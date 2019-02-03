@@ -1,0 +1,22 @@
+# build stage
+FROM golang:alpine AS build-stage
+
+WORKDIR /go/src/{{ .BasePackage }}/{{ .ProjectName }}
+
+RUN apk add --update gcc musl-dev
+
+ADD . .
+
+RUN go build -o /todo {{ .BasePackage }}/{{ .ProjectName }}/cmd/server/v1
+
+# final stage
+FROM alpine:latest
+
+COPY dev_files/certs/server /certs
+COPY database database
+COPY --from=build-stage /todo /todo
+
+ENV DOCKER=true
+EXPOSE 443
+
+ENTRYPOINT ["/todo"]
