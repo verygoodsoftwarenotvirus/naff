@@ -15,42 +15,12 @@
 package main
 
 import (
-	"errors"
-
-	"github.com/gobuffalo/packr/v2"
 	"github.com/spf13/cobra"
-	"gopkg.in/AlecAivazis/survey.v1"
 )
 
 const (
 	defaultFileExtension = ".tmpl"
-
-	defaultTemplatePath = "test_template"
 )
-
-func fillSurvey() (*Project, error) {
-	// the questions to ask
-	questions := []*survey.Question{
-		{
-			Name:      "name",
-			Prompt:    &survey.Input{Message: "Project name:"},
-			Validate:  survey.Required,
-			Transform: survey.Title,
-		},
-		{
-			Name: "basePackage",
-			Prompt: &survey.Input{
-				Message: "Base import:",
-				Help: `the package path that all the subrepositories will live in.
-Something like gitlab.com/verygoodsoftwarenotvirus`,
-			},
-		},
-	}
-
-	// perform the questions
-	var p Project
-	return &p, survey.Ask(questions, &p)
-}
 
 var (
 	outputPackage string
@@ -65,22 +35,14 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if outputPackage == "" {
-				return errors.New("no output package set, please run again with --output-package set")
-			}
-
-			if fileBox == nil {
-				return errors.New("no filebox available")
-			}
-
 			p, err := fillSurvey()
 			if err != nil {
 				return err
 			}
-			if err := p.EnsureRootPath(); err != nil {
+			if err := p.EnsureOutputDir(); err != nil {
 				return err
 			}
-			if err := p.RenderDirectory(fileBox); err != nil {
+			if err := p.RenderDirectory(); err != nil {
 				return err
 			}
 
@@ -90,8 +52,6 @@ to quickly create a Cobra application.`,
 )
 
 func init() {
-	fileBox = packr.New("templates", defaultTemplatePath)
-
 	generateCmd.Flags().StringVarP(&outputPackage, "output-package", "o", "", "Package to generate.")
 
 	rootCmd.AddCommand(generateCmd)

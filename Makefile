@@ -31,5 +31,9 @@ test:
 	docker build --tag coverage-todo:latest --file dockerfiles/coverage.Dockerfile .
 	docker run --rm --volume `pwd`:`pwd` --workdir=`pwd` coverage-todo:latest
 
+.PHONY: run
+run:
+	go run gitlab.com/verygoodsoftwarenotvirus/naff/cmd/cli generate
+
 naff_debug:
 	go build -o naff_debug gitlab.com/verygoodsoftwarenotvirus/naff/cmd/cli
