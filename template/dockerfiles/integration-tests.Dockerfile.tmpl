@@ -1,9 +1,0 @@
-FROM golang:alpine
-
-WORKDIR /go/src/{{ .BasePackage }}/{{ .ProjectName }}
-
-RUN apk add --update gcc musl-dev
-
-ADD . .
-
-ENTRYPOINT [ "go", "test", "-v", "{{ .BasePackage }}/{{ .ProjectName }}/tests/integration/v1" ]

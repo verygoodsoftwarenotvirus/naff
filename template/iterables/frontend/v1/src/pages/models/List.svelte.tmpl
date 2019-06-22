@@ -1,0 +1,63 @@
+<script>
+  import { Link, navigate } from "svelte-routing";
+
+  import Table from "../../components/Table.svelte";
+
+  const columns = [
+    {
+      title: "ID",
+      key: "id"
+    },
+    {
+      title: "Name",
+      key: "name"
+    },
+    {
+      title: "Details",
+      key: "details"
+    },
+    {
+      title: "Created On",
+      key: "created_on"
+    },
+    {
+      title: "Updated On",
+      key: "updated_on"
+    }
+  ];
+  let {{ .PluralLowercase }} = [];
+
+  function delete{{ .SingularTitlecase }}(row) {
+    if (confirm("are you sure you want to delete this {{ .SingularLowercase  }}?")) {
+      fetch(`/api/v1/{{ .PluralLowercase }}/${row.id}`, {
+        method: "DELETE"
+      }).then(response => {
+        if (response.status != 204) {
+          console.error("something has gone awry");
+        }
+        {{ .PluralLowercase }} = {{ .PluralLowercase }}.filter({{ .SingularLowercase  }} => {
+          return {{ .SingularLowercase  }}.id != row.id;
+        });
+      });
+    }
+  }
+
+  function goTo{{ .SingularTitlecase }}(row) {
+    navigate(`/{{ .PluralLowercase }}/${row.id}`, { replace: true });
+  }
+
+  fetch("/api/v1/{{ .PluralLowercase }}/")
+    .then(response => response.json())
+    .then(data => {
+      {{ .PluralLowercase }} = data["{{ .PluralLowercase }}"];
+    });
+</script>
+
+<!-- {{ .PluralTitlecase }}.svelte -->
+
+<Table
+  {columns}
+  tableStyle={'margin: 0px auto;'}
+  rows={ {{ .PluralLowercase }} }
+  rowClickFunc={goTo{{ .SingularTitlecase }}}
+  rowDeleteFunc={delete{{ .SingularTitlecase }}} />

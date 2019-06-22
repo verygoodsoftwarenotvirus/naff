@@ -1,0 +1,316 @@
+package postgres
+
+import (
+	"context"
+	"database/sql"
+	"sync"
+
+	"{{ .OutputRepository }}/database/v1"
+	"{{ .OutputRepository }}/internal/logging/v1"
+	"{{ .OutputRepository }}/models/v1"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
+)
+
+const (
+	{{ .PluralLowercase }}TableName = "{{ .PluralLowercase }}"
+)
+
+var (
+	{{ .PluralLowercase }}TableColumns = []string{
+		"id",
+		"name",
+		"details",
+		"created_on",
+		"updated_on",
+		"archived_on",
+		"belongs_to",
+	}
+)
+
+// scan{{ .SingularTitlecase }} takes a database Scanner (i.e. *sql.Row) and scans
+// the result into an {{ .SingularTitlecase }} struct
+func scan{{ .SingularTitlecase }}(scan database.Scanner) (*models.{{ .SingularTitlecase }}, error) {
+	x := &models.{{ .SingularTitlecase }}{}
+
+	if err := scan.Scan(
+		&x.ID,
+		&x.Name,
+		&x.Details,
+		&x.CreatedOn,
+		&x.UpdatedOn,
+		&x.ArchivedOn,
+		&x.BelongsTo,
+	); err != nil {
+		return nil, err
+	}
+
+	return x, nil
+}
+
+// scan{{ .PluralTitlecase }} takes a logger and some database rows and turns them into a slice of {{ .PluralLowercase }}
+func scan{{ .PluralTitlecase }}(logger logging.Logger, rows *sql.Rows) ([]models.{{ .SingularTitlecase }}, error) {
+	var list []models.{{ .SingularTitlecase }}
+
+	for rows.Next() {
+		x, err := scan{{ .SingularTitlecase }}(rows)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, *x)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if closeErr := rows.Close(); closeErr != nil {
+		logger.Error(closeErr, "closing database rows")
+	}
+
+	return list, nil
+}
+
+// buildGet{{ .SingularTitlecase }}Query constructs a SQL query for fetching an {{ .SingularLowercase  }} with a given ID belong to a user with a given ID.
+func (p *Postgres) buildGet{{ .SingularTitlecase }}Query({{ .SingularLowercase  }}ID, userID uint64) (query string, args []interface{}) {
+	var err error
+	query, args, err = p.sqlBuilder.
+		Select({{ .PluralLowercase }}TableColumns...).
+		From({{ .PluralLowercase }}TableName).
+		Where(squirrel.Eq{
+			"id":         {{ .SingularLowercase  }}ID,
+			"belongs_to": userID,
+		}).
+		ToSql()
+
+	logQueryBuildingError(p.logger, err)
+
+	return query, args
+}
+
+// Get{{ .SingularTitlecase }} fetches an {{ .SingularLowercase  }} from the postgres database
+func (p *Postgres) Get{{ .SingularTitlecase }}(ctx context.Context, {{ .SingularLowercase  }}ID, userID uint64) (*models.{{ .SingularTitlecase }}, error) {
+	query, args := p.buildGet{{ .SingularTitlecase }}Query({{ .SingularLowercase  }}ID, userID)
+	row := p.db.QueryRowContext(ctx, query, args...)
+	return scan{{ .SingularTitlecase }}(row)
+}
+
+// buildGet{{ .SingularTitlecase }}CountQuery takes a QueryFilter and a user ID and returns a SQL query (and the relevant arguments) for
+// fetching the number of {{ .PluralLowercase }} belonging to a given user that meet a given query
+func (p *Postgres) buildGet{{ .SingularTitlecase }}CountQuery(filter *models.QueryFilter, userID uint64) (query string, args []interface{}) {
+	var err error
+	builder := p.sqlBuilder.
+		Select(CountQuery).
+		From({{ .PluralLowercase }}TableName).
+		Where(squirrel.Eq{
+			"archived_on": nil,
+			"belongs_to":  userID,
+		})
+
+	if filter != nil {
+		builder = filter.ApplyToQueryBuilder(builder)
+	}
+
+	query, args, err = builder.ToSql()
+	logQueryBuildingError(p.logger, err)
+
+	return query, args
+}
+
+// Get{{ .SingularTitlecase }}Count will fetch the count of {{ .PluralLowercase }} from the database that meet a particular filter and belong to a particular user.
+func (p *Postgres) Get{{ .SingularTitlecase }}Count(ctx context.Context, filter *models.QueryFilter, userID uint64) (count uint64, err error) {
+	query, args := p.buildGet{{ .SingularTitlecase }}CountQuery(filter, userID)
+	err = p.db.QueryRowContext(ctx, query, args...).Scan(&count)
+	return count, err
+}
+
+var (
+	all{{ .PluralTitlecase }}CountQueryBuilder sync.Once
+	all{{ .PluralTitlecase }}CountQuery        string
+)
+
+// buildGetAll{{ .PluralTitlecase }}CountQuery returns a query that fetches the total number of {{ .PluralLowercase }} in the database.
+// This query only gets generated once, and is otherwise returned from cache.
+func (p *Postgres) buildGetAll{{ .PluralTitlecase }}CountQuery() string {
+	all{{ .PluralTitlecase }}CountQueryBuilder.Do(func() {
+		var err error
+		all{{ .PluralTitlecase }}CountQuery, _, err = p.sqlBuilder.Select(CountQuery).
+			From({{ .PluralLowercase }}TableName).
+			Where(squirrel.Eq{"archived_on": nil}).
+			ToSql()
+		logQueryBuildingError(p.logger, err)
+	})
+
+	return all{{ .PluralTitlecase }}CountQuery
+}
+
+// GetAll{{ .PluralTitlecase }}Count will fetch the count of {{ .PluralLowercase }} from the database
+func (p *Postgres) GetAll{{ .PluralTitlecase }}Count(ctx context.Context) (count uint64, err error) {
+	err = p.db.QueryRowContext(ctx, p.buildGetAll{{ .PluralTitlecase }}CountQuery()).Scan(&count)
+	return count, err
+}
+
+// buildGet{{ .PluralTitlecase }}Query builds a SQL query selecting {{ .PluralLowercase }} that adhere to a given QueryFilter and belong to a given user,
+// and returns both the query and the relevant args to pass to the query executor.
+func (p *Postgres) buildGet{{ .PluralTitlecase }}Query(filter *models.QueryFilter, userID uint64) (query string, args []interface{}) {
+	var err error
+	builder := p.sqlBuilder.
+		Select({{ .PluralLowercase }}TableColumns...).
+		From({{ .PluralLowercase }}TableName).
+		Where(squirrel.Eq{
+			"archived_on": nil,
+			"belongs_to":  userID,
+		})
+
+	if filter != nil {
+		builder = filter.ApplyToQueryBuilder(builder)
+	}
+
+	query, args, err = builder.ToSql()
+	logQueryBuildingError(p.logger, err)
+
+	return query, args
+}
+
+// Get{{ .PluralTitlecase }} fetches a list of {{ .PluralLowercase }} from the database that meet a particular filter
+func (p *Postgres) Get{{ .PluralTitlecase }}(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.{{ .SingularTitlecase }}List, error) {
+	query, args := p.buildGet{{ .PluralTitlecase }}Query(filter, userID)
+
+	rows, err := p.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, buildError(err, "querying database for {{ .PluralLowercase }}")
+	}
+
+	list, err := scan{{ .PluralTitlecase }}(p.logger, rows)
+	if err != nil {
+		return nil, errors.Wrap(err, "scanning response from database")
+	}
+
+	count, err := p.Get{{ .SingularTitlecase }}Count(ctx, filter, userID)
+	if err != nil {
+		return nil, errors.Wrap(err, "fetching {{ .SingularLowercase  }} count")
+	}
+
+	x := &models.{{ .SingularTitlecase }}List{
+		Pagination: models.Pagination{
+			Page:       filter.Page,
+			Limit:      filter.Limit,
+			TotalCount: count,
+		},
+		{{ .PluralTitlecase }}: list,
+	}
+
+	return x, nil
+}
+
+// GetAll{{ .PluralTitlecase }}ForUser fetches every {{ .SingularLowercase  }} belonging to a user
+func (p *Postgres) GetAll{{ .PluralTitlecase }}ForUser(ctx context.Context, userID uint64) ([]models.{{ .SingularTitlecase }}, error) {
+	query, args := p.buildGet{{ .PluralTitlecase }}Query(nil, userID)
+
+	rows, err := p.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, buildError(err, "fetching {{ .PluralLowercase }} for user")
+	}
+
+	list, err := scan{{ .PluralTitlecase }}(p.logger, rows)
+	if err != nil {
+		return nil, errors.Wrap(err, "parsing database results")
+	}
+
+	return list, nil
+}
+
+// buildCreate{{ .SingularTitlecase }}Query takes an {{ .SingularLowercase  }} and returns a creation query for that {{ .SingularLowercase  }} and the relevant arguments.
+func (p *Postgres) buildCreate{{ .SingularTitlecase }}Query(input *models.{{ .SingularTitlecase }}) (query string, args []interface{}) {
+	var err error
+	query, args, err = p.sqlBuilder.
+		Insert({{ .PluralLowercase }}TableName).
+		Columns(
+			"name",
+			"details",
+			"belongs_to",
+		).
+		Values(
+			input.Name,
+			input.Details,
+			input.BelongsTo,
+		).
+		Suffix("RETURNING id, created_on").
+		ToSql()
+
+	logQueryBuildingError(p.logger, err)
+
+	return query, args
+}
+
+// Create{{ .SingularTitlecase }} creates an {{ .SingularLowercase  }} in the database
+func (p *Postgres) Create{{ .SingularTitlecase }}(ctx context.Context, input *models.{{ .SingularTitlecase }}CreationInput) (*models.{{ .SingularTitlecase }}, error) {
+	i := &models.{{ .SingularTitlecase }}{
+		Name:      input.Name,
+		Details:   input.Details,
+		BelongsTo: input.BelongsTo,
+	}
+
+	query, args := p.buildCreate{{ .SingularTitlecase }}Query(i)
+
+	// create the {{ .SingularLowercase  }}
+	err := p.db.QueryRowContext(ctx, query, args...).Scan(&i.ID, &i.CreatedOn)
+	if err != nil {
+		return nil, errors.Wrap(err, "error executing {{ .SingularLowercase  }} creation query")
+	}
+
+	return i, nil
+}
+
+// buildUpdate{{ .SingularTitlecase }}Query takes an {{ .SingularLowercase  }} and returns an update SQL query, with the relevant query parameters
+func (p *Postgres) buildUpdate{{ .SingularTitlecase }}Query(input *models.{{ .SingularTitlecase }}) (query string, args []interface{}) {
+	var err error
+	query, args, err = p.sqlBuilder.Update({{ .PluralLowercase }}TableName).
+		Set("name", input.Name).
+		Set("details", input.Details).
+		Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).
+		Where(squirrel.Eq{
+			"id":         input.ID,
+			"belongs_to": input.BelongsTo,
+		}).
+		Suffix("RETURNING updated_on").
+		ToSql()
+
+	logQueryBuildingError(p.logger, err)
+
+	return query, args
+}
+
+// Update{{ .SingularTitlecase }} updates a particular {{ .SingularLowercase  }}. Note that Update{{ .SingularTitlecase }} expects the provided input to have a valid ID.
+func (p *Postgres) Update{{ .SingularTitlecase }}(ctx context.Context, input *models.{{ .SingularTitlecase }}) error {
+	query, args := p.buildUpdate{{ .SingularTitlecase }}Query(input)
+	return p.db.QueryRowContext(ctx, query, args...).Scan(&input.UpdatedOn)
+}
+
+// buildArchive{{ .SingularTitlecase }}Query returns a SQL query which marks a given {{ .SingularLowercase  }} belonging to a given user as archived.
+func (p *Postgres) buildArchive{{ .SingularTitlecase }}Query({{ .SingularLowercase  }}ID, userID uint64) (query string, args []interface{}) {
+	var err error
+	query, args, err = p.sqlBuilder.
+		Update({{ .PluralLowercase }}TableName).
+		Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).
+		Set("archived_on", squirrel.Expr(CurrentUnixTimeQuery)).
+		Where(squirrel.Eq{
+			"id":          {{ .SingularLowercase  }}ID,
+			"archived_on": nil,
+			"belongs_to":  userID,
+		}).
+		Suffix("RETURNING archived_on").
+		ToSql()
+
+	logQueryBuildingError(p.logger, err)
+
+	return query, args
+}
+
+// Archive{{ .SingularTitlecase }} marks an {{ .SingularLowercase  }} as archived in the database
+func (p *Postgres) Archive{{ .SingularTitlecase }}(ctx context.Context, {{ .SingularLowercase  }}ID, userID uint64) error {
+	query, args := p.buildArchive{{ .SingularTitlecase }}Query({{ .SingularLowercase  }}ID, userID)
+	_, err := p.db.ExecContext(ctx, query, args...)
+	return err
+}

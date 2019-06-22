@@ -1,0 +1,18 @@
+[meta]
+# tracing_enabled = true
+# debug = true
+
+[server]
+http_port = 8888
+debug = true
+
+[frontend]
+wasm_client_package = "{{ .OutputRepository }}/client/v1/frontend"
+
+[auth]
+cookie_secret = "HEREISA32CHARSECRETWHICHISMADEUP"
+
+[database]
+provider = "postgres"
+debug = false
+connection_details = "postgres://dbuser:hunter2@database:5432/todo?sslmode=disable"

@@ -1,0 +1,83 @@
+package models
+
+import (
+	"context"
+	"net/http"
+)
+
+type (
+	// {{ .SingularTitlecase }} represents an {{ .SingularLowercase  }}
+	{{ .SingularTitlecase }} struct {
+		ID         uint64  `json:"id"`
+		{{ range $i, $typ := .DataTypes }}
+	{{ range $i, $field := $typ.Fields }}
+			{{ $field.Name }} {{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
+		{{ end }}
+	{{ end }}
+		CreatedOn  uint64  `json:"created_on"`
+		UpdatedOn  *uint64 `json:"updated_on"`
+		ArchivedOn *uint64 `json:"archived_on"`
+		BelongsTo  uint64  `json:"belongs_to"`
+	}
+
+	// {{ .SingularTitlecase }}List represents a list of {{ .PluralLowercase }}
+	{{ .SingularTitlecase }}List struct {
+		Pagination
+		{{ .PluralTitlecase }} []{{ .SingularTitlecase }} `json:"{{ .PluralLowercase }}"`
+	}
+
+	// {{ .SingularTitlecase }}CreationInput represents what a user could set as input for {{ .PluralLowercase }}
+	{{ .SingularTitlecase }}CreationInput struct {
+		{{ range $i, $typ := .DataTypes }}
+	{{ range $i, $field := $typ.Fields }}
+			{{ $field.Name }} {{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
+		{{ end }}
+	{{ end }}
+		BelongsTo uint64 `json:"-"`
+	}
+
+	// {{ .SingularTitlecase }}UpdateInput represents what a user could set as input for {{ .PluralLowercase }}
+	{{ .SingularTitlecase }}UpdateInput struct {
+		{{ range $i, $typ := .DataTypes }}
+	{{ range $i, $field := $typ.Fields }}
+			{{ $field.Name }} {{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
+		{{ end }}
+	{{ end }}
+		BelongsTo uint64 `json:"-"`
+	}
+
+	// {{ .SingularTitlecase }}DataManager describes a structure capable of storing {{ .PluralLowercase }} permanently
+	{{ .SingularTitlecase }}DataManager interface {
+		Get{{ .SingularTitlecase }}(ctx context.Context, {{ .SingularLowercase  }}ID, userID uint64) (*{{ .SingularTitlecase }}, error)
+		Get{{ .SingularTitlecase }}Count(ctx context.Context, filter *QueryFilter, userID uint64) (uint64, error)
+		GetAll{{ .PluralTitlecase }}Count(ctx context.Context) (uint64, error)
+		Get{{ .PluralTitlecase }}(ctx context.Context, filter *QueryFilter, userID uint64) (*{{ .SingularTitlecase }}List, error)
+		GetAll{{ .PluralTitlecase }}ForUser(ctx context.Context, userID uint64) ([]{{ .SingularTitlecase }}, error)
+		Create{{ .SingularTitlecase }}(ctx context.Context, input *{{ .SingularTitlecase }}CreationInput) (*{{ .SingularTitlecase }}, error)
+		Update{{ .SingularTitlecase }}(ctx context.Context, updated *{{ .SingularTitlecase }}) error
+		Archive{{ .SingularTitlecase }}(ctx context.Context, id, userID uint64) error
+	}
+
+	// {{ .SingularTitlecase }}DataServer describes a structure capable of serving traffic related to {{ .PluralLowercase }}
+	{{ .SingularTitlecase }}DataServer interface {
+		CreationInputMiddleware(next http.Handler) http.Handler
+		UpdateInputMiddleware(next http.Handler) http.Handler
+
+		ListHandler(res http.ResponseWriter, req *http.Request)
+		CreateHandler(res http.ResponseWriter, req *http.Request)
+		ReadHandler(res http.ResponseWriter, req *http.Request)
+		UpdateHandler(res http.ResponseWriter, req *http.Request)
+		ArchiveHandler(res http.ResponseWriter, req *http.Request)
+	}
+)
+
+// Update merges an {{ .SingularTitlecase }}Input with an {{ .SingularTitlecase }}
+func (x *{{ .SingularTitlecase }}) Update(input *{{ .SingularTitlecase }}UpdateInput) {
+	{{ range $i, $typ := .DataTypes }}
+		{{ range $i, $field := $typ.Fields }}
+			if x.{{ $field.Name }} != input.{{ $field.Name }} {
+				x.{{ $field.Name }} = input.{{ $field.Name }} 
+			}
+		{{ end }}
+	{{ end }}
+}

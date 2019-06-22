@@ -1,0 +1,29 @@
+<script>
+  import { Link } from "svelte-routing";
+
+  let {{ .SingularLowercase  }} = {};
+
+  const {{ .SingularLowercase  }}ID = window.location.pathname.replace("/{{ .PluralLowercase }}/", "");
+
+  fetch(`/api/v1/{{ .PluralLowercase }}/${ {{ .SingularLowercase  }}ID }`)
+    .then(response => response.json())
+    .then(data => {
+      {{ .SingularLowercase  }} = data;
+    });
+</script>
+
+<!-- {{ .PluralTitlecase }}.svelte -->
+
+<div style="text-align: center; margin: 0px auto;">
+  <p>
+    name:
+    {@html {{ .SingularLowercase  }}.name}
+  </p>
+  <p>
+    details:
+    {@html {{ .SingularLowercase  }}.details}
+  </p>
+
+  <Link to="/{{ .PluralLowercase }}">see all</Link>
+
+</div>

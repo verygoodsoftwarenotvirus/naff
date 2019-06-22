@@ -1,0 +1,136 @@
+package httpserver
+
+import (
+	"net/http"
+	"strconv"
+
+	"{{ .OutputRepository }}/internal/logging/v1"
+	"{{ .OutputRepository }}/models/v1"
+	"{{ .OutputRepository }}/services/v1/auth"
+{{ range $x, $import := .IterableServicesImports }} 
+	"{{ $import }}" 
+{{ end }}
+	"{{ .OutputRepository }}/services/v1/oauth2clients"
+	"{{ .OutputRepository }}/services/v1/users"
+	"{{ .OutputRepository }}/services/v1/webhooks"
+
+	"github.com/go-chi/chi"
+	"github.com/google/wire"
+)
+
+var (
+	paramFetcherProviders = wire.NewSet(
+
+				{{ range $i, $dt := .DataTypes }}
+					Provide{{ camelcase $dt.Name }}UserIDFetcher, 
+				{{ end }}
+			
+		ProvideUsernameFetcher,
+		ProvideOAuth2ServiceClientIDFetcher,
+		ProvideAuthUserIDFetcher,
+
+{{ range $i, $dt := .DataTypes }}
+	Provide{{ camelcase $dt.Name }}IDFetcher,
+{{ end }}
+
+		ProvideWebhooksUserIDFetcher,
+		ProvideWebhookIDFetcher,
+	)
+)
+
+{{ range $i, $dt := .DataTypes }}
+// Provide{{ camelcase $dt.Name }}UserIDFetcher provides a UserIDFetcher
+func Provide{{ camelcase $dt.Name }}UserIDFetcher() {{ lower $dt.Name }}s.UserIDFetcher {
+	return UserIDFetcher
+}
+{{ end }}
+
+
+{{ range $i, $dt := .DataTypes }}
+// Provide{{ camelcase $dt.Name }}IDFetcher provides an {{ camelcase $dt.Name }}IDFetcher
+func Provide{{ camelcase $dt.Name }}IDFetcher(logger logging.Logger) {{ lower $dt.Name }}s.{{ camelcase $dt.Name }}IDFetcher {
+	return buildChi{{ camelcase $dt.Name }}IDFetcher(logger)
+}
+{{ end }}
+
+// ProvideUsernameFetcher provides a UsernameFetcher
+func ProvideUsernameFetcher(logger logging.Logger) users.UserIDFetcher {
+	return buildChiUserIDFetcher(logger)
+}
+
+// ProvideAuthUserIDFetcher provides a UsernameFetcher
+func ProvideAuthUserIDFetcher() auth.UserIDFetcher {
+	return UserIDFetcher
+}
+
+// ProvideWebhooksUserIDFetcher provides a UserIDFetcher
+func ProvideWebhooksUserIDFetcher() webhooks.UserIDFetcher {
+	return UserIDFetcher
+}
+
+// ProvideWebhookIDFetcher provides an WebhookIDFetcher
+func ProvideWebhookIDFetcher(logger logging.Logger) webhooks.WebhookIDFetcher {
+	return buildChiWebhookIDFetcher(logger)
+}
+
+// ProvideOAuth2ServiceClientIDFetcher provides a ClientIDFetcher
+func ProvideOAuth2ServiceClientIDFetcher(logger logging.Logger) oauth2clients.ClientIDFetcher {
+	return buildChiOAuth2ClientIDFetcher(logger)
+}
+
+// UserIDFetcher fetches a user ID from a request routed by chi.
+func UserIDFetcher(req *http.Request) uint64 {
+	return req.Context().Value(models.UserIDKey).(uint64)
+}
+
+// buildChiUserIDFetcher builds a function that fetches a Username from a request routed by chi.
+func buildChiUserIDFetcher(logger logging.Logger) users.UserIDFetcher {
+	return func(req *http.Request) uint64 {
+		u, err := strconv.ParseUint(chi.URLParam(req, users.URIParamKey), 10, 64)
+		if err != nil {
+			logger.Error(err, "fetching user ID from request")
+		}
+		return u
+	}
+}
+
+{{ range $i, $dt := .DataTypes }}
+// chi{{ camelcase $dt.Name }}IDFetcher fetches a {{ camelcase $dt.Name }}ID from a request routed by chi.
+func buildChi{{ camelcase $dt.Name }}IDFetcher(logger logging.Logger) func(req *http.Request) uint64 {
+	return func(req *http.Request) uint64 {
+		// we can generally disregard this error only because we should be able to validate
+		// that the string only contains numbers via chi's regex url param feature.
+		u, err := strconv.ParseUint(chi.URLParam(req, {{ lower $dt.Name }}s.URIParamKey), 10, 64)
+		if err != nil {
+			logger.Error(err, "fetching {{ camelcase $dt.Name }}ID from request")
+		}
+		return u
+	}
+}
+{{ end }}
+
+// chiWebhookIDFetcher fetches a WebhookID from a request routed by chi.
+func buildChiWebhookIDFetcher(logger logging.Logger) func(req *http.Request) uint64 {
+	return func(req *http.Request) uint64 {
+		// we can generally disregard this error only because we should be able to validate
+		// that the string only contains numbers via chi's regex url param feature.
+		u, err := strconv.ParseUint(chi.URLParam(req, webhooks.URIParamKey), 10, 64)
+		if err != nil {
+			logger.Error(err, "fetching WebhookID from request")
+		}
+		return u
+	}
+}
+
+// chiOAuth2ClientIDFetcher fetches a OAuth2ClientID from a request routed by chi.
+func buildChiOAuth2ClientIDFetcher(logger logging.Logger) func(req *http.Request) uint64 {
+	return func(req *http.Request) uint64 {
+		// we can generally disregard this error only because we should be able to validate
+		// that the string only contains numbers via chi's regex url param feature.
+		u, err := strconv.ParseUint(chi.URLParam(req, oauth2clients.URIParamKey), 10, 64)
+		if err != nil {
+			logger.Error(err, "fetching OAuth2ClientID from request")
+		}
+		return u
+	}
+}

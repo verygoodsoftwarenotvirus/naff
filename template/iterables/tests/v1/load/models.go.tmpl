@@ -1,0 +1,72 @@
+package main
+
+import (
+	"context"
+	"math/rand"
+	"net/http"
+
+	client "{{ .OutputRepository }}/client/v1/http"
+	"{{ .OutputRepository }}/models/v1"
+	randmodel "{{ .OutputRepository }}/tests/v1/testutil/rand/model"
+)
+
+// fetchRandom{{ .SingularTitlecase }} retrieves a random {{ .SingularLowercase  }} from the list of available {{ .PluralLowercase }}
+func fetchRandom{{ .SingularTitlecase }}(c *client.V1Client) *models.{{ .SingularTitlecase }} {
+	{{ .PluralLowercase }}Res, err := c.Get{{ .PluralTitlecase }}(context.Background(), nil)
+	if err != nil || {{ .PluralLowercase }}Res == nil || len({{ .PluralLowercase }}Res.{{ .PluralTitlecase }}) == 0 {
+		return nil
+	}
+
+	randIndex := rand.Intn(len({{ .PluralLowercase }}Res.{{ .PluralTitlecase }}))
+	return &{{ .PluralLowercase }}Res.{{ .PluralTitlecase }}[randIndex]
+}
+
+func build{{ .SingularTitlecase }}Actions(c *client.V1Client) map[string]*Action {
+	return map[string]*Action{
+		"Create{{ .SingularTitlecase }}": {
+			Name: "Create{{ .SingularTitlecase }}",
+			Action: func() (*http.Request, error) {
+				return c.BuildCreate{{ .SingularTitlecase }}Request(context.Background(), randmodel.Random{{ .SingularTitlecase }}CreationInput())
+			},
+			Weight: 100,
+		},
+		"Get{{ .SingularTitlecase }}": {
+			Name: "Get{{ .SingularTitlecase }}",
+			Action: func() (*http.Request, error) {
+				if random{{ .SingularTitlecase }} := fetchRandom{{ .SingularTitlecase }}(c); random{{ .SingularTitlecase }} != nil {
+					return c.BuildGet{{ .SingularTitlecase }}Request(context.Background(), random{{ .SingularTitlecase }}.ID)
+				}
+				return nil, ErrUnavailableYet
+			},
+			Weight: 100,
+		},
+		"Get{{ .PluralTitlecase }}": {
+			Name: "Get{{ .PluralTitlecase }}",
+			Action: func() (*http.Request, error) {
+				return c.BuildGet{{ .PluralTitlecase }}Request(context.Background(), nil)
+			},
+			Weight: 100,
+		},
+		"Update{{ .SingularTitlecase }}": {
+			Name: "Update{{ .SingularTitlecase }}",
+			Action: func() (*http.Request, error) {
+				if random{{ .SingularTitlecase }} := fetchRandom{{ .SingularTitlecase }}(c); random{{ .SingularTitlecase }} != nil {
+					random{{ .SingularTitlecase }}.Name = randmodel.Random{{ .SingularTitlecase }}CreationInput().Name
+					return c.BuildUpdate{{ .SingularTitlecase }}Request(context.Background(), random{{ .SingularTitlecase }})
+				}
+				return nil, ErrUnavailableYet
+			},
+			Weight: 100,
+		},
+		"Archive{{ .SingularTitlecase }}": {
+			Name: "Archive{{ .SingularTitlecase }}",
+			Action: func() (*http.Request, error) {
+				if random{{ .SingularTitlecase }} := fetchRandom{{ .SingularTitlecase }}(c); random{{ .SingularTitlecase }} != nil {
+					return c.BuildArchive{{ .SingularTitlecase }}Request(context.Background(), random{{ .SingularTitlecase }}.ID)
+				}
+				return nil, ErrUnavailableYet
+			},
+			Weight: 85,
+		},
+	}
+}

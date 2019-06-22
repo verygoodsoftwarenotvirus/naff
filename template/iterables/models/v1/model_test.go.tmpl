@@ -1,0 +1,27 @@
+package models
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func Test{{ .SingularTitlecase }}_Update(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		i := &{{ .SingularTitlecase }}{
+			Name:    "name",
+			Details: "deets",
+		}
+
+		expected := &{{ .SingularTitlecase }}UpdateInput{
+			Name:    "expected name",
+			Details: "expected details",
+		}
+
+		i.Update(expected)
+		assert.Equal(t, expected.Name, i.Name)
+		assert.Equal(t, expected.Details, i.Details)
+	})
+}

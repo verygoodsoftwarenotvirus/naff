@@ -1,0 +1,176 @@
+package dbclient
+
+import (
+	"context"
+	"testing"
+
+	"{{ .OutputRepository }}/models/v1"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+func TestClient_Get{{ .SingularTitlecase }}(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		example{{ .SingularTitlecase }}ID := uint64(123)
+		exampleUserID := uint64(123)
+		expected := &models.{{ .SingularTitlecase }}{}
+
+		c, mockDB := buildTestClient()
+		mockDB.{{ .SingularTitlecase }}DataManager.
+			On("Get{{ .SingularTitlecase }}", mock.Anything, example{{ .SingularTitlecase }}ID, exampleUserID).
+			Return(expected, nil)
+
+		actual, err := c.Get{{ .SingularTitlecase }}(context.Background(), example{{ .SingularTitlecase }}ID, exampleUserID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mockDB.AssertExpectations(t)
+	})
+}
+
+func TestClient_Get{{ .SingularTitlecase }}Count(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		expected := uint64(321)
+		exampleUserID := uint64(123)
+
+		c, mockDB := buildTestClient()
+		mockDB.{{ .SingularTitlecase }}DataManager.
+			On("Get{{ .SingularTitlecase }}Count", mock.Anything, models.DefaultQueryFilter(), exampleUserID).
+			Return(expected, nil)
+
+		actual, err := c.Get{{ .SingularTitlecase }}Count(context.Background(), models.DefaultQueryFilter(), exampleUserID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mockDB.AssertExpectations(t)
+	})
+
+	T.Run("with nil filter", func(t *testing.T) {
+		expected := uint64(321)
+		exampleUserID := uint64(123)
+
+		c, mockDB := buildTestClient()
+		mockDB.{{ .SingularTitlecase }}DataManager.
+			On("Get{{ .SingularTitlecase }}Count", mock.Anything, (*models.QueryFilter)(nil), exampleUserID).
+			Return(expected, nil)
+
+		actual, err := c.Get{{ .SingularTitlecase }}Count(context.Background(), nil, exampleUserID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mockDB.AssertExpectations(t)
+	})
+}
+
+func TestClient_GetAll{{ .PluralTitlecase }}Count(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		expected := uint64(321)
+		c, mockDB := buildTestClient()
+		mockDB.{{ .SingularTitlecase }}DataManager.
+			On("GetAll{{ .PluralTitlecase }}Count", mock.Anything).
+			Return(expected, nil)
+
+		actual, err := c.GetAll{{ .PluralTitlecase }}Count(context.Background())
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mockDB.AssertExpectations(t)
+	})
+}
+
+func TestClient_Get{{ .PluralTitlecase }}(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		exampleUserID := uint64(123)
+		c, mockDB := buildTestClient()
+		expected := &models.{{ .SingularTitlecase }}List{}
+
+		mockDB.{{ .SingularTitlecase }}DataManager.
+			On("Get{{ .PluralTitlecase }}", mock.Anything, models.DefaultQueryFilter(), exampleUserID).
+			Return(expected, nil)
+
+		actual, err := c.Get{{ .PluralTitlecase }}(context.Background(), models.DefaultQueryFilter(), exampleUserID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mockDB.AssertExpectations(t)
+	})
+
+	T.Run("with nil filter", func(t *testing.T) {
+		exampleUserID := uint64(123)
+		c, mockDB := buildTestClient()
+		expected := &models.{{ .SingularTitlecase }}List{}
+
+		mockDB.{{ .SingularTitlecase }}DataManager.
+			On("Get{{ .PluralTitlecase }}", mock.Anything, (*models.QueryFilter)(nil), exampleUserID).
+			Return(expected, nil)
+
+		actual, err := c.Get{{ .PluralTitlecase }}(context.Background(), nil, exampleUserID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mockDB.AssertExpectations(t)
+	})
+}
+
+func TestClient_Create{{ .SingularTitlecase }}(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		exampleInput := &models.{{ .SingularTitlecase }}CreationInput{}
+		c, mockDB := buildTestClient()
+		expected := &models.{{ .SingularTitlecase }}{}
+
+		mockDB.{{ .SingularTitlecase }}DataManager.
+			On("Create{{ .SingularTitlecase }}", mock.Anything, exampleInput).
+			Return(expected, nil)
+
+		actual, err := c.Create{{ .SingularTitlecase }}(context.Background(), exampleInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mockDB.AssertExpectations(t)
+	})
+}
+
+func TestClient_Update{{ .SingularTitlecase }}(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		exampleInput := &models.{{ .SingularTitlecase }}{}
+		c, mockDB := buildTestClient()
+		var expected error
+
+		mockDB.{{ .SingularTitlecase }}DataManager.
+			On("Update{{ .SingularTitlecase }}", mock.Anything, exampleInput).
+			Return(expected)
+
+		err := c.Update{{ .SingularTitlecase }}(context.Background(), exampleInput)
+		assert.NoError(t, err)
+	})
+}
+
+func TestClient_Archive{{ .SingularTitlecase }}(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		exampleUserID := uint64(123)
+		example{{ .SingularTitlecase }}ID := uint64(123)
+		var expected error
+
+		c, mockDB := buildTestClient()
+		mockDB.{{ .SingularTitlecase }}DataManager.On("Archive{{ .SingularTitlecase }}", mock.Anything, example{{ .SingularTitlecase }}ID, exampleUserID).
+			Return(expected)
+
+		err := c.Archive{{ .SingularTitlecase }}(context.Background(), exampleUserID, example{{ .SingularTitlecase }}ID)
+		assert.NoError(t, err)
+	})
+}

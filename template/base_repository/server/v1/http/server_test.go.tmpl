@@ -1,0 +1,81 @@
+package httpserver
+
+import (
+	"context"
+	"testing"
+
+	"{{ .OutputRepository }}/database/v1"
+	"{{ .OutputRepository }}/internal/config/v1"
+	mencoding "{{ .OutputRepository }}/internal/encoding/v1/mock"
+	"{{ .OutputRepository }}/internal/logging/v1/noop"
+	"{{ .OutputRepository }}/models/v1"
+	mmodels "{{ .OutputRepository }}/models/v1/mock"
+	"{{ .OutputRepository }}/services/v1/auth"
+	"{{ .OutputRepository }}/services/v1/frontend"
+{{ range $x, $import := .IterableServicesImports }} 
+	"{{ $import }}" 
+{{ end }}
+	"{{ .OutputRepository }}/services/v1/oauth2clients"
+	"{{ .OutputRepository }}/services/v1/users"
+	"{{ .OutputRepository }}/services/v1/webhooks"
+
+	"gitlab.com/verygoodsoftwarenotvirus/newsman"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+func buildTestServer() *Server {
+	s := &Server{
+		DebugMode:  true,
+		db:         database.BuildMockDatabase(),
+		config:     config.ServerSettings{},
+		encoder:    &mencoding.EncoderDecoder{},
+		httpServer: provideHTTPServer(),
+		logger:     noop.ProvideNoopLogger(),
+
+		frontendService: frontend.ProvideFrontendService(
+			noop.ProvideNoopLogger(),
+			config.FrontendSettings{},
+		),
+		webhooksService:      &mmodels.WebhookDataServer{},
+		usersService:         &mmodels.UserDataServer{},
+		authService:          &auth.Service{},
+{{ range $i, $dt := .DataTypes }} {{ lower $dt.Name }}sService: &mmodels.{{ camelcase $dt.Name }}DataServer{}, {{ end }}
+		oauth2ClientsService: &mmodels.OAuth2ClientDataServer{},
+	}
+	return s
+}
+
+func TestProvideServer(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		mockDB := database.BuildMockDatabase()
+		mockDB.WebhookDataManager.On("GetAllWebhooks", mock.Anything).
+			Return(&models.WebhookList{}, nil)
+
+		actual, err := ProvideServer(
+			context.Background(),
+			&config.ServerConfig{
+				Auth: config.AuthSettings{
+					CookieSecret: "THISISAVERYLONGSTRINGFORTESTPURPOSES",
+				},
+			},
+			&auth.Service{},
+			&frontend.Service{},
+{{ range $i, $dt := .DataTypes }} &{{ lower $dt.Name }}s.Service{}, {{ end }}
+			&users.Service{},
+			&oauth2clients.Service{},
+			&webhooks.Service{},
+			mockDB,
+			noop.ProvideNoopLogger(),
+			&mencoding.EncoderDecoder{},
+			newsman.NewNewsman(nil, nil),
+		)
+
+		assert.NotNil(t, actual)
+		assert.NoError(t, err)
+	})
+
+}

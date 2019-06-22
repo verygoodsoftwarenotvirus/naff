@@ -1,0 +1,17 @@
+package model
+
+import (
+	"{{ .OutputRepository }}/models/v1"
+
+	"github.com/icrowley/fake"
+)
+
+// Random{{ .SingularTitlecase }}CreationInput creates a random {{ .SingularTitlecase }}Input
+func Random{{ .SingularTitlecase }}CreationInput() *models.{{ .SingularTitlecase }}CreationInput {
+	x := &models.{{ .SingularTitlecase }}CreationInput{
+		Name:    fake.Word(),
+		Details: fake.Sentence(),
+	}
+
+	return x
+}

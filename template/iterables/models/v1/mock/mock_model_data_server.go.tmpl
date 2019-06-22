@@ -1,0 +1,53 @@
+package mock
+
+import (
+	"net/http"
+
+	"{{ .OutputRepository }}/models/v1"
+
+	"github.com/stretchr/testify/mock"
+)
+
+var _ models.{{ .SingularTitlecase }}DataServer = (*{{ .SingularTitlecase }}DataServer)(nil)
+
+// {{ .SingularTitlecase }}DataServer describes a structure capable of serving traffic related to users
+type {{ .SingularTitlecase }}DataServer struct {
+	mock.Mock
+}
+
+// CreationInputMiddleware implements our interface requirements
+func (m *{{ .SingularTitlecase }}DataServer) CreationInputMiddleware(next http.Handler) http.Handler {
+	args := m.Called(next)
+	return args.Get(0).(http.Handler)
+}
+
+// UpdateInputMiddleware implements our interface requirements
+func (m *{{ .SingularTitlecase }}DataServer) UpdateInputMiddleware(next http.Handler) http.Handler {
+	args := m.Called(next)
+	return args.Get(0).(http.Handler)
+}
+
+// ListHandler implements our interface requirements
+func (m *{{ .SingularTitlecase }}DataServer) ListHandler(res http.ResponseWriter, req *http.Request) {
+	m.Called(res, req)
+}
+
+// CreateHandler implements our interface requirements
+func (m *{{ .SingularTitlecase }}DataServer) CreateHandler(res http.ResponseWriter, req *http.Request) {
+	m.Called(res, req)
+}
+
+// ReadHandler implements our interface requirements
+func (m *{{ .SingularTitlecase }}DataServer) ReadHandler(res http.ResponseWriter, req *http.Request) {
+	m.Called(res, req)
+}
+
+// UpdateHandler implements our interface requirements
+func (m *{{ .SingularTitlecase }}DataServer) UpdateHandler(res http.ResponseWriter, req *http.Request) {
+	m.Called(res, req)
+}
+
+// ArchiveHandler implements our interface requirements
+func (m *{{ .SingularTitlecase }}DataServer) ArchiveHandler(res http.ResponseWriter, req *http.Request) {
+	m.Called(res, req)
+}

@@ -1,0 +1,85 @@
+package {{ .PluralLowercase }}
+
+import (
+	"context"
+	"net/http"
+
+	"{{ .OutputRepository }}/internal/encoding/v1"
+	"{{ .OutputRepository }}/internal/logging/v1"
+	"{{ .OutputRepository }}/internal/metrics/v1"
+	"{{ .OutputRepository }}/models/v1"
+
+	"gitlab.com/verygoodsoftwarenotvirus/newsman"
+
+	"github.com/pkg/errors"
+)
+
+const (
+	// CreateMiddlewareCtxKey is a string alias we can use for referring to {{ .SingularLowercase  }} input data in contexts
+	CreateMiddlewareCtxKey models.ContextKey = "{{ .SingularLowercase  }}_create_input"
+	// UpdateMiddlewareCtxKey is a string alias we can use for referring to {{ .SingularLowercase  }} update data in contexts
+	UpdateMiddlewareCtxKey models.ContextKey = "{{ .SingularLowercase  }}_update_input"
+
+	counterName        metrics.CounterName = "{{ .PluralLowercase }}"
+	counterDescription                     = "the number of {{ .PluralLowercase }} managed by the {{ .PluralLowercase }} service"
+	topicName          string              = "{{ .PluralLowercase }}"
+	serviceName        string              = "{{ .PluralLowercase }}_service"
+)
+
+var (
+	_ models.{{ .SingularTitlecase }}DataServer = (*Service)(nil)
+)
+
+type (
+	// Service handles to-do list {{ .PluralLowercase }}
+	Service struct {
+		logger         logging.Logger
+		{{ .SingularLowercase  }}Counter    metrics.UnitCounter
+		{{ .SingularLowercase  }}Database   models.{{ .SingularTitlecase }}DataManager
+		userIDFetcher  UserIDFetcher
+		{{ .SingularLowercase  }}IDFetcher  {{ .SingularTitlecase }}IDFetcher
+		encoderDecoder encoding.EncoderDecoder
+		reporter       newsman.Reporter
+	}
+
+	// UserIDFetcher is a function that fetches user IDs
+	UserIDFetcher func(*http.Request) uint64
+
+	// {{ .SingularTitlecase }}IDFetcher is a function that fetches {{ .SingularLowercase  }} IDs
+	{{ .SingularTitlecase }}IDFetcher func(*http.Request) uint64
+)
+
+// Provide{{ .PluralTitlecase }}Service builds a new {{ .PluralTitlecase }}Service
+func Provide{{ .PluralTitlecase }}Service(
+	ctx context.Context,
+	logger logging.Logger,
+	db models.{{ .SingularTitlecase }}DataManager,
+	userIDFetcher UserIDFetcher,
+	{{ .SingularLowercase  }}IDFetcher {{ .SingularTitlecase }}IDFetcher,
+	encoder encoding.EncoderDecoder,
+	{{ .SingularLowercase  }}CounterProvider metrics.UnitCounterProvider,
+	reporter newsman.Reporter,
+) (*Service, error) {
+	{{ .SingularLowercase  }}Counter, err := {{ .SingularLowercase  }}CounterProvider(counterName, counterDescription)
+	if err != nil {
+		return nil, errors.Wrap(err, "error initializing counter")
+	}
+
+	svc := &Service{
+		logger:         logger.WithName(serviceName),
+		{{ .SingularLowercase  }}Database:   db,
+		encoderDecoder: encoder,
+		{{ .SingularLowercase  }}Counter:    {{ .SingularLowercase  }}Counter,
+		userIDFetcher:  userIDFetcher,
+		{{ .SingularLowercase  }}IDFetcher:  {{ .SingularLowercase  }}IDFetcher,
+		reporter:       reporter,
+	}
+
+	{{ .SingularLowercase  }}Count, err := svc.{{ .SingularLowercase  }}Database.GetAll{{ .PluralTitlecase }}Count(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "setting current {{ .SingularLowercase  }} count")
+	}
+	svc.{{ .SingularLowercase  }}Counter.IncrementBy(ctx, {{ .SingularLowercase  }}Count)
+
+	return svc, nil
+}

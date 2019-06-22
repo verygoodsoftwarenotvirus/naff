@@ -1,0 +1,240 @@
+package {{ .PluralLowercase }}
+
+import (
+	"database/sql"
+	"net/http"
+	"strconv"
+
+	"{{ .OutputRepository }}/models/v1"
+
+	"gitlab.com/verygoodsoftwarenotvirus/newsman"
+
+	"go.opencensus.io/trace"
+)
+
+const (
+	// URIParamKey is a standard string that we'll use to refer to {{ .SingularLowercase  }} IDs with
+	URIParamKey = "{{ .SingularLowercase  }}ID"
+)
+
+func attach{{ .SingularTitlecase }}IDToSpan(span *trace.Span, {{ .SingularLowercase  }}ID uint64) {
+	if span != nil {
+		span.AddAttributes(trace.StringAttribute("{{ .SingularLowercase  }}_id", strconv.FormatUint({{ .SingularLowercase  }}ID, 10)))
+	}
+}
+
+func attachUserIDToSpan(span *trace.Span, userID uint64) {
+	if span != nil {
+		span.AddAttributes(trace.StringAttribute("user_id", strconv.FormatUint(userID, 10)))
+	}
+}
+
+// ListHandler is our list route
+func (s *Service) ListHandler(res http.ResponseWriter, req *http.Request) {
+	ctx, span := trace.StartSpan(req.Context(), "ListHandler")
+	defer span.End()
+
+	// ensure query filter
+	qf := models.ExtractQueryFilter(req)
+
+	// determine user ID
+	userID := s.userIDFetcher(req)
+	logger := s.logger.WithValue("user_id", userID)
+
+	attachUserIDToSpan(span, userID)
+
+	// fetch {{ .PluralLowercase }} from database
+	{{ .PluralLowercase }}, err := s.{{ .SingularLowercase  }}Database.Get{{ .PluralTitlecase }}(ctx, qf, userID)
+	if err == sql.ErrNoRows {
+		// in the event no rows exist return an empty list
+		{{ .PluralLowercase }} = &models.{{ .SingularTitlecase }}List{
+			{{ .PluralTitlecase }}: []models.{{ .SingularTitlecase }}{},
+		}
+	} else if err != nil {
+		logger.Error(err, "error encountered fetching {{ .PluralLowercase }}")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// encode our response and peace
+	if err = s.encoderDecoder.EncodeResponse(res, {{ .PluralLowercase }}); err != nil {
+		s.logger.Error(err, "encoding response")
+	}
+}
+
+// CreateHandler is our {{ .SingularLowercase  }} creation route
+func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
+	ctx, span := trace.StartSpan(req.Context(), "CreateHandler")
+	defer span.End()
+
+	// determine user ID
+	userID := s.userIDFetcher(req)
+	attachUserIDToSpan(span, userID)
+	logger := s.logger.WithValue("user_id", userID)
+
+	// check request context for parsed input struct
+	input, ok := ctx.Value(CreateMiddlewareCtxKey).(*models.{{ .SingularTitlecase }}CreationInput)
+	logger = logger.WithValue("input", input)
+	if !ok {
+		logger.Info("valid input not attached to request")
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	input.BelongsTo = userID
+
+	// create {{ .SingularLowercase  }} in database
+	x, err := s.{{ .SingularLowercase  }}Database.Create{{ .SingularTitlecase }}(ctx, input)
+	if err != nil {
+		s.logger.Error(err, "error creating {{ .SingularLowercase  }}")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// notify relevant parties of new {{ .SingularLowercase  }}
+	s.{{ .SingularLowercase  }}Counter.Increment(ctx)
+	attach{{ .SingularTitlecase }}IDToSpan(span, x.ID)
+	s.reporter.Report(newsman.Event{
+		Data:      x,
+		Topics:    []string{topicName},
+		EventType: string(models.Create),
+	})
+
+	// encode response and peace
+	res.WriteHeader(http.StatusCreated)
+	if err = s.encoderDecoder.EncodeResponse(res, x); err != nil {
+		s.logger.Error(err, "encoding response")
+	}
+}
+
+// ReadHandler returns a GET handler that returns an {{ .SingularLowercase  }}
+func (s *Service) ReadHandler(res http.ResponseWriter, req *http.Request) {
+	ctx, span := trace.StartSpan(req.Context(), "ReadHandler")
+	defer span.End()
+
+	// determine relevant info
+	userID := s.userIDFetcher(req)
+	{{ .SingularLowercase  }}ID := s.{{ .SingularLowercase  }}IDFetcher(req)
+
+	// keep the aforementioned context in mind
+	logger := s.logger.WithValues(map[string]interface{}{
+		"user_id": userID,
+		"{{ .SingularLowercase  }}_id": {{ .SingularLowercase  }}ID,
+	})
+	attach{{ .SingularTitlecase }}IDToSpan(span, {{ .SingularLowercase  }}ID)
+	attachUserIDToSpan(span, userID)
+
+	// fetch {{ .SingularLowercase  }} from database
+	x, err := s.{{ .SingularLowercase  }}Database.Get{{ .SingularTitlecase }}(ctx, {{ .SingularLowercase  }}ID, userID)
+	if err == sql.ErrNoRows {
+		res.WriteHeader(http.StatusNotFound)
+		return
+	} else if err != nil {
+		logger.Error(err, "error fetching {{ .SingularLowercase  }} from database")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// encode response and peace
+	if err = s.encoderDecoder.EncodeResponse(res, x); err != nil {
+		s.logger.Error(err, "encoding response")
+	}
+}
+
+// UpdateHandler returns a handler that updates an {{ .SingularLowercase  }}
+func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
+	ctx, span := trace.StartSpan(req.Context(), "UpdateHandler")
+	defer span.End()
+
+	// check for parsed input attached to request context
+	input, ok := ctx.Value(UpdateMiddlewareCtxKey).(*models.{{ .SingularTitlecase }}UpdateInput)
+	if !ok {
+		s.logger.Info("no input attached to request")
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// determine relevant info
+	userID := s.userIDFetcher(req)
+	{{ .SingularLowercase  }}ID := s.{{ .SingularLowercase  }}IDFetcher(req)
+
+	// keep aforementioned context in mind
+	logger := s.logger.WithValues(map[string]interface{}{
+		"user_id": userID,
+		"{{ .SingularLowercase  }}_id": {{ .SingularLowercase  }}ID,
+	})
+	attach{{ .SingularTitlecase }}IDToSpan(span, {{ .SingularLowercase  }}ID)
+	attachUserIDToSpan(span, userID)
+
+	// fetch {{ .SingularLowercase  }} from database
+	x, err := s.{{ .SingularLowercase  }}Database.Get{{ .SingularTitlecase }}(ctx, {{ .SingularLowercase  }}ID, userID)
+	if err == sql.ErrNoRows {
+		res.WriteHeader(http.StatusNotFound)
+		return
+	} else if err != nil {
+		logger.Error(err, "error encountered getting {{ .SingularLowercase  }}")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// update the data structure
+	x.Update(input)
+
+	// update {{ .SingularLowercase  }} in database
+	if err = s.{{ .SingularLowercase  }}Database.Update{{ .SingularTitlecase }}(ctx, x); err != nil {
+		logger.Error(err, "error encountered updating {{ .SingularLowercase  }}")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// notify relevant parties
+	s.reporter.Report(newsman.Event{
+		Data:      x,
+		Topics:    []string{topicName},
+		EventType: string(models.Update),
+	})
+
+	// encode response and peace
+	if err = s.encoderDecoder.EncodeResponse(res, x); err != nil {
+		s.logger.Error(err, "encoding response")
+	}
+}
+
+// ArchiveHandler returns a handler that archives an {{ .SingularLowercase  }}
+func (s *Service) ArchiveHandler(res http.ResponseWriter, req *http.Request) {
+	ctx, span := trace.StartSpan(req.Context(), "ArchiveHandler")
+	defer span.End()
+
+	// determine relevant information
+	userID := s.userIDFetcher(req)
+	{{ .SingularLowercase  }}ID := s.{{ .SingularLowercase  }}IDFetcher(req)
+
+	// keep aforementioned context in mind
+	logger := s.logger.WithValues(map[string]interface{}{
+		"{{ .SingularLowercase  }}_id": {{ .SingularLowercase  }}ID,
+		"user_id": userID,
+	})
+	attach{{ .SingularTitlecase }}IDToSpan(span, {{ .SingularLowercase  }}ID)
+	attachUserIDToSpan(span, userID)
+
+	// archive the {{ .SingularLowercase  }} in the database
+	err := s.{{ .SingularLowercase  }}Database.Archive{{ .SingularTitlecase }}(ctx, {{ .SingularLowercase  }}ID, userID)
+	if err == sql.ErrNoRows {
+		res.WriteHeader(http.StatusNotFound)
+		return
+	} else if err != nil {
+		logger.Error(err, "error encountered deleting {{ .SingularLowercase  }}")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// notify relevant parties
+	s.{{ .SingularLowercase  }}Counter.Decrement(ctx)
+	s.reporter.Report(newsman.Event{
+		EventType: string(models.Archive),
+		Data:      &models.{{ .SingularTitlecase }}{ID: {{ .SingularLowercase  }}ID},
+		Topics:    []string{topicName},
+	})
+
+	// peace
+	res.WriteHeader(http.StatusNoContent)
+}

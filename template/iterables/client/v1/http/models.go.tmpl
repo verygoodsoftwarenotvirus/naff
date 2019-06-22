@@ -1,0 +1,109 @@
+package client
+
+import (
+	"context"
+	"net/http"
+	"strconv"
+
+	"{{ .OutputRepository }}/models/v1"
+
+	"github.com/pkg/errors"
+)
+
+const (
+	{{ .PluralLowercase }}BasePath = "{{ .PluralLowercase }}"
+)
+
+// BuildGet{{ .SingularTitlecase }}Request builds an HTTP request for fetching an {{ .SingularLowercase  }}
+func (c *V1Client) BuildGet{{ .SingularTitlecase }}Request(ctx context.Context, id uint64) (*http.Request, error) {
+	uri := c.BuildURL(nil, {{ .PluralLowercase }}BasePath, strconv.FormatUint(id, 10))
+
+	return http.NewRequest(http.MethodGet, uri, nil)
+}
+
+// Get{{ .SingularTitlecase }} retrieves an {{ .SingularLowercase  }}
+func (c *V1Client) Get{{ .SingularTitlecase }}(ctx context.Context, id uint64) ({{ .SingularLowercase  }} *models.{{ .SingularTitlecase }}, err error) {
+	req, err := c.BuildGet{{ .SingularTitlecase }}Request(ctx, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "building request")
+	}
+
+	if retrieveErr := c.retrieve(ctx, req, &{{ .SingularLowercase  }}); retrieveErr != nil {
+		return nil, retrieveErr
+	}
+
+	return {{ .SingularLowercase  }}, nil
+}
+
+// BuildGet{{ .PluralTitlecase }}Request builds an HTTP request for fetching {{ .PluralLowercase }}
+func (c *V1Client) BuildGet{{ .PluralTitlecase }}Request(ctx context.Context, filter *models.QueryFilter) (*http.Request, error) {
+	uri := c.BuildURL(filter.ToValues(), {{ .PluralLowercase }}BasePath)
+
+	return http.NewRequest(http.MethodGet, uri, nil)
+}
+
+// Get{{ .PluralTitlecase }} retrieves a list of {{ .PluralLowercase }}
+func (c *V1Client) Get{{ .PluralTitlecase }}(ctx context.Context, filter *models.QueryFilter) ({{ .PluralLowercase }} *models.{{ .SingularTitlecase }}List, err error) {
+	req, err := c.BuildGet{{ .PluralTitlecase }}Request(ctx, filter)
+	if err != nil {
+		return nil, errors.Wrap(err, "building request")
+	}
+
+	if retrieveErr := c.retrieve(ctx, req, &{{ .PluralLowercase }}); retrieveErr != nil {
+		return nil, retrieveErr
+	}
+
+	return {{ .PluralLowercase }}, nil
+}
+
+// BuildCreate{{ .SingularTitlecase }}Request builds an HTTP request for creating an {{ .SingularLowercase  }}
+func (c *V1Client) BuildCreate{{ .SingularTitlecase }}Request(ctx context.Context, body *models.{{ .SingularTitlecase }}CreationInput) (*http.Request, error) {
+	uri := c.BuildURL(nil, {{ .PluralLowercase }}BasePath)
+
+	return c.buildDataRequest(http.MethodPost, uri, body)
+}
+
+// Create{{ .SingularTitlecase }} creates an {{ .SingularLowercase  }}
+func (c *V1Client) Create{{ .SingularTitlecase }}(ctx context.Context, input *models.{{ .SingularTitlecase }}CreationInput) ({{ .SingularLowercase  }} *models.{{ .SingularTitlecase }}, err error) {
+	req, err := c.BuildCreate{{ .SingularTitlecase }}Request(ctx, input)
+	if err != nil {
+		return nil, errors.Wrap(err, "building request")
+	}
+
+	err = c.executeRequest(ctx, req, &{{ .SingularLowercase  }})
+	return {{ .SingularLowercase  }}, err
+}
+
+// BuildUpdate{{ .SingularTitlecase }}Request builds an HTTP request for updating an {{ .SingularLowercase  }}
+func (c *V1Client) BuildUpdate{{ .SingularTitlecase }}Request(ctx context.Context, updated *models.{{ .SingularTitlecase }}) (*http.Request, error) {
+	uri := c.BuildURL(nil, {{ .PluralLowercase }}BasePath, strconv.FormatUint(updated.ID, 10))
+
+	return c.buildDataRequest(http.MethodPut, uri, updated)
+}
+
+// Update{{ .SingularTitlecase }} updates an {{ .SingularLowercase  }}
+func (c *V1Client) Update{{ .SingularTitlecase }}(ctx context.Context, updated *models.{{ .SingularTitlecase }}) error {
+	req, err := c.BuildUpdate{{ .SingularTitlecase }}Request(ctx, updated)
+	if err != nil {
+		return errors.Wrap(err, "building request")
+	}
+
+	return c.executeRequest(ctx, req, &updated)
+}
+
+// BuildArchive{{ .SingularTitlecase }}Request builds an HTTP request for updating an {{ .SingularLowercase  }}
+func (c *V1Client) BuildArchive{{ .SingularTitlecase }}Request(ctx context.Context, id uint64) (*http.Request, error) {
+	uri := c.BuildURL(nil, {{ .PluralLowercase }}BasePath, strconv.FormatUint(id, 10))
+
+	return http.NewRequest(http.MethodDelete, uri, nil)
+}
+
+// Archive{{ .SingularTitlecase }} archives an {{ .SingularLowercase  }}
+func (c *V1Client) Archive{{ .SingularTitlecase }}(ctx context.Context, id uint64) error {
+	req, err := c.BuildArchive{{ .SingularTitlecase }}Request(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "building request")
+	}
+
+	return c.executeRequest(ctx, req, nil)
+}

@@ -1,0 +1,61 @@
+//+build wireinject
+
+package main
+
+import (
+	"context"
+
+	"{{ .OutputRepository }}/database/v1"
+	libauth "{{ .OutputRepository }}/internal/auth/v1"
+	"{{ .OutputRepository }}/internal/config/v1"
+	"{{ .OutputRepository }}/internal/encoding/v1"
+	"{{ .OutputRepository }}/internal/logging/v1"
+	metricsProvider "{{ .OutputRepository }}/internal/metrics/v1"
+	"{{ .OutputRepository }}/server/v1"
+	httpserver "{{ .OutputRepository }}/server/v1/http"
+	"{{ .OutputRepository }}/services/v1/auth"
+	"{{ .OutputRepository }}/services/v1/frontend"
+{{ range $x, $import := .IterableServicesImports }} 
+	"{{ $import }}" 
+{{ end }}
+	"{{ .OutputRepository }}/services/v1/oauth2clients"
+	"{{ .OutputRepository }}/services/v1/users"
+	"{{ .OutputRepository }}/services/v1/webhooks"
+
+	"gitlab.com/verygoodsoftwarenotvirus/newsman"
+
+	"github.com/google/wire"
+)
+
+// BuildServer builds a server
+func BuildServer(
+	ctx context.Context,
+	cfg *config.ServerConfig,
+	logger logging.Logger,
+	database database.Database,
+) (*server.Server, error) {
+
+	wire.Build(
+		config.Providers,
+		libauth.Providers,
+
+		// Server things
+		server.Providers,
+		encoding.Providers,
+		httpserver.Providers,
+
+		// metrics
+		metricsProvider.Providers,
+
+		// external libs
+		newsman.NewNewsman,
+
+		auth.Providers,
+		users.Providers,
+{{ range $i, $dm := .DataTypes }} {{ lower $dm.Name }}s.Providers, {{ end }}
+		frontend.Providers,
+		webhooks.Providers,
+		oauth2clients.Providers,
+	)
+	return nil, nil
+}

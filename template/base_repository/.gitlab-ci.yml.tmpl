@@ -1,0 +1,114 @@
+stages:
+  - quality
+  - testing
+  - publish
+
+before_script:
+  - mkdir -p /go/src/gitlab.com/verygoodsoftwarenotvirus/
+  - cp -rf /builds/verygoodsoftwarenotvirus/todo
+    /go/src/gitlab.com/verygoodsoftwarenotvirus/
+  - cd /go/src/{{ .OutputRepository }}
+  - apt-get update -y && apt-get install -y make git gcc musl-dev
+
+coverage:
+  stage: quality
+  image: golang:stretch
+  variables:
+    GOPATH: '/go'
+  script:
+    - apt-get update -y && apt-get install -y make git gcc musl-dev
+    - GO111MODULES=off go get -u github.com/axw/gocov/gocov
+    - make artifacts/coverage.out
+
+integration-tests:
+  stage: testing
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    GOPATH: '/go'
+  script:
+    - apk add --update --no-cache py-pip openssl python-dev libffi-dev
+      openssl-dev gcc libc-dev make
+    - pip install docker-compose
+    - make integration-tests
+
+build-frontend:
+  stage: quality
+  image: node:10
+  before_script:
+    - cd frontend/v1
+    - npm install
+  script:
+    - npm run build
+
+frontend-selenium-tests:
+  stage: testing
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    GOPATH: '/go'
+  script:
+    - apk add --update --no-cache py-pip openssl python-dev libffi-dev
+      openssl-dev gcc libc-dev make
+    - pip install docker-compose
+    - make frontend-tests
+
+
+daily-load-tests:on-schedule:
+  stage: testing
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    GOPATH: '/go'
+    LOADTEST_RUN_TIME: '2m30s'
+  script:
+    - apk add --update --no-cache py-pip openssl python-dev libffi-dev
+      openssl-dev gcc libc-dev make
+    - pip install docker-compose
+    - make ci-load-tests
+  only:
+    - schedules
+
+load-tests:
+  stage: testing
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    GOPATH: '/go'
+    LOADTEST_RUN_TIME: '2m30s'
+  script:
+    - apk add --update --no-cache py-pip openssl python-dev libffi-dev
+      openssl-dev gcc libc-dev make
+    - pip install docker-compose
+    - make ci-load-tests
+  except:
+    - schedules
+  only:
+    - master
+
+linting:
+  stage: quality
+  image: golang:stretch
+  variables:
+    GOPATH: '/go'
+  before_script:
+    - apt-get install -y curl
+    - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.16.0
+  script:
+    - make lint
+
+gitlabcr:
+  stage: publish
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker login -u=gitlab-ci-token -p=$CI_JOB_TOKEN registry.gitlab.com
+    - docker build -t registry.{{ .OutputRepository }}:latest --file dockerfiles/server.Dockerfile .
+    - docker push registry.{{ .OutputRepository }}:latest
+  only:
+    - master

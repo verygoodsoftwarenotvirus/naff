@@ -1,0 +1,986 @@
+package {{ .PluralLowercase }}
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	mencoding "{{ .OutputRepository }}/internal/encoding/v1/mock"
+	mmetrics "{{ .OutputRepository }}/internal/metrics/v1/mock"
+	"{{ .OutputRepository }}/models/v1"
+	mmodels "{{ .OutputRepository }}/models/v1/mock"
+
+	mockman "gitlab.com/verygoodsoftwarenotvirus/newsman/mock"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+)
+
+func Test{{ .PluralTitlecase }}Service_List(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}List{
+			{{ .PluralTitlecase }}: []models.{{ .SingularTitlecase }}{
+				{
+					ID:      123,
+					Name:    "name",
+					Details: "details",
+				},
+			},
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Get{{ .PluralTitlecase }}",
+			mock.Anything,
+			mock.Anything,
+			requestingUser.ID,
+		).Return(expected, nil)
+
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ListHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusOK)
+	})
+
+	T.Run("with no rows returned", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Get{{ .PluralTitlecase }}",
+			mock.Anything,
+			mock.Anything,
+			requestingUser.ID,
+		).Return((*models.{{ .SingularTitlecase }}List)(nil), sql.ErrNoRows)
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ListHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusOK)
+	})
+
+	T.Run("with error fetching {{ .PluralLowercase }} from database", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Get{{ .PluralTitlecase }}",
+			mock.Anything,
+			mock.Anything,
+			requestingUser.ID,
+		).Return((*models.{{ .SingularTitlecase }}List)(nil), errors.New("blah"))
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ListHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusInternalServerError)
+	})
+
+	T.Run("with error encoding response", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}List{
+			{{ .PluralTitlecase }}: []models.{{ .SingularTitlecase }}{},
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Get{{ .PluralTitlecase }}",
+			mock.Anything,
+			mock.Anything,
+			requestingUser.ID,
+		).Return(expected, nil)
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(errors.New("blah"))
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ListHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusOK)
+	})
+}
+
+func Test{{ .PluralTitlecase }}Service_Create(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID:      123,
+			Name:    "name",
+			Details: "details",
+		}
+
+		mc := &mmetrics.UnitCounter{}
+		mc.On("Increment", mock.Anything)
+		s.{{ .SingularLowercase  }}Counter = mc
+
+		r := &mockman.Reporter{}
+		r.On("Report", mock.Anything).Return()
+		s.reporter = r
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Create{{ .SingularTitlecase }}",
+			mock.Anything,
+			mock.Anything,
+		).Return(expected, nil)
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		exampleInput := &models.{{ .SingularTitlecase }}CreationInput{
+			Name:    expected.Name,
+			Details: expected.Details,
+		}
+		req = req.WithContext(context.WithValue(req.Context(), CreateMiddlewareCtxKey, exampleInput))
+
+		s.CreateHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusCreated)
+	})
+
+	T.Run("without input attached", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.CreateHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusBadRequest)
+	})
+
+	T.Run("with error creating {{ .SingularLowercase  }}", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID:      123,
+			Name:    "name",
+			Details: "details",
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Create{{ .SingularTitlecase }}",
+			mock.Anything,
+			mock.Anything,
+		).Return((*models.{{ .SingularTitlecase }})(nil), errors.New("blah"))
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		exampleInput := &models.{{ .SingularTitlecase }}CreationInput{
+			Name:    expected.Name,
+			Details: expected.Details,
+		}
+		req = req.WithContext(context.WithValue(req.Context(), CreateMiddlewareCtxKey, exampleInput))
+
+		s.CreateHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusInternalServerError)
+	})
+
+	T.Run("with error encoding response", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID:      123,
+			Name:    "name",
+			Details: "details",
+		}
+
+		mc := &mmetrics.UnitCounter{}
+		mc.On("Increment", mock.Anything)
+		s.{{ .SingularLowercase  }}Counter = mc
+
+		r := &mockman.Reporter{}
+		r.On("Report", mock.Anything).Return()
+		s.reporter = r
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Create{{ .SingularTitlecase }}",
+			mock.Anything,
+			mock.Anything,
+		).Return(expected, nil)
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(errors.New("blah"))
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		exampleInput := &models.{{ .SingularTitlecase }}CreationInput{
+			Name:    expected.Name,
+			Details: expected.Details,
+		}
+		req = req.WithContext(context.WithValue(req.Context(), CreateMiddlewareCtxKey, exampleInput))
+
+		s.CreateHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusCreated)
+	})
+}
+
+func Test{{ .PluralTitlecase }}Service_Read(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID:      123,
+			Name:    "name",
+			Details: "details",
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Get{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return(expected, nil)
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ReadHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusOK)
+	})
+
+	T.Run("with no such {{ .SingularLowercase  }} in database", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID:      123,
+			Name:    "name",
+			Details: "details",
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Get{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return((*models.{{ .SingularTitlecase }})(nil), sql.ErrNoRows)
+		s.{{ .SingularLowercase  }}Database = id
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ReadHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusNotFound)
+	})
+
+	T.Run("with error fetching {{ .SingularLowercase  }} from database", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID:      123,
+			Name:    "name",
+			Details: "details",
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Get{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return((*models.{{ .SingularTitlecase }})(nil), errors.New("blah"))
+		s.{{ .SingularLowercase  }}Database = id
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ReadHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusInternalServerError)
+	})
+
+	T.Run("with error encoding response", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID:      123,
+			Name:    "name",
+			Details: "details",
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Get{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return(expected, nil)
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(errors.New("blah"))
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ReadHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusOK)
+	})
+}
+
+func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID: 123, Name: "name", Details: "details",
+		}
+
+		mc := &mmetrics.UnitCounter{}
+		mc.On("Increment", mock.Anything)
+		s.{{ .SingularLowercase  }}Counter = mc
+
+		r := &mockman.Reporter{}
+		r.On("Report", mock.Anything).Return()
+		s.reporter = r
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+
+		id.On(
+			"Get{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return(expected, nil)
+
+		id.On(
+			"Update{{ .SingularTitlecase }}",
+			mock.Anything,
+			mock.Anything,
+		).Return(nil)
+
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		exampleInput := &models.{{ .SingularTitlecase }}UpdateInput{
+			Name:    expected.Name,
+			Details: expected.Details,
+		}
+		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
+
+		s.UpdateHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusOK)
+	})
+
+	T.Run("without update input", func(t *testing.T) {
+		s := buildTestService()
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.UpdateHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusBadRequest)
+	})
+
+	T.Run("with no rows fetching {{ .SingularLowercase  }}", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID: 123, Name: "name", Details: "details",
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+
+		id.On(
+			"Get{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return((*models.{{ .SingularTitlecase }})(nil), sql.ErrNoRows)
+
+		s.{{ .SingularLowercase  }}Database = id
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		exampleInput := &models.{{ .SingularTitlecase }}UpdateInput{
+			Name:    expected.Name,
+			Details: expected.Details,
+		}
+		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
+
+		s.UpdateHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusNotFound)
+	})
+
+	T.Run("with error fetching {{ .SingularLowercase  }}", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID: 123, Name: "name", Details: "details",
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+
+		id.On(
+			"Get{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return((*models.{{ .SingularTitlecase }})(nil), errors.New("blah"))
+
+		s.{{ .SingularLowercase  }}Database = id
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		exampleInput := &models.{{ .SingularTitlecase }}UpdateInput{
+			Name:    expected.Name,
+			Details: expected.Details,
+		}
+		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
+
+		s.UpdateHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusInternalServerError)
+	})
+
+	T.Run("with error updating {{ .SingularLowercase  }}", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID: 123, Name: "name", Details: "details",
+		}
+
+		mc := &mmetrics.UnitCounter{}
+		mc.On("Increment", mock.Anything)
+		s.{{ .SingularLowercase  }}Counter = mc
+
+		r := &mockman.Reporter{}
+		r.On("Report", mock.Anything).Return()
+		s.reporter = r
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+
+		id.On(
+			"Get{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return(expected, nil)
+
+		id.On(
+			"Update{{ .SingularTitlecase }}",
+			mock.Anything,
+			mock.Anything,
+		).Return(errors.New("blah"))
+
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		exampleInput := &models.{{ .SingularTitlecase }}UpdateInput{
+			Name:    expected.Name,
+			Details: expected.Details,
+		}
+		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
+
+		s.UpdateHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusInternalServerError)
+	})
+
+	T.Run("with error encoding response", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID: 123, Name: "name", Details: "details",
+		}
+
+		mc := &mmetrics.UnitCounter{}
+		mc.On("Increment", mock.Anything)
+		s.{{ .SingularLowercase  }}Counter = mc
+
+		r := &mockman.Reporter{}
+		r.On("Report", mock.Anything).Return()
+		s.reporter = r
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+
+		id.On(
+			"Get{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return(expected, nil)
+
+		id.On(
+			"Update{{ .SingularTitlecase }}",
+			mock.Anything,
+			mock.Anything,
+		).Return(nil)
+
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(errors.New("blah"))
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		exampleInput := &models.{{ .SingularTitlecase }}UpdateInput{
+			Name:    expected.Name,
+			Details: expected.Details,
+		}
+		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
+
+		s.UpdateHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusOK)
+	})
+}
+
+func Test{{ .PluralTitlecase }}Service_Archive(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID:      123,
+			Name:    "name",
+			Details: "details",
+		}
+
+		r := &mockman.Reporter{}
+		r.On("Report", mock.Anything).Return()
+		s.reporter = r
+
+		mc := &mmetrics.UnitCounter{}
+		mc.On("Decrement").Return()
+		s.{{ .SingularLowercase  }}Counter = mc
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Archive{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return(nil)
+		s.{{ .SingularLowercase  }}Database = id
+
+		ed := &mencoding.EncoderDecoder{}
+		ed.On("EncodeResponse", mock.Anything, mock.Anything).
+			Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ArchiveHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusNoContent)
+	})
+
+	T.Run("with no {{ .SingularLowercase  }} in database", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID:      123,
+			Name:    "name",
+			Details: "details",
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Archive{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return(sql.ErrNoRows)
+		s.{{ .SingularLowercase  }}Database = id
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ArchiveHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusNotFound)
+	})
+
+	T.Run("with error reading from database", func(t *testing.T) {
+		s := buildTestService()
+		requestingUser := &models.User{ID: 1}
+		expected := &models.{{ .SingularTitlecase }}{
+			ID:      123,
+			Name:    "name",
+			Details: "details",
+		}
+
+		s.userIDFetcher = func(req *http.Request) uint64 {
+			return requestingUser.ID
+		}
+
+		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+			return expected.ID
+		}
+
+		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id.On(
+			"Archive{{ .SingularTitlecase }}",
+			mock.Anything,
+			expected.ID,
+			requestingUser.ID,
+		).Return(errors.New("blah"))
+		s.{{ .SingularLowercase  }}Database = id
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.ArchiveHandler(res, req)
+
+		assert.Equal(t, res.Code, http.StatusInternalServerError)
+	})
+}
