@@ -1,29 +1,29 @@
 <script>
   import { Link } from "svelte-routing";
 
-  let {{ .SingularLowercase  }} = {};
+  let {{ lower .Name }} = {};
 
-  const {{ .SingularLowercase  }}ID = window.location.pathname.replace("/{{ .PluralLowercase }}/", "");
+  const {{ lower .Name }}ID = window.location.pathname.replace("/{{ lower .Name }}s/", "");
 
-  fetch(`/api/v1/{{ .PluralLowercase }}/${ {{ .SingularLowercase  }}ID }`)
+  fetch(`/api/v1/{{ lower .Name }}s/${ {{ lower .Name }}ID }`)
     .then(response => response.json())
     .then(data => {
-      {{ .SingularLowercase  }} = data;
+      {{ lower .Name }} = data;
     });
 </script>
 
-<!-- {{ .PluralTitlecase }}.svelte -->
+<!-- {{ camelcase .Name }}s.svelte -->
 
 <div style="text-align: center; margin: 0px auto;">
   <p>
     name:
-    {@html {{ .SingularLowercase  }}.name}
+    {@html {{ lower .Name }}.name}
   </p>
   <p>
     details:
-    {@html {{ .SingularLowercase  }}.details}
+    {@html {{ lower .Name }}.details}
   </p>
 
-  <Link to="/{{ .PluralLowercase }}">see all</Link>
+  <Link to="/{{ lower .Name }}s">see all</Link>
 
 </div>

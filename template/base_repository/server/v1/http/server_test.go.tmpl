@@ -41,7 +41,10 @@ func buildTestServer() *Server {
 		webhooksService:      &mmodels.WebhookDataServer{},
 		usersService:         &mmodels.UserDataServer{},
 		authService:          &auth.Service{},
-{{ range $i, $dt := .DataTypes }} {{ lower $dt.Name }}sService: &mmodels.{{ camelcase $dt.Name }}DataServer{}, {{ end }}
+
+{{ range $i, $dt := .DataTypes }} 
+	{{ lower $dt.Name }}sService: &mmodels.{{ camelcase $dt.Name }}DataServer{}, 
+{{ end }}
 		oauth2ClientsService: &mmodels.OAuth2ClientDataServer{},
 	}
 	return s
@@ -64,7 +67,10 @@ func TestProvideServer(T *testing.T) {
 			},
 			&auth.Service{},
 			&frontend.Service{},
-{{ range $i, $dt := .DataTypes }} &{{ lower $dt.Name }}s.Service{}, {{ end }}
+
+{{ range $i, $dt := .DataTypes }} 
+	&{{ lower $dt.Name }}s.Service{}, 
+{{ end }}
 			&users.Service{},
 			&oauth2clients.Service{},
 			&webhooks.Service{},

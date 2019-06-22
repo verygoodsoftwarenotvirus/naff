@@ -6,34 +6,37 @@ import (
 
 	"{{ .OutputRepository }}/models/v1"
 
-	"github.com/icrowley/fake"
+	
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.opencensus.io/trace"
 )
 
-func check{{ .SingularTitlecase }}Equality(t *testing.T, expected, actual *models.{{ .SingularTitlecase }}) {
+func check{{ pascal .Name }}Equality(t *testing.T, expected, actual *models.{{ pascal .Name }}) {
 	t.Helper()
 
 	assert.NotZero(t, actual.ID)
-	assert.Equal(t, expected.Name, actual.Name)
-	assert.Equal(t, expected.Details, actual.Details)
+	{{ range $i, $field := .Fields }}
+	assert.Equal(t, expected.{{ pascal $field.Name }}, actual.{{ pascal $field.Name }})
+	{{ end }}
 	assert.NotZero(t, actual.CreatedOn)
 }
 
-func buildDummy{{ .SingularTitlecase }}(t *testing.T) *models.{{ .SingularTitlecase }} {
+func buildDummy{{ pascal .Name }}(t *testing.T) *models.{{ pascal .Name }} {
 	t.Helper()
 
-	x := &models.{{ .SingularTitlecase }}CreationInput{
-		Name:    fake.Word(),
-		Details: fake.Sentence(),
+	x := &models.{{ pascal .Name }}CreationInput{
+		{{ range $i, $field := .Fields }}
+		{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+		{{ end }}
 	}
-	y, err := todoClient.Create{{ .SingularTitlecase }}(context.Background(), x)
+	y, err := todoClient.Create{{ pascal .Name }}(context.Background(), x)
 	require.NoError(t, err)
 	return y
 }
 
-func Test{{ .PluralTitlecase }}(test *testing.T) {
+
+func Test{{ camelcase .Name }}s(test *testing.T) {
 	test.Parallel()
 
 	test.Run("Creating", func(T *testing.T) {
@@ -42,26 +45,31 @@ func Test{{ .PluralTitlecase }}(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// CreateHandler {{ .SingularLowercase  }}
-			expected := &models.{{ .SingularTitlecase }}{Name: "name", Details: "details"}
-			premade, err := todoClient.Create{{ .SingularTitlecase }}(
+			// CreateHandler {{ lower .Name }}
+			expected := &models.{{ pascal .Name }}{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+					{{ end }}
+				}
+			premade, err := todoClient.Create{{ camelcase .Name }}(
 				ctx,
-				&models.{{ .SingularTitlecase }}CreationInput{
-					Name:    expected.Name,
-					Details: expected.Details,
+				&models.{{ pascal .Name }}CreationInput{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: expected.{{ pascal $field.Name }},
+					{{ end }}
 				})
 			checkValueAndError(t, premade, err)
 
-			// Assert {{ .SingularLowercase  }} equality
-			check{{ .SingularTitlecase }}Equality(t, expected, premade)
+			// Assert {{ lower .Name }} equality
+			check{{ camelcase .Name }}Equality(t, expected, premade)
 
 			// Clean up
-			err = todoClient.Archive{{ .SingularTitlecase }}(ctx, premade.ID)
+			err = todoClient.Archive{{ camelcase .Name }}(ctx, premade.ID)
 			assert.NoError(t, err)
 
-			actual, err := todoClient.Get{{ .SingularTitlecase }}(ctx, premade.ID)
+			actual, err := todoClient.Get{{ camelcase .Name }}(ctx, premade.ID)
 			checkValueAndError(t, actual, err)
-			check{{ .SingularTitlecase }}Equality(t, expected, actual)
+			check{{ camelcase .Name }}Equality(t, expected, actual)
 			assert.NotZero(t, actual.ArchivedOn)
 		})
 	})
@@ -72,26 +80,26 @@ func Test{{ .PluralTitlecase }}(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// CreateHandler {{ .PluralLowercase }}
-			var expected []*models.{{ .SingularTitlecase }}
+			// CreateHandler {{ lower .Name }}s
+			var expected []*models.{{ camelcase .Name }}
 			for i := 0; i < 5; i++ {
-				expected = append(expected, buildDummy{{ .SingularTitlecase }}(t))
+				expected = append(expected, buildDummy{{ camelcase .Name }}(t))
 			}
 
-			// Assert {{ .SingularLowercase  }} list equality
-			actual, err := todoClient.Get{{ .PluralTitlecase }}(ctx, nil)
+			// Assert {{ lower .Name }} list equality
+			actual, err := todoClient.Get{{ camelcase .Name }}s(ctx, nil)
 			checkValueAndError(t, actual, err)
 			assert.True(
 				t,
-				len(expected) <= len(actual.{{ .PluralTitlecase }}),
+				len(expected) <= len(actual.{{ camelcase .Name }}s),
 				"expected %d to be <= %d",
 				len(expected),
-				len(actual.{{ .PluralTitlecase }}),
+				len(actual.{{ camelcase .Name }}s),
 			)
 
 			// Clean up
-			for _, {{ .SingularLowercase  }} := range actual.{{ .PluralTitlecase }} {
-				err = todoClient.Archive{{ .SingularTitlecase }}(ctx, {{ .SingularLowercase  }}.ID)
+			for _, {{ lower .Name }} := range actual.{{ camelcase .Name }}s {
+				err = todoClient.Archive{{ camelcase .Name }}(ctx, {{ lower .Name }}.ID)
 				assert.NoError(t, err)
 			}
 		})
@@ -103,8 +111,8 @@ func Test{{ .PluralTitlecase }}(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// Fetch {{ .SingularLowercase  }}
-			_, err := todoClient.Get{{ .SingularTitlecase }}(ctx, nonexistentID)
+			// Fetch {{ lower .Name }}
+			_, err := todoClient.Get{{ camelcase .Name }}(ctx, nonexistentID)
 			assert.Error(t, err)
 		})
 
@@ -113,24 +121,30 @@ func Test{{ .PluralTitlecase }}(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// CreateHandler {{ .SingularLowercase  }}
-			expected := &models.{{ .SingularTitlecase }}{Name: "name", Details: "details"}
-			premade, err := todoClient.Create{{ .SingularTitlecase }}(
+			// CreateHandler {{ lower .Name }}
+			expected := &models.{{ pascal .Name }}{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+					{{ end }}
+				}
+			premade, err := todoClient.Create{{ camelcase .Name }}(
 				ctx,
-				&models.{{ .SingularTitlecase }}CreationInput{
-					Name: expected.Name, Details: expected.Details,
+				&models.{{ pascal .Name }}CreationInput{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: expected.{{ pascal $field.Name }},
+					{{ end }}
 				})
 			checkValueAndError(t, premade, err)
 
-			// Fetch {{ .SingularLowercase  }}
-			actual, err := todoClient.Get{{ .SingularTitlecase }}(ctx, premade.ID)
+			// Fetch {{ lower .Name }}
+			actual, err := todoClient.Get{{ camelcase .Name }}(ctx, premade.ID)
 			checkValueAndError(t, actual, err)
 
-			// Assert {{ .SingularLowercase  }} equality
-			check{{ .SingularTitlecase }}Equality(t, expected, actual)
+			// Assert {{ lower .Name }} equality
+			check{{ camelcase .Name }}Equality(t, expected, actual)
 
 			// Clean up
-			err = todoClient.Archive{{ .SingularTitlecase }}(ctx, actual.ID)
+			err = todoClient.Archive{{ camelcase .Name }}(ctx, actual.ID)
 			assert.NoError(t, err)
 		})
 	})
@@ -141,7 +155,7 @@ func Test{{ .PluralTitlecase }}(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			err := todoClient.Update{{ .SingularTitlecase }}(ctx, &models.{{ .SingularTitlecase }}{ID: nonexistentID})
+			err := todoClient.Update{{ camelcase .Name }}(ctx, &models.{{ camelcase .Name }}{ID: nonexistentID})
 			assert.Error(t, err)
 
 		})
@@ -151,32 +165,37 @@ func Test{{ .PluralTitlecase }}(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// CreateHandler {{ .SingularLowercase  }}
-			expected := &models.{{ .SingularTitlecase }}{Name: "new name", Details: "new details"}
-			premade, err := todoClient.Create{{ .SingularTitlecase }}(
+			// CreateHandler {{ lower .Name }}
+			expected := &models.{{ pascal .Name }}{
+			{{ range $i, $field := .Fields }}
+			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+			{{ end }}
+		}
+			premade, err := todoClient.Create{{ camelcase .Name }}(
 				tctx,
-				&models.{{ .SingularTitlecase }}CreationInput{
-					Name:    "old name",
-					Details: "old details",
+				&models.{{ pascal .Name }}CreationInput{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+					{{ end }}
 				},
 			)
 			checkValueAndError(t, premade, err)
 
-			// Change {{ .SingularLowercase  }}
-			premade.Name, premade.Details = expected.Name, expected.Details
-			err = todoClient.Update{{ .SingularTitlecase }}(ctx, premade)
+			// Change {{ lower .Name }}
+			// CHANGEME
+			err = todoClient.Update{{ camelcase .Name }}(ctx, premade)
 			assert.NoError(t, err)
 
-			// Fetch {{ .SingularLowercase  }}
-			actual, err := todoClient.Get{{ .SingularTitlecase }}(ctx, premade.ID)
+			// Fetch {{ lower .Name }}
+			actual, err := todoClient.Get{{ camelcase .Name }}(ctx, premade.ID)
 			checkValueAndError(t, actual, err)
 
-			// Assert {{ .SingularLowercase  }} equality
-			check{{ .SingularTitlecase }}Equality(t, expected, actual)
+			// Assert {{ lower .Name }} equality
+			check{{ camelcase .Name }}Equality(t, expected, actual)
 			assert.NotNil(t, actual.UpdatedOn)
 
 			// Clean up
-			err = todoClient.Archive{{ .SingularTitlecase }}(ctx, actual.ID)
+			err = todoClient.Archive{{ camelcase .Name }}(ctx, actual.ID)
 			assert.NoError(t, err)
 		})
 	})
@@ -187,16 +206,22 @@ func Test{{ .PluralTitlecase }}(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// CreateHandler {{ .SingularLowercase  }}
-			expected := &models.{{ .SingularTitlecase }}{Name: "name", Details: "details"}
-			premade, err := todoClient.Create{{ .SingularTitlecase }}(ctx,
-				&models.{{ .SingularTitlecase }}CreationInput{
-					Name: expected.Name, Details: expected.Details,
+			// CreateHandler {{ lower .Name }}
+			expected := &models.{{ pascal .Name }}{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+					{{ end }}
+				}
+			premade, err := todoClient.Create{{ camelcase .Name }}(ctx,
+				&models.{{ pascal .Name }}CreationInput{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: expected.{{ pascal $field.Name }},
+					{{ end }}
 				})
 			checkValueAndError(t, premade, err)
 
 			// Clean up
-			err = todoClient.Archive{{ .SingularTitlecase }}(ctx, premade.ID)
+			err = todoClient.Archive{{ camelcase .Name }}(ctx, premade.ID)
 			assert.NoError(t, err)
 		})
 	})

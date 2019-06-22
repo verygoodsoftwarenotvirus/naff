@@ -9,8 +9,8 @@
     canSubmit = name != "" && details != "";
   }
 
-  function create{{ .SingularTitlecase }}() {
-    fetch("http://localhost/api/v1/{{ .PluralLowercase }}/", {
+  function create{{ camelcase .Name }}() {
+    fetch("http://localhost/api/v1/{{ lower .Name }}s/", {
       method: "POST",
       mode: "cors", // no-cors, cors, *same-origin
       credentials: "include",
@@ -32,10 +32,10 @@
   }
 </script>
 
-<!-- {{ .PluralTitlecase }}.svelte -->
+<!-- {{ camelcase .Name }}s.svelte -->
 <form
-  id="{{ .SingularLowercase  }}Form"
-  on:submit|preventDefault={create{{ .SingularTitlecase }}}
+  id="{{ lower .Name }}Form"
+  on:submit|preventDefault={create{{ camelcase .Name }}}
   style="margin-top: 7.5%; text-align: center;">
   <p>
     name:
@@ -54,5 +54,5 @@
       name="details" />
   </p>
   <input type="submit" value="create" disabled={!canSubmit} />
-  <Link to="/{{ .PluralLowercase }}">{{ .PluralLowercase }} list</Link>
+  <Link to="/{{ lower .Name }}s">{{ lower .Name }}s list</Link>
 </form>

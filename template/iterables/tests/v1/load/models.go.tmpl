@@ -10,59 +10,59 @@ import (
 	randmodel "{{ .OutputRepository }}/tests/v1/testutil/rand/model"
 )
 
-// fetchRandom{{ .SingularTitlecase }} retrieves a random {{ .SingularLowercase  }} from the list of available {{ .PluralLowercase }}
-func fetchRandom{{ .SingularTitlecase }}(c *client.V1Client) *models.{{ .SingularTitlecase }} {
-	{{ .PluralLowercase }}Res, err := c.Get{{ .PluralTitlecase }}(context.Background(), nil)
-	if err != nil || {{ .PluralLowercase }}Res == nil || len({{ .PluralLowercase }}Res.{{ .PluralTitlecase }}) == 0 {
+// fetchRandom{{ camelcase .Name }} retrieves a random {{ lower .Name }} from the list of available {{ lower .Name }}s
+func fetchRandom{{ camelcase .Name }}(c *client.V1Client) *models.{{ camelcase .Name }} {
+	{{ lower .Name }}sRes, err := c.Get{{ camelcase .Name }}s(context.Background(), nil)
+	if err != nil || {{ lower .Name }}sRes == nil || len({{ lower .Name }}sRes.{{ camelcase .Name }}s) == 0 {
 		return nil
 	}
 
-	randIndex := rand.Intn(len({{ .PluralLowercase }}Res.{{ .PluralTitlecase }}))
-	return &{{ .PluralLowercase }}Res.{{ .PluralTitlecase }}[randIndex]
+	randIndex := rand.Intn(len({{ lower .Name }}sRes.{{ camelcase .Name }}s))
+	return &{{ lower .Name }}sRes.{{ camelcase .Name }}s[randIndex]
 }
 
-func build{{ .SingularTitlecase }}Actions(c *client.V1Client) map[string]*Action {
+func build{{ camelcase .Name }}Actions(c *client.V1Client) map[string]*Action {
 	return map[string]*Action{
-		"Create{{ .SingularTitlecase }}": {
-			Name: "Create{{ .SingularTitlecase }}",
+		"Create{{ camelcase .Name }}": {
+			Name: "Create{{ camelcase .Name }}",
 			Action: func() (*http.Request, error) {
-				return c.BuildCreate{{ .SingularTitlecase }}Request(context.Background(), randmodel.Random{{ .SingularTitlecase }}CreationInput())
+				return c.BuildCreate{{ camelcase .Name }}Request(context.Background(), randmodel.Random{{ camelcase .Name }}CreationInput())
 			},
 			Weight: 100,
 		},
-		"Get{{ .SingularTitlecase }}": {
-			Name: "Get{{ .SingularTitlecase }}",
+		"Get{{ camelcase .Name }}": {
+			Name: "Get{{ camelcase .Name }}",
 			Action: func() (*http.Request, error) {
-				if random{{ .SingularTitlecase }} := fetchRandom{{ .SingularTitlecase }}(c); random{{ .SingularTitlecase }} != nil {
-					return c.BuildGet{{ .SingularTitlecase }}Request(context.Background(), random{{ .SingularTitlecase }}.ID)
+				if random{{ camelcase .Name }} := fetchRandom{{ camelcase .Name }}(c); random{{ camelcase .Name }} != nil {
+					return c.BuildGet{{ camelcase .Name }}Request(context.Background(), random{{ camelcase .Name }}.ID)
 				}
 				return nil, ErrUnavailableYet
 			},
 			Weight: 100,
 		},
-		"Get{{ .PluralTitlecase }}": {
-			Name: "Get{{ .PluralTitlecase }}",
+		"Get{{ camelcase .Name }}s": {
+			Name: "Get{{ camelcase .Name }}s",
 			Action: func() (*http.Request, error) {
-				return c.BuildGet{{ .PluralTitlecase }}Request(context.Background(), nil)
+				return c.BuildGet{{ camelcase .Name }}sRequest(context.Background(), nil)
 			},
 			Weight: 100,
 		},
-		"Update{{ .SingularTitlecase }}": {
-			Name: "Update{{ .SingularTitlecase }}",
+		"Update{{ camelcase .Name }}": {
+			Name: "Update{{ camelcase .Name }}",
 			Action: func() (*http.Request, error) {
-				if random{{ .SingularTitlecase }} := fetchRandom{{ .SingularTitlecase }}(c); random{{ .SingularTitlecase }} != nil {
-					random{{ .SingularTitlecase }}.Name = randmodel.Random{{ .SingularTitlecase }}CreationInput().Name
-					return c.BuildUpdate{{ .SingularTitlecase }}Request(context.Background(), random{{ .SingularTitlecase }})
+				if random{{ camelcase .Name }} := fetchRandom{{ camelcase .Name }}(c); random{{ camelcase .Name }} != nil {
+					random{{ camelcase .Name }}.Name = randmodel.Random{{ camelcase .Name }}CreationInput().Name
+					return c.BuildUpdate{{ camelcase .Name }}Request(context.Background(), random{{ camelcase .Name }})
 				}
 				return nil, ErrUnavailableYet
 			},
 			Weight: 100,
 		},
-		"Archive{{ .SingularTitlecase }}": {
-			Name: "Archive{{ .SingularTitlecase }}",
+		"Archive{{ camelcase .Name }}": {
+			Name: "Archive{{ camelcase .Name }}",
 			Action: func() (*http.Request, error) {
-				if random{{ .SingularTitlecase }} := fetchRandom{{ .SingularTitlecase }}(c); random{{ .SingularTitlecase }} != nil {
-					return c.BuildArchive{{ .SingularTitlecase }}Request(context.Background(), random{{ .SingularTitlecase }}.ID)
+				if random{{ camelcase .Name }} := fetchRandom{{ camelcase .Name }}(c); random{{ camelcase .Name }} != nil {
+					return c.BuildArchive{{ camelcase .Name }}Request(context.Background(), random{{ camelcase .Name }}.ID)
 				}
 				return nil, ErrUnavailableYet
 			},

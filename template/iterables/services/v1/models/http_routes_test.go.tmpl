@@ -1,4 +1,4 @@
-package {{ .PluralLowercase }}
+package {{ lower .Name }}s
 
 import (
 	"context"
@@ -20,18 +20,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test{{ .PluralTitlecase }}Service_List(T *testing.T) {
+func Test{{ camelcase .Name }}sService_List(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}List{
-			{{ .PluralTitlecase }}: []models.{{ .SingularTitlecase }}{
+		expected := &models.{{ camelcase .Name }}List{
+			{{ camelcase .Name }}s: []models.{{ camelcase .Name }}{
 				{
-					ID:      123,
-					Name:    "name",
-					Details: "details",
+					ID:   123,
+					Name: "name",
 				},
 			},
 		}
@@ -40,15 +39,15 @@ func Test{{ .PluralTitlecase }}Service_List(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Get{{ .PluralTitlecase }}",
+			"Get{{ camelcase .Name }}s",
 			mock.Anything,
 			mock.Anything,
 			requestingUser.ID,
 		).Return(expected, nil)
 
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -77,14 +76,14 @@ func Test{{ .PluralTitlecase }}Service_List(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Get{{ .PluralTitlecase }}",
+			"Get{{ camelcase .Name }}s",
 			mock.Anything,
 			mock.Anything,
 			requestingUser.ID,
-		).Return((*models.{{ .SingularTitlecase }}List)(nil), sql.ErrNoRows)
-		s.{{ .SingularLowercase  }}Database = id
+		).Return((*models.{{ camelcase .Name }}List)(nil), sql.ErrNoRows)
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -105,7 +104,7 @@ func Test{{ .PluralTitlecase }}Service_List(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusOK)
 	})
 
-	T.Run("with error fetching {{ .PluralLowercase }} from database", func(t *testing.T) {
+	T.Run("with error fetching {{ lower .Name }}s from database", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
 
@@ -113,14 +112,14 @@ func Test{{ .PluralTitlecase }}Service_List(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Get{{ .PluralTitlecase }}",
+			"Get{{ camelcase .Name }}s",
 			mock.Anything,
 			mock.Anything,
 			requestingUser.ID,
-		).Return((*models.{{ .SingularTitlecase }}List)(nil), errors.New("blah"))
-		s.{{ .SingularLowercase  }}Database = id
+		).Return((*models.{{ camelcase .Name }}List)(nil), errors.New("blah"))
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -144,22 +143,22 @@ func Test{{ .PluralTitlecase }}Service_List(T *testing.T) {
 	T.Run("with error encoding response", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}List{
-			{{ .PluralTitlecase }}: []models.{{ .SingularTitlecase }}{},
+		expected := &models.{{ camelcase .Name }}List{
+			{{ camelcase .Name }}s: []models.{{ camelcase .Name }}{},
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Get{{ .PluralTitlecase }}",
+			"Get{{ camelcase .Name }}s",
 			mock.Anything,
 			mock.Anything,
 			requestingUser.ID,
 		).Return(expected, nil)
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -181,21 +180,20 @@ func Test{{ .PluralTitlecase }}Service_List(T *testing.T) {
 	})
 }
 
-func Test{{ .PluralTitlecase }}Service_Create(T *testing.T) {
+func Test{{ camelcase .Name }}sService_Create(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID:      123,
-			Name:    "name",
-			Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Increment", mock.Anything)
-		s.{{ .SingularLowercase  }}Counter = mc
+		s.{{ lower .Name }}Counter = mc
 
 		r := &mockman.Reporter{}
 		r.On("Report", mock.Anything).Return()
@@ -205,13 +203,13 @@ func Test{{ .PluralTitlecase }}Service_Create(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Create{{ .SingularTitlecase }}",
+			"Create{{ camelcase .Name }}",
 			mock.Anything,
 			mock.Anything,
 		).Return(expected, nil)
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -227,9 +225,8 @@ func Test{{ .PluralTitlecase }}Service_Create(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ .SingularTitlecase }}CreationInput{
-			Name:    expected.Name,
-			Details: expected.Details,
+		exampleInput := &models.{{ camelcase .Name }}CreationInput{
+			Name: expected.Name,
 		}
 		req = req.WithContext(context.WithValue(req.Context(), CreateMiddlewareCtxKey, exampleInput))
 
@@ -265,26 +262,25 @@ func Test{{ .PluralTitlecase }}Service_Create(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusBadRequest)
 	})
 
-	T.Run("with error creating {{ .SingularLowercase  }}", func(t *testing.T) {
+	T.Run("with error creating {{ lower .Name }}", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID:      123,
-			Name:    "name",
-			Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Create{{ .SingularTitlecase }}",
+			"Create{{ camelcase .Name }}",
 			mock.Anything,
 			mock.Anything,
-		).Return((*models.{{ .SingularTitlecase }})(nil), errors.New("blah"))
-		s.{{ .SingularLowercase  }}Database = id
+		).Return((*models.{{ camelcase .Name }})(nil), errors.New("blah"))
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -300,9 +296,8 @@ func Test{{ .PluralTitlecase }}Service_Create(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ .SingularTitlecase }}CreationInput{
-			Name:    expected.Name,
-			Details: expected.Details,
+		exampleInput := &models.{{ camelcase .Name }}CreationInput{
+			Name: expected.Name,
 		}
 		req = req.WithContext(context.WithValue(req.Context(), CreateMiddlewareCtxKey, exampleInput))
 
@@ -314,15 +309,14 @@ func Test{{ .PluralTitlecase }}Service_Create(T *testing.T) {
 	T.Run("with error encoding response", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID:      123,
-			Name:    "name",
-			Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Increment", mock.Anything)
-		s.{{ .SingularLowercase  }}Counter = mc
+		s.{{ lower .Name }}Counter = mc
 
 		r := &mockman.Reporter{}
 		r.On("Report", mock.Anything).Return()
@@ -332,13 +326,13 @@ func Test{{ .PluralTitlecase }}Service_Create(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Create{{ .SingularTitlecase }}",
+			"Create{{ camelcase .Name }}",
 			mock.Anything,
 			mock.Anything,
 		).Return(expected, nil)
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -354,9 +348,8 @@ func Test{{ .PluralTitlecase }}Service_Create(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ .SingularTitlecase }}CreationInput{
-			Name:    expected.Name,
-			Details: expected.Details,
+		exampleInput := &models.{{ camelcase .Name }}CreationInput{
+			Name: expected.Name,
 		}
 		req = req.WithContext(context.WithValue(req.Context(), CreateMiddlewareCtxKey, exampleInput))
 
@@ -366,34 +359,33 @@ func Test{{ .PluralTitlecase }}Service_Create(T *testing.T) {
 	})
 }
 
-func Test{{ .PluralTitlecase }}Service_Read(T *testing.T) {
+func Test{{ camelcase .Name }}sService_Read(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID:      123,
-			Name:    "name",
-			Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Get{{ .SingularTitlecase }}",
+			"Get{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(expected, nil)
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -414,31 +406,30 @@ func Test{{ .PluralTitlecase }}Service_Read(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusOK)
 	})
 
-	T.Run("with no such {{ .SingularLowercase  }} in database", func(t *testing.T) {
+	T.Run("with no such {{ lower .Name }} in database", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID:      123,
-			Name:    "name",
-			Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Get{{ .SingularTitlecase }}",
+			"Get{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
-		).Return((*models.{{ .SingularTitlecase }})(nil), sql.ErrNoRows)
-		s.{{ .SingularLowercase  }}Database = id
+		).Return((*models.{{ camelcase .Name }})(nil), sql.ErrNoRows)
+		s.{{ lower .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
@@ -454,31 +445,30 @@ func Test{{ .PluralTitlecase }}Service_Read(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusNotFound)
 	})
 
-	T.Run("with error fetching {{ .SingularLowercase  }} from database", func(t *testing.T) {
+	T.Run("with error fetching {{ lower .Name }} from database", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID:      123,
-			Name:    "name",
-			Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Get{{ .SingularTitlecase }}",
+			"Get{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
-		).Return((*models.{{ .SingularTitlecase }})(nil), errors.New("blah"))
-		s.{{ .SingularLowercase  }}Database = id
+		).Return((*models.{{ camelcase .Name }})(nil), errors.New("blah"))
+		s.{{ lower .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
@@ -497,28 +487,27 @@ func Test{{ .PluralTitlecase }}Service_Read(T *testing.T) {
 	T.Run("with error encoding response", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID:      123,
-			Name:    "name",
-			Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Get{{ .SingularTitlecase }}",
+			"Get{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(expected, nil)
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -540,19 +529,20 @@ func Test{{ .PluralTitlecase }}Service_Read(T *testing.T) {
 	})
 }
 
-func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
+func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID: 123, Name: "name", Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Increment", mock.Anything)
-		s.{{ .SingularLowercase  }}Counter = mc
+		s.{{ lower .Name }}Counter = mc
 
 		r := &mockman.Reporter{}
 		r.On("Report", mock.Anything).Return()
@@ -562,26 +552,26 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 
 		id.On(
-			"Get{{ .SingularTitlecase }}",
+			"Get{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(expected, nil)
 
 		id.On(
-			"Update{{ .SingularTitlecase }}",
+			"Update{{ camelcase .Name }}",
 			mock.Anything,
 			mock.Anything,
 		).Return(nil)
 
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -597,9 +587,8 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ .SingularTitlecase }}UpdateInput{
-			Name:    expected.Name,
-			Details: expected.Details,
+		exampleInput := &models.{{ camelcase .Name }}UpdateInput{
+			Name: expected.Name,
 		}
 		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
 
@@ -625,31 +614,32 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusBadRequest)
 	})
 
-	T.Run("with no rows fetching {{ .SingularLowercase  }}", func(t *testing.T) {
+	T.Run("with no rows fetching {{ lower .Name }}", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID: 123, Name: "name", Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 
 		id.On(
-			"Get{{ .SingularTitlecase }}",
+			"Get{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
-		).Return((*models.{{ .SingularTitlecase }})(nil), sql.ErrNoRows)
+		).Return((*models.{{ camelcase .Name }})(nil), sql.ErrNoRows)
 
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
@@ -660,9 +650,8 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ .SingularTitlecase }}UpdateInput{
-			Name:    expected.Name,
-			Details: expected.Details,
+		exampleInput := &models.{{ camelcase .Name }}UpdateInput{
+			Name: expected.Name,
 		}
 		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
 
@@ -671,31 +660,32 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusNotFound)
 	})
 
-	T.Run("with error fetching {{ .SingularLowercase  }}", func(t *testing.T) {
+	T.Run("with error fetching {{ lower .Name }}", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID: 123, Name: "name", Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 
 		id.On(
-			"Get{{ .SingularTitlecase }}",
+			"Get{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
-		).Return((*models.{{ .SingularTitlecase }})(nil), errors.New("blah"))
+		).Return((*models.{{ camelcase .Name }})(nil), errors.New("blah"))
 
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
@@ -706,9 +696,8 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ .SingularTitlecase }}UpdateInput{
-			Name:    expected.Name,
-			Details: expected.Details,
+		exampleInput := &models.{{ camelcase .Name }}UpdateInput{
+			Name: expected.Name,
 		}
 		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
 
@@ -717,16 +706,17 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusInternalServerError)
 	})
 
-	T.Run("with error updating {{ .SingularLowercase  }}", func(t *testing.T) {
+	T.Run("with error updating {{ lower .Name }}", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID: 123, Name: "name", Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Increment", mock.Anything)
-		s.{{ .SingularLowercase  }}Counter = mc
+		s.{{ lower .Name }}Counter = mc
 
 		r := &mockman.Reporter{}
 		r.On("Report", mock.Anything).Return()
@@ -736,26 +726,26 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 
 		id.On(
-			"Get{{ .SingularTitlecase }}",
+			"Get{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(expected, nil)
 
 		id.On(
-			"Update{{ .SingularTitlecase }}",
+			"Update{{ camelcase .Name }}",
 			mock.Anything,
 			mock.Anything,
 		).Return(errors.New("blah"))
 
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -771,9 +761,8 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ .SingularTitlecase }}UpdateInput{
-			Name:    expected.Name,
-			Details: expected.Details,
+		exampleInput := &models.{{ camelcase .Name }}UpdateInput{
+			Name: expected.Name,
 		}
 		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
 
@@ -785,13 +774,14 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 	T.Run("with error encoding response", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID: 123, Name: "name", Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Increment", mock.Anything)
-		s.{{ .SingularLowercase  }}Counter = mc
+		s.{{ lower .Name }}Counter = mc
 
 		r := &mockman.Reporter{}
 		r.On("Report", mock.Anything).Return()
@@ -801,26 +791,26 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 
 		id.On(
-			"Get{{ .SingularTitlecase }}",
+			"Get{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(expected, nil)
 
 		id.On(
-			"Update{{ .SingularTitlecase }}",
+			"Update{{ camelcase .Name }}",
 			mock.Anything,
 			mock.Anything,
 		).Return(nil)
 
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -836,9 +826,8 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ .SingularTitlecase }}UpdateInput{
-			Name:    expected.Name,
-			Details: expected.Details,
+		exampleInput := &models.{{ camelcase .Name }}UpdateInput{
+			Name: expected.Name,
 		}
 		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
 
@@ -848,16 +837,15 @@ func Test{{ .PluralTitlecase }}Service_Update(T *testing.T) {
 	})
 }
 
-func Test{{ .PluralTitlecase }}Service_Archive(T *testing.T) {
+func Test{{ camelcase .Name }}sService_Archive(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID:      123,
-			Name:    "name",
-			Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		r := &mockman.Reporter{}
@@ -866,24 +854,24 @@ func Test{{ .PluralTitlecase }}Service_Archive(T *testing.T) {
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Decrement").Return()
-		s.{{ .SingularLowercase  }}Counter = mc
+		s.{{ lower .Name }}Counter = mc
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Archive{{ .SingularTitlecase }}",
+			"Archive{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(nil)
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -904,31 +892,30 @@ func Test{{ .PluralTitlecase }}Service_Archive(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusNoContent)
 	})
 
-	T.Run("with no {{ .SingularLowercase  }} in database", func(t *testing.T) {
+	T.Run("with no {{ lower .Name }} in database", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID:      123,
-			Name:    "name",
-			Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Archive{{ .SingularTitlecase }}",
+			"Archive{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(sql.ErrNoRows)
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
@@ -947,28 +934,27 @@ func Test{{ .PluralTitlecase }}Service_Archive(T *testing.T) {
 	T.Run("with error reading from database", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ .SingularTitlecase }}{
-			ID:      123,
-			Name:    "name",
-			Details: "details",
+		expected := &models.{{ camelcase .Name }}{
+			ID:   123,
+			Name: "name",
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ .SingularLowercase  }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ .SingularTitlecase }}DataManager{}
+		id := &mmodels.{{ camelcase .Name }}DataManager{}
 		id.On(
-			"Archive{{ .SingularTitlecase }}",
+			"Archive{{ camelcase .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(errors.New("blah"))
-		s.{{ .SingularLowercase  }}Database = id
+		s.{{ lower .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(

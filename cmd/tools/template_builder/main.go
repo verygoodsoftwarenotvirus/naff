@@ -41,6 +41,7 @@ func main() {
 		"frontend/v1/public/bundle.js":      true,
 		"frontend/v1/public/bundle.js.map":  true,
 		"cmd/server/v1/wire_gen.go":         true,
+		"profile.out":                       true,
 	}
 
 	// files that require exceptional handling
@@ -150,19 +151,579 @@ func main() {
 
 			return in
 		},
-		"models/v1/item.go": func(in string) string {
-			x := "Name       string  `json:\"name\"`\n		Details    string  `json:\"details\"`"
-			y := "Name      string `json:\"name\"`\n		Details   string `json:\"details\"`"
 
-			t := "{{ range $i, $typ := .DataTypes }}\n\t{{ range $i, $field := $typ.Fields }}\n\t\t\t{{ $field.Name }} {{ $field.Type }} `json:\"{{ snakecase $field.Name }}\"`\n\t\t{{ end }}\n\t{{ end }}"
-			u := `{{ range $i, $typ := .DataTypes }}
-		{{ range $i, $field := $typ.Fields }}
-			if x.{{ $field.Name }} != input.{{ $field.Name }} {
-				x.{{ $field.Name }} = input.{{ $field.Name }} 
-			}
+		"database/v1/queriers/postgres/items.go": func(in string) string {
+			in = strings.Replace(in, `
+	itemsTableColumns = []string{
+		"id",
+		"name",
+		"details",
+		"created_on",
+		"updated_on",
+		"archived_on",
+		"belongs_to",
+	}`, `
+	{{ camelCase .Name }}sTableColumns = []string{
+		"id",
+		{{ range $j, $field := .Fields }}
+			"{{ snakecase $field.Name }}", 
+		{{ end }}	
+		"created_on",
+		"updated_on",
+		"archived_on",
+		"belongs_to",
+	}`, 1)
+
+			in = strings.Replace(in, `
+	if err := scan.Scan(
+		&x.ID,
+		&x.Name,
+		&x.Details,
+		&x.CreatedOn,
+		&x.UpdatedOn,
+		&x.ArchivedOn,
+		&x.BelongsTo,
+	); err != nil {
+		return nil, err
+	}`, `
+	if err := scan.Scan(
+		&x.ID,
+		{{ range $j, $field := .Fields }}
+			&x.{{ pascal $field.Name }}, 
+		{{ end }}	
+		&x.CreatedOn,
+		&x.UpdatedOn,
+		&x.ArchivedOn,
+		&x.BelongsTo,
+	); err != nil {
+		return nil, err
+	}`, 1)
+
+			in = strings.Replace(in, `
+// buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments.
+func (p *Postgres) buildCreateItemQuery(input *models.Item) (query string, args []interface{}) {
+	var err error
+	query, args, err = p.sqlBuilder.
+		Insert(itemsTableName).
+		Columns(
+			"name",
+			"details",
+			"belongs_to",
+		).
+		Values(
+			input.Name,
+			input.Details,
+			input.BelongsTo,
+		).
+		Suffix("RETURNING id, created_on").
+		ToSql()
+
+	logQueryBuildingError(p.logger, err)
+
+	return query, args
+}`, `
+// buildCreate{{ pascal .Name }}Query takes an item and returns a creation query for that item and the relevant arguments.
+func (p *Postgres) buildCreate{{ pascal .Name }}Query(input *models.{{ pascal .Name }}) (query string, args []interface{}) {
+	var err error
+	query, args, err = p.sqlBuilder.
+		Insert(itemsTableName).
+		Columns(
+			{{ range $j, $field := .Fields }}
+				{{ if $field.ValidForCreationInput }}"{{ snakecase $field.Name }}",{{ end }}
+			{{ end }}
+			"belongs_to",
+		).
+		Values(
+		{{ range $j, $field := .Fields }}
+			{{ if $field.ValidForCreationInput }}input.{{ pascal $field.Name }},{{ end }}
+		{{ end }}	
+			input.BelongsTo,
+		).
+		Suffix("RETURNING id, created_on").
+		ToSql()
+
+	logQueryBuildingError(p.logger, err)
+
+	return query, args
+}`, 1)
+
+			in = strings.Replace(in, `
+// CreateItem creates an item in the database
+func (p *Postgres) CreateItem(ctx context.Context, input *models.ItemCreationInput) (*models.Item, error) {
+	i := &models.Item{
+		Name:      input.Name,
+		Details:   input.Details,
+		BelongsTo: input.BelongsTo,
+	}
+
+	query, args := p.buildCreateItemQuery(i)
+
+	// create the item
+	err := p.db.QueryRowContext(ctx, query, args...).Scan(&i.ID, &i.CreatedOn)
+	if err != nil {
+		return nil, errors.Wrap(err, "error executing item creation query")
+	}
+
+	return i, nil
+}`, `
+// Create{{ pascal .Name }} creates an {{ lower .Name }} in the database
+func (p *Postgres) Create{{ pascal .Name }}(ctx context.Context, input *models.{{ pascal .Name }}CreationInput) (*models.{{ pascal .Name }}, error) {
+	x := &models.{{ pascal .Name }}{
+		{{ range $j, $field := .Fields }}
+			{{ if $field.ValidForCreationInput }}
+				{{ pascal $field.Name }}: input.{{ pascal $field.Name }}, 
+			{{ end }}
 		{{ end }}
-	{{ end }}`
-			in = strings.NewReplacer(x, t, y, t).Replace(in)
+		BelongsTo: input.BelongsTo,
+	}
+
+	query, args := p.buildCreate{{ pascal .Name }}Query(x)
+
+	// create the {{ lower .Name }}
+	err := p.db.QueryRowContext(ctx, query, args...).Scan(&x.ID, &x.CreatedOn)
+	if err != nil {
+		return nil, errors.Wrap(err, "error executing {{ lower .Name }} creation query")
+	}
+
+	return x, nil
+}`, 1)
+
+			in = strings.Replace(in, `
+		Set("name", input.Name).
+		Set("details", input.Details).
+`, `
+		{{ range $j, $field := .Fields }}	
+			{{ if $field.ValidForUpdateInput }}
+				Set("{{ snakecase $field.Name }}", input.{{ pascal $field.Name }}). 
+			{{ end }}	
+		{{ end }}	
+`, 1)
+
+			return in
+		},
+		"database/v1/queriers/postgres/items_test.go": func(in string) string {
+			in = strings.Replace(in, `Name: "name",`, `
+		{{ range $j, $field := .Fields }}	
+			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+		{{ end }}	
+			`, 1)
+
+			in = strings.Replace(in, `
+
+func buildMockRowFromItem(item *models.Item) *sqlmock.Rows {
+	exampleRows := sqlmock.NewRows(itemsTableColumns).
+		AddRow(
+			item.ID,
+			item.Name,
+			item.Details,
+			item.CreatedOn,
+			item.UpdatedOn,
+			item.ArchivedOn,
+			item.BelongsTo,
+		)
+
+	return exampleRows
+}
+
+func buildErroneousMockRowFromItem(item *models.Item) *sqlmock.Rows {
+	exampleRows := sqlmock.NewRows(itemsTableColumns).
+		AddRow(
+			item.ArchivedOn,
+			item.Name,
+			item.Details,
+			item.CreatedOn,
+			item.UpdatedOn,
+			item.BelongsTo,
+			item.ID,
+		)
+
+	return exampleRows
+}
+`, `
+func buildMockRowFrom{{ pascal .Name }}({{ camelCase .Name}} *models.{{ pascal .Name }}) *sqlmock.Rows {
+	exampleRows := sqlmock.NewRows({{ camelCase .Name}}sTableColumns).
+		AddRow(
+			{{ camelCase .Name}}.ID,
+		{{ $og := . }}{{ range $j, $field := .Fields }}	
+			{{ camelCase $og.Name}}.{{ pascal $field.Name }},
+		{{ end }}	
+			{{ camelCase .Name}}.CreatedOn,
+			{{ camelCase .Name}}.UpdatedOn,
+			{{ camelCase .Name}}.ArchivedOn,
+			{{ camelCase .Name}}.BelongsTo,
+		)
+
+	return exampleRows
+}
+
+func buildErroneousMockRowFrom{{ pascal .Name }}({{ camelCase .Name}} *models.{{ pascal .Name }}) *sqlmock.Rows {
+	exampleRows := sqlmock.NewRows({{ camelCase .Name}}sTableColumns).
+		AddRow(
+			{{ camelCase .Name}}.ArchivedOn,
+		{{ $og := . }}{{ range $j, $field := .Fields }}	
+			{{ camelCase $og.Name}}.{{ pascal $field.Name }},
+		{{ end }}	
+			{{ camelCase .Name}}.CreatedOn,
+			{{ camelCase .Name}}.UpdatedOn,
+			{{ camelCase .Name}}.BelongsTo,
+			{{ camelCase .Name}}.ID,
+		)
+
+	return exampleRows
+}
+`, 1)
+			in = strings.NewReplacer(
+				`Name:    "name",
+			Details: "details",`, `
+		{{ range $j, $field := .Fields }}	
+			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+		{{ end }}`, `Name:      "name",
+			Details:   "details",`, `
+		{{ range $j, $field := .Fields }}	
+			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+		{{ end }}`).Replace(in)
+
+			in = strings.Replace(in, `
+func TestPostgres_buildCreateItemQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+		expected := &models.Item{
+			Name:      "name",
+			Details:   "details",
+			BelongsTo: 123,
+		}
+
+		expectedArgCount := 3
+		expectedQuery := "INSERT INTO items (name,details,belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"
+
+		actualQuery, args := p.buildCreateItemQuery(expected)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Len(t, args, expectedArgCount)
+		assert.Equal(t, expected.Name, args[0].(string))
+		assert.Equal(t, expected.Details, args[1].(string))
+		assert.Equal(t, expected.BelongsTo, args[2].(uint64))
+	})
+}
+`, `
+func TestPostgres_buildCreate{{ pascal .Name }}Query(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+		expected := &models.{{ pascal .Name }}{
+		{{ range $j, $field := .Fields }}	
+			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+		{{ end }}	
+			BelongsTo: 123,
+		}
+
+		// NOTE: this test is a deliberate failure
+
+		expectedArgCount := 0
+		expectedQuery := "INSERT INTO {{ snakecase .Name }} () VALUES () RETURNING id, created_on"
+
+		actualQuery, args := p.buildCreate{{ pascal .Name }}Query(expected)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Len(t, args, expectedArgCount)
+
+		{{ range $j, $field := .Fields }}	
+		assert.Equal(t, expected.{{ pascal $field.Name }}, args[{{ $j }}].({{ $field.Type }}))
+		{{ end }}	
+		assert.Equal(t, expected.BelongsTo, args[len(args)-1].(uint64))
+	})
+}`, 1)
+
+			in = strings.Replace(in, `
+func TestPostgres_CreateItem(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		expectedUserID := uint64(321)
+		expected := &models.Item{
+			ID:        123,
+			Name:      "name",
+			BelongsTo: expectedUserID,
+			CreatedOn: uint64(time.Now().Unix()),
+		}
+		expectedInput := &models.ItemCreationInput{
+			Name:      expected.Name,
+			BelongsTo: expected.BelongsTo,
+		}
+		exampleRows := sqlmock.NewRows([]string{"id", "created_on"}).
+			AddRow(expected.ID, uint64(time.Now().Unix()))
+
+		expectedQuery := "INSERT INTO items (name,details,belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				expected.Name,
+				expected.Details,
+				expected.BelongsTo,
+			).
+			WillReturnRows(exampleRows)
+
+		actual, err := p.CreateItem(context.Background(), expectedInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		expectedUserID := uint64(321)
+		example := &models.Item{
+			ID:        123,
+			Name:      "name",
+			BelongsTo: expectedUserID,
+			CreatedOn: uint64(time.Now().Unix()),
+		}
+		expectedInput := &models.ItemCreationInput{
+			Name:      example.Name,
+			BelongsTo: example.BelongsTo,
+		}
+
+		expectedQuery := "INSERT INTO items (name,details,belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				example.Name,
+				example.Details,
+				example.BelongsTo,
+			).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := p.CreateItem(context.Background(), expectedInput)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`, `
+func TestPostgres_Create{{ pascal .Name }}(T *testing.T) {
+	T.Parallel()
+	
+	T.Run("happy path", func(t *testing.T) {
+		expectedUserID := uint64(321)
+		expected := &models.{{ pascal .Name }}{
+			ID:        123,
+			BelongsTo: expectedUserID,
+			CreatedOn: uint64(time.Now().Unix()),
+		}
+		expectedInput := &models.{{ pascal .Name }}CreationInput{
+			{{ range $j, $field := .Fields }}
+				{{ if $field.ValidForCreationInput }}
+					{{ pascal $field.Name }}: expected.{{ pascal $field.Name }},
+				{{ end }}
+			{{ end }}	
+			BelongsTo: expected.BelongsTo,
+		}
+		exampleRows := sqlmock.NewRows([]string{"id", "created_on"}).
+			AddRow(expected.ID, uint64(time.Now().Unix()))
+
+		expectedQuery := "INSERT INTO {{ snakecase .Name }} (name,details,belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+			{{ $og := . }}{{ range $j, $field := .Fields }}	
+				expected.{{ pascal $field.Name }},
+			{{ end }}	
+				expected.BelongsTo,
+			).
+			WillReturnRows(exampleRows)
+
+		actual, err := p.Create{{ pascal .Name }}(context.Background(), expectedInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		expectedUserID := uint64(321)
+		example := &models.{{ pascal .Name }}{
+			ID:        123,
+			BelongsTo: expectedUserID,
+			CreatedOn: uint64(time.Now().Unix()),
+		}
+		expectedInput := &models.{{ pascal .Name }}CreationInput{
+			BelongsTo: example.BelongsTo,
+		}
+
+		expectedQuery := "INSERT INTO {{ snakecase .Name }} (name,details,belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+			{{ $og := . }}{{ range $j, $field := .Fields }}	
+				example.{{ pascal $field.Name }},
+			{{ end }}	
+				example.BelongsTo,
+			).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := p.Create{{ pascal .Name }} (context.Background(), expectedInput)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}`, 1)
+
+			in = strings.ReplaceAll(in, `name, details, `, "")
+			in = strings.ReplaceAll(in, `name,details,`, "")
+			in = strings.ReplaceAll(in, `name = $1, details = $2, `, "")
+
+			in = strings.ReplaceAll(in, `
+			ID:        123,
+			Name:      "name",
+			BelongsTo: expectedUserID,
+			CreatedOn: uint64(time.Now().Unix()),`, `
+			ID:        123,
+			{{ range $j, $field := .Fields }}	
+			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+			{{ end }}	
+			BelongsTo: expectedUserID,
+			CreatedOn: uint64(time.Now().Unix()),`)
+
+			in = strings.ReplaceAll(in, `WithArgs(
+				example.Name,
+				example.Details,
+				example.BelongsTo,
+				example.ID,
+			).`, `WithArgs(
+			{{ range $j, $field := .Fields }}	
+				example.{{ pascal $field.Name }},
+			{{ end }}	
+				example.BelongsTo,
+				example.ID,
+			).`)
+
+			in = strings.ReplaceAll(in, `
+			WithArgs(
+				expected.Name,
+				expected.Details,
+				expected.BelongsTo,
+			).`, `
+			WithArgs(
+			{{ range $j, $field := .Fields }}	
+				expected.{{ pascal $field.Name }},
+			{{ end }}	
+				expected.BelongsTo,
+			).`)
+
+			in = strings.ReplaceAll(in, `
+			WithArgs(
+				example.Name,
+				example.Details,
+				example.BelongsTo,
+			).`, `
+			WithArgs(
+			{{ range $j, $field := .Fields }}	
+				example.{{ pascal $field.Name }},
+			{{ end }}	
+				example.BelongsTo,
+			).`)
+
+			in = strings.ReplaceAll(in, `
+		assert.Equal(t, expected.Name, args[0].(string))
+		assert.Equal(t, expected.Details, args[1].(string))
+		assert.Equal(t, expected.BelongsTo, args[2].(uint64))`, `
+		{{ range $j, $field := .Fields }}	
+		assert.Equal(t, expected.{{ pascal $field.Name }}, args[{{ $j }}].({{ $field.Type }}))
+		{{ end }}	
+		assert.Equal(t, expected.BelongsTo, args[len(args)-1].(uint64))`)
+
+			in = strings.Replace(in, `
+			WithArgs(
+				expected.Name,
+				expected.Details,
+				expected.BelongsTo,
+				expected.ID,
+			).`, `
+			WithArgs(
+				{{ range $j, $field := .Fields }}	
+					expected.{{ pascal $field.Name }},
+				{{ end }}	
+				expected.BelongsTo,
+				expected.ID,
+			).`, 1)
+
+			in = strings.ReplaceAll(in, `&models.Item{
+			Name: "name",
+		}`, `&models.Item{
+			{{ range $j, $field := .Fields }}	
+			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+			{{ end }}	
+		}`)
+
+			return in
+		},
+
+		"models/v1/item.go": func(in string) string {
+			z := `
+	// Item represents an item
+	Item struct {
+		ID         uint64  ` + "`" + `json:"id"` + "`" + `
+		Name       string  ` + "`" + `json:"name"` + "`" + `
+		Details    string  ` + "`" + `json:"details"` + "`" + `
+		CreatedOn  uint64  ` + "`" + `json:"created_on"` + "`" + `
+		UpdatedOn  *uint64 ` + "`" + `json:"updated_on"` + "`" + `
+		ArchivedOn *uint64 ` + "`" + `json:"archived_on"` + "`" + `
+		BelongsTo  uint64  ` + "`" + `json:"belongs_to"` + "`" + `
+	}`
+			u := `
+	// {{ camelcase .Name }} represents a(n) {{ camelcase .Name }}
+	{{ camelcase .Name }} struct {
+		ID         uint64  ` + "`" + `json:"id"` + "`" + `
+		{{ range $i, $field := .Fields }}
+			{{ pascal $field.Name }} {{ if $field.Pointer }}*{{ end }}{{ $field.Type }} ` + "`" + `json:"{{ snakecase $field.Name }}"` + "`" + `
+		{{ end }}
+		CreatedOn  uint64  ` + "`" + `json:"created_on"` + "`" + `
+		UpdatedOn  *uint64 ` + "`" + `json:"updated_on"` + "`" + `
+		ArchivedOn *uint64 ` + "`" + `json:"archived_on"` + "`" + `
+		BelongsTo  uint64  ` + "`" + `json:"belongs_to"` + "`" + `
+	}`
+			in = strings.ReplaceAll(in, z, u)
+
+			in = strings.Replace(in, `
+	// ItemCreationInput represents what a user could set as input for creating items
+	ItemCreationInput struct {
+		Name      string `+"`"+`json:"name"`+"`"+`
+		Details   string `+"`"+`json:"details"`+"`"+`
+		BelongsTo uint64 `+"`"+`json:"-"`+"`"+`
+	}
+
+	// ItemUpdateInput represents what a user could set as input for updating items
+	ItemUpdateInput struct {
+		Name      string `+"`"+`json:"name"`+"`"+`
+		Details   string `+"`"+`json:"details"`+"`"+`
+		BelongsTo uint64 `+"`"+`json:"-"`+"`"+`
+	}`, `
+	// {{ camelcase .Name }}CreationInput represents what a user could set as input for creating {{ camelcase .Name }}s
+	{{ camelcase .Name }}CreationInput struct {
+		{{ range $i, $field := .Fields }}
+			{{ if $field.ValidForCreationInput }}
+				{{ $field.Name }} {{ if $field.Pointer }}*{{ end }}{{ $field.Type }} `+"`"+`json:"{{ snakecase $field.Name }}"`+"`"+`
+			{{ end }}
+		{{ end }}
+		BelongsTo uint64 `+"`"+`json:"-"`+"`"+`
+	}
+
+	// {{ camelcase .Name }}UpdateInput represents what a user could set as input for updating {{ camelcase .Name }}s
+	{{ camelcase .Name }}UpdateInput struct {
+		{{ range $i, $field := .Fields }}
+			{{ if $field.ValidForUpdateInput }}
+				{{ $field.Name }} {{ if $field.Pointer }}*{{ end }}{{ $field.Type }} `+"`"+`json:"{{ snakecase $field.Name }}"`+"`"+`
+			{{ end }}
+		{{ end }}
+		BelongsTo uint64 `+"`"+`json:"-"`+"`"+`
+	}`, 1)
 
 			in = strings.Replace(in, `if input.Name != "" || input.Name != x.Name {
 		x.Name = input.Name
@@ -170,14 +731,28 @@ func main() {
 
 	if input.Details != "" || input.Details != x.Details {
 		x.Details = input.Details
-	}`, u, 1)
+	}`, `{{ range $i, $field := .Fields }}
+		{{ if $field.ValidForUpdateInput }} 
+		if x.{{ $field.Name }} != input.{{ $field.Name }} {
+			x.{{ $field.Name }} = input.{{ $field.Name }} 
+		}{{ end }}
+{{ end }}`, 1)
 
 			return in
 		},
 		"server/v1/http/server.go": func(in string) string {
-			in = strings.Replace(in, "		itemsService         models.ItemDataServer", "{{ range $i, $dt := .DataTypes }} {{ lower $dt.Name }}sService models.{{ camelcase $dt.Name }}DataServer{{ end }}", 1)
-			in = strings.Replace(in, "	itemsService models.ItemDataServer,", "{{ range $i, $dt := .DataTypes }} {{ lower $dt.Name }}sService models.{{ camelcase $dt.Name }}DataServer, {{ end }}", 1)
-			in = strings.Replace(in, "		itemsService:         itemsService,", "{{ range $i, $dt := .DataTypes }} {{ lower $dt.Name }}sService: {{ lower $dt.Name }}sService,{{ end }}", 1)
+			in = strings.Replace(in, "		itemsService         models.ItemDataServer", `
+{{ range $i, $dt := .DataTypes }} 
+	{{ lower $dt.Name }}sService models.{{ camelcase $dt.Name }}DataServer
+{{ end }}`, 1)
+			in = strings.Replace(in, "	itemsService models.ItemDataServer,", `
+{{ range $i, $dt := .DataTypes }} 
+				{{ lower $dt.Name }}sService models.{{ camelcase $dt.Name }}DataServer, 
+{{ end }}`, 1)
+			in = strings.Replace(in, "		itemsService:         itemsService,", `
+{{ range $i, $dt := .DataTypes }} 
+	{{ lower $dt.Name }}sService: {{ lower $dt.Name }}sService,
+{{ end }}`, 1)
 
 			return in
 		},
@@ -186,8 +761,14 @@ func main() {
 				in, `	"{{ .OutputRepository }}/services/v1/items"`,
 				iterablesImportsTemplateCode, 1,
 			)
-			in = strings.Replace(in, "		itemsService:         &mmodels.ItemDataServer{},", "{{ range $i, $dt := .DataTypes }} {{ lower $dt.Name }}sService: &mmodels.{{ camelcase $dt.Name }}DataServer{}, {{ end }}", 1)
-			in = strings.Replace(in, "			&items.Service{},", "{{ range $i, $dt := .DataTypes }} &{{ lower $dt.Name }}s.Service{}, {{ end }}", 1)
+			in = strings.Replace(in, "		itemsService:         &mmodels.ItemDataServer{},", `
+{{ range $i, $dt := .DataTypes }} 
+	{{ lower $dt.Name }}sService: &mmodels.{{ camelcase $dt.Name }}DataServer{}, 
+{{ end }}`, 1)
+			in = strings.Replace(in, "			&items.Service{},", `
+{{ range $i, $dt := .DataTypes }} 
+	&{{ lower $dt.Name }}s.Service{}, 
+{{ end }}`, 1)
 
 			return in
 		},
@@ -389,41 +970,28 @@ func Test_buildChi{{ camelcase $dt.Name }}IDFetcher(T *testing.T) {
 		"services/v1/frontend/http_routes.go": func(in string) string {
 			in = strings.Replace(in, `
 	// itemsFrontendPathRegex matches URLs against our frontend router's specification for specific item routes
-	itemsFrontendPathRegex = regexp.MustCompile(`, "", 1)
-
-			in = strings.Replace(in, `	"regexp"`, "", 1)
-			in = strings.Replace(in, "`/items/\\d+`)", "", 1)
-			in = strings.Replace(in, `			"/items",`, "", 1)
+	itemsFrontendPathRegex = regexp.MustCompile(`+"`"+`/items/\d+`+"`)", `
+{{ range $i, $dt := .DataTypes }}
+	// {{ lower $dt.Name }}sFrontendPathRegex matches URLs against our frontend router's specification for specific {{ camelcase $dt.Name }} routes
+	{{ lower $dt.Name }}sFrontendPathRegex = regexp.MustCompile(`+"`"+`/items/\d+`+"`"+`)
+{{ end }}
+`, 1)
 			in = strings.Replace(in, `
 
 			"/items/new",`, "", 1)
 			in = strings.Replace(in, `
 		if itemsFrontendPathRegex.MatchString(req.URL.Path) {
 			req.URL.Path = "/"
-		}`, "", 1)
+		}`, `{{ range $i, $dt := .DataTypes }}
+	if {{ lower $dt.Name }}sFrontendPathRegex.MatchString(req.URL.Path) {
+		req.URL.Path = "/"
+	}
+{{ end }}`, 1)
 
 			return in
 		},
 		"services/v1/frontend/http_routes_test.go": func(in string) string {
 			in = strings.Replace(in, `
-	T.Run("with frontend routing path", func(t *testing.T) {
-		s := &Service{logger: noop.ProvideNoopLogger()}
-		exampleDir := "."
-
-		hf, err := s.StaticDir(exampleDir)
-		assert.NoError(t, err)
-		assert.NotNil(t, hf)
-
-		req, res := buildRequest(t), httptest.NewRecorder()
-		req.URL.Path = "/login"
-
-		hf(res, req)
-
-		assert.Equal(t, http.StatusOK, res.Code)
-	})`, "", 1)
-
-			in = strings.Replace(in, `
-
 	T.Run("with frontend items routing path", func(t *testing.T) {
 		s := &Service{logger: noop.ProvideNoopLogger()}
 		exampleDir := "."
@@ -439,7 +1007,36 @@ func Test_buildChi{{ camelcase $dt.Name }}IDFetcher(T *testing.T) {
 
 		assert.Equal(t, http.StatusOK, res.Code)
 	})
-`, "", 1)
+`, `
+{{ range $i, $dt := .DataTypes }}
+	T.Run("with frontend {{ snakecase $dt.Name }}s routing path", func(t *testing.T) {
+		s := &Service{logger: noop.ProvideNoopLogger()}
+		exampleDir := "."
+
+		hf, err := s.StaticDir(exampleDir)
+		assert.NoError(t, err)
+		assert.NotNil(t, hf)
+
+		req, res := buildRequest(t), httptest.NewRecorder()
+		req.URL.Path = "/{{ snakecase $dt.Name }}s/123"
+
+		hf(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+	})
+{{ end }}`, 1)
+
+			in = strings.ReplaceAll(in, `Name:    "name",`, `
+`)
+
+			in = strings.Replace(in, `
+			Name:    expected.Name,
+			Details: expected.Details,
+`, `{{ range $i, $dt := .DataTypes }}
+	{{ range $j, $field := $dt.Fields }}
+		{{ $field.Name }}: expected.{{ $field.Name}},
+	{{ end }}
+{{ end }}`, -1)
 
 			return in
 		},
@@ -503,7 +1100,118 @@ func Test_buildChi{{ camelcase $dt.Name }}IDFetcher(T *testing.T) {
 
 	for k, v := range buildItemActions(c) {
 		allActions[k] = v
-	}`, "", 1)
+	}`, `{{ range $i, $dt := .DataTypes }}
+	for k, v := range build{{ camelcase $dt.Name }}Actions(c) {
+		allActions[k] = v
+	}
+{{ end }}`, 1)
+			return in
+		},
+		"tests/v1/integration/items_test.go": func(in string) string {
+			in = strings.ReplaceAll(in, `"github.com/icrowley/fake"`, "")
+
+			in = strings.ReplaceAll(in, `&models.ItemCreationInput{
+					Name:    expected.Name,
+					Details: expected.Details,
+				})`, `&models.{{ pascal .Name }}CreationInput{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: expected.{{ pascal $field.Name }},
+					{{ end }}
+				})`)
+			in = strings.ReplaceAll(in, `&models.Item{
+					Name:    expected.Name,
+					Details: expected.Details,
+				})`, `&models.{{ pascal .Name }}{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: expected.{{ pascal $field.Name }},
+					{{ end }}
+				})`)
+			in = strings.ReplaceAll(in, `&models.Item{
+				Name:    "name",
+				Details: "details",
+			}`, `&models.{{ pascal .Name }}{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+					{{ end }}
+				}`)
+
+			in = strings.ReplaceAll(in, `&models.Item{
+				Name:    "new name",
+				Details: "new details",
+			}`, `&models.{{ pascal .Name }}{
+			{{ range $i, $field := .Fields }}
+			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+			{{ end }}
+		}`)
+
+			in = strings.ReplaceAll(in, `&models.ItemCreationInput{
+					Name:    "old name",
+					Details: "old details",
+				},`, `&models.{{ pascal .Name }}CreationInput{
+					{{ range $i, $field := .Fields }}
+					{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+					{{ end }}
+				},`)
+
+			in = strings.ReplaceAll(in, `
+func checkItemEquality(t *testing.T, expected, actual *models.Item) {
+	t.Helper()
+
+	assert.NotZero(t, actual.ID)
+	assert.Equal(t, expected.Name, actual.Name)
+	assert.Equal(t, expected.Details, actual.Details)
+	assert.NotZero(t, actual.CreatedOn)
+}
+
+func buildDummyItem(t *testing.T) *models.Item {
+	t.Helper()
+
+	x := &models.ItemCreationInput{
+		Name:    fake.Word(),
+		Details: fake.Sentence(),
+	}
+	y, err := todoClient.CreateItem(context.Background(), x)
+	require.NoError(t, err)
+	return y
+}`, `
+func check{{ pascal .Name }}Equality(t *testing.T, expected, actual *models.{{ pascal .Name }}) {
+	t.Helper()
+
+	assert.NotZero(t, actual.ID)
+	{{ range $i, $field := .Fields }}
+	assert.Equal(t, expected.{{ pascal $field.Name }}, actual.{{ pascal $field.Name }})
+	{{ end }}
+	assert.NotZero(t, actual.CreatedOn)
+}
+
+func buildDummy{{ pascal .Name }}(t *testing.T) *models.{{ pascal .Name }} {
+	t.Helper()
+
+	x := &models.{{ pascal .Name }}CreationInput{
+		{{ range $i, $field := .Fields }}
+		{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+		{{ end }}
+	}
+	y, err := todoClient.Create{{ pascal .Name }}(context.Background(), x)
+	require.NoError(t, err)
+	return y
+}
+`)
+
+			in = strings.ReplaceAll(in, `premade.Name, premade.Details = expected.Name, expected.Details`, "// CHANGEME")
+
+			return in
+		},
+		"tests/v1/testutil/rand/model/items.go": func(in string) string {
+			in = strings.ReplaceAll(in, `	"github.com/icrowley/fake"`, "")
+
+			in = strings.ReplaceAll(in, `
+		Name:    fake.Word(),
+		Details: fake.Sentence(),`, `
+		{{ range $i, $field := .Fields }}
+		{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
+		{{ end }}`)
+
 			return in
 		},
 	}
@@ -601,10 +1309,10 @@ func Test_buildChi{{ camelcase $dt.Name }}IDFetcher(T *testing.T) {
 					return err
 				}
 
-				file = strings.ReplaceAll(file, "Items", "{{ .PluralTitlecase }}")
-				file = strings.ReplaceAll(file, "Item", "{{ .SingularTitlecase }}")
-				file = strings.ReplaceAll(file, "items", "{{ .PluralLowercase }}")
-				file = strings.ReplaceAll(file, "item", "{{ .SingularLowercase  }}")
+				file = strings.ReplaceAll(file, "Items", "{{ camelcase .Name }}s")
+				file = strings.ReplaceAll(file, "Item", "{{ camelcase .Name }}")
+				file = strings.ReplaceAll(file, "items", "{{ lower .Name }}s")
+				file = strings.ReplaceAll(file, "item", "{{ lower .Name }}")
 			}
 
 			if !strings.HasSuffix(outputFilepath, "dashboard.json") {

@@ -9,116 +9,116 @@ import (
 	"go.opencensus.io/trace"
 )
 
-var _ models.{{ .SingularTitlecase }}DataManager = (*Client)(nil)
+var _ models.{{ camelcase .Name }}DataManager = (*Client)(nil)
 
-// attach{{ .SingularTitlecase }}IDToSpan provides a consistent way to attach an {{ .SingularLowercase  }}'s ID to a span
-func attach{{ .SingularTitlecase }}IDToSpan(span *trace.Span, {{ .SingularLowercase  }}ID uint64) {
+// attach{{ camelcase .Name }}IDToSpan provides a consistent way to attach an {{ lower .Name }}'s ID to a span
+func attach{{ camelcase .Name }}IDToSpan(span *trace.Span, {{ lower .Name }}ID uint64) {
 	if span != nil {
-		span.AddAttributes(trace.StringAttribute("{{ .SingularLowercase  }}_id", strconv.FormatUint({{ .SingularLowercase  }}ID, 10)))
+		span.AddAttributes(trace.StringAttribute("{{ lower .Name }}_id", strconv.FormatUint({{ lower .Name }}ID, 10)))
 	}
 }
 
-// Get{{ .SingularTitlecase }} fetches an {{ .SingularLowercase  }} from the database
-func (c *Client) Get{{ .SingularTitlecase }}(ctx context.Context, {{ .SingularLowercase  }}ID, userID uint64) (*models.{{ .SingularTitlecase }}, error) {
-	ctx, span := trace.StartSpan(ctx, "Get{{ .SingularTitlecase }}")
+// Get{{ camelcase .Name }} fetches an {{ lower .Name }} from the database
+func (c *Client) Get{{ camelcase .Name }}(ctx context.Context, {{ lower .Name }}ID, userID uint64) (*models.{{ camelcase .Name }}, error) {
+	ctx, span := trace.StartSpan(ctx, "Get{{ camelcase .Name }}")
 	defer span.End()
 
 	attachUserIDToSpan(span, userID)
-	attach{{ .SingularTitlecase }}IDToSpan(span, {{ .SingularLowercase  }}ID)
+	attach{{ camelcase .Name }}IDToSpan(span, {{ lower .Name }}ID)
 
 	c.logger.WithValues(map[string]interface{}{
-		"{{ .SingularLowercase  }}_id": {{ .SingularLowercase  }}ID,
+		"{{ lower .Name }}_id": {{ lower .Name }}ID,
 		"user_id": userID,
-	}).Debug("Get{{ .SingularTitlecase }} called")
+	}).Debug("Get{{ camelcase .Name }} called")
 
-	return c.querier.Get{{ .SingularTitlecase }}(ctx, {{ .SingularLowercase  }}ID, userID)
+	return c.querier.Get{{ camelcase .Name }}(ctx, {{ lower .Name }}ID, userID)
 }
 
-// Get{{ .SingularTitlecase }}Count fetches the count of {{ .PluralLowercase }} from the database that meet a particular filter
-func (c *Client) Get{{ .SingularTitlecase }}Count(ctx context.Context, filter *models.QueryFilter, userID uint64) (count uint64, err error) {
-	ctx, span := trace.StartSpan(ctx, "Get{{ .SingularTitlecase }}Count")
+// Get{{ camelcase .Name }}Count fetches the count of {{ lower .Name }}s from the database that meet a particular filter
+func (c *Client) Get{{ camelcase .Name }}Count(ctx context.Context, filter *models.QueryFilter, userID uint64) (count uint64, err error) {
+	ctx, span := trace.StartSpan(ctx, "Get{{ camelcase .Name }}Count")
 	defer span.End()
 
 	attachUserIDToSpan(span, userID)
 	attachFilterToSpan(span, filter)
 
-	c.logger.WithValue("user_id", userID).Debug("Get{{ .SingularTitlecase }}Count called")
+	c.logger.WithValue("user_id", userID).Debug("Get{{ camelcase .Name }}Count called")
 
-	return c.querier.Get{{ .SingularTitlecase }}Count(ctx, filter, userID)
+	return c.querier.Get{{ camelcase .Name }}Count(ctx, filter, userID)
 }
 
-// GetAll{{ .PluralTitlecase }}Count fetches the count of {{ .PluralLowercase }} from the database that meet a particular filter
-func (c *Client) GetAll{{ .PluralTitlecase }}Count(ctx context.Context) (count uint64, err error) {
-	ctx, span := trace.StartSpan(ctx, "GetAll{{ .PluralTitlecase }}Count")
+// GetAll{{ camelcase .Name }}sCount fetches the count of {{ lower .Name }}s from the database that meet a particular filter
+func (c *Client) GetAll{{ camelcase .Name }}sCount(ctx context.Context) (count uint64, err error) {
+	ctx, span := trace.StartSpan(ctx, "GetAll{{ camelcase .Name }}sCount")
 	defer span.End()
 
-	c.logger.Debug("GetAll{{ .PluralTitlecase }}Count called")
+	c.logger.Debug("GetAll{{ camelcase .Name }}sCount called")
 
-	return c.querier.GetAll{{ .PluralTitlecase }}Count(ctx)
+	return c.querier.GetAll{{ camelcase .Name }}sCount(ctx)
 }
 
-// Get{{ .PluralTitlecase }} fetches a list of {{ .PluralLowercase }} from the database that meet a particular filter
-func (c *Client) Get{{ .PluralTitlecase }}(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.{{ .SingularTitlecase }}List, error) {
-	ctx, span := trace.StartSpan(ctx, "Get{{ .PluralTitlecase }}")
+// Get{{ camelcase .Name }}s fetches a list of {{ lower .Name }}s from the database that meet a particular filter
+func (c *Client) Get{{ camelcase .Name }}s(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.{{ camelcase .Name }}List, error) {
+	ctx, span := trace.StartSpan(ctx, "Get{{ camelcase .Name }}s")
 	defer span.End()
 
 	attachUserIDToSpan(span, userID)
 	attachFilterToSpan(span, filter)
 
-	c.logger.WithValue("user_id", userID).Debug("Get{{ .PluralTitlecase }} called")
+	c.logger.WithValue("user_id", userID).Debug("Get{{ camelcase .Name }}s called")
 
-	{{ .SingularLowercase  }}List, err := c.querier.Get{{ .PluralTitlecase }}(ctx, filter, userID)
+	{{ lower .Name }}List, err := c.querier.Get{{ camelcase .Name }}s(ctx, filter, userID)
 
-	return {{ .SingularLowercase  }}List, err
+	return {{ lower .Name }}List, err
 }
 
-// GetAll{{ .PluralTitlecase }}ForUser fetches a list of {{ .PluralLowercase }} from the database that meet a particular filter
-func (c *Client) GetAll{{ .PluralTitlecase }}ForUser(ctx context.Context, userID uint64) ([]models.{{ .SingularTitlecase }}, error) {
-	ctx, span := trace.StartSpan(ctx, "GetAll{{ .PluralTitlecase }}ForUser")
+// GetAll{{ camelcase .Name }}sForUser fetches a list of {{ lower .Name }}s from the database that meet a particular filter
+func (c *Client) GetAll{{ camelcase .Name }}sForUser(ctx context.Context, userID uint64) ([]models.{{ camelcase .Name }}, error) {
+	ctx, span := trace.StartSpan(ctx, "GetAll{{ camelcase .Name }}sForUser")
 	defer span.End()
 
 	attachUserIDToSpan(span, userID)
-	c.logger.WithValue("user_id", userID).Debug("GetAll{{ .PluralTitlecase }}ForUser called")
+	c.logger.WithValue("user_id", userID).Debug("GetAll{{ camelcase .Name }}sForUser called")
 
-	{{ .SingularLowercase  }}List, err := c.querier.GetAll{{ .PluralTitlecase }}ForUser(ctx, userID)
+	{{ lower .Name }}List, err := c.querier.GetAll{{ camelcase .Name }}sForUser(ctx, userID)
 
-	return {{ .SingularLowercase  }}List, err
+	return {{ lower .Name }}List, err
 }
 
-// Create{{ .SingularTitlecase }} creates an {{ .SingularLowercase  }} in the database
-func (c *Client) Create{{ .SingularTitlecase }}(ctx context.Context, input *models.{{ .SingularTitlecase }}CreationInput) (*models.{{ .SingularTitlecase }}, error) {
-	ctx, span := trace.StartSpan(ctx, "Create{{ .SingularTitlecase }}")
+// Create{{ camelcase .Name }} creates an {{ lower .Name }} in the database
+func (c *Client) Create{{ camelcase .Name }}(ctx context.Context, input *models.{{ camelcase .Name }}CreationInput) (*models.{{ camelcase .Name }}, error) {
+	ctx, span := trace.StartSpan(ctx, "Create{{ camelcase .Name }}")
 	defer span.End()
 
-	c.logger.WithValue("input", input).Debug("Create{{ .SingularTitlecase }} called")
+	c.logger.WithValue("input", input).Debug("Create{{ camelcase .Name }} called")
 
-	return c.querier.Create{{ .SingularTitlecase }}(ctx, input)
+	return c.querier.Create{{ camelcase .Name }}(ctx, input)
 }
 
-// Update{{ .SingularTitlecase }} updates a particular {{ .SingularLowercase  }}. Note that Update{{ .SingularTitlecase }} expects the
+// Update{{ camelcase .Name }} updates a particular {{ lower .Name }}. Note that Update{{ camelcase .Name }} expects the
 // provided input to have a valid ID.
-func (c *Client) Update{{ .SingularTitlecase }}(ctx context.Context, input *models.{{ .SingularTitlecase }}) error {
-	ctx, span := trace.StartSpan(ctx, "Update{{ .SingularTitlecase }}")
+func (c *Client) Update{{ camelcase .Name }}(ctx context.Context, input *models.{{ camelcase .Name }}) error {
+	ctx, span := trace.StartSpan(ctx, "Update{{ camelcase .Name }}")
 	defer span.End()
 
-	attach{{ .SingularTitlecase }}IDToSpan(span, input.ID)
-	c.logger.WithValue("{{ .SingularLowercase  }}_id", input.ID).Debug("Update{{ .SingularTitlecase }} called")
+	attach{{ camelcase .Name }}IDToSpan(span, input.ID)
+	c.logger.WithValue("{{ lower .Name }}_id", input.ID).Debug("Update{{ camelcase .Name }} called")
 
-	return c.querier.Update{{ .SingularTitlecase }}(ctx, input)
+	return c.querier.Update{{ camelcase .Name }}(ctx, input)
 }
 
-// Archive{{ .SingularTitlecase }} archives an {{ .SingularLowercase  }} from the database by its ID
-func (c *Client) Archive{{ .SingularTitlecase }}(ctx context.Context, {{ .SingularLowercase  }}ID, userID uint64) error {
-	ctx, span := trace.StartSpan(ctx, "Archive{{ .SingularTitlecase }}")
+// Archive{{ camelcase .Name }} archives an {{ lower .Name }} from the database by its ID
+func (c *Client) Archive{{ camelcase .Name }}(ctx context.Context, {{ lower .Name }}ID, userID uint64) error {
+	ctx, span := trace.StartSpan(ctx, "Archive{{ camelcase .Name }}")
 	defer span.End()
 
 	attachUserIDToSpan(span, userID)
-	attach{{ .SingularTitlecase }}IDToSpan(span, {{ .SingularLowercase  }}ID)
+	attach{{ camelcase .Name }}IDToSpan(span, {{ lower .Name }}ID)
 
 	c.logger.WithValues(map[string]interface{}{
-		"{{ .SingularLowercase  }}_id": {{ .SingularLowercase  }}ID,
+		"{{ lower .Name }}_id": {{ lower .Name }}ID,
 		"user_id": userID,
-	}).Debug("Archive{{ .SingularTitlecase }} called")
+	}).Debug("Archive{{ camelcase .Name }} called")
 
-	return c.querier.Archive{{ .SingularTitlecase }}(ctx, {{ .SingularLowercase  }}ID, userID)
+	return c.querier.Archive{{ camelcase .Name }}(ctx, {{ lower .Name }}ID, userID)
 }

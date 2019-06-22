@@ -8,55 +8,55 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var _ models.{{ .SingularTitlecase }}DataManager = (*{{ .SingularTitlecase }}DataManager)(nil)
+var _ models.{{ camelcase .Name }}DataManager = (*{{ camelcase .Name }}DataManager)(nil)
 
-// {{ .SingularTitlecase }}DataManager is a mock {{ .SingularLowercase  }} handler
-type {{ .SingularTitlecase }}DataManager struct {
+// {{ camelcase .Name }}DataManager is a mock {{ lower .Name }} handler
+type {{ camelcase .Name }}DataManager struct {
 	mock.Mock
 }
 
-// Get{{ .SingularTitlecase }} is a mock function
-func (m *{{ .SingularTitlecase }}DataManager) Get{{ .SingularTitlecase }}(ctx context.Context, {{ .SingularLowercase  }}ID, userID uint64) (*models.{{ .SingularTitlecase }}, error) {
-	args := m.Called(ctx, {{ .SingularLowercase  }}ID, userID)
-	return args.Get(0).(*models.{{ .SingularTitlecase }}), args.Error(1)
+// Get{{ camelcase .Name }} is a mock function
+func (m *{{ camelcase .Name }}DataManager) Get{{ camelcase .Name }}(ctx context.Context, {{ lower .Name }}ID, userID uint64) (*models.{{ camelcase .Name }}, error) {
+	args := m.Called(ctx, {{ lower .Name }}ID, userID)
+	return args.Get(0).(*models.{{ camelcase .Name }}), args.Error(1)
 }
 
-// Get{{ .SingularTitlecase }}Count is a mock function
-func (m *{{ .SingularTitlecase }}DataManager) Get{{ .SingularTitlecase }}Count(ctx context.Context, filter *models.QueryFilter, userID uint64) (uint64, error) {
+// Get{{ camelcase .Name }}Count is a mock function
+func (m *{{ camelcase .Name }}DataManager) Get{{ camelcase .Name }}Count(ctx context.Context, filter *models.QueryFilter, userID uint64) (uint64, error) {
 	args := m.Called(ctx, filter, userID)
 	return args.Get(0).(uint64), args.Error(1)
 }
 
-// GetAll{{ .PluralTitlecase }}Count is a mock function
-func (m *{{ .SingularTitlecase }}DataManager) GetAll{{ .PluralTitlecase }}Count(ctx context.Context) (uint64, error) {
+// GetAll{{ camelcase .Name }}sCount is a mock function
+func (m *{{ camelcase .Name }}DataManager) GetAll{{ camelcase .Name }}sCount(ctx context.Context) (uint64, error) {
 	args := m.Called(ctx)
 	return args.Get(0).(uint64), args.Error(1)
 }
 
-// Get{{ .PluralTitlecase }} is a mock function
-func (m *{{ .SingularTitlecase }}DataManager) Get{{ .PluralTitlecase }}(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.{{ .SingularTitlecase }}List, error) {
+// Get{{ camelcase .Name }}s is a mock function
+func (m *{{ camelcase .Name }}DataManager) Get{{ camelcase .Name }}s(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.{{ camelcase .Name }}List, error) {
 	args := m.Called(ctx, filter, userID)
-	return args.Get(0).(*models.{{ .SingularTitlecase }}List), args.Error(1)
+	return args.Get(0).(*models.{{ camelcase .Name }}List), args.Error(1)
 }
 
-// GetAll{{ .PluralTitlecase }}ForUser is a mock function
-func (m *{{ .SingularTitlecase }}DataManager) GetAll{{ .PluralTitlecase }}ForUser(ctx context.Context, userID uint64) ([]models.{{ .SingularTitlecase }}, error) {
+// GetAll{{ camelcase .Name }}sForUser is a mock function
+func (m *{{ camelcase .Name }}DataManager) GetAll{{ camelcase .Name }}sForUser(ctx context.Context, userID uint64) ([]models.{{ camelcase .Name }}, error) {
 	args := m.Called(ctx, userID)
-	return args.Get(0).([]models.{{ .SingularTitlecase }}), args.Error(1)
+	return args.Get(0).([]models.{{ camelcase .Name }}), args.Error(1)
 }
 
-// Create{{ .SingularTitlecase }} is a mock function
-func (m *{{ .SingularTitlecase }}DataManager) Create{{ .SingularTitlecase }}(ctx context.Context, input *models.{{ .SingularTitlecase }}CreationInput) (*models.{{ .SingularTitlecase }}, error) {
+// Create{{ camelcase .Name }} is a mock function
+func (m *{{ camelcase .Name }}DataManager) Create{{ camelcase .Name }}(ctx context.Context, input *models.{{ camelcase .Name }}CreationInput) (*models.{{ camelcase .Name }}, error) {
 	args := m.Called(ctx, input)
-	return args.Get(0).(*models.{{ .SingularTitlecase }}), args.Error(1)
+	return args.Get(0).(*models.{{ camelcase .Name }}), args.Error(1)
 }
 
-// Update{{ .SingularTitlecase }} is a mock function
-func (m *{{ .SingularTitlecase }}DataManager) Update{{ .SingularTitlecase }}(ctx context.Context, updated *models.{{ .SingularTitlecase }}) error {
+// Update{{ camelcase .Name }} is a mock function
+func (m *{{ camelcase .Name }}DataManager) Update{{ camelcase .Name }}(ctx context.Context, updated *models.{{ camelcase .Name }}) error {
 	return m.Called(ctx, updated).Error(0)
 }
 
-// Archive{{ .SingularTitlecase }} is a mock function
-func (m *{{ .SingularTitlecase }}DataManager) Archive{{ .SingularTitlecase }}(ctx context.Context, id, userID uint64) error {
+// Archive{{ camelcase .Name }} is a mock function
+func (m *{{ camelcase .Name }}DataManager) Archive{{ camelcase .Name }}(ctx context.Context, id, userID uint64) error {
 	return m.Called(ctx, id, userID).Error(0)
 }

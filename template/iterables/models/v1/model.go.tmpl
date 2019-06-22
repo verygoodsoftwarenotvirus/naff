@@ -6,60 +6,58 @@ import (
 )
 
 type (
-	// {{ .SingularTitlecase }} represents an {{ .SingularLowercase  }}
-	{{ .SingularTitlecase }} struct {
+	// {{ camelcase .Name }} represents a(n) {{ camelcase .Name }}
+	{{ camelcase .Name }} struct {
 		ID         uint64  `json:"id"`
-		{{ range $i, $typ := .DataTypes }}
-	{{ range $i, $field := $typ.Fields }}
-			{{ $field.Name }} {{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
+		{{ range $i, $field := .Fields }}
+			{{ pascal $field.Name }} {{ if $field.Pointer }}*{{ end }}{{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
 		{{ end }}
-	{{ end }}
 		CreatedOn  uint64  `json:"created_on"`
 		UpdatedOn  *uint64 `json:"updated_on"`
 		ArchivedOn *uint64 `json:"archived_on"`
 		BelongsTo  uint64  `json:"belongs_to"`
 	}
 
-	// {{ .SingularTitlecase }}List represents a list of {{ .PluralLowercase }}
-	{{ .SingularTitlecase }}List struct {
+	// {{ camelcase .Name }}List represents a list of {{ lower .Name }}s
+	{{ camelcase .Name }}List struct {
 		Pagination
-		{{ .PluralTitlecase }} []{{ .SingularTitlecase }} `json:"{{ .PluralLowercase }}"`
+		{{ camelcase .Name }}s []{{ camelcase .Name }} `json:"{{ lower .Name }}s"`
 	}
 
-	// {{ .SingularTitlecase }}CreationInput represents what a user could set as input for {{ .PluralLowercase }}
-	{{ .SingularTitlecase }}CreationInput struct {
-		{{ range $i, $typ := .DataTypes }}
-	{{ range $i, $field := $typ.Fields }}
-			{{ $field.Name }} {{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
+	// {{ camelcase .Name }}CreationInput represents what a user could set as input for creating {{ camelcase .Name }}s
+	{{ camelcase .Name }}CreationInput struct {
+		{{ range $i, $field := .Fields }}
+			{{ if $field.ValidForCreationInput }}
+				{{ $field.Name }} {{ if $field.Pointer }}*{{ end }}{{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
+			{{ end }}
 		{{ end }}
-	{{ end }}
 		BelongsTo uint64 `json:"-"`
 	}
 
-	// {{ .SingularTitlecase }}UpdateInput represents what a user could set as input for {{ .PluralLowercase }}
-	{{ .SingularTitlecase }}UpdateInput struct {
-		{{ range $i, $typ := .DataTypes }}
-	{{ range $i, $field := $typ.Fields }}
-			{{ $field.Name }} {{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
+	// {{ camelcase .Name }}UpdateInput represents what a user could set as input for updating {{ camelcase .Name }}s
+	{{ camelcase .Name }}UpdateInput struct {
+		{{ range $i, $field := .Fields }}
+			{{ if $field.ValidForUpdateInput }}
+				{{ $field.Name }} {{ if $field.Pointer }}*{{ end }}{{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
+			{{ end }}
 		{{ end }}
-	{{ end }}
 		BelongsTo uint64 `json:"-"`
 	}
 
-	// {{ .SingularTitlecase }}DataManager describes a structure capable of storing {{ .PluralLowercase }} permanently
-	{{ .SingularTitlecase }}DataManager interface {
-		Get{{ .SingularTitlecase }}(ctx context.Context, {{ .SingularLowercase  }}ID, userID uint64) (*{{ .SingularTitlecase }}, error)
-		Get{{ .SingularTitlecase }}Count(ctx context.Context, filter *QueryFilter, userID uint64) (uint64, error)
-		GetAll{{ .PluralTitlecase }}Count(ctx context.Context) (uint64, error)
-		Get{{ .PluralTitlecase }}(ctx context.Context, filter *QueryFilter, userID uint64) (*{{ .SingularTitlecase }}List, error)
-		GetAll{{ .PluralTitlecase }}ForUser(ctx context.Context, userID uint64) ([]{{ .SingularTitlecase }}, error)
-		Create{{ .SingularTitlecase }}(ctx context.Context, input *{{ .SingularTitlecase }}CreationInput) (*{{ .SingularTitlecase }}, error)
-		Update{{ .SingularTitlecase }}(ctx context.Context, updated *{{ .SingularTitlecase }}) error
-		Archive{{ .SingularTitlecase }}(ctx context.Context, id, userID uint64) error
+	// {{ camelcase .Name }}DataManager describes a structure capable of storing {{ lower .Name }}s permanently
+	{{ camelcase .Name }}DataManager interface {
+		Get{{ camelcase .Name }}(ctx context.Context, {{ lower .Name }}ID, userID uint64) (*{{ camelcase .Name }}, error)
+		Get{{ camelcase .Name }}Count(ctx context.Context, filter *QueryFilter, userID uint64) (uint64, error)
+		GetAll{{ camelcase .Name }}sCount(ctx context.Context) (uint64, error)
+		Get{{ camelcase .Name }}s(ctx context.Context, filter *QueryFilter, userID uint64) (*{{ camelcase .Name }}List, error)
+		GetAll{{ camelcase .Name }}sForUser(ctx context.Context, userID uint64) ([]{{ camelcase .Name }}, error)
+		Create{{ camelcase .Name }}(ctx context.Context, input *{{ camelcase .Name }}CreationInput) (*{{ camelcase .Name }}, error)
+		Update{{ camelcase .Name }}(ctx context.Context, updated *{{ camelcase .Name }}) error
+		Archive{{ camelcase .Name }}(ctx context.Context, id, userID uint64) error
 	}
 
-	// {{ .SingularTitlecase }}DataServer describes a structure capable of serving traffic related to {{ .PluralLowercase }}
-	{{ .SingularTitlecase }}DataServer interface {
+	// {{ camelcase .Name }}DataServer describes a structure capable of serving traffic related to {{ lower .Name }}s
+	{{ camelcase .Name }}DataServer interface {
 		CreationInputMiddleware(next http.Handler) http.Handler
 		UpdateInputMiddleware(next http.Handler) http.Handler
 
@@ -71,13 +69,12 @@ type (
 	}
 )
 
-// Update merges an {{ .SingularTitlecase }}Input with an {{ .SingularTitlecase }}
-func (x *{{ .SingularTitlecase }}) Update(input *{{ .SingularTitlecase }}UpdateInput) {
-	{{ range $i, $typ := .DataTypes }}
-		{{ range $i, $field := $typ.Fields }}
-			if x.{{ $field.Name }} != input.{{ $field.Name }} {
-				x.{{ $field.Name }} = input.{{ $field.Name }} 
-			}
-		{{ end }}
-	{{ end }}
+// Update merges an {{ camelcase .Name }}Input with an {{ camelcase .Name }}
+func (x *{{ camelcase .Name }}) Update(input *{{ camelcase .Name }}UpdateInput) {
+	{{ range $i, $field := .Fields }}
+		{{ if $field.ValidForUpdateInput }} 
+		if x.{{ $field.Name }} != input.{{ $field.Name }} {
+			x.{{ $field.Name }} = input.{{ $field.Name }} 
+		}{{ end }}
+{{ end }}
 }

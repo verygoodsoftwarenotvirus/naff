@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
-
+	"regexp"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -67,6 +67,11 @@ var (
 	// information, such as `/event/123`, you would want to put something like this below:
 	// 		eventsFrontendPathRegex = regexp.MustCompile(`/event/\d+`)
 
+{{ range $i, $dt := .DataTypes }}
+	// {{ lower $dt.Name }}sFrontendPathRegex matches URLs against our frontend router's specification for specific {{ camelcase $dt.Name }} routes
+	{{ lower $dt.Name }}sFrontendPathRegex = regexp.MustCompile(`/items/\d+`)
+{{ end }}
+
 )
 
 // StaticDir builds a static directory handler
@@ -89,10 +94,16 @@ func (s *Service) StaticDir(staticFilesDirectory string) (http.HandlerFunc, erro
 		// list your frontend history routes here
 		case "/register",
 			"/login",
+			"/items",
+			"/items/new",
 			"/password/new":
 			s.logger.Debug(fmt.Sprintf("rerouting %q", req.URL.Path))
 			req.URL.Path = "/"
-		}
+		}{{ range $i, $dt := .DataTypes }}
+	if {{ lower $dt.Name }}sFrontendPathRegex.MatchString(req.URL.Path) {
+		req.URL.Path = "/"
+	}
+{{ end }}
 
 		fs.ServeHTTP(res, req)
 	}, nil

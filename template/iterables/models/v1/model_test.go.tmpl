@@ -6,16 +6,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test{{ .SingularTitlecase }}_Update(T *testing.T) {
+func Test{{ camelcase .Name }}_Update(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		i := &{{ .SingularTitlecase }}{
+		i := &{{ camelcase .Name }}{
 			Name:    "name",
 			Details: "deets",
 		}
 
-		expected := &{{ .SingularTitlecase }}UpdateInput{
+		expected := &{{ camelcase .Name }}UpdateInput{
 			Name:    "expected name",
 			Details: "expected details",
 		}

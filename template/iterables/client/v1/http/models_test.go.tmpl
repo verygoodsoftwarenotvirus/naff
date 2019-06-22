@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestV1Client_BuildGet{{ .SingularTitlecase }}Request(T *testing.T) {
+func TestV1Client_BuildGet{{ camelcase .Name }}Request(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -27,7 +27,7 @@ func TestV1Client_BuildGet{{ .SingularTitlecase }}Request(T *testing.T) {
 		c := buildTestClient(t, ts)
 		expectedID := uint64(1)
 
-		actual, err := c.BuildGet{{ .SingularTitlecase }}Request(ctx, expectedID)
+		actual, err := c.BuildGet{{ camelcase .Name }}Request(ctx, expectedID)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -41,11 +41,11 @@ func TestV1Client_BuildGet{{ .SingularTitlecase }}Request(T *testing.T) {
 	})
 }
 
-func TestV1Client_Get{{ .SingularTitlecase }}(T *testing.T) {
+func TestV1Client_Get{{ camelcase .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		expected := &models.{{ .SingularTitlecase }}{
+		expected := &models.{{ camelcase .Name }}{
 			ID:      1,
 			Name:    "example",
 			Details: "blah",
@@ -62,7 +62,7 @@ func TestV1Client_Get{{ .SingularTitlecase }}(T *testing.T) {
 							strconv.Itoa(int(expected.ID)),
 						),
 					)
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/{{ .PluralLowercase }}/%d", expected.ID), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/{{ lower .Name }}s/%d", expected.ID), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodGet)
 					require.NoError(t, json.NewEncoder(res).Encode(expected))
 				},
@@ -71,7 +71,7 @@ func TestV1Client_Get{{ .SingularTitlecase }}(T *testing.T) {
 
 		c := buildTestClient(t, ts)
 
-		actual, err := c.Get{{ .SingularTitlecase }}(ctx, expected.ID)
+		actual, err := c.Get{{ camelcase .Name }}(ctx, expected.ID)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -79,7 +79,7 @@ func TestV1Client_Get{{ .SingularTitlecase }}(T *testing.T) {
 	})
 }
 
-func TestV1Client_BuildGet{{ .PluralTitlecase }}Request(T *testing.T) {
+func TestV1Client_BuildGet{{ camelcase .Name }}sRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -89,7 +89,7 @@ func TestV1Client_BuildGet{{ .PluralTitlecase }}Request(T *testing.T) {
 		ts := httptest.NewTLSServer(nil)
 
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildGet{{ .PluralTitlecase }}Request(ctx, nil)
+		actual, err := c.BuildGet{{ camelcase .Name }}sRequest(ctx, nil)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -102,12 +102,12 @@ func TestV1Client_BuildGet{{ .PluralTitlecase }}Request(T *testing.T) {
 	})
 }
 
-func TestV1Client_Get{{ .PluralTitlecase }}(T *testing.T) {
+func TestV1Client_Get{{ camelcase .Name }}s(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		expected := &models.{{ .SingularTitlecase }}List{
-			{{ .PluralTitlecase }}: []models.{{ .SingularTitlecase }}{
+		expected := &models.{{ camelcase .Name }}List{
+			{{ camelcase .Name }}s: []models.{{ camelcase .Name }}{
 				{
 					ID:      1,
 					Name:    "example",
@@ -121,7 +121,7 @@ func TestV1Client_Get{{ .PluralTitlecase }}(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, "/api/v1/{{ .PluralLowercase }}", "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, "/api/v1/{{ lower .Name }}s", "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodGet)
 					require.NoError(t, json.NewEncoder(res).Encode(expected))
 				},
@@ -130,7 +130,7 @@ func TestV1Client_Get{{ .PluralTitlecase }}(T *testing.T) {
 
 		c := buildTestClient(t, ts)
 
-		actual, err := c.Get{{ .PluralTitlecase }}(ctx, nil)
+		actual, err := c.Get{{ camelcase .Name }}s(ctx, nil)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -138,7 +138,7 @@ func TestV1Client_Get{{ .PluralTitlecase }}(T *testing.T) {
 	})
 }
 
-func TestV1Client_BuildCreate{{ .SingularTitlecase }}Request(T *testing.T) {
+func TestV1Client_BuildCreate{{ camelcase .Name }}Request(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -147,12 +147,12 @@ func TestV1Client_BuildCreate{{ .SingularTitlecase }}Request(T *testing.T) {
 
 		ts := httptest.NewTLSServer(nil)
 
-		exampleInput := &models.{{ .SingularTitlecase }}CreationInput{
+		exampleInput := &models.{{ camelcase .Name }}CreationInput{
 			Name:    "expected name",
 			Details: "expected details",
 		}
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildCreate{{ .SingularTitlecase }}Request(ctx, exampleInput)
+		actual, err := c.BuildCreate{{ camelcase .Name }}Request(ctx, exampleInput)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -165,17 +165,17 @@ func TestV1Client_BuildCreate{{ .SingularTitlecase }}Request(T *testing.T) {
 	})
 }
 
-func TestV1Client_Create{{ .SingularTitlecase }}(T *testing.T) {
+func TestV1Client_Create{{ camelcase .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		expected := &models.{{ .SingularTitlecase }}{
+		expected := &models.{{ camelcase .Name }}{
 			ID:      1,
 			Name:    "example",
 			Details: "blah",
 		}
 
-		exampleInput := &models.{{ .SingularTitlecase }}CreationInput{
+		exampleInput := &models.{{ camelcase .Name }}CreationInput{
 			Name:    expected.Name,
 			Details: expected.Details,
 		}
@@ -185,10 +185,10 @@ func TestV1Client_Create{{ .SingularTitlecase }}(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, "/api/v1/{{ .PluralLowercase }}", "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, "/api/v1/{{ lower .Name }}s", "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodPost)
 
-					var x *models.{{ .SingularTitlecase }}CreationInput
+					var x *models.{{ camelcase .Name }}CreationInput
 					require.NoError(t, json.NewDecoder(req.Body).Decode(&x))
 					assert.Equal(t, exampleInput, x)
 
@@ -200,7 +200,7 @@ func TestV1Client_Create{{ .SingularTitlecase }}(T *testing.T) {
 
 		c := buildTestClient(t, ts)
 
-		actual, err := c.Create{{ .SingularTitlecase }}(ctx, exampleInput)
+		actual, err := c.Create{{ camelcase .Name }}(ctx, exampleInput)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -208,21 +208,21 @@ func TestV1Client_Create{{ .SingularTitlecase }}(T *testing.T) {
 	})
 }
 
-func TestV1Client_BuildUpdate{{ .SingularTitlecase }}Request(T *testing.T) {
+func TestV1Client_BuildUpdate{{ camelcase .Name }}Request(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		expectedMethod := http.MethodPut
 		ctx := context.Background()
 
-		exampleInput := &models.{{ .SingularTitlecase }}{
+		exampleInput := &models.{{ camelcase .Name }}{
 			Name:    "changed name",
 			Details: "changed details",
 		}
 
 		ts := httptest.NewTLSServer(nil)
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildUpdate{{ .SingularTitlecase }}Request(ctx, exampleInput)
+		actual, err := c.BuildUpdate{{ camelcase .Name }}Request(ctx, exampleInput)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -235,11 +235,11 @@ func TestV1Client_BuildUpdate{{ .SingularTitlecase }}Request(T *testing.T) {
 	})
 }
 
-func TestV1Client_Update{{ .SingularTitlecase }}(T *testing.T) {
+func TestV1Client_Update{{ camelcase .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		expected := &models.{{ .SingularTitlecase }}{
+		expected := &models.{{ camelcase .Name }}{
 			ID:      1,
 			Name:    "example",
 			Details: "blah",
@@ -249,7 +249,7 @@ func TestV1Client_Update{{ .SingularTitlecase }}(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/{{ .PluralLowercase }}/%d", expected.ID), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/{{ lower .Name }}s/%d", expected.ID), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodPut)
 
 					res.WriteHeader(http.StatusOK)
@@ -257,13 +257,13 @@ func TestV1Client_Update{{ .SingularTitlecase }}(T *testing.T) {
 			),
 		)
 
-		err := buildTestClient(t, ts).Update{{ .SingularTitlecase }}(ctx, expected)
+		err := buildTestClient(t, ts).Update{{ camelcase .Name }}(ctx, expected)
 
 		assert.NoError(t, err, "no error should be returned")
 	})
 }
 
-func TestV1Client_BuildArchive{{ .SingularTitlecase }}Request(T *testing.T) {
+func TestV1Client_BuildArchive{{ camelcase .Name }}Request(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -274,7 +274,7 @@ func TestV1Client_BuildArchive{{ .SingularTitlecase }}Request(T *testing.T) {
 
 		expectedID := uint64(1)
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildArchive{{ .SingularTitlecase }}Request(ctx, expectedID)
+		actual, err := c.BuildArchive{{ camelcase .Name }}Request(ctx, expectedID)
 
 		require.NotNil(t, actual)
 		require.NotNil(t, actual.URL)
@@ -289,7 +289,7 @@ func TestV1Client_BuildArchive{{ .SingularTitlecase }}Request(T *testing.T) {
 	})
 }
 
-func TestV1Client_Archive{{ .SingularTitlecase }}(T *testing.T) {
+func TestV1Client_Archive{{ camelcase .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -299,7 +299,7 @@ func TestV1Client_Archive{{ .SingularTitlecase }}(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/{{ .PluralLowercase }}/%d", expected), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/{{ lower .Name }}s/%d", expected), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodDelete)
 
 					res.WriteHeader(http.StatusOK)
@@ -307,7 +307,7 @@ func TestV1Client_Archive{{ .SingularTitlecase }}(T *testing.T) {
 			),
 		)
 
-		err := buildTestClient(t, ts).Archive{{ .SingularTitlecase }}(ctx, expected)
+		err := buildTestClient(t, ts).Archive{{ camelcase .Name }}(ctx, expected)
 
 		assert.NoError(t, err, "no error should be returned")
 	})

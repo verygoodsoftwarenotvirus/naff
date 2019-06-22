@@ -11,79 +11,79 @@ import (
 )
 
 const (
-	{{ .PluralLowercase }}BasePath = "{{ .PluralLowercase }}"
+	{{ lower .Name }}sBasePath = "{{ lower .Name }}s"
 )
 
-// BuildGet{{ .SingularTitlecase }}Request builds an HTTP request for fetching an {{ .SingularLowercase  }}
-func (c *V1Client) BuildGet{{ .SingularTitlecase }}Request(ctx context.Context, id uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, {{ .PluralLowercase }}BasePath, strconv.FormatUint(id, 10))
+// BuildGet{{ camelcase .Name }}Request builds an HTTP request for fetching an {{ lower .Name }}
+func (c *V1Client) BuildGet{{ camelcase .Name }}Request(ctx context.Context, id uint64) (*http.Request, error) {
+	uri := c.BuildURL(nil, {{ lower .Name }}sBasePath, strconv.FormatUint(id, 10))
 
 	return http.NewRequest(http.MethodGet, uri, nil)
 }
 
-// Get{{ .SingularTitlecase }} retrieves an {{ .SingularLowercase  }}
-func (c *V1Client) Get{{ .SingularTitlecase }}(ctx context.Context, id uint64) ({{ .SingularLowercase  }} *models.{{ .SingularTitlecase }}, err error) {
-	req, err := c.BuildGet{{ .SingularTitlecase }}Request(ctx, id)
+// Get{{ camelcase .Name }} retrieves an {{ lower .Name }}
+func (c *V1Client) Get{{ camelcase .Name }}(ctx context.Context, id uint64) ({{ lower .Name }} *models.{{ camelcase .Name }}, err error) {
+	req, err := c.BuildGet{{ camelcase .Name }}Request(ctx, id)
 	if err != nil {
 		return nil, errors.Wrap(err, "building request")
 	}
 
-	if retrieveErr := c.retrieve(ctx, req, &{{ .SingularLowercase  }}); retrieveErr != nil {
+	if retrieveErr := c.retrieve(ctx, req, &{{ lower .Name }}); retrieveErr != nil {
 		return nil, retrieveErr
 	}
 
-	return {{ .SingularLowercase  }}, nil
+	return {{ lower .Name }}, nil
 }
 
-// BuildGet{{ .PluralTitlecase }}Request builds an HTTP request for fetching {{ .PluralLowercase }}
-func (c *V1Client) BuildGet{{ .PluralTitlecase }}Request(ctx context.Context, filter *models.QueryFilter) (*http.Request, error) {
-	uri := c.BuildURL(filter.ToValues(), {{ .PluralLowercase }}BasePath)
+// BuildGet{{ camelcase .Name }}sRequest builds an HTTP request for fetching {{ lower .Name }}s
+func (c *V1Client) BuildGet{{ camelcase .Name }}sRequest(ctx context.Context, filter *models.QueryFilter) (*http.Request, error) {
+	uri := c.BuildURL(filter.ToValues(), {{ lower .Name }}sBasePath)
 
 	return http.NewRequest(http.MethodGet, uri, nil)
 }
 
-// Get{{ .PluralTitlecase }} retrieves a list of {{ .PluralLowercase }}
-func (c *V1Client) Get{{ .PluralTitlecase }}(ctx context.Context, filter *models.QueryFilter) ({{ .PluralLowercase }} *models.{{ .SingularTitlecase }}List, err error) {
-	req, err := c.BuildGet{{ .PluralTitlecase }}Request(ctx, filter)
+// Get{{ camelcase .Name }}s retrieves a list of {{ lower .Name }}s
+func (c *V1Client) Get{{ camelcase .Name }}s(ctx context.Context, filter *models.QueryFilter) ({{ lower .Name }}s *models.{{ camelcase .Name }}List, err error) {
+	req, err := c.BuildGet{{ camelcase .Name }}sRequest(ctx, filter)
 	if err != nil {
 		return nil, errors.Wrap(err, "building request")
 	}
 
-	if retrieveErr := c.retrieve(ctx, req, &{{ .PluralLowercase }}); retrieveErr != nil {
+	if retrieveErr := c.retrieve(ctx, req, &{{ lower .Name }}s); retrieveErr != nil {
 		return nil, retrieveErr
 	}
 
-	return {{ .PluralLowercase }}, nil
+	return {{ lower .Name }}s, nil
 }
 
-// BuildCreate{{ .SingularTitlecase }}Request builds an HTTP request for creating an {{ .SingularLowercase  }}
-func (c *V1Client) BuildCreate{{ .SingularTitlecase }}Request(ctx context.Context, body *models.{{ .SingularTitlecase }}CreationInput) (*http.Request, error) {
-	uri := c.BuildURL(nil, {{ .PluralLowercase }}BasePath)
+// BuildCreate{{ camelcase .Name }}Request builds an HTTP request for creating an {{ lower .Name }}
+func (c *V1Client) BuildCreate{{ camelcase .Name }}Request(ctx context.Context, body *models.{{ camelcase .Name }}CreationInput) (*http.Request, error) {
+	uri := c.BuildURL(nil, {{ lower .Name }}sBasePath)
 
 	return c.buildDataRequest(http.MethodPost, uri, body)
 }
 
-// Create{{ .SingularTitlecase }} creates an {{ .SingularLowercase  }}
-func (c *V1Client) Create{{ .SingularTitlecase }}(ctx context.Context, input *models.{{ .SingularTitlecase }}CreationInput) ({{ .SingularLowercase  }} *models.{{ .SingularTitlecase }}, err error) {
-	req, err := c.BuildCreate{{ .SingularTitlecase }}Request(ctx, input)
+// Create{{ camelcase .Name }} creates an {{ lower .Name }}
+func (c *V1Client) Create{{ camelcase .Name }}(ctx context.Context, input *models.{{ camelcase .Name }}CreationInput) ({{ lower .Name }} *models.{{ camelcase .Name }}, err error) {
+	req, err := c.BuildCreate{{ camelcase .Name }}Request(ctx, input)
 	if err != nil {
 		return nil, errors.Wrap(err, "building request")
 	}
 
-	err = c.executeRequest(ctx, req, &{{ .SingularLowercase  }})
-	return {{ .SingularLowercase  }}, err
+	err = c.executeRequest(ctx, req, &{{ lower .Name }})
+	return {{ lower .Name }}, err
 }
 
-// BuildUpdate{{ .SingularTitlecase }}Request builds an HTTP request for updating an {{ .SingularLowercase  }}
-func (c *V1Client) BuildUpdate{{ .SingularTitlecase }}Request(ctx context.Context, updated *models.{{ .SingularTitlecase }}) (*http.Request, error) {
-	uri := c.BuildURL(nil, {{ .PluralLowercase }}BasePath, strconv.FormatUint(updated.ID, 10))
+// BuildUpdate{{ camelcase .Name }}Request builds an HTTP request for updating an {{ lower .Name }}
+func (c *V1Client) BuildUpdate{{ camelcase .Name }}Request(ctx context.Context, updated *models.{{ camelcase .Name }}) (*http.Request, error) {
+	uri := c.BuildURL(nil, {{ lower .Name }}sBasePath, strconv.FormatUint(updated.ID, 10))
 
 	return c.buildDataRequest(http.MethodPut, uri, updated)
 }
 
-// Update{{ .SingularTitlecase }} updates an {{ .SingularLowercase  }}
-func (c *V1Client) Update{{ .SingularTitlecase }}(ctx context.Context, updated *models.{{ .SingularTitlecase }}) error {
-	req, err := c.BuildUpdate{{ .SingularTitlecase }}Request(ctx, updated)
+// Update{{ camelcase .Name }} updates an {{ lower .Name }}
+func (c *V1Client) Update{{ camelcase .Name }}(ctx context.Context, updated *models.{{ camelcase .Name }}) error {
+	req, err := c.BuildUpdate{{ camelcase .Name }}Request(ctx, updated)
 	if err != nil {
 		return errors.Wrap(err, "building request")
 	}
@@ -91,16 +91,16 @@ func (c *V1Client) Update{{ .SingularTitlecase }}(ctx context.Context, updated *
 	return c.executeRequest(ctx, req, &updated)
 }
 
-// BuildArchive{{ .SingularTitlecase }}Request builds an HTTP request for updating an {{ .SingularLowercase  }}
-func (c *V1Client) BuildArchive{{ .SingularTitlecase }}Request(ctx context.Context, id uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, {{ .PluralLowercase }}BasePath, strconv.FormatUint(id, 10))
+// BuildArchive{{ camelcase .Name }}Request builds an HTTP request for updating an {{ lower .Name }}
+func (c *V1Client) BuildArchive{{ camelcase .Name }}Request(ctx context.Context, id uint64) (*http.Request, error) {
+	uri := c.BuildURL(nil, {{ lower .Name }}sBasePath, strconv.FormatUint(id, 10))
 
 	return http.NewRequest(http.MethodDelete, uri, nil)
 }
 
-// Archive{{ .SingularTitlecase }} archives an {{ .SingularLowercase  }}
-func (c *V1Client) Archive{{ .SingularTitlecase }}(ctx context.Context, id uint64) error {
-	req, err := c.BuildArchive{{ .SingularTitlecase }}Request(ctx, id)
+// Archive{{ camelcase .Name }} archives an {{ lower .Name }}
+func (c *V1Client) Archive{{ camelcase .Name }}(ctx context.Context, id uint64) error {
+	req, err := c.BuildArchive{{ camelcase .Name }}Request(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "building request")
 	}

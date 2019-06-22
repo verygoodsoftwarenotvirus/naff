@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/codemodus/kace"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -14,17 +15,12 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
-	"github.com/codemodus/kace"
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
 type dataType struct {
-	Name              string
-	PluralLowercase   string
-	SingularLowercase string
-	PluralTitlecase   string
-	SingularTitlecase string
-	Fields            []dataField
+	Name   string
+	Fields []dataField
 }
 
 type dataField struct {
@@ -57,18 +53,16 @@ func fillSurvey() (*Project, error) {
 			Name: "outputRepository",
 			Prompt: &survey.Input{
 				Message: "output repository path:",
-				Default: "gitlab.com/verygoodsoftwarenotvirus/whateverfarts",
-				Help: `the package path that all the subrepositories will live in.
-Something like gitlab.com/verygoodsoftwarenotvirus`,
+				Default: "gitlab.com/verygoodsoftwarenotvirus/whatever",
+				Help:    `the package path that the generated project will live in`,
 			},
 		},
 		{
 			Name: "modelsPackage",
 			Prompt: &survey.Input{
 				Message: "models package:",
-				Default: "gitlab.com/verygoodsoftwarenotvirus/naff/example_models/a",
-				Help: `the package path that all the subrepositories will live in.
-Something like gitlab.com/verygoodsoftwarenotvirus`,
+				Default: "gitlab.com/verygoodsoftwarenotvirus/naff/example_models/todo",
+				Help:    `the input package that defines the base set of models`,
 			},
 		},
 	}
@@ -87,8 +81,7 @@ Something like gitlab.com/verygoodsoftwarenotvirus`,
 func (p *Project) parseModels() {
 	fullModelsPath := filepath.Join(os.Getenv("GOPATH"), "src", p.ModelsPackage)
 
-	fset := token.NewFileSet()
-	packages, err := parser.ParseDir(fset, fullModelsPath, nil, parser.AllErrors)
+	packages, err := parser.ParseDir(token.NewFileSet(), fullModelsPath, nil, parser.AllErrors)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,12 +91,8 @@ func (p *Project) parseModels() {
 			ast.Inspect(file, func(n ast.Node) bool {
 				if dec, ok := n.(*ast.TypeSpec); ok {
 					dt := dataType{
-						Name:              dec.Name.Name,
-						SingularLowercase: strings.ToLower(dec.Name.Name),
-						SingularTitlecase: kace.Pascal(dec.Name.Name),
-						PluralLowercase:   strings.ToLower(dec.Name.Name) + "s",
-						PluralTitlecase:   kace.Pascal(dec.Name.Name) + "s",
-						Fields:            []dataField{},
+						Name:   dec.Name.Name,
+						Fields: []dataField{},
 					}
 
 					if _, ok := dec.Type.(*ast.StructType); !ok {
@@ -123,9 +112,14 @@ func (p *Project) parseModels() {
 							df.Type = y.X.(*ast.Ident).Name
 						}
 
-						tag := strings.Replace(strings.Replace(
-							strings.Replace(field.Tag.Value, `naff:`, "", 1),
-							"`", "", -1), `"`, "", -1)
+						var tag string
+						if field != nil && field.Tag != nil {
+							tag = strings.Replace(strings.Replace(
+								strings.Replace(field.Tag.Value, `naff:`, "", 1),
+								"`", "", -1), `"`, "", -1)
+						} else {
+							log.Fatal("no naff tag found on field")
+						}
 
 						for _, t := range strings.Split(tag, ",") {
 							_t := strings.ToLower(strings.TrimSpace(t))
@@ -139,7 +133,15 @@ func (p *Project) parseModels() {
 					}
 
 					p.DataTypes = append(p.DataTypes, dt)
-					p.IterableServicesImports = append(p.IterableServicesImports, filepath.Join(p.OutputRepository, "services", "v1", dt.PluralLowercase))
+					p.IterableServicesImports = append(
+						p.IterableServicesImports,
+						filepath.Join(
+							p.OutputRepository,
+							"services",
+							"v1",
+							strings.ToLower(dt.Name)+"s",
+						),
+					)
 				}
 				return true
 			})
@@ -215,15 +217,14 @@ const (
 
 func typeToPostgresType(t string) string {
 	typeMap := map[string]string{
-		"string":    "CHARACTER VARYING",
-		"*string":   "CHARACTER VARYING",
-		"uint64":    "BIGINT",
-		"*uint64":   "BIGINT",
-		"bool":      "BOOLEAN",
-		"*bool":     "BOOLEAN",
-		"uuid.UUID": "UUID",
-		"int":       "INTEGER",
-		"float64":   "NUMERIC",
+		"string":  "CHARACTER VARYING",
+		"*string": "CHARACTER VARYING",
+		"uint64":  "BIGINT",
+		"*uint64": "BIGINT",
+		"bool":    "BOOLEAN",
+		"*bool":   "BOOLEAN",
+		"int":     "INTEGER",
+		"float64": "NUMERIC",
 	}
 
 	if x, ok := typeMap[t]; ok {
@@ -231,6 +232,31 @@ func typeToPostgresType(t string) string {
 	}
 
 	log.Println("typeToPostgresType called for type: ", t)
+	return t
+}
+
+func typeExample(t string, pointer bool) interface{} {
+	typeMap := map[string]interface{}{
+		"string":  `"example"`,
+		"*string": `"example"`,
+		"uint64":  "uint64(123)",
+		"*uint64": "func(u uint64) *uint64 { return &u }(123)",
+		"bool":    false,
+		"*bool":   false,
+		"int":     "int(456)",
+		"float64": "float64(12.34)",
+	}
+
+	tn := t
+	if pointer {
+		tn = fmt.Sprintf("*%s", tn)
+	}
+
+	if x, ok := typeMap[tn]; ok {
+		return x
+	}
+
+	log.Println("typeExample called for type: ", t)
 	return t
 }
 
@@ -264,6 +290,9 @@ func (p *Project) RenderDirectory() error {
 				if strings.HasSuffix(path, defaultFileExtension) {
 					t := template.Must(template.New(path).Funcs(map[string]interface{}{
 						"typeToPostgresType": typeToPostgresType,
+						"typeExample":        typeExample,
+						"camelCase":          kace.Camel,
+						"pascal":             kace.Pascal,
 					}).Funcs(sprig.TxtFuncMap()).Parse(string(b)))
 
 					if renderErr := renderTemplateToPath(t, p, renderPath); renderErr != nil {
@@ -298,6 +327,9 @@ func (p *Project) RenderDirectory() error {
 				}
 				t := template.Must(template.New(path).Funcs(map[string]interface{}{
 					"typeToPostgresType": typeToPostgresType,
+					"typeExample":        typeExample,
+					"camelCase":          kace.Camel,
+					"pascal":             kace.Pascal,
 				}).Funcs(sprig.TxtFuncMap()).Parse(string(b)))
 
 				renderPath := strings.Replace(
@@ -306,21 +338,25 @@ func (p *Project) RenderDirectory() error {
 					filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository),
 					1,
 				)
+
 				renderPath = strings.ReplaceAll(renderPath, ".tmpl", "")
-				renderPath = strings.Replace(renderPath, "services/v1/models/", fmt.Sprintf("services/v1/%s/", dt.PluralLowercase), 1)
-				renderPath = strings.Replace(renderPath, "model.go", dt.SingularLowercase+".go", 1)
-				renderPath = strings.Replace(renderPath, "mock_model_data_manager", fmt.Sprintf("mock_%s_data_manager", dt.SingularLowercase), 1)
-				renderPath = strings.Replace(renderPath, "mock_model_data_server", fmt.Sprintf("mock_%s_data_server", dt.SingularLowercase), 1)
-				renderPath = strings.Replace(renderPath, "model_test.go", dt.SingularLowercase+"_test.go", 1)
-				renderPath = strings.Replace(renderPath, "models.go", dt.PluralLowercase+".go", 1)
-				renderPath = strings.Replace(renderPath, "models_test.go", dt.PluralLowercase+"_test.go", 1)
+				renderPath = strings.Replace(renderPath, "services/v1/models/", fmt.Sprintf("services/v1/%ss/", strings.ToLower(dt.Name)), 1)
+				renderPath = strings.Replace(renderPath, "frontend/v1/src/pages/models", fmt.Sprintf("frontend/v1/src/pages/%ss/", strings.ToLower(dt.Name)), 1)
+				renderPath = strings.Replace(renderPath, "model.go", strings.ToLower(dt.Name)+".go", 1)
+				renderPath = strings.Replace(renderPath, "mock_model_data_manager", fmt.Sprintf("mock_%s_data_manager", strings.ToLower(dt.Name)), 1)
+				renderPath = strings.Replace(renderPath, "mock_model_data_server", fmt.Sprintf("mock_%s_data_server", strings.ToLower(dt.Name)), 1)
+				renderPath = strings.Replace(renderPath, "model_test.go", strings.ToLower(dt.Name)+"_test.go", 1)
+				renderPath = strings.Replace(renderPath, "models.go", strings.ToLower(dt.Name+"s.go"), 1)
+				renderPath = strings.Replace(renderPath, "models_test.go", strings.ToLower(dt.Name+"s_test.go"), 1)
 
 				type tt struct {
 					Project
 					dataType
+
+					Name string
 				}
 
-				x := &tt{Project: *p, dataType: dt}
+				x := &tt{Project: *p, dataType: dt, Name: dt.Name}
 
 				if renderErr := renderTemplateToPath(t, x, renderPath); renderErr != nil {
 					return renderErr

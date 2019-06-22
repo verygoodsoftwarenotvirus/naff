@@ -48,6 +48,39 @@ func TestService_StaticDir(T *testing.T) {
 		assert.Equal(t, http.StatusOK, res.Code)
 	})
 
+	T.Run("with frontend routing path", func(t *testing.T) {
+		s := &Service{logger: noop.ProvideNoopLogger()}
+		exampleDir := "."
+
+		hf, err := s.StaticDir(exampleDir)
+		assert.NoError(t, err)
+		assert.NotNil(t, hf)
+
+		req, res := buildRequest(t), httptest.NewRecorder()
+		req.URL.Path = "/login"
+
+		hf(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+	})
+
+{{ range $i, $dt := .DataTypes }}
+	T.Run("with frontend {{ snakecase $dt.Name }}s routing path", func(t *testing.T) {
+		s := &Service{logger: noop.ProvideNoopLogger()}
+		exampleDir := "."
+
+		hf, err := s.StaticDir(exampleDir)
+		assert.NoError(t, err)
+		assert.NotNil(t, hf)
+
+		req, res := buildRequest(t), httptest.NewRecorder()
+		req.URL.Path = "/{{ snakecase $dt.Name }}s/123"
+
+		hf(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+	})
+{{ end }}
 }
 
 func TestService_Routes(T *testing.T) {

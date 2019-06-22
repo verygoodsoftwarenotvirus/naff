@@ -1,4 +1,4 @@
-package {{ .PluralLowercase }}
+package {{ lower .Name }}s
 
 import (
 	"database/sql"
@@ -13,13 +13,13 @@ import (
 )
 
 const (
-	// URIParamKey is a standard string that we'll use to refer to {{ .SingularLowercase  }} IDs with
-	URIParamKey = "{{ .SingularLowercase  }}ID"
+	// URIParamKey is a standard string that we'll use to refer to {{ lower .Name }} IDs with
+	URIParamKey = "{{ lower .Name }}ID"
 )
 
-func attach{{ .SingularTitlecase }}IDToSpan(span *trace.Span, {{ .SingularLowercase  }}ID uint64) {
+func attach{{ camelcase .Name }}IDToSpan(span *trace.Span, {{ lower .Name }}ID uint64) {
 	if span != nil {
-		span.AddAttributes(trace.StringAttribute("{{ .SingularLowercase  }}_id", strconv.FormatUint({{ .SingularLowercase  }}ID, 10)))
+		span.AddAttributes(trace.StringAttribute("{{ lower .Name }}_id", strconv.FormatUint({{ lower .Name }}ID, 10)))
 	}
 }
 
@@ -43,26 +43,26 @@ func (s *Service) ListHandler(res http.ResponseWriter, req *http.Request) {
 
 	attachUserIDToSpan(span, userID)
 
-	// fetch {{ .PluralLowercase }} from database
-	{{ .PluralLowercase }}, err := s.{{ .SingularLowercase  }}Database.Get{{ .PluralTitlecase }}(ctx, qf, userID)
+	// fetch {{ lower .Name }}s from database
+	{{ lower .Name }}s, err := s.{{ lower .Name }}Database.Get{{ camelcase .Name }}s(ctx, qf, userID)
 	if err == sql.ErrNoRows {
 		// in the event no rows exist return an empty list
-		{{ .PluralLowercase }} = &models.{{ .SingularTitlecase }}List{
-			{{ .PluralTitlecase }}: []models.{{ .SingularTitlecase }}{},
+		{{ lower .Name }}s = &models.{{ camelcase .Name }}List{
+			{{ camelcase .Name }}s: []models.{{ camelcase .Name }}{},
 		}
 	} else if err != nil {
-		logger.Error(err, "error encountered fetching {{ .PluralLowercase }}")
+		logger.Error(err, "error encountered fetching {{ lower .Name }}s")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	// encode our response and peace
-	if err = s.encoderDecoder.EncodeResponse(res, {{ .PluralLowercase }}); err != nil {
+	if err = s.encoderDecoder.EncodeResponse(res, {{ lower .Name }}s); err != nil {
 		s.logger.Error(err, "encoding response")
 	}
 }
 
-// CreateHandler is our {{ .SingularLowercase  }} creation route
+// CreateHandler is our {{ lower .Name }} creation route
 func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	ctx, span := trace.StartSpan(req.Context(), "CreateHandler")
 	defer span.End()
@@ -73,7 +73,7 @@ func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	logger := s.logger.WithValue("user_id", userID)
 
 	// check request context for parsed input struct
-	input, ok := ctx.Value(CreateMiddlewareCtxKey).(*models.{{ .SingularTitlecase }}CreationInput)
+	input, ok := ctx.Value(CreateMiddlewareCtxKey).(*models.{{ camelcase .Name }}CreationInput)
 	logger = logger.WithValue("input", input)
 	if !ok {
 		logger.Info("valid input not attached to request")
@@ -82,17 +82,17 @@ func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	input.BelongsTo = userID
 
-	// create {{ .SingularLowercase  }} in database
-	x, err := s.{{ .SingularLowercase  }}Database.Create{{ .SingularTitlecase }}(ctx, input)
+	// create {{ lower .Name }} in database
+	x, err := s.{{ lower .Name }}Database.Create{{ camelcase .Name }}(ctx, input)
 	if err != nil {
-		s.logger.Error(err, "error creating {{ .SingularLowercase  }}")
+		s.logger.Error(err, "error creating {{ lower .Name }}")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// notify relevant parties of new {{ .SingularLowercase  }}
-	s.{{ .SingularLowercase  }}Counter.Increment(ctx)
-	attach{{ .SingularTitlecase }}IDToSpan(span, x.ID)
+	// notify relevant parties of new {{ lower .Name }}
+	s.{{ lower .Name }}Counter.Increment(ctx)
+	attach{{ camelcase .Name }}IDToSpan(span, x.ID)
 	s.reporter.Report(newsman.Event{
 		Data:      x,
 		Topics:    []string{topicName},
@@ -106,30 +106,30 @@ func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// ReadHandler returns a GET handler that returns an {{ .SingularLowercase  }}
+// ReadHandler returns a GET handler that returns an {{ lower .Name }}
 func (s *Service) ReadHandler(res http.ResponseWriter, req *http.Request) {
 	ctx, span := trace.StartSpan(req.Context(), "ReadHandler")
 	defer span.End()
 
 	// determine relevant info
 	userID := s.userIDFetcher(req)
-	{{ .SingularLowercase  }}ID := s.{{ .SingularLowercase  }}IDFetcher(req)
+	{{ lower .Name }}ID := s.{{ lower .Name }}IDFetcher(req)
 
 	// keep the aforementioned context in mind
 	logger := s.logger.WithValues(map[string]interface{}{
 		"user_id": userID,
-		"{{ .SingularLowercase  }}_id": {{ .SingularLowercase  }}ID,
+		"{{ lower .Name }}_id": {{ lower .Name }}ID,
 	})
-	attach{{ .SingularTitlecase }}IDToSpan(span, {{ .SingularLowercase  }}ID)
+	attach{{ camelcase .Name }}IDToSpan(span, {{ lower .Name }}ID)
 	attachUserIDToSpan(span, userID)
 
-	// fetch {{ .SingularLowercase  }} from database
-	x, err := s.{{ .SingularLowercase  }}Database.Get{{ .SingularTitlecase }}(ctx, {{ .SingularLowercase  }}ID, userID)
+	// fetch {{ lower .Name }} from database
+	x, err := s.{{ lower .Name }}Database.Get{{ camelcase .Name }}(ctx, {{ lower .Name }}ID, userID)
 	if err == sql.ErrNoRows {
 		res.WriteHeader(http.StatusNotFound)
 		return
 	} else if err != nil {
-		logger.Error(err, "error fetching {{ .SingularLowercase  }} from database")
+		logger.Error(err, "error fetching {{ lower .Name }} from database")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -140,13 +140,13 @@ func (s *Service) ReadHandler(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// UpdateHandler returns a handler that updates an {{ .SingularLowercase  }}
+// UpdateHandler returns a handler that updates an {{ lower .Name }}
 func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	ctx, span := trace.StartSpan(req.Context(), "UpdateHandler")
 	defer span.End()
 
 	// check for parsed input attached to request context
-	input, ok := ctx.Value(UpdateMiddlewareCtxKey).(*models.{{ .SingularTitlecase }}UpdateInput)
+	input, ok := ctx.Value(UpdateMiddlewareCtxKey).(*models.{{ camelcase .Name }}UpdateInput)
 	if !ok {
 		s.logger.Info("no input attached to request")
 		res.WriteHeader(http.StatusBadRequest)
@@ -155,23 +155,23 @@ func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 
 	// determine relevant info
 	userID := s.userIDFetcher(req)
-	{{ .SingularLowercase  }}ID := s.{{ .SingularLowercase  }}IDFetcher(req)
+	{{ lower .Name }}ID := s.{{ lower .Name }}IDFetcher(req)
 
 	// keep aforementioned context in mind
 	logger := s.logger.WithValues(map[string]interface{}{
 		"user_id": userID,
-		"{{ .SingularLowercase  }}_id": {{ .SingularLowercase  }}ID,
+		"{{ lower .Name }}_id": {{ lower .Name }}ID,
 	})
-	attach{{ .SingularTitlecase }}IDToSpan(span, {{ .SingularLowercase  }}ID)
+	attach{{ camelcase .Name }}IDToSpan(span, {{ lower .Name }}ID)
 	attachUserIDToSpan(span, userID)
 
-	// fetch {{ .SingularLowercase  }} from database
-	x, err := s.{{ .SingularLowercase  }}Database.Get{{ .SingularTitlecase }}(ctx, {{ .SingularLowercase  }}ID, userID)
+	// fetch {{ lower .Name }} from database
+	x, err := s.{{ lower .Name }}Database.Get{{ camelcase .Name }}(ctx, {{ lower .Name }}ID, userID)
 	if err == sql.ErrNoRows {
 		res.WriteHeader(http.StatusNotFound)
 		return
 	} else if err != nil {
-		logger.Error(err, "error encountered getting {{ .SingularLowercase  }}")
+		logger.Error(err, "error encountered getting {{ lower .Name }}")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -179,9 +179,9 @@ func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	// update the data structure
 	x.Update(input)
 
-	// update {{ .SingularLowercase  }} in database
-	if err = s.{{ .SingularLowercase  }}Database.Update{{ .SingularTitlecase }}(ctx, x); err != nil {
-		logger.Error(err, "error encountered updating {{ .SingularLowercase  }}")
+	// update {{ lower .Name }} in database
+	if err = s.{{ lower .Name }}Database.Update{{ camelcase .Name }}(ctx, x); err != nil {
+		logger.Error(err, "error encountered updating {{ lower .Name }}")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -199,39 +199,39 @@ func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// ArchiveHandler returns a handler that archives an {{ .SingularLowercase  }}
+// ArchiveHandler returns a handler that archives an {{ lower .Name }}
 func (s *Service) ArchiveHandler(res http.ResponseWriter, req *http.Request) {
 	ctx, span := trace.StartSpan(req.Context(), "ArchiveHandler")
 	defer span.End()
 
 	// determine relevant information
 	userID := s.userIDFetcher(req)
-	{{ .SingularLowercase  }}ID := s.{{ .SingularLowercase  }}IDFetcher(req)
+	{{ lower .Name }}ID := s.{{ lower .Name }}IDFetcher(req)
 
 	// keep aforementioned context in mind
 	logger := s.logger.WithValues(map[string]interface{}{
-		"{{ .SingularLowercase  }}_id": {{ .SingularLowercase  }}ID,
+		"{{ lower .Name }}_id": {{ lower .Name }}ID,
 		"user_id": userID,
 	})
-	attach{{ .SingularTitlecase }}IDToSpan(span, {{ .SingularLowercase  }}ID)
+	attach{{ camelcase .Name }}IDToSpan(span, {{ lower .Name }}ID)
 	attachUserIDToSpan(span, userID)
 
-	// archive the {{ .SingularLowercase  }} in the database
-	err := s.{{ .SingularLowercase  }}Database.Archive{{ .SingularTitlecase }}(ctx, {{ .SingularLowercase  }}ID, userID)
+	// archive the {{ lower .Name }} in the database
+	err := s.{{ lower .Name }}Database.Archive{{ camelcase .Name }}(ctx, {{ lower .Name }}ID, userID)
 	if err == sql.ErrNoRows {
 		res.WriteHeader(http.StatusNotFound)
 		return
 	} else if err != nil {
-		logger.Error(err, "error encountered deleting {{ .SingularLowercase  }}")
+		logger.Error(err, "error encountered deleting {{ lower .Name }}")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	// notify relevant parties
-	s.{{ .SingularLowercase  }}Counter.Decrement(ctx)
+	s.{{ lower .Name }}Counter.Decrement(ctx)
 	s.reporter.Report(newsman.Event{
 		EventType: string(models.Archive),
-		Data:      &models.{{ .SingularTitlecase }}{ID: {{ .SingularLowercase  }}ID},
+		Data:      &models.{{ camelcase .Name }}{ID: {{ lower .Name }}ID},
 		Topics:    []string{topicName},
 	})
 

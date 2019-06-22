@@ -25,39 +25,39 @@
       key: "updated_on"
     }
   ];
-  let {{ .PluralLowercase }} = [];
+  let {{ lower .Name }}s = [];
 
-  function delete{{ .SingularTitlecase }}(row) {
-    if (confirm("are you sure you want to delete this {{ .SingularLowercase  }}?")) {
-      fetch(`/api/v1/{{ .PluralLowercase }}/${row.id}`, {
+  function delete{{ camelcase .Name }}(row) {
+    if (confirm("are you sure you want to delete this {{ lower .Name }}?")) {
+      fetch(`/api/v1/{{ lower .Name }}s/${row.id}`, {
         method: "DELETE"
       }).then(response => {
         if (response.status != 204) {
           console.error("something has gone awry");
         }
-        {{ .PluralLowercase }} = {{ .PluralLowercase }}.filter({{ .SingularLowercase  }} => {
-          return {{ .SingularLowercase  }}.id != row.id;
+        {{ lower .Name }}s = {{ lower .Name }}s.filter({{ lower .Name }} => {
+          return {{ lower .Name }}.id != row.id;
         });
       });
     }
   }
 
-  function goTo{{ .SingularTitlecase }}(row) {
-    navigate(`/{{ .PluralLowercase }}/${row.id}`, { replace: true });
+  function goTo{{ camelcase .Name }}(row) {
+    navigate(`/{{ lower .Name }}s/${row.id}`, { replace: true });
   }
 
-  fetch("/api/v1/{{ .PluralLowercase }}/")
+  fetch("/api/v1/{{ lower .Name }}s/")
     .then(response => response.json())
     .then(data => {
-      {{ .PluralLowercase }} = data["{{ .PluralLowercase }}"];
+      {{ lower .Name }}s = data["{{ lower .Name }}s"];
     });
 </script>
 
-<!-- {{ .PluralTitlecase }}.svelte -->
+<!-- {{ camelcase .Name }}s.svelte -->
 
 <Table
   {columns}
   tableStyle={'margin: 0px auto;'}
-  rows={ {{ .PluralLowercase }} }
-  rowClickFunc={goTo{{ .SingularTitlecase }}}
-  rowDeleteFunc={delete{{ .SingularTitlecase }}} />
+  rows={ {{ lower .Name }}s }
+  rowClickFunc={goTo{{ camelcase .Name }}}
+  rowDeleteFunc={delete{{ camelcase .Name }}} />

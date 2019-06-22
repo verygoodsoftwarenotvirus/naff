@@ -1,10 +1,8 @@
-package {{ .PluralLowercase }}
+package {{ lower .Name }}s
 
 import (
 	"{{ .OutputRepository }}/database/v1"
 	"{{ .OutputRepository }}/models/v1"
-
-	"gitlab.com/verygoodsoftwarenotvirus/newsman"
 
 	"github.com/google/wire"
 )
@@ -12,24 +10,18 @@ import (
 var (
 	// Providers is our collection of what we provide to other services
 	Providers = wire.NewSet(
-		Provide{{ .PluralTitlecase }}Service,
-		Provide{{ .SingularTitlecase }}DataManager,
-		ProvideReporter,
-		Provide{{ .SingularTitlecase }}DataServer,
+		Provide{{ camelcase .Name }}sService,
+		Provide{{ camelcase .Name }}DataManager,
+		Provide{{ camelcase .Name }}DataServer,
 	)
 )
 
-// Provide{{ .SingularTitlecase }}DataManager turns a database into an {{ .SingularTitlecase }}DataManager
-func Provide{{ .SingularTitlecase }}DataManager(db database.Database) models.{{ .SingularTitlecase }}DataManager {
+// Provide{{ camelcase .Name }}DataManager turns a database into an {{ camelcase .Name }}DataManager
+func Provide{{ camelcase .Name }}DataManager(db database.Database) models.{{ camelcase .Name }}DataManager {
 	return db
 }
 
-// Provide{{ .SingularTitlecase }}DataServer is an arbitrary function for dependency injection's sake
-func Provide{{ .SingularTitlecase }}DataServer(s *Service) models.{{ .SingularTitlecase }}DataServer {
+// Provide{{ camelcase .Name }}DataServer is an arbitrary function for dependency injection's sake
+func Provide{{ camelcase .Name }}DataServer(s *Service) models.{{ camelcase .Name }}DataServer {
 	return s
-}
-
-// ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day
-func ProvideReporter(n *newsman.Newsman) newsman.Reporter {
-	return n
 }

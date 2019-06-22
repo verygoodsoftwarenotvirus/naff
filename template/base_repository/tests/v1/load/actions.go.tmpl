@@ -45,7 +45,11 @@ func RandomAction(c *client.V1Client) *Action {
 			},
 			Weight: 100,
 		},
+	}{{ range $i, $dt := .DataTypes }}
+	for k, v := range build{{ camelcase $dt.Name }}Actions(c) {
+		allActions[k] = v
 	}
+{{ end }}
 
 	for k, v := range buildWebhookActions(c) {
 		allActions[k] = v
