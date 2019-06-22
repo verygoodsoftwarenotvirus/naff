@@ -86,7 +86,7 @@ func main() {
 					"intervalFactor": 1,
 					"legendFormat": "items",
 					"refId": "A"
-				},`, "", 1)
+				},`, ``, 1)
 
 			return in
 		},
@@ -457,16 +457,28 @@ func Test_buildChi{{ camelcase $dt.Name }}IDFetcher(T *testing.T) {
   // Items routes
   import ReadItem from "./pages/items/Read.svelte";
   import CreateItem from "./pages/items/Create.svelte";
-  import Items from "./pages/items/List.svelte";`, "", 1)
+  import Items from "./pages/items/List.svelte";`, `{{ range $i, $dt := .DataTypes }}
+  // {{ camelcase $dt.Name }} routes
+  import Read{{ camelcase $dt.Name }} from "./pages/{{ lower $dt.Name }}s/Read.svelte";
+  import Create{{ camelcase $dt.Name }} from "./pages/{{ lower $dt.Name }}s/Create.svelte";
+  import {{ camelcase $dt.Name }}s from "./pages/{{ lower $dt.Name }}s/List.svelte";
+{{ end }}`, 1)
 
 			in = strings.Replace(in, `
     <Link to="items">Items</Link>
-    <Link to="items/new">Create Item</Link>`, "", 1)
+    <Link to="items/new">Create Item</Link>`, `{{ range $i, $dt := .DataTypes }}
+	<Link to="{{ lower $dt.Name }}s">{{ camelcase $dt.Name }}</Link>
+	<Link to="{{ lower $dt.Name }}s/new">Create {{ camelcase $dt.Name }}</Link>
+{{ end }}`, 1)
 
 			in = strings.Replace(in, `
     <Route path="items" component={Items} />
     <Route path="items/:id" component={ReadItem} />
-    <Route path="items/new" component={CreateItem} />`, "", 1)
+    <Route path="items/new" component={CreateItem} />`, `{{ range $i, $dt := .DataTypes }}
+    <Route path="{{ lower $dt.Name }}s" component={ {{ camelcase $dt.Name }}s } />
+    <Route path="{{ lower $dt.Name }}s/:id" component={ Read{{ camelcase $dt.Name }} } />
+    <Route path="{{ lower $dt.Name }}s/new" component={ Create{{ camelcase $dt.Name }} } />
+{{ end }}`, 1)
 
 			return in
 		},

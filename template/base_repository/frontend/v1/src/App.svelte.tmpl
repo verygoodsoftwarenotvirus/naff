@@ -5,7 +5,12 @@
   // Auth routes
   import Login from "./pages/Login.svelte";
   import Register from "./pages/Register.svelte";
-  import ChangePassword from "./pages/ChangePassword.svelte";
+  import ChangePassword from "./pages/ChangePassword.svelte";{{ range $i, $dt := .DataTypes }}
+  // {{ camelcase $dt.Name }} routes
+  import Read{{ camelcase $dt.Name }} from "./pages/{{ lower $dt.Name }}s/Read.svelte";
+  import Create{{ camelcase $dt.Name }} from "./pages/{{ lower $dt.Name }}s/Create.svelte";
+  import {{ camelcase $dt.Name }}s from "./pages/{{ lower $dt.Name }}s/List.svelte";
+{{ end }}
 
   export let url = "";
 </script>
@@ -14,13 +19,20 @@
 
 <Router {url}>
   <nav style="text-align: center;">
-    <Link to="/">Home Page</Link>
+    <Link to="/">Home Page</Link>{{ range $i, $dt := .DataTypes }}
+	<Link to="{{ lower $dt.Name }}s">{{ camelcase $dt.Name }}</Link>
+	<Link to="{{ lower $dt.Name }}s/new">Create {{ camelcase $dt.Name }}</Link>
+{{ end }}
     <Link to="webhooks">Webhooks</Link>
     <Link to="login">Login</Link>
     <Link to="register">Register</Link>
     <Link to="password/new">Change Password</Link>
   </nav>
-  <div>
+  <div>{{ range $i, $dt := .DataTypes }}
+    <Route path="{{ lower $dt.Name }}s" component={ {{ camelcase $dt.Name }}s } />
+    <Route path="{{ lower $dt.Name }}s/:id" component={ Read{{ camelcase $dt.Name }} } />
+    <Route path="{{ lower $dt.Name }}s/new" component={ Create{{ camelcase $dt.Name }} } />
+{{ end }}
     <Route path="login" component={Login} />
     <Route path="register" component={Register} />
     <Route path="password/new" component={ChangePassword} />

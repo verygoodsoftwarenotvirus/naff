@@ -215,12 +215,15 @@ const (
 
 func typeToPostgresType(t string) string {
 	typeMap := map[string]string{
-		"string":  "TEXT",
-		"*string": "TEXT",
-		"uint64":  "BIGINT",
-		"*uint64": "BIGINT",
-		"bool":    "BOOLEAN",
-		"*bool":   "BOOLEAN",
+		"string":    "CHARACTER VARYING",
+		"*string":   "CHARACTER VARYING",
+		"uint64":    "BIGINT",
+		"*uint64":   "BIGINT",
+		"bool":      "BOOLEAN",
+		"*bool":     "BOOLEAN",
+		"uuid.UUID": "UUID",
+		"int":       "INTEGER",
+		"float64":   "NUMERIC",
 	}
 
 	if x, ok := typeMap[t]; ok {
