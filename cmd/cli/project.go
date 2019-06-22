@@ -217,6 +217,10 @@ func typeToPostgresType(t string) string {
 	typeMap := map[string]string{
 		"string":  "TEXT",
 		"*string": "TEXT",
+		"uint64":  "BIGINT",
+		"*uint64": "BIGINT",
+		"bool":    "BOOLEAN",
+		"*bool":   "BOOLEAN",
 	}
 
 	if x, ok := typeMap[t]; ok {
