@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/codemodus/kace"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -13,6 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/codemodus/kace"
 
 	"github.com/Masterminds/sprig"
 	"gopkg.in/AlecAivazis/survey.v1"
@@ -102,7 +103,9 @@ func (p *Project) parseModels() {
 
 					for _, field := range dec.Type.(*ast.StructType).Fields.List {
 						df := dataField{
-							Name: field.Names[0].Name,
+							Name:                  field.Names[0].Name,
+							ValidForCreationInput: true,
+							ValidForUpdateInput:   true,
 						}
 
 						if x, ok := field.Type.(*ast.Ident); ok {
@@ -123,10 +126,10 @@ func (p *Project) parseModels() {
 
 						for _, t := range strings.Split(tag, ",") {
 							_t := strings.ToLower(strings.TrimSpace(t))
-							if _t == "createable" {
-								df.ValidForCreationInput = true
-							} else if _t == "editable" {
-								df.ValidForUpdateInput = true
+							if _t == "!createable" {
+								df.ValidForCreationInput = false
+							} else if _t == "!editable" {
+								df.ValidForUpdateInput = false
 							}
 						}
 						dt.Fields = append(dt.Fields, df)
