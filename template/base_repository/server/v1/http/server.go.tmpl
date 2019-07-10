@@ -37,8 +37,8 @@ type (
 		oauth2ClientsService models.OAuth2ClientDataServer
 		webhooksService      models.WebhookDataServer
 
-{{ range $i, $dt := .DataTypes }} 
-	{{ lower $dt.Name }}sService models.{{ camelcase $dt.Name }}DataServer
+{{ range $i, $dt := .DataTypes }}
+	{{ lower $dt.Name }}sService models.{{ $dt.Name }}DataServer
 {{ end }}
 
 		// infra things
@@ -61,8 +61,8 @@ func ProvideServer(
 	authService *auth.Service,
 	frontendService *frontend.Service,
 
-{{ range $i, $dt := .DataTypes }} 
-				{{ lower $dt.Name }}sService models.{{ camelcase $dt.Name }}DataServer, 
+{{ range $i, $dt := .DataTypes }}
+				{{ lower $dt.Name }}sService models.{{ $dt.Name }}DataServer,
 {{ end }}
 	usersService models.UserDataServer,
 	oauth2Service models.OAuth2ClientDataServer,
@@ -97,7 +97,7 @@ func ProvideServer(
 		usersService:         usersService,
 		authService:          authService,
 
-{{ range $i, $dt := .DataTypes }} 
+{{ range $i, $dt := .DataTypes }}
 	{{ lower $dt.Name }}sService: {{ lower $dt.Name }}sService,
 {{ end }}
 		oauth2ClientsService: oauth2Service,

@@ -13,13 +13,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-func buildMockRowFrom{{ pascal .Name }}({{ camelCase .Name}} *models.{{ pascal .Name }}) *sqlmock.Rows {
+func buildMockRowFrom{{ .Name }}({{ camelCase .Name}} *models.{{ .Name }}) *sqlmock.Rows {
 	exampleRows := sqlmock.NewRows({{ camelCase .Name}}sTableColumns).
 		AddRow(
 			{{ camelCase .Name}}.ID,
-		{{ $og := . }}{{ range $j, $field := .Fields }}	
+		{{ $og := . }}{{ range $j, $field := .Fields }}
 			{{ camelCase $og.Name}}.{{ pascal $field.Name }},
-		{{ end }}	
+		{{ end }}
 			{{ camelCase .Name}}.CreatedOn,
 			{{ camelCase .Name}}.UpdatedOn,
 			{{ camelCase .Name}}.ArchivedOn,
@@ -29,13 +29,13 @@ func buildMockRowFrom{{ pascal .Name }}({{ camelCase .Name}} *models.{{ pascal .
 	return exampleRows
 }
 
-func buildErroneousMockRowFrom{{ pascal .Name }}({{ camelCase .Name}} *models.{{ pascal .Name }}) *sqlmock.Rows {
+func buildErroneousMockRowFrom{{ .Name }}({{ camelCase .Name}} *models.{{ .Name }}) *sqlmock.Rows {
 	exampleRows := sqlmock.NewRows({{ camelCase .Name}}sTableColumns).
 		AddRow(
 			{{ camelCase .Name}}.ArchivedOn,
-		{{ $og := . }}{{ range $j, $field := .Fields }}	
+		{{ $og := . }}{{ range $j, $field := .Fields }}
 			{{ camelCase $og.Name}}.{{ pascal $field.Name }},
-		{{ end }}	
+		{{ end }}
 			{{ camelCase .Name}}.CreatedOn,
 			{{ camelCase .Name}}.UpdatedOn,
 			{{ camelCase .Name}}.BelongsTo,
@@ -45,34 +45,34 @@ func buildErroneousMockRowFrom{{ pascal .Name }}({{ camelCase .Name}} *models.{{
 	return exampleRows
 }
 
-func TestPostgres_buildGet{{ camelcase .Name }}Query(T *testing.T) {
+func TestPostgres_buildGet{{ .Name }}Query(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		p, _ := buildTestService(t)
-		example{{ camelcase .Name }}ID := uint64(123)
+		example{{ .Name }}ID := uint64(123)
 		exampleUserID := uint64(321)
 
 		expectedArgCount := 2
-		expectedQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE belongs_to = $1 AND id = $2"
+		expectedQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE belongs_to = $1 AND id = $2"
 
-		actualQuery, args := p.buildGet{{ camelcase .Name }}Query(example{{ camelcase .Name }}ID, exampleUserID)
+		actualQuery, args := p.buildGet{{ .Name }}Query(example{{ .Name }}ID, exampleUserID)
 		assert.Equal(t, expectedQuery, actualQuery)
 		assert.Len(t, args, expectedArgCount)
 		assert.Equal(t, exampleUserID, args[0].(uint64))
-		assert.Equal(t, example{{ camelcase .Name }}ID, args[1].(uint64))
+		assert.Equal(t, example{{ .Name }}ID, args[1].(uint64))
 	})
 }
 
-func TestPostgres_Get{{ camelcase .Name }}(T *testing.T) {
+func TestPostgres_Get{{ .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		expectedQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE belongs_to = $1 AND id = $2"
-		expected := &models.{{ camelcase .Name }}{
+		expectedQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE belongs_to = $1 AND id = $2"
+		expected := &models.{{ .Name }}{
 			ID:      123,
 			
-		{{ range $j, $field := .Fields }}	
+		{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 		{{ end }}
 		}
@@ -82,10 +82,10 @@ func TestPostgres_Get{{ camelcase .Name }}(T *testing.T) {
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(expectedUserID, expected.ID).
 			WillReturnRows(
-				buildMockRowFrom{{ camelcase .Name }}(expected),
+				buildMockRowFrom{{ .Name }}(expected),
 			)
 
-		actual, err := p.Get{{ camelcase .Name }}(context.Background(), expected.ID, expectedUserID)
+		actual, err := p.Get{{ .Name }}(context.Background(), expected.ID, expectedUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -93,11 +93,11 @@ func TestPostgres_Get{{ camelcase .Name }}(T *testing.T) {
 	})
 
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
-		expectedQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE belongs_to = $1 AND id = $2"
-		expected := &models.{{ camelcase .Name }}{
+		expectedQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE belongs_to = $1 AND id = $2"
+		expected := &models.{{ .Name }}{
 			ID:      123,
 			
-		{{ range $j, $field := .Fields }}	
+		{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 		{{ end }}
 		}
@@ -108,7 +108,7 @@ func TestPostgres_Get{{ camelcase .Name }}(T *testing.T) {
 			WithArgs(expectedUserID, expected.ID).
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := p.Get{{ camelcase .Name }}(context.Background(), expected.ID, expectedUserID)
+		actual, err := p.Get{{ .Name }}(context.Background(), expected.ID, expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 		assert.Equal(t, sql.ErrNoRows, err)
@@ -117,7 +117,7 @@ func TestPostgres_Get{{ camelcase .Name }}(T *testing.T) {
 	})
 }
 
-func TestPostgres_buildGet{{ camelcase .Name }}CountQuery(T *testing.T) {
+func TestPostgres_buildGet{{ .Name }}CountQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -125,21 +125,21 @@ func TestPostgres_buildGet{{ camelcase .Name }}CountQuery(T *testing.T) {
 		exampleUserID := uint64(321)
 
 		expectedArgCount := 1
-		expectedQuery := "SELECT COUNT(id) FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
+		expectedQuery := "SELECT COUNT(id) FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
 
-		actualQuery, args := p.buildGet{{ camelcase .Name }}CountQuery(models.DefaultQueryFilter(), exampleUserID)
+		actualQuery, args := p.buildGet{{ .Name }}CountQuery(models.DefaultQueryFilter(), exampleUserID)
 		assert.Equal(t, expectedQuery, actualQuery)
 		assert.Len(t, args, expectedArgCount)
 		assert.Equal(t, exampleUserID, args[0].(uint64))
 	})
 }
 
-func TestPostgres_Get{{ camelcase .Name }}Count(T *testing.T) {
+func TestPostgres_Get{{ .Name }}Count(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		expectedUserID := uint64(321)
-		expectedQuery := "SELECT COUNT(id) FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
+		expectedQuery := "SELECT COUNT(id) FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
 		expectedCount := uint64(666)
 
 		p, mockDB := buildTestService(t)
@@ -149,7 +149,7 @@ func TestPostgres_Get{{ camelcase .Name }}Count(T *testing.T) {
 				sqlmock.NewRows([]string{"count"}).AddRow(expectedCount),
 			)
 
-		actualCount, err := p.Get{{ camelcase .Name }}Count(context.Background(), models.DefaultQueryFilter(), expectedUserID)
+		actualCount, err := p.Get{{ .Name }}Count(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expectedCount, actualCount)
 
@@ -157,23 +157,23 @@ func TestPostgres_Get{{ camelcase .Name }}Count(T *testing.T) {
 	})
 }
 
-func TestPostgres_buildGetAll{{ camelcase .Name }}sCountQuery(T *testing.T) {
+func TestPostgres_buildGetAll{{ .Name }}sCountQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		p, _ := buildTestService(t)
-		expectedQuery := "SELECT COUNT(id) FROM {{ lower .Name }}s WHERE archived_on IS NULL"
+		expectedQuery := "SELECT COUNT(id) FROM {{ camelCase .Name }}s WHERE archived_on IS NULL"
 
-		actualQuery := p.buildGetAll{{ camelcase .Name }}sCountQuery()
+		actualQuery := p.buildGetAll{{ .Name }}sCountQuery()
 		assert.Equal(t, expectedQuery, actualQuery)
 	})
 }
 
-func TestPostgres_GetAll{{ camelcase .Name }}sCount(T *testing.T) {
+func TestPostgres_GetAll{{ .Name }}sCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		expectedQuery := "SELECT COUNT(id) FROM {{ lower .Name }}s WHERE archived_on IS NULL"
+		expectedQuery := "SELECT COUNT(id) FROM {{ camelCase .Name }}s WHERE archived_on IS NULL"
 		expectedCount := uint64(666)
 
 		p, mockDB := buildTestService(t)
@@ -182,7 +182,7 @@ func TestPostgres_GetAll{{ camelcase .Name }}sCount(T *testing.T) {
 				sqlmock.NewRows([]string{"count"}).AddRow(expectedCount),
 			)
 
-		actualCount, err := p.GetAll{{ camelcase .Name }}sCount(context.Background())
+		actualCount, err := p.GetAll{{ .Name }}sCount(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, expectedCount, actualCount)
 
@@ -190,7 +190,7 @@ func TestPostgres_GetAll{{ camelcase .Name }}sCount(T *testing.T) {
 	})
 }
 
-func TestPostgres_buildGet{{ camelcase .Name }}sQuery(T *testing.T) {
+func TestPostgres_buildGet{{ .Name }}sQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -198,55 +198,55 @@ func TestPostgres_buildGet{{ camelcase .Name }}sQuery(T *testing.T) {
 		exampleUserID := uint64(321)
 
 		expectedArgCount := 1
-		expectedQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
+		expectedQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
 
-		actualQuery, args := p.buildGet{{ camelcase .Name }}sQuery(models.DefaultQueryFilter(), exampleUserID)
+		actualQuery, args := p.buildGet{{ .Name }}sQuery(models.DefaultQueryFilter(), exampleUserID)
 		assert.Equal(t, expectedQuery, actualQuery)
 		assert.Len(t, args, expectedArgCount)
 		assert.Equal(t, exampleUserID, args[0].(uint64))
 	})
 }
 
-func TestPostgres_Get{{ camelcase .Name }}s(T *testing.T) {
+func TestPostgres_Get{{ .Name }}s(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		expectedUserID := uint64(123)
-		expected{{ camelcase .Name }}1 := &models.{{ camelcase .Name }}{
+		expected{{ .Name }}1 := &models.{{ .Name }}{
 			
-		{{ range $j, $field := .Fields }}	
+		{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
-		{{ end }}	
+		{{ end }}
 			
 		}
 
-		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
-		expectedCountQuery := "SELECT COUNT(id) FROM {{ lower .Name }}s WHERE archived_on IS NULL"
+		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
+		expectedCountQuery := "SELECT COUNT(id) FROM {{ camelCase .Name }}s WHERE archived_on IS NULL"
 		expectedCount := uint64(666)
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
 			WithArgs(expectedUserID).
 			WillReturnRows(
-				buildMockRowFrom{{ camelcase .Name }}(expected{{ camelcase .Name }}1),
+				buildMockRowFrom{{ .Name }}(expected{{ .Name }}1),
 			)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
 			WillReturnRows(
 				sqlmock.NewRows([]string{"count"}).AddRow(expectedCount),
 			)
 
-		expected := &models.{{ camelcase .Name }}List{
+		expected := &models.{{ .Name }}List{
 			Pagination: models.Pagination{
 				Page:       1,
 				Limit:      20,
 				TotalCount: expectedCount,
 			},
-			{{ camelcase .Name }}s: []models.{{ camelcase .Name }}{
-				*expected{{ camelcase .Name }}1,
+			{{ .Name }}s: []models.{{ .Name }}{
+				*expected{{ .Name }}1,
 			},
 		}
 
-		actual, err := p.Get{{ camelcase .Name }}s(context.Background(), models.DefaultQueryFilter(), expectedUserID)
+		actual, err := p.Get{{ .Name }}s(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -255,14 +255,14 @@ func TestPostgres_Get{{ camelcase .Name }}s(T *testing.T) {
 
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		expectedUserID := uint64(123)
-		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
+		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
 			WithArgs(expectedUserID).
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := p.Get{{ camelcase .Name }}s(context.Background(), models.DefaultQueryFilter(), expectedUserID)
+		actual, err := p.Get{{ .Name }}s(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 		assert.Equal(t, sql.ErrNoRows, err)
@@ -273,37 +273,37 @@ func TestPostgres_Get{{ camelcase .Name }}s(T *testing.T) {
 	T.Run("with error executing read query", func(t *testing.T) {
 		expectedUserID := uint64(123)
 
-		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
+		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
 			WithArgs(expectedUserID).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := p.Get{{ camelcase .Name }}s(context.Background(), models.DefaultQueryFilter(), expectedUserID)
+		actual, err := p.Get{{ .Name }}s(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
-	T.Run("with error scanning {{ lower .Name }}", func(t *testing.T) {
+	T.Run("with error scanning {{ camelCase .Name }}", func(t *testing.T) {
 		expectedUserID := uint64(123)
-		expected{{ camelcase .Name }}1 := &models.{{ camelcase .Name }}{
-			{{ range $j, $field := .Fields }}	
+		expected{{ .Name }}1 := &models.{{ .Name }}{
+			{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
-			{{ end }}	
+			{{ end }}
 		}
 
-		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
+		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
 			WithArgs(expectedUserID).
 			WillReturnRows(
-				buildErroneousMockRowFrom{{ camelcase .Name }}(expected{{ camelcase .Name }}1),
+				buildErroneousMockRowFrom{{ .Name }}(expected{{ .Name }}1),
 			)
 
-		actual, err := p.Get{{ camelcase .Name }}s(context.Background(), models.DefaultQueryFilter(), expectedUserID)
+		actual, err := p.Get{{ .Name }}s(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 
@@ -312,25 +312,25 @@ func TestPostgres_Get{{ camelcase .Name }}s(T *testing.T) {
 
 	T.Run("with error querying for count", func(t *testing.T) {
 		expectedUserID := uint64(123)
-		expected{{ camelcase .Name }}1 := &models.{{ camelcase .Name }}{
-			{{ range $j, $field := .Fields }}	
+		expected{{ .Name }}1 := &models.{{ .Name }}{
+			{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
-			{{ end }}	
+			{{ end }}
 		}
 
-		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
-		expectedCountQuery := "SELECT COUNT(id) FROM {{ lower .Name }}s WHERE archived_on IS NULL"
+		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
+		expectedCountQuery := "SELECT COUNT(id) FROM {{ camelCase .Name }}s WHERE archived_on IS NULL"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
 			WithArgs(expectedUserID).
 			WillReturnRows(
-				buildMockRowFrom{{ camelcase .Name }}(expected{{ camelcase .Name }}1),
+				buildMockRowFrom{{ .Name }}(expected{{ .Name }}1),
 			)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := p.Get{{ camelcase .Name }}s(context.Background(), models.DefaultQueryFilter(), expectedUserID)
+		actual, err := p.Get{{ .Name }}s(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 
@@ -339,28 +339,28 @@ func TestPostgres_Get{{ camelcase .Name }}s(T *testing.T) {
 
 }
 
-func TestPostgres_GetAll{{ camelcase .Name }}sForUser(T *testing.T) {
+func TestPostgres_GetAll{{ .Name }}sForUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		expectedUserID := uint64(123)
-		expected{{ camelcase .Name }} := &models.{{ camelcase .Name }}{
-			{{ range $j, $field := .Fields }}	
+		expected{{ .Name }} := &models.{{ .Name }}{
+			{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
-			{{ end }}	
+			{{ end }}
 		}
-		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1"
+		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
 			WithArgs(expectedUserID).
 			WillReturnRows(
-				buildMockRowFrom{{ camelcase .Name }}(expected{{ camelcase .Name }}),
+				buildMockRowFrom{{ .Name }}(expected{{ .Name }}),
 			)
 
-		expected := []models.{{ camelcase .Name }}{*expected{{ camelcase .Name }}}
+		expected := []models.{{ .Name }}{*expected{{ .Name }}}
 
-		actual, err := p.GetAll{{ camelcase .Name }}sForUser(context.Background(), expectedUserID)
+		actual, err := p.GetAll{{ .Name }}sForUser(context.Background(), expectedUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -369,14 +369,14 @@ func TestPostgres_GetAll{{ camelcase .Name }}sForUser(T *testing.T) {
 
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		expectedUserID := uint64(123)
-		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1"
+		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
 			WithArgs(expectedUserID).
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := p.GetAll{{ camelcase .Name }}sForUser(context.Background(), expectedUserID)
+		actual, err := p.GetAll{{ .Name }}sForUser(context.Background(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 		assert.Equal(t, sql.ErrNoRows, err)
@@ -386,14 +386,14 @@ func TestPostgres_GetAll{{ camelcase .Name }}sForUser(T *testing.T) {
 
 	T.Run("with error querying database", func(t *testing.T) {
 		expectedUserID := uint64(123)
-		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1"
+		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
 			WithArgs(expectedUserID).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := p.GetAll{{ camelcase .Name }}sForUser(context.Background(), expectedUserID)
+		actual, err := p.GetAll{{ .Name }}sForUser(context.Background(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 
@@ -402,21 +402,21 @@ func TestPostgres_GetAll{{ camelcase .Name }}sForUser(T *testing.T) {
 
 	T.Run("with unscannable response", func(t *testing.T) {
 		expectedUserID := uint64(123)
-		expected{{ camelcase .Name }} := &models.{{ camelcase .Name }}{
-			{{ range $j, $field := .Fields }}	
+		expected{{ .Name }} := &models.{{ .Name }}{
+			{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
-			{{ end }}	
+			{{ end }}
 		}
-		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ lower .Name }}s WHERE archived_on IS NULL AND belongs_to = $1"
+		expectedListQuery := "SELECT id, created_on, updated_on, archived_on, belongs_to FROM {{ camelCase .Name }}s WHERE archived_on IS NULL AND belongs_to = $1"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
 			WithArgs(expectedUserID).
 			WillReturnRows(
-				buildErroneousMockRowFrom{{ camelcase .Name }}(expected{{ camelcase .Name }}),
+				buildErroneousMockRowFrom{{ .Name }}(expected{{ .Name }}),
 			)
 
-		actual, err := p.GetAll{{ camelcase .Name }}sForUser(context.Background(), expectedUserID)
+		actual, err := p.GetAll{{ .Name }}sForUser(context.Background(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 
@@ -424,48 +424,48 @@ func TestPostgres_GetAll{{ camelcase .Name }}sForUser(T *testing.T) {
 	})
 }
 
-func TestPostgres_buildCreate{{ camelcase .Name }}Query(T *testing.T) {
+func TestPostgres_buildCreate{{ .Name }}Query(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		p, _ := buildTestService(t)
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			
-		{{ range $j, $field := .Fields }}	
+		{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 		{{ end }}
 			BelongsTo: 123,
 		}
 
 		expectedArgCount := 3
-		expectedQuery := "INSERT INTO {{ lower .Name }}s (belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"
+		expectedQuery := "INSERT INTO {{ camelCase .Name }}s (belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"
 
-		actualQuery, args := p.buildCreate{{ camelcase .Name }}Query(expected)
+		actualQuery, args := p.buildCreate{{ .Name }}Query(expected)
 		assert.Equal(t, expectedQuery, actualQuery)
 		assert.Len(t, args, expectedArgCount)
-		{{ range $j, $field := .Fields }}	
+		{{ range $j, $field := .Fields }}
 		assert.Equal(t, expected.{{ pascal $field.Name }}, args[{{ $j }}].({{ $field.Type }}))
-		{{ end }}	
+		{{ end }}
 		assert.Equal(t, expected.BelongsTo, args[len(args)-1].(uint64))
 	})
 }
 
-func TestPostgres_Create{{ pascal .Name }}(T *testing.T) {
+func TestPostgres_Create{{ .Name }}(T *testing.T) {
 	T.Parallel()
-	
+
 	T.Run("happy path", func(t *testing.T) {
 		expectedUserID := uint64(321)
-		expected := &models.{{ pascal .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:        123,
 			BelongsTo: expectedUserID,
 			CreatedOn: uint64(time.Now().Unix()),
 		}
-		expectedInput := &models.{{ pascal .Name }}CreationInput{
+		expectedInput := &models.{{ .Name }}CreationInput{
 			{{ range $j, $field := .Fields }}
 				{{ if $field.ValidForCreationInput }}
 					{{ pascal $field.Name }}: expected.{{ pascal $field.Name }},
 				{{ end }}
-			{{ end }}	
+			{{ end }}
 			BelongsTo: expected.BelongsTo,
 		}
 		exampleRows := sqlmock.NewRows([]string{"id", "created_on"}).
@@ -476,14 +476,14 @@ func TestPostgres_Create{{ pascal .Name }}(T *testing.T) {
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(
-			{{ $og := . }}{{ range $j, $field := .Fields }}	
+			{{ $og := . }}{{ range $j, $field := .Fields }}
 				expected.{{ pascal $field.Name }},
-			{{ end }}	
+			{{ end }}
 				expected.BelongsTo,
 			).
 			WillReturnRows(exampleRows)
 
-		actual, err := p.Create{{ pascal .Name }}(context.Background(), expectedInput)
+		actual, err := p.Create{{ .Name }}(context.Background(), expectedInput)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -492,12 +492,12 @@ func TestPostgres_Create{{ pascal .Name }}(T *testing.T) {
 
 	T.Run("with error writing to database", func(t *testing.T) {
 		expectedUserID := uint64(321)
-		example := &models.{{ pascal .Name }}{
+		example := &models.{{ .Name }}{
 			ID:        123,
 			BelongsTo: expectedUserID,
 			CreatedOn: uint64(time.Now().Unix()),
 		}
-		expectedInput := &models.{{ pascal .Name }}CreationInput{
+		expectedInput := &models.{{ .Name }}CreationInput{
 			BelongsTo: example.BelongsTo,
 		}
 
@@ -506,78 +506,78 @@ func TestPostgres_Create{{ pascal .Name }}(T *testing.T) {
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(
-			{{ $og := . }}{{ range $j, $field := .Fields }}	
+			{{ $og := . }}{{ range $j, $field := .Fields }}
 				example.{{ pascal $field.Name }},
-			{{ end }}	
+			{{ end }}
 				example.BelongsTo,
 			).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := p.Create{{ pascal .Name }} (context.Background(), expectedInput)
+		actual, err := p.Create{{ .Name }} (context.Background(), expectedInput)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 }
-func TestPostgres_buildUpdate{{ camelcase .Name }}Query(T *testing.T) {
+func TestPostgres_buildUpdate{{ .Name }}Query(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		p, _ := buildTestService(t)
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:        321,
 			
-		{{ range $j, $field := .Fields }}	
+		{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 		{{ end }}
 			BelongsTo: 123,
 		}
 
 		expectedArgCount := 4
-		expectedQuery := "UPDATE {{ lower .Name }}s SET updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $3 AND id = $4 RETURNING updated_on"
+		expectedQuery := "UPDATE {{ camelCase .Name }}s SET updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $3 AND id = $4 RETURNING updated_on"
 
-		actualQuery, args := p.buildUpdate{{ camelcase .Name }}Query(expected)
+		actualQuery, args := p.buildUpdate{{ .Name }}Query(expected)
 		assert.Equal(t, expectedQuery, actualQuery)
 		assert.Len(t, args, expectedArgCount)
-		{{ range $j, $field := .Fields }}	
+		{{ range $j, $field := .Fields }}
 		assert.Equal(t, expected.{{ pascal $field.Name }}, args[{{ $j }}].({{ $field.Type }}))
-		{{ end }}	
+		{{ end }}
 		assert.Equal(t, expected.BelongsTo, args[len(args)-1].(uint64))
 		assert.Equal(t, expected.ID, args[3].(uint64))
 	})
 }
 
-func TestPostgres_Update{{ camelcase .Name }}(T *testing.T) {
+func TestPostgres_Update{{ .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		expectedUserID := uint64(321)
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:        123,
-			{{ range $j, $field := .Fields }}	
+			{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
-			{{ end }}	
+			{{ end }}
 			BelongsTo: expectedUserID,
 			CreatedOn: uint64(time.Now().Unix()),
 		}
 		exampleRows := sqlmock.NewRows([]string{"updated_on"}).
 			AddRow(uint64(time.Now().Unix()))
 
-		expectedQuery := "UPDATE {{ lower .Name }}s SET updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $3 AND id = $4 RETURNING updated_on"
+		expectedQuery := "UPDATE {{ camelCase .Name }}s SET updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $3 AND id = $4 RETURNING updated_on"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(
-				{{ range $j, $field := .Fields }}	
+				{{ range $j, $field := .Fields }}
 					expected.{{ pascal $field.Name }},
-				{{ end }}	
+				{{ end }}
 				expected.BelongsTo,
 				expected.ID,
 			).
 			WillReturnRows(exampleRows)
 
-		err := p.Update{{ camelcase .Name }}(context.Background(), expected)
+		err := p.Update{{ .Name }}(context.Background(), expected)
 		assert.NoError(t, err)
 
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
@@ -585,53 +585,53 @@ func TestPostgres_Update{{ camelcase .Name }}(T *testing.T) {
 
 	T.Run("with error writing to database", func(t *testing.T) {
 		expectedUserID := uint64(321)
-		example := &models.{{ camelcase .Name }}{
+		example := &models.{{ .Name }}{
 			ID:        123,
-			{{ range $j, $field := .Fields }}	
+			{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
-			{{ end }}	
+			{{ end }}
 			BelongsTo: expectedUserID,
 			CreatedOn: uint64(time.Now().Unix()),
 		}
 
-		expectedQuery := "UPDATE {{ lower .Name }}s SET updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $3 AND id = $4 RETURNING updated_on"
+		expectedQuery := "UPDATE {{ camelCase .Name }}s SET updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $3 AND id = $4 RETURNING updated_on"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(
-			{{ range $j, $field := .Fields }}	
+			{{ range $j, $field := .Fields }}
 				example.{{ pascal $field.Name }},
-			{{ end }}	
+			{{ end }}
 				example.BelongsTo,
 				example.ID,
 			).
 			WillReturnError(errors.New("blah"))
 
-		err := p.Update{{ camelcase .Name }}(context.Background(), example)
+		err := p.Update{{ .Name }}(context.Background(), example)
 		assert.Error(t, err)
 
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 }
 
-func TestPostgres_buildArchive{{ camelcase .Name }}Query(T *testing.T) {
+func TestPostgres_buildArchive{{ .Name }}Query(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		p, _ := buildTestService(t)
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:        321,
 			
-		{{ range $j, $field := .Fields }}	
+		{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 		{{ end }}
 			BelongsTo: 123,
 		}
 
 		expectedArgCount := 2
-		expectedQuery := "UPDATE {{ lower .Name }}s SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"
+		expectedQuery := "UPDATE {{ camelCase .Name }}s SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"
 
-		actualQuery, args := p.buildArchive{{ camelcase .Name }}Query(expected.ID, expected.BelongsTo)
+		actualQuery, args := p.buildArchive{{ .Name }}Query(expected.ID, expected.BelongsTo)
 		assert.Equal(t, expectedQuery, actualQuery)
 		assert.Len(t, args, expectedArgCount)
 		assert.Equal(t, expected.BelongsTo, args[0].(uint64))
@@ -639,21 +639,21 @@ func TestPostgres_buildArchive{{ camelcase .Name }}Query(T *testing.T) {
 	})
 }
 
-func TestPostgres_Archive{{ camelcase .Name }}(T *testing.T) {
+func TestPostgres_Archive{{ .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		expectedUserID := uint64(321)
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:        123,
-			{{ range $j, $field := .Fields }}	
+			{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
-			{{ end }}	
+			{{ end }}
 			BelongsTo: expectedUserID,
 			CreatedOn: uint64(time.Now().Unix()),
 		}
 
-		expectedQuery := "UPDATE {{ lower .Name }}s SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"
+		expectedQuery := "UPDATE {{ camelCase .Name }}s SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
@@ -663,7 +663,7 @@ func TestPostgres_Archive{{ camelcase .Name }}(T *testing.T) {
 			).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
-		err := p.Archive{{ camelcase .Name }}(context.Background(), expected.ID, expectedUserID)
+		err := p.Archive{{ .Name }}(context.Background(), expected.ID, expectedUserID)
 		assert.NoError(t, err)
 
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
@@ -671,16 +671,16 @@ func TestPostgres_Archive{{ camelcase .Name }}(T *testing.T) {
 
 	T.Run("with error writing to database", func(t *testing.T) {
 		expectedUserID := uint64(321)
-		example := &models.{{ camelcase .Name }}{
+		example := &models.{{ .Name }}{
 			ID:        123,
-			{{ range $j, $field := .Fields }}	
+			{{ range $j, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
-			{{ end }}	
+			{{ end }}
 			BelongsTo: expectedUserID,
 			CreatedOn: uint64(time.Now().Unix()),
 		}
 
-		expectedQuery := "UPDATE {{ lower .Name }}s SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"
+		expectedQuery := "UPDATE {{ camelCase .Name }}s SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"
 
 		p, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
@@ -690,7 +690,7 @@ func TestPostgres_Archive{{ camelcase .Name }}(T *testing.T) {
 			).
 			WillReturnError(errors.New("blah"))
 
-		err := p.Archive{{ camelcase .Name }}(context.Background(), example.ID, expectedUserID)
+		err := p.Archive{{ .Name }}(context.Background(), example.ID, expectedUserID)
 		assert.Error(t, err)
 
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")

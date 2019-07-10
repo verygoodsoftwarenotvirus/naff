@@ -8,46 +8,46 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var _ models.{{ camelcase .Name }}DataServer = (*{{ camelcase .Name }}DataServer)(nil)
+var _ models.{{ .Name }}DataServer = (*{{ .Name }}DataServer)(nil)
 
-// {{ camelcase .Name }}DataServer describes a structure capable of serving traffic related to users
-type {{ camelcase .Name }}DataServer struct {
+// {{ .Name }}DataServer describes a structure capable of serving traffic related to users
+type {{ .Name }}DataServer struct {
 	mock.Mock
 }
 
 // CreationInputMiddleware implements our interface requirements
-func (m *{{ camelcase .Name }}DataServer) CreationInputMiddleware(next http.Handler) http.Handler {
+func (m *{{ .Name }}DataServer) CreationInputMiddleware(next http.Handler) http.Handler {
 	args := m.Called(next)
 	return args.Get(0).(http.Handler)
 }
 
 // UpdateInputMiddleware implements our interface requirements
-func (m *{{ camelcase .Name }}DataServer) UpdateInputMiddleware(next http.Handler) http.Handler {
+func (m *{{ .Name }}DataServer) UpdateInputMiddleware(next http.Handler) http.Handler {
 	args := m.Called(next)
 	return args.Get(0).(http.Handler)
 }
 
 // ListHandler implements our interface requirements
-func (m *{{ camelcase .Name }}DataServer) ListHandler(res http.ResponseWriter, req *http.Request) {
+func (m *{{ .Name }}DataServer) ListHandler(res http.ResponseWriter, req *http.Request) {
 	m.Called(res, req)
 }
 
 // CreateHandler implements our interface requirements
-func (m *{{ camelcase .Name }}DataServer) CreateHandler(res http.ResponseWriter, req *http.Request) {
+func (m *{{ .Name }}DataServer) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	m.Called(res, req)
 }
 
 // ReadHandler implements our interface requirements
-func (m *{{ camelcase .Name }}DataServer) ReadHandler(res http.ResponseWriter, req *http.Request) {
+func (m *{{ .Name }}DataServer) ReadHandler(res http.ResponseWriter, req *http.Request) {
 	m.Called(res, req)
 }
 
 // UpdateHandler implements our interface requirements
-func (m *{{ camelcase .Name }}DataServer) UpdateHandler(res http.ResponseWriter, req *http.Request) {
+func (m *{{ .Name }}DataServer) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	m.Called(res, req)
 }
 
 // ArchiveHandler implements our interface requirements
-func (m *{{ camelcase .Name }}DataServer) ArchiveHandler(res http.ResponseWriter, req *http.Request) {
+func (m *{{ .Name }}DataServer) ArchiveHandler(res http.ResponseWriter, req *http.Request) {
 	m.Called(res, req)
 }

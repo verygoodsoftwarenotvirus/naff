@@ -10,59 +10,59 @@ import (
 	randmodel "{{ .OutputRepository }}/tests/v1/testutil/rand/model"
 )
 
-// fetchRandom{{ camelcase .Name }} retrieves a random {{ lower .Name }} from the list of available {{ lower .Name }}s
-func fetchRandom{{ camelcase .Name }}(c *client.V1Client) *models.{{ camelcase .Name }} {
-	{{ lower .Name }}sRes, err := c.Get{{ camelcase .Name }}s(context.Background(), nil)
-	if err != nil || {{ lower .Name }}sRes == nil || len({{ lower .Name }}sRes.{{ camelcase .Name }}s) == 0 {
+// fetchRandom{{ .Name }} retrieves a random {{ camelCase .Name }} from the list of available {{ camelCase .Name }}s
+func fetchRandom{{ .Name }}(c *client.V1Client) *models.{{ .Name }} {
+	{{ camelCase .Name }}sRes, err := c.Get{{ .Name }}s(context.Background(), nil)
+	if err != nil || {{ camelCase .Name }}sRes == nil || len({{ camelCase .Name }}sRes.{{ .Name }}s) == 0 {
 		return nil
 	}
 
-	randIndex := rand.Intn(len({{ lower .Name }}sRes.{{ camelcase .Name }}s))
-	return &{{ lower .Name }}sRes.{{ camelcase .Name }}s[randIndex]
+	randIndex := rand.Intn(len({{ camelCase .Name }}sRes.{{ .Name }}s))
+	return &{{ camelCase .Name }}sRes.{{ .Name }}s[randIndex]
 }
 
-func build{{ camelcase .Name }}Actions(c *client.V1Client) map[string]*Action {
+func build{{ .Name }}Actions(c *client.V1Client) map[string]*Action {
 	return map[string]*Action{
-		"Create{{ camelcase .Name }}": {
-			Name: "Create{{ camelcase .Name }}",
+		"Create{{ .Name }}": {
+			Name: "Create{{ .Name }}",
 			Action: func() (*http.Request, error) {
-				return c.BuildCreate{{ camelcase .Name }}Request(context.Background(), randmodel.Random{{ camelcase .Name }}CreationInput())
+				return c.BuildCreate{{ .Name }}Request(context.Background(), randmodel.Random{{ .Name }}CreationInput())
 			},
 			Weight: 100,
 		},
-		"Get{{ camelcase .Name }}": {
-			Name: "Get{{ camelcase .Name }}",
+		"Get{{ .Name }}": {
+			Name: "Get{{ .Name }}",
 			Action: func() (*http.Request, error) {
-				if random{{ camelcase .Name }} := fetchRandom{{ camelcase .Name }}(c); random{{ camelcase .Name }} != nil {
-					return c.BuildGet{{ camelcase .Name }}Request(context.Background(), random{{ camelcase .Name }}.ID)
+				if random{{ .Name }} := fetchRandom{{ .Name }}(c); random{{ .Name }} != nil {
+					return c.BuildGet{{ .Name }}Request(context.Background(), random{{ .Name }}.ID)
 				}
 				return nil, ErrUnavailableYet
 			},
 			Weight: 100,
 		},
-		"Get{{ camelcase .Name }}s": {
-			Name: "Get{{ camelcase .Name }}s",
+		"Get{{ .Name }}s": {
+			Name: "Get{{ .Name }}s",
 			Action: func() (*http.Request, error) {
-				return c.BuildGet{{ camelcase .Name }}sRequest(context.Background(), nil)
+				return c.BuildGet{{ .Name }}sRequest(context.Background(), nil)
 			},
 			Weight: 100,
 		},
-		"Update{{ camelcase .Name }}": {
-			Name: "Update{{ camelcase .Name }}",
+		"Update{{ .Name }}": {
+			Name: "Update{{ .Name }}",
 			Action: func() (*http.Request, error) {
-				if random{{ camelcase .Name }} := fetchRandom{{ camelcase .Name }}(c); random{{ camelcase .Name }} != nil {
-					random{{ camelcase .Name }}.Name = randmodel.Random{{ camelcase .Name }}CreationInput().Name
-					return c.BuildUpdate{{ camelcase .Name }}Request(context.Background(), random{{ camelcase .Name }})
+				if random{{ .Name }} := fetchRandom{{ .Name }}(c); random{{ .Name }} != nil {
+					random{{ .Name }}.Name = randmodel.Random{{ .Name }}CreationInput().Name
+					return c.BuildUpdate{{ .Name }}Request(context.Background(), random{{ .Name }})
 				}
 				return nil, ErrUnavailableYet
 			},
 			Weight: 100,
 		},
-		"Archive{{ camelcase .Name }}": {
-			Name: "Archive{{ camelcase .Name }}",
+		"Archive{{ .Name }}": {
+			Name: "Archive{{ .Name }}",
 			Action: func() (*http.Request, error) {
-				if random{{ camelcase .Name }} := fetchRandom{{ camelcase .Name }}(c); random{{ camelcase .Name }} != nil {
-					return c.BuildArchive{{ camelcase .Name }}Request(context.Background(), random{{ camelcase .Name }}.ID)
+				if random{{ .Name }} := fetchRandom{{ .Name }}(c); random{{ .Name }} != nil {
+					return c.BuildArchive{{ .Name }}Request(context.Background(), random{{ .Name }}.ID)
 				}
 				return nil, ErrUnavailableYet
 			},

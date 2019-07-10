@@ -68,7 +68,7 @@ var (
 	// 		eventsFrontendPathRegex = regexp.MustCompile(`/event/\d+`)
 
 {{ range $i, $dt := .DataTypes }}
-	// {{ lower $dt.Name }}sFrontendPathRegex matches URLs against our frontend router's specification for specific {{ camelcase $dt.Name }} routes
+	// {{ lower $dt.Name }}sFrontendPathRegex matches URLs against our frontend router's specification for specific {{ camelCase $dt.Name }} routes
 	{{ lower $dt.Name }}sFrontendPathRegex = regexp.MustCompile(`/items/\d+`)
 {{ end }}
 

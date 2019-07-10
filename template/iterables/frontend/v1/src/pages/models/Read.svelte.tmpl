@@ -1,29 +1,23 @@
 <script>
   import { Link } from "svelte-routing";
 
-  let {{ lower .Name }} = {};
+  let {{ camelCase .Name }} = {};
 
-  const {{ lower .Name }}ID = window.location.pathname.replace("/{{ lower .Name }}s/", "");
+  const {{ camelCase .Name }}ID = window.location.pathname.replace("/{{ camelCase .Name }}s/", "");
 
-  fetch(`/api/v1/{{ lower .Name }}s/${ {{ lower .Name }}ID }`)
+  fetch(`/api/v1/{{ camelCase .Name }}s/${ {{ camelCase .Name }}ID }`)
     .then(response => response.json())
     .then(data => {
-      {{ lower .Name }} = data;
+      {{ camelCase .Name }} = data;
     });
 </script>
 
-<!-- {{ camelcase .Name }}s.svelte -->
+<!-- {{ .Name }}s.svelte -->
 
 <div style="text-align: center; margin: 0px auto;">
-  <p>
-    name:
-    {@html {{ lower .Name }}.name}
-  </p>
-  <p>
-    details:
-    {@html {{ lower .Name }}.details}
-  </p>
+  
+  
 
-  <Link to="/{{ lower .Name }}s">see all</Link>
+  <Link to="/{{ camelCase .Name }}s">see all</Link>
 
 </div>

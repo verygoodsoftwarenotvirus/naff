@@ -6,9 +6,9 @@ import (
 
 )
 
-// Random{{ camelcase .Name }}CreationInput creates a random {{ camelcase .Name }}Input
-func Random{{ camelcase .Name }}CreationInput() *models.{{ camelcase .Name }}CreationInput {
-	x := &models.{{ camelcase .Name }}CreationInput{
+// Random{{ .Name }}CreationInput creates a random {{ .Name }}Input
+func Random{{ .Name }}CreationInput() *models.{{ .Name }}CreationInput {
+	x := &models.{{ .Name }}CreationInput{
 		{{ range $i, $field := .Fields }}
 		{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 		{{ end }}

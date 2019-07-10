@@ -19,16 +19,16 @@ import (
 func buildTestService() *Service {
 	return &Service{
 		logger:         noop.ProvideNoopLogger(),
-		{{ lower .Name }}Counter:    &mmetrics.UnitCounter{},
-		{{ lower .Name }}Database:   &mmodels.{{ camelcase .Name }}DataManager{},
+		{{ camelCase .Name }}Counter:    &mmetrics.UnitCounter{},
+		{{ camelCase .Name }}Database:   &mmodels.{{ .Name }}DataManager{},
 		userIDFetcher:  func(req *http.Request) uint64 { return 0 },
-		{{ lower .Name }}IDFetcher:  func(req *http.Request) uint64 { return 0 },
+		{{ camelCase .Name }}IDFetcher:  func(req *http.Request) uint64 { return 0 },
 		encoderDecoder: &mencoding.EncoderDecoder{},
 		reporter:       nil,
 	}
 }
 
-func TestProvide{{ camelcase .Name }}sService(T *testing.T) {
+func TestProvide{{ .Name }}sService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -42,13 +42,13 @@ func TestProvide{{ camelcase .Name }}sService(T *testing.T) {
 			return uc, nil
 		}
 
-		idm := &mmodels.{{ camelcase .Name }}DataManager{}
-		idm.On("GetAll{{ camelcase .Name }}sCount", mock.Anything).
+		idm := &mmodels.{{ .Name }}DataManager{}
+		idm.On("GetAll{{ .Name }}sCount", mock.Anything).
 			Return(expectation, nil)
 
 		uc.On("IncrementBy", expectation).Return()
 
-		s, err := Provide{{ camelcase .Name }}sService(
+		s, err := Provide{{ .Name }}sService(
 			context.Background(),
 			noop.ProvideNoopLogger(),
 			idm,
@@ -74,13 +74,13 @@ func TestProvide{{ camelcase .Name }}sService(T *testing.T) {
 			return uc, errors.New("blah")
 		}
 
-		idm := &mmodels.{{ camelcase .Name }}DataManager{}
-		idm.On("GetAll{{ camelcase .Name }}sCount", mock.Anything).
+		idm := &mmodels.{{ .Name }}DataManager{}
+		idm.On("GetAll{{ .Name }}sCount", mock.Anything).
 			Return(expectation, nil)
 
 		uc.On("IncrementBy", expectation).Return()
 
-		s, err := Provide{{ camelcase .Name }}sService(
+		s, err := Provide{{ .Name }}sService(
 			context.Background(),
 			noop.ProvideNoopLogger(),
 			idm,
@@ -95,7 +95,7 @@ func TestProvide{{ camelcase .Name }}sService(T *testing.T) {
 		require.Error(t, err)
 	})
 
-	T.Run("with error fetching {{ lower .Name }} count", func(t *testing.T) {
+	T.Run("with error fetching {{ camelCase .Name }} count", func(t *testing.T) {
 		uc := &mmetrics.UnitCounter{}
 		expectation := uint64(123)
 
@@ -106,13 +106,13 @@ func TestProvide{{ camelcase .Name }}sService(T *testing.T) {
 			return uc, nil
 		}
 
-		idm := &mmodels.{{ camelcase .Name }}DataManager{}
-		idm.On("GetAll{{ camelcase .Name }}sCount", mock.Anything).
+		idm := &mmodels.{{ .Name }}DataManager{}
+		idm.On("GetAll{{ .Name }}sCount", mock.Anything).
 			Return(expectation, errors.New("blah"))
 
 		uc.On("IncrementBy", expectation).Return()
 
-		s, err := Provide{{ camelcase .Name }}sService(
+		s, err := Provide{{ .Name }}sService(
 			context.Background(),
 			noop.ProvideNoopLogger(),
 			idm,

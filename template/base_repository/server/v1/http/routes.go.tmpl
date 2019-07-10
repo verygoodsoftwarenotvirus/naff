@@ -6,8 +6,8 @@ import (
 
 	"{{ .OutputRepository }}/internal/config/v1"
 	"{{ .OutputRepository }}/internal/metrics/v1"
-{{ range $x, $import := .IterableServicesImports }} 
-	"{{ $import }}" 
+{{ range $x, $import := .IterableServicesImports }}
+	"{{ $import }}"
 {{ end }}
 	"{{ .OutputRepository }}/services/v1/oauth2clients"
 	"{{ .OutputRepository }}/services/v1/users"
@@ -132,16 +132,16 @@ func (s *Server) setupRouter(frontendConfig config.FrontendSettings, metricsHand
 		Route("/api/v1", func(v1Router chi.Router) {
 
 			{{ range $i, $dt := .DataTypes }}
-			// {{ camelcase $dt.Name }}s
-			v1Router.Route("/{{ lower $dt.Name }}s", func({{ lower $dt.Name }}sRouter chi.Router) {
+			// {{ pascal $dt.Name }}s
+			v1Router.Route("/{{ snakecase $dt.Name }}s", func({{ camelCase $dt.Name }}sRouter chi.Router) {
 				sr := fmt.Sprintf(numericIDPattern, {{ lower $dt.Name }}s.URIParamKey)
-				{{ lower $dt.Name }}sRouter.With(s.{{ lower $dt.Name }}sService.CreationInputMiddleware).
+				{{ camelCase $dt.Name }}sRouter.With(s.{{ lower $dt.Name }}sService.CreationInputMiddleware).
 					Post("/", s.{{ lower $dt.Name }}sService.CreateHandler) // CreateHandler
-				{{ lower $dt.Name }}sRouter.Get(sr, s.{{ lower $dt.Name }}sService.ReadHandler) // ReadHandler
-				{{ lower $dt.Name }}sRouter.With(s.{{ lower $dt.Name }}sService.UpdateInputMiddleware).
+				{{ camelCase $dt.Name }}sRouter.Get(sr, s.{{ lower $dt.Name }}sService.ReadHandler) // ReadHandler
+				{{ camelCase $dt.Name }}sRouter.With(s.{{ lower $dt.Name }}sService.UpdateInputMiddleware).
 					Put(sr, s.{{ lower $dt.Name }}sService.UpdateHandler) // UpdateHandler
-				{{ lower $dt.Name }}sRouter.Delete(sr, s.{{ lower $dt.Name }}sService.ArchiveHandler) // ArchiveHandler
-				{{ lower $dt.Name }}sRouter.Get("/", s.{{ lower $dt.Name }}sService.ListHandler)      // ListHandler
+				{{ camelCase $dt.Name }}sRouter.Delete(sr, s.{{ lower $dt.Name }}sService.ArchiveHandler) // ArchiveHandler
+				{{ camelCase $dt.Name }}sRouter.Get("/", s.{{ lower $dt.Name }}sService.ListHandler)      // ListHandler
 			})
 			{{ end }}
 

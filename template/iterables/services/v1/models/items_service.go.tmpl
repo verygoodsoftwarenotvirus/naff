@@ -15,29 +15,29 @@ import (
 )
 
 const (
-	// CreateMiddlewareCtxKey is a string alias we can use for referring to {{ lower .Name }} input data in contexts
-	CreateMiddlewareCtxKey models.ContextKey = "{{ lower .Name }}_create_input"
-	// UpdateMiddlewareCtxKey is a string alias we can use for referring to {{ lower .Name }} update data in contexts
-	UpdateMiddlewareCtxKey models.ContextKey = "{{ lower .Name }}_update_input"
+	// CreateMiddlewareCtxKey is a string alias we can use for referring to {{ camelCase .Name }} input data in contexts
+	CreateMiddlewareCtxKey models.ContextKey = "{{ camelCase .Name }}_create_input"
+	// UpdateMiddlewareCtxKey is a string alias we can use for referring to {{ camelCase .Name }} update data in contexts
+	UpdateMiddlewareCtxKey models.ContextKey = "{{ camelCase .Name }}_update_input"
 
-	counterName        metrics.CounterName = "{{ lower .Name }}s"
-	counterDescription                     = "the number of {{ lower .Name }}s managed by the {{ lower .Name }}s service"
-	topicName          string              = "{{ lower .Name }}s"
-	serviceName        string              = "{{ lower .Name }}s_service"
+	counterName        metrics.CounterName = "{{ camelCase .Name }}s"
+	counterDescription                     = "the number of {{ camelCase .Name }}s managed by the {{ camelCase .Name }}s service"
+	topicName          string              = "{{ camelCase .Name }}s"
+	serviceName        string              = "{{ camelCase .Name }}s_service"
 )
 
 var (
-	_ models.{{ camelcase .Name }}DataServer = (*Service)(nil)
+	_ models.{{ .Name }}DataServer = (*Service)(nil)
 )
 
 type (
-	// Service handles to-do list {{ lower .Name }}s
+	// Service handles to-do list {{ camelCase .Name }}s
 	Service struct {
 		logger         logging.Logger
-		{{ lower .Name }}Counter    metrics.UnitCounter
-		{{ lower .Name }}Database   models.{{ camelcase .Name }}DataManager
+		{{ camelCase .Name }}Counter    metrics.UnitCounter
+		{{ camelCase .Name }}Database   models.{{ .Name }}DataManager
 		userIDFetcher  UserIDFetcher
-		{{ lower .Name }}IDFetcher  {{ camelcase .Name }}IDFetcher
+		{{ camelCase .Name }}IDFetcher  {{ .Name }}IDFetcher
 		encoderDecoder encoding.EncoderDecoder
 		reporter       newsman.Reporter
 	}
@@ -45,41 +45,41 @@ type (
 	// UserIDFetcher is a function that fetches user IDs
 	UserIDFetcher func(*http.Request) uint64
 
-	// {{ camelcase .Name }}IDFetcher is a function that fetches {{ lower .Name }} IDs
-	{{ camelcase .Name }}IDFetcher func(*http.Request) uint64
+	// {{ .Name }}IDFetcher is a function that fetches {{ camelCase .Name }} IDs
+	{{ .Name }}IDFetcher func(*http.Request) uint64
 )
 
-// Provide{{ camelcase .Name }}sService builds a new {{ camelcase .Name }}sService
-func Provide{{ camelcase .Name }}sService(
+// Provide{{ .Name }}sService builds a new {{ .Name }}sService
+func Provide{{ .Name }}sService(
 	ctx context.Context,
 	logger logging.Logger,
-	db models.{{ camelcase .Name }}DataManager,
+	db models.{{ .Name }}DataManager,
 	userIDFetcher UserIDFetcher,
-	{{ lower .Name }}IDFetcher {{ camelcase .Name }}IDFetcher,
+	{{ camelCase .Name }}IDFetcher {{ .Name }}IDFetcher,
 	encoder encoding.EncoderDecoder,
-	{{ lower .Name }}CounterProvider metrics.UnitCounterProvider,
+	{{ camelCase .Name }}CounterProvider metrics.UnitCounterProvider,
 	reporter newsman.Reporter,
 ) (*Service, error) {
-	{{ lower .Name }}Counter, err := {{ lower .Name }}CounterProvider(counterName, counterDescription)
+	{{ camelCase .Name }}Counter, err := {{ camelCase .Name }}CounterProvider(counterName, counterDescription)
 	if err != nil {
 		return nil, errors.Wrap(err, "error initializing counter")
 	}
 
 	svc := &Service{
 		logger:         logger.WithName(serviceName),
-		{{ lower .Name }}Database:   db,
+		{{ camelCase .Name }}Database:   db,
 		encoderDecoder: encoder,
-		{{ lower .Name }}Counter:    {{ lower .Name }}Counter,
+		{{ camelCase .Name }}Counter:    {{ camelCase .Name }}Counter,
 		userIDFetcher:  userIDFetcher,
-		{{ lower .Name }}IDFetcher:  {{ lower .Name }}IDFetcher,
+		{{ camelCase .Name }}IDFetcher:  {{ camelCase .Name }}IDFetcher,
 		reporter:       reporter,
 	}
 
-	{{ lower .Name }}Count, err := svc.{{ lower .Name }}Database.GetAll{{ camelcase .Name }}sCount(ctx)
+	{{ camelCase .Name }}Count, err := svc.{{ camelCase .Name }}Database.GetAll{{ .Name }}sCount(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "setting current {{ lower .Name }} count")
+		return nil, errors.Wrap(err, "setting current {{ camelCase .Name }} count")
 	}
-	svc.{{ lower .Name }}Counter.IncrementBy(ctx, {{ lower .Name }}Count)
+	svc.{{ camelCase .Name }}Counter.IncrementBy(ctx, {{ camelCase .Name }}Count)
 
 	return svc, nil
 }

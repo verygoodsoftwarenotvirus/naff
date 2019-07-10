@@ -10,18 +10,18 @@ import (
 var (
 	// Providers is our collection of what we provide to other services
 	Providers = wire.NewSet(
-		Provide{{ camelcase .Name }}sService,
-		Provide{{ camelcase .Name }}DataManager,
-		Provide{{ camelcase .Name }}DataServer,
+		Provide{{ .Name }}sService,
+		Provide{{ .Name }}DataManager,
+		Provide{{ .Name }}DataServer,
 	)
 )
 
-// Provide{{ camelcase .Name }}DataManager turns a database into an {{ camelcase .Name }}DataManager
-func Provide{{ camelcase .Name }}DataManager(db database.Database) models.{{ camelcase .Name }}DataManager {
+// Provide{{ .Name }}DataManager turns a database into an {{ .Name }}DataManager
+func Provide{{ .Name }}DataManager(db database.Database) models.{{ .Name }}DataManager {
 	return db
 }
 
-// Provide{{ camelcase .Name }}DataServer is an arbitrary function for dependency injection's sake
-func Provide{{ camelcase .Name }}DataServer(s *Service) models.{{ camelcase .Name }}DataServer {
+// Provide{{ .Name }}DataServer is an arbitrary function for dependency injection's sake
+func Provide{{ .Name }}DataServer(s *Service) models.{{ .Name }}DataServer {
 	return s
 }

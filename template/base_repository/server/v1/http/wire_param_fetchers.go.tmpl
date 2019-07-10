@@ -7,8 +7,8 @@ import (
 	"{{ .OutputRepository }}/internal/logging/v1"
 	"{{ .OutputRepository }}/models/v1"
 	"{{ .OutputRepository }}/services/v1/auth"
-{{ range $x, $import := .IterableServicesImports }} 
-	"{{ $import }}" 
+{{ range $x, $import := .IterableServicesImports }}
+	"{{ $import }}"
 {{ end }}
 	"{{ .OutputRepository }}/services/v1/oauth2clients"
 	"{{ .OutputRepository }}/services/v1/users"
@@ -22,7 +22,7 @@ var (
 	paramFetcherProviders = wire.NewSet(
 
 				{{ range $i, $dt := .DataTypes }}
-					Provide{{ camelcase $dt.Name }}UserIDFetcher, 
+					Provide{{ pascal $dt.Name }}UserIDFetcher,
 				{{ end }}
 			
 		ProvideUsernameFetcher,
@@ -30,7 +30,7 @@ var (
 		ProvideAuthUserIDFetcher,
 
 {{ range $i, $dt := .DataTypes }}
-	Provide{{ camelcase $dt.Name }}IDFetcher,
+	Provide{{ pascal $dt.Name }}IDFetcher,
 {{ end }}
 
 		ProvideWebhooksUserIDFetcher,
@@ -39,17 +39,17 @@ var (
 )
 
 {{ range $i, $dt := .DataTypes }}
-// Provide{{ camelcase $dt.Name }}UserIDFetcher provides a UserIDFetcher
-func Provide{{ camelcase $dt.Name }}UserIDFetcher() {{ lower $dt.Name }}s.UserIDFetcher {
+// Provide{{ pascal $dt.Name }}UserIDFetcher provides a UserIDFetcher
+func Provide{{ pascal $dt.Name }}UserIDFetcher() {{ lower $dt.Name }}s.UserIDFetcher {
 	return UserIDFetcher
 }
 {{ end }}
 
 
 {{ range $i, $dt := .DataTypes }}
-// Provide{{ camelcase $dt.Name }}IDFetcher provides an {{ camelcase $dt.Name }}IDFetcher
-func Provide{{ camelcase $dt.Name }}IDFetcher(logger logging.Logger) {{ lower $dt.Name }}s.{{ camelcase $dt.Name }}IDFetcher {
-	return buildChi{{ camelcase $dt.Name }}IDFetcher(logger)
+// Provide{{ pascal $dt.Name }}IDFetcher provides an {{ pascal $dt.Name }}IDFetcher
+func Provide{{ pascal $dt.Name }}IDFetcher(logger logging.Logger) {{ lower $dt.Name }}s.{{ pascal $dt.Name }}IDFetcher {
+	return buildChi{{ $dt.Name }}IDFetcher(logger)
 }
 {{ end }}
 
@@ -95,14 +95,14 @@ func buildChiUserIDFetcher(logger logging.Logger) users.UserIDFetcher {
 }
 
 {{ range $i, $dt := .DataTypes }}
-// chi{{ camelcase $dt.Name }}IDFetcher fetches a {{ camelcase $dt.Name }}ID from a request routed by chi.
-func buildChi{{ camelcase $dt.Name }}IDFetcher(logger logging.Logger) func(req *http.Request) uint64 {
+// chi{{ pascal $dt.Name }}IDFetcher fetches a {{ pascal $dt.Name }}ID from a request routed by chi.
+func buildChi{{ pascal $dt.Name }}IDFetcher(logger logging.Logger) func(req *http.Request) uint64 {
 	return func(req *http.Request) uint64 {
 		// we can generally disregard this error only because we should be able to validate
 		// that the string only contains numbers via chi's regex url param feature.
 		u, err := strconv.ParseUint(chi.URLParam(req, {{ lower $dt.Name }}s.URIParamKey), 10, 64)
 		if err != nil {
-			logger.Error(err, "fetching {{ camelcase $dt.Name }}ID from request")
+			logger.Error(err, "fetching {{ camelCase $dt.Name }}ID from request")
 		}
 		return u
 	}

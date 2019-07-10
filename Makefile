@@ -37,3 +37,8 @@ run:
 
 naff_debug:
 	go build -o naff_debug gitlab.com/verygoodsoftwarenotvirus/naff/cmd/cli
+
+templates:
+	@rm -rf template/
+	@mkdir template
+	go run cmd/tools/template_builder/main.go

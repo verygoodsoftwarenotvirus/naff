@@ -13,13 +13,13 @@ import (
 )
 
 const (
-	// URIParamKey is a standard string that we'll use to refer to {{ lower .Name }} IDs with
-	URIParamKey = "{{ lower .Name }}ID"
+	// URIParamKey is a standard string that we'll use to refer to {{ camelCase .Name }} IDs with
+	URIParamKey = "{{ camelCase .Name }}ID"
 )
 
-func attach{{ camelcase .Name }}IDToSpan(span *trace.Span, {{ lower .Name }}ID uint64) {
+func attach{{ .Name }}IDToSpan(span *trace.Span, {{ camelCase .Name }}ID uint64) {
 	if span != nil {
-		span.AddAttributes(trace.StringAttribute("{{ lower .Name }}_id", strconv.FormatUint({{ lower .Name }}ID, 10)))
+		span.AddAttributes(trace.StringAttribute("{{ camelCase .Name }}_id", strconv.FormatUint({{ camelCase .Name }}ID, 10)))
 	}
 }
 
@@ -43,26 +43,26 @@ func (s *Service) ListHandler(res http.ResponseWriter, req *http.Request) {
 
 	attachUserIDToSpan(span, userID)
 
-	// fetch {{ lower .Name }}s from database
-	{{ lower .Name }}s, err := s.{{ lower .Name }}Database.Get{{ camelcase .Name }}s(ctx, qf, userID)
+	// fetch {{ camelCase .Name }}s from database
+	{{ camelCase .Name }}s, err := s.{{ camelCase .Name }}Database.Get{{ .Name }}s(ctx, qf, userID)
 	if err == sql.ErrNoRows {
 		// in the event no rows exist return an empty list
-		{{ lower .Name }}s = &models.{{ camelcase .Name }}List{
-			{{ camelcase .Name }}s: []models.{{ camelcase .Name }}{},
+		{{ camelCase .Name }}s = &models.{{ .Name }}List{
+			{{ .Name }}s: []models.{{ .Name }}{},
 		}
 	} else if err != nil {
-		logger.Error(err, "error encountered fetching {{ lower .Name }}s")
+		logger.Error(err, "error encountered fetching {{ camelCase .Name }}s")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	// encode our response and peace
-	if err = s.encoderDecoder.EncodeResponse(res, {{ lower .Name }}s); err != nil {
+	if err = s.encoderDecoder.EncodeResponse(res, {{ camelCase .Name }}s); err != nil {
 		s.logger.Error(err, "encoding response")
 	}
 }
 
-// CreateHandler is our {{ lower .Name }} creation route
+// CreateHandler is our {{ camelCase .Name }} creation route
 func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	ctx, span := trace.StartSpan(req.Context(), "CreateHandler")
 	defer span.End()
@@ -73,7 +73,7 @@ func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	logger := s.logger.WithValue("user_id", userID)
 
 	// check request context for parsed input struct
-	input, ok := ctx.Value(CreateMiddlewareCtxKey).(*models.{{ camelcase .Name }}CreationInput)
+	input, ok := ctx.Value(CreateMiddlewareCtxKey).(*models.{{ .Name }}CreationInput)
 	logger = logger.WithValue("input", input)
 	if !ok {
 		logger.Info("valid input not attached to request")
@@ -82,17 +82,17 @@ func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	input.BelongsTo = userID
 
-	// create {{ lower .Name }} in database
-	x, err := s.{{ lower .Name }}Database.Create{{ camelcase .Name }}(ctx, input)
+	// create {{ camelCase .Name }} in database
+	x, err := s.{{ camelCase .Name }}Database.Create{{ .Name }}(ctx, input)
 	if err != nil {
-		s.logger.Error(err, "error creating {{ lower .Name }}")
+		s.logger.Error(err, "error creating {{ camelCase .Name }}")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// notify relevant parties of new {{ lower .Name }}
-	s.{{ lower .Name }}Counter.Increment(ctx)
-	attach{{ camelcase .Name }}IDToSpan(span, x.ID)
+	// notify relevant parties of new {{ camelCase .Name }}
+	s.{{ camelCase .Name }}Counter.Increment(ctx)
+	attach{{ .Name }}IDToSpan(span, x.ID)
 	s.reporter.Report(newsman.Event{
 		Data:      x,
 		Topics:    []string{topicName},
@@ -106,30 +106,30 @@ func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// ReadHandler returns a GET handler that returns an {{ lower .Name }}
+// ReadHandler returns a GET handler that returns an {{ camelCase .Name }}
 func (s *Service) ReadHandler(res http.ResponseWriter, req *http.Request) {
 	ctx, span := trace.StartSpan(req.Context(), "ReadHandler")
 	defer span.End()
 
 	// determine relevant info
 	userID := s.userIDFetcher(req)
-	{{ lower .Name }}ID := s.{{ lower .Name }}IDFetcher(req)
+	{{ camelCase .Name }}ID := s.{{ camelCase .Name }}IDFetcher(req)
 
 	// keep the aforementioned context in mind
 	logger := s.logger.WithValues(map[string]interface{}{
 		"user_id": userID,
-		"{{ lower .Name }}_id": {{ lower .Name }}ID,
+		"{{ camelCase .Name }}_id": {{ camelCase .Name }}ID,
 	})
-	attach{{ camelcase .Name }}IDToSpan(span, {{ lower .Name }}ID)
+	attach{{ .Name }}IDToSpan(span, {{ camelCase .Name }}ID)
 	attachUserIDToSpan(span, userID)
 
-	// fetch {{ lower .Name }} from database
-	x, err := s.{{ lower .Name }}Database.Get{{ camelcase .Name }}(ctx, {{ lower .Name }}ID, userID)
+	// fetch {{ camelCase .Name }} from database
+	x, err := s.{{ camelCase .Name }}Database.Get{{ .Name }}(ctx, {{ camelCase .Name }}ID, userID)
 	if err == sql.ErrNoRows {
 		res.WriteHeader(http.StatusNotFound)
 		return
 	} else if err != nil {
-		logger.Error(err, "error fetching {{ lower .Name }} from database")
+		logger.Error(err, "error fetching {{ camelCase .Name }} from database")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -140,13 +140,13 @@ func (s *Service) ReadHandler(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// UpdateHandler returns a handler that updates an {{ lower .Name }}
+// UpdateHandler returns a handler that updates an {{ camelCase .Name }}
 func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	ctx, span := trace.StartSpan(req.Context(), "UpdateHandler")
 	defer span.End()
 
 	// check for parsed input attached to request context
-	input, ok := ctx.Value(UpdateMiddlewareCtxKey).(*models.{{ camelcase .Name }}UpdateInput)
+	input, ok := ctx.Value(UpdateMiddlewareCtxKey).(*models.{{ .Name }}UpdateInput)
 	if !ok {
 		s.logger.Info("no input attached to request")
 		res.WriteHeader(http.StatusBadRequest)
@@ -155,23 +155,23 @@ func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 
 	// determine relevant info
 	userID := s.userIDFetcher(req)
-	{{ lower .Name }}ID := s.{{ lower .Name }}IDFetcher(req)
+	{{ camelCase .Name }}ID := s.{{ camelCase .Name }}IDFetcher(req)
 
 	// keep aforementioned context in mind
 	logger := s.logger.WithValues(map[string]interface{}{
 		"user_id": userID,
-		"{{ lower .Name }}_id": {{ lower .Name }}ID,
+		"{{ camelCase .Name }}_id": {{ camelCase .Name }}ID,
 	})
-	attach{{ camelcase .Name }}IDToSpan(span, {{ lower .Name }}ID)
+	attach{{ .Name }}IDToSpan(span, {{ camelCase .Name }}ID)
 	attachUserIDToSpan(span, userID)
 
-	// fetch {{ lower .Name }} from database
-	x, err := s.{{ lower .Name }}Database.Get{{ camelcase .Name }}(ctx, {{ lower .Name }}ID, userID)
+	// fetch {{ camelCase .Name }} from database
+	x, err := s.{{ camelCase .Name }}Database.Get{{ .Name }}(ctx, {{ camelCase .Name }}ID, userID)
 	if err == sql.ErrNoRows {
 		res.WriteHeader(http.StatusNotFound)
 		return
 	} else if err != nil {
-		logger.Error(err, "error encountered getting {{ lower .Name }}")
+		logger.Error(err, "error encountered getting {{ camelCase .Name }}")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -179,9 +179,9 @@ func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	// update the data structure
 	x.Update(input)
 
-	// update {{ lower .Name }} in database
-	if err = s.{{ lower .Name }}Database.Update{{ camelcase .Name }}(ctx, x); err != nil {
-		logger.Error(err, "error encountered updating {{ lower .Name }}")
+	// update {{ camelCase .Name }} in database
+	if err = s.{{ camelCase .Name }}Database.Update{{ .Name }}(ctx, x); err != nil {
+		logger.Error(err, "error encountered updating {{ camelCase .Name }}")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -199,39 +199,39 @@ func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// ArchiveHandler returns a handler that archives an {{ lower .Name }}
+// ArchiveHandler returns a handler that archives an {{ camelCase .Name }}
 func (s *Service) ArchiveHandler(res http.ResponseWriter, req *http.Request) {
 	ctx, span := trace.StartSpan(req.Context(), "ArchiveHandler")
 	defer span.End()
 
 	// determine relevant information
 	userID := s.userIDFetcher(req)
-	{{ lower .Name }}ID := s.{{ lower .Name }}IDFetcher(req)
+	{{ camelCase .Name }}ID := s.{{ camelCase .Name }}IDFetcher(req)
 
 	// keep aforementioned context in mind
 	logger := s.logger.WithValues(map[string]interface{}{
-		"{{ lower .Name }}_id": {{ lower .Name }}ID,
+		"{{ camelCase .Name }}_id": {{ camelCase .Name }}ID,
 		"user_id": userID,
 	})
-	attach{{ camelcase .Name }}IDToSpan(span, {{ lower .Name }}ID)
+	attach{{ .Name }}IDToSpan(span, {{ camelCase .Name }}ID)
 	attachUserIDToSpan(span, userID)
 
-	// archive the {{ lower .Name }} in the database
-	err := s.{{ lower .Name }}Database.Archive{{ camelcase .Name }}(ctx, {{ lower .Name }}ID, userID)
+	// archive the {{ camelCase .Name }} in the database
+	err := s.{{ camelCase .Name }}Database.Archive{{ .Name }}(ctx, {{ camelCase .Name }}ID, userID)
 	if err == sql.ErrNoRows {
 		res.WriteHeader(http.StatusNotFound)
 		return
 	} else if err != nil {
-		logger.Error(err, "error encountered deleting {{ lower .Name }}")
+		logger.Error(err, "error encountered deleting {{ camelCase .Name }}")
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	// notify relevant parties
-	s.{{ lower .Name }}Counter.Decrement(ctx)
+	s.{{ camelCase .Name }}Counter.Decrement(ctx)
 	s.reporter.Report(newsman.Event{
 		EventType: string(models.Archive),
-		Data:      &models.{{ camelcase .Name }}{ID: {{ lower .Name }}ID},
+		Data:      &models.{{ .Name }}{ID: {{ camelCase .Name }}ID},
 		Topics:    []string{topicName},
 	})
 

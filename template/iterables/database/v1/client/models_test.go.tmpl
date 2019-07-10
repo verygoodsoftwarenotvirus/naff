@@ -10,20 +10,20 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestClient_Get{{ camelcase .Name }}(T *testing.T) {
+func TestClient_Get{{ .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		example{{ camelcase .Name }}ID := uint64(123)
+		example{{ .Name }}ID := uint64(123)
 		exampleUserID := uint64(123)
-		expected := &models.{{ camelcase .Name }}{}
+		expected := &models.{{ .Name }}{}
 
 		c, mockDB := buildTestClient()
-		mockDB.{{ camelcase .Name }}DataManager.
-			On("Get{{ camelcase .Name }}", mock.Anything, example{{ camelcase .Name }}ID, exampleUserID).
+		mockDB.{{ .Name }}DataManager.
+			On("Get{{ .Name }}", mock.Anything, example{{ .Name }}ID, exampleUserID).
 			Return(expected, nil)
 
-		actual, err := c.Get{{ camelcase .Name }}(context.Background(), example{{ camelcase .Name }}ID, exampleUserID)
+		actual, err := c.Get{{ .Name }}(context.Background(), example{{ .Name }}ID, exampleUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -31,7 +31,7 @@ func TestClient_Get{{ camelcase .Name }}(T *testing.T) {
 	})
 }
 
-func TestClient_Get{{ camelcase .Name }}Count(T *testing.T) {
+func TestClient_Get{{ .Name }}Count(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
@@ -39,11 +39,11 @@ func TestClient_Get{{ camelcase .Name }}Count(T *testing.T) {
 		exampleUserID := uint64(123)
 
 		c, mockDB := buildTestClient()
-		mockDB.{{ camelcase .Name }}DataManager.
-			On("Get{{ camelcase .Name }}Count", mock.Anything, models.DefaultQueryFilter(), exampleUserID).
+		mockDB.{{ .Name }}DataManager.
+			On("Get{{ .Name }}Count", mock.Anything, models.DefaultQueryFilter(), exampleUserID).
 			Return(expected, nil)
 
-		actual, err := c.Get{{ camelcase .Name }}Count(context.Background(), models.DefaultQueryFilter(), exampleUserID)
+		actual, err := c.Get{{ .Name }}Count(context.Background(), models.DefaultQueryFilter(), exampleUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -55,11 +55,11 @@ func TestClient_Get{{ camelcase .Name }}Count(T *testing.T) {
 		exampleUserID := uint64(123)
 
 		c, mockDB := buildTestClient()
-		mockDB.{{ camelcase .Name }}DataManager.
-			On("Get{{ camelcase .Name }}Count", mock.Anything, (*models.QueryFilter)(nil), exampleUserID).
+		mockDB.{{ .Name }}DataManager.
+			On("Get{{ .Name }}Count", mock.Anything, (*models.QueryFilter)(nil), exampleUserID).
 			Return(expected, nil)
 
-		actual, err := c.Get{{ camelcase .Name }}Count(context.Background(), nil, exampleUserID)
+		actual, err := c.Get{{ .Name }}Count(context.Background(), nil, exampleUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -67,17 +67,17 @@ func TestClient_Get{{ camelcase .Name }}Count(T *testing.T) {
 	})
 }
 
-func TestClient_GetAll{{ camelcase .Name }}sCount(T *testing.T) {
+func TestClient_GetAll{{ .Name }}sCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
 		expected := uint64(321)
 		c, mockDB := buildTestClient()
-		mockDB.{{ camelcase .Name }}DataManager.
-			On("GetAll{{ camelcase .Name }}sCount", mock.Anything).
+		mockDB.{{ .Name }}DataManager.
+			On("GetAll{{ .Name }}sCount", mock.Anything).
 			Return(expected, nil)
 
-		actual, err := c.GetAll{{ camelcase .Name }}sCount(context.Background())
+		actual, err := c.GetAll{{ .Name }}sCount(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -85,19 +85,19 @@ func TestClient_GetAll{{ camelcase .Name }}sCount(T *testing.T) {
 	})
 }
 
-func TestClient_Get{{ camelcase .Name }}s(T *testing.T) {
+func TestClient_Get{{ .Name }}s(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
 		exampleUserID := uint64(123)
 		c, mockDB := buildTestClient()
-		expected := &models.{{ camelcase .Name }}List{}
+		expected := &models.{{ .Name }}List{}
 
-		mockDB.{{ camelcase .Name }}DataManager.
-			On("Get{{ camelcase .Name }}s", mock.Anything, models.DefaultQueryFilter(), exampleUserID).
+		mockDB.{{ .Name }}DataManager.
+			On("Get{{ .Name }}s", mock.Anything, models.DefaultQueryFilter(), exampleUserID).
 			Return(expected, nil)
 
-		actual, err := c.Get{{ camelcase .Name }}s(context.Background(), models.DefaultQueryFilter(), exampleUserID)
+		actual, err := c.Get{{ .Name }}s(context.Background(), models.DefaultQueryFilter(), exampleUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -107,13 +107,13 @@ func TestClient_Get{{ camelcase .Name }}s(T *testing.T) {
 	T.Run("with nil filter", func(t *testing.T) {
 		exampleUserID := uint64(123)
 		c, mockDB := buildTestClient()
-		expected := &models.{{ camelcase .Name }}List{}
+		expected := &models.{{ .Name }}List{}
 
-		mockDB.{{ camelcase .Name }}DataManager.
-			On("Get{{ camelcase .Name }}s", mock.Anything, (*models.QueryFilter)(nil), exampleUserID).
+		mockDB.{{ .Name }}DataManager.
+			On("Get{{ .Name }}s", mock.Anything, (*models.QueryFilter)(nil), exampleUserID).
 			Return(expected, nil)
 
-		actual, err := c.Get{{ camelcase .Name }}s(context.Background(), nil, exampleUserID)
+		actual, err := c.Get{{ .Name }}s(context.Background(), nil, exampleUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -121,19 +121,19 @@ func TestClient_Get{{ camelcase .Name }}s(T *testing.T) {
 	})
 }
 
-func TestClient_Create{{ camelcase .Name }}(T *testing.T) {
+func TestClient_Create{{ .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		exampleInput := &models.{{ camelcase .Name }}CreationInput{}
+		exampleInput := &models.{{ .Name }}CreationInput{}
 		c, mockDB := buildTestClient()
-		expected := &models.{{ camelcase .Name }}{}
+		expected := &models.{{ .Name }}{}
 
-		mockDB.{{ camelcase .Name }}DataManager.
-			On("Create{{ camelcase .Name }}", mock.Anything, exampleInput).
+		mockDB.{{ .Name }}DataManager.
+			On("Create{{ .Name }}", mock.Anything, exampleInput).
 			Return(expected, nil)
 
-		actual, err := c.Create{{ camelcase .Name }}(context.Background(), exampleInput)
+		actual, err := c.Create{{ .Name }}(context.Background(), exampleInput)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 
@@ -141,36 +141,36 @@ func TestClient_Create{{ camelcase .Name }}(T *testing.T) {
 	})
 }
 
-func TestClient_Update{{ camelcase .Name }}(T *testing.T) {
+func TestClient_Update{{ .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		exampleInput := &models.{{ camelcase .Name }}{}
+		exampleInput := &models.{{ .Name }}{}
 		c, mockDB := buildTestClient()
 		var expected error
 
-		mockDB.{{ camelcase .Name }}DataManager.
-			On("Update{{ camelcase .Name }}", mock.Anything, exampleInput).
+		mockDB.{{ .Name }}DataManager.
+			On("Update{{ .Name }}", mock.Anything, exampleInput).
 			Return(expected)
 
-		err := c.Update{{ camelcase .Name }}(context.Background(), exampleInput)
+		err := c.Update{{ .Name }}(context.Background(), exampleInput)
 		assert.NoError(t, err)
 	})
 }
 
-func TestClient_Archive{{ camelcase .Name }}(T *testing.T) {
+func TestClient_Archive{{ .Name }}(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
 		exampleUserID := uint64(123)
-		example{{ camelcase .Name }}ID := uint64(123)
+		example{{ .Name }}ID := uint64(123)
 		var expected error
 
 		c, mockDB := buildTestClient()
-		mockDB.{{ camelcase .Name }}DataManager.On("Archive{{ camelcase .Name }}", mock.Anything, example{{ camelcase .Name }}ID, exampleUserID).
+		mockDB.{{ .Name }}DataManager.On("Archive{{ .Name }}", mock.Anything, example{{ .Name }}ID, exampleUserID).
 			Return(expected)
 
-		err := c.Archive{{ camelcase .Name }}(context.Background(), exampleUserID, example{{ camelcase .Name }}ID)
+		err := c.Archive{{ .Name }}(context.Background(), exampleUserID, example{{ .Name }}ID)
 		assert.NoError(t, err)
 	})
 }

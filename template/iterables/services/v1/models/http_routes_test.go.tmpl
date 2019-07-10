@@ -20,17 +20,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test{{ camelcase .Name }}sService_List(T *testing.T) {
+func Test{{ .Name }}sService_List(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}List{
-			{{ camelcase .Name }}s: []models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}List{
+			{{ .Name }}s: []models.{{ .Name }}{
 				{
 					ID:   123,
-					Name: "name",
+					
 				},
 			},
 		}
@@ -39,15 +39,15 @@ func Test{{ camelcase .Name }}sService_List(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Get{{ camelcase .Name }}s",
+			"Get{{ .Name }}s",
 			mock.Anything,
 			mock.Anything,
 			requestingUser.ID,
 		).Return(expected, nil)
 
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -76,14 +76,14 @@ func Test{{ camelcase .Name }}sService_List(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Get{{ camelcase .Name }}s",
+			"Get{{ .Name }}s",
 			mock.Anything,
 			mock.Anything,
 			requestingUser.ID,
-		).Return((*models.{{ camelcase .Name }}List)(nil), sql.ErrNoRows)
-		s.{{ lower .Name }}Database = id
+		).Return((*models.{{ .Name }}List)(nil), sql.ErrNoRows)
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -104,7 +104,7 @@ func Test{{ camelcase .Name }}sService_List(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusOK)
 	})
 
-	T.Run("with error fetching {{ lower .Name }}s from database", func(t *testing.T) {
+	T.Run("with error fetching {{ camelCase .Name }}s from database", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
 
@@ -112,14 +112,14 @@ func Test{{ camelcase .Name }}sService_List(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Get{{ camelcase .Name }}s",
+			"Get{{ .Name }}s",
 			mock.Anything,
 			mock.Anything,
 			requestingUser.ID,
-		).Return((*models.{{ camelcase .Name }}List)(nil), errors.New("blah"))
-		s.{{ lower .Name }}Database = id
+		).Return((*models.{{ .Name }}List)(nil), errors.New("blah"))
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -143,22 +143,22 @@ func Test{{ camelcase .Name }}sService_List(T *testing.T) {
 	T.Run("with error encoding response", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}List{
-			{{ camelcase .Name }}s: []models.{{ camelcase .Name }}{},
+		expected := &models.{{ .Name }}List{
+			{{ .Name }}s: []models.{{ .Name }}{},
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Get{{ camelcase .Name }}s",
+			"Get{{ .Name }}s",
 			mock.Anything,
 			mock.Anything,
 			requestingUser.ID,
 		).Return(expected, nil)
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -180,20 +180,20 @@ func Test{{ camelcase .Name }}sService_List(T *testing.T) {
 	})
 }
 
-func Test{{ camelcase .Name }}sService_Create(T *testing.T) {
+func Test{{ .Name }}sService_Create(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Increment", mock.Anything)
-		s.{{ lower .Name }}Counter = mc
+		s.{{ camelCase .Name }}Counter = mc
 
 		r := &mockman.Reporter{}
 		r.On("Report", mock.Anything).Return()
@@ -203,13 +203,13 @@ func Test{{ camelcase .Name }}sService_Create(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Create{{ camelcase .Name }}",
+			"Create{{ .Name }}",
 			mock.Anything,
 			mock.Anything,
 		).Return(expected, nil)
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -225,8 +225,8 @@ func Test{{ camelcase .Name }}sService_Create(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ camelcase .Name }}CreationInput{
-			Name: expected.Name,
+		exampleInput := &models.{{ .Name }}CreationInput{
+			
 		}
 		req = req.WithContext(context.WithValue(req.Context(), CreateMiddlewareCtxKey, exampleInput))
 
@@ -262,25 +262,25 @@ func Test{{ camelcase .Name }}sService_Create(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusBadRequest)
 	})
 
-	T.Run("with error creating {{ lower .Name }}", func(t *testing.T) {
+	T.Run("with error creating {{ camelCase .Name }}", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Create{{ camelcase .Name }}",
+			"Create{{ .Name }}",
 			mock.Anything,
 			mock.Anything,
-		).Return((*models.{{ camelcase .Name }})(nil), errors.New("blah"))
-		s.{{ lower .Name }}Database = id
+		).Return((*models.{{ .Name }})(nil), errors.New("blah"))
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -296,8 +296,8 @@ func Test{{ camelcase .Name }}sService_Create(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ camelcase .Name }}CreationInput{
-			Name: expected.Name,
+		exampleInput := &models.{{ .Name }}CreationInput{
+			
 		}
 		req = req.WithContext(context.WithValue(req.Context(), CreateMiddlewareCtxKey, exampleInput))
 
@@ -309,14 +309,14 @@ func Test{{ camelcase .Name }}sService_Create(T *testing.T) {
 	T.Run("with error encoding response", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Increment", mock.Anything)
-		s.{{ lower .Name }}Counter = mc
+		s.{{ camelCase .Name }}Counter = mc
 
 		r := &mockman.Reporter{}
 		r.On("Report", mock.Anything).Return()
@@ -326,13 +326,13 @@ func Test{{ camelcase .Name }}sService_Create(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Create{{ camelcase .Name }}",
+			"Create{{ .Name }}",
 			mock.Anything,
 			mock.Anything,
 		).Return(expected, nil)
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -348,8 +348,8 @@ func Test{{ camelcase .Name }}sService_Create(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ camelcase .Name }}CreationInput{
-			Name: expected.Name,
+		exampleInput := &models.{{ .Name }}CreationInput{
+			
 		}
 		req = req.WithContext(context.WithValue(req.Context(), CreateMiddlewareCtxKey, exampleInput))
 
@@ -359,33 +359,33 @@ func Test{{ camelcase .Name }}sService_Create(T *testing.T) {
 	})
 }
 
-func Test{{ camelcase .Name }}sService_Read(T *testing.T) {
+func Test{{ .Name }}sService_Read(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Get{{ camelcase .Name }}",
+			"Get{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(expected, nil)
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -406,30 +406,30 @@ func Test{{ camelcase .Name }}sService_Read(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusOK)
 	})
 
-	T.Run("with no such {{ lower .Name }} in database", func(t *testing.T) {
+	T.Run("with no such {{ camelCase .Name }} in database", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Get{{ camelcase .Name }}",
+			"Get{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
-		).Return((*models.{{ camelcase .Name }})(nil), sql.ErrNoRows)
-		s.{{ lower .Name }}Database = id
+		).Return((*models.{{ .Name }})(nil), sql.ErrNoRows)
+		s.{{ camelCase .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
@@ -445,30 +445,30 @@ func Test{{ camelcase .Name }}sService_Read(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusNotFound)
 	})
 
-	T.Run("with error fetching {{ lower .Name }} from database", func(t *testing.T) {
+	T.Run("with error fetching {{ camelCase .Name }} from database", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Get{{ camelcase .Name }}",
+			"Get{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
-		).Return((*models.{{ camelcase .Name }})(nil), errors.New("blah"))
-		s.{{ lower .Name }}Database = id
+		).Return((*models.{{ .Name }})(nil), errors.New("blah"))
+		s.{{ camelCase .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
@@ -487,27 +487,27 @@ func Test{{ camelcase .Name }}sService_Read(T *testing.T) {
 	T.Run("with error encoding response", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Get{{ camelcase .Name }}",
+			"Get{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(expected, nil)
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -529,20 +529,20 @@ func Test{{ camelcase .Name }}sService_Read(T *testing.T) {
 	})
 }
 
-func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
+func Test{{ .Name }}sService_Update(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Increment", mock.Anything)
-		s.{{ lower .Name }}Counter = mc
+		s.{{ camelCase .Name }}Counter = mc
 
 		r := &mockman.Reporter{}
 		r.On("Report", mock.Anything).Return()
@@ -552,26 +552,26 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 
 		id.On(
-			"Get{{ camelcase .Name }}",
+			"Get{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(expected, nil)
 
 		id.On(
-			"Update{{ camelcase .Name }}",
+			"Update{{ .Name }}",
 			mock.Anything,
 			mock.Anything,
 		).Return(nil)
 
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -587,8 +587,8 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ camelcase .Name }}UpdateInput{
-			Name: expected.Name,
+		exampleInput := &models.{{ .Name }}UpdateInput{
+			
 		}
 		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
 
@@ -614,32 +614,32 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusBadRequest)
 	})
 
-	T.Run("with no rows fetching {{ lower .Name }}", func(t *testing.T) {
+	T.Run("with no rows fetching {{ camelCase .Name }}", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 
 		id.On(
-			"Get{{ camelcase .Name }}",
+			"Get{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
-		).Return((*models.{{ camelcase .Name }})(nil), sql.ErrNoRows)
+		).Return((*models.{{ .Name }})(nil), sql.ErrNoRows)
 
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
@@ -650,8 +650,8 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ camelcase .Name }}UpdateInput{
-			Name: expected.Name,
+		exampleInput := &models.{{ .Name }}UpdateInput{
+			
 		}
 		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
 
@@ -660,32 +660,32 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusNotFound)
 	})
 
-	T.Run("with error fetching {{ lower .Name }}", func(t *testing.T) {
+	T.Run("with error fetching {{ camelCase .Name }}", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 
 		id.On(
-			"Get{{ camelcase .Name }}",
+			"Get{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
-		).Return((*models.{{ camelcase .Name }})(nil), errors.New("blah"))
+		).Return((*models.{{ .Name }})(nil), errors.New("blah"))
 
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
@@ -696,8 +696,8 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ camelcase .Name }}UpdateInput{
-			Name: expected.Name,
+		exampleInput := &models.{{ .Name }}UpdateInput{
+			
 		}
 		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
 
@@ -706,17 +706,17 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusInternalServerError)
 	})
 
-	T.Run("with error updating {{ lower .Name }}", func(t *testing.T) {
+	T.Run("with error updating {{ camelCase .Name }}", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Increment", mock.Anything)
-		s.{{ lower .Name }}Counter = mc
+		s.{{ camelCase .Name }}Counter = mc
 
 		r := &mockman.Reporter{}
 		r.On("Report", mock.Anything).Return()
@@ -726,26 +726,26 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 
 		id.On(
-			"Get{{ camelcase .Name }}",
+			"Get{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(expected, nil)
 
 		id.On(
-			"Update{{ camelcase .Name }}",
+			"Update{{ .Name }}",
 			mock.Anything,
 			mock.Anything,
 		).Return(errors.New("blah"))
 
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -761,8 +761,8 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ camelcase .Name }}UpdateInput{
-			Name: expected.Name,
+		exampleInput := &models.{{ .Name }}UpdateInput{
+			
 		}
 		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
 
@@ -774,14 +774,14 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 	T.Run("with error encoding response", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Increment", mock.Anything)
-		s.{{ lower .Name }}Counter = mc
+		s.{{ camelCase .Name }}Counter = mc
 
 		r := &mockman.Reporter{}
 		r.On("Report", mock.Anything).Return()
@@ -791,26 +791,26 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 
 		id.On(
-			"Get{{ camelcase .Name }}",
+			"Get{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(expected, nil)
 
 		id.On(
-			"Update{{ camelcase .Name }}",
+			"Update{{ .Name }}",
 			mock.Anything,
 			mock.Anything,
 		).Return(nil)
 
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -826,8 +826,8 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 		require.NotNil(t, req)
 		require.NoError(t, err)
 
-		exampleInput := &models.{{ camelcase .Name }}UpdateInput{
-			Name: expected.Name,
+		exampleInput := &models.{{ .Name }}UpdateInput{
+			
 		}
 		req = req.WithContext(context.WithValue(req.Context(), UpdateMiddlewareCtxKey, exampleInput))
 
@@ -837,15 +837,15 @@ func Test{{ camelcase .Name }}sService_Update(T *testing.T) {
 	})
 }
 
-func Test{{ camelcase .Name }}sService_Archive(T *testing.T) {
+func Test{{ .Name }}sService_Archive(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		r := &mockman.Reporter{}
@@ -854,24 +854,24 @@ func Test{{ camelcase .Name }}sService_Archive(T *testing.T) {
 
 		mc := &mmetrics.UnitCounter{}
 		mc.On("Decrement").Return()
-		s.{{ lower .Name }}Counter = mc
+		s.{{ camelCase .Name }}Counter = mc
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Archive{{ camelcase .Name }}",
+			"Archive{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(nil)
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		ed := &mencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).
@@ -892,30 +892,30 @@ func Test{{ camelcase .Name }}sService_Archive(T *testing.T) {
 		assert.Equal(t, res.Code, http.StatusNoContent)
 	})
 
-	T.Run("with no {{ lower .Name }} in database", func(t *testing.T) {
+	T.Run("with no {{ camelCase .Name }} in database", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Archive{{ camelcase .Name }}",
+			"Archive{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(sql.ErrNoRows)
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
@@ -934,27 +934,27 @@ func Test{{ camelcase .Name }}sService_Archive(T *testing.T) {
 	T.Run("with error reading from database", func(t *testing.T) {
 		s := buildTestService()
 		requestingUser := &models.User{ID: 1}
-		expected := &models.{{ camelcase .Name }}{
+		expected := &models.{{ .Name }}{
 			ID:   123,
-			Name: "name",
+			
 		}
 
 		s.userIDFetcher = func(req *http.Request) uint64 {
 			return requestingUser.ID
 		}
 
-		s.{{ lower .Name }}IDFetcher = func(req *http.Request) uint64 {
+		s.{{ camelCase .Name }}IDFetcher = func(req *http.Request) uint64 {
 			return expected.ID
 		}
 
-		id := &mmodels.{{ camelcase .Name }}DataManager{}
+		id := &mmodels.{{ .Name }}DataManager{}
 		id.On(
-			"Archive{{ camelcase .Name }}",
+			"Archive{{ .Name }}",
 			mock.Anything,
 			expected.ID,
 			requestingUser.ID,
 		).Return(errors.New("blah"))
-		s.{{ lower .Name }}Database = id
+		s.{{ camelCase .Name }}Database = id
 
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(

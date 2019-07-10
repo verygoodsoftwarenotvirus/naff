@@ -15,8 +15,8 @@ import (
 	httpserver "{{ .OutputRepository }}/server/v1/http"
 	"{{ .OutputRepository }}/services/v1/auth"
 	"{{ .OutputRepository }}/services/v1/frontend"
-{{ range $x, $import := .IterableServicesImports }} 
-	"{{ $import }}" 
+{{ range $x, $import := .IterableServicesImports }}
+	"{{ $import }}"
 {{ end }}
 	"{{ .OutputRepository }}/services/v1/oauth2clients"
 	"{{ .OutputRepository }}/services/v1/users"
@@ -58,7 +58,9 @@ func BuildServer(
 
 		auth.Providers,
 		users.Providers,
-{{ range $i, $dm := .DataTypes }} {{ lower $dm.Name }}s.Providers, {{ end }}
+		{{ range $i, $dm := .DataTypes }}
+			{{ lower $dm.Name }}s.Providers,
+		{{ end }}
 		frontend.Providers,
 		webhooks.Providers,
 		oauth2clients.Providers,

@@ -6,8 +6,8 @@ import (
 )
 
 type (
-	// {{ camelcase .Name }} represents a(n) {{ camelcase .Name }}
-	{{ camelcase .Name }} struct {
+	// {{ .Name }} represents a(n) {{ .Name }}
+	{{ .Name }} struct {
 		ID         uint64  `json:"id"`
 		{{ range $i, $field := .Fields }}
 			{{ pascal $field.Name }} {{ if $field.Pointer }}*{{ end }}{{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
@@ -18,14 +18,14 @@ type (
 		BelongsTo  uint64  `json:"belongs_to"`
 	}
 
-	// {{ camelcase .Name }}List represents a list of {{ lower .Name }}s
-	{{ camelcase .Name }}List struct {
+	// {{ .Name }}List represents a list of {{ camelCase .Name }}s
+	{{ .Name }}List struct {
 		Pagination
-		{{ camelcase .Name }}s []{{ camelcase .Name }} `json:"{{ lower .Name }}s"`
+		{{ .Name }}s []{{ .Name }} `json:"{{ camelCase .Name }}s"`
 	}
 
-	// {{ camelcase .Name }}CreationInput represents what a user could set as input for creating {{ camelcase .Name }}s
-	{{ camelcase .Name }}CreationInput struct {
+	// {{ .Name }}CreationInput represents what a user could set as input for creating {{ .Name }}s
+	{{ .Name }}CreationInput struct {
 		{{ range $i, $field := .Fields }}
 			{{ if $field.ValidForCreationInput }}
 				{{ $field.Name }} {{ if $field.Pointer }}*{{ end }}{{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
@@ -34,8 +34,8 @@ type (
 		BelongsTo uint64 `json:"-"`
 	}
 
-	// {{ camelcase .Name }}UpdateInput represents what a user could set as input for updating {{ camelcase .Name }}s
-	{{ camelcase .Name }}UpdateInput struct {
+	// {{ .Name }}UpdateInput represents what a user could set as input for updating {{ .Name }}s
+	{{ .Name }}UpdateInput struct {
 		{{ range $i, $field := .Fields }}
 			{{ if $field.ValidForUpdateInput }}
 				{{ $field.Name }} {{ if $field.Pointer }}*{{ end }}{{ $field.Type }} `json:"{{ snakecase $field.Name }}"`
@@ -44,20 +44,20 @@ type (
 		BelongsTo uint64 `json:"-"`
 	}
 
-	// {{ camelcase .Name }}DataManager describes a structure capable of storing {{ lower .Name }}s permanently
-	{{ camelcase .Name }}DataManager interface {
-		Get{{ camelcase .Name }}(ctx context.Context, {{ lower .Name }}ID, userID uint64) (*{{ camelcase .Name }}, error)
-		Get{{ camelcase .Name }}Count(ctx context.Context, filter *QueryFilter, userID uint64) (uint64, error)
-		GetAll{{ camelcase .Name }}sCount(ctx context.Context) (uint64, error)
-		Get{{ camelcase .Name }}s(ctx context.Context, filter *QueryFilter, userID uint64) (*{{ camelcase .Name }}List, error)
-		GetAll{{ camelcase .Name }}sForUser(ctx context.Context, userID uint64) ([]{{ camelcase .Name }}, error)
-		Create{{ camelcase .Name }}(ctx context.Context, input *{{ camelcase .Name }}CreationInput) (*{{ camelcase .Name }}, error)
-		Update{{ camelcase .Name }}(ctx context.Context, updated *{{ camelcase .Name }}) error
-		Archive{{ camelcase .Name }}(ctx context.Context, id, userID uint64) error
+	// {{ .Name }}DataManager describes a structure capable of storing {{ camelCase .Name }}s permanently
+	{{ .Name }}DataManager interface {
+		Get{{ .Name }}(ctx context.Context, {{ camelCase .Name }}ID, userID uint64) (*{{ .Name }}, error)
+		Get{{ .Name }}Count(ctx context.Context, filter *QueryFilter, userID uint64) (uint64, error)
+		GetAll{{ .Name }}sCount(ctx context.Context) (uint64, error)
+		Get{{ .Name }}s(ctx context.Context, filter *QueryFilter, userID uint64) (*{{ .Name }}List, error)
+		GetAll{{ .Name }}sForUser(ctx context.Context, userID uint64) ([]{{ .Name }}, error)
+		Create{{ .Name }}(ctx context.Context, input *{{ .Name }}CreationInput) (*{{ .Name }}, error)
+		Update{{ .Name }}(ctx context.Context, updated *{{ .Name }}) error
+		Archive{{ .Name }}(ctx context.Context, id, userID uint64) error
 	}
 
-	// {{ camelcase .Name }}DataServer describes a structure capable of serving traffic related to {{ lower .Name }}s
-	{{ camelcase .Name }}DataServer interface {
+	// {{ .Name }}DataServer describes a structure capable of serving traffic related to {{ camelCase .Name }}s
+	{{ .Name }}DataServer interface {
 		CreationInputMiddleware(next http.Handler) http.Handler
 		UpdateInputMiddleware(next http.Handler) http.Handler
 
@@ -69,12 +69,12 @@ type (
 	}
 )
 
-// Update merges an {{ camelcase .Name }}Input with an {{ camelcase .Name }}
-func (x *{{ camelcase .Name }}) Update(input *{{ camelcase .Name }}UpdateInput) {
+// Update merges an {{ .Name }}Input with an {{ .Name }}
+func (x *{{ .Name }}) Update(input *{{ .Name }}UpdateInput) {
 	{{ range $i, $field := .Fields }}
-		{{ if $field.ValidForUpdateInput }} 
+		{{ if $field.ValidForUpdateInput }}
 		if x.{{ $field.Name }} != input.{{ $field.Name }} {
-			x.{{ $field.Name }} = input.{{ $field.Name }} 
+			x.{{ $field.Name }} = input.{{ $field.Name }}
 		}{{ end }}
 {{ end }}
 }

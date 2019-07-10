@@ -9,10 +9,10 @@ import (
 	"go.opencensus.io/trace"
 )
 
-// CreationInputMiddleware is a middleware for fetching, parsing, and attaching an {{ camelcase .Name }}Input struct from a request
+// CreationInputMiddleware is a middleware for fetching, parsing, and attaching an {{ .Name }}Input struct from a request
 func (s *Service) CreationInputMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		x := new(models.{{ camelcase .Name }}CreationInput)
+		x := new(models.{{ .Name }}CreationInput)
 		ctx, span := trace.StartSpan(req.Context(), "CreationInputMiddleware")
 		defer span.End()
 
@@ -27,11 +27,11 @@ func (s *Service) CreationInputMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// UpdateInputMiddleware is a middleware for fetching, parsing, and attaching an {{ camelcase .Name }}Input struct from a request
+// UpdateInputMiddleware is a middleware for fetching, parsing, and attaching an {{ .Name }}Input struct from a request
 // This is the same as the creation one, but that won't always be the case.
 func (s *Service) UpdateInputMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		x := new(models.{{ camelcase .Name }}UpdateInput)
+		x := new(models.{{ .Name }}UpdateInput)
 		ctx, span := trace.StartSpan(req.Context(), "UpdateInputMiddleware")
 		defer span.End()
 

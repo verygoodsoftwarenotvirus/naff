@@ -13,8 +13,8 @@ type (
 		Migrate(ctx context.Context) error
 		IsReady(ctx context.Context) (ready bool)
 {{ range $i, $dm := .DataTypes }}
-	models.{{ camelcase $dm.Name }}DataManager
-{{ end }}
+	models.{{ pascal $dm.Name }}DataManager
+	{{ end }}
 		models.UserDataManager
 		models.OAuth2ClientDataManager
 		models.WebhookDataManager

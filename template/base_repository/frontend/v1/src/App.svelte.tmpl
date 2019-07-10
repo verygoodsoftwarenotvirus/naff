@@ -6,10 +6,10 @@
   import Login from "./pages/Login.svelte";
   import Register from "./pages/Register.svelte";
   import ChangePassword from "./pages/ChangePassword.svelte";{{ range $i, $dt := .DataTypes }}
-  // {{ camelcase $dt.Name }} routes
-  import Read{{ camelcase $dt.Name }} from "./pages/{{ lower $dt.Name }}s/Read.svelte";
-  import Create{{ camelcase $dt.Name }} from "./pages/{{ lower $dt.Name }}s/Create.svelte";
-  import {{ camelcase $dt.Name }}s from "./pages/{{ lower $dt.Name }}s/List.svelte";
+  // {{ pascal $dt.Name }} routes
+  import Read{{ pascal $dt.Name }} from "./pages/{{ lower $dt.Name }}s/Read.svelte";
+  import Create{{ pascal $dt.Name }} from "./pages/{{ lower $dt.Name }}s/Create.svelte";
+  import {{ pascal $dt.Name }}s from "./pages/{{ lower $dt.Name }}s/List.svelte";
 {{ end }}
 
   export let url = "";
@@ -20,8 +20,8 @@
 <Router {url}>
   <nav style="text-align: center;">
     <Link to="/">Home Page</Link>{{ range $i, $dt := .DataTypes }}
-	<Link to="{{ lower $dt.Name }}s">{{ camelcase $dt.Name }}</Link>
-	<Link to="{{ lower $dt.Name }}s/new">Create {{ camelcase $dt.Name }}</Link>
+	<Link to="{{ snakecase $dt.Name }}s">{{ pascal $dt.Name }}s</Link>
+	<Link to="{{ snakecase $dt.Name }}s/new">Create {{ pascal $dt.Name }}</Link>
 {{ end }}
     <Link to="webhooks">Webhooks</Link>
     <Link to="login">Login</Link>
@@ -29,9 +29,9 @@
     <Link to="password/new">Change Password</Link>
   </nav>
   <div>{{ range $i, $dt := .DataTypes }}
-    <Route path="{{ lower $dt.Name }}s" component={ {{ camelcase $dt.Name }}s } />
-    <Route path="{{ lower $dt.Name }}s/:id" component={ Read{{ camelcase $dt.Name }} } />
-    <Route path="{{ lower $dt.Name }}s/new" component={ Create{{ camelcase $dt.Name }} } />
+    <Route path="{{ snakecase $dt.Name }}s" component={ {{ pascal $dt.Name }}s } />
+    <Route path="{{ snakecase $dt.Name }}s/:id" component={ Read{{ pascal $dt.Name }} } />
+    <Route path="{{ snakecase $dt.Name }}s/new" component={ Create{{ pascal $dt.Name }} } />
 {{ end }}
     <Route path="login" component={Login} />
     <Route path="register" component={Register} />

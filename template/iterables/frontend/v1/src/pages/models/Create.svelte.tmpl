@@ -1,16 +1,16 @@
 <script>
   import { Link } from "svelte-routing";
 
-  let name = "";
-  let details = "";
+
+
   let canSubmit = false;
 
   function evaluateSubmission() {
-    canSubmit = name != "" && details != "";
+    canSubmit = false;
   }
 
-  function create{{ camelcase .Name }}() {
-    fetch("http://localhost/api/v1/{{ lower .Name }}s/", {
+  function create{{ .Name }}() {
+    fetch("http://localhost/api/v1/{{ camelCase .Name }}s/", {
       method: "POST",
       mode: "cors", // no-cors, cors, *same-origin
       credentials: "include",
@@ -18,41 +18,20 @@
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        name,
-        details
-      })
+				  // AMENDME
+			  })
     }).then(function(response) {
       if (response.status != 201) {
         console.error("something has gone awry");
-      } else {
-        name = "";
-        details = "";
-      }
     });
   }
 </script>
 
-<!-- {{ camelcase .Name }}s.svelte -->
+<!-- {{ .Name }}s.svelte -->
 <form
-  id="{{ lower .Name }}Form"
-  on:submit|preventDefault={create{{ camelcase .Name }}}
+  id="{{ camelCase .Name }}Form"
+  on:submit|preventDefault={create{{ .Name }}}
   style="margin-top: 7.5%; text-align: center;">
-  <p>
-    name:
-    <input
-      bind:value={name}
-      on:keyup={evaluateSubmission}
-      type="text"
-      name="name" />
-  </p>
-  <p>
-    details:
-    <input
-      bind:value={details}
-      on:keyup={evaluateSubmission}
-      type="text"
-      name="details" />
-  </p>
   <input type="submit" value="create" disabled={!canSubmit} />
-  <Link to="/{{ lower .Name }}s">{{ lower .Name }}s list</Link>
+  <Link to="/{{ camelCase .Name }}s">{{ camelCase .Name }}s list</Link>
 </form>

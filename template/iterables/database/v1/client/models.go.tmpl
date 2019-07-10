@@ -9,116 +9,116 @@ import (
 	"go.opencensus.io/trace"
 )
 
-var _ models.{{ camelcase .Name }}DataManager = (*Client)(nil)
+var _ models.{{ .Name }}DataManager = (*Client)(nil)
 
-// attach{{ camelcase .Name }}IDToSpan provides a consistent way to attach an {{ lower .Name }}'s ID to a span
-func attach{{ camelcase .Name }}IDToSpan(span *trace.Span, {{ lower .Name }}ID uint64) {
+// attach{{ .Name }}IDToSpan provides a consistent way to attach an {{ camelCase .Name }}'s ID to a span
+func attach{{ .Name }}IDToSpan(span *trace.Span, {{ camelCase .Name }}ID uint64) {
 	if span != nil {
-		span.AddAttributes(trace.StringAttribute("{{ lower .Name }}_id", strconv.FormatUint({{ lower .Name }}ID, 10)))
+		span.AddAttributes(trace.StringAttribute("{{ camelCase .Name }}_id", strconv.FormatUint({{ camelCase .Name }}ID, 10)))
 	}
 }
 
-// Get{{ camelcase .Name }} fetches an {{ lower .Name }} from the database
-func (c *Client) Get{{ camelcase .Name }}(ctx context.Context, {{ lower .Name }}ID, userID uint64) (*models.{{ camelcase .Name }}, error) {
-	ctx, span := trace.StartSpan(ctx, "Get{{ camelcase .Name }}")
+// Get{{ .Name }} fetches an {{ camelCase .Name }} from the database
+func (c *Client) Get{{ .Name }}(ctx context.Context, {{ camelCase .Name }}ID, userID uint64) (*models.{{ .Name }}, error) {
+	ctx, span := trace.StartSpan(ctx, "Get{{ .Name }}")
 	defer span.End()
 
 	attachUserIDToSpan(span, userID)
-	attach{{ camelcase .Name }}IDToSpan(span, {{ lower .Name }}ID)
+	attach{{ .Name }}IDToSpan(span, {{ camelCase .Name }}ID)
 
 	c.logger.WithValues(map[string]interface{}{
-		"{{ lower .Name }}_id": {{ lower .Name }}ID,
+		"{{ camelCase .Name }}_id": {{ camelCase .Name }}ID,
 		"user_id": userID,
-	}).Debug("Get{{ camelcase .Name }} called")
+	}).Debug("Get{{ .Name }} called")
 
-	return c.querier.Get{{ camelcase .Name }}(ctx, {{ lower .Name }}ID, userID)
+	return c.querier.Get{{ .Name }}(ctx, {{ camelCase .Name }}ID, userID)
 }
 
-// Get{{ camelcase .Name }}Count fetches the count of {{ lower .Name }}s from the database that meet a particular filter
-func (c *Client) Get{{ camelcase .Name }}Count(ctx context.Context, filter *models.QueryFilter, userID uint64) (count uint64, err error) {
-	ctx, span := trace.StartSpan(ctx, "Get{{ camelcase .Name }}Count")
+// Get{{ .Name }}Count fetches the count of {{ camelCase .Name }}s from the database that meet a particular filter
+func (c *Client) Get{{ .Name }}Count(ctx context.Context, filter *models.QueryFilter, userID uint64) (count uint64, err error) {
+	ctx, span := trace.StartSpan(ctx, "Get{{ .Name }}Count")
 	defer span.End()
 
 	attachUserIDToSpan(span, userID)
 	attachFilterToSpan(span, filter)
 
-	c.logger.WithValue("user_id", userID).Debug("Get{{ camelcase .Name }}Count called")
+	c.logger.WithValue("user_id", userID).Debug("Get{{ .Name }}Count called")
 
-	return c.querier.Get{{ camelcase .Name }}Count(ctx, filter, userID)
+	return c.querier.Get{{ .Name }}Count(ctx, filter, userID)
 }
 
-// GetAll{{ camelcase .Name }}sCount fetches the count of {{ lower .Name }}s from the database that meet a particular filter
-func (c *Client) GetAll{{ camelcase .Name }}sCount(ctx context.Context) (count uint64, err error) {
-	ctx, span := trace.StartSpan(ctx, "GetAll{{ camelcase .Name }}sCount")
+// GetAll{{ .Name }}sCount fetches the count of {{ camelCase .Name }}s from the database that meet a particular filter
+func (c *Client) GetAll{{ .Name }}sCount(ctx context.Context) (count uint64, err error) {
+	ctx, span := trace.StartSpan(ctx, "GetAll{{ .Name }}sCount")
 	defer span.End()
 
-	c.logger.Debug("GetAll{{ camelcase .Name }}sCount called")
+	c.logger.Debug("GetAll{{ .Name }}sCount called")
 
-	return c.querier.GetAll{{ camelcase .Name }}sCount(ctx)
+	return c.querier.GetAll{{ .Name }}sCount(ctx)
 }
 
-// Get{{ camelcase .Name }}s fetches a list of {{ lower .Name }}s from the database that meet a particular filter
-func (c *Client) Get{{ camelcase .Name }}s(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.{{ camelcase .Name }}List, error) {
-	ctx, span := trace.StartSpan(ctx, "Get{{ camelcase .Name }}s")
+// Get{{ .Name }}s fetches a list of {{ camelCase .Name }}s from the database that meet a particular filter
+func (c *Client) Get{{ .Name }}s(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.{{ .Name }}List, error) {
+	ctx, span := trace.StartSpan(ctx, "Get{{ .Name }}s")
 	defer span.End()
 
 	attachUserIDToSpan(span, userID)
 	attachFilterToSpan(span, filter)
 
-	c.logger.WithValue("user_id", userID).Debug("Get{{ camelcase .Name }}s called")
+	c.logger.WithValue("user_id", userID).Debug("Get{{ .Name }}s called")
 
-	{{ lower .Name }}List, err := c.querier.Get{{ camelcase .Name }}s(ctx, filter, userID)
+	{{ camelCase .Name }}List, err := c.querier.Get{{ .Name }}s(ctx, filter, userID)
 
-	return {{ lower .Name }}List, err
+	return {{ camelCase .Name }}List, err
 }
 
-// GetAll{{ camelcase .Name }}sForUser fetches a list of {{ lower .Name }}s from the database that meet a particular filter
-func (c *Client) GetAll{{ camelcase .Name }}sForUser(ctx context.Context, userID uint64) ([]models.{{ camelcase .Name }}, error) {
-	ctx, span := trace.StartSpan(ctx, "GetAll{{ camelcase .Name }}sForUser")
+// GetAll{{ .Name }}sForUser fetches a list of {{ camelCase .Name }}s from the database that meet a particular filter
+func (c *Client) GetAll{{ .Name }}sForUser(ctx context.Context, userID uint64) ([]models.{{ .Name }}, error) {
+	ctx, span := trace.StartSpan(ctx, "GetAll{{ .Name }}sForUser")
 	defer span.End()
 
 	attachUserIDToSpan(span, userID)
-	c.logger.WithValue("user_id", userID).Debug("GetAll{{ camelcase .Name }}sForUser called")
+	c.logger.WithValue("user_id", userID).Debug("GetAll{{ .Name }}sForUser called")
 
-	{{ lower .Name }}List, err := c.querier.GetAll{{ camelcase .Name }}sForUser(ctx, userID)
+	{{ camelCase .Name }}List, err := c.querier.GetAll{{ .Name }}sForUser(ctx, userID)
 
-	return {{ lower .Name }}List, err
+	return {{ camelCase .Name }}List, err
 }
 
-// Create{{ camelcase .Name }} creates an {{ lower .Name }} in the database
-func (c *Client) Create{{ camelcase .Name }}(ctx context.Context, input *models.{{ camelcase .Name }}CreationInput) (*models.{{ camelcase .Name }}, error) {
-	ctx, span := trace.StartSpan(ctx, "Create{{ camelcase .Name }}")
+// Create{{ .Name }} creates an {{ camelCase .Name }} in the database
+func (c *Client) Create{{ .Name }}(ctx context.Context, input *models.{{ .Name }}CreationInput) (*models.{{ .Name }}, error) {
+	ctx, span := trace.StartSpan(ctx, "Create{{ .Name }}")
 	defer span.End()
 
-	c.logger.WithValue("input", input).Debug("Create{{ camelcase .Name }} called")
+	c.logger.WithValue("input", input).Debug("Create{{ .Name }} called")
 
-	return c.querier.Create{{ camelcase .Name }}(ctx, input)
+	return c.querier.Create{{ .Name }}(ctx, input)
 }
 
-// Update{{ camelcase .Name }} updates a particular {{ lower .Name }}. Note that Update{{ camelcase .Name }} expects the
+// Update{{ .Name }} updates a particular {{ camelCase .Name }}. Note that Update{{ .Name }} expects the
 // provided input to have a valid ID.
-func (c *Client) Update{{ camelcase .Name }}(ctx context.Context, input *models.{{ camelcase .Name }}) error {
-	ctx, span := trace.StartSpan(ctx, "Update{{ camelcase .Name }}")
+func (c *Client) Update{{ .Name }}(ctx context.Context, input *models.{{ .Name }}) error {
+	ctx, span := trace.StartSpan(ctx, "Update{{ .Name }}")
 	defer span.End()
 
-	attach{{ camelcase .Name }}IDToSpan(span, input.ID)
-	c.logger.WithValue("{{ lower .Name }}_id", input.ID).Debug("Update{{ camelcase .Name }} called")
+	attach{{ .Name }}IDToSpan(span, input.ID)
+	c.logger.WithValue("{{ camelCase .Name }}_id", input.ID).Debug("Update{{ .Name }} called")
 
-	return c.querier.Update{{ camelcase .Name }}(ctx, input)
+	return c.querier.Update{{ .Name }}(ctx, input)
 }
 
-// Archive{{ camelcase .Name }} archives an {{ lower .Name }} from the database by its ID
-func (c *Client) Archive{{ camelcase .Name }}(ctx context.Context, {{ lower .Name }}ID, userID uint64) error {
-	ctx, span := trace.StartSpan(ctx, "Archive{{ camelcase .Name }}")
+// Archive{{ .Name }} archives an {{ camelCase .Name }} from the database by its ID
+func (c *Client) Archive{{ .Name }}(ctx context.Context, {{ camelCase .Name }}ID, userID uint64) error {
+	ctx, span := trace.StartSpan(ctx, "Archive{{ .Name }}")
 	defer span.End()
 
 	attachUserIDToSpan(span, userID)
-	attach{{ camelcase .Name }}IDToSpan(span, {{ lower .Name }}ID)
+	attach{{ .Name }}IDToSpan(span, {{ camelCase .Name }}ID)
 
 	c.logger.WithValues(map[string]interface{}{
-		"{{ lower .Name }}_id": {{ lower .Name }}ID,
+		"{{ camelCase .Name }}_id": {{ camelCase .Name }}ID,
 		"user_id": userID,
-	}).Debug("Archive{{ camelcase .Name }} called")
+	}).Debug("Archive{{ .Name }} called")
 
-	return c.querier.Archive{{ camelcase .Name }}(ctx, {{ lower .Name }}ID, userID)
+	return c.querier.Archive{{ .Name }}(ctx, {{ camelCase .Name }}ID, userID)
 }

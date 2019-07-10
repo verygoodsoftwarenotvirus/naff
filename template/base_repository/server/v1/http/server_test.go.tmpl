@@ -12,8 +12,8 @@ import (
 	mmodels "{{ .OutputRepository }}/models/v1/mock"
 	"{{ .OutputRepository }}/services/v1/auth"
 	"{{ .OutputRepository }}/services/v1/frontend"
-{{ range $x, $import := .IterableServicesImports }} 
-	"{{ $import }}" 
+{{ range $x, $import := .IterableServicesImports }}
+	"{{ $import }}"
 {{ end }}
 	"{{ .OutputRepository }}/services/v1/oauth2clients"
 	"{{ .OutputRepository }}/services/v1/users"
@@ -42,8 +42,8 @@ func buildTestServer() *Server {
 		usersService:         &mmodels.UserDataServer{},
 		authService:          &auth.Service{},
 
-{{ range $i, $dt := .DataTypes }} 
-	{{ lower $dt.Name }}sService: &mmodels.{{ camelcase $dt.Name }}DataServer{}, 
+{{ range $i, $dt := .DataTypes }}
+	{{ lower $dt.Name }}sService: &mmodels.{{ pascal $dt.Name }}DataServer{},
 {{ end }}
 		oauth2ClientsService: &mmodels.OAuth2ClientDataServer{},
 	}
@@ -68,8 +68,8 @@ func TestProvideServer(T *testing.T) {
 			&auth.Service{},
 			&frontend.Service{},
 
-{{ range $i, $dt := .DataTypes }} 
-	&{{ lower $dt.Name }}s.Service{}, 
+{{ range $i, $dt := .DataTypes }}
+	&{{ lower $dt.Name }}s.Service{},
 {{ end }}
 			&users.Service{},
 			&oauth2clients.Service{},

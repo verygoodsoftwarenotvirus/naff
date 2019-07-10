@@ -14,15 +14,15 @@ import (
 )
 
 const (
-	{{ lower .Name }}sTableName = "{{ lower .Name }}s"
+	{{ camelCase .Name }}sTableName = "{{ snakecase .Name }}"
 )
 
 var (
 	{{ camelCase .Name }}sTableColumns = []string{
 		"id",
 		{{ range $j, $field := .Fields }}
-			"{{ snakecase $field.Name }}", 
-		{{ end }}	
+			"{{ snakecase $field.Name }}",
+		{{ end }}
 		"created_on",
 		"updated_on",
 		"archived_on",
@@ -30,16 +30,16 @@ var (
 	}
 )
 
-// scan{{ camelcase .Name }} takes a database Scanner (i.e. *sql.Row) and scans
-// the result into an {{ camelcase .Name }} struct
-func scan{{ camelcase .Name }}(scan database.Scanner) (*models.{{ camelcase .Name }}, error) {
-	x := &models.{{ camelcase .Name }}{}
+// scan{{ .Name }} takes a database Scanner (i.e. *sql.Row) and scans
+// the result into an {{ .Name }} struct
+func scan{{ .Name }}(scan database.Scanner) (*models.{{ .Name }}, error) {
+	x := &models.{{ .Name }}{}
 
 	if err := scan.Scan(
 		&x.ID,
 		{{ range $j, $field := .Fields }}
-			&x.{{ pascal $field.Name }}, 
-		{{ end }}	
+			&x.{{ pascal $field.Name }},
+		{{ end }}
 		&x.CreatedOn,
 		&x.UpdatedOn,
 		&x.ArchivedOn,
@@ -51,12 +51,12 @@ func scan{{ camelcase .Name }}(scan database.Scanner) (*models.{{ camelcase .Nam
 	return x, nil
 }
 
-// scan{{ camelcase .Name }}s takes a logger and some database rows and turns them into a slice of {{ lower .Name }}s
-func scan{{ camelcase .Name }}s(logger logging.Logger, rows *sql.Rows) ([]models.{{ camelcase .Name }}, error) {
-	var list []models.{{ camelcase .Name }}
+// scan{{ .Name }}s takes a logger and some database rows and turns them into a slice of {{ camelCase .Name }}s
+func scan{{ .Name }}s(logger logging.Logger, rows *sql.Rows) ([]models.{{ .Name }}, error) {
+	var list []models.{{ .Name }}
 
 	for rows.Next() {
-		x, err := scan{{ camelcase .Name }}(rows)
+		x, err := scan{{ .Name }}(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -74,14 +74,14 @@ func scan{{ camelcase .Name }}s(logger logging.Logger, rows *sql.Rows) ([]models
 	return list, nil
 }
 
-// buildGet{{ camelcase .Name }}Query constructs a SQL query for fetching an {{ lower .Name }} with a given ID belong to a user with a given ID.
-func (p *Postgres) buildGet{{ camelcase .Name }}Query({{ lower .Name }}ID, userID uint64) (query string, args []interface{}) {
+// buildGet{{ .Name }}Query constructs a SQL query for fetching an {{ camelCase .Name }} with a given ID belong to a user with a given ID.
+func (p *Postgres) buildGet{{ .Name }}Query({{ camelCase .Name }}ID, userID uint64) (query string, args []interface{}) {
 	var err error
 	query, args, err = p.sqlBuilder.
-		Select({{ lower .Name }}sTableColumns...).
-		From({{ lower .Name }}sTableName).
+		Select({{ camelCase .Name }}sTableColumns...).
+		From({{ camelCase .Name }}sTableName).
 		Where(squirrel.Eq{
-			"id":         {{ lower .Name }}ID,
+			"id":         {{ camelCase .Name }}ID,
 			"belongs_to": userID,
 		}).
 		ToSql()
@@ -91,20 +91,20 @@ func (p *Postgres) buildGet{{ camelcase .Name }}Query({{ lower .Name }}ID, userI
 	return query, args
 }
 
-// Get{{ camelcase .Name }} fetches an {{ lower .Name }} from the postgres database
-func (p *Postgres) Get{{ camelcase .Name }}(ctx context.Context, {{ lower .Name }}ID, userID uint64) (*models.{{ camelcase .Name }}, error) {
-	query, args := p.buildGet{{ camelcase .Name }}Query({{ lower .Name }}ID, userID)
+// Get{{ .Name }} fetches an {{ camelCase .Name }} from the postgres database
+func (p *Postgres) Get{{ .Name }}(ctx context.Context, {{ camelCase .Name }}ID, userID uint64) (*models.{{ .Name }}, error) {
+	query, args := p.buildGet{{ .Name }}Query({{ camelCase .Name }}ID, userID)
 	row := p.db.QueryRowContext(ctx, query, args...)
-	return scan{{ camelcase .Name }}(row)
+	return scan{{ .Name }}(row)
 }
 
-// buildGet{{ camelcase .Name }}CountQuery takes a QueryFilter and a user ID and returns a SQL query (and the relevant arguments) for
-// fetching the number of {{ lower .Name }}s belonging to a given user that meet a given query
-func (p *Postgres) buildGet{{ camelcase .Name }}CountQuery(filter *models.QueryFilter, userID uint64) (query string, args []interface{}) {
+// buildGet{{ .Name }}CountQuery takes a QueryFilter and a user ID and returns a SQL query (and the relevant arguments) for
+// fetching the number of {{ camelCase .Name }}s belonging to a given user that meet a given query
+func (p *Postgres) buildGet{{ .Name }}CountQuery(filter *models.QueryFilter, userID uint64) (query string, args []interface{}) {
 	var err error
 	builder := p.sqlBuilder.
 		Select(CountQuery).
-		From({{ lower .Name }}sTableName).
+		From({{ camelCase .Name }}sTableName).
 		Where(squirrel.Eq{
 			"archived_on": nil,
 			"belongs_to":  userID,
@@ -120,46 +120,46 @@ func (p *Postgres) buildGet{{ camelcase .Name }}CountQuery(filter *models.QueryF
 	return query, args
 }
 
-// Get{{ camelcase .Name }}Count will fetch the count of {{ lower .Name }}s from the database that meet a particular filter and belong to a particular user.
-func (p *Postgres) Get{{ camelcase .Name }}Count(ctx context.Context, filter *models.QueryFilter, userID uint64) (count uint64, err error) {
-	query, args := p.buildGet{{ camelcase .Name }}CountQuery(filter, userID)
+// Get{{ .Name }}Count will fetch the count of {{ camelCase .Name }}s from the database that meet a particular filter and belong to a particular user.
+func (p *Postgres) Get{{ .Name }}Count(ctx context.Context, filter *models.QueryFilter, userID uint64) (count uint64, err error) {
+	query, args := p.buildGet{{ .Name }}CountQuery(filter, userID)
 	err = p.db.QueryRowContext(ctx, query, args...).Scan(&count)
 	return count, err
 }
 
 var (
-	all{{ camelcase .Name }}sCountQueryBuilder sync.Once
-	all{{ camelcase .Name }}sCountQuery        string
+	all{{ .Name }}sCountQueryBuilder sync.Once
+	all{{ .Name }}sCountQuery        string
 )
 
-// buildGetAll{{ camelcase .Name }}sCountQuery returns a query that fetches the total number of {{ lower .Name }}s in the database.
+// buildGetAll{{ .Name }}sCountQuery returns a query that fetches the total number of {{ camelCase .Name }}s in the database.
 // This query only gets generated once, and is otherwise returned from cache.
-func (p *Postgres) buildGetAll{{ camelcase .Name }}sCountQuery() string {
-	all{{ camelcase .Name }}sCountQueryBuilder.Do(func() {
+func (p *Postgres) buildGetAll{{ .Name }}sCountQuery() string {
+	all{{ .Name }}sCountQueryBuilder.Do(func() {
 		var err error
-		all{{ camelcase .Name }}sCountQuery, _, err = p.sqlBuilder.Select(CountQuery).
-			From({{ lower .Name }}sTableName).
+		all{{ .Name }}sCountQuery, _, err = p.sqlBuilder.Select(CountQuery).
+			From({{ camelCase .Name }}sTableName).
 			Where(squirrel.Eq{"archived_on": nil}).
 			ToSql()
 		logQueryBuildingError(p.logger, err)
 	})
 
-	return all{{ camelcase .Name }}sCountQuery
+	return all{{ .Name }}sCountQuery
 }
 
-// GetAll{{ camelcase .Name }}sCount will fetch the count of {{ lower .Name }}s from the database
-func (p *Postgres) GetAll{{ camelcase .Name }}sCount(ctx context.Context) (count uint64, err error) {
-	err = p.db.QueryRowContext(ctx, p.buildGetAll{{ camelcase .Name }}sCountQuery()).Scan(&count)
+// GetAll{{ .Name }}sCount will fetch the count of {{ camelCase .Name }}s from the database
+func (p *Postgres) GetAll{{ .Name }}sCount(ctx context.Context) (count uint64, err error) {
+	err = p.db.QueryRowContext(ctx, p.buildGetAll{{ .Name }}sCountQuery()).Scan(&count)
 	return count, err
 }
 
-// buildGet{{ camelcase .Name }}sQuery builds a SQL query selecting {{ lower .Name }}s that adhere to a given QueryFilter and belong to a given user,
+// buildGet{{ .Name }}sQuery builds a SQL query selecting {{ camelCase .Name }}s that adhere to a given QueryFilter and belong to a given user,
 // and returns both the query and the relevant args to pass to the query executor.
-func (p *Postgres) buildGet{{ camelcase .Name }}sQuery(filter *models.QueryFilter, userID uint64) (query string, args []interface{}) {
+func (p *Postgres) buildGet{{ .Name }}sQuery(filter *models.QueryFilter, userID uint64) (query string, args []interface{}) {
 	var err error
 	builder := p.sqlBuilder.
-		Select({{ lower .Name }}sTableColumns...).
-		From({{ lower .Name }}sTableName).
+		Select({{ camelCase .Name }}sTableColumns...).
+		From({{ camelCase .Name }}sTableName).
 		Where(squirrel.Eq{
 			"archived_on": nil,
 			"belongs_to":  userID,
@@ -175,47 +175,47 @@ func (p *Postgres) buildGet{{ camelcase .Name }}sQuery(filter *models.QueryFilte
 	return query, args
 }
 
-// Get{{ camelcase .Name }}s fetches a list of {{ lower .Name }}s from the database that meet a particular filter
-func (p *Postgres) Get{{ camelcase .Name }}s(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.{{ camelcase .Name }}List, error) {
-	query, args := p.buildGet{{ camelcase .Name }}sQuery(filter, userID)
+// Get{{ .Name }}s fetches a list of {{ camelCase .Name }}s from the database that meet a particular filter
+func (p *Postgres) Get{{ .Name }}s(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.{{ .Name }}List, error) {
+	query, args := p.buildGet{{ .Name }}sQuery(filter, userID)
 
 	rows, err := p.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, buildError(err, "querying database for {{ lower .Name }}s")
+		return nil, buildError(err, "querying database for {{ camelCase .Name }}s")
 	}
 
-	list, err := scan{{ camelcase .Name }}s(p.logger, rows)
+	list, err := scan{{ .Name }}s(p.logger, rows)
 	if err != nil {
 		return nil, errors.Wrap(err, "scanning response from database")
 	}
 
-	count, err := p.Get{{ camelcase .Name }}Count(ctx, filter, userID)
+	count, err := p.Get{{ .Name }}Count(ctx, filter, userID)
 	if err != nil {
-		return nil, errors.Wrap(err, "fetching {{ lower .Name }} count")
+		return nil, errors.Wrap(err, "fetching {{ camelCase .Name }} count")
 	}
 
-	x := &models.{{ camelcase .Name }}List{
+	x := &models.{{ .Name }}List{
 		Pagination: models.Pagination{
 			Page:       filter.Page,
 			Limit:      filter.Limit,
 			TotalCount: count,
 		},
-		{{ camelcase .Name }}s: list,
+		{{ .Name }}s: list,
 	}
 
 	return x, nil
 }
 
-// GetAll{{ camelcase .Name }}sForUser fetches every {{ lower .Name }} belonging to a user
-func (p *Postgres) GetAll{{ camelcase .Name }}sForUser(ctx context.Context, userID uint64) ([]models.{{ camelcase .Name }}, error) {
-	query, args := p.buildGet{{ camelcase .Name }}sQuery(nil, userID)
+// GetAll{{ .Name }}sForUser fetches every {{ camelCase .Name }} belonging to a user
+func (p *Postgres) GetAll{{ .Name }}sForUser(ctx context.Context, userID uint64) ([]models.{{ .Name }}, error) {
+	query, args := p.buildGet{{ .Name }}sQuery(nil, userID)
 
 	rows, err := p.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, buildError(err, "fetching {{ lower .Name }}s for user")
+		return nil, buildError(err, "fetching {{ camelCase .Name }}s for user")
 	}
 
-	list, err := scan{{ camelcase .Name }}s(p.logger, rows)
+	list, err := scan{{ .Name }}s(p.logger, rows)
 	if err != nil {
 		return nil, errors.Wrap(err, "parsing database results")
 	}
@@ -223,11 +223,11 @@ func (p *Postgres) GetAll{{ camelcase .Name }}sForUser(ctx context.Context, user
 	return list, nil
 }
 
-// buildCreate{{ pascal .Name }}Query takes an {{ lower .Name }} and returns a creation query for that {{ lower .Name }} and the relevant arguments.
-func (p *Postgres) buildCreate{{ pascal .Name }}Query(input *models.{{ pascal .Name }}) (query string, args []interface{}) {
+// buildCreate{{ .Name }}Query takes an {{ camelCase .Name }} and returns a creation query for that {{ camelCase .Name }} and the relevant arguments.
+func (p *Postgres) buildCreate{{ .Name }}Query(input *models.{{ .Name }}) (query string, args []interface{}) {
 	var err error
 	query, args, err = p.sqlBuilder.
-		Insert({{ lower .Name }}sTableName).
+		Insert({{ camelCase .Name }}sTableName).
 		Columns(
 			{{ range $j, $field := .Fields }}
 				{{ if $field.ValidForCreationInput }}"{{ snakecase $field.Name }}",{{ end }}
@@ -237,7 +237,7 @@ func (p *Postgres) buildCreate{{ pascal .Name }}Query(input *models.{{ pascal .N
 		Values(
 		{{ range $j, $field := .Fields }}
 			{{ if $field.ValidForCreationInput }}input.{{ pascal $field.Name }},{{ end }}
-		{{ end }}	
+		{{ end }}
 			input.BelongsTo,
 		).
 		Suffix("RETURNING id, created_on").
@@ -248,18 +248,18 @@ func (p *Postgres) buildCreate{{ pascal .Name }}Query(input *models.{{ pascal .N
 	return query, args
 }
 
-// Create{{ pascal .Name }} creates an {{ lower .Name }} in the database
-func (p *Postgres) Create{{ pascal .Name }}(ctx context.Context, input *models.{{ pascal .Name }}CreationInput) (*models.{{ pascal .Name }}, error) {
-	x := &models.{{ pascal .Name }}{
+// Create{{ .Name }} creates an {{ lower .Name }} in the database
+func (p *Postgres) Create{{ .Name }}(ctx context.Context, input *models.{{ .Name }}CreationInput) (*models.{{ .Name }}, error) {
+	x := &models.{{ .Name }}{
 		{{ range $j, $field := .Fields }}
 			{{ if $field.ValidForCreationInput }}
-				{{ pascal $field.Name }}: input.{{ pascal $field.Name }}, 
+				{{ pascal $field.Name }}: input.{{ pascal $field.Name }},
 			{{ end }}
 		{{ end }}
 		BelongsTo: input.BelongsTo,
 	}
 
-	query, args := p.buildCreate{{ pascal .Name }}Query(x)
+	query, args := p.buildCreate{{ .Name }}Query(x)
 
 	// create the {{ lower .Name }}
 	err := p.db.QueryRowContext(ctx, query, args...).Scan(&x.ID, &x.CreatedOn)
@@ -270,15 +270,15 @@ func (p *Postgres) Create{{ pascal .Name }}(ctx context.Context, input *models.{
 	return x, nil
 }
 
-// buildUpdate{{ camelcase .Name }}Query takes an {{ lower .Name }} and returns an update SQL query, with the relevant query parameters
-func (p *Postgres) buildUpdate{{ camelcase .Name }}Query(input *models.{{ camelcase .Name }}) (query string, args []interface{}) {
+// buildUpdate{{ .Name }}Query takes an {{ camelCase .Name }} and returns an update SQL query, with the relevant query parameters
+func (p *Postgres) buildUpdate{{ .Name }}Query(input *models.{{ .Name }}) (query string, args []interface{}) {
 	var err error
-	query, args, err = p.sqlBuilder.Update({{ lower .Name }}sTableName).
-		{{ range $j, $field := .Fields }}	
+	query, args, err = p.sqlBuilder.Update({{ camelCase .Name }}sTableName).
+		{{ range $j, $field := .Fields }}
 			{{ if $field.ValidForUpdateInput }}
-				Set("{{ snakecase $field.Name }}", input.{{ pascal $field.Name }}). 
-			{{ end }}	
-		{{ end }}	
+				Set("{{ snakecase $field.Name }}", input.{{ pascal $field.Name }}).
+			{{ end }}
+		{{ end }}
 		Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).
 		Where(squirrel.Eq{
 			"id":         input.ID,
@@ -292,21 +292,21 @@ func (p *Postgres) buildUpdate{{ camelcase .Name }}Query(input *models.{{ camelc
 	return query, args
 }
 
-// Update{{ camelcase .Name }} updates a particular {{ lower .Name }}. Note that Update{{ camelcase .Name }} expects the provided input to have a valid ID.
-func (p *Postgres) Update{{ camelcase .Name }}(ctx context.Context, input *models.{{ camelcase .Name }}) error {
-	query, args := p.buildUpdate{{ camelcase .Name }}Query(input)
+// Update{{ .Name }} updates a particular {{ camelCase .Name }}. Note that Update{{ .Name }} expects the provided input to have a valid ID.
+func (p *Postgres) Update{{ .Name }}(ctx context.Context, input *models.{{ .Name }}) error {
+	query, args := p.buildUpdate{{ .Name }}Query(input)
 	return p.db.QueryRowContext(ctx, query, args...).Scan(&input.UpdatedOn)
 }
 
-// buildArchive{{ camelcase .Name }}Query returns a SQL query which marks a given {{ lower .Name }} belonging to a given user as archived.
-func (p *Postgres) buildArchive{{ camelcase .Name }}Query({{ lower .Name }}ID, userID uint64) (query string, args []interface{}) {
+// buildArchive{{ .Name }}Query returns a SQL query which marks a given {{ camelCase .Name }} belonging to a given user as archived.
+func (p *Postgres) buildArchive{{ .Name }}Query({{ camelCase .Name }}ID, userID uint64) (query string, args []interface{}) {
 	var err error
 	query, args, err = p.sqlBuilder.
-		Update({{ lower .Name }}sTableName).
+		Update({{ camelCase .Name }}sTableName).
 		Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).
 		Set("archived_on", squirrel.Expr(CurrentUnixTimeQuery)).
 		Where(squirrel.Eq{
-			"id":          {{ lower .Name }}ID,
+			"id":          {{ camelCase .Name }}ID,
 			"archived_on": nil,
 			"belongs_to":  userID,
 		}).
@@ -318,9 +318,9 @@ func (p *Postgres) buildArchive{{ camelcase .Name }}Query({{ lower .Name }}ID, u
 	return query, args
 }
 
-// Archive{{ camelcase .Name }} marks an {{ lower .Name }} as archived in the database
-func (p *Postgres) Archive{{ camelcase .Name }}(ctx context.Context, {{ lower .Name }}ID, userID uint64) error {
-	query, args := p.buildArchive{{ camelcase .Name }}Query({{ lower .Name }}ID, userID)
+// Archive{{ .Name }} marks an {{ camelCase .Name }} as archived in the database
+func (p *Postgres) Archive{{ .Name }}(ctx context.Context, {{ camelCase .Name }}ID, userID uint64) error {
+	query, args := p.buildArchive{{ .Name }}Query({{ camelCase .Name }}ID, userID)
 	_, err := p.db.ExecContext(ctx, query, args...)
 	return err
 }

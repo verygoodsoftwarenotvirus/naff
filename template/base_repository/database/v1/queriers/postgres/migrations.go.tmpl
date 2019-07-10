@@ -66,16 +66,16 @@ var (
 				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")
 			);`,
 		},
-{{ range $i, $dt := .DataTypes }} 
+{{ range $i, $dt := .DataTypes }}
 		{
 			Version:     {{ add $i 4 }} ,
-			Description: "create {{ lower $dt.Name }}s table",
-			Script: ` 
-			CREATE TABLE IF NOT EXISTS {{ lower $dt.Name }}s (
+			Description: "create {{ snakecase $dt.Name }}s table",
+			Script: `
+			CREATE TABLE IF NOT EXISTS {{ snakecase $dt.Name }}s (
 				"id" bigserial NOT NULL PRIMARY KEY,
 				{{ range $j, $field := $dt.Fields }}
-					"{{ snakecase $field.Name }}" {{ typeToPostgresType $field.Type }} {{ if ne true $field.Pointer }} NOT NULL {{ end }} , 
-				{{ end }}				
+					"{{ snakecase $field.Name }}" {{ typeToPostgresType $field.Type }} {{ if ne true $field.Pointer }} NOT NULL {{ else }} DEFAULT NULL {{ end }} ,
+				{{ end }}
 				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
 				"updated_on" bigint DEFAULT NULL,
 				"archived_on" bigint DEFAULT NULL,

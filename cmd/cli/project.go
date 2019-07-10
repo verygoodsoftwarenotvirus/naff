@@ -70,10 +70,16 @@ func fillSurvey() (*Project, error) {
 	_ = questions
 
 	// perform the questions
-	p := Project{}
-	if surveyErr := survey.Ask(questions, &p); surveyErr != nil {
-		return nil, surveyErr
+	p := Project{
+		Name:             "slef",
+		OutputRepository: "gitlab.com/verygoodsoftwarenotvirus/slef",
+		ModelsPackage:    "gitlab.com/verygoodsoftwarenotvirus/naffmodels/slef",
 	}
+	//if surveyErr := survey.Ask(questions, &p); surveyErr != nil {
+	//	return nil, surveyErr
+	//}
+	os.RemoveAll(filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository))
+
 	p.parseModels()
 
 	return &p, nil
@@ -120,8 +126,6 @@ func (p *Project) parseModels() {
 							tag = strings.Replace(strings.Replace(
 								strings.Replace(field.Tag.Value, `naff:`, "", 1),
 								"`", "", -1), `"`, "", -1)
-						} else {
-							log.Fatal("no naff tag found on field")
 						}
 
 						for _, t := range strings.Split(tag, ",") {
@@ -227,6 +231,9 @@ func typeToPostgresType(t string) string {
 		"bool":    "BOOLEAN",
 		"*bool":   "BOOLEAN",
 		"int":     "INTEGER",
+		"*int":    "INTEGER",
+		"uint":    "INTEGER",
+		"*uint":   "INTEGER",
 		"float64": "NUMERIC",
 	}
 
@@ -247,6 +254,9 @@ func typeExample(t string, pointer bool) interface{} {
 		"bool":    false,
 		"*bool":   false,
 		"int":     "int(456)",
+		"*int":    "func(i int) *int { return &i }(123)",
+		"uint":    "uint(456)",
+		"*uint":   "func(i uint) *uint { return &i }(123)",
 		"float64": "float64(12.34)",
 	}
 

@@ -12,7 +12,7 @@ import (
 	"go.opencensus.io/trace"
 )
 
-func check{{ pascal .Name }}Equality(t *testing.T, expected, actual *models.{{ pascal .Name }}) {
+func check{{ .Name }}Equality(t *testing.T, expected, actual *models.{{ .Name }}) {
 	t.Helper()
 
 	assert.NotZero(t, actual.ID)
@@ -22,21 +22,21 @@ func check{{ pascal .Name }}Equality(t *testing.T, expected, actual *models.{{ p
 	assert.NotZero(t, actual.CreatedOn)
 }
 
-func buildDummy{{ pascal .Name }}(t *testing.T) *models.{{ pascal .Name }} {
+func buildDummy{{ .Name }}(t *testing.T) *models.{{ .Name }} {
 	t.Helper()
 
-	x := &models.{{ pascal .Name }}CreationInput{
+	x := &models.{{ .Name }}CreationInput{
 		{{ range $i, $field := .Fields }}
 		{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 		{{ end }}
 	}
-	y, err := todoClient.Create{{ pascal .Name }}(context.Background(), x)
+	y, err := todoClient.Create{{ .Name }}(context.Background(), x)
 	require.NoError(t, err)
 	return y
 }
 
 
-func Test{{ camelcase .Name }}s(test *testing.T) {
+func Test{{ .Name }}s(test *testing.T) {
 	test.Parallel()
 
 	test.Run("Creating", func(T *testing.T) {
@@ -45,31 +45,31 @@ func Test{{ camelcase .Name }}s(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// CreateHandler {{ lower .Name }}
-			expected := &models.{{ pascal .Name }}{
+			// CreateHandler {{ camelCase .Name }}
+			expected := &models.{{ .Name }}{
 					{{ range $i, $field := .Fields }}
 					{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 					{{ end }}
 				}
-			premade, err := todoClient.Create{{ camelcase .Name }}(
+			premade, err := todoClient.Create{{ .Name }}(
 				ctx,
-				&models.{{ pascal .Name }}CreationInput{
+				&models.{{ .Name }}CreationInput{
 					{{ range $i, $field := .Fields }}
 					{{ pascal $field.Name }}: expected.{{ pascal $field.Name }},
 					{{ end }}
 				})
 			checkValueAndError(t, premade, err)
 
-			// Assert {{ lower .Name }} equality
-			check{{ camelcase .Name }}Equality(t, expected, premade)
+			// Assert {{ camelCase .Name }} equality
+			check{{ .Name }}Equality(t, expected, premade)
 
 			// Clean up
-			err = todoClient.Archive{{ camelcase .Name }}(ctx, premade.ID)
+			err = todoClient.Archive{{ .Name }}(ctx, premade.ID)
 			assert.NoError(t, err)
 
-			actual, err := todoClient.Get{{ camelcase .Name }}(ctx, premade.ID)
+			actual, err := todoClient.Get{{ .Name }}(ctx, premade.ID)
 			checkValueAndError(t, actual, err)
-			check{{ camelcase .Name }}Equality(t, expected, actual)
+			check{{ .Name }}Equality(t, expected, actual)
 			assert.NotZero(t, actual.ArchivedOn)
 		})
 	})
@@ -80,26 +80,26 @@ func Test{{ camelcase .Name }}s(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// CreateHandler {{ lower .Name }}s
-			var expected []*models.{{ camelcase .Name }}
+			// CreateHandler {{ camelCase .Name }}s
+			var expected []*models.{{ .Name }}
 			for i := 0; i < 5; i++ {
-				expected = append(expected, buildDummy{{ camelcase .Name }}(t))
+				expected = append(expected, buildDummy{{ .Name }}(t))
 			}
 
-			// Assert {{ lower .Name }} list equality
-			actual, err := todoClient.Get{{ camelcase .Name }}s(ctx, nil)
+			// Assert {{ camelCase .Name }} list equality
+			actual, err := todoClient.Get{{ .Name }}s(ctx, nil)
 			checkValueAndError(t, actual, err)
 			assert.True(
 				t,
-				len(expected) <= len(actual.{{ camelcase .Name }}s),
+				len(expected) <= len(actual.{{ .Name }}s),
 				"expected %d to be <= %d",
 				len(expected),
-				len(actual.{{ camelcase .Name }}s),
+				len(actual.{{ .Name }}s),
 			)
 
 			// Clean up
-			for _, {{ lower .Name }} := range actual.{{ camelcase .Name }}s {
-				err = todoClient.Archive{{ camelcase .Name }}(ctx, {{ lower .Name }}.ID)
+			for _, {{ camelCase .Name }} := range actual.{{ .Name }}s {
+				err = todoClient.Archive{{ .Name }}(ctx, {{ camelCase .Name }}.ID)
 				assert.NoError(t, err)
 			}
 		})
@@ -111,8 +111,8 @@ func Test{{ camelcase .Name }}s(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// Fetch {{ lower .Name }}
-			_, err := todoClient.Get{{ camelcase .Name }}(ctx, nonexistentID)
+			// Fetch {{ camelCase .Name }}
+			_, err := todoClient.Get{{ .Name }}(ctx, nonexistentID)
 			assert.Error(t, err)
 		})
 
@@ -121,30 +121,30 @@ func Test{{ camelcase .Name }}s(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// CreateHandler {{ lower .Name }}
-			expected := &models.{{ pascal .Name }}{
+			// CreateHandler {{ camelCase .Name }}
+			expected := &models.{{ .Name }}{
 					{{ range $i, $field := .Fields }}
 					{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 					{{ end }}
 				}
-			premade, err := todoClient.Create{{ camelcase .Name }}(
+			premade, err := todoClient.Create{{ .Name }}(
 				ctx,
-				&models.{{ pascal .Name }}CreationInput{
+				&models.{{ .Name }}CreationInput{
 					{{ range $i, $field := .Fields }}
 					{{ pascal $field.Name }}: expected.{{ pascal $field.Name }},
 					{{ end }}
 				})
 			checkValueAndError(t, premade, err)
 
-			// Fetch {{ lower .Name }}
-			actual, err := todoClient.Get{{ camelcase .Name }}(ctx, premade.ID)
+			// Fetch {{ camelCase .Name }}
+			actual, err := todoClient.Get{{ .Name }}(ctx, premade.ID)
 			checkValueAndError(t, actual, err)
 
-			// Assert {{ lower .Name }} equality
-			check{{ camelcase .Name }}Equality(t, expected, actual)
+			// Assert {{ camelCase .Name }} equality
+			check{{ .Name }}Equality(t, expected, actual)
 
 			// Clean up
-			err = todoClient.Archive{{ camelcase .Name }}(ctx, actual.ID)
+			err = todoClient.Archive{{ .Name }}(ctx, actual.ID)
 			assert.NoError(t, err)
 		})
 	})
@@ -155,7 +155,7 @@ func Test{{ camelcase .Name }}s(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			err := todoClient.Update{{ camelcase .Name }}(ctx, &models.{{ camelcase .Name }}{ID: nonexistentID})
+			err := todoClient.Update{{ .Name }}(ctx, &models.{{ .Name }}{ID: nonexistentID})
 			assert.Error(t, err)
 
 		})
@@ -165,15 +165,15 @@ func Test{{ camelcase .Name }}s(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// CreateHandler {{ lower .Name }}
-			expected := &models.{{ pascal .Name }}{
+			// CreateHandler {{ camelCase .Name }}
+			expected := &models.{{ .Name }}{
 			{{ range $i, $field := .Fields }}
 			{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 			{{ end }}
 		}
-			premade, err := todoClient.Create{{ camelcase .Name }}(
+			premade, err := todoClient.Create{{ .Name }}(
 				tctx,
-				&models.{{ pascal .Name }}CreationInput{
+				&models.{{ .Name }}CreationInput{
 					{{ range $i, $field := .Fields }}
 					{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 					{{ end }}
@@ -181,21 +181,21 @@ func Test{{ camelcase .Name }}s(test *testing.T) {
 			)
 			checkValueAndError(t, premade, err)
 
-			// Change {{ lower .Name }}
+			// Change {{ camelCase .Name }}
 			// CHANGEME
-			err = todoClient.Update{{ camelcase .Name }}(ctx, premade)
+			err = todoClient.Update{{ .Name }}(ctx, premade)
 			assert.NoError(t, err)
 
-			// Fetch {{ lower .Name }}
-			actual, err := todoClient.Get{{ camelcase .Name }}(ctx, premade.ID)
+			// Fetch {{ camelCase .Name }}
+			actual, err := todoClient.Get{{ .Name }}(ctx, premade.ID)
 			checkValueAndError(t, actual, err)
 
-			// Assert {{ lower .Name }} equality
-			check{{ camelcase .Name }}Equality(t, expected, actual)
+			// Assert {{ camelCase .Name }} equality
+			check{{ .Name }}Equality(t, expected, actual)
 			assert.NotNil(t, actual.UpdatedOn)
 
 			// Clean up
-			err = todoClient.Archive{{ camelcase .Name }}(ctx, actual.ID)
+			err = todoClient.Archive{{ .Name }}(ctx, actual.ID)
 			assert.NoError(t, err)
 		})
 	})
@@ -206,14 +206,14 @@ func Test{{ camelcase .Name }}s(test *testing.T) {
 			ctx, span := trace.StartSpan(tctx, t.Name())
 			defer span.End()
 
-			// CreateHandler {{ lower .Name }}
-			expected := &models.{{ pascal .Name }}{
+			// CreateHandler {{ camelCase .Name }}
+			expected := &models.{{ .Name }}{
 					{{ range $i, $field := .Fields }}
 					{{ pascal $field.Name }}: {{ typeExample $field.Type $field.Pointer }},
 					{{ end }}
 				}
-			premade, err := todoClient.Create{{ camelcase .Name }}(ctx,
-				&models.{{ pascal .Name }}CreationInput{
+			premade, err := todoClient.Create{{ .Name }}(ctx,
+				&models.{{ .Name }}CreationInput{
 					{{ range $i, $field := .Fields }}
 					{{ pascal $field.Name }}: expected.{{ pascal $field.Name }},
 					{{ end }}
@@ -221,7 +221,7 @@ func Test{{ camelcase .Name }}s(test *testing.T) {
 			checkValueAndError(t, premade, err)
 
 			// Clean up
-			err = todoClient.Archive{{ camelcase .Name }}(ctx, premade.ID)
+			err = todoClient.Archive{{ .Name }}(ctx, premade.ID)
 			assert.NoError(t, err)
 		})
 	})
