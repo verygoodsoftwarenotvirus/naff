@@ -67,17 +67,12 @@ func fillSurvey() (*Project, error) {
 			},
 		},
 	}
-	_ = questions
 
 	// perform the questions
-	p := Project{
-		Name:             "slef",
-		OutputRepository: "gitlab.com/verygoodsoftwarenotvirus/slef",
-		ModelsPackage:    "gitlab.com/verygoodsoftwarenotvirus/naffmodels/slef",
+	p := Project{}
+	if surveyErr := survey.Ask(questions, &p); surveyErr != nil {
+		return nil, surveyErr
 	}
-	//if surveyErr := survey.Ask(questions, &p); surveyErr != nil {
-	//	return nil, surveyErr
-	//}
 	os.RemoveAll(filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository))
 
 	p.parseModels()

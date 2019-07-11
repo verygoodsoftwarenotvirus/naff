@@ -27,7 +27,7 @@ var (
 	// generateCmd represents the generate command
 	versionCmd = &cobra.Command{
 		Use:   "version",
-		Short: "the version of the software",
+		Short: "prints a short commit hash of the CLI code",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println(Version)
 		},

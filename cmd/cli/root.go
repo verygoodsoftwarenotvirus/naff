@@ -17,9 +17,6 @@ var (
 		Use:   "naff",
 		Short: "not another fucking framework",
 		Long:  `NAFF is for generating server code in an opinionated way`,
-		// Uncomment the following line if your bare application
-		// has an action associated with it:
-		//	Run: func(cmd *cobra.Command, args []string) { },
 	}
 )
 

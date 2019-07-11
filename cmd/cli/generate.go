@@ -24,16 +24,18 @@ const (
 
 var (
 	outputPackage string
+
 	// generateCmd represents the generate command
 	generateCmd = &cobra.Command{
 		Use:   "generate",
-		Short: "A brief description of your command",
-		Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+		Short: "executes the templates to generate boilerplate",
+		Long: `This command will prompt the user for a few things:
+	1. The name of the project
+	2. The directory where the files should end up
+	3. The directory where the input models are kept
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Input models are probably not necessary, but they may as well be, if you try to use this tool without any, you're going to have a bad time.
+		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			p, err := fillSurvey()
 			if err != nil {
@@ -55,13 +57,4 @@ func init() {
 	generateCmd.Flags().StringVarP(&outputPackage, "output-package", "o", "", "Package to generate.")
 
 	rootCmd.AddCommand(generateCmd)
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// generateCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// generateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
