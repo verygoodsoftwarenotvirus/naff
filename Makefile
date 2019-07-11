@@ -1,20 +1,14 @@
 GOPATH            := $(GOPATH)
+GO_PACKAGE        := gitlab.com/verygoodsoftwarenotvirus/naff
 COVERAGE_OUT      := coverage.out
+INSTALL_PATH      := ~/.bin
 
-SERVER_PRIV_KEY := dev_files/certs/server/key.pem
-SERVER_CERT_KEY := dev_files/certs/server/cert.pem
-CLIENT_PRIV_KEY := dev_files/certs/client/key.pem
-CLIENT_CERT_KEY := dev_files/certs/client/cert.pem
+VERSION := $(shell git rev-parse --short HEAD)
 
 ## generic make stuff
-
 .PHONY: clean
 clean:
 	rm -f naff_debug
-
-.PHONY: dev_deps
-dev_deps:
-	go get -u github.com/gobuffalo/packr/v2/packr2
 
 ## Project prerequisites
 vendor:
@@ -33,12 +27,17 @@ test:
 
 .PHONY: run
 run:
-	go run gitlab.com/verygoodsoftwarenotvirus/naff/cmd/cli generate
+	go run $(GO_PACKAGE)/cmd/cli generate
 
 naff_debug:
-	go build -o naff_debug gitlab.com/verygoodsoftwarenotvirus/naff/cmd/cli
+	go build -o naff_debug $(GO_PACKAGE)/cmd/cli
 
 templates:
 	@rm -rf template/
 	@mkdir template
 	go run cmd/tools/template_builder/main.go
+
+.PHONY: install
+install:
+	go build -o $(INSTALL_PATH)/naff -ldflags "-X main.Version=$(VERSION)" $(GO_PACKAGE)/cmd/cli
+
