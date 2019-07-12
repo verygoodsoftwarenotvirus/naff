@@ -5,20 +5,17 @@ INSTALL_PATH      := ~/.bin
 
 VERSION := $(shell git rev-parse --short HEAD)
 
-## generic make stuff
-.PHONY: clean
-clean:
-	rm -f naff_debug
-
 ## Project prerequisites
-vendor:
-	docker run --env GO111MODULE=on --env GOPATH=$(GOPATH) --volume `pwd`:`pwd` --workdir=`pwd` --workdir=`pwd` golang:latest /bin/sh -c "go mod vendor"
+.PHONY: vendor-clean
+vendor-clean:
+	rm -rf vendor go.sum
+
+.PHONY: vendor
+vendor: template-clean
+	GO111MODULE=on go mod vendor
 
 .PHONY: revendor
-revendor:
-	rm -rf vendor go.{mod,sum}
-	GO111MODULE=on go mod init
-	$(MAKE) vendor
+revendor: vendor-clean vendor
 
 .PHONY: test
 test:
@@ -32,9 +29,12 @@ run:
 naff_debug:
 	go build -o naff_debug $(GO_PACKAGE)/cmd/cli
 
-templates:
-	@rm -rf template/
-	@mkdir template
+.PHONY: template-clean
+template-clean:
+	rm -rf template
+	mkdir -p template
+
+templates: template-clean
 	go run cmd/tools/template_builder/main.go
 
 .PHONY: install

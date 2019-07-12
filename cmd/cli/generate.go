@@ -15,6 +15,9 @@
 package main
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/spf13/cobra"
 )
 
@@ -37,10 +40,20 @@ var (
 Input models are probably not necessary, but they may as well be, if you try to use this tool without any, you're going to have a bad time.
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			//p := &Project{
+			//	Name: "slef",
+			//	OutputRepository: "gitlab.com/verygoodsoftwarenotvirus/naff",
+			//	ModelsPackage: "gitlab.com/verygoodsoftwarenotvirus/naffmodels/slef",
+			//}
 			p, err := fillSurvey()
 			if err != nil {
 				return err
 			}
+
+			if strings.TrimSpace(p.OutputRepository) == "gitlab.com/verygoodsoftwarenotvirus/naff" {
+				return errors.New("you want me to erase myself?")
+			}
+
 			if err := p.EnsureOutputDir(); err != nil {
 				return err
 			}
