@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -13,9 +12,11 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/codemodus/kace"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/embedded"
 
 	"github.com/Masterminds/sprig"
+	"github.com/codemodus/kace"
+	"github.com/pkg/errors"
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
@@ -45,10 +46,9 @@ func fillSurvey() (*Project, error) {
 	// the questions to ask
 	questions := []*survey.Question{
 		{
-			Name:      "name",
-			Prompt:    &survey.Input{Message: "project name:"},
-			Validate:  survey.Required,
-			Transform: survey.Title,
+			Name:     "name",
+			Prompt:   &survey.Input{Message: "project name:"},
+			Validate: survey.Required,
 		},
 		{
 			Name: "outputRepository",
@@ -74,8 +74,6 @@ func fillSurvey() (*Project, error) {
 		return nil, surveyErr
 	}
 	os.RemoveAll(filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository))
-
-	p.parseModels()
 
 	return &p, nil
 }
@@ -196,26 +194,21 @@ func (p *Project) EnsureOutputDir() error {
 func renderTemplateToPath(t *template.Template, data interface{}, path string) error {
 	p := filepath.Dir(path)
 	if err := os.MkdirAll(p, os.ModePerm); err != nil {
-		return err
+		return errors.Wrap(err, "creating directory")
 	}
 
 	f, err := os.Create(path)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "creating file")
 	}
 
 	err = t.Execute(f, data)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "executing template")
 	}
 
 	return f.Close()
 }
-
-const (
-	baseTemplateDirectory = "template/base_repository/"
-	iterableDirectory     = "template/iterables/"
-)
 
 func typeToPostgresType(t string) string {
 	typeMap := map[string]string{
@@ -264,75 +257,74 @@ func typeExample(t string, pointer bool) interface{} {
 		return x
 	}
 
-	log.Println("typeExample called for type: ", t)
 	return t
 }
 
+const (
+	baseTemplateDirectory = "template/base_repository/"
+	iterableDirectory     = "template/iterables/"
+)
+
 // RenderDirectory renders a directory full of templates with the project as the data
 func (p *Project) RenderDirectory() error {
-	thisPackage := filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/naff")
+	//thisPackage := filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/naff")
 
-	var fp string
-	fp, _ = filepath.Abs(baseTemplateDirectory)
-	if walkErr := filepath.Walk(fp,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
-				return err
+	baseFiles, err := embedded.WalkDirs(baseTemplateDirectory, false)
+	if err != nil {
+		return errors.Wrap(err, "fetching directory from embedded files")
+	}
+
+	for _, path := range baseFiles {
+		b, err := embedded.ReadFile(path)
+		if err != nil {
+			return errors.Wrapf(err, "reading embedded file at path: %q", path)
+		}
+		renderPath := strings.Replace(
+			path,
+			baseTemplateDirectory,
+			filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository)+"/",
+			1,
+		)
+		renderPath = strings.TrimSuffix(renderPath, ".tmpl")
+		fmt.Printf("rendering file: %q\n", renderPath)
+
+		if strings.HasSuffix(path, defaultFileExtension) {
+			t := template.Must(template.New(path).Funcs(map[string]interface{}{
+				"typeToPostgresType": typeToPostgresType,
+				"typeExample":        typeExample,
+				"camelCase":          kace.Camel,
+				"pascal":             kace.Pascal,
+			}).Funcs(sprig.TxtFuncMap()).Parse(string(b)))
+
+			if renderErr := renderTemplateToPath(t, p, renderPath); renderErr != nil {
+				return errors.Wrap(renderErr, "rendering template")
+			}
+		} else {
+			if mkdirErr := os.MkdirAll(filepath.Dir(renderPath), os.ModePerm); mkdirErr != nil {
+				return errors.Wrap(mkdirErr, "creating containing folder")
 			}
 
-			if !info.IsDir() {
-
-				b, err := ioutil.ReadFile(path)
-				if err != nil {
-					return err
-				}
-				renderPath := strings.Replace(
-					path,
-					filepath.Join(thisPackage, baseTemplateDirectory),
-					filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository),
-					1,
-				)
-				renderPath = strings.ReplaceAll(renderPath, ".tmpl", "")
-
-				if strings.HasSuffix(path, defaultFileExtension) {
-					t := template.Must(template.New(path).Funcs(map[string]interface{}{
-						"typeToPostgresType": typeToPostgresType,
-						"typeExample":        typeExample,
-						"camelCase":          kace.Camel,
-						"pascal":             kace.Pascal,
-					}).Funcs(sprig.TxtFuncMap()).Parse(string(b)))
-
-					if renderErr := renderTemplateToPath(t, p, renderPath); renderErr != nil {
-						return renderErr
-					}
-				} else {
-					if mkdirErr := os.MkdirAll(filepath.Dir(renderPath), os.ModePerm); mkdirErr != nil {
-						return mkdirErr
-					}
-
-					return ioutil.WriteFile(renderPath, b, info.Mode())
-				}
+			if renderErr := ioutil.WriteFile(renderPath, b, 0644); renderErr != nil {
+				return errors.Wrap(renderErr, "rendering template")
 			}
-			return nil
-		},
-	); walkErr != nil {
-		return walkErr
+		}
+	}
+
+	dataFiles, err := embedded.WalkDirs(iterableDirectory, false)
+	if err != nil {
+		return errors.Wrap(err, "fetching directory from embedded files")
 	}
 
 	for _, dt := range p.DataTypes {
-		fp, _ = filepath.Abs(iterableDirectory)
-		if walkErr := filepath.Walk(fp, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
-				return err
-			}
+		for _, path := range dataFiles {
+			fmt.Printf("iterating over file %q for data type %q\n", path, dt.Name)
 
 			if strings.HasSuffix(path, defaultFileExtension) {
-				b, err := ioutil.ReadFile(path)
+				b, err := embedded.ReadFile(path)
 				if err != nil {
-					return err
+					return errors.Wrapf(err, "reading embedded file at path: %q", path)
 				}
+
 				t := template.Must(template.New(path).Funcs(map[string]interface{}{
 					"typeToPostgresType": typeToPostgresType,
 					"typeExample":        typeExample,
@@ -342,12 +334,12 @@ func (p *Project) RenderDirectory() error {
 
 				renderPath := strings.Replace(
 					path,
-					filepath.Join(thisPackage, iterableDirectory),
-					filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository),
+					iterableDirectory,
+					filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository)+"/",
 					1,
 				)
 
-				renderPath = strings.ReplaceAll(renderPath, ".tmpl", "")
+				renderPath = strings.TrimSuffix(renderPath, ".tmpl")
 				renderPath = strings.Replace(renderPath, "services/v1/models/", fmt.Sprintf("services/v1/%ss/", strings.ToLower(dt.Name)), 1)
 				renderPath = strings.Replace(renderPath, "frontend/v1/src/pages/models", fmt.Sprintf("frontend/v1/src/pages/%ss/", strings.ToLower(dt.Name)), 1)
 				renderPath = strings.Replace(renderPath, "model.go", strings.ToLower(dt.Name)+".go", 1)
@@ -360,19 +352,16 @@ func (p *Project) RenderDirectory() error {
 				type tt struct {
 					Project
 					dataType
-
 					Name string
 				}
 
 				x := &tt{Project: *p, dataType: dt, Name: dt.Name}
 
+				fmt.Printf("rendering file: %q\n", renderPath)
 				if renderErr := renderTemplateToPath(t, x, renderPath); renderErr != nil {
 					return renderErr
 				}
 			}
-			return nil
-		}); walkErr != nil {
-			return walkErr
 		}
 	}
 

@@ -2,10 +2,15 @@ GOPATH            := $(GOPATH)
 GO_PACKAGE        := gitlab.com/verygoodsoftwarenotvirus/naff
 COVERAGE_OUT      := coverage.out
 INSTALL_PATH      := ~/.bin
+EMBEDDED_PACKAGE  := embedded
 
 VERSION := $(shell git rev-parse --short HEAD)
 
 ## Project prerequisites
+.PHONY: deps
+deps:
+	GO111MODULE=off go get -u github.com/UnnoTed/fileb0x
+
 .PHONY: vendor-clean
 vendor-clean:
 	rm -rf vendor go.sum
@@ -37,7 +42,11 @@ template-clean:
 templates: template-clean
 	go run cmd/tools/template_builder/main.go
 
+.PHONY: $(EMBEDDED_PACKAGE)
+$(EMBEDDED_PACKAGE): templates
+	fileb0x b0x.yaml
+
 .PHONY: install
-install:
+install: $(EMBEDDED_PACKAGE)
 	go build -o $(INSTALL_PATH)/naff -ldflags "-X main.Version=$(VERSION)" $(GO_PACKAGE)/cmd/cli
 

@@ -16,7 +16,9 @@ require (
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/phogolabs/parcello v0.8.1 // indirect
+	github.com/pkg/errors v0.8.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
+	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 	gopkg.in/AlecAivazis/survey.v1 v1.8.5
 )

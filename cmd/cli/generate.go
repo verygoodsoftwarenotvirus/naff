@@ -41,9 +41,9 @@ Input models are probably not necessary, but they may as well be, if you try to 
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			//p := &Project{
-			//	Name: "slef",
-			//	OutputRepository: "gitlab.com/verygoodsoftwarenotvirus/naff",
-			//	ModelsPackage: "gitlab.com/verygoodsoftwarenotvirus/naffmodels/slef",
+			//	Name:             "slef",
+			//	OutputRepository: "gitlab.com/verygoodsoftwarenotvirus/slef",
+			//	ModelsPackage:    "gitlab.com/verygoodsoftwarenotvirus/naffmodels/slef",
 			//}
 			p, err := fillSurvey()
 			if err != nil {
@@ -53,6 +53,7 @@ Input models are probably not necessary, but they may as well be, if you try to 
 			if strings.TrimSpace(p.OutputRepository) == "gitlab.com/verygoodsoftwarenotvirus/naff" {
 				return errors.New("you want me to erase myself?")
 			}
+			p.parseModels()
 
 			if err := p.EnsureOutputDir(); err != nil {
 				return err
