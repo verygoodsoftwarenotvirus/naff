@@ -212,17 +212,18 @@ func renderTemplateToPath(t *template.Template, data interface{}, path string) e
 
 func typeToPostgresType(t string) string {
 	typeMap := map[string]string{
-		"string":  "CHARACTER VARYING",
-		"*string": "CHARACTER VARYING",
-		"uint64":  "BIGINT",
-		"*uint64": "BIGINT",
-		"bool":    "BOOLEAN",
-		"*bool":   "BOOLEAN",
-		"int":     "INTEGER",
-		"*int":    "INTEGER",
-		"uint":    "INTEGER",
-		"*uint":   "INTEGER",
-		"float64": "NUMERIC",
+		"[]string": "CHARACTER VARYING",
+		"string":   "CHARACTER VARYING",
+		"*string":  "CHARACTER VARYING",
+		"uint64":   "BIGINT",
+		"*uint64":  "BIGINT",
+		"bool":     "BOOLEAN",
+		"*bool":    "BOOLEAN",
+		"int":      "INTEGER",
+		"*int":     "INTEGER",
+		"uint":     "INTEGER",
+		"*uint":    "INTEGER",
+		"float64":  "NUMERIC",
 	}
 
 	if x, ok := typeMap[t]; ok {
@@ -235,17 +236,18 @@ func typeToPostgresType(t string) string {
 
 func typeExample(t string, pointer bool) interface{} {
 	typeMap := map[string]interface{}{
-		"string":  `"example"`,
-		"*string": `"example"`,
-		"uint64":  "uint64(123)",
-		"*uint64": "func(u uint64) *uint64 { return &u }(123)",
-		"bool":    false,
-		"*bool":   false,
-		"int":     "int(456)",
-		"*int":    "func(i int) *int { return &i }(123)",
-		"uint":    "uint(456)",
-		"*uint":   "func(i uint) *uint { return &i }(123)",
-		"float64": "float64(12.34)",
+		"[]string": `[]string{"example"}`,
+		"string":   `"example"`,
+		"*string":  `func(s string) *string { return &s }("example")`,
+		"uint64":   "uint64(123)",
+		"*uint64":  "func(u uint64) *uint64 { return &u }(123)",
+		"bool":     false,
+		"*bool":    false,
+		"int":      "int(456)",
+		"*int":     "func(i int) *int { return &i }(123)",
+		"uint":     "uint(456)",
+		"*uint":    "func(i uint) *uint { return &i }(123)",
+		"float64":  "float64(12.34)",
 	}
 
 	tn := t
