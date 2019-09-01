@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	{{ camelCase .Name }}sTableName = "{{ snakecase .Name }}"
+	{{ camelCase .Name }}sTableName = "{{ snakecase .Name }}s"
 )
 
 var (
@@ -248,23 +248,20 @@ func (p *Postgres) buildCreate{{ .Name }}Query(input *models.{{ .Name }}) (query
 	return query, args
 }
 
-// Create{{ .Name }} creates an {{ lower .Name }} in the database
+// Create{{ .Name }} creates an {{ camelCase .Name }} in the database
 func (p *Postgres) Create{{ .Name }}(ctx context.Context, input *models.{{ .Name }}CreationInput) (*models.{{ .Name }}, error) {
 	x := &models.{{ .Name }}{
-		{{ range $j, $field := .Fields }}
-			{{ if $field.ValidForCreationInput }}
-				{{ pascal $field.Name }}: input.{{ pascal $field.Name }},
-			{{ end }}
-		{{ end }}
+		Name:      input.Name,
+		Details:   input.Details,
 		BelongsTo: input.BelongsTo,
 	}
 
 	query, args := p.buildCreate{{ .Name }}Query(x)
 
-	// create the {{ lower .Name }}
+	// create the {{ camelCase .Name }}
 	err := p.db.QueryRowContext(ctx, query, args...).Scan(&x.ID, &x.CreatedOn)
 	if err != nil {
-		return nil, errors.Wrap(err, "error executing {{ lower .Name }} creation query")
+		return nil, errors.Wrap(err, "error executing {{ camelCase .Name }} creation query")
 	}
 
 	return x, nil

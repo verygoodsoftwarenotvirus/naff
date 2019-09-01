@@ -234,6 +234,30 @@ func typeToPostgresType(t string) string {
 	return t
 }
 
+func typeToSqliteType(t string) string {
+	typeMap := map[string]string{
+		"[]string": "CHARACTER VARYING",
+		"string":   "CHARACTER VARYING",
+		"*string":  "CHARACTER VARYING",
+		"uint64":   "INTEGER",
+		"*uint64":  "INTEGER",
+		"bool":     "BOOLEAN",
+		"*bool":    "BOOLEAN",
+		"int":      "INTEGER",
+		"*int":     "INTEGER",
+		"uint":     "INTEGER",
+		"*uint":    "INTEGER",
+		"float64":  "REAL",
+	}
+
+	if x, ok := typeMap[t]; ok {
+		return x
+	}
+
+	log.Println("typeToSqliteType called for type: ", t)
+	return t
+}
+
 func typeExample(t string, pointer bool) interface{} {
 	typeMap := map[string]interface{}{
 		"[]string": `[]string{"example"}`,
@@ -242,7 +266,7 @@ func typeExample(t string, pointer bool) interface{} {
 		"uint64":   "uint64(123)",
 		"*uint64":  "func(u uint64) *uint64 { return &u }(123)",
 		"bool":     false,
-		"*bool":    false,
+		"*bool":    "func(b bool) *bool { return &b }(false)",
 		"int":      "int(456)",
 		"*int":     "func(i int) *int { return &i }(123)",
 		"uint":     "uint(456)",
@@ -293,6 +317,7 @@ func (p *Project) RenderDirectory() error {
 		if strings.HasSuffix(path, defaultFileExtension) {
 			t := template.Must(template.New(path).Funcs(map[string]interface{}{
 				"typeToPostgresType": typeToPostgresType,
+				"typeToSqliteType":   typeToSqliteType,
 				"typeExample":        typeExample,
 				"camelCase":          kace.Camel,
 				"pascal":             kace.Pascal,
@@ -329,6 +354,7 @@ func (p *Project) RenderDirectory() error {
 
 				t := template.Must(template.New(path).Funcs(map[string]interface{}{
 					"typeToPostgresType": typeToPostgresType,
+					"typeToSqliteType":   typeToSqliteType,
 					"typeExample":        typeExample,
 					"camelCase":          kace.Camel,
 					"pascal":             kace.Pascal,
