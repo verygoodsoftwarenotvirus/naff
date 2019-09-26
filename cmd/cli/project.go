@@ -258,6 +258,30 @@ func typeToSqliteType(t string) string {
 	return t
 }
 
+func typeToMariaDBType(t string) string {
+	typeMap := map[string]string{
+		"[]string": "LONGTEXT",
+		"string":   "LONGTEXT",
+		"*string":  "LONGTEXT",
+		"uint64":   "INTEGER UNSIGNED",
+		"*uint64":  "INTEGER UNSIGNED",
+		"bool":     "BOOLEAN",
+		"*bool":    "BOOLEAN",
+		"int":      "INTEGER",
+		"*int":     "INTEGER",
+		"uint":     "INTEGER UNSIGNED",
+		"*uint":    "INTEGER UNSIGNED",
+		"float64":  "REAL",
+	}
+
+	if x, ok := typeMap[t]; ok {
+		return x
+	}
+
+	log.Println("typeToMariaDBType called for type: ", t)
+	return t
+}
+
 func typeExample(t string, pointer bool) interface{} {
 	typeMap := map[string]interface{}{
 		"[]string": `[]string{"example"}`,
@@ -317,6 +341,7 @@ func (p *Project) RenderDirectory() error {
 		if strings.HasSuffix(path, defaultFileExtension) {
 			t := template.Must(template.New(path).Funcs(map[string]interface{}{
 				"typeToPostgresType": typeToPostgresType,
+				"typeToMariaDBType":  typeToMariaDBType,
 				"typeToSqliteType":   typeToSqliteType,
 				"typeExample":        typeExample,
 				"camelCase":          kace.Camel,
@@ -354,6 +379,7 @@ func (p *Project) RenderDirectory() error {
 
 				t := template.Must(template.New(path).Funcs(map[string]interface{}{
 					"typeToPostgresType": typeToPostgresType,
+					"typeToMariaDBType":  typeToMariaDBType,
 					"typeToSqliteType":   typeToSqliteType,
 					"typeExample":        typeExample,
 					"camelCase":          kace.Camel,

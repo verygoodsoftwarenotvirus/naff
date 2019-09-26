@@ -4,11 +4,12 @@ go 1.12
 
 require (
 	github.com/Masterminds/goutils v1.1.0 // indirect
-	github.com/Masterminds/semver v1.4.2 // indirect
 	github.com/Masterminds/sprig v2.20.0+incompatible
+	github.com/aloder/tojen v0.0.0-20190316230437-fb189648ba82
 	github.com/blang/vfs v1.0.0 // indirect
 	github.com/codemodus/kace v0.5.1
 	github.com/daaku/go.zipexe v1.0.1 // indirect
+	github.com/dave/jennifer v1.3.0
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/huandu/xstrings v1.2.0 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
@@ -16,9 +17,11 @@ require (
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/phogolabs/parcello v0.8.1 // indirect
-	github.com/pkg/errors v0.8.0
+	github.com/pkg/errors v0.8.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
+	github.com/stretchr/testify v1.3.0
+	gitlab.com/verygoodsoftwarenotvirus/todo v0.0.0-20190909232555-f1416d18f08d
 	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 	gopkg.in/AlecAivazis/survey.v1 v1.8.5
 )
