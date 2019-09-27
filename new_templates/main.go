@@ -2,8 +2,8 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
-	client "gitlab.com/verygoodsoftwarenotvirus/naff/new_templates/client/v1/http"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -13,8 +13,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/tojen/gen"
+	tojen "gitlab.com/verygoodsoftwarenotvirus/naff/lib/tojen/gen"
+	client "gitlab.com/verygoodsoftwarenotvirus/naff/new_templates/client/v1/http"
 )
 
 func runTojenForFile(filename, pkg string) (string, error) {
@@ -32,13 +34,31 @@ func runTojenForFile(filename, pkg string) (string, error) {
 	return string(b), nil
 }
 
+func runDiffForFiles(file1, file2 string) (string, error) {
+	cmd := exec.Command("diff", file1, file2)
+	var e *exec.ExitError
+
+	b, err := cmd.Output()
+	if err != nil {
+		if !errors.Is(err, e) {
+			return "", err
+		}
+	}
+
+	if f, err := format.Source(b); err == nil {
+		b = f
+	}
+
+	return string(b), nil
+}
+
 func GetJenniferForFile(filename string) (string, error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return "", err
 	}
 
-	retBytes, err := gen.GenerateFileBytes(b, "main", true, true)
+	retBytes, err := tojen.GenerateFileBytes(b, "main", true, true)
 	if err != nil {
 		return "", err
 	}
@@ -56,8 +76,15 @@ func makeFuncLit(x *ast.FuncDecl) *ast.FuncLit {
 func main() {
 	for path, file := range client.Files {
 		fp := fmt.Sprintf("/home/jeffrey/src/gitlab.com/verygoodsoftwarenotvirus/naff/templates/%s", path)
-
 		_ = os.Remove(fp)
+
+		ogfp := strings.Replace(fp, "naff/templates", "todo", 1)
+		ogBytes, err := ioutil.ReadFile(ogfp)
+		if err != nil {
+			log.Fatal(err)
+		}
+		ogFile := string(ogBytes)
+		_ = ogFile
 
 		var b bytes.Buffer
 		if err := file.Render(&b); err != nil {
@@ -67,6 +94,12 @@ func main() {
 		if err := ioutil.WriteFile(fp, b.Bytes(), os.ModePerm); err != nil {
 			log.Fatal(err)
 		}
+
+		//diff, err := runDiffForFiles(ogfp, fp)
+		//if err != nil {
+		//	func(error) {}(err)
+		//}
+		//_ = diff
 	}
 
 	doTheThingForFile("/home/jeffrey/src/gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http/items_test.go", "client")
