@@ -628,8 +628,7 @@ func mainTestDotGo() *jen.File {
 								jen.ID("expectedMethod"),
 								nil,
 							),
-							jen.ID("require").Dot("NoError").Call(
-								jen.ID(t),
+							requireNoError(
 								jen.Qual("encoding/json", "NewEncoder").Call(
 									jen.ID("res"),
 								).Dot("Encode").Call(
@@ -637,6 +636,7 @@ func mainTestDotGo() *jen.File {
 										jen.ID("Name").Op(":").Lit("name"),
 									),
 								),
+								nil,
 							),
 						),
 					),
@@ -699,9 +699,9 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
-				jen.ID("require").Dot("NotNil").Call(
-					jen.ID(t),
+				requireNotNil(
 					jen.ID("req"),
+					nil,
 				),
 				requireNoError(jen.ID("err"), nil),
 				jen.Line(),
@@ -736,8 +736,7 @@ func mainTestDotGo() *jen.File {
 								jen.ID("expectedMethod"),
 								nil,
 							),
-							jen.ID("require").Dot("NoError").Call(
-								jen.ID(t),
+							requireNoError(
 								jen.Qual("encoding/json", "NewEncoder").Call(
 									jen.ID("res"),
 								).Dot("Encode").Call(
@@ -745,6 +744,7 @@ func mainTestDotGo() *jen.File {
 										jen.ID("Name").Op(":").Lit("name"),
 									),
 								),
+								nil,
 							),
 						),
 					),
@@ -984,8 +984,7 @@ func mainTestDotGo() *jen.File {
 								jen.ID("expectedMethod"),
 								nil,
 							),
-							jen.ID("require").Dot("NoError").Call(
-								jen.ID(t),
+							requireNoError(
 								jen.Qual("encoding/json", "NewEncoder").Call(
 									jen.ID("res"),
 								).Dot("Encode").Call(
@@ -993,6 +992,7 @@ func mainTestDotGo() *jen.File {
 										jen.ID("Name").Op(":").Lit("name"),
 									),
 								),
+								nil,
 							),
 						),
 					),

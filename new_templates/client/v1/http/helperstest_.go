@@ -384,6 +384,7 @@ func helpersTestDotGo() *jen.File {
 				).Op(":=").Qual("io/ioutil", "ReadAll").Call(
 					jen.ID("actual"),
 				),
+				jen.Line(),
 				assertNoError(
 					jen.ID("err"),
 					jen.Lit("expected no error reading JSON from valid struct"),

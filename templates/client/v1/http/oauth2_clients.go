@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 	"net/http"
 	"strconv"
+
+	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 const (

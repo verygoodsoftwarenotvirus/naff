@@ -3,14 +3,16 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 	"time"
+
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (

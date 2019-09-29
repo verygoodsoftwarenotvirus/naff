@@ -4,15 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
-	mockutil "gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
+
+	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	mockutil "gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type testingType struct {

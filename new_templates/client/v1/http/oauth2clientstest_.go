@@ -100,13 +100,9 @@ func oauth2ClientsTestDotGo() *jen.File {
 								jen.Qual("net/http", "MethodGet"),
 								nil,
 							),
-							jen.ID("require").Dot("NoError").Call(
-								jen.ID(t),
-								jen.Qual("encoding/json", "NewEncoder").Call(
-									jen.ID("res"),
-								).Dot("Encode").Call(
-									jen.ID("expected"),
-								),
+							requireNoError(
+								jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+								nil,
 							),
 						),
 					),
@@ -205,13 +201,9 @@ func oauth2ClientsTestDotGo() *jen.File {
 								jen.Qual("net/http", "MethodGet"),
 								nil,
 							),
-							jen.ID("require").Dot("NoError").Call(
-								jen.ID(t),
-								jen.Qual("encoding/json", "NewEncoder").Call(
-									jen.ID("res"),
-								).Dot("Encode").Call(
-									jen.ID("expected"),
-								),
+							requireNoError(
+								jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+								nil,
 							),
 						),
 					),
@@ -319,13 +311,9 @@ func oauth2ClientsTestDotGo() *jen.File {
 								jen.Qual("net/http", "MethodPost"),
 								nil,
 							),
-							jen.ID("require").Dot("NoError").Call(
-								jen.ID(t),
-								jen.Qual("encoding/json", "NewEncoder").Call(
-									jen.ID("res"),
-								).Dot("Encode").Call(
-									jen.ID("exampleOutput"),
-								),
+							requireNoError(
+								jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("exampleOutput")),
+								nil,
 							),
 						),
 					),

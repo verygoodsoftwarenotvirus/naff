@@ -100,13 +100,9 @@ func webhooksTestDotGo() *jen.File {
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
-					jen.ID("require").Dot("NoError").Call(
-						jen.ID(t),
-						jen.Qual("encoding/json", "NewEncoder").Call(
-							jen.ID("res"),
-						).Dot("Encode").Call(
-							jen.ID("expected"),
-						),
+					requireNoError(
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						nil,
 					),
 				),
 				jen.Line(),
@@ -198,13 +194,9 @@ func webhooksTestDotGo() *jen.File {
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
-					jen.ID("require").Dot("NoError").Call(
-						jen.ID(t),
-						jen.Qual("encoding/json", "NewEncoder").Call(
-							jen.ID("res"),
-						).Dot("Encode").Call(
-							jen.ID("expected"),
-						),
+					requireNoError(
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						nil,
 					),
 				),
 				jen.Line(),
@@ -314,13 +306,9 @@ func webhooksTestDotGo() *jen.File {
 						nil,
 					),
 					jen.Line(),
-					jen.ID("require").Dot("NoError").Call(
-						jen.ID(t),
-						jen.Qual("encoding/json", "NewEncoder").Call(
-							jen.ID("res"),
-						).Dot("Encode").Call(
-							jen.ID("expected"),
-						),
+					requireNoError(
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						nil,
 					),
 					writeHeader("StatusOK"),
 				),

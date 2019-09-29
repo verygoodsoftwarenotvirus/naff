@@ -13,6 +13,7 @@ import (
 	"text/template"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/embedded"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
 	"github.com/Masterminds/sprig"
 	"github.com/codemodus/kace"
@@ -20,23 +21,10 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
-type dataType struct {
-	Name   string
-	Fields []dataField
-}
-
-type dataField struct {
-	Name                  string
-	Type                  string
-	Pointer               bool
-	ValidForCreationInput bool
-	ValidForUpdateInput   bool
-}
-
 // Project is our project type
 type Project struct {
 	Name                    string `survey:"name"`
-	DataTypes               []dataType
+	DataTypes               []models.DataType
 	IterableServicesImports []string
 	OutputRepository        string `survey:"outputRepository"`
 	ModelsPackage           string `survey:"modelsPackage"`
@@ -90,9 +78,9 @@ func (p *Project) parseModels() {
 		for _, file := range pkg.Files {
 			ast.Inspect(file, func(n ast.Node) bool {
 				if dec, ok := n.(*ast.TypeSpec); ok {
-					dt := dataType{
+					dt := models.DataType{
 						Name:   dec.Name.Name,
-						Fields: []dataField{},
+						Fields: []models.DataField{},
 					}
 
 					if _, ok := dec.Type.(*ast.StructType); !ok {
@@ -101,7 +89,7 @@ func (p *Project) parseModels() {
 					}
 
 					for _, field := range dec.Type.(*ast.StructType).Fields.List {
-						df := dataField{
+						df := models.DataField{
 							Name:                  field.Names[0].Name,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
@@ -405,11 +393,11 @@ func (p *Project) RenderDirectory() error {
 
 				type tt struct {
 					Project
-					dataType
+					models.DataType
 					Name string
 				}
 
-				x := &tt{Project: *p, dataType: dt, Name: dt.Name}
+				x := &tt{Project: *p, DataType: dt, Name: dt.Name}
 
 				fmt.Printf("rendering file: %q\n", renderPath)
 				if renderErr := renderTemplateToPath(t, x, renderPath); renderErr != nil {

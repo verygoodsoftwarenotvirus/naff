@@ -94,13 +94,9 @@ func usersTestDotGo() *jen.File {
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
-					jen.ID("require").Dot("NoError").Call(
-						jen.ID(t),
-						jen.Qual("encoding/json", "NewEncoder").Call(
-							jen.ID("res"),
-						).Dot("Encode").Call(
-							jen.ID("expected"),
-						),
+					requireNoError(
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						nil,
 					),
 				),
 				jen.Line(),
@@ -116,9 +112,9 @@ func usersTestDotGo() *jen.File {
 					jen.ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("require").Dot("NotNil").Call(
-					jen.ID(t),
+				requireNotNil(
 					jen.ID("actual"),
+					nil,
 				),
 				assertNoError(
 					jen.ID("err"),
@@ -196,13 +192,9 @@ func usersTestDotGo() *jen.File {
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
-					jen.ID("require").Dot("NoError").Call(
-						jen.ID(t),
-						jen.Qual("encoding/json", "NewEncoder").Call(
-							jen.ID("res"),
-						).Dot("Encode").Call(
-							jen.ID("expected"),
-						),
+					requireNoError(
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						nil,
 					),
 				),
 				jen.Line(),
@@ -291,13 +283,13 @@ func usersTestDotGo() *jen.File {
 					),
 					jen.Line(),
 					jen.Var().ID("x").Op("*").Qual(modelsPkg, "UserInput"),
-					jen.ID("require").Dot("NoError").Call(
-						jen.ID(t),
+					requireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(
 							jen.ID("req").Dot("Body"),
 						).Dot("Decode").Call(
 							jen.Op("&").ID("x"),
 						),
+						nil,
 					),
 					assertEqual(
 						jen.ID("exampleInput"),

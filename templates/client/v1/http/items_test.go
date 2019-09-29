@@ -16,17 +16,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestV1Client_BuildGetWebhookRequest(T *testing.T) {
+func TestV1Client_BuildGetItemRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		expectedMethod := http.MethodGet
-
 		ts := httptest.NewTLSServer(nil)
+
 		c := buildTestClient(t, ts)
 		expectedID := uint64(1)
-		actual, err := c.BuildGetWebhookRequest(ctx, expectedID)
+		actual, err := c.BuildGetItemRequest(ctx, expectedID)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -35,21 +35,22 @@ func TestV1Client_BuildGetWebhookRequest(T *testing.T) {
 	})
 }
 
-func TestV1Client_GetWebhook(T *testing.T) {
+func TestV1Client_GetItem(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
-		expected := &models.Webhook{
-			ID:   1,
-			Name: "example",
+		expected := &models.Item{
+			ID:      1,
+			Name:    "example",
+			Details: "blah",
 		}
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
 					assert.True(t, strings.HasSuffix(req.URL.String(), strconv.Itoa(int(expected.ID))))
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/webhooks/%d", expected.ID), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/items/%d", expected.ID), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodGet)
 					require.NoError(t, json.NewEncoder(res).Encode(expected))
 				},
@@ -57,7 +58,7 @@ func TestV1Client_GetWebhook(T *testing.T) {
 		)
 
 		c := buildTestClient(t, ts)
-		actual, err := c.GetWebhook(ctx, expected.ID)
+		actual, err := c.GetItem(ctx, expected.ID)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -65,7 +66,7 @@ func TestV1Client_GetWebhook(T *testing.T) {
 	})
 }
 
-func TestV1Client_BuildGetWebhooksRequest(T *testing.T) {
+func TestV1Client_BuildGetItemsRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -74,7 +75,7 @@ func TestV1Client_BuildGetWebhooksRequest(T *testing.T) {
 		ts := httptest.NewTLSServer(nil)
 
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildGetWebhooksRequest(ctx, nil)
+		actual, err := c.BuildGetItemsRequest(ctx, nil)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -82,16 +83,17 @@ func TestV1Client_BuildGetWebhooksRequest(T *testing.T) {
 	})
 }
 
-func TestV1Client_GetWebhooks(T *testing.T) {
+func TestV1Client_GetItems(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
-		expected := &models.WebhookList{
-			Webhooks: []models.Webhook{
+		expected := &models.ItemList{
+			Items: []models.Item{
 				{
-					ID:   1,
-					Name: "example",
+					ID:      1,
+					Name:    "example",
+					Details: "blah",
 				},
 			},
 		}
@@ -99,7 +101,7 @@ func TestV1Client_GetWebhooks(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, "/api/v1/webhooks", "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, "/api/v1/items", "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodGet)
 					require.NoError(t, json.NewEncoder(res).Encode(expected))
 				},
@@ -107,7 +109,7 @@ func TestV1Client_GetWebhooks(T *testing.T) {
 		)
 
 		c := buildTestClient(t, ts)
-		actual, err := c.GetWebhooks(ctx, nil)
+		actual, err := c.GetItems(ctx, nil)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -115,7 +117,7 @@ func TestV1Client_GetWebhooks(T *testing.T) {
 	})
 }
 
-func TestV1Client_BuildCreateWebhookRequest(T *testing.T) {
+func TestV1Client_BuildCreateItemRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -123,11 +125,12 @@ func TestV1Client_BuildCreateWebhookRequest(T *testing.T) {
 		expectedMethod := http.MethodPost
 		ts := httptest.NewTLSServer(nil)
 
-		exampleInput := &models.WebhookCreationInput{
-			Name: "expected name",
+		exampleInput := &models.ItemCreationInput{
+			Name:    "expected name",
+			Details: "expected details",
 		}
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildCreateWebhookRequest(ctx, exampleInput)
+		actual, err := c.BuildCreateItemRequest(ctx, exampleInput)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -135,26 +138,28 @@ func TestV1Client_BuildCreateWebhookRequest(T *testing.T) {
 	})
 }
 
-func TestV1Client_CreateWebhook(T *testing.T) {
+func TestV1Client_CreateItem(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
-		expected := &models.Webhook{
-			ID:   1,
-			Name: "example",
+		expected := &models.Item{
+			ID:      1,
+			Name:    "example",
+			Details: "blah",
 		}
-		exampleInput := &models.WebhookCreationInput{
-			Name: expected.Name,
+		exampleInput := &models.ItemCreationInput{
+			Name:    expected.Name,
+			Details: expected.Details,
 		}
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, "/api/v1/webhooks", "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, "/api/v1/items", "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodPost)
 
-					var x *models.WebhookCreationInput
+					var x *models.ItemCreationInput
 					require.NoError(t, json.NewDecoder(req.Body).Decode(&x))
 					assert.Equal(t, exampleInput, x)
 
@@ -165,7 +170,7 @@ func TestV1Client_CreateWebhook(T *testing.T) {
 		)
 
 		c := buildTestClient(t, ts)
-		actual, err := c.CreateWebhook(ctx, exampleInput)
+		actual, err := c.CreateItem(ctx, exampleInput)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -173,19 +178,20 @@ func TestV1Client_CreateWebhook(T *testing.T) {
 	})
 }
 
-func TestV1Client_BuildUpdateWebhookRequest(T *testing.T) {
+func TestV1Client_BuildUpdateItemRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		expectedMethod := http.MethodPut
-		exampleInput := &models.Webhook{
-			Name: "changed name",
+		exampleInput := &models.Item{
+			Name:    "changed name",
+			Details: "changed details",
 		}
 
 		ts := httptest.NewTLSServer(nil)
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildUpdateWebhookRequest(ctx, exampleInput)
+		actual, err := c.BuildUpdateItemRequest(ctx, exampleInput)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -193,32 +199,33 @@ func TestV1Client_BuildUpdateWebhookRequest(T *testing.T) {
 	})
 }
 
-func TestV1Client_UpdateWebhook(T *testing.T) {
+func TestV1Client_UpdateItem(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
-		expected := &models.Webhook{
-			ID:   1,
-			Name: "example",
+		expected := &models.Item{
+			ID:      1,
+			Name:    "example",
+			Details: "blah",
 		}
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/webhooks/%d", expected.ID), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/items/%d", expected.ID), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodPut)
 					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)
 
-		err := buildTestClient(t, ts).UpdateWebhook(ctx, expected)
+		err := buildTestClient(t, ts).UpdateItem(ctx, expected)
 		assert.NoError(t, err, "no error should be returned")
 	})
 }
 
-func TestV1Client_BuildArchiveWebhookRequest(T *testing.T) {
+func TestV1Client_BuildArchiveItemRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -228,7 +235,7 @@ func TestV1Client_BuildArchiveWebhookRequest(T *testing.T) {
 
 		expectedID := uint64(1)
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildArchiveWebhookRequest(ctx, expectedID)
+		actual, err := c.BuildArchiveItemRequest(ctx, expectedID)
 
 		require.NotNil(t, actual)
 		require.NotNil(t, actual.URL)
@@ -238,7 +245,7 @@ func TestV1Client_BuildArchiveWebhookRequest(T *testing.T) {
 	})
 }
 
-func TestV1Client_ArchiveWebhook(T *testing.T) {
+func TestV1Client_ArchiveItem(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
@@ -248,14 +255,14 @@ func TestV1Client_ArchiveWebhook(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/webhooks/%d", expected), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/items/%d", expected), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodDelete)
 					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)
 
-		err := buildTestClient(t, ts).ArchiveWebhook(ctx, expected)
+		err := buildTestClient(t, ts).ArchiveItem(ctx, expected)
 		assert.NoError(t, err, "no error should be returned")
 	})
 }
