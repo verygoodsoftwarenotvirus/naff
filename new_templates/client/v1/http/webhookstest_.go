@@ -1,6 +1,11 @@
 package client
 
-import jen "github.com/dave/jennifer/jen"
+import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+
+const (
+	webhookRoute      = "/api/v1/webhooks/%d"
+	webhooksListRoute = "/api/v1/webhooks"
+)
 
 func webhooksTestDotGo() *jen.File {
 	ret := jen.NewFile("client")
@@ -10,48 +15,47 @@ func webhooksTestDotGo() *jen.File {
 	ret.Add(
 		jen.Line(),
 		testFunc("V1Client_BuildGetWebhookRequest").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
 				expectMethod("expectedMethod", "MethodGet"),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Id("nil")),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
-				jen.Id("expectedID").Op(":=").Id("uint64").Call(
+				jen.ID("expectedID").Op(":=").ID("uint64").Call(
 					jen.Lit(1),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("BuildGetWebhookRequest").Call(
-					jen.Id("ctx"),
-					jen.Id("expectedID"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("BuildGetWebhookRequest").Call(
+					jen.ID("ctx"),
+					jen.ID("expectedID"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
 				assertTrue(
-					jen.Id("t"), jen.Qual("strings", "HasSuffix").Call(
-						jen.Id("actual").Dot("URL").Dot("String").Call(),
+					jen.Qual("strings", "HasSuffix").Call(
+						jen.ID("actual").Dot("URL").Dot("String").Call(),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit("%d"),
-							jen.Id("expectedID"),
+							jen.ID("expectedID"),
 						),
 					),
+					nil,
 				),
 				assertEqual(
-					jen.Id("t"),
-					jen.Id("actual").Dot("Method"),
-					jen.Id("expectedMethod"),
+					jen.ID("actual").Dot("Method"),
+					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
-					jen.Id("expectedMethod"),
+					jen.ID("expectedMethod"),
 				),
 			),
 		),
@@ -60,66 +64,72 @@ func webhooksTestDotGo() *jen.File {
 	ret.Add(
 		jen.Line(),
 		testFunc("V1Client_GetWebhook").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
-				jen.Id("expected").Op(":=").Op("&").Id("models").Dot("Webhook").Values(jen.Id("ID").Op(":").Lit(1),
-					jen.Id("Name").Op(":").Lit("example")),
+				jen.ID("expected").Op(":=").Op("&").Qual(modelsPkg, "Webhook").Values(jen.Dict{
+					jen.ID("ID"):   jen.Lit(1),
+					jen.ID("Name"): jen.Lit("example"),
+				}),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
 					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
+						jen.ID("res").Qual("net/http", "ResponseWriter"),
+						jen.ID("req").Op("*").Qual("net/http", "Request"),
 					).Block(
-						assertTrue(
-							jen.Id("t"), jen.Qual("strings", "HasSuffix").Call(
-								jen.Id("req").Dot("URL").Dot("String").Call(), jen.Qual("strconv", "Itoa").Call(
-									jen.Id("int").Call(
-										jen.Id("expected").Dot("ID"),
-									),
+						assertTrue(jen.Qual("strings", "HasSuffix").Call(
+							jen.ID("req").Dot("URL").Dot("String").Call(),
+							jen.Qual("strconv", "Itoa").Call(
+								jen.ID("int").Call(
+									jen.ID("expected").Dot("ID"),
 								),
 							),
 						),
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("URL").Dot("Path"), jen.Qual("fmt", "Sprintf").Call(
-								jen.Lit("/api/v1/webhooks/%d"),
-								jen.Id("expected").Dot("ID"),
-							), jen.Lit("expected and actual path don't match"),
+							nil,
 						),
 						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"), jen.Qual("net/http", "MethodGet"),
+							jen.ID("req").Dot("URL").Dot("Path"),
+							jen.Qual("fmt", "Sprintf").Call(
+								jen.Lit(webhookRoute),
+								jen.ID("expected").Dot("ID"),
+							),
+							jen.Lit("expected and actual path don't match"),
 						),
-						jen.Id("require").Dot("NoError").Call(
-							jen.Id("t"), jen.Qual("encoding/json", "NewEncoder").Call(
-								jen.Id("res"),
+						assertEqual(
+							jen.ID("req").Dot("Method"),
+							jen.Qual("net/http", "MethodGet"),
+							nil,
+						),
+						jen.ID("require").Dot("NoError").Call(
+							jen.ID(t),
+							jen.Qual("encoding/json", "NewEncoder").Call(
+								jen.ID("res"),
 							).Dot("Encode").Call(
-								jen.Id("expected"),
+								jen.ID("expected"),
 							),
 						),
 					),
 				),
 				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("GetWebhook").Call(
-					jen.Id("ctx"),
-					jen.Id("expected").Dot("ID"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("GetWebhook").Call(
+					jen.ID("ctx"),
+					jen.ID("expected").Dot("ID"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(jen.Id("expected"), jen.Id("actual"), nil),
+				assertEqual(jen.ID("expected"),
+					jen.ID("actual"), nil),
 			),
 		),
 	)
@@ -127,36 +137,34 @@ func webhooksTestDotGo() *jen.File {
 	ret.Add(
 		jen.Line(),
 		testFunc("V1Client_BuildGetWebhooksRequest").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
 				expectMethod("expectedMethod", "MethodGet"),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Id("nil")),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("BuildGetWebhooksRequest").Call(
-					jen.Id("ctx"),
-					jen.Id("nil"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("BuildGetWebhooksRequest").Call(
+					jen.ID("ctx"),
+					jen.ID("nil"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
 				assertEqual(
-					jen.Id("t"),
-					jen.Id("actual").Dot("Method"),
-					jen.Id("expectedMethod"),
+					jen.ID("actual").Dot("Method"),
+					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
-					jen.Id("expectedMethod"),
+					jen.ID("expectedMethod"),
 				),
 			),
 		),
@@ -165,58 +173,62 @@ func webhooksTestDotGo() *jen.File {
 	ret.Add(
 		jen.Line(),
 		testFunc("V1Client_GetWebhooks").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
-				jen.Id("expected").Op(":=").Op("&").Id("models").Dot("WebhookList").Values(jen.Id("Webhooks").Op(":").Index().Id("models").Dot("Webhook").Values(jen.Values(jen.Id("ID").Op(":").Lit(1),
-					jen.Id("Name").Op(":").Lit("example"),
-				),
-				),
-				),
+				jen.ID("expected").Op(":=").Op("&").Qual(modelsPkg, "WebhookList").Values(jen.Dict{
+					jen.ID("Webhooks"): jen.Index().Qual(modelsPkg, "Webhook").Values(jen.Dict{
+						jen.ID("ID"):   jen.Lit(1),
+						jen.ID("Name"): jen.Lit("example"),
+					}),
+				}),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
-					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
-					).Block(
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("URL").Dot("Path"), jen.Lit("/api/v1/webhooks"),
-							jen.Lit("expected and actual path don't match"),
-						),
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"), jen.Qual("net/http", "MethodGet"),
-						),
-						jen.Id("require").Dot("NoError").Call(
-							jen.Id("t"), jen.Qual("encoding/json", "NewEncoder").Call(
-								jen.Id("res"),
-							).Dot("Encode").Call(
-								jen.Id("expected"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(
+					jen.Qual("net/http", "HandlerFunc").Call(
+						jen.Func().Params(
+							jen.ID("res").Qual("net/http", "ResponseWriter"),
+							jen.ID("req").Op("*").Qual("net/http", "Request"),
+						).Block(
+							assertEqual(
+								jen.ID("req").Dot("URL").Dot("Path"),
+								jen.Lit(webhooksListRoute),
+								jen.Lit("expected and actual path don't match"),
+							),
+							assertEqual(
+								jen.ID("req").Dot("Method"),
+								jen.Qual("net/http", "MethodGet"),
+								nil,
+							),
+							jen.ID("require").Dot("NoError").Call(
+								jen.ID(t),
+								jen.Qual("encoding/json", "NewEncoder").Call(
+									jen.ID("res"),
+								).Dot("Encode").Call(
+									jen.ID("expected"),
+								),
 							),
 						),
 					),
 				),
-				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("GetWebhooks").Call(
-					jen.Id("ctx"),
-					jen.Id("nil"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("GetWebhooks").Call(
+					jen.ID("ctx"),
+					jen.ID("nil"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(jen.Id("expected"), jen.Id("actual"), nil),
+				assertEqual(jen.ID("expected"),
+					jen.ID("actual"), nil),
 			),
 		),
 	)
@@ -224,39 +236,37 @@ func webhooksTestDotGo() *jen.File {
 	ret.Add(
 		jen.Line(),
 		testFunc("V1Client_BuildCreateWebhookRequest").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
 				expectMethod("expectedMethod", "MethodPost"),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Id("nil")),
-				jen.Id("exampleInput").Op(":=").Op("&").Id("models").Dot("WebhookCreationInput").Values(
-					jen.Id("Name").Op(":").Lit("expected name"),
-				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, "WebhookCreationInput").Values(jen.Dict{
+					jen.ID("Name"): jen.Lit("expected name"),
+				}),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("BuildCreateWebhookRequest").Call(
-					jen.Id("ctx"),
-					jen.Id("exampleInput"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("BuildCreateWebhookRequest").Call(
+					jen.ID("ctx"),
+					jen.ID("exampleInput"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
 				assertEqual(
-					jen.Id("t"),
-					jen.Id("actual").Dot("Method"),
-					jen.Id("expectedMethod"),
+					jen.ID("actual").Dot("Method"),
+					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
-					jen.Id("expectedMethod"),
+					jen.ID("expectedMethod"),
 				),
 			),
 		),
@@ -265,71 +275,78 @@ func webhooksTestDotGo() *jen.File {
 	ret.Add(
 		jen.Line(),
 		testFunc("V1Client_CreateWebhook").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
-				jen.Id("expected").Op(":=").Op("&").Id("models").Dot("Webhook").Values(jen.Id("ID").Op(":").Lit(1),
-					jen.Id("Name").Op(":").Lit("example")),
-				jen.Id("exampleInput").Op(":=").Op("&").Id("models").Dot("WebhookCreationInput").Values(
-					jen.Id("Name").Op(":").Id("expected").Dot("Name"),
-				),
+				jen.ID("expected").Op(":=").Op("&").Qual(modelsPkg, "Webhook").Values(jen.Dict{
+					jen.ID("ID"):   jen.Lit(1),
+					jen.ID("Name"): jen.Lit("example"),
+				}),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, "WebhookCreationInput").Values(jen.Dict{
+					jen.ID("Name"): jen.ID("expected").Dot("Name"),
+				}),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
-					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
-					).Block(
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("URL").Dot("Path"), jen.Lit("/api/v1/webhooks"),
-							jen.Lit("expected and actual path don't match"),
-						),
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"), jen.Qual("net/http", "MethodPost"),
-						), jen.Var().Id("x").Op("*").Id("models").Dot("WebhookCreationInput"),
-						jen.Id("require").Dot("NoError").Call(
-							jen.Id("t"), jen.Qual("encoding/json", "NewDecoder").Call(
-								jen.Id("req").Dot("Body"),
-							).Dot("Decode").Call(
-								jen.Op("&").Id("x"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(
+					jen.Qual("net/http", "HandlerFunc").Call(
+						jen.Func().Params(
+							jen.ID("res").Qual("net/http", "ResponseWriter"),
+							jen.ID("req").Op("*").Qual("net/http", "Request"),
+						).Block(
+							assertEqual(
+								jen.ID("req").Dot("URL").Dot("Path"),
+								jen.Lit(webhooksListRoute),
+								jen.Lit("expected and actual path don't match"),
 							),
-						),
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("exampleInput"),
-							jen.Id("x"),
-						),
-						jen.Id("require").Dot("NoError").Call(
-							jen.Id("t"), jen.Qual("encoding/json", "NewEncoder").Call(
-								jen.Id("res"),
-							).Dot("Encode").Call(
-								jen.Id("expected"),
+							assertEqual(
+								jen.ID("req").Dot("Method"),
+								jen.Qual("net/http", "MethodPost"),
+								nil,
 							),
+							jen.Var().ID("x").Op("*").Qual(modelsPkg, "WebhookCreationInput"),
+							jen.ID("require").Dot("NoError").Call(
+								jen.ID(t),
+								jen.Qual("encoding/json", "NewDecoder").Call(
+									jen.ID("req").Dot("Body"),
+								).Dot("Decode").Call(
+									jen.Op("&").ID("x"),
+								),
+							),
+							assertEqual(
+								jen.ID("exampleInput"),
+								jen.ID("x"),
+								nil,
+							),
+							jen.ID("require").Dot("NoError").Call(
+								jen.ID(t),
+								jen.Qual("encoding/json", "NewEncoder").Call(
+									jen.ID("res"),
+								).Dot("Encode").Call(
+									jen.ID("expected"),
+								),
+							),
+							writeHeader("StatusOK"),
 						),
-						writeHeader("StatusOK"),
 					),
 				),
-				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("CreateWebhook").Call(
-					jen.Id("ctx"),
-					jen.Id("exampleInput"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("CreateWebhook").Call(
+					jen.ID("ctx"),
+					jen.ID("exampleInput"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(jen.Id("expected"), jen.Id("actual"), nil),
+				assertEqual(jen.ID("expected"),
+					jen.ID("actual"), nil),
 			),
 		),
 	)
@@ -337,39 +354,37 @@ func webhooksTestDotGo() *jen.File {
 	ret.Add(
 		jen.Line(),
 		testFunc("V1Client_BuildUpdateWebhookRequest").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
 				expectMethod("expectedMethod", "MethodPut"),
 				createCtx(),
-				jen.Id("exampleInput").Op(":=").Op("&").Id("models").Dot("Webhook").Values(
-					jen.Id("Name").Op(":").Lit("changed name"),
-				),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Id("nil")),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, "Webhook").Values(jen.Dict{
+					jen.ID("Name"): jen.Lit("changed name"),
+				}),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("BuildUpdateWebhookRequest").Call(
-					jen.Id("ctx"),
-					jen.Id("exampleInput"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("BuildUpdateWebhookRequest").Call(
+					jen.ID("ctx"),
+					jen.ID("exampleInput"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
 				assertEqual(
-					jen.Id("t"),
-					jen.Id("actual").Dot("Method"),
-					jen.Id("expectedMethod"),
+					jen.ID("actual").Dot("Method"),
+					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
-					jen.Id("expectedMethod"),
+					jen.ID("expectedMethod"),
 				),
 			),
 		),
@@ -378,48 +393,47 @@ func webhooksTestDotGo() *jen.File {
 	ret.Add(
 		jen.Line(),
 		testFunc("V1Client_UpdateWebhook").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
-				jen.Id("expected").Op(":=").Op("&").Id("models").Dot("Webhook").Values(
-					jen.Id("ID").Op(":").Lit(1),
-					jen.Id("Name").Op(":").Lit("example"),
-				),
+				jen.ID("expected").Op(":=").Op("&").Qual(modelsPkg, "Webhook").Values(jen.Dict{
+					jen.ID("ID"):   jen.Lit(1),
+					jen.ID("Name"): jen.Lit("example"),
+				}),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
-					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
-					).Block(
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("URL").Dot("Path"),
-							jen.Qual("fmt", "Sprintf").Call(
-								jen.Lit("/api/v1/webhooks/%d"),
-								jen.Id("expected").Dot("ID"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(
+					jen.Qual("net/http", "HandlerFunc").Call(
+						jen.Func().Params(
+							jen.ID("res").Qual("net/http", "ResponseWriter"),
+							jen.ID("req").Op("*").Qual("net/http", "Request"),
+						).Block(
+							assertEqual(
+								jen.ID("req").Dot("URL").Dot("Path"),
+								jen.Qual("fmt", "Sprintf").Call(
+									jen.Lit(webhookRoute),
+									jen.ID("expected").Dot("ID"),
+								),
+								jen.Lit("expected and actual path don't match"),
 							),
-							jen.Lit("expected and actual path don't match"),
+							assertEqual(
+								jen.ID("req").Dot("Method"),
+								jen.Qual("net/http", "MethodPut"),
+								nil,
+							),
+							writeHeader("StatusOK"),
 						),
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"),
-							jen.Qual("net/http", "MethodPut"),
-						),
-						writeHeader("StatusOK"),
 					),
 				),
-				),
-				jen.Id("err").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("err").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				).Dot("UpdateWebhook").Call(
-					jen.Id("ctx"),
-					jen.Id("expected"),
+					jen.ID("ctx"),
+					jen.ID("expected"),
 				),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
 			),
@@ -429,52 +443,50 @@ func webhooksTestDotGo() *jen.File {
 	ret.Add(
 		jen.Line(),
 		testFunc("V1Client_BuildArchiveWebhookRequest").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
 				expectMethod("expectedMethod", "MethodDelete"),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Id("nil")),
-				jen.Id("expectedID").Op(":=").Id("uint64").Call(
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("expectedID").Op(":=").ID("uint64").Call(
 					jen.Lit(1),
 				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("BuildArchiveWebhookRequest").Call(
-					jen.Id("ctx"),
-					jen.Id("expectedID"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("BuildArchiveWebhookRequest").Call(
+					jen.ID("ctx"),
+					jen.ID("expectedID"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
-				jen.Id("require").Dot("NotNil").Call(
-					jen.Id("t"),
-					jen.Id("actual").Dot("URL"),
+				requireNotNil(jen.ID("actual"), nil),
+				jen.ID("require").Dot("NotNil").Call(
+					jen.ID(t),
+					jen.ID("actual").Dot("URL"),
 				),
-				assertTrue(
-					jen.Id("t"), jen.Qual("strings", "HasSuffix").Call(
-						jen.Id("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
-							jen.Id("expectedID"),
-						),
+				assertTrue(jen.Qual("strings", "HasSuffix").Call(
+					jen.ID("actual").Dot("URL").Dot("String").Call(),
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%d"),
+						jen.ID("expectedID"),
 					),
 				),
+					nil,
+				),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
 				assertEqual(
-					jen.Id("t"),
-					jen.Id("actual").Dot("Method"),
-					jen.Id("expectedMethod"),
+					jen.ID("actual").Dot("Method"),
+					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
-					jen.Id("expectedMethod"),
+					jen.ID("expectedMethod"),
 				),
 			),
 		),
@@ -483,47 +495,45 @@ func webhooksTestDotGo() *jen.File {
 	ret.Add(
 		jen.Line(),
 		testFunc("V1Client_ArchiveWebhook").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
-				jen.Id("expected").Op(":=").Id("uint64").Call(
+				jen.ID("expected").Op(":=").ID("uint64").Call(
 					jen.Lit(1),
 				),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
 					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
+						jen.ID("res").Qual("net/http", "ResponseWriter"),
+						jen.ID("req").Op("*").Qual("net/http", "Request"),
 					).Block(
 						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("URL").Dot("Path"),
+							jen.ID("req").Dot("URL").Dot("Path"),
 							jen.Qual("fmt", "Sprintf").Call(
-								jen.Lit("/api/v1/webhooks/%d"),
-								jen.Id("expected"),
+								jen.Lit(webhookRoute),
+								jen.ID("expected"),
 							),
 							jen.Lit("expected and actual path don't match"),
 						),
 						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"),
+							jen.ID("req").Dot("Method"),
 							jen.Qual("net/http", "MethodDelete"),
+							nil,
 						),
 						writeHeader("StatusOK"),
 					),
 				),
 				),
-				jen.Id("err").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("err").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				).Dot("ArchiveWebhook").Call(
-					jen.Id("ctx"),
-					jen.Id("expected"),
+					jen.ID("ctx"),
+					jen.ID("expected"),
 				),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
 			),

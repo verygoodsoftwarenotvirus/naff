@@ -50,3 +50,6 @@ $(EMBEDDED_PACKAGE): templates
 install: $(EMBEDDED_PACKAGE)
 	go build -o $(INSTALL_PATH)/naff -ldflags "-X main.Version=$(VERSION)" $(GO_PACKAGE)/cmd/cli
 
+.PHONY: test-new-templates
+test-new-templates:
+	go run new_templates/main.go

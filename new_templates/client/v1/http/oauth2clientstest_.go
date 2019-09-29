@@ -1,6 +1,6 @@
 package client
 
-import jen "github.com/dave/jennifer/jen"
+import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 func oauth2ClientsTestDotGo() *jen.File {
 	ret := jen.NewFile("client")
@@ -9,49 +9,47 @@ func oauth2ClientsTestDotGo() *jen.File {
 
 	ret.Add(
 		testFunc("V1Client_BuildGetOAuth2ClientRequest").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
 				expectMethod("expectedMethod", "MethodGet"),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Id("nil")),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
-				jen.Id("expectedID").Op(":=").Id("uint64").Call(
+				jen.ID("expectedID").Op(":=").ID("uint64").Call(
 					jen.Lit(1),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("BuildGetOAuth2ClientRequest").Call(
-					jen.Id("ctx"),
-					jen.Id("expectedID"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("BuildGetOAuth2ClientRequest").Call(
+					jen.ID("ctx"),
+					jen.ID("expectedID"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
 				assertTrue(
-					jen.Id("t"),
 					jen.Qual("strings", "HasSuffix").Call(
-						jen.Id("actual").Dot("URL").Dot("String").Call(),
+						jen.ID("actual").Dot("URL").Dot("String").Call(),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit("%d"),
-							jen.Id("expectedID"),
+							jen.ID("expectedID"),
 						),
 					),
+					nil,
 				),
 				assertEqual(
-					jen.Id("t"),
-					jen.Id("actual").Dot("Method"),
-					jen.Id("expectedMethod"),
+					jen.ID("actual").Dot("Method"),
+					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
-					jen.Id("expectedMethod"),
+					jen.ID("expectedMethod"),
 				),
 			),
 		),
@@ -60,75 +58,74 @@ func oauth2ClientsTestDotGo() *jen.File {
 
 	ret.Add(
 		testFunc("V1Client_GetOAuth2Client").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
-				jen.Id("expected").Op(":=").Op("&").Id("models").Dot("OAuth2Client").Values(
-					jen.Id("ID").Op(":").Lit(1),
-					jen.Id("ClientID").Op(":").Lit("example"),
-					jen.Id("ClientSecret").Op(":").Lit("blah"),
-				),
+				jen.ID("expected").Op(":=").Op("&").Qual(modelsPkg, "OAuth2Client").Values(jen.Dict{
+					jen.ID("ID"):           jen.Lit(1),
+					jen.ID("ClientID"):     jen.Lit("example"),
+					jen.ID("ClientSecret"): jen.Lit("blah"),
+				}),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
 					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
+						jen.ID("res").Qual("net/http", "ResponseWriter"),
+						jen.ID("req").Op("*").Qual("net/http", "Request"),
 					).Block(
 						assertTrue(
-							jen.Id("t"),
 							jen.Qual("strings", "HasSuffix").Call(
-								jen.Id("req").Dot("URL").Dot("String").Call(),
+								jen.ID("req").Dot("URL").Dot("String").Call(),
 								jen.Qual("strconv", "Itoa").Call(
-									jen.Id("int").Call(
-										jen.Id("expected").Dot("ID"),
+									jen.ID("int").Call(
+										jen.ID("expected").Dot("ID"),
 									),
 								),
 							),
+							nil,
 						),
 						assertEqual(
-							jen.Id("t"),
 							jen.Qual("fmt", "Sprintf").Call(
 								jen.Lit("/api/v1/oauth2/clients/%d"),
-								jen.Id("expected").Dot("ID"),
+								jen.ID("expected").Dot("ID"),
 							),
-							jen.Id("req").Dot("URL").Dot("Path"),
+							jen.ID("req").Dot("URL").Dot("Path"),
 							jen.Lit("expected and actual path don't match"),
 						),
 						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"),
+							jen.ID("req").Dot("Method"),
 							jen.Qual("net/http", "MethodGet"),
+							nil,
 						),
-						jen.Id("require").Dot("NoError").Call(
-							jen.Id("t"),
+						jen.ID("require").Dot("NoError").Call(
+							jen.ID(t),
 							jen.Qual("encoding/json", "NewEncoder").Call(
-								jen.Id("res"),
+								jen.ID("res"),
 							).Dot("Encode").Call(
-								jen.Id("expected"),
+								jen.ID("expected"),
 							),
 						),
 					),
 				),
 				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("GetOAuth2Client").Call(
-					jen.Id("ctx"),
-					jen.Id("expected").Dot("ID"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("GetOAuth2Client").Call(
+					jen.ID("ctx"),
+					jen.ID("expected").Dot("ID"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(jen.Id("expected"), jen.Id("actual"), nil),
+				assertEqual(jen.ID("expected"),
+					jen.ID("actual"), nil),
 			),
 		),
 		jen.Line(),
@@ -136,36 +133,34 @@ func oauth2ClientsTestDotGo() *jen.File {
 
 	ret.Add(
 		testFunc("V1Client_BuildGetOAuth2ClientsRequest").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
 				expectMethod("expectedMethod", "MethodGet"),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Id("nil")),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("BuildGetOAuth2ClientsRequest").Call(
-					jen.Id("ctx"),
-					jen.Id("nil"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("BuildGetOAuth2ClientsRequest").Call(
+					jen.ID("ctx"),
+					jen.ID("nil"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
 				assertEqual(
-					jen.Id("t"),
-					jen.Id("actual").Dot("Method"),
-					jen.Id("expectedMethod"),
+					jen.ID("actual").Dot("Method"),
+					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
-					jen.Id("expectedMethod"),
+					jen.ID("expectedMethod"),
 				),
 			),
 		),
@@ -174,65 +169,63 @@ func oauth2ClientsTestDotGo() *jen.File {
 
 	ret.Add(
 		testFunc("V1Client_GetOAuth2Clients").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
-				jen.Id("expected").Op(":=").Op("&").Id("models").Dot("OAuth2ClientList").Values(
-					jen.Id("Clients").Op(":").Index().Id("models").Dot("OAuth2Client").Values(
-						jen.Values(jen.Dict{
-							jen.Id("ID"):           jen.Lit(1),
-							jen.Id("ClientID"):     jen.Lit("example"),
-							jen.Id("ClientSecret"): jen.Lit("blah"),
-						}),
-					),
-				),
+				jen.ID("expected").Op(":=").Op("&").Qual(modelsPkg, "OAuth2ClientList").Values(jen.Dict{
+					jen.ID("Clients"): jen.Index().Qual(modelsPkg, "OAuth2Client").Values(jen.Dict{
+						jen.ID("ID"):           jen.Lit(1),
+						jen.ID("ClientID"):     jen.Lit("example"),
+						jen.ID("ClientSecret"): jen.Lit("blah"),
+					}),
+				}),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
-					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
-					).Block(
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("URL").Dot("Path"),
-							jen.Lit("/api/v1/oauth2/clients"),
-							jen.Lit("expected and actual path don't match"),
-						),
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"),
-							jen.Qual("net/http", "MethodGet"),
-						),
-						jen.Id("require").Dot("NoError").Call(
-							jen.Id("t"),
-							jen.Qual("encoding/json", "NewEncoder").Call(
-								jen.Id("res"),
-							).Dot("Encode").Call(
-								jen.Id("expected"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(
+					jen.Qual("net/http", "HandlerFunc").Call(
+						jen.Func().Params(
+							jen.ID("res").Qual("net/http", "ResponseWriter"),
+							jen.ID("req").Op("*").Qual("net/http", "Request"),
+						).Block(
+							assertEqual(
+								jen.ID("req").Dot("URL").Dot("Path"),
+								jen.Lit("/api/v1/oauth2/clients"),
+								jen.Lit("expected and actual path don't match"),
+							),
+							assertEqual(
+								jen.ID("req").Dot("Method"),
+								jen.Qual("net/http", "MethodGet"),
+								nil,
+							),
+							jen.ID("require").Dot("NoError").Call(
+								jen.ID(t),
+								jen.Qual("encoding/json", "NewEncoder").Call(
+									jen.ID("res"),
+								).Dot("Encode").Call(
+									jen.ID("expected"),
+								),
 							),
 						),
 					),
 				),
-				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("GetOAuth2Clients").Call(
-					jen.Id("ctx"),
-					jen.Id("nil"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("GetOAuth2Clients").Call(
+					jen.ID("ctx"),
+					jen.ID("nil"),
 				),
-				requireNotNil(jen.Id("actual"), nil),
+				requireNotNil(jen.ID("actual"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(jen.Id("expected"), jen.Id("actual"), nil),
+				assertEqual(jen.ID("expected"),
+					jen.ID("actual"), nil),
 			),
 		),
 		jen.Line(),
@@ -240,40 +233,40 @@ func oauth2ClientsTestDotGo() *jen.File {
 
 	ret.Add(
 		testFunc("V1Client_BuildCreateOAuth2ClientRequest").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Id("nil")),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
-				jen.Id("exampleInput").Op(":=").Op("&").Id("models").Dot("OAuth2ClientCreationInput").Values(
-					jen.Id("UserLoginInput").Op(":").Id("models").Dot("UserLoginInput").Values(
-						jen.Id("Username").Op(":").Lit("username"),
-						jen.Id("Password").Op(":").Lit("password"),
-						jen.Id("TOTPToken").Op(":").Lit("123456"),
-					),
-				),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, "OAuth2ClientCreationInput").Values(jen.Dict{
+					jen.ID("UserLoginInput"): jen.Qual(modelsPkg, "UserLoginInput").Values(jen.Dict{
+						jen.ID("Username"):  jen.Lit("username"),
+						jen.ID("Password"):  jen.Lit("password"),
+						jen.ID("TOTPToken"): jen.Lit("123456"),
+					}),
+				}),
 				jen.List(
-					jen.Id("req"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("BuildCreateOAuth2ClientRequest").Call(
-					jen.Id("ctx"),
+					jen.ID("req"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("BuildCreateOAuth2ClientRequest").Call(
+					jen.ID("ctx"),
 					jen.Op("&").Qual("net/http", "Cookie").Values(),
-					jen.Id("exampleInput"),
+					jen.ID("exampleInput"),
 				),
-				requireNotNil(jen.Id("req"), nil),
+				requireNotNil(jen.ID("req"), nil),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
+					nil,
 				),
 				assertEqual(
-					jen.Id("t"),
 					jen.Qual("net/http", "MethodPost"),
-					jen.Id("req").Dot("Method"),
+					jen.ID("req").Dot("Method"),
+					nil,
 				),
 			),
 		),
@@ -282,160 +275,160 @@ func oauth2ClientsTestDotGo() *jen.File {
 
 	ret.Add(
 		testFunc("V1Client_CreateOAuth2Client").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
 				createCtx(),
-				jen.Id("exampleInput").Op(":=").Op("&").Id("models").Dot("OAuth2ClientCreationInput").Values(
-					jen.Id("UserLoginInput").Op(":").Id("models").Dot("UserLoginInput").Values(
-						jen.Id("Username").Op(":").Lit("username"),
-						jen.Id("Password").Op(":").Lit("password"),
-						jen.Id("TOTPToken").Op(":").Lit("123456"),
-					),
-				),
-				jen.Id("exampleOutput").Op(":=").Op("&").Id("models").Dot("OAuth2Client").Values(
-					jen.Id("ClientID").Op(":").Lit("EXAMPLECLIENTID"),
-					jen.Id("ClientSecret").Op(":").Lit("EXAMPLECLIENTSECRET"),
-				),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
-					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
-					).Block(
-						assertEqual(
-							jen.Id("t"),
-							jen.Lit("/oauth2/client"),
-							jen.Id("req").Dot("URL").Dot("Path"),
-							jen.Lit("expected and actual path don't match"),
-						),
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"),
-							jen.Qual("net/http", "MethodPost"),
-						),
-						jen.Id("require").Dot("NoError").Call(
-							jen.Id("t"),
-							jen.Qual("encoding/json", "NewEncoder").Call(
-								jen.Id("res"),
-							).Dot("Encode").Call(
-								jen.Id("exampleOutput"),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, "OAuth2ClientCreationInput").Values(jen.Dict{
+					jen.ID("UserLoginInput"): jen.Qual(modelsPkg, "UserLoginInput").Values(jen.Dict{
+						jen.ID("Username"):  jen.Lit("username"),
+						jen.ID("Password"):  jen.Lit("password"),
+						jen.ID("TOTPToken"): jen.Lit("123456"),
+					}),
+				}),
+				jen.ID("exampleOutput").Op(":=").Op("&").Qual(modelsPkg, "OAuth2Client").Values(jen.Dict{
+					jen.ID("ClientID"):     jen.Lit("EXAMPLECLIENTID"),
+					jen.ID("ClientSecret"): jen.Lit("EXAMPLECLIENTSECRET"),
+				}),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(
+					jen.Qual("net/http", "HandlerFunc").Call(
+						jen.Func().Params(
+							jen.ID("res").Qual("net/http", "ResponseWriter"),
+							jen.ID("req").Op("*").Qual("net/http", "Request"),
+						).Block(
+							assertEqual(
+								jen.Lit("/oauth2/client"),
+								jen.ID("req").Dot("URL").Dot("Path"),
+								jen.Lit("expected and actual path don't match"),
+							),
+							assertEqual(
+								jen.ID("req").Dot("Method"),
+								jen.Qual("net/http", "MethodPost"),
+								nil,
+							),
+							jen.ID("require").Dot("NoError").Call(
+								jen.ID(t),
+								jen.Qual("encoding/json", "NewEncoder").Call(
+									jen.ID("res"),
+								).Dot("Encode").Call(
+									jen.ID("exampleOutput"),
+								),
 							),
 						),
 					),
 				),
-				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("oac"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("CreateOAuth2Client").Call(
-					jen.Id("ctx"),
+					jen.ID("oac"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("CreateOAuth2Client").Call(
+					jen.ID("ctx"),
 					jen.Op("&").Qual("net/http", "Cookie").Values(),
-					jen.Id("exampleInput"),
+					jen.ID("exampleInput"),
 				),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
+					nil,
 				),
 				assertNotNil(
-					jen.Id("t"),
-					jen.Id("oac"),
+					jen.ID("oac"),
+					nil,
 				),
 			),
 			buildSubTest(
 				"with invalid body",
 				createCtx(),
-				jen.Id("exampleInput").Op(":=").Op("&").Id("models").Dot("OAuth2ClientCreationInput").Values(
-					jen.Id("UserLoginInput").Op(":").Id("models").Dot("UserLoginInput").Values(
-						jen.Id("Username").Op(":").Lit("username"),
-						jen.Id("Password").Op(":").Lit("password"),
-						jen.Id("TOTPToken").Op(":").Lit("123456"),
-					),
-				),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
-					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
-					).Block(
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("URL").Dot("Path"),
-							jen.Lit("/oauth2/client"),
-							jen.Lit("expected and actual path don't match"),
-						),
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"),
-							jen.Qual("net/http", "MethodPost"),
-						),
-						jen.List(
-							jen.Id("_"),
-							jen.Id("err"),
-						).Op(":=").Id("res").Dot("Write").Call(
-							jen.Index().Id("byte").Call(
-								jen.Lit(`
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, "OAuth2ClientCreationInput").Values(jen.Dict{
+					jen.ID("UserLoginInput"): jen.Qual(modelsPkg, "UserLoginInput").Values(jen.Dict{
+						jen.ID("Username"):  jen.Lit("username"),
+						jen.ID("Password"):  jen.Lit("password"),
+						jen.ID("TOTPToken"): jen.Lit("123456"),
+					}),
+				}),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(
+					jen.Qual("net/http", "HandlerFunc").Call(
+						jen.Func().Params(
+							jen.ID("res").Qual("net/http", "ResponseWriter"),
+							jen.ID("req").Op("*").Qual("net/http", "Request"),
+						).Block(
+							assertEqual(
+								jen.ID("req").Dot("URL").Dot("Path"),
+								jen.Lit("/oauth2/client"),
+								jen.Lit("expected and actual path don't match"),
+							),
+							assertEqual(
+								jen.ID("req").Dot("Method"),
+								jen.Qual("net/http", "MethodPost"),
+								nil,
+							),
+							jen.List(
+								jen.ID("_"),
+								jen.ID("err"),
+							).Op(":=").ID("res").Dot("Write").Call(
+								jen.Index().ID("byte").Call(
+									jen.Lit(`
 
 					BLAH
 
 									`),
+								),
 							),
-						),
-						assertNoError(
-							jen.Id("t"),
-							jen.Id("err"),
+							assertNoError(
+								jen.ID("err"),
+								nil,
+							),
 						),
 					),
 				),
-				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("oac"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("CreateOAuth2Client").Call(
-					jen.Id("ctx"), jen.Op("&").Qual("net/http", "Cookie").Values(),
-					jen.Id("exampleInput"),
+					jen.ID("oac"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("CreateOAuth2Client").Call(
+					jen.ID("ctx"),
+					jen.Op("&").Qual("net/http", "Cookie").Values(),
+					jen.ID("exampleInput"),
 				),
 				assertError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
+					nil,
 				),
 				assertNil(
-					jen.Id("t"),
-					jen.Id("oac"),
+					jen.ID("oac"),
+					nil,
 				),
 			),
 			buildSubTest(
 				"with timeout",
 				createCtx(),
-				jen.Id("exampleInput").Op(":=").Op("&").Id("models").Dot("OAuth2ClientCreationInput").Values(
-					jen.Id("UserLoginInput").Op(":").Id("models").Dot("UserLoginInput").Values(
-						jen.Id("Username").Op(":").Lit("username"),
-						jen.Id("Password").Op(":").Lit("password"),
-						jen.Id("TOTPToken").Op(":").Lit("123456"),
-					),
-				),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, "OAuth2ClientCreationInput").Values(jen.Dict{
+					jen.ID("UserLoginInput"): jen.Qual(modelsPkg, "UserLoginInput").Values(jen.Dict{
+						jen.ID("Username"):  jen.Lit("username"),
+						jen.ID("Password"):  jen.Lit("password"),
+						jen.ID("TOTPToken"): jen.Lit("123456"),
+					}),
+				}),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
 					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
+						jen.ID("res").Qual("net/http", "ResponseWriter"),
+						jen.ID("req").Op("*").Qual("net/http", "Request"),
 					).Block(
 						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("URL").Dot("Path"),
+							jen.ID("req").Dot("URL").Dot("Path"),
 							jen.Lit("/oauth2/client"),
 							jen.Lit("expected and actual path don't match"),
 						),
 						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"),
+							jen.ID("req").Dot("Method"),
 							jen.Qual("net/http", "MethodPost"),
+							nil,
 						),
 						jen.Qual("time", "Sleep").Call(
 							jen.Lit(10).Op("*").Qual("time", "Hour"),
@@ -443,99 +436,99 @@ func oauth2ClientsTestDotGo() *jen.File {
 					),
 				),
 				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
-				jen.Id("c").Dot("plainClient").Dot("Timeout").Op("=").Lit(500).Op("*").Qual("time", "Millisecond"),
+				jen.ID("c").Dot("plainClient").Dot("Timeout").Op("=").Lit(500).Op("*").Qual("time", "Millisecond"),
 				jen.List(
-					jen.Id("oac"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("CreateOAuth2Client").Call(
-					jen.Id("ctx"),
+					jen.ID("oac"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("CreateOAuth2Client").Call(
+					jen.ID("ctx"),
 					jen.Op("&").Qual("net/http", "Cookie").Values(),
-					jen.Id("exampleInput"),
+					jen.ID("exampleInput"),
 				),
 				assertError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
+					nil,
 				),
 				assertNil(
-					jen.Id("t"),
-					jen.Id("oac"),
+					jen.ID("oac"),
+					nil,
 				),
 			),
 			buildSubTest(
 				"with 404",
 				createCtx(),
-				jen.Id("exampleInput").Op(":=").Op("&").Id("models").Dot("OAuth2ClientCreationInput").Values(
-					jen.Id("UserLoginInput").Op(":").Id("models").Dot("UserLoginInput").Values(jen.Dict{
-						jen.Id("Username"):  jen.Lit("username"),
-						jen.Id("Password"):  jen.Lit("password"),
-						jen.Id("TOTPToken"): jen.Lit("123456"),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, "OAuth2ClientCreationInput").Values(jen.Dict{
+					jen.ID("UserLoginInput"): jen.Qual(modelsPkg, "UserLoginInput").Values(jen.Dict{
+						jen.ID("Username"):  jen.Lit("username"),
+						jen.ID("Password"):  jen.Lit("password"),
+						jen.ID("TOTPToken"): jen.Lit("123456"),
 					}),
-				),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
+				}),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
 					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
+						jen.ID("res").Qual("net/http", "ResponseWriter"),
+						jen.ID("req").Op("*").Qual("net/http", "Request"),
 					).Block(
 						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("URL").Dot("Path"),
+							jen.ID("req").Dot("URL").Dot("Path"),
 							jen.Lit("/oauth2/client"),
 							jen.Lit("expected and actual path don't match"),
 						),
 						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"),
+							jen.ID("req").Dot("Method"),
 							jen.Qual("net/http", "MethodPost"),
+							nil,
 						),
 						writeHeader("StatusNotFound"),
 					),
 				),
 				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("oac"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("CreateOAuth2Client").Call(
-					jen.Id("ctx"),
+					jen.ID("oac"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("CreateOAuth2Client").Call(
+					jen.ID("ctx"),
 					jen.Op("&").Qual("net/http", "Cookie").Values(),
-					jen.Id("exampleInput"),
+					jen.ID("exampleInput"),
 				),
 				assertError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
+					nil,
 				),
-				assertEqual(jen.Id("err"), jen.Id("ErrNotFound"), nil),
+				assertEqual(jen.ID("err"),
+					jen.ID("ErrNotFound"), nil),
 				assertNil(
-					jen.Id("t"),
-					jen.Id("oac"),
+					jen.ID("oac"),
+					nil,
 				),
 			),
 			buildSubTest(
 				"with no cookie",
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Id("nil")),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("_"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("CreateOAuth2Client").Call(
-					jen.Id("ctx"),
-					jen.Id("nil"),
-					jen.Id("nil"),
+					jen.ID("_"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("CreateOAuth2Client").Call(
+					jen.ID("ctx"),
+					jen.ID("nil"),
+					jen.ID("nil"),
 				),
 				assertError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
+					nil,
 				),
 			),
 		),
@@ -544,26 +537,26 @@ func oauth2ClientsTestDotGo() *jen.File {
 
 	ret.Add(
 		testFunc("V1Client_BuildArchiveOAuth2ClientRequest").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
 				expectMethod("expectedMethod", "MethodDelete"),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Id("nil")),
-				jen.Id("expectedID").Op(":=").Id("uint64").Call(
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("expectedID").Op(":=").ID("uint64").Call(
 					jen.Lit(1),
 				),
-				jen.Id("c").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				),
 				jen.List(
-					jen.Id("actual"),
-					jen.Id("err"),
-				).Op(":=").Id("c").Dot("BuildArchiveOAuth2ClientRequest").Call(
-					jen.Id("ctx"),
-					jen.Id("expectedID"),
+					jen.ID("actual"),
+					jen.ID("err"),
+				).Op(":=").ID("c").Dot("BuildArchiveOAuth2ClientRequest").Call(
+					jen.ID("ctx"),
+					jen.ID("expectedID"),
 				),
 			),
 		),
@@ -572,45 +565,46 @@ func oauth2ClientsTestDotGo() *jen.File {
 
 	ret.Add(
 		testFunc("V1Client_ArchiveOAuth2Client").Block(
-			jen.Id("T").Dot("Parallel").Call(),
+			parallelTest(nil),
 			jen.Line(),
 			buildSubTest(
 				"happy path",
-				jen.Id("expected").Op(":=").Id("uint64").Call(
+				jen.ID("expected").Op(":=").ID("uint64").Call(
 					jen.Lit(1),
 				),
 				createCtx(),
-				jen.Id("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Qual("net/http", "HandlerFunc").Call(
-					jen.Func().Params(
-						jen.Id("res").Qual("net/http", "ResponseWriter"),
-						jen.Id("req").Op("*").Qual("net/http", "Request"),
-					).Block(
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("URL").Dot("Path"),
-							jen.Qual("fmt", "Sprintf").Call(
-								jen.Lit("/api/v1/oauth2/clients/%d"),
-								jen.Id("expected"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(
+					jen.Qual("net/http", "HandlerFunc").Call(
+						jen.Func().Params(
+							jen.ID("res").Qual("net/http", "ResponseWriter"),
+							jen.ID("req").Op("*").Qual("net/http", "Request"),
+						).Block(
+							assertEqual(
+								jen.ID("req").Dot("URL").Dot("Path"),
+								jen.Qual("fmt", "Sprintf").Call(
+									jen.Lit("/api/v1/oauth2/clients/%d"),
+									jen.ID("expected"),
+								),
+								jen.Lit("expected and actual path don't match"),
 							),
-							jen.Lit("expected and actual path don't match"),
+							assertEqual(
+								jen.ID("req").Dot("Method"),
+								jen.Qual("net/http", "MethodDelete"),
+								nil,
+							),
+							writeHeader("StatusOK"),
 						),
-						assertEqual(
-							jen.Id("t"),
-							jen.Id("req").Dot("Method"),
-							jen.Qual("net/http", "MethodDelete")), writeHeader("StatusOK"),
 					),
 				),
-				),
-				jen.Id("err").Op(":=").Id("buildTestClient").Call(
-					jen.Id("t"),
-					jen.Id("ts"),
+				jen.ID("err").Op(":=").ID("buildTestClient").Call(
+					jen.ID(t),
+					jen.ID("ts"),
 				).Dot("ArchiveOAuth2Client").Call(
-					jen.Id("ctx"),
-					jen.Id("expected"),
+					jen.ID("ctx"),
+					jen.ID("expected"),
 				),
 				assertNoError(
-					jen.Id("t"),
-					jen.Id("err"),
+					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
 			),

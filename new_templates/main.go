@@ -15,7 +15,7 @@ import (
 	"os/exec"
 	"strings"
 
-	tojen "gitlab.com/verygoodsoftwarenotvirus/naff/lib/tojen/gen"
+	tojen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/tojen/gen"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/new_templates/client/v1/http"
 )
 
@@ -52,7 +52,7 @@ func runDiffForFiles(file1, file2 string) (string, error) {
 	return string(b), nil
 }
 
-func GetJenniferForFile(filename string) (string, error) {
+func getJenniferForFile(filename string) (string, error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return "", err
@@ -94,15 +94,9 @@ func main() {
 		if err := ioutil.WriteFile(fp, b.Bytes(), os.ModePerm); err != nil {
 			log.Fatal(err)
 		}
-
-		//diff, err := runDiffForFiles(ogfp, fp)
-		//if err != nil {
-		//	func(error) {}(err)
-		//}
-		//_ = diff
 	}
 
-	doTheThingForFile("/home/jeffrey/src/gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http/items_test.go", "client")
+	// doTheThingForFile("/home/jeffrey/src/gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http/items_test.go", "client")
 
 	//exprs := map[string]ast.Expr{}
 	//sourcePath := filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/todo")

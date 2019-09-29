@@ -1,38 +1,36 @@
 package client
 
-import jen "github.com/dave/jennifer/jen"
+import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 func usersDotGo() *jen.File {
 	ret := jen.NewFile("client")
 
 	addImports(ret)
 
-	ret.Add(jen.Var().Id("usersBasePath").Op("=").Lit("users"))
+	ret.Add(jen.Var().ID("usersBasePath").Op("=").Lit("users"))
 
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("BuildGetUserRequest").Params(
+		newClientMethod("BuildGetUserRequest").Params(
 			ctxParam(),
-			jen.Id("userID").Id("uint64"),
+			jen.ID("userID").ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
-			jen.Id("uri").Op(":=").Id("c").Dot("buildVersionlessURL").Call(
-				jen.Id("nil"),
-				jen.Id("usersBasePath"),
+			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
+				jen.ID("nil"),
+				jen.ID("usersBasePath"),
 				jen.Qual("strconv", "FormatUint").Call(
-					jen.Id("userID"),
+					jen.ID("userID"),
 					jen.Lit(10),
 				),
 			),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodGet"),
-				jen.Id("uri"),
-				jen.Id("nil"),
+				jen.ID("uri"),
+				jen.ID("nil"),
 			),
 		),
 		jen.Line(),
@@ -41,39 +39,37 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("GetUser").Params(
+		newClientMethod("GetUser").Params(
 			ctxParam(),
-			jen.Id("userID").Id("uint64"),
+			jen.ID("userID").ID("uint64"),
 		).Params(
-			jen.Id("user").Op("*").Id("models").Dot("User"),
-			jen.Id("err").Id("error"),
+			jen.ID("user").Op("*").Qual(modelsPkg, "User"),
+			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
-				jen.Id("req"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("BuildGetUserRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("userID"),
+				jen.ID("req"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("BuildGetUserRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("userID"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(
-					jen.Id("nil"),
+					jen.ID("nil"),
 					jen.Qual("fmt", "Errorf").Call(
 						jen.Lit("building request: %w"),
-						jen.Id("err"),
+						jen.ID("err"),
 					),
 				),
 			),
-			jen.Id("err").Op("=").Id("c").Dot("retrieve").Call(
-				jen.Id("ctx"),
-				jen.Id("req"),
-				jen.Op("&").Id("user"),
+			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
+				jen.ID("ctx"),
+				jen.ID("req"),
+				jen.Op("&").ID("user"),
 			),
 			jen.Return().List(
-				jen.Id("user"),
-				jen.Id("err"),
+				jen.ID("user"),
+				jen.ID("err"),
 			),
 		),
 		jen.Line(),
@@ -82,23 +78,21 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("BuildGetUsersRequest").Params(
+		newClientMethod("BuildGetUsersRequest").Params(
 			ctxParam(),
-			jen.Id("filter").Op("*").Id("models").Dot("QueryFilter"),
+			jen.ID("filter").Op("*").Qual(modelsPkg, "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
-			jen.Id("uri").Op(":=").Id("c").Dot("buildVersionlessURL").Call(
-				jen.Id("filter").Dot("ToValues").Call(),
-				jen.Id("usersBasePath"),
+			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
+				jen.ID("filter").Dot("ToValues").Call(),
+				jen.ID("usersBasePath"),
 			),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodGet"),
-				jen.Id("uri"),
-				jen.Id("nil"),
+				jen.ID("uri"),
+				jen.ID("nil"),
 			),
 		),
 		jen.Line(),
@@ -107,37 +101,35 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("GetUsers").Params(
+		newClientMethod("GetUsers").Params(
 			ctxParam(),
-			jen.Id("filter").Op("*").Id("models").Dot("QueryFilter"),
+			jen.ID("filter").Op("*").Qual(modelsPkg, "QueryFilter"),
 		).Params(
-			jen.Op("*").Id("models").Dot("UserList"),
-			jen.Id("error"),
+			jen.Op("*").Qual(modelsPkg, "UserList"),
+			jen.ID("error"),
 		).Block(
-			jen.Id("users").Op(":=").Op("&").Id("models").Dot("UserList").Values(),
+			jen.ID("users").Op(":=").Op("&").Qual(modelsPkg, "UserList").Values(),
 			jen.List(
-				jen.Id("req"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("BuildGetUsersRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("filter"),
+				jen.ID("req"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("BuildGetUsersRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("filter"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
-				jen.Return().List(jen.Id("nil"), jen.Qual("fmt", "Errorf").Call(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("building request: %w"),
-					jen.Id("err"),
+					jen.ID("err"),
 				),
 				),
 			),
-			jen.Id("err").Op("=").Id("c").Dot("retrieve").Call(
-				jen.Id("ctx"),
-				jen.Id("req"),
-				jen.Op("&").Id("users"),
+			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
+				jen.ID("ctx"),
+				jen.ID("req"),
+				jen.Op("&").ID("users"),
 			),
-			jen.Return().List(jen.Id("users"),
-				jen.Id("err")),
+			jen.Return().List(jen.ID("users"),
+				jen.ID("err")),
 		),
 		jen.Line(),
 	)
@@ -145,23 +137,21 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("BuildCreateUserRequest").Params(
+		newClientMethod("BuildCreateUserRequest").Params(
 			ctxParam(),
-			jen.Id("body").Op("*").Id("models").Dot("UserInput"),
+			jen.ID("body").Op("*").Qual(modelsPkg, "UserInput"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
-			jen.Id("uri").Op(":=").Id("c").Dot("buildVersionlessURL").Call(
-				jen.Id("nil"),
-				jen.Id("usersBasePath"),
+			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
+				jen.ID("nil"),
+				jen.ID("usersBasePath"),
 			),
-			jen.Return().Id("c").Dot("buildDataRequest").Call(
+			jen.Return().ID("c").Dot("buildDataRequest").Call(
 				jen.Qual("net/http", "MethodPost"),
-				jen.Id("uri"),
-				jen.Id("body"),
+				jen.ID("uri"),
+				jen.ID("body"),
 			),
 		),
 		jen.Line(),
@@ -170,39 +160,37 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("CreateUser").Params(
+		newClientMethod("CreateUser").Params(
 			ctxParam(),
-			jen.Id("input").Op("*").Id("models").Dot("UserInput"),
+			jen.ID("input").Op("*").Qual(modelsPkg, "UserInput"),
 		).Params(
-			jen.Op("*").Id("models").Dot("UserCreationResponse"),
-			jen.Id("error"),
+			jen.Op("*").Qual(modelsPkg, "UserCreationResponse"),
+			jen.ID("error"),
 		).Block(
-			jen.Id("user").Op(":=").Op("&").Id("models").Dot("UserCreationResponse").Values(),
+			jen.ID("user").Op(":=").Op("&").Qual(modelsPkg, "UserCreationResponse").Values(),
 			jen.List(
-				jen.Id("req"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("BuildCreateUserRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("input"),
+				jen.ID("req"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("BuildCreateUserRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("input"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(
-					jen.Id("nil"),
+					jen.ID("nil"),
 					jen.Qual("fmt", "Errorf").Call(
 						jen.Lit("building request: %w"),
-						jen.Id("err"),
+						jen.ID("err"),
 					),
 				),
 			),
-			jen.Id("err").Op("=").Id("c").Dot("executeUnathenticatedDataRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("req"),
-				jen.Op("&").Id("user"),
+			jen.ID("err").Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("req"),
+				jen.Op("&").ID("user"),
 			),
-			jen.Return().List(jen.Id("user"),
-				jen.Id("err")),
+			jen.Return().List(jen.ID("user"),
+				jen.ID("err")),
 		),
 		jen.Line(),
 	)
@@ -210,27 +198,25 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("BuildArchiveUserRequest").Params(
+		newClientMethod("BuildArchiveUserRequest").Params(
 			ctxParam(),
-			jen.Id("userID").Id("uint64"),
+			jen.ID("userID").ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
-			jen.Id("uri").Op(":=").Id("c").Dot("buildVersionlessURL").Call(
-				jen.Id("nil"),
-				jen.Id("usersBasePath"),
+			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
+				jen.ID("nil"),
+				jen.ID("usersBasePath"),
 				jen.Qual("strconv", "FormatUint").Call(
-					jen.Id("userID"),
+					jen.ID("userID"),
 					jen.Lit(10),
 				),
 			),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodDelete"),
-				jen.Id("uri"),
-				jen.Id("nil"),
+				jen.ID("uri"),
+				jen.ID("nil"),
 			),
 		),
 		jen.Line(),
@@ -239,29 +225,27 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("ArchiveUser").Params(
+		newClientMethod("ArchiveUser").Params(
 			ctxParam(),
-			jen.Id("userID").Id("uint64"),
-		).Params(jen.Id("error")).Block(
+			jen.ID("userID").ID("uint64"),
+		).Params(jen.ID("error")).Block(
 			jen.List(
-				jen.Id("req"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("BuildArchiveUserRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("userID"),
+				jen.ID("req"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("BuildArchiveUserRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("userID"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(
 					jen.Lit("building request"),
-					jen.Id("err"),
+					jen.ID("err"),
 				),
 			),
-			jen.Return().Id("c").Dot("executeRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("req"),
-				jen.Id("nil"),
+			jen.Return().ID("c").Dot("executeRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("req"),
+				jen.ID("nil"),
 			),
 		),
 		jen.Line(),
@@ -270,44 +254,42 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("BuildLoginRequest").Params(
+		newClientMethod("BuildLoginRequest").Params(
 			jen.List(
-				jen.Id("username"),
-				jen.Id("password"),
-				jen.Id("totpToken"),
-			).Id("string"),
+				jen.ID("username"),
+				jen.ID("password"),
+				jen.ID("totpToken"),
+			).ID("string"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
 			jen.List(
-				jen.Id("body"),
-				jen.Id("err"),
-			).Op(":=").Id("createBodyFromStruct").Call(
-				jen.Op("&").Id("models").Dot("UserLoginInput").Values(
-					jen.Id("Username").Op(":").Id("username"),
-					jen.Id("Password").Op(":").Id("password"),
-					jen.Id("TOTPToken").Op(":").Id("totpToken"),
-				),
+				jen.ID("body"),
+				jen.ID("err"),
+			).Op(":=").ID("createBodyFromStruct").Call(
+				jen.Op("&").Qual(modelsPkg, "UserLoginInput").Values(jen.Dict{
+					jen.ID("Username"):  jen.ID("username"),
+					jen.ID("Password"):  jen.ID("password"),
+					jen.ID("TOTPToken"): jen.ID("totpToken"),
+				}),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
-				jen.Return().List(jen.Id("nil"), jen.Qual("fmt", "Errorf").Call(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("creating body from struct"),
-					jen.Id("err"),
+					jen.ID("err"),
 				),
 				),
 			),
-			jen.Id("uri").Op(":=").Id("c").Dot("buildVersionlessURL").Call(
-				jen.Id("nil"),
-				jen.Id("usersBasePath"),
+			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
+				jen.ID("nil"),
+				jen.ID("usersBasePath"),
 				jen.Lit("login"),
 			),
-			jen.Return().Id("c").Dot("buildDataRequest").Call(
+			jen.Return().ID("c").Dot("buildDataRequest").Call(
 				jen.Qual("net/http", "MethodPost"),
-				jen.Id("uri"),
-				jen.Id("body"),
+				jen.ID("uri"),
+				jen.ID("body"),
 			),
 		),
 		jen.Line(),
@@ -316,92 +298,90 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("Login").Params(
+		newClientMethod("Login").Params(
 			ctxParam(),
 			jen.List(
-				jen.Id("username"),
-				jen.Id("password"),
-				jen.Id("totpToken"),
-			).Id("string"),
+				jen.ID("username"),
+				jen.ID("password"),
+				jen.ID("totpToken"),
+			).ID("string"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Cookie"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
 			jen.List(
-				jen.Id("req"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("BuildLoginRequest").Call(
-				jen.Id("username"),
-				jen.Id("password"),
-				jen.Id("totpToken"),
+				jen.ID("req"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("BuildLoginRequest").Call(
+				jen.ID("username"),
+				jen.ID("password"),
+				jen.ID("totpToken"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
-				jen.Return().List(jen.Id("nil"),
-					jen.Id("err")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"),
+					jen.ID("err")),
 			),
 			jen.List(
-				jen.Id("res"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("plainClient").Dot("Do").Call(
-				jen.Id("req"),
+				jen.ID("res"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("plainClient").Dot("Do").Call(
+				jen.ID("req"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(
-					jen.Id("nil"), jen.Qual("fmt", "Errorf").Call(
+					jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(
 						jen.Lit("encountered error executing login request: %w"),
-						jen.Id("err"),
+						jen.ID("err"),
 					),
 				),
 			),
-			jen.If(jen.Id("c").Dot("Debug")).Block(
+			jen.If(jen.ID("c").Dot("Debug")).Block(
 				jen.List(
-					jen.Id("b"),
-					jen.Id("err"),
-				).Op(":=").Id("httputil").Dot("DumpResponse").Call(
-					jen.Id("res"),
-					jen.Id("true"),
+					jen.ID("b"),
+					jen.ID("err"),
+				).Op(":=").ID("httputil").Dot("DumpResponse").Call(
+					jen.ID("res"),
+					jen.ID("true"),
 				),
-				jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
-					jen.Id("c").Dot("logger").Dot("Error").Call(
-						jen.Id("err"),
+				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+					jen.ID("c").Dot("logger").Dot("Error").Call(
+						jen.ID("err"),
 						jen.Lit("dumping response"),
 					),
 				),
-				jen.Id("c").Dot("logger").Dot("WithValue").Call(
+				jen.ID("c").Dot("logger").Dot("WithValue").Call(
 					jen.Lit("response"),
-					jen.Id("string").Call(
-						jen.Id("b"),
+					jen.ID("string").Call(
+						jen.ID("b"),
 					),
 				).Dot("Debug").Call(
 					jen.Lit("login response received"),
 				),
 			),
 			jen.Defer().Func().Params().Block(
-				jen.If(jen.Id("err").Op(":=").Id("res").Dot("Body").Dot("Close").Call(),
-					jen.Id("err").Op("!=").Id("nil"),
+				jen.If(jen.ID("err").Op(":=").ID("res").Dot("Body").Dot("Close").Call(),
+					jen.ID("err").Op("!=").ID("nil"),
 				).Block(
-					jen.Id("c").Dot("logger").Dot("Error").Call(
-						jen.Id("err"),
+					jen.ID("c").Dot("logger").Dot("Error").Call(
+						jen.ID("err"),
 						jen.Lit("closing response body"),
 					),
 				),
 			).Call(),
-			jen.Id("cookies").Op(":=").Id("res").Dot("Cookies").Call(),
-			jen.If(jen.Id("len").Call(
-				jen.Id("cookies"),
+			jen.ID("cookies").Op(":=").ID("res").Dot("Cookies").Call(),
+			jen.If(jen.ID("len").Call(
+				jen.ID("cookies"),
 			).Op(">").Lit(0),
 			).Block(
-				jen.Return().List(jen.Id("cookies").Index(
+				jen.Return().List(jen.ID("cookies").Index(
 					jen.Lit(0),
 				),
-					jen.Id("nil"),
+					jen.ID("nil"),
 				),
 			),
 			jen.Return().List(
-				jen.Id("nil"),
-				jen.Id("errors").Dot("New").Call(
+				jen.ID("nil"),
+				jen.ID("errors").Dot("New").Call(
 					jen.Lit("no cookies returned from request"),
 				),
 			),

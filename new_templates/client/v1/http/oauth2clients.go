@@ -1,6 +1,6 @@
 package client
 
-import jen "github.com/dave/jennifer/jen"
+import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 func oauth2ClientsDotGo() *jen.File {
 	ret := jen.NewFile("client")
@@ -8,30 +8,30 @@ func oauth2ClientsDotGo() *jen.File {
 	addImports(ret)
 
 	ret.Add(jen.Null())
-	ret.Add(jen.Var().Id("oauth2ClientsBasePath").Op("=").Lit("oauth2/clients"))
+	ret.Add(jen.Var().ID("oauth2ClientsBasePath").Op("=").Lit("oauth2/clients"))
 
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
 		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("BuildGetOAuth2ClientRequest").Params(
+			jen.ID("c").Op("*").ID(v1),
+		).ID("BuildGetOAuth2ClientRequest").Params(
 			ctxParam(),
-			jen.Id("id").Id("uint64"),
+			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
-			jen.Id("uri").Op(":=").Id("c").Dot("BuildURL").Call(
-				jen.Id("nil"),
-				jen.Id("oauth2ClientsBasePath"), jen.Qual("strconv", "FormatUint").Call(
-					jen.Id("id"),
+			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
+				jen.ID("nil"),
+				jen.ID("oauth2ClientsBasePath"), jen.Qual("strconv", "FormatUint").Call(
+					jen.ID("id"),
 					jen.Lit(10),
 				),
 			), jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodGet"),
-				jen.Id("uri"),
-				jen.Id("nil"),
+				jen.ID("uri"),
+				jen.ID("nil"),
 			),
 		),
 		jen.Line(),
@@ -41,38 +41,38 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment(""),
 		jen.Line(),
 		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("GetOAuth2Client").Params(
+			jen.ID("c").Op("*").ID(v1),
+		).ID("GetOAuth2Client").Params(
 			ctxParam(),
-			jen.Id("id").Id("uint64"),
+			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.Id("oauth2Client").Op("*").Id("models").Dot("OAuth2Client"),
-			jen.Id("err").Id("error"),
+			jen.ID("oauth2Client").Op("*").Qual(modelsPkg, "OAuth2Client"),
+			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
-				jen.Id("req"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("BuildGetOAuth2ClientRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("id"),
+				jen.ID("req"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("BuildGetOAuth2ClientRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("id"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(
-					jen.Id("nil"),
+					jen.ID("nil"),
 					jen.Qual("fmt", "Errorf").Call(
 						jen.Lit("building request: %w"),
-						jen.Id("err"),
+						jen.ID("err"),
 					),
 				),
 			),
-			jen.Id("err").Op("=").Id("c").Dot("retrieve").Call(
-				jen.Id("ctx"),
-				jen.Id("req"),
-				jen.Op("&").Id("oauth2Client"),
+			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
+				jen.ID("ctx"),
+				jen.ID("req"),
+				jen.Op("&").ID("oauth2Client"),
 			),
 			jen.Return().List(
-				jen.Id("oauth2Client"),
-				jen.Id("err"),
+				jen.ID("oauth2Client"),
+				jen.ID("err"),
 			),
 		),
 		jen.Line(),
@@ -81,21 +81,21 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(jen.Id("c").Op("*").Id(v1)).Id("BuildGetOAuth2ClientsRequest").Params(
+		newClientMethod("BuildGetOAuth2ClientsRequest").Params(
 			ctxParam(),
-			jen.Id("filter").Op("*").Id("models").Dot("QueryFilter"),
+			jen.ID("filter").Op("*").Qual(modelsPkg, "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
-			jen.Id("uri").Op(":=").Id("c").Dot("BuildURL").Call(
-				jen.Id("filter").Dot("ToValues").Call(),
-				jen.Id("oauth2ClientsBasePath"),
+			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
+				jen.ID("filter").Dot("ToValues").Call(),
+				jen.ID("oauth2ClientsBasePath"),
 			),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodGet"),
-				jen.Id("uri"),
-				jen.Id("nil"),
+				jen.ID("uri"),
+				jen.ID("nil"),
 			),
 		),
 		jen.Line(),
@@ -105,39 +105,39 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment(""),
 		jen.Line(),
 		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("GetOAuth2Clients").Params(
+			jen.ID("c").Op("*").ID(v1),
+		).ID("GetOAuth2Clients").Params(
 			ctxParam(),
-			jen.Id("filter").Op("*").Id("models").Dot("QueryFilter"),
+			jen.ID("filter").Op("*").Qual(modelsPkg, "QueryFilter"),
 		).Params(
-			jen.Op("*").Id("models").Dot("OAuth2ClientList"),
-			jen.Id("error"),
+			jen.Op("*").Qual(modelsPkg, "OAuth2ClientList"),
+			jen.ID("error"),
 		).Block(
 			jen.List(
-				jen.Id("req"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("BuildGetOAuth2ClientsRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("filter"),
+				jen.ID("req"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("BuildGetOAuth2ClientsRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("filter"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(
-					jen.Id("nil"),
+					jen.ID("nil"),
 					jen.Qual("fmt", "Errorf").Call(
 						jen.Lit("building request: %w"),
-						jen.Id("err"),
+						jen.ID("err"),
 					),
 				),
 			),
-			jen.Var().Id("oauth2Clients").Op("*").Id("models").Dot("OAuth2ClientList"),
-			jen.Id("err").Op("=").Id("c").Dot("retrieve").Call(
-				jen.Id("ctx"),
-				jen.Id("req"),
-				jen.Op("&").Id("oauth2Clients"),
+			jen.Var().ID("oauth2Clients").Op("*").Qual(modelsPkg, "OAuth2ClientList"),
+			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
+				jen.ID("ctx"),
+				jen.ID("req"),
+				jen.Op("&").ID("oauth2Clients"),
 			),
 			jen.Return().List(
-				jen.Id("oauth2Clients"),
-				jen.Id("err"),
+				jen.ID("oauth2Clients"),
+				jen.ID("err"),
 			),
 		),
 		jen.Line(),
@@ -146,36 +146,36 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(jen.Id("c").Op("*").Id(v1)).Id("BuildCreateOAuth2ClientRequest").Params(
+		newClientMethod("BuildCreateOAuth2ClientRequest").Params(
 			ctxParam(),
-			jen.Id("cookie").Op("*").Qual("net/http", "Cookie"),
-			jen.Id("body").Op("*").Id("models").Dot("OAuth2ClientCreationInput"),
+			jen.ID("cookie").Op("*").Qual("net/http", "Cookie"),
+			jen.ID("body").Op("*").Qual(modelsPkg, "OAuth2ClientCreationInput"),
 		).Params(jen.Op("*").Qual("net/http", "Request"),
-			jen.Id("error")).Block(
-			jen.Id("uri").Op(":=").Id("c").Dot("buildVersionlessURL").Call(
-				jen.Id("nil"),
+			jen.ID("error")).Block(
+			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
+				jen.ID("nil"),
 				jen.Lit("oauth2"),
 				jen.Lit("client"),
 			),
 			jen.List(
-				jen.Id("req"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("buildDataRequest").Call(
+				jen.ID("req"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("buildDataRequest").Call(
 				jen.Qual("net/http", "MethodPost"),
-				jen.Id("uri"),
-				jen.Id("body"),
+				jen.ID("uri"),
+				jen.ID("body"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(
-					jen.Id("nil"),
-					jen.Id("err"),
+					jen.ID("nil"),
+					jen.ID("err"),
 				),
 			),
-			jen.Id("req").Dot("AddCookie").Call(
-				jen.Id("cookie"),
+			jen.ID("req").Dot("AddCookie").Call(
+				jen.ID("cookie"),
 			),
-			jen.Return().List(jen.Id("req"),
-				jen.Id("nil")),
+			jen.Return().List(jen.ID("req"),
+				jen.ID("nil")),
 		),
 		jen.Line(),
 	)
@@ -184,77 +184,77 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment(""),
 		jen.Line(),
 		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("CreateOAuth2Client").Params(
+			jen.ID("c").Op("*").ID(v1),
+		).ID("CreateOAuth2Client").Params(
 			ctxParam(),
-			jen.Id("cookie").Op("*").Qual("net/http", "Cookie"),
-			jen.Id("input").Op("*").Id("models").Dot("OAuth2ClientCreationInput"),
+			jen.ID("cookie").Op("*").Qual("net/http", "Cookie"),
+			jen.ID("input").Op("*").Qual(modelsPkg, "OAuth2ClientCreationInput"),
 		).Params(
-			jen.Op("*").Id("models").Dot("OAuth2Client"),
-			jen.Id("error"),
+			jen.Op("*").Qual(modelsPkg, "OAuth2Client"),
+			jen.ID("error"),
 		).Block(
-			jen.Var().Id("oauth2Client").Op("*").Id("models").Dot("OAuth2Client"),
-			jen.If(jen.Id("cookie").Op("==").Id("nil")).Block(
+			jen.Var().ID("oauth2Client").Op("*").Qual(modelsPkg, "OAuth2Client"),
+			jen.If(jen.ID("cookie").Op("==").ID("nil")).Block(
 				jen.Return().List(
-					jen.Id("nil"),
-					jen.Id("errors").Dot("New").Call(
+					jen.ID("nil"),
+					jen.ID("errors").Dot("New").Call(
 						jen.Lit("cookie required for request"),
 					),
 				),
 			),
 			jen.List(
-				jen.Id("req"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("BuildCreateOAuth2ClientRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("cookie"),
-				jen.Id("input"),
+				jen.ID("req"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("BuildCreateOAuth2ClientRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("cookie"),
+				jen.ID("input"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(
-					jen.Id("nil"),
-					jen.Id("err"),
+					jen.ID("nil"),
+					jen.ID("err"),
 				),
 			),
 			jen.List(
-				jen.Id("res"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("executeRawRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("c").Dot("plainClient"),
-				jen.Id("req"),
+				jen.ID("res"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("executeRawRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("c").Dot("plainClient"),
+				jen.ID("req"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(
-					jen.Id("nil"),
+					jen.ID("nil"),
 					jen.Qual("fmt", "Errorf").Call(
 						jen.Lit("executing request: %w"),
-						jen.Id("err"),
+						jen.ID("err"),
 					),
 				),
 			),
-			jen.If(jen.Id("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusNotFound")).Block(
+			jen.If(jen.ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusNotFound")).Block(
 				jen.Return().List(
-					jen.Id("nil"),
-					jen.Id("ErrNotFound"),
+					jen.ID("nil"),
+					jen.ID("ErrNotFound"),
 				),
 			),
-			jen.If(jen.Id("resErr").Op(":=").Id("unmarshalBody").Call(
-				jen.Id("res"),
-				jen.Op("&").Id("oauth2Client"),
+			jen.If(jen.ID("resErr").Op(":=").ID("unmarshalBody").Call(
+				jen.ID("res"),
+				jen.Op("&").ID("oauth2Client"),
 			),
-				jen.Id("resErr").Op("!=").Id("nil"),
+				jen.ID("resErr").Op("!=").ID("nil"),
 			).Block(
 				jen.Return().List(
-					jen.Id("nil"),
-					jen.Id("errors").Dot("Wrap").Call(
-						jen.Id("resErr"),
+					jen.ID("nil"),
+					jen.ID("errors").Dot("Wrap").Call(
+						jen.ID("resErr"),
 						jen.Lit("loading response from server"),
 					),
 				),
 			),
-			jen.Return().List(jen.Id("oauth2Client"),
-				jen.Id("nil")),
+			jen.Return().List(jen.ID("oauth2Client"),
+				jen.ID("nil")),
 		),
 		jen.Line(),
 	)
@@ -263,26 +263,26 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment(""),
 		jen.Line(),
 		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("BuildArchiveOAuth2ClientRequest").Params(
+			jen.ID("c").Op("*").ID(v1),
+		).ID("BuildArchiveOAuth2ClientRequest").Params(
 			ctxParam(),
-			jen.Id("id").Id("uint64"),
+			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
-			jen.Id("uri").Op(":=").Id("c").Dot("BuildURL").Call(
-				jen.Id("nil"),
-				jen.Id("oauth2ClientsBasePath"),
+			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
+				jen.ID("nil"),
+				jen.ID("oauth2ClientsBasePath"),
 				jen.Qual("strconv", "FormatUint").Call(
-					jen.Id("id"),
+					jen.ID("id"),
 					jen.Lit(10),
 				),
 			),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodDelete"),
-				jen.Id("uri"),
-				jen.Id("nil"),
+				jen.ID("uri"),
+				jen.ID("nil"),
 			),
 		),
 		jen.Line(),
@@ -292,30 +292,30 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment(""),
 		jen.Line(),
 		jen.Func().Params(
-			jen.Id("c").Op("*").Id(v1),
-		).Id("ArchiveOAuth2Client").Params(
+			jen.ID("c").Op("*").ID(v1),
+		).ID("ArchiveOAuth2Client").Params(
 			ctxParam(),
-			jen.Id("id").Id("uint64"),
+			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
 			jen.List(
-				jen.Id("req"),
-				jen.Id("err"),
-			).Op(":=").Id("c").Dot("BuildArchiveOAuth2ClientRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("id"),
+				jen.ID("req"),
+				jen.ID("err"),
+			).Op(":=").ID("c").Dot("BuildArchiveOAuth2ClientRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("id"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(
 					jen.Lit("building request: %w"),
-					jen.Id("err"),
+					jen.ID("err"),
 				),
 			),
-			jen.Return().Id("c").Dot("executeRequest").Call(
-				jen.Id("ctx"),
-				jen.Id("req"),
-				jen.Id("nil"),
+			jen.Return().ID("c").Dot("executeRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("req"),
+				jen.ID("nil"),
 			),
 		),
 		jen.Line(),

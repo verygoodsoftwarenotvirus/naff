@@ -1,6 +1,6 @@
 package client
 
-import jen "github.com/dave/jennifer/jen"
+import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 func helpersDotGo() *jen.File {
 	ret := jen.NewFile("client")
@@ -10,173 +10,157 @@ func helpersDotGo() *jen.File {
 	ret.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "models")
 	ret.Add(jen.Line())
 
+	ret.Add(comments("argIsNotPointer checks an argument and returns whether or not it is a pointer")...)
 	ret.Add(
-		jen.Comment("argIsNotPointer checks an argument and returns whether or not it is a pointer"),
-		jen.Line(),
-		jen.Func().Id("argIsNotPointer").Params(jen.Id("i").Interface()).Params(
-			jen.Id("notAPointer").Id("bool"),
-			jen.Id("err").Id("error"),
+		jen.Func().ID("argIsNotPointer").Params(jen.ID("i").Interface()).Params(
+			jen.ID("notAPointer").ID("bool"),
+			jen.ID("err").ID("error"),
 		).Block(
 			jen.If(
-				jen.Id("i").Op("==").Id("nil").
+				jen.ID("i").Op("==").ID("nil").
 					Op("||").
 					Qual("reflect", "TypeOf").Call(
-					jen.Id("i"),
+					jen.ID("i"),
 				).Dot("Kind").Call().Op("!=").Qual("reflect", "Ptr"),
 			).Block(
-				jen.Return().List(jen.Id("true"), jen.Qual("errors", "New").Call(
-					jen.Lit("value is not a pointer"),
-				),
+				jen.Return().List(
+					jen.ID("true"),
+					jen.Qual("errors", "New").Call(jen.Lit("value is not a pointer")),
 				),
 			),
-			jen.Return().List(jen.Id("false"),
-				jen.Id("nil")),
+			jen.Return().List(jen.ID("false"),
+				jen.ID("nil")),
 		),
 		jen.Line(),
 	)
 
+	ret.Add(comments("argIsNotNil checks an argument and returns whether or not it is nil")...)
 	ret.Add(
-		jen.Comment("argIsNotNil checks an argument and returns whether or not it is nil"),
-		jen.Line(),
-		jen.Func().Id("argIsNotNil").Params(jen.Id("i").Interface()).Params(
-			jen.Id("isNil").Id("bool"),
-			jen.Id("err").Id("error"),
+		jen.Func().ID("argIsNotNil").Params(jen.ID("i").Interface()).Params(
+			jen.ID("isNil").ID("bool"),
+			jen.ID("err").ID("error"),
 		).Block(
-			jen.If(jen.Id("i").Op("==").Id("nil")).Block(
+			jen.If(jen.ID("i").Op("==").ID("nil")).Block(
 				jen.Return().List(
-					jen.Id("true"),
-					jen.Id("errors").Dot("New").Call(
+					jen.ID("true"),
+					jen.ID("errors").Dot("New").Call(
 						jen.Lit("value is nil"),
 					),
 				),
 			),
-			jen.Return().List(jen.Id("false"),
-				jen.Id("nil")),
+			jen.Return().List(jen.ID("false"),
+				jen.ID("nil")),
 		),
 		jen.Line(),
 	)
 
+	ret.Add(comments(
+		"argIsNotPointerOrNil does what it says on the tin. This function",
+		"is primarily useful for detecting if a destination value is valid",
+		"before decoding an HTTP response, for instance",
+	)...)
 	ret.Add(
-		jen.Comment("argIsNotPointerOrNil does what it says on the tin. This function"),
-		jen.Line(),
-		jen.Comment("is primarily useful for detecting if a destination value is valid"),
-		jen.Line(),
-		jen.Comment("before decoding an HTTP response, for instance"),
-		jen.Line(),
-		jen.Func().Id("argIsNotPointerOrNil").Params(jen.Id("i").Interface()).Params(jen.Id("error")).Block(
+		jen.Func().ID("argIsNotPointerOrNil").Params(jen.ID("i").Interface()).Params(jen.ID("error")).Block(
 			jen.If(
-				jen.List(
-					jen.Id("nn"),
-					jen.Id("err"),
-				).Op(":=").Id("argIsNotNil").Call(
-					jen.Id("i"),
-				),
-				jen.Id("nn").Op("||").Id("err").Op("!=").Id("nil"),
-			).Block(jen.Return().Id("err")),
-			jen.If(jen.List(
-				jen.Id("np"),
-				jen.Id("err"),
-			).Op(":=").Id("argIsNotPointer").Call(
-				jen.Id("i"),
-			),
-				jen.Id("np").
-					Op("||").
-					Id("err").Op("!=").Id("nil"),
-			).Block(jen.Return().Id("err")),
-			jen.Return().Id("nil"),
+				jen.List(jen.ID("nn"), jen.ID("err")).Op(":=").ID("argIsNotNil").Call(jen.ID("i")),
+				jen.ID("nn").Op("||").ID("err").Op("!=").ID("nil"),
+			).Block(jen.Return().ID("err")),
+			jen.Line(),
+			jen.If(
+				jen.List(jen.ID("np"), jen.ID("err")).Op(":=").ID("argIsNotPointer").Call(jen.ID("i")),
+				jen.ID("np").Op("||").ID("err").Op("!=").ID("nil"),
+			).Block(jen.Return().ID("err")),
+			jen.Line(),
+			jen.Return().ID("nil"),
 		),
 		jen.Line(),
 	)
 
+	ret.Add(comments(
+		"unmarshalBody takes an HTTP response and JSON decodes its",
+		"body into a destination value. `dest` must be a non-nil",
+		"pointer to an object. Ideally, response is also not nil.",
+		"The error returned here should only ever be received in",
+		"testing, and should never be encountered by an end-user.",
+	)...)
 	ret.Add(
-		jen.Comment("unmarshalBody takes an HTTP response and JSON decodes its"),
-		jen.Line(),
-		jen.Comment("body into a destination value. `dest` must be a non-nil"),
-		jen.Line(),
-		jen.Comment("pointer to an object. Ideally, response is also not nil."),
-		jen.Line(),
-		jen.Comment("The error returned here should only ever be received in"),
-		jen.Line(),
-		jen.Comment("testing, and should never be encountered by an end-user."),
-		jen.Line(),
-		jen.Func().Id("unmarshalBody").Params(
-			jen.Id("res").Op("*").Qual("net/http", "Response"),
-			jen.Id("dest").Interface(),
+		jen.Func().ID("unmarshalBody").Params(
+			jen.ID("res").Op("*").Qual("net/http", "Response"),
+			jen.ID("dest").Interface(),
 		).Params(
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
-			jen.If(
-				jen.Id("err").Op(":=").Id("argIsNotPointerOrNil").Call(
-					jen.Id("dest"),
-				),
-				jen.Id("err").Op("!=").Id("nil"),
-			).Block(
-				jen.Return().Id("err"),
+			jen.If(jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(jen.ID("dest")), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Return().ID("err"),
 			),
+			jen.Line(),
 			jen.List(
-				jen.Id("bodyBytes"),
-				jen.Id("err"),
+				jen.ID("bodyBytes"),
+				jen.ID("err"),
 			).Op(":=").Qual("io/ioutil", "ReadAll").
-				Call(jen.Id("res").Dot("Body")),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
-				jen.Return().Id("err"),
+				Call(jen.ID("res").Dot("Body")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Return().ID("err"),
 			),
-			jen.If(jen.Id("res").Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(
-				jen.Id("apiErr").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ErrorResponse").Values(),
-				jen.If(jen.Id("err").Op("=").Qual("encoding/json", "Unmarshal").Call(
-					jen.Id("bodyBytes"),
-					jen.Op("&").Id("apiErr"),
+			jen.Line(),
+			jen.If(jen.ID("res").Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(
+				jen.ID("apiErr").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ErrorResponse").Values(),
+				jen.If(jen.ID("err").Op("=").Qual("encoding/json", "Unmarshal").Call(
+					jen.ID("bodyBytes"),
+					jen.Op("&").ID("apiErr"),
 				),
-					jen.Id("err").Op("!=").Id("nil"),
+					jen.ID("err").Op("!=").ID("nil"),
 				).Block(
 					jen.Return().Qual("fmt", "Errorf").Call(
 						jen.Lit("unmarshaling error: %w"),
-						jen.Id("err"),
+						jen.ID("err"),
 					),
 				),
-				jen.Return().Id("apiErr"),
+				jen.Return().ID("apiErr"),
 			),
+			jen.Line(),
 			jen.If(
-				jen.Id("err").Op("=").Qual("encoding/json", "Unmarshal").Call(
-					jen.Id("bodyBytes"),
-					jen.Op("&").Id("dest"),
+				jen.ID("err").Op("=").Qual("encoding/json", "Unmarshal").Call(
+					jen.ID("bodyBytes"),
+					jen.Op("&").ID("dest"),
 				),
-				jen.Id("err").Op("!=").Id("nil"),
+				jen.ID("err").Op("!=").ID("nil"),
 			).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(
 					jen.Lit("unmarshaling body: %w"),
-					jen.Id("err"),
+					jen.ID("err"),
 				),
-			), jen.Return().Id("nil"),
+			),
+			jen.Return().ID("nil"),
 		),
 		jen.Line(),
 	)
 
+	ret.Add(comments(
+		"createBodyFromStruct takes any value in and returns an io.Reader",
+		"for placement within http.NewRequest's last argument.",
+	)...)
 	ret.Add(
-		jen.Comment("createBodyFromStruct takes any value in and returns an io.Reader"),
-		jen.Line(),
-		jen.Comment("for placement within http.NewRequest's last argument."),
-		jen.Line(),
-		jen.Func().Id("createBodyFromStruct").Params(
-			jen.Id("in").Interface(),
+		jen.Func().ID("createBodyFromStruct").Params(
+			jen.ID("in").Interface(),
 		).Params(
 			jen.Qual("io", "Reader"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
 			jen.List(
-				jen.Id("out"),
-				jen.Id("err"),
+				jen.ID("out"),
+				jen.ID("err"),
 			).Op(":=").Qual("encoding/json", "Marshal").Call(
-				jen.Id("in"),
+				jen.ID("in"),
 			),
-			jen.If(jen.Id("err").Op("!=").Id("nil")).Block(
-				jen.Return().List(jen.Id("nil"),
-					jen.Id("err")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"),
+					jen.ID("err")),
 			),
 			jen.Return().List(jen.Qual("bytes", "NewReader").Call(
-				jen.Id("out"),
+				jen.ID("out"),
 			),
-				jen.Id("nil"),
+				jen.ID("nil"),
 			),
 		),
 		jen.Line(),

@@ -1,6 +1,6 @@
 package client
 
-import jen "github.com/dave/jennifer/jen"
+import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 func roundtripperDotGo() *jen.File {
 	ret := jen.NewFile("client")
@@ -8,15 +8,15 @@ func roundtripperDotGo() *jen.File {
 	addImports(ret)
 
 	ret.Add(jen.Const().Defs(
-		jen.Id("userAgentHeader").Op("=").Lit("User-Agent"),
-		jen.Id("userAgent").Op("=").Lit("TODO Service Client"),
+		jen.ID("userAgentHeader").Op("=").Lit("User-Agent"),
+		jen.ID("userAgent").Op("=").Lit("TODO Service Client"),
 	),
 		jen.Line(),
 	)
 	ret.Add(jen.Line())
 
-	ret.Add(jen.Type().Id("defaultRoundTripper").Struct(
-		jen.Id("baseTransport").Op("*").Qual("net/http", "Transport"),
+	ret.Add(jen.Type().ID("defaultRoundTripper").Struct(
+		jen.ID("baseTransport").Op("*").Qual("net/http", "Transport"),
 	),
 		jen.Line(),
 	)
@@ -25,10 +25,10 @@ func roundtripperDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Id("newDefaultRoundTripper").Params().Params(jen.Op("*").Id("defaultRoundTripper")).Block(
+		jen.Func().ID("newDefaultRoundTripper").Params().Params(jen.Op("*").ID("defaultRoundTripper")).Block(
 			jen.Return(
-				jen.Op("&").Id("defaultRoundTripper").Values(jen.Dict{
-					jen.Id("baseTransport"): jen.Id("buildDefaultTransport").Call(),
+				jen.Op("&").ID("defaultRoundTripper").Values(jen.Dict{
+					jen.ID("baseTransport"): jen.ID("buildDefaultTransport").Call(),
 				}),
 			),
 		),
@@ -39,19 +39,19 @@ func roundtripperDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Params(jen.Id("t").Op("*").Id("defaultRoundTripper")).Id("RoundTrip").Params(
-			jen.Id("req").Op("*").Qual("net/http", "Request"),
+		jen.Func().Params(jen.ID(T).Op("*").ID("defaultRoundTripper")).ID("RoundTrip").Params(
+			jen.ID("req").Op("*").Qual("net/http", "Request"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Response"),
-			jen.Id("error"),
+			jen.ID("error"),
 		).Block(
-			jen.Id("req").Dot("Header").Dot("Set").Call(
-				jen.Id("userAgentHeader"),
-				jen.Id("userAgent"),
+			jen.ID("req").Dot("Header").Dot("Set").Call(
+				jen.ID("userAgentHeader"),
+				jen.ID("userAgent"),
 			),
 			jen.Line(),
-			jen.Return().Id("t").Dot("baseTransport").Dot("RoundTrip").Call(
-				jen.Id("req"),
+			jen.Return().ID(T).Dot("baseTransport").Dot("RoundTrip").Call(
+				jen.ID("req"),
 			),
 		),
 	)
@@ -60,23 +60,23 @@ func roundtripperDotGo() *jen.File {
 	ret.Add(
 		jen.Comment(""),
 		jen.Line(),
-		jen.Func().Id("buildDefaultTransport").Params().Params(jen.Op("*").Qual("net/http", "Transport")).Block(
+		jen.Func().ID("buildDefaultTransport").Params().Params(jen.Op("*").Qual("net/http", "Transport")).Block(
 			jen.Return().Op("&").Qual("net/http", "Transport").Values(
 				jen.Dict{
-					jen.Id("Proxy"): jen.Qual("net/http", "ProxyFromEnvironment"),
-					jen.Id("DialContext"): jen.Parens(jen.Op("&").Qual("net", "Dialer").Values(
+					jen.ID("Proxy"): jen.Qual("net/http", "ProxyFromEnvironment"),
+					jen.ID("DialContext"): jen.Parens(jen.Op("&").Qual("net", "Dialer").Values(
 						jen.Dict{
-							jen.Id("Timeout"):   jen.Lit(30).Op("*").Qual("time", "Second"),
-							jen.Id("KeepAlive"): jen.Lit(30).Op("*").Qual("time", "Second"),
-							jen.Id("DualStack"): jen.Id("true"),
+							jen.ID("Timeout"):   jen.Lit(30).Op("*").Qual("time", "Second"),
+							jen.ID("KeepAlive"): jen.Lit(30).Op("*").Qual("time", "Second"),
+							jen.ID("DualStack"): jen.ID("true"),
 						},
 					),
 					).Dot("DialContext"),
-					jen.Id("MaxIdleConns"):          jen.Lit(100),
-					jen.Id("MaxIdleConnsPerHost"):   jen.Lit(100),
-					jen.Id("IdleConnTimeout"):       jen.Lit(90).Op("*").Qual("time", "Second"),
-					jen.Id("TLSHandshakeTimeout"):   jen.Lit(10).Op("*").Qual("time", "Second"),
-					jen.Id("ExpectContinueTimeout"): jen.Lit(1).Op("*").Qual("time", "Second"),
+					jen.ID("MaxIdleConns"):          jen.Lit(100),
+					jen.ID("MaxIdleConnsPerHost"):   jen.Lit(100),
+					jen.ID("IdleConnTimeout"):       jen.Lit(90).Op("*").Qual("time", "Second"),
+					jen.ID("TLSHandshakeTimeout"):   jen.Lit(10).Op("*").Qual("time", "Second"),
+					jen.ID("ExpectContinueTimeout"): jen.Lit(1).Op("*").Qual("time", "Second"),
 				},
 			),
 		),
