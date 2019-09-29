@@ -12,6 +12,7 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 	logger "logger"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"path"
 	"strings"
@@ -42,11 +43,37 @@ type V1Client struct {
 	tokenSource  oauth2.TokenSource
 }
 
+// AuthenticatedClient returns the authenticated *http.Client that we use to make most requests
+func (c *V1Client) AuthenticatedClient() *http.Client {
+	return c.authedClient
+}
+
+// PlainClient returns the unauthenticated *http.Client that we use to make certain requests
+func (c *V1Client) PlainClient() *http.Client {
+	return c.plainClient
+}
+
+// TokenSource provides the client's token source
+func (c *V1Client) TokenSource() oauth2.TokenSource {
+	return c.tokenSource
+}
+
 // NewClient builds a new API client for us
-func NewClient(ctx context.Context, clientID, clientSecret string, address *url.URL, logger logging.Logger, hclient *http.Client, scopes []string, debug bool) (*V1Client, error) {
+func NewClient(
+	ctx context.Context,
+	clientID,
+	clientSecret string,
+	address *url.URL,
+	logger logging.Logger,
+	hclient *http.Client,
+	scopes []string,
+	debug bool,
+) (*V1Client, error) {
 	var client = hclient
 	if client == nil {
-		client = &http.Client{Timeout: defaultTimeout}
+		client = &http.Client{
+			Timeout: defaultTimeout,
+		}
 	}
 	if client.Timeout == 0 {
 		client.Timeout = defaultTimeout
@@ -60,11 +87,11 @@ func NewClient(ctx context.Context, clientID, clientSecret string, address *url.
 	ac, ts := buildOAuthClient(ctx, address, clientID, clientSecret, scopes)
 
 	c := &V1Client{
-		Debug:        debug,
 		URL:          address,
-		authedClient: ac,
-		logger:       logger.WithName(clientName),
 		plainClient:  client,
+		logger:       logger.WithName(clientName),
+		Debug:        debug,
+		authedClient: ac,
 		tokenSource:  ts,
 	}
 
@@ -73,25 +100,33 @@ func NewClient(ctx context.Context, clientID, clientSecret string, address *url.
 }
 
 // buildOAuthClient does too much
-func buildOAuthClient(ctx context.Context, uri *url.URL, clientID, clientSecret string, scopes []string) (*http.Client, oauth2.TokenSource) {
+func buildOAuthClient(
+	ctx context.Context,
+	uri *url.URL,
+	clientID,
+	clientSecret string,
+	scopes []string,
+) (*http.Client, oauth2.TokenSource) {
 	conf := clientcredentials.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
+		Scopes:       scopes,
 		EndpointParams: url.Values{
 			"client_id":     []string{clientID},
 			"client_secret": []string{clientSecret},
 		},
-		Scopes:   scopes,
 		TokenURL: tokenEndpoint(uri).TokenURL,
 	}
 
 	ts := oauth2.ReuseTokenSource(nil, conf.TokenSource(ctx))
 	client := &http.Client{
-		Timeout: 5 * time.Second,
 		Transport: &oauth2.Transport{
-			Base:   &ochttp.Transport{Base: newDefaultRoundTripper()},
+			Base: &ochttp.Transport{
+				Base: newDefaultRoundTripper(),
+			},
 			Source: ts,
 		},
+		Timeout: 5 * time.Second,
 	}
 
 	return client, ts
@@ -103,8 +138,8 @@ func tokenEndpoint(baseURL *url.URL) oauth2.Endpoint {
 	tu.Path, au.Path = "oauth2/token", "oauth2/authorize"
 
 	return oauth2.Endpoint{
-		AuthURL:  au.String(),
 		TokenURL: tu.String(),
+		AuthURL:  au.String(),
 	}
 }
 
@@ -117,21 +152,6 @@ func NewSimpleClient(ctx context.Context, address *url.URL, debug bool) (*V1Clie
 	h := &http.Client{Timeout: 5 * time.Second}
 	c, err := NewClient(ctx, "", "", address, l, h, []string{"*"}, debug)
 	return c, err
-}
-
-// AuthenticatedClient provides the client's authenticated HTTP client
-func (c *V1Client) AuthenticatedClient() *http.Client {
-	return c.authedClient
-}
-
-// PlainClient provides the client's unauthenticated HTTP client
-func (c *V1Client) PlainClient() *http.Client {
-	return c.plainClient
-}
-
-// TokenSource provides the client's token source
-func (c *V1Client) TokenSource() oauth2.TokenSource {
-	return c.tokenSource
 }
 
 // executeRawRequest takes a given *http.Request and executes it with the provided
@@ -281,6 +301,7 @@ func (c *V1Client) executeRequest(ctx context.Context, req *http.Request, out in
 	if err != nil {
 		return fmt.Errorf("executing request: %w", err)
 	}
+
 	switch res.StatusCode {
 	case http.StatusNotFound:
 		return ErrNotFound
@@ -298,25 +319,31 @@ func (c *V1Client) executeRequest(ctx context.Context, req *http.Request, out in
 	return nil
 }
 
-// c.executeUnathenticatedDataRequest
+// executeUnathenticatedDataRequest takes a given request and loads the response into an interface value.
 func (c *V1Client) executeUnathenticatedDataRequest(ctx context.Context, req *http.Request, out interface{}) error {
+	// sometimes we want to make requests with data attached, but we don't really care about the response
+	// so we give this function a nil `out` value. That said, if you provide us a value, it needs to be a pointer.
 	if out != nil {
 		if np, err := argIsNotPointer(out); np || err != nil {
 			return fmt.Errorf("struct to load must be a pointer: %w", err)
 		}
 	}
+
 	res, err := c.executeRawRequest(ctx, c.plainClient, req)
 	if err != nil {
 		return fmt.Errorf("executing request: %w", err)
 	}
+
 	if res.StatusCode == http.StatusNotFound {
 		return ErrNotFound
 	}
+
 	if out != nil {
 		resErr := unmarshalBody(res, &out)
 		if resErr != nil {
 			return fmt.Errorf("loading response from server: %w", err)
 		}
 	}
+
 	return nil
 }

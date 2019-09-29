@@ -54,6 +54,32 @@ func (s *Statement) List(items ...Code) *Statement {
 	return s
 }
 
+// ListLn renders a comma separated list. Use for multiple return functions.
+func ListLn(items ...Code) *Statement {
+	return newStatement().ListLn(items...)
+}
+
+// ListLn renders a comma separated list. Use for multiple return functions.
+func (g *Group) ListLn(items ...Code) *Statement {
+	s := ListLn(items...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// ListLn renders a comma separated list. Use for multiple return functions.
+func (s *Statement) ListLn(items ...Code) *Statement {
+	g := &Group{
+		close:     "",
+		items:     items,
+		multi:     false,
+		name:      "list",
+		open:      "",
+		separator: ",\n",
+	}
+	*s = append(*s, g)
+	return s
+}
+
 // ListFunc renders a comma separated list. Use for multiple return functions.
 func ListFunc(f func(*Group)) *Statement {
 	return newStatement().ListFunc(f)
@@ -413,6 +439,32 @@ func (s *Statement) Params(params ...Code) *Statement {
 		name:      "params",
 		open:      "(",
 		separator: ",",
+	}
+	*s = append(*s, g)
+	return s
+}
+
+// ParamsLn renders a comma-and-newline separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func ParamsLn(params ...Code) *Statement {
+	return newStatement().ParamsLn(params...)
+}
+
+// ParamsLn renders a comma-and-newline separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func (g *Group) ParamsLn(params ...Code) *Statement {
+	s := ParamsLn(params...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// ParamsLn renders a comma-and-newline separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func (s *Statement) ParamsLn(params ...Code) *Statement {
+	g := &Group{
+		close:     ",\n)",
+		items:     params,
+		multi:     false,
+		name:      "params",
+		open:      "(\n",
+		separator: ",\n",
 	}
 	*s = append(*s, g)
 	return s

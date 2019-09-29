@@ -41,7 +41,14 @@ func (t token) render(f *File, w io.Writer, s *Statement) error {
 	case literalToken:
 		var out string
 		switch t.content.(type) {
-		case bool, string, int, complex128:
+		case string:
+			ts := fmt.Sprintf("%s", t.content)
+			if strings.Contains(ts, `"`) && !strings.Contains(ts, `\"`) {
+				out = fmt.Sprintf("`%s`", t.content)
+			} else {
+				out = fmt.Sprintf("%q", t.content)
+			}
+		case bool, int, complex128:
 			// default constant types can be left bare
 			out = fmt.Sprintf("%#v", t.content)
 		case float64:

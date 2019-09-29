@@ -15,31 +15,32 @@ type defaultRoundTripper struct {
 	baseTransport *http.Transport
 }
 
-//
+// newDefaultRoundTripper constructs a new http.RoundTripper
 func newDefaultRoundTripper() *defaultRoundTripper {
-	return &defaultRoundTripper{baseTransport: buildDefaultTransport()}
+	return &defaultRoundTripper{
+		baseTransport: buildDefaultTransport(),
+	}
 }
 
-//
-func (T *defaultRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+// RoundTrip implements the http.RoundTripper interface
+func (t *defaultRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set(userAgentHeader, userAgent)
-
-	return T.baseTransport.RoundTrip(req)
+	return t.baseTransport.RoundTrip(req)
 }
 
-//
+// buildDefaultTransport constructs a new http.Transport
 func buildDefaultTransport() *http.Transport {
 	return &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
-			DualStack: true,
-			KeepAlive: 30 * time.Second,
 			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
 		}).DialContext,
-		ExpectContinueTimeout: 1 * time.Second,
-		IdleConnTimeout:       90 * time.Second,
 		MaxIdleConns:          100,
 		MaxIdleConnsPerHost:   100,
-		Proxy:                 http.ProxyFromEnvironment,
+		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
 }

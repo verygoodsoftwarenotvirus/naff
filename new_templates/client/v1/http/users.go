@@ -7,10 +7,10 @@ func usersDotGo() *jen.File {
 
 	addImports(ret)
 
-	ret.Add(jen.Var().ID("usersBasePath").Op("=").Lit("users"))
+	ret.Add(jen.Const().ID("usersBasePath").Op("=").Lit("users"))
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("BuildGetUserRequest builds an HTTP request for fetching a user"),
 		jen.Line(),
 		newClientMethod("BuildGetUserRequest").Params(
 			ctxParam(),
@@ -27,6 +27,7 @@ func usersDotGo() *jen.File {
 					jen.Lit(10),
 				),
 			),
+			jen.Line(),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodGet"),
 				jen.ID("uri"),
@@ -37,7 +38,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("GetUser retrieves a user"),
 		jen.Line(),
 		newClientMethod("GetUser").Params(
 			ctxParam(),
@@ -62,6 +63,7 @@ func usersDotGo() *jen.File {
 					),
 				),
 			),
+			jen.Line(),
 			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
@@ -76,7 +78,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("BuildGetUsersRequest builds an HTTP request for fetching a user"),
 		jen.Line(),
 		newClientMethod("BuildGetUsersRequest").Params(
 			ctxParam(),
@@ -89,6 +91,7 @@ func usersDotGo() *jen.File {
 				jen.ID("filter").Dot("ToValues").Call(),
 				jen.ID("usersBasePath"),
 			),
+			jen.Line(),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodGet"),
 				jen.ID("uri"),
@@ -99,7 +102,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("GetUsers retrieves a list of users"),
 		jen.Line(),
 		newClientMethod("GetUsers").Params(
 			ctxParam(),
@@ -109,6 +112,7 @@ func usersDotGo() *jen.File {
 			jen.ID("error"),
 		).Block(
 			jen.ID("users").Op(":=").Op("&").Qual(modelsPkg, "UserList").Values(),
+			jen.Line(),
 			jen.List(
 				jen.ID("req"),
 				jen.ID("err"),
@@ -117,12 +121,15 @@ func usersDotGo() *jen.File {
 				jen.ID("filter"),
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(
-					jen.Lit("building request: %w"),
-					jen.ID("err"),
-				),
+				jen.Return().List(
+					jen.ID("nil"),
+					jen.Qual("fmt", "Errorf").Call(
+						jen.Lit("building request: %w"),
+						jen.ID("err"),
+					),
 				),
 			),
+			jen.Line(),
 			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
@@ -135,7 +142,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("BuildCreateUserRequest builds an HTTP request for creating a user"),
 		jen.Line(),
 		newClientMethod("BuildCreateUserRequest").Params(
 			ctxParam(),
@@ -148,6 +155,7 @@ func usersDotGo() *jen.File {
 				jen.ID("nil"),
 				jen.ID("usersBasePath"),
 			),
+			jen.Line(),
 			jen.Return().ID("c").Dot("buildDataRequest").Call(
 				jen.Qual("net/http", "MethodPost"),
 				jen.ID("uri"),
@@ -158,7 +166,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("CreateUser creates a new user"),
 		jen.Line(),
 		newClientMethod("CreateUser").Params(
 			ctxParam(),
@@ -168,6 +176,7 @@ func usersDotGo() *jen.File {
 			jen.ID("error"),
 		).Block(
 			jen.ID("user").Op(":=").Op("&").Qual(modelsPkg, "UserCreationResponse").Values(),
+			jen.Line(),
 			jen.List(
 				jen.ID("req"),
 				jen.ID("err"),
@@ -184,6 +193,7 @@ func usersDotGo() *jen.File {
 					),
 				),
 			),
+			jen.Line(),
 			jen.ID("err").Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
@@ -196,7 +206,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("BuildArchiveUserRequest builds an HTTP request for updating a user"),
 		jen.Line(),
 		newClientMethod("BuildArchiveUserRequest").Params(
 			ctxParam(),
@@ -213,6 +223,7 @@ func usersDotGo() *jen.File {
 					jen.Lit(10),
 				),
 			),
+			jen.Line(),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodDelete"),
 				jen.ID("uri"),
@@ -223,7 +234,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("ArchiveUser archives a user"),
 		jen.Line(),
 		newClientMethod("ArchiveUser").Params(
 			ctxParam(),
@@ -238,10 +249,11 @@ func usersDotGo() *jen.File {
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("building request"),
+					jen.Lit("building request: %w"),
 					jen.ID("err"),
 				),
 			),
+			jen.Line(),
 			jen.Return().ID("c").Dot("executeRequest").Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
@@ -252,7 +264,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("BuildLoginRequest builds an authenticating HTTP request"),
 		jen.Line(),
 		newClientMethod("BuildLoginRequest").Params(
 			jen.List(
@@ -268,19 +280,23 @@ func usersDotGo() *jen.File {
 				jen.ID("body"),
 				jen.ID("err"),
 			).Op(":=").ID("createBodyFromStruct").Call(
-				jen.Op("&").Qual(modelsPkg, "UserLoginInput").Values(jen.Dict{
-					jen.ID("Username"):  jen.ID("username"),
-					jen.ID("Password"):  jen.ID("password"),
-					jen.ID("TOTPToken"): jen.ID("totpToken"),
-				}),
+				jen.Op("&").Qual(modelsPkg, "UserLoginInput").ValuesLn(
+					jen.ID("Username").Op(":").ID("username"),
+					jen.ID("Password").Op(":").ID("password"),
+					jen.ID("TOTPToken").Op(":").ID("totpToken"),
+				),
 			),
+			jen.Line(),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(
-					jen.Lit("creating body from struct"),
-					jen.ID("err"),
-				),
+				jen.Return().List(
+					jen.ID("nil"),
+					jen.Qual("fmt", "Errorf").Call(
+						jen.Lit("creating body from struct: %w"),
+						jen.ID("err"),
+					),
 				),
 			),
+			jen.Line(),
 			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
 				jen.ID("nil"),
 				jen.ID("usersBasePath"),
@@ -296,7 +312,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("Login will, when provided the correct credentials, fetch a login cookie"),
 		jen.Line(),
 		newClientMethod("Login").Params(
 			ctxParam(),
@@ -318,9 +334,12 @@ func usersDotGo() *jen.File {
 				jen.ID("totpToken"),
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"),
-					jen.ID("err")),
+				jen.Return().List(
+					jen.ID("nil"),
+					jen.ID("err"),
+				),
 			),
+			jen.Line(),
 			jen.List(
 				jen.ID("res"),
 				jen.ID("err"),
@@ -329,17 +348,19 @@ func usersDotGo() *jen.File {
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(
-					jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(
+					jen.ID("nil"),
+					jen.Qual("fmt", "Errorf").Call(
 						jen.Lit("encountered error executing login request: %w"),
 						jen.ID("err"),
 					),
 				),
 			),
+			jen.Line(),
 			jen.If(jen.ID("c").Dot("Debug")).Block(
 				jen.List(
 					jen.ID("b"),
 					jen.ID("err"),
-				).Op(":=").ID("httputil").Dot("DumpResponse").Call(
+				).Op(":=").Qual("net/http/httputil", "DumpResponse").Call(
 					jen.ID("res"),
 					jen.ID("true"),
 				),
@@ -358,6 +379,7 @@ func usersDotGo() *jen.File {
 					jen.Lit("login response received"),
 				),
 			),
+			jen.Line(),
 			jen.Defer().Func().Params().Block(
 				jen.If(jen.ID("err").Op(":=").ID("res").Dot("Body").Dot("Close").Call(),
 					jen.ID("err").Op("!=").ID("nil"),
@@ -368,6 +390,7 @@ func usersDotGo() *jen.File {
 					),
 				),
 			).Call(),
+			jen.Line(),
 			jen.ID("cookies").Op(":=").ID("res").Dot("Cookies").Call(),
 			jen.If(jen.ID("len").Call(
 				jen.ID("cookies"),
@@ -379,9 +402,10 @@ func usersDotGo() *jen.File {
 					jen.ID("nil"),
 				),
 			),
+			jen.Line(),
 			jen.Return().List(
 				jen.ID("nil"),
-				jen.ID("errors").Dot("New").Call(
+				jen.Qual("errors", "New").Call(
 					jen.Lit("no cookies returned from request"),
 				),
 			),

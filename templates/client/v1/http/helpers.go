@@ -69,6 +69,7 @@ func unmarshalBody(res *http.Response, dest interface{}) error {
 	if err = json.Unmarshal(bodyBytes, &dest); err != nil {
 		return fmt.Errorf("unmarshaling body: %w", err)
 	}
+
 	return nil
 }
 

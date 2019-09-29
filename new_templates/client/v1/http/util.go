@@ -48,6 +48,10 @@ func requireNotNil(value, message *jen.Statement, formatArgs ...*jen.Statement) 
 	return buildSingleValueTestifyFunc(r, "NotNil")(value, message, formatArgs...)
 }
 
+func requireNil(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
+	return buildSingleValueTestifyFunc(r, "Nil")(value, message, formatArgs...)
+}
+
 func assertTrue(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(a, "True")(value, message, formatArgs...)
 }
@@ -114,8 +118,33 @@ func buildDoubleValueTestifyFunc(pkg, method string) func(expected, actual, mess
 }
 
 func buildSubTest(name string, testInstructions ...jen.Code) jen.Code {
+	return _buildSubtest(name, true, testInstructions...)
+}
+
+func buildSubTestWithoutContext(name string, testInstructions ...jen.Code) jen.Code {
+	return _buildSubtest(name, false, testInstructions...)
+}
+
+func _buildSubtest(name string, includeContext bool, testInstructions ...jen.Code) jen.Code {
+	insts := []jen.Code{}
+	if includeContext {
+		insts = append(insts, createCtx())
+	}
+	insts = append(insts, testInstructions...)
+
 	return jen.ID(T).Dot("Run").Call(
-		jen.Lit(name), jen.Func().Params(jen.ID(t).Op("*").Qual("testing", "T")).Block(testInstructions...),
+		jen.Lit(name), jen.Func().Params(jen.ID(t).Op("*").Qual("testing", "T")).Block(insts...),
+	)
+}
+
+func buildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
+	return jen.ID(name).Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
+		jen.Qual("net/http", "HandlerFunc").CallLn(
+			jen.Func().Params(
+				jen.ID("res").Qual("net/http", "ResponseWriter"),
+				jen.ID("req").Op("*").Qual("net/http", "Request"),
+			).Block(handlerLines...),
+		),
 	)
 }
 

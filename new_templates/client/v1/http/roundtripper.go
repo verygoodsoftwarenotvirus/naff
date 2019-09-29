@@ -20,16 +20,15 @@ func roundtripperDotGo() *jen.File {
 	),
 		jen.Line(),
 	)
-	ret.Add(jen.Line())
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("newDefaultRoundTripper constructs a new http.RoundTripper"),
 		jen.Line(),
 		jen.Func().ID("newDefaultRoundTripper").Params().Params(jen.Op("*").ID("defaultRoundTripper")).Block(
 			jen.Return(
-				jen.Op("&").ID("defaultRoundTripper").Values(jen.Dict{
-					jen.ID("baseTransport"): jen.ID("buildDefaultTransport").Call(),
-				}),
+				jen.Op("&").ID("defaultRoundTripper").ValuesLn(
+					jen.ID("baseTransport").Op(":").ID("buildDefaultTransport").Call(),
+				),
 			),
 		),
 		jen.Line(),
@@ -37,9 +36,9 @@ func roundtripperDotGo() *jen.File {
 	ret.Add(jen.Line())
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("RoundTrip implements the http.RoundTripper interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(T).Op("*").ID("defaultRoundTripper")).ID("RoundTrip").Params(
+		jen.Func().Params(jen.ID(t).Op("*").ID("defaultRoundTripper")).ID("RoundTrip").Params(
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Response"),
@@ -49,8 +48,7 @@ func roundtripperDotGo() *jen.File {
 				jen.ID("userAgentHeader"),
 				jen.ID("userAgent"),
 			),
-			jen.Line(),
-			jen.Return().ID(T).Dot("baseTransport").Dot("RoundTrip").Call(
+			jen.Return().ID(t).Dot("baseTransport").Dot("RoundTrip").Call(
 				jen.ID("req"),
 			),
 		),
@@ -58,26 +56,22 @@ func roundtripperDotGo() *jen.File {
 	ret.Add(jen.Line())
 
 	ret.Add(
-		jen.Comment(""),
+		jen.Comment("buildDefaultTransport constructs a new http.Transport"),
 		jen.Line(),
 		jen.Func().ID("buildDefaultTransport").Params().Params(jen.Op("*").Qual("net/http", "Transport")).Block(
-			jen.Return().Op("&").Qual("net/http", "Transport").Values(
-				jen.Dict{
-					jen.ID("Proxy"): jen.Qual("net/http", "ProxyFromEnvironment"),
-					jen.ID("DialContext"): jen.Parens(jen.Op("&").Qual("net", "Dialer").Values(
-						jen.Dict{
-							jen.ID("Timeout"):   jen.Lit(30).Op("*").Qual("time", "Second"),
-							jen.ID("KeepAlive"): jen.Lit(30).Op("*").Qual("time", "Second"),
-							jen.ID("DualStack"): jen.ID("true"),
-						},
-					),
-					).Dot("DialContext"),
-					jen.ID("MaxIdleConns"):          jen.Lit(100),
-					jen.ID("MaxIdleConnsPerHost"):   jen.Lit(100),
-					jen.ID("IdleConnTimeout"):       jen.Lit(90).Op("*").Qual("time", "Second"),
-					jen.ID("TLSHandshakeTimeout"):   jen.Lit(10).Op("*").Qual("time", "Second"),
-					jen.ID("ExpectContinueTimeout"): jen.Lit(1).Op("*").Qual("time", "Second"),
-				},
+			jen.Return().Op("&").Qual("net/http", "Transport").ValuesLn(
+				jen.ID("Proxy").Op(":").Qual("net/http", "ProxyFromEnvironment"),
+				jen.ID("DialContext").Op(":").Parens(jen.Op("&").Qual("net", "Dialer").ValuesLn(
+					jen.ID("Timeout").Op(":").Lit(30).Op("*").Qual("time", "Second"),
+					jen.ID("KeepAlive").Op(":").Lit(30).Op("*").Qual("time", "Second"),
+					jen.ID("DualStack").Op(":").ID("true"),
+				),
+				).Dot("DialContext"),
+				jen.ID("MaxIdleConns").Op(":").Lit(100),
+				jen.ID("MaxIdleConnsPerHost").Op(":").Lit(100),
+				jen.ID("IdleConnTimeout").Op(":").Lit(90).Op("*").Qual("time", "Second"),
+				jen.ID("TLSHandshakeTimeout").Op(":").Lit(10).Op("*").Qual("time", "Second"),
+				jen.ID("ExpectContinueTimeout").Op(":").Lit(1).Op("*").Qual("time", "Second"),
 			),
 		),
 	)

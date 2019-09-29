@@ -18,7 +18,7 @@ func helpersTestDotGo() *jen.File {
 		testFunc("ArgIsNotPointerOrNil").Block(
 			parallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"expected use",
 				jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(
 					jen.Op("&").ID("testingType").Values(),
@@ -29,7 +29,7 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with non-pointer",
 				jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(
 					jen.ID("testingType").Values(),
@@ -40,7 +40,7 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with nil",
 				jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(
 					jen.ID("nil"),
@@ -58,7 +58,7 @@ func helpersTestDotGo() *jen.File {
 		testFunc("ArgIsNotPointer").Block(
 			parallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"expected use",
 				jen.List(
 					jen.ID("notAPointer"),
@@ -77,7 +77,7 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with non-pointer",
 				jen.List(
 					jen.ID("notAPointer"),
@@ -96,7 +96,7 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with nil",
 				jen.List(
 					jen.ID("notAPointer"),
@@ -122,7 +122,7 @@ func helpersTestDotGo() *jen.File {
 		testFunc("ArgIsNotNil").Block(
 			parallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"without nil",
 				jen.List(
 					jen.ID("isNil"),
@@ -141,7 +141,7 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with non-pointer",
 				jen.List(
 					jen.ID("isNil"),
@@ -160,7 +160,7 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with nil",
 				jen.List(
 					jen.ID("isNil"),
@@ -186,11 +186,11 @@ func helpersTestDotGo() *jen.File {
 		testFunc("UnmarshalBody").Block(
 			parallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"expected use",
 				jen.ID("expected").Op(":=").Lit("example"),
-				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Values(jen.Dict{
-					jen.ID("Body"): jen.Qual("io/ioutil", "NopCloser").Call(
+				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").ValuesLn(
+					jen.ID("Body").Op(":").Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(
 							jen.Qual("fmt", "Sprintf").Call(
 								jen.Lit("{\"name\": %q}"),
@@ -198,8 +198,8 @@ func helpersTestDotGo() *jen.File {
 							),
 						),
 					),
-					jen.ID("StatusCode"): jen.Qual("net/http", "StatusOK"),
-				}),
+					jen.ID("StatusCode").Op(":").Qual("net/http", "StatusOK"),
+				),
 				jen.Var().ID("out").ID("testingType"),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
@@ -217,14 +217,14 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with good status but unmarshallable response",
-				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Values(jen.Dict{
-					jen.ID("Body"): jen.Qual("io/ioutil", "NopCloser").Call(
+				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").ValuesLn(
+					jen.ID("Body").Op(":").Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(jen.Lit("BLAH")),
 					),
-					jen.ID("StatusCode"): jen.Qual("net/http", "StatusOK"),
-				}),
+					jen.ID("StatusCode").Op(":").Qual("net/http", "StatusOK"),
+				),
 				jen.Var().ID("out").ID("testingType"),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
@@ -237,11 +237,11 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with an erroneous error code",
-				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Values(jen.Dict{
-					jen.ID("Body"): jen.Qual("io/ioutil", "NopCloser").Call(
-						jen.Qual("strings", "NewReader").Call(
+				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").ValuesLn(
+					jen.ID("Body").Op(":").Qual("io/ioutil", "NopCloser").CallLn(
+						jen.Qual("strings", "NewReader").CallLn(
 							jen.Func().Params().Params(
 								jen.ID("string"),
 							).Block(
@@ -259,8 +259,8 @@ func helpersTestDotGo() *jen.File {
 							).Call(),
 						),
 					),
-					jen.ID("StatusCode"): jen.Qual("net/http", "StatusBadRequest"),
-				}),
+					jen.ID("StatusCode").Op(":").Qual("net/http", "StatusBadRequest"),
+				),
 				jen.Var().ID("out").Op("*").ID("testingType"),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
@@ -277,14 +277,14 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with an erroneous error code and unmarshallable body",
-				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Values(jen.Dict{
-					jen.ID("Body"): jen.Qual("io/ioutil", "NopCloser").Call(
+				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").ValuesLn(
+					jen.ID("Body").Op(":").Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(jen.Lit("BLAH")),
 					),
-					jen.ID("StatusCode"): jen.Qual("net/http", "StatusBadRequest"),
-				}),
+					jen.ID("StatusCode").Op(":").Qual("net/http", "StatusBadRequest"),
+				),
 				jen.Var().ID("out").Op("*").ID("testingType"),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
@@ -301,7 +301,7 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with nil target variable",
 				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
 					jen.ID("nil"),
@@ -313,7 +313,7 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with erroneous reader",
 				jen.ID("expected").Op(":=").Qual("errors", "New").Call(
 					jen.Lit("blah"),
@@ -328,10 +328,10 @@ func helpersTestDotGo() *jen.File {
 					jen.ID("expected"),
 				),
 				jen.Line(),
-				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Values(jen.Dict{
-					jen.ID("Body"):       jen.ID("rc"),
-					jen.ID("StatusCode"): jen.Qual("net/http", "StatusOK"),
-				}),
+				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").ValuesLn(
+					jen.ID("Body").Op(":").ID("rc"),
+					jen.ID("StatusCode").Op(":").Qual("net/http", "StatusOK"),
+				),
 				jen.Var().ID("out").ID("testingType"),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
@@ -357,16 +357,15 @@ func helpersTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestCreateBodyFromStruct").Params(jen.ID(T).Op("*").Qual("testing", T)).Block(
+		testFunc("CreateBodyFromStruct").Block(
 			parallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"expected use",
 				jen.ID("expected").Op(":=").Lit(`{"name":"expected"}`),
-				jen.Line(),
-				jen.ID("x").Op(":=").Op("&").ID("testingType").Values(jen.Dict{
-					jen.ID("Name"): jen.Lit("expected"),
-				}),
+				jen.ID("x").Op(":=").Op("&").ID("testingType").Values(
+					jen.ID("Name").Op(":").Lit("expected"),
+				),
 				jen.Line(),
 				jen.List(
 					jen.ID("actual"),
@@ -398,11 +397,11 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			buildSubTestWithoutContext(
 				"with unmarshallable struct",
-				jen.ID("x").Op(":=").Op("&").ID("testBreakableStruct").Values(jen.Dict{
-					jen.ID("Thing"): jen.Lit("stuff"),
-				}),
+				jen.ID("x").Op(":=").Op("&").ID("testBreakableStruct").Values(
+					jen.ID("Thing").Op(":").Lit("stuff"),
+				),
 				jen.List(
 					jen.ID("_"),
 					jen.ID("err"),

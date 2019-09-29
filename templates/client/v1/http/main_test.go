@@ -3,16 +3,14 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 	"time"
-
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -165,8 +163,8 @@ func TestV1Client_executeRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("with error", func(t *testing.T) {
-		expectedMethod := http.MethodPost
 		ctx := context.Background()
+		expectedMethod := http.MethodPost
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(

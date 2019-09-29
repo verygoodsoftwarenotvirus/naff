@@ -56,13 +56,42 @@ func mainDotGo() *jen.File {
 		jen.Line(),
 	)
 
+	ret.Add(
+		jen.Comment("AuthenticatedClient returns the authenticated *http.Client that we use to make most requests"),
+		jen.Line(),
+		newClientMethod("AuthenticatedClient").Params().Params(jen.Op("*").Qual("net/http", "Client")).Block(
+			jen.Return().ID("c").Dot("authedClient"),
+		),
+		jen.Line(),
+	)
+
+	// c.PlainClient
+	ret.Add(
+		jen.Comment("PlainClient returns the unauthenticated *http.Client that we use to make certain requests"),
+		jen.Line(),
+		newClientMethod("PlainClient").Params().Params(jen.Op("*").Qual("net/http", "Client")).Block(
+			jen.Return().ID("c").Dot("plainClient"),
+		),
+		jen.Line(),
+	)
+
+	// c.TokenSource
+	ret.Add(
+		jen.Comment("TokenSource provides the client's token source"),
+		jen.Line(),
+		newClientMethod("TokenSource").Params().Params(jen.ID("oauth2").Dot("TokenSource")).Block(
+			jen.Return().ID("c").Dot("tokenSource"),
+		),
+		jen.Line(),
+	)
+
 	// NewClient
 	ret.Add(
 		jen.Comment("NewClient builds a new API client for us"),
 		jen.Line(),
-		jen.Func().ID("NewClient").Params(
+		jen.Func().ID("NewClient").ParamsLn(
 			ctxParam(),
-			jen.List(
+			jen.ListLn(
 				jen.ID("clientID"),
 				jen.ID("clientSecret"),
 			).ID("string"),
@@ -77,9 +106,9 @@ func mainDotGo() *jen.File {
 		).Block(
 			jen.Var().ID("client").Op("=").ID("hclient"),
 			jen.If(jen.ID("client").Op("==").ID("nil")).Block(
-				jen.ID("client").Op("=").Op("&").Qual("net/http", "Client").Values(jen.Dict{
-					jen.ID("Timeout"): jen.ID("defaultTimeout"),
-				}),
+				jen.ID("client").Op("=").Op("&").Qual("net/http", "Client").ValuesLn(
+					jen.ID("Timeout").Op(":").ID("defaultTimeout"),
+				),
 			),
 			jen.If(jen.ID("client").Dot("Timeout").Op("==").Lit(0)).Block(
 				jen.ID("client").Dot("Timeout").Op("=").ID("defaultTimeout"),
@@ -105,14 +134,14 @@ func mainDotGo() *jen.File {
 				jen.ID("scopes"),
 			),
 			jen.Line(),
-			jen.ID("c").Op(":=").Op("&").ID(v1).Values(jen.Dict{
-				jen.ID("URL"):          jen.ID("address"),
-				jen.ID("plainClient"):  jen.ID("client"),
-				jen.ID("logger"):       jen.Qual("logger", "WithName").Call(jen.ID("clientName")),
-				jen.ID("Debug"):        jen.ID("debug"),
-				jen.ID("authedClient"): jen.ID("ac"),
-				jen.ID("tokenSource"):  jen.ID("ts"),
-			}),
+			jen.ID("c").Op(":=").Op("&").ID(v1).ValuesLn(
+				jen.ID("URL").Op(":").ID("address"),
+				jen.ID("plainClient").Op(":").ID("client"),
+				jen.ID("logger").Op(":").Qual("logger", "WithName").Call(jen.ID("clientName")),
+				jen.ID("Debug").Op(":").ID("debug"),
+				jen.ID("authedClient").Op(":").ID("ac"),
+				jen.ID("tokenSource").Op(":").ID("ts"),
+			),
 			jen.Line(),
 			jen.ID("logger").Dot("WithValue").Call(
 				jen.Lit("url"),
@@ -130,10 +159,10 @@ func mainDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildOAuthClient does too much"),
 		jen.Line(),
-		jen.Func().ID("buildOAuthClient").Params(
+		jen.Func().ID("buildOAuthClient").ParamsLn(
 			ctxParam(),
 			jen.ID("uri").Op("*").Qual("net/url", "URL"),
-			jen.List(
+			jen.ListLn(
 				jen.ID("clientID"),
 				jen.ID("clientSecret"),
 			).ID("string"),
@@ -142,18 +171,18 @@ func mainDotGo() *jen.File {
 			jen.Op("*").Qual("net/http", "Client"),
 			jen.ID("oauth2").Dot("TokenSource"),
 		).Block(
-			jen.ID("conf").Op(":=").Qual("golang.org/x/oauth2/clientcredentials", "Config").Values(jen.Dict{
-				jen.ID("ClientID"):     jen.ID("clientID"),
-				jen.ID("ClientSecret"): jen.ID("clientSecret"),
-				jen.ID("Scopes"):       jen.ID("scopes"),
-				jen.ID("EndpointParams"): jen.Qual("net/url", "Values").Values(jen.Dict{
-					jen.Lit("client_id"):     jen.Index().ID("string").Values(jen.ID("clientID")),
-					jen.Lit("client_secret"): jen.Index().ID("string").Values(jen.ID("clientSecret")),
-				}),
-				jen.ID("TokenURL"): jen.ID("tokenEndpoint").Call(
+			jen.ID("conf").Op(":=").Qual("golang.org/x/oauth2/clientcredentials", "Config").ValuesLn(
+				jen.ID("ClientID").Op(":").ID("clientID"),
+				jen.ID("ClientSecret").Op(":").ID("clientSecret"),
+				jen.ID("Scopes").Op(":").ID("scopes"),
+				jen.ID("EndpointParams").Op(":").Qual("net/url", "Values").ValuesLn(
+					jen.Lit("client_id").Op(":").Index().ID("string").Values(jen.ID("clientID")),
+					jen.Lit("client_secret").Op(":").Index().ID("string").Values(jen.ID("clientSecret")),
+				),
+				jen.ID("TokenURL").Op(":").ID("tokenEndpoint").Call(
 					jen.ID("uri"),
 				).Dot("TokenURL"),
-			}),
+			),
 			jen.Line(),
 			jen.ID("ts").Op(":=").ID("oauth2").Dot("ReuseTokenSource").Call(
 				jen.ID("nil"),
@@ -161,15 +190,15 @@ func mainDotGo() *jen.File {
 					jen.ID("ctx"),
 				),
 			),
-			jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(jen.Dict{
-				jen.ID("Transport"): jen.Op("&").ID("oauth2").Dot("Transport").Values(jen.Dict{
-					jen.ID("Base"): jen.Op("&").Qual("go.opencensus.io/plugin/ochttp", "Transport").Values(jen.Dict{
-						jen.ID("Base"): jen.ID("newDefaultRoundTripper").Call(),
-					}),
-					jen.ID("Source"): jen.ID("ts"),
-				}),
-				jen.ID("Timeout"): jen.Lit(5).Op("*").Qual("time", "Second"),
-			}),
+			jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").ValuesLn(
+				jen.ID("Transport").Op(":").Op("&").ID("oauth2").Dot("Transport").ValuesLn(
+					jen.ID("Base").Op(":").Op("&").Qual("go.opencensus.io/plugin/ochttp", "Transport").ValuesLn(
+						jen.ID("Base").Op(":").ID("newDefaultRoundTripper").Call(),
+					),
+					jen.ID("Source").Op(":").ID("ts"),
+				),
+				jen.ID("Timeout").Op(":").Lit(5).Op("*").Qual("time", "Second"),
+			),
 			jen.Line(),
 			jen.Return().List(jen.ID("client"),
 				jen.ID("ts")),
@@ -198,10 +227,10 @@ func mainDotGo() *jen.File {
 				jen.Lit("oauth2/authorize"),
 			),
 			jen.Line(),
-			jen.Return().ID("oauth2").Dot("Endpoint").Values(jen.Dict{
-				jen.ID("TokenURL"): jen.ID("tu").Dot("String").Call(),
-				jen.ID("AuthURL"):  jen.ID("au").Dot("String").Call(),
-			}),
+			jen.Return().ID("oauth2").Dot("Endpoint").ValuesLn(
+				jen.ID("TokenURL").Op(":").ID("tu").Dot("String").Call(),
+				jen.ID("AuthURL").Op(":").ID("au").Dot("String").Call(),
+			),
 		),
 		jen.Line(),
 	)
@@ -223,9 +252,9 @@ func mainDotGo() *jen.File {
 			jen.ID("error"),
 		).Block(
 			jen.ID("l").Op(":=").Qual(noopLoggingPkg, "ProvideNoopLogger").Call(),
-			jen.ID("h").Op(":=").Op("&").Qual("net/http", "Client").Values(jen.Dict{
-				jen.ID("Timeout"): jen.Lit(5).Op("*").Qual("time", "Second"),
-			}),
+			jen.ID("h").Op(":=").Op("&").Qual("net/http", "Client").Values(
+				jen.ID("Timeout").Op(":").Lit(5).Op("*").Qual("time", "Second"),
+			),
 			jen.List(
 				jen.ID("c"),
 				jen.ID("err"),
@@ -243,35 +272,6 @@ func mainDotGo() *jen.File {
 				jen.ID("c"),
 				jen.ID("err"),
 			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("AuthenticatedClient provides the client's authenticated HTTP client"),
-		jen.Line(),
-		newClientMethod("AuthenticatedClient").Params().Params(jen.Op("*").Qual("net/http", "Client")).Block(
-			jen.Return().ID("c").Dot("authedClient"),
-		),
-		jen.Line(),
-	)
-
-	// c.PlainClient
-	ret.Add(
-		jen.Comment("PlainClient provides the client's unauthenticated HTTP client"),
-		jen.Line(),
-		newClientMethod("PlainClient").Params().Params(jen.Op("*").Qual("net/http", "Client")).Block(
-			jen.Return().ID("c").Dot("plainClient"),
-		),
-		jen.Line(),
-	)
-
-	// c.TokenSource
-	ret.Add(
-		jen.Comment("TokenSource provides the client's token source"),
-		jen.Line(),
-		newClientMethod("TokenSource").Params().Params(jen.ID("oauth2").Dot("TokenSource")).Block(
-			jen.Return().ID("c").Dot("tokenSource"),
 		),
 		jen.Line(),
 	)
@@ -325,7 +325,7 @@ func mainDotGo() *jen.File {
 				jen.List(
 					jen.ID("bdump"),
 					jen.ID("err"),
-				).Op(":=").ID("httputil").Dot("DumpResponse").Call(
+				).Op(":=").Qual("net/http/httputil", "DumpResponse").Call(
 					jen.ID("res"),
 					jen.ID("true"),
 				),
@@ -657,6 +657,7 @@ func mainDotGo() *jen.File {
 					jen.ID("err"),
 				),
 			),
+			jen.Line(),
 			jen.Switch(jen.ID("res").Dot("StatusCode")).Block(
 				jen.Case(jen.Qual("net/http", "StatusNotFound")).Block(
 					jen.Return().ID("ErrNotFound"),
@@ -684,13 +685,15 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.executeUnathenticatedDataRequest
-	ret.Add(comments("c.executeUnathenticatedDataRequest")...)
+	ret.Add(comments("executeUnathenticatedDataRequest takes a given request and loads the response into an interface value.")...)
 	ret.Add(
 		newClientMethod("executeUnathenticatedDataRequest").Params(
 			ctxParam(),
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
 			jen.ID("out").Interface(),
 		).Params(jen.ID("error")).Block(
+			jen.Comment("sometimes we want to make requests with data attached, but we don't really care about the response"),
+			jen.Comment("so we give this function a nil `out` value. That said, if you provide us a value, it needs to be a pointer."),
 			jen.If(jen.ID("out").Op("!=").ID("nil")).Block(
 				jen.If(jen.List(
 					jen.ID("np"),
@@ -706,6 +709,7 @@ func mainDotGo() *jen.File {
 					),
 				),
 			),
+			jen.Line(),
 			jen.List(
 				jen.ID("res"),
 				jen.ID("err"),
@@ -720,9 +724,11 @@ func mainDotGo() *jen.File {
 					jen.ID("err"),
 				),
 			),
+			jen.Line(),
 			jen.If(jen.ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusNotFound")).Block(
 				jen.Return().ID("ErrNotFound"),
 			),
+			jen.Line(),
 			jen.If(jen.ID("out").Op("!=").ID("nil")).Block(
 				jen.ID("resErr").Op(":=").ID("unmarshalBody").Call(
 					jen.ID("res"), jen.Op("&").ID("out"),
@@ -734,6 +740,7 @@ func mainDotGo() *jen.File {
 					),
 				),
 			),
+			jen.Line(),
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),

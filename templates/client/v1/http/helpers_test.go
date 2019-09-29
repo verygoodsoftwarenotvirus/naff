@@ -94,7 +94,7 @@ func TestUnmarshalBody(T *testing.T) {
 	T.Run("expected use", func(t *testing.T) {
 		expected := "example"
 		res := &http.Response{
-			Body:       ioutil.NopCloser(strings.NewReader(fmt.Sprintf("{\"name\": %q}", expected))),
+			Body:       ioutil.NopCloser(strings.NewReader(fmt.Sprintf(`{"name": %q}`, expected))),
 			StatusCode: http.StatusOK,
 		}
 		var out testingType
@@ -117,12 +117,16 @@ func TestUnmarshalBody(T *testing.T) {
 
 	T.Run("with an erroneous error code", func(t *testing.T) {
 		res := &http.Response{
-			Body: ioutil.NopCloser(strings.NewReader(func() string {
-				er := &models.ErrorResponse{}
-				bs, err := json.Marshal(er)
-				require.NoError(t, err)
-				return string(bs)
-			}())),
+			Body: ioutil.NopCloser(
+				strings.NewReader(
+					func() string {
+						er := &models.ErrorResponse{}
+						bs, err := json.Marshal(er)
+						require.NoError(t, err)
+						return string(bs)
+					}(),
+				),
+			),
 			StatusCode: http.StatusBadRequest,
 		}
 		var out *testingType
@@ -175,8 +179,7 @@ func TestCreateBodyFromStruct(T *testing.T) {
 	T.Parallel()
 
 	T.Run("expected use", func(t *testing.T) {
-		expected := "{\"name\":\"expected\"}"
-
+		expected := `{"name":"expected"}`
 		x := &testingType{Name: "expected"}
 
 		actual, err := createBodyFromStruct(x)

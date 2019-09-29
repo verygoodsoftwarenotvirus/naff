@@ -43,7 +43,7 @@ func helpersDotGo() *jen.File {
 			jen.If(jen.ID("i").Op("==").ID("nil")).Block(
 				jen.Return().List(
 					jen.ID("true"),
-					jen.ID("errors").Dot("New").Call(
+					jen.Qual("errors", "New").Call(
 						jen.Lit("value is nil"),
 					),
 				),
@@ -131,6 +131,7 @@ func helpersDotGo() *jen.File {
 					jen.ID("err"),
 				),
 			),
+			jen.Line(),
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
