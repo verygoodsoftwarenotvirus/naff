@@ -11,11 +11,10 @@ import (
 	"go/token"
 	"io/ioutil"
 	"log"
-	"os"
 	"os/exec"
-	"strings"
 
 	tojen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/tojen/gen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/new_templates/client/v1/http"
 )
 
@@ -74,27 +73,18 @@ func makeFuncLit(x *ast.FuncDecl) *ast.FuncLit {
 }
 
 func main() {
-	for path, file := range client.Files {
-		fp := fmt.Sprintf("/home/jeffrey/src/gitlab.com/verygoodsoftwarenotvirus/naff/templates/%s", path)
-		_ = os.Remove(fp)
-
-		ogfp := strings.Replace(fp, "naff/templates", "todo", 1)
-		ogBytes, err := ioutil.ReadFile(ogfp)
-		if err != nil {
-			log.Fatal(err)
-		}
-		ogFile := string(ogBytes)
-		_ = ogFile
-
-		var b bytes.Buffer
-		if err := file.Render(&b); err != nil {
-			log.Fatal(err)
-		}
-
-		if err := ioutil.WriteFile(fp, b.Bytes(), os.ModePerm); err != nil {
-			log.Fatal(err)
-		}
-	}
+	client.RenderPackage([]models.DataType{
+		models.DataType{
+			Name: models.Name{
+				Singular:                "Item",
+				Plural:                  "Items",
+				RouteName:               "items",
+				PluralRouteName:         "item",
+				UnexportedVarName:       "item",
+				PluralUnexportedVarName: "items",
+			},
+		},
+	})
 
 	// doTheThingForFile("/home/jeffrey/src/gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http/items_test.go", "client")
 

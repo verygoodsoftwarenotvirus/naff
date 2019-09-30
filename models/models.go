@@ -18,7 +18,8 @@ type DataField struct {
 // Name is a handy struct for all the things we need from a data types name
 type Name struct {
 	Singular, // singular title cased
-	RouteName, // usually snaked case and plural
+	RouteName, // usually snaked case and singular
+	PluralRouteName, // usually snaked case and plural
 	UnexportedVarName, // singular camelCased
 	PluralUnexportedVarName, // plural camelCased
 	Plural, // plural title cased

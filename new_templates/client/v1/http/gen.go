@@ -1,7 +1,11 @@
 package client
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -9,26 +13,14 @@ import (
 )
 
 var (
-	todoType = &models.DataType{
-		Name: models.Name{
-			Singular:                "Item",
-			Plural:                  "Items",
-			RouteName:               "items",
-			UnexportedVarName:       "item",
-			PluralUnexportedVarName: "items",
-		},
-	}
-
-	// Files are all the available files to generate
-	Files = map[string]*jen.File{
+	// files are all the available files to generate
+	files = map[string]*jen.File{
 		"client/v1/http/main.go":                mainDotGo(),
 		"client/v1/http/main_test.go":           mainTestDotGo(),
 		"client/v1/http/helpers.go":             helpersDotGo(),
 		"client/v1/http/helpers_test.go":        helpersTestDotGo(),
 		"client/v1/http/users.go":               usersDotGo(),
 		"client/v1/http/users_test.go":          usersTestDotGo(),
-		"client/v1/http/items.go":               itemsDotGo(todoType),
-		"client/v1/http/items_test.go":          itemsTestDotGo(todoType),
 		"client/v1/http/roundtripper.go":        roundtripperDotGo(),
 		"client/v1/http/webhooks.go":            webhooksDotGo(),
 		"client/v1/http/webhooks_test.go":       webhooksTestDotGo(),
@@ -52,6 +44,32 @@ const (
 	mockPkg        = "github.com/stretchr/testify/mock"
 	modelsPkg      = "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
+
+// RenderPackage renders the package
+func RenderPackage(types []models.DataType) {
+	for path, file := range files {
+		renderFile(path, file)
+	}
+
+	for _, typ := range types {
+		renderFile(fmt.Sprintf("client/v1/http/%s.go", typ.Name.PluralRouteName), itemsDotGo(typ))
+		renderFile(fmt.Sprintf("client/v1/http/%s_test.go", typ.Name.PluralRouteName), itemsDotGo(typ))
+	}
+}
+
+func renderFile(path string, file *jen.File) {
+	fp := fmt.Sprintf("/home/jeffrey/src/gitlab.com/verygoodsoftwarenotvirus/naff/templates/%s", path)
+	_ = os.Remove(fp)
+
+	var b bytes.Buffer
+	if err := file.Render(&b); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := ioutil.WriteFile(fp, b.Bytes(), os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+}
 
 func addImports(file *jen.File) {
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock", "mockutil")
@@ -87,12 +105,12 @@ func addImports(file *jen.File) {
 	file.Add(jen.Line())
 }
 
-func itemsDotGo(typ *models.DataType) *jen.File {
+func itemsDotGo(typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
 	vn := typ.Name.UnexportedVarName
 	pvn := typ.Name.PluralUnexportedVarName
-	rn := typ.Name.RouteName
+	prn := typ.Name.PluralRouteName
 	lp := strings.ToLower(typ.Name.Plural)   // lower plural
 	tp := typ.Name.Plural                    // title plural
 	ls := strings.ToLower(typ.Name.Singular) // lower singular
@@ -102,7 +120,7 @@ func itemsDotGo(typ *models.DataType) *jen.File {
 
 	addImports(ret)
 	ret.Add(jen.Const().Defs(
-		jen.ID(basePath).Op("=").Lit(rn)),
+		jen.ID(basePath).Op("=").Lit(prn)),
 	)
 
 	ret.Add(
@@ -432,20 +450,20 @@ func itemsDotGo(typ *models.DataType) *jen.File {
 	return ret
 }
 
-func itemsTestDotGo(typ *models.DataType) *jen.File {
+func itemsTestDotGo(typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
 	// vn := typ.Name.UnexportedVarName
 	// pvn := typ.Name.PluralUnexportedVarName
-	rn := typ.Name.RouteName
+	prn := typ.Name.PluralRouteName
 	// lp := strings.ToLower(typ.Name.Plural)   // lower plural
 	tp := typ.Name.Plural // title plural
 	// ls := strings.ToLower(typ.Name.Singular) // lower singular
 	ts := typ.Name.Singular // title singular
 
 	// routes
-	modelRoute := fmt.Sprintf("/api/v1/%s/", rn) + "%d"
-	modelListRoute := fmt.Sprintf("/api/v1/%s", rn)
+	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
+	modelListRoute := fmt.Sprintf("/api/v1/%s", prn)
 
 	addImports(ret)
 
