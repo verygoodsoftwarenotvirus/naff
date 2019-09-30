@@ -8,13 +8,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dave/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 )
 
-var jenImp = "github.com/dave/jennifer/jen"
+var jenImp = "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 func funcDecl(s *ast.FuncDecl) jen.Code {
-	ret := jen.Qual("github.com/dave/jennifer/jen", "Func").Call()
+	ret := jen.Qual("gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen", "Func").Call()
 	if s.Recv != nil {
 		ret.Dot("Params").Call(fieldList(s.Recv)...)
 	}
@@ -99,17 +99,17 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 	codes = append(codes, genNewJenFile(astFile.Name.String()))
 	// add anon imports i.e. _ for side effects
 	if len(anonImports) > 0 {
-		codes = append(codes, jen.Id("ret").Dot("Anon").Call(anonImports...))
+		codes = append(codes, jen.ID("ret").Dot("Anon").Call(anonImports...))
 	}
 	// add the generated functions to the created jen file
 	for _, name := range decls {
-		codes = append(codes, jen.Id("ret").Dot("Add").Call(jen.Id(name).Call()))
+		codes = append(codes, jen.ID("ret").Dot("Add").Call(jen.ID(name).Call()))
 	}
 	// return the created jen file
-	codes = append(codes, jen.Return().Id("ret"))
+	codes = append(codes, jen.Return().ID("ret"))
 	// add the patch function to the output file
 	file.Add(
-		jen.Func().Id("genFile").Params().Op("*").Qual(jenImp, "File").Block(codes...),
+		jen.Func().ID("genFile").Params().Op("*").Qual(jenImp, "File").Block(codes...),
 	)
 	// if main then generate a main function that prints out the output of the
 	// patch function
@@ -120,15 +120,15 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 }
 
 func genNewJenFile(name string) jen.Code {
-	return jen.Id("ret").Op(":=").Qual(jenImp, "NewFile").Call(jen.Lit(name))
+	return jen.ID("ret").Op(":=").Qual(jenImp, "NewFile").Call(jen.Lit(name))
 }
 
 func genMainFunc() jen.Code {
-	return jen.Func().Id("main").Params().Block(
-		jen.Id("ret").Op(":=").Id("genFile").Call(),
+	return jen.Func().ID("main").Params().Block(
+		jen.ID("ret").Op(":=").ID("genFile").Call(),
 		jen.Qual("fmt", "Printf").Call(
 			jen.Lit("%#v"),
-			jen.Id("ret"),
+			jen.ID("ret"),
 		),
 	)
 }
@@ -148,7 +148,7 @@ func makeJenCode(s ast.Decl) (jen.Code, string) {
 }
 
 func makeJenFileFunc(name string, block jen.Code) jen.Code {
-	return jen.Func().Id(name).Params().Qual(jenImp, "Code").Block(
+	return jen.Func().ID(name).Params().Qual(jenImp, "Code").Block(
 		jen.Return().Add(block),
 	)
 }
@@ -199,13 +199,13 @@ func basicLit(b *ast.BasicLit) jen.Code {
 		}
 		return jen.Dot("Lit").Call(jen.Lit(int(i)))
 	case token.FLOAT:
-		return jen.Dot("Lit").Call(jen.Id(b.Value))
+		return jen.Dot("Lit").Call(jen.ID(b.Value))
 	case token.IMAG:
 		panic("Cannot parse Imaginary Numbers")
 	case token.CHAR:
-		return jen.Dot("Id").Call(jen.Id("\"" + b.Value + "\""))
+		return jen.Dot("Id").Call(jen.ID("\"" + b.Value + "\""))
 	case token.STRING:
-		return jen.Dot("Lit").Call(jen.Id(b.Value))
+		return jen.Dot("Lit").Call(jen.ID(b.Value))
 	}
 	return nil
 }

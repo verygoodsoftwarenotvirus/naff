@@ -4,7 +4,7 @@ import (
 	"go/ast"
 	"reflect"
 
-	"github.com/dave/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 )
 
 func genExprs(s []ast.Expr) jen.Code {
@@ -21,7 +21,7 @@ func genExprs(s []ast.Expr) jen.Code {
 func genExprsCode(s []ast.Expr) []jen.Code {
 	var code []jen.Code
 	for _, expr := range s {
-		code = append(code, jen.Id("jen").Add(genExpr(expr)))
+		code = append(code, jen.ID("jen").Add(genExpr(expr)))
 	}
 	return code
 }
@@ -85,15 +85,15 @@ func funcLit(t *ast.FuncLit) jen.Code {
 }
 
 func compositeLit(t *ast.CompositeLit) jen.Code {
-	return jen.Add(genExpr(t.Type)).Dot("Values").Call(genExprsCode(t.Elts)...)
+	return jen.Add(genExpr(t.Type)).Dot("Valuesln").Call(genExprsCode(t.Elts)...)
 }
 
 func parenExpr(t *ast.ParenExpr) jen.Code {
-	return jen.Dot("Parens").Call(jen.Id("jen").Add(genExpr(t.X)))
+	return jen.Dot("Parens").Call(jen.ID("jen").Add(genExpr(t.X)))
 }
 
 func indexExpr(t *ast.IndexExpr) jen.Code {
-	return jen.Add(genExpr(t.X)).Dot("Index").Call(jen.Id("jen").Add(genExpr(t.Index)))
+	return jen.Add(genExpr(t.X)).Dot("Index").Call(jen.ID("jen").Add(genExpr(t.Index)))
 }
 func starExpr(t *ast.StarExpr) jen.Code {
 	return jen.Dot("Op").Call(jen.Lit("*")).Add(genExpr(t.X))
@@ -112,7 +112,7 @@ func keyValueExpr(t *ast.KeyValueExpr) jen.Code {
 
 func mapType(t *ast.MapType) jen.Code {
 	ret := jen.Dot("Map").Call(
-		jen.Id("jen").Add(genExpr(t.Key)),
+		jen.ID("jen").Add(genExpr(t.Key)),
 	).Add(genExpr(t.Value))
 	return ret
 }
@@ -137,7 +137,7 @@ func identsList(s []*ast.Ident) jen.Code {
 	}
 	var n []jen.Code
 	for _, name := range s {
-		n = append(n, jen.Id("jen").Add(ident(name)))
+		n = append(n, jen.ID("jen").Add(ident(name)))
 	}
 	return jen.Dot("List").Call(jen.List(n...))
 }
@@ -149,9 +149,9 @@ func ident(s *ast.Ident) jen.Code {
 func typeAssertExpr(t *ast.TypeAssertExpr) jen.Code {
 	ret2 := jen.Add(genExpr(t.X)).Dot("Assert")
 	if t.Type == nil {
-		return ret2.Call(jen.Id("jen").Dot("Type").Call())
+		return ret2.Call(jen.ID("jen").Dot("Type").Call())
 	}
-	return ret2.Call(jen.Id("jen").Add(genExpr(t.Type)))
+	return ret2.Call(jen.ID("jen").Add(genExpr(t.Type)))
 }
 
 func callExpr(t *ast.CallExpr) jen.Code {
@@ -164,19 +164,19 @@ func callExpr(t *ast.CallExpr) jen.Code {
 
 func sliceExpr(t *ast.SliceExpr) jen.Code {
 	code := []jen.Code{
-		jen.Id("jen").Dot("Empty").Call(),
-		jen.Id("jen").Dot("Empty").Call(),
+		jen.ID("jen").Dot("Empty").Call(),
+		jen.ID("jen").Dot("Empty").Call(),
 	}
 	if t.Low != nil {
-		code[0] = jen.Id("jen").Add(genExpr(t.Low))
+		code[0] = jen.ID("jen").Add(genExpr(t.Low))
 	}
 	if t.High != nil {
-		code[1] = jen.Id("jen").Add(genExpr(t.High))
+		code[1] = jen.ID("jen").Add(genExpr(t.High))
 	}
 	if t.Slice3 {
-		code = append(code, jen.Id("jen").Dot("Empty").Call())
+		code = append(code, jen.ID("jen").Dot("Empty").Call())
 		if t.Max != nil {
-			code[2] = jen.Id("jen").Add(genExpr(t.Max))
+			code[2] = jen.ID("jen").Add(genExpr(t.Max))
 		}
 	}
 	return jen.Add(genExpr(t.X)).Dot("Index").Call(code...)

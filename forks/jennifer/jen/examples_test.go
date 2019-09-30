@@ -189,7 +189,8 @@ func ExampleFile_ImportAlias() {
 	// }
 }
 
-func ExampleFile_ImportAliasDot() {
+// ExampleFileImportAliasDot is an example function
+func ExampleFileImportAliasDot() {
 	f := NewFile("main")
 
 	// package a should be a dot-import
@@ -1563,6 +1564,7 @@ func ExampleNewFilePathName() {
 	// }
 }
 
+// ExampleFile_HeaderAndPackageComments is an example function
 func ExampleFile_HeaderAndPackageComments() {
 	f := NewFile("c")
 	f.CanonicalPath = "d.e/f"

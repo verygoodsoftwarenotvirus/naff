@@ -3,7 +3,7 @@ package gen
 import (
 	"go/ast"
 
-	"github.com/dave/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 )
 
 func funcType(s *ast.FuncType) jen.Code {
