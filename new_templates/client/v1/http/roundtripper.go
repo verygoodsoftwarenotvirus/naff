@@ -1,11 +1,14 @@
 package client
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func roundtripperDotGo() *jen.File {
 	ret := jen.NewFile("client")
 
-	addImports(ret)
+	utils.AddImports(ret)
 
 	ret.Add(jen.Const().Defs(
 		jen.ID("userAgentHeader").Op("=").Lit("User-Agent"),
@@ -26,7 +29,7 @@ func roundtripperDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("newDefaultRoundTripper").Params().Params(jen.Op("*").ID("defaultRoundTripper")).Block(
 			jen.Return(
-				jen.Op("&").ID("defaultRoundTripper").ValuesLn(
+				jen.Op("&").ID("defaultRoundTripper").Valuesln(
 					jen.ID("baseTransport").Op(":").ID("buildDefaultTransport").Call(),
 				),
 			),
@@ -59,9 +62,9 @@ func roundtripperDotGo() *jen.File {
 		jen.Comment("buildDefaultTransport constructs a new http.Transport"),
 		jen.Line(),
 		jen.Func().ID("buildDefaultTransport").Params().Params(jen.Op("*").Qual("net/http", "Transport")).Block(
-			jen.Return().Op("&").Qual("net/http", "Transport").ValuesLn(
+			jen.Return().Op("&").Qual("net/http", "Transport").Valuesln(
 				jen.ID("Proxy").Op(":").Qual("net/http", "ProxyFromEnvironment"),
-				jen.ID("DialContext").Op(":").Parens(jen.Op("&").Qual("net", "Dialer").ValuesLn(
+				jen.ID("DialContext").Op(":").Parens(jen.Op("&").Qual("net", "Dialer").Valuesln(
 					jen.ID("Timeout").Op(":").Lit(30).Op("*").Qual("time", "Second"),
 					jen.ID("KeepAlive").Op(":").Lit(30).Op("*").Qual("time", "Second"),
 					jen.ID("DualStack").Op(":").ID("true"),

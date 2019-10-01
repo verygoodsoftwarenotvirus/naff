@@ -76,6 +76,7 @@ func genExpr(s ast.Expr) jen.Code {
 	}
 	panic("Not Handled gen expr: " + reflect.TypeOf(s).String() + " at " + string(s.Pos()))
 }
+
 func ellipsis(t *ast.Ellipsis) jen.Code {
 	return jen.Dot("Op").Call(jen.Lit("...")).Add(genExpr(t.Elt))
 }
@@ -95,12 +96,15 @@ func parenExpr(t *ast.ParenExpr) jen.Code {
 func indexExpr(t *ast.IndexExpr) jen.Code {
 	return jen.Add(genExpr(t.X)).Dot("Index").Call(jen.ID("jen").Add(genExpr(t.Index)))
 }
+
 func starExpr(t *ast.StarExpr) jen.Code {
 	return jen.Dot("Op").Call(jen.Lit("*")).Add(genExpr(t.X))
 }
+
 func unaryExpr(t *ast.UnaryExpr) jen.Code {
 	return jen.Dot("Op").Call(jen.Lit(t.Op.String())).Add(genExpr(t.X))
 }
+
 func binaryExpr(t *ast.BinaryExpr) jen.Code {
 	return jen.Add(genExpr(t.X)).Dot("Op").Call(jen.Lit(t.Op.String())).Add(genExpr(t.Y))
 }
@@ -125,7 +129,7 @@ func selectorExpr(t *ast.SelectorExpr) jen.Code {
 			return jen.Dot("Qual").Call(jen.Lit(path), jen.Lit(t.Sel.String()))
 		}
 	}
-	return jen.Add(genExpr(t.X)).Dot("Dot").Call(jen.Lit(t.Sel.String()))
+	return jen.Add(genExpr(t.X)).Dot("Dot").Callln(jen.Lit(t.Sel.String()))
 }
 
 func identsList(s []*ast.Ident) jen.Code {
@@ -143,7 +147,7 @@ func identsList(s []*ast.Ident) jen.Code {
 }
 
 func ident(s *ast.Ident) jen.Code {
-	return jen.Dot("Id").Call(jen.Lit(s.String()))
+	return jen.Dot("ID").Call(jen.Lit(s.String()))
 }
 
 func typeAssertExpr(t *ast.TypeAssertExpr) jen.Code {

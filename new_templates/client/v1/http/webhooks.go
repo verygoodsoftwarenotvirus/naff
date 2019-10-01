@@ -1,11 +1,14 @@
 package client
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func webhooksDotGo() *jen.File {
 	ret := jen.NewFile("client")
 
-	addImports(ret)
+	utils.AddImports(ret)
 	ret.Add(jen.Const().Defs(
 		jen.ID("webhooksBasePath").Op("=").Lit("webhooks"),
 	))
@@ -14,7 +17,7 @@ func webhooksDotGo() *jen.File {
 		jen.Comment("BuildGetWebhookRequest builds an HTTP request for fetching a webhook"),
 		jen.Line(),
 		newClientMethod("BuildGetWebhookRequest").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
@@ -41,10 +44,10 @@ func webhooksDotGo() *jen.File {
 		jen.Comment("GetWebhook retrieves a webhook"),
 		jen.Line(),
 		newClientMethod("GetWebhook").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.ID("webhook").Op("*").Qual(modelsPkg, "Webhook"),
+			jen.ID("webhook").Op("*").Qual(utils.ModelsPkg, "Webhook"),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -79,8 +82,8 @@ func webhooksDotGo() *jen.File {
 		jen.Comment("BuildGetWebhooksRequest builds an HTTP request for fetching webhooks"),
 		jen.Line(),
 		newClientMethod("BuildGetWebhooksRequest").Params(
-			ctxParam(),
-			jen.ID("filter").Op("*").Qual(modelsPkg, "QueryFilter"),
+			utils.CtxParam(),
+			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -102,10 +105,10 @@ func webhooksDotGo() *jen.File {
 		jen.Comment("GetWebhooks gets a list of webhooks"),
 		jen.Line(),
 		newClientMethod("GetWebhooks").Params(
-			ctxParam(),
-			jen.ID("filter").Op("*").Qual(modelsPkg, "QueryFilter"),
+			utils.CtxParam(),
+			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
 		).Params(
-			jen.ID("webhooks").Op("*").Qual(modelsPkg, "WebhookList"),
+			jen.ID("webhooks").Op("*").Qual(utils.ModelsPkg, "WebhookList"),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -141,8 +144,8 @@ func webhooksDotGo() *jen.File {
 		jen.Comment("BuildCreateWebhookRequest builds an HTTP request for creating a webhook"),
 		jen.Line(),
 		newClientMethod("BuildCreateWebhookRequest").Params(
-			ctxParam(),
-			jen.ID("body").Op("*").Qual(modelsPkg, "WebhookCreationInput"),
+			utils.CtxParam(),
+			jen.ID("body").Op("*").Qual(utils.ModelsPkg, "WebhookCreationInput"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -164,10 +167,10 @@ func webhooksDotGo() *jen.File {
 		jen.Comment("CreateWebhook creates a webhook"),
 		jen.Line(),
 		newClientMethod("CreateWebhook").Params(
-			ctxParam(),
-			jen.ID("input").Op("*").Qual(modelsPkg, "WebhookCreationInput"),
+			utils.CtxParam(),
+			jen.ID("input").Op("*").Qual(utils.ModelsPkg, "WebhookCreationInput"),
 		).Params(
-			jen.ID("webhook").Op("*").Qual(modelsPkg, "Webhook"),
+			jen.ID("webhook").Op("*").Qual(utils.ModelsPkg, "Webhook"),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -203,8 +206,8 @@ func webhooksDotGo() *jen.File {
 		jen.Comment("BuildUpdateWebhookRequest builds an HTTP request for updating a webhook"),
 		jen.Line(),
 		newClientMethod("BuildUpdateWebhookRequest").Params(
-			ctxParam(),
-			jen.ID("updated").Op("*").Qual(modelsPkg, "Webhook"),
+			utils.CtxParam(),
+			jen.ID("updated").Op("*").Qual(utils.ModelsPkg, "Webhook"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -230,8 +233,8 @@ func webhooksDotGo() *jen.File {
 		jen.Comment("UpdateWebhook updates a webhook"),
 		jen.Line(),
 		newClientMethod("UpdateWebhook").Params(
-			ctxParam(),
-			jen.ID("updated").Op("*").Qual(modelsPkg, "Webhook"),
+			utils.CtxParam(),
+			jen.ID("updated").Op("*").Qual(utils.ModelsPkg, "Webhook"),
 		).Params(
 			jen.ID("error"),
 		).Block(
@@ -260,7 +263,7 @@ func webhooksDotGo() *jen.File {
 		jen.Comment("BuildArchiveWebhookRequest builds an HTTP request for updating a webhook"),
 		jen.Line(),
 		newClientMethod("BuildArchiveWebhookRequest").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
@@ -286,7 +289,7 @@ func webhooksDotGo() *jen.File {
 		jen.Comment("ArchiveWebhook archives a webhook"),
 		jen.Line(),
 		newClientMethod("ArchiveWebhook").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.ID("error"),

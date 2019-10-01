@@ -4,20 +4,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/moul/http2curl"
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
+	"go.opencensus.io/plugin/ochttp"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
+	logger "logger"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"path"
 	"strings"
 	"time"
-
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-
-	"github.com/moul/http2curl"
-	"go.opencensus.io/plugin/ochttp"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/clientcredentials"
 )
 
 const (

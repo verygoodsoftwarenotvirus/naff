@@ -1,12 +1,15 @@
 package client
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func mainTestDotGo() *jen.File {
 	ret := jen.NewFile("client")
 	ret.Add(jen.Null())
 
-	addImports(ret)
+	utils.AddImports(ret)
 
 	// vars
 	ret.Add(
@@ -75,12 +78,12 @@ func mainTestDotGo() *jen.File {
 		).Block(
 			jen.ID(t).Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("l").Op(":=").Qual(noopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("l").Op(":=").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("u").Op(":=").ID("mustParseURL").Call(
 				jen.ID("ts").Dot("URL"),
 			),
 			jen.Line(),
-			jen.Return().Op("&").ID(v1).ValuesLn(
+			jen.Return().Op("&").ID(v1).Valuesln(
 				jen.ID("URL").Op(":").ID("u"),
 				jen.ID("plainClient").Op(":").ID("ts").Dot("Client").Call(),
 				jen.ID("logger").Op(":").ID("l"),
@@ -95,10 +98,10 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("V1Client_AuthenticatedClient").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_AuthenticatedClient").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -108,7 +111,7 @@ func mainTestDotGo() *jen.File {
 				jen.Line(),
 				jen.ID("actual").Op(":=").ID("c").Dot("AuthenticatedClient").Call(),
 				jen.Line(),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("ts").Dot("Client").Call(),
 					jen.ID("actual"),
 					jen.Lit("AuthenticatedClient should return the assigned authedClient"),
@@ -119,10 +122,10 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("V1Client_PlainClient").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_PlainClient").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -132,7 +135,7 @@ func mainTestDotGo() *jen.File {
 				jen.Line(),
 				jen.ID("actual").Op(":=").ID("c").Dot("PlainClient").Call(),
 				jen.Line(),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("ts").Dot("Client").Call(),
 					jen.ID("actual"),
 					jen.Lit("PlainClient should return the assigned plainClient"),
@@ -143,90 +146,87 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("V1Client_TokenSource").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_TokenSource").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.List(
 					jen.ID("c"),
 					jen.ID("err"),
-				).Op(":=").ID("NewClient").CallLn(
+				).Op(":=").ID("NewClient").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Lit(""),
 					jen.Lit(""),
 					jen.ID("mustParseURL").Call(
 						jen.ID("exampleURI"),
 					),
-					jen.Qual(noopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("ts").Dot("Client").Call(),
 					jen.Index().ID("string").Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 				jen.Line(),
 				jen.ID("actual").Op(":=").ID("c").Dot("TokenSource").Call(),
 				jen.Line(),
-				assertNotNil(
-					jen.ID("actual"),
-					nil,
-				),
+				utils.AssertNotNil(jen.ID("actual"), nil),
 			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		testFunc("NewClient").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("NewClient").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.List(
 					jen.ID("c"),
 					jen.ID("err"),
-				).Op(":=").ID("NewClient").CallLn(
+				).Op(":=").ID("NewClient").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Lit(""),
 					jen.Lit(""),
 					jen.ID("mustParseURL").Call(
 						jen.ID("exampleURI"),
 					),
-					jen.Qual(noopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("ts").Dot("Client").Call(),
 					jen.Index().ID("string").Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("c"), nil),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("c"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with client but invalid timeout",
 				jen.List(
 					jen.ID("c"),
 					jen.ID("err"),
-				).Op(":=").ID("NewClient").CallLn(
+				).Op(":=").ID("NewClient").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Lit(""),
 					jen.Lit(""),
 					jen.ID("mustParseURL").Call(
 						jen.ID("exampleURI"),
 					),
-					jen.Qual(noopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.Op("&").Qual("net/http", "Client").ValuesLn(
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Op("&").Qual("net/http", "Client").Valuesln(
 						jen.ID("Timeout").Op(":").Lit(0),
 					),
 					jen.Index().ID("string").Values(jen.Lit("*")),
 					jen.ID("true"),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("c"), nil),
-				requireNoError(jen.ID("err"), nil),
-				assertEqual(
+				utils.RequireNotNil(jen.ID("c"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
+				utils.AssertEqual(
 					jen.ID("c").Dot("plainClient").Dot("Timeout"),
 					jen.ID("defaultTimeout"),
 					jen.Lit("NewClient should set the default timeout"),
@@ -237,39 +237,37 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("NewSimpleClient").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("NewSimpleClient").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.List(
 					jen.ID("c"),
 					jen.ID("err"),
-				).Op(":=").ID("NewSimpleClient").CallLn(
+				).Op(":=").ID("NewSimpleClient").Callln(
 					jen.Qual("context", "Background").Call(),
-					jen.ID("mustParseURL").Call(
-						jen.ID("exampleURI"),
-					),
+					jen.ID("mustParseURL").Call(jen.ID("exampleURI")),
 					jen.ID("true"),
 				),
-				assertNotNil(jen.ID("c"), nil),
-				assertNoError(jen.ID("err"), nil),
+				utils.AssertNotNil(jen.ID("c"), nil),
+				utils.AssertNoError(jen.ID("err"), nil),
 			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		testFunc("V1Client_executeRequest").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_executeRequest").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"with error",
-				expectMethod("expectedMethod", "MethodPost"),
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.Line(),
-				buildTestServer(
+				utils.BuildTestServer(
 					"ts",
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
 						jen.ID("expectedMethod"),
 						nil,
@@ -292,8 +290,8 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
-				requireNotNil(jen.ID("req"), nil),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 				jen.Line(),
 				jen.List(
 					jen.ID("res"),
@@ -305,11 +303,11 @@ func mainTestDotGo() *jen.File {
 					),
 					jen.ID("req"),
 				),
-				assertNil(
+				utils.AssertNil(
 					jen.ID("res"),
 					nil,
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					nil,
 				),
@@ -319,12 +317,12 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("BuildURL").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("BuildURL").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"various urls",
-				parallelTest(jen.ID("t")),
+				utils.ParallelTest(jen.ID("t")),
 				jen.Line(),
 				jen.List(
 					jen.ID("u"),
@@ -335,37 +333,37 @@ func mainTestDotGo() *jen.File {
 				jen.List(
 					jen.ID("c"),
 					jen.ID("err"),
-				).Op(":=").ID("NewClient").CallLn(
+				).Op(":=").ID("NewClient").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Lit(""),
 					jen.Lit(""),
 					jen.ID("u"),
-					jen.Qual(noopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("nil"),
 					jen.Index().ID("string").Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 				jen.Line(),
 				jen.ID("testCases").Op(":=").Index().Struct(
 					jen.ID("expectation").ID("string"),
 					jen.ID("inputParts").Index().ID("string"),
 					jen.ID("inputQuery").ID("valuer"),
-				).ValuesLn(
-					jen.ValuesLn(
+				).Valuesln(
+					jen.Valuesln(
 						jen.ID("expectation").Op(":").Lit("https://todo.verygoodsoftwarenotvirus.ru/api/v1/things"),
 						jen.ID("inputParts").Op(":").Index().ID("string").Values(jen.Lit("things")),
 					),
-					jen.ValuesLn(
+					jen.Valuesln(
 						jen.ID("expectation").Op(":").Lit("https://todo.verygoodsoftwarenotvirus.ru/api/v1/stuff?key=value"),
 						jen.ID("inputQuery").Op(":").Map(jen.ID("string")).Index().ID("string").Values(
 							jen.Lit("key").Op(":").Values(jen.Lit("value")),
 						),
 						jen.ID("inputParts").Op(":").Index().ID("string").Values(jen.Lit("stuff")),
 					),
-					jen.ValuesLn(
+					jen.Valuesln(
 						jen.ID("expectation").Op(":").Lit("https://todo.verygoodsoftwarenotvirus.ru/api/v1/things/and/stuff?key=value1&key=value2&yek=eulav"),
-						jen.ID("inputQuery").Op(":").Map(jen.ID("string")).Index().ID("string").ValuesLn(
+						jen.ID("inputQuery").Op(":").Map(jen.ID("string")).Index().ID("string").Valuesln(
 							jen.Lit("key").Op(":").Values(
 								jen.Lit("value1"),
 								jen.Lit("value2"),
@@ -388,7 +386,7 @@ func mainTestDotGo() *jen.File {
 						jen.ID("tc").Dot("inputQuery").Dot("ToValues").Call(),
 						jen.ID("tc").Dot("inputParts").Op("..."),
 					),
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("tc").Dot("expectation"),
 						jen.ID("actual"),
 						nil,
@@ -400,10 +398,10 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("V1Client_BuildWebsocketURL").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_BuildWebsocketURL").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.List(
 					jen.ID("u"),
@@ -414,17 +412,17 @@ func mainTestDotGo() *jen.File {
 				jen.List(
 					jen.ID("c"),
 					jen.ID("err"),
-				).Op(":=").ID("NewClient").CallLn(
+				).Op(":=").ID("NewClient").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Lit(""),
 					jen.Lit(""),
 					jen.ID("u"),
-					jen.Qual(noopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("nil"),
 					jen.Index().ID("string").Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 				jen.Line(),
 				jen.ID("expected").Op(":=").Lit("ws://todo.verygoodsoftwarenotvirus.ru/api/v1/things/and/stuff"),
 				jen.ID("actual").Op(":=").ID("c").Dot("BuildWebsocketURL").Call(
@@ -433,7 +431,7 @@ func mainTestDotGo() *jen.File {
 					jen.Lit("stuff"),
 				),
 				jen.Line(),
-				assertEqual(jen.ID("expected"),
+				utils.AssertEqual(jen.ID("expected"),
 					jen.ID("actual"), nil),
 			),
 		),
@@ -441,12 +439,12 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("V1Client_BuildHealthCheckRequest").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_BuildHealthCheckRequest").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"happy path",
-				expectMethod("expectedMethod", "MethodGet"),
+				utils.ExpectMethod("expectedMethod", "MethodGet"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -458,12 +456,12 @@ func mainTestDotGo() *jen.File {
 					jen.ID("err"),
 				).Op(":=").ID("c").Dot("BuildHealthCheckRequest").Call(),
 				jen.Line(),
-				requireNotNil(jen.ID("actual"), nil),
-				assertNoError(
+				utils.RequireNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("actual").Dot("Method"),
 					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
@@ -475,23 +473,23 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("V1Client_IsUp").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_IsUp").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.Qual("net/http", "MethodGet"),
 								nil,
 							),
-							writeHeader("StatusOK"),
+							utils.WriteHeader("StatusOK"),
 						),
 					),
 				),
@@ -501,26 +499,26 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts"),
 				),
 				jen.ID("actual").Op(":=").ID("c").Dot("IsUp").Call(),
-				assertTrue(
+				utils.AssertTrue(
 					jen.ID("actual"),
 					nil,
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with bad status code",
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.Qual("net/http", "MethodGet"),
 								nil,
 							),
-							writeHeader("StatusInternalServerError"),
+							utils.WriteHeader("StatusInternalServerError"),
 						),
 					),
 				),
@@ -530,21 +528,21 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts"),
 				),
 				jen.ID("actual").Op(":=").ID("c").Dot("IsUp").Call(),
-				assertFalse(
+				utils.AssertFalse(
 					jen.ID("actual"),
 					nil,
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with timeout",
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.Qual("net/http", "MethodGet"),
 								nil,
@@ -562,7 +560,7 @@ func mainTestDotGo() *jen.File {
 				),
 				jen.ID("c").Dot("plainClient").Dot("Timeout").Op("=").Lit(500).Op("*").Qual("time", "Millisecond"),
 				jen.ID("actual").Op(":=").ID("c").Dot("IsUp").Call(),
-				assertFalse(
+				utils.AssertFalse(
 					jen.ID("actual"),
 					nil,
 				),
@@ -572,10 +570,10 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("V1Client_buildDataRequest").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_buildDataRequest").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -583,7 +581,7 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts"),
 				),
 				jen.Line(),
-				expectMethod("expectedMethod", "MethodPost"),
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.List(
 					jen.ID("req"),
 					jen.ID("err"),
@@ -595,12 +593,12 @@ func mainTestDotGo() *jen.File {
 					),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("req"), nil),
-				assertNoError(
+				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.AssertNoError(
 					jen.ID("err"),
 					nil,
 				),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("expectedMethod"),
 					jen.ID("req").Dot("Method"),
 					nil,
@@ -611,24 +609,24 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("V1Client_makeRequest").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_makeRequest").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				expectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.ID("expectedMethod"),
 								nil,
 							),
-							requireNoError(
+							utils.RequireNoError(
 								jen.Qual("encoding/json", "NewEncoder").Call(
 									jen.ID("res"),
 								).Dot("Encode").Call(
@@ -654,35 +652,35 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
-				requireNotNil(jen.ID("req"), nil),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 				jen.Line(),
 				jen.ID("err").Op("=").ID("c").Dot("executeRequest").Call(
 					jen.ID("ctx"),
 					jen.ID("req"),
 					jen.Op("&").ID("argleBargle").Values(),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					nil,
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"with 404",
-				expectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.ID("expectedMethod"),
 								nil,
 							),
-							writeHeader("StatusNotFound"),
+							utils.WriteHeader("StatusNotFound"),
 						),
 					),
 				),
@@ -699,13 +697,13 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
-				requireNotNil(
+				utils.RequireNotNil(
 					jen.ID("req"),
 					nil,
 				),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 				jen.Line(),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("ErrNotFound"),
 					jen.ID("c").Dot("executeRequest").Call(
 						jen.ID("ctx"),
@@ -720,23 +718,23 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("V1Client_makeUnauthedDataRequest").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_makeUnauthedDataRequest").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				expectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.ID("expectedMethod"),
 								nil,
 							),
-							requireNoError(
+							utils.RequireNoError(
 								jen.Qual("encoding/json", "NewEncoder").Call(
 									jen.ID("res"),
 								).Dot("Encode").Call(
@@ -768,8 +766,8 @@ func mainTestDotGo() *jen.File {
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("in"),
 				),
-				requireNoError(jen.ID("err"), nil),
-				requireNotNil(jen.ID("body"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("body"), nil),
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
@@ -779,35 +777,35 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
 				),
-				requireNoError(jen.ID("err"), nil),
-				requireNotNil(jen.ID("req"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				jen.ID("err").Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
 					jen.ID("ctx"),
 					jen.ID("req"),
 					jen.ID("out"),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					nil,
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"with 404",
-				expectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.ID("expectedMethod"),
 								nil,
 							),
-							writeHeader("StatusNotFound"),
+							utils.WriteHeader("StatusNotFound"),
 						),
 					),
 				),
@@ -830,8 +828,8 @@ func mainTestDotGo() *jen.File {
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("in"),
 				),
-				requireNoError(jen.ID("err"), nil),
-				requireNotNil(jen.ID("body"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("body"), nil),
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
@@ -841,32 +839,32 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
 				),
-				requireNoError(jen.ID("err"), nil),
-				requireNotNil(jen.ID("req"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				jen.ID("err").Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
 					jen.ID("ctx"),
 					jen.ID("req"),
 					jen.ID("out"),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					nil,
 				),
-				assertEqual(jen.ID("ErrNotFound"),
+				utils.AssertEqual(jen.ID("ErrNotFound"),
 					jen.ID("err"), nil),
 			),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"with timeout",
-				expectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.ID("expectedMethod"),
 								nil,
@@ -896,8 +894,8 @@ func mainTestDotGo() *jen.File {
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("in"),
 				),
-				requireNoError(jen.ID("err"), nil),
-				requireNotNil(jen.ID("body"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("body"), nil),
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
@@ -907,11 +905,11 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
 				),
-				requireNoError(jen.ID("err"), nil),
-				requireNotNil(jen.ID("req"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				jen.ID("c").Dot("plainClient").Dot("Timeout").Op("=").Lit(500).Op("*").Qual("time", "Millisecond"),
-				assertError(
+				utils.AssertError(
 					jen.ID("c").Dot("executeUnathenticatedDataRequest").Call(
 						jen.ID("ctx"),
 						jen.ID("req"),
@@ -921,9 +919,9 @@ func mainTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"with nil as output",
-				expectMethod("expectedMethod", "MethodPost"),
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID(t),
@@ -938,8 +936,8 @@ func mainTestDotGo() *jen.File {
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("in"),
 				),
-				requireNoError(jen.ID("err"), nil),
-				requireNotNil(jen.ID("body"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("body"), nil),
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
@@ -949,15 +947,15 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
 				),
-				requireNoError(jen.ID("err"), nil),
-				requireNotNil(jen.ID("req"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				jen.ID("err").Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
 					jen.ID("ctx"),
 					jen.ID("req"),
 					jen.ID("testingType").Values(),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					nil,
 				),
@@ -967,24 +965,24 @@ func mainTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("V1Client_retrieve").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("V1Client_retrieve").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				expectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").ID("httptest").Dot("NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.ID("ts").Op(":=").ID("httptest").Dot("NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.ID("expectedMethod"),
 								nil,
 							),
-							requireNoError(
+							utils.RequireNoError(
 								jen.Qual("encoding/json", "NewEncoder").Call(
 									jen.ID("res"),
 								).Dot("Encode").Call(
@@ -1010,21 +1008,21 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
-				requireNotNil(jen.ID("req"), nil),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 				jen.Line(),
 				jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
 					jen.ID("ctx"),
 					jen.ID("req"),
 					jen.Op("&").ID("argleBargle").Values(),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					nil,
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"with nil passed in",
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -1040,30 +1038,30 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
-				requireNotNil(jen.ID("req"), nil),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 				jen.Line(),
 				jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
 					jen.ID("ctx"),
 					jen.ID("req"),
 					jen.ID("nil"),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					nil,
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"with timeout",
-				expectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.ID("expectedMethod"),
 								nil,
@@ -1087,8 +1085,8 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
-				requireNotNil(jen.ID("req"), nil),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 				jen.Line(),
 				jen.ID("c").Dot("authedClient").Dot("Timeout").Op("=").Lit(500).Op("*").Qual("time", "Millisecond"),
 				jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
@@ -1096,27 +1094,27 @@ func mainTestDotGo() *jen.File {
 					jen.ID("req"),
 					jen.Op("&").ID("argleBargle").Values(),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					nil,
 				),
 			),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"with 404",
-				expectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").CallLn(
-					jen.Qual("net/http", "HandlerFunc").CallLn(
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
 							jen.ID("req").Op("*").Qual("net/http", "Request"),
 						).Block(
-							assertEqual(
+							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
 								jen.ID("expectedMethod"),
 								nil,
 							),
-							writeHeader("StatusNotFound"),
+							utils.WriteHeader("StatusNotFound"),
 						),
 					),
 				),
@@ -1133,10 +1131,10 @@ func mainTestDotGo() *jen.File {
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
-				requireNotNil(jen.ID("req"), nil),
-				requireNoError(jen.ID("err"), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.RequireNoError(jen.ID("err"), nil),
 				jen.Line(),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("ErrNotFound"),
 					jen.ID("c").Dot("retrieve").Call(
 						jen.ID("ctx"),

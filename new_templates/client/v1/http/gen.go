@@ -8,8 +8,17 @@ import (
 	"os"
 	"strings"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+)
+
+const (
+	// T is the big T
+	T  = "T"
+	t  = "t"
+	v1 = "V1Client"
 )
 
 var (
@@ -27,22 +36,6 @@ var (
 		"client/v1/http/oauth2_clients.go":      oauth2ClientsDotGo(),
 		"client/v1/http/oauth2_clients_test.go": oauth2ClientsTestDotGo(),
 	}
-)
-
-const (
-	// T is the big T
-	T  = "T"
-	t  = "t"
-	v1 = "V1Client"
-
-	// packages
-	coreOAuth2Pkg  = "golang.org/x/oauth2"
-	loggingPkg     = "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	noopLoggingPkg = "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	assertPkg      = "github.com/stretchr/testify/assert"
-	mustAssertPkg  = "github.com/stretchr/testify/require"
-	mockPkg        = "github.com/stretchr/testify/mock"
-	modelsPkg      = "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 // RenderPackage renders the package
@@ -71,40 +64,6 @@ func renderFile(path string, file *jen.File) {
 	}
 }
 
-func addImports(file *jen.File) {
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock", "mockutil")
-
-	file.ImportNames(map[string]string{
-		"context":           "context",
-		"fmt":               "fmt",
-		"net/http":          "http",
-		"net/http/httputil": "httputil",
-		"errors":            "errors",
-		"net/url":           "url",
-		"path":              "path",
-		"strings":           "strings",
-		"time":              "time",
-		"bytes":             "bytes",
-		"encoding/json":     "json",
-		"io":                "io",
-		"io/ioutil":         "ioutil",
-		"reflect":           "reflect",
-		//
-		loggingPkg:     "logging",
-		noopLoggingPkg: "noop",
-		modelsPkg:      "models",
-		//
-		assertPkg:                               "assert",
-		mustAssertPkg:                           "require",
-		mockPkg:                                 "mock",
-		coreOAuth2Pkg:                           "oauth2",
-		"github.com/moul/http2curl":             "http2curl",
-		"go.opencensus.io/plugin/ochttp":        "ochttp",
-		"golang.org/x/oauth2/clientcredentials": "clientcredentials",
-	})
-	file.Add(jen.Line())
-}
-
 func itemsDotGo(typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
@@ -118,7 +77,7 @@ func itemsDotGo(typ models.DataType) *jen.File {
 
 	basePath := fmt.Sprintf("%sBasePath", pvn)
 
-	addImports(ret)
+	utils.AddImports(ret)
 	ret.Add(jen.Const().Defs(
 		jen.ID(basePath).Op("=").Lit(prn)),
 	)
@@ -127,7 +86,7 @@ func itemsDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching an %s", ts, ls)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildGet%sRequest", ts)).Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
@@ -155,10 +114,10 @@ func itemsDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("Get%s retrieves an %s", ts, ls)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Get%s", ts)).Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.ID(vn).Op("*").Qual(modelsPkg, ts),
+			jen.ID(vn).Op("*").Qual(utils.ModelsPkg, ts),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -201,8 +160,8 @@ func itemsDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching %s", tp, lp)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildGet%sRequest", tp)).Params(
-			ctxParam(),
-			jen.ID("filter").Op("*").Qual(modelsPkg, "QueryFilter"),
+			utils.CtxParam(),
+			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -225,10 +184,10 @@ func itemsDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("Get%s retrieves a list of %s", tp, lp)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Get%s", tp)).Params(
-			ctxParam(),
-			jen.ID("filter").Op("*").Qual(modelsPkg, "QueryFilter"),
+			utils.CtxParam(),
+			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
 		).Params(
-			jen.ID(pvn).Op("*").Qual(modelsPkg, fmt.Sprintf("%sList", ts)),
+			jen.ID(pvn).Op("*").Qual(utils.ModelsPkg, fmt.Sprintf("%sList", ts)),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -272,8 +231,8 @@ func itemsDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("BuildCreate%sRequest builds an HTTP request for creating an %s", ts, ls)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildCreate%sRequest", ts)).Params(
-			ctxParam(),
-			jen.ID("body").Op("*").Qual(modelsPkg, fmt.Sprintf("%sCreationInput", ts)),
+			utils.CtxParam(),
+			jen.ID("body").Op("*").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -296,10 +255,10 @@ func itemsDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("Create%s creates an %s", ts, ls)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Create%s", ts)).Params(
-			ctxParam(),
-			jen.ID("input").Op("*").Qual(modelsPkg, fmt.Sprintf("%sCreationInput", ts)),
+			utils.CtxParam(),
+			jen.ID("input").Op("*").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)),
 		).Params(
-			jen.ID(vn).Op("*").Qual(modelsPkg, ts),
+			jen.ID(vn).Op("*").Qual(utils.ModelsPkg, ts),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -335,8 +294,8 @@ func itemsDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("BuildUpdate%sRequest builds an HTTP request for updating an %s", ts, ls)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildUpdate%sRequest", ts)).Params(
-			ctxParam(),
-			jen.ID("updated").Op("*").Qual(modelsPkg, ts),
+			utils.CtxParam(),
+			jen.ID("updated").Op("*").Qual(utils.ModelsPkg, ts),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -363,8 +322,8 @@ func itemsDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("Update%s updates an %s", ts, ls)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Update%s", ts)).Params(
-			ctxParam(),
-			jen.ID("updated").Op("*").Qual(modelsPkg, ts),
+			utils.CtxParam(),
+			jen.ID("updated").Op("*").Qual(utils.ModelsPkg, ts),
 		).Params(
 			jen.ID("error"),
 		).Block(
@@ -395,7 +354,7 @@ func itemsDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("BuildArchive%sRequest builds an HTTP request for updating an %s", ts, ls)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildArchive%sRequest", ts)).Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
@@ -423,7 +382,7 @@ func itemsDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("Archive%s archives an %s", ts, ls)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Archive%s", ts)).Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(jen.ID("error")).Block(
 			jen.List(
@@ -465,15 +424,15 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
 	modelListRoute := fmt.Sprintf("/api/v1/%s", prn)
 
-	addImports(ret)
+	utils.AddImports(ret)
 
 	ret.Add(
-		testFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", ts)).Block(
-			parallelTest(nil),
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", ts)).Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				expectMethod("expectedMethod", "MethodGet"),
+				utils.ExpectMethod("expectedMethod", "MethodGet"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -491,12 +450,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("expectedID"),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("actual"), nil),
-				assertNoError(
+				utils.RequireNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertTrue(
+				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
 						jen.Qual("fmt", "Sprintf").Call(
@@ -506,7 +465,7 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					),
 					nil,
 				),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("actual").Dot("Method"),
 					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
@@ -518,20 +477,20 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		testFunc(fmt.Sprintf("V1Client_Get%s", ts)).Block(
-			parallelTest(nil),
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", ts)).Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(modelsPkg, ts).ValuesLn(
+				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("Name").Op(":").Lit("example"),
 					jen.ID("Details").Op(":").Lit("blah"),
 				),
 				jen.Line(),
-				buildTestServer(
+				utils.BuildTestServer(
 					"ts",
-					assertTrue(
+					utils.AssertTrue(
 						jen.Qual("strings", "HasSuffix").Call(
 							jen.ID("req").Dot("URL").Dot("String").Call(),
 							jen.Qual("strconv", "Itoa").Call(
@@ -542,7 +501,7 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 						),
 						nil,
 					),
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit(modelRoute),
@@ -550,12 +509,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 						),
 						jen.Lit("expected and actual path don't match"),
 					),
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
-					requireNoError(
+					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
 						nil,
 					),
@@ -573,12 +532,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("actual"), nil),
-				assertNoError(
+				utils.RequireNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(jen.ID("expected"),
+				utils.AssertEqual(jen.ID("expected"),
 					jen.ID("actual"), nil),
 			),
 		),
@@ -586,12 +545,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		testFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", tp)).Block(
-			parallelTest(nil),
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", tp)).Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				expectMethod("expectedMethod", "MethodGet"),
+				utils.ExpectMethod("expectedMethod", "MethodGet"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -606,12 +565,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("nil"),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("actual"), nil),
-				assertNoError(
+				utils.RequireNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("actual").Dot("Method"),
 					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
@@ -623,14 +582,14 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		testFunc(fmt.Sprintf("V1Client_Get%s", tp)).Block(
-			parallelTest(nil),
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", tp)).Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(modelsPkg, fmt.Sprintf("%sList", ts)).ValuesLn(
-					jen.ID(fmt.Sprintf(tp)).Op(":").Index().Qual(modelsPkg, ts).ValuesLn(
-						jen.ValuesLn(
+				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sList", ts)).Valuesln(
+					jen.ID(fmt.Sprintf(tp)).Op(":").Index().Qual(utils.ModelsPkg, ts).Valuesln(
+						jen.Valuesln(
 							jen.ID("ID").Op(":").Lit(1),
 							jen.ID("Name").Op(":").Lit("example"),
 							jen.ID("Details").Op(":").Lit("blah"),
@@ -638,19 +597,19 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					),
 				),
 				jen.Line(),
-				buildTestServer(
+				utils.BuildTestServer(
 					"ts",
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Lit(modelListRoute),
 						jen.Lit("expected and actual path don't match"),
 					),
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
-					requireNoError(
+					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
 						nil,
 					),
@@ -668,12 +627,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("nil"),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("actual"), nil),
-				assertNoError(
+				utils.RequireNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(jen.ID("expected"),
+				utils.AssertEqual(jen.ID("expected"),
 					jen.ID("actual"), nil),
 			),
 		),
@@ -681,15 +640,15 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		testFunc(fmt.Sprintf("V1Client_BuildCreate%sRequest", ts)).Block(
-			parallelTest(nil),
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildCreate%sRequest", ts)).Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				expectMethod("expectedMethod", "MethodPost"),
+				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, fmt.Sprintf("%sCreationInput", ts)).ValuesLn(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)).Valuesln(
 					jen.ID("Name").Op(":").Lit("expected name"),
 					jen.ID("Details").Op(":").Lit("expected details"),
 				),
@@ -705,12 +664,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("exampleInput"),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("actual"), nil),
-				assertNoError(
+				utils.RequireNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("actual").Dot("Method"),
 					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
@@ -722,36 +681,36 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		testFunc(fmt.Sprintf("V1Client_Create%s", ts)).Block(
-			parallelTest(nil),
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Create%s", ts)).Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(modelsPkg, ts).ValuesLn(
+				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("Name").Op(":").Lit("example"),
 					jen.ID("Details").Op(":").Lit("blah"),
 				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, fmt.Sprintf("%sCreationInput", ts)).ValuesLn(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 					jen.ID("Details").Op(":").ID("expected").Dot("Details"),
 				),
 				jen.Line(),
-				buildTestServer(
+				utils.BuildTestServer(
 					"ts",
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Lit(modelListRoute),
 						jen.Lit("expected and actual path don't match"),
 					),
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
 						jen.Qual("net/http", "MethodPost"),
 						nil,
 					),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(modelsPkg, fmt.Sprintf("%sCreationInput", ts)),
-					requireNoError(
+					jen.Var().ID("x").Op("*").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)),
+					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(
 							jen.ID("req").Dot("Body"),
 						).Dot("Decode").Call(
@@ -759,17 +718,17 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 						),
 						nil,
 					),
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("exampleInput"),
 						jen.ID("x"),
 						nil,
 					),
 					jen.Line(),
-					requireNoError(
+					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
 						nil,
 					),
-					writeHeader("StatusOK"),
+					utils.WriteHeader("StatusOK"),
 				),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -784,12 +743,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("exampleInput"),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("actual"), nil),
-				assertNoError(
+				utils.RequireNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(jen.ID("expected"),
+				utils.AssertEqual(jen.ID("expected"),
 					jen.ID("actual"), nil),
 			),
 		),
@@ -797,13 +756,13 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		testFunc(fmt.Sprintf("V1Client_BuildUpdate%sRequest", ts)).Block(
-			parallelTest(nil),
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildUpdate%sRequest", ts)).Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				expectMethod("expectedMethod", "MethodPut"),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(modelsPkg, ts).ValuesLn(
+				utils.ExpectMethod("expectedMethod", "MethodPut"),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
 					jen.ID("Name").Op(":").Lit("changed name"),
 					jen.ID("Details").Op(":").Lit("changed details"),
 				),
@@ -821,12 +780,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("exampleInput"),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("actual"), nil),
-				assertNoError(
+				utils.RequireNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("actual").Dot("Method"),
 					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
@@ -838,20 +797,20 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		testFunc(fmt.Sprintf("V1Client_Update%s", ts)).Block(
-			parallelTest(nil),
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Update%s", ts)).Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(modelsPkg, ts).ValuesLn(
+				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("Name").Op(":").Lit("example"),
 					jen.ID("Details").Op(":").Lit("blah"),
 				),
 				jen.Line(),
-				buildTestServer(
+				utils.BuildTestServer(
 					"ts",
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit(modelRoute),
@@ -859,12 +818,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 						),
 						jen.Lit("expected and actual path don't match"),
 					),
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
 						jen.Qual("net/http", "MethodPut"),
 						nil,
 					),
-					writeHeader("StatusOK"),
+					utils.WriteHeader("StatusOK"),
 				),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("buildTestClient").Call(
@@ -874,7 +833,7 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("ctx"),
 					jen.ID("expected"),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
@@ -884,12 +843,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		testFunc(fmt.Sprintf("V1Client_BuildArchive%sRequest", ts)).Block(
-			parallelTest(nil),
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildArchive%sRequest", ts)).Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
-				expectMethod("expectedMethod", "MethodDelete"),
+				utils.ExpectMethod("expectedMethod", "MethodDelete"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
 				jen.ID("expectedID").Op(":=").ID("uint64").Call(
@@ -907,12 +866,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("expectedID"),
 				),
 				jen.Line(),
-				requireNotNil(jen.ID("actual"), nil),
-				requireNotNil(
+				utils.RequireNotNil(jen.ID("actual"), nil),
+				utils.RequireNotNil(
 					jen.ID("actual").Dot("URL"),
 					nil,
 				),
-				assertTrue(
+				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
 						jen.Qual("fmt", "Sprintf").Call(
@@ -922,11 +881,11 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					),
 					nil,
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("actual").Dot("Method"),
 					jen.ID("expectedMethod"),
 					jen.Lit("request should be a %s request"),
@@ -938,16 +897,16 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		testFunc(fmt.Sprintf("V1Client_Archive%s", ts)).Block(
-			parallelTest(nil),
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Archive%s", ts)).Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTest(
+			utils.BuildSubTest(
 				"happy path",
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(1)),
 				jen.Line(),
-				buildTestServer(
+				utils.BuildTestServer(
 					"ts",
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit(modelRoute),
@@ -955,12 +914,12 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 						),
 						jen.Lit("expected and actual path don't match"),
 					),
-					assertEqual(
+					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
 						jen.Qual("net/http", "MethodDelete"),
 						nil,
 					),
-					writeHeader("StatusOK"),
+					utils.WriteHeader("StatusOK"),
 				),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("buildTestClient").Call(
@@ -970,7 +929,7 @@ func itemsTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("ctx"),
 					jen.ID("expected"),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be returned"),
 				),

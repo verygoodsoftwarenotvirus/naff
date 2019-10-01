@@ -1,16 +1,19 @@
 package client
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func helpersDotGo() *jen.File {
 	ret := jen.NewFile("client")
 
-	addImports(ret)
+	utils.AddImports(ret)
 
 	ret.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "models")
 	ret.Add(jen.Line())
 
-	ret.Add(comments("argIsNotPointer checks an argument and returns whether or not it is a pointer")...)
+	ret.Add(utils.Comments("argIsNotPointer checks an argument and returns whether or not it is a pointer")...)
 	ret.Add(
 		jen.Func().ID("argIsNotPointer").Params(jen.ID("i").Interface()).Params(
 			jen.ID("notAPointer").ID("bool"),
@@ -34,7 +37,7 @@ func helpersDotGo() *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(comments("argIsNotNil checks an argument and returns whether or not it is nil")...)
+	ret.Add(utils.Comments("argIsNotNil checks an argument and returns whether or not it is nil")...)
 	ret.Add(
 		jen.Func().ID("argIsNotNil").Params(jen.ID("i").Interface()).Params(
 			jen.ID("isNil").ID("bool"),
@@ -54,7 +57,7 @@ func helpersDotGo() *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(comments(
+	ret.Add(utils.Comments(
 		"argIsNotPointerOrNil does what it says on the tin. This function",
 		"is primarily useful for detecting if a destination value is valid",
 		"before decoding an HTTP response, for instance",
@@ -76,7 +79,7 @@ func helpersDotGo() *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(comments(
+	ret.Add(utils.Comments(
 		"unmarshalBody takes an HTTP response and JSON decodes its",
 		"body into a destination value. `dest` must be a non-nil",
 		"pointer to an object. Ideally, response is also not nil.",
@@ -137,7 +140,7 @@ func helpersDotGo() *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(comments(
+	ret.Add(utils.Comments(
 		"createBodyFromStruct takes any value in and returns an io.Reader",
 		"for placement within http.NewRequest's last argument.",
 	)...)

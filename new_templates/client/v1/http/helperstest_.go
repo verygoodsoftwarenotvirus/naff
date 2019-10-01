@@ -1,11 +1,14 @@
 package client
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func helpersTestDotGo() *jen.File {
 	ret := jen.NewFile("client")
 
-	addImports(ret)
+	utils.AddImports(ret)
 
 	ret.Add(
 		jen.Type().ID("testingType").Struct(
@@ -15,37 +18,37 @@ func helpersTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("ArgIsNotPointerOrNil").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("ArgIsNotPointerOrNil").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"expected use",
 				jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(
 					jen.Op("&").ID("testingType").Values(),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("error should not be returned when a pointer is provided"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with non-pointer",
 				jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(
 					jen.ID("testingType").Values(),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("error should be returned when a non-pointer is provided"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with nil",
 				jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(
 					jen.ID("nil"),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("error should be returned when nil is provided"),
 				),
@@ -55,10 +58,10 @@ func helpersTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("ArgIsNotPointer").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("ArgIsNotPointer").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"expected use",
 				jen.List(
 					jen.ID("notAPointer"),
@@ -66,18 +69,17 @@ func helpersTestDotGo() *jen.File {
 				).Op(":=").ID("argIsNotPointer").Call(
 					jen.Op("&").ID("testingType").Values(),
 				),
-				jen.Line(),
-				assertFalse(
+				utils.AssertFalse(
 					jen.ID("notAPointer"),
 					jen.Lit("expected `false` when a pointer is provided"),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("error should not be returned when a pointer is provided"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with non-pointer",
 				jen.List(
 					jen.ID("notAPointer"),
@@ -85,18 +87,17 @@ func helpersTestDotGo() *jen.File {
 				).Op(":=").ID("argIsNotPointer").Call(
 					jen.ID("testingType").Values(),
 				),
-				jen.Line(),
-				assertTrue(
+				utils.AssertTrue(
 					jen.ID("notAPointer"),
 					jen.Lit("expected `true` when a non-pointer is provided"),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("error should be returned when a non-pointer is provided"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with nil",
 				jen.List(
 					jen.ID("notAPointer"),
@@ -104,12 +105,11 @@ func helpersTestDotGo() *jen.File {
 				).Op(":=").ID("argIsNotPointer").Call(
 					jen.ID("nil"),
 				),
-				jen.Line(),
-				assertTrue(
+				utils.AssertTrue(
 					jen.ID("notAPointer"),
 					jen.Lit("expected `true` when nil is provided"),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("error should be returned when nil is provided"),
 				),
@@ -119,10 +119,10 @@ func helpersTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("ArgIsNotNil").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("ArgIsNotNil").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"without nil",
 				jen.List(
 					jen.ID("isNil"),
@@ -130,18 +130,17 @@ func helpersTestDotGo() *jen.File {
 				).Op(":=").ID("argIsNotNil").Call(
 					jen.Op("&").ID("testingType").Values(),
 				),
-				jen.Line(),
-				assertFalse(
+				utils.AssertFalse(
 					jen.ID("isNil"),
 					jen.Lit("expected `false` when a pointer is provided"),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("error should not be returned when a pointer is provided"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with non-pointer",
 				jen.List(
 					jen.ID("isNil"),
@@ -149,18 +148,17 @@ func helpersTestDotGo() *jen.File {
 				).Op(":=").ID("argIsNotNil").Call(
 					jen.ID("testingType").Values(),
 				),
-				jen.Line(),
-				assertFalse(
+				utils.AssertFalse(
 					jen.ID("isNil"),
 					jen.Lit("expected `true` when a non-pointer is provided"),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("error should not be returned when a non-pointer is provided"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with nil",
 				jen.List(
 					jen.ID("isNil"),
@@ -168,12 +166,11 @@ func helpersTestDotGo() *jen.File {
 				).Op(":=").ID("argIsNotNil").Call(
 					jen.ID("nil"),
 				),
-				jen.Line(),
-				assertTrue(
+				utils.AssertTrue(
 					jen.ID("isNil"),
 					jen.Lit("expected `true` when nil is provided"),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("error should be returned when nil is provided"),
 				),
@@ -183,13 +180,13 @@ func helpersTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("UnmarshalBody").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("UnmarshalBody").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"expected use",
 				jen.ID("expected").Op(":=").Lit("example"),
-				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").ValuesLn(
+				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").Op(":").Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(
 							jen.Qual("fmt", "Sprintf").Call(
@@ -206,20 +203,20 @@ func helpersTestDotGo() *jen.File {
 					jen.ID("res"),
 					jen.Op("&").ID("out"),
 				),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("out").Dot("Name"),
 					jen.ID("expected"),
 					jen.Lit("expected marshaling to work"),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("no error should be encountered unmarshaling into a valid struct"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with good status but unmarshallable response",
-				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").ValuesLn(
+				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").Op(":").Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(jen.Lit("BLAH")),
 					),
@@ -231,28 +228,28 @@ func helpersTestDotGo() *jen.File {
 					jen.ID("res"),
 					jen.Op("&").ID("out"),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("no error should be encountered unmarshaling into a valid struct"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with an erroneous error code",
-				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").ValuesLn(
-					jen.ID("Body").Op(":").Qual("io/ioutil", "NopCloser").CallLn(
-						jen.Qual("strings", "NewReader").CallLn(
+				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Valuesln(
+					jen.ID("Body").Op(":").Qual("io/ioutil", "NopCloser").Callln(
+						jen.Qual("strings", "NewReader").Callln(
 							jen.Func().Params().Params(
 								jen.ID("string"),
 							).Block(
-								jen.ID("er").Op(":=").Op("&").Qual(modelsPkg, "ErrorResponse").Values(),
+								jen.ID("er").Op(":=").Op("&").Qual(utils.ModelsPkg, "ErrorResponse").Values(),
 								jen.List(
 									jen.ID("bs"),
 									jen.ID("err"),
 								).Op(":=").Qual("encoding/json", "Marshal").Call(
 									jen.ID("er"),
 								),
-								requireNoError(jen.ID("err"), nil),
+								utils.RequireNoError(jen.ID("err"), nil),
 								jen.Return().ID("string").Call(
 									jen.ID("bs"),
 								),
@@ -267,19 +264,19 @@ func helpersTestDotGo() *jen.File {
 					jen.ID("res"),
 					jen.Op("&").ID("out"),
 				),
-				assertNil(
+				utils.AssertNil(
 					jen.ID("out"),
 					jen.Lit("expected nil to be returned"),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("error should be returned from the API"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with an erroneous error code and unmarshallable body",
-				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").ValuesLn(
+				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").Op(":").Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(jen.Lit("BLAH")),
 					),
@@ -291,29 +288,29 @@ func helpersTestDotGo() *jen.File {
 					jen.ID("res"),
 					jen.Op("&").ID("out"),
 				),
-				assertNil(
+				utils.AssertNil(
 					jen.ID("out"),
 					jen.Lit("expected nil to be returned"),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("error should be returned from the unmarshaller"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with nil target variable",
 				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
 					jen.ID("nil"),
 					jen.ID("nil"),
 				),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("error should be encountered when passed nil"),
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with erroneous reader",
 				jen.ID("expected").Op(":=").Qual("errors", "New").Call(
 					jen.Lit("blah"),
@@ -322,13 +319,13 @@ func helpersTestDotGo() *jen.File {
 				jen.ID("rc").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock", "NewMockReadCloser").Call(),
 				jen.ID("rc").Dot("On").Call(
 					jen.Lit("Read"),
-					jen.Qual(mockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.Lit(0),
 					jen.ID("expected"),
 				),
 				jen.Line(),
-				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").ValuesLn(
+				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").Op(":").ID("rc"),
 					jen.ID("StatusCode").Op(":").Qual("net/http", "StatusOK"),
 				),
@@ -337,8 +334,8 @@ func helpersTestDotGo() *jen.File {
 				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
 					jen.ID("res"), jen.Op("&").ID("out"),
 				),
-				assertEqual(jen.ID("expected"), jen.ID("err"), nil),
-				assertError(
+				utils.AssertEqual(jen.ID("expected"), jen.ID("err"), nil),
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("no error should be encountered unmarshaling into a valid struct"),
 				),
@@ -357,10 +354,10 @@ func helpersTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		testFunc("CreateBodyFromStruct").Block(
-			parallelTest(nil),
+		utils.OuterTestFunc("CreateBodyFromStruct").Block(
+			utils.ParallelTest(nil),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"expected use",
 				jen.ID("expected").Op(":=").Lit(`{"name":"expected"}`),
 				jen.ID("x").Op(":=").Op("&").ID("testingType").Values(
@@ -373,7 +370,7 @@ func helpersTestDotGo() *jen.File {
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("x"),
 				),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("expected no error creating JSON from valid struct"),
 				),
@@ -384,12 +381,11 @@ func helpersTestDotGo() *jen.File {
 				).Op(":=").Qual("io/ioutil", "ReadAll").Call(
 					jen.ID("actual"),
 				),
-				jen.Line(),
-				assertNoError(
+				utils.AssertNoError(
 					jen.ID("err"),
 					jen.Lit("expected no error reading JSON from valid struct"),
 				),
-				assertEqual(
+				utils.AssertEqual(
 					jen.ID("expected"),
 					jen.ID("string").Call(
 						jen.ID("bs"),
@@ -398,7 +394,7 @@ func helpersTestDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			buildSubTestWithoutContext(
+			utils.BuildSubTestWithoutContext(
 				"with unmarshallable struct",
 				jen.ID("x").Op(":=").Op("&").ID("testBreakableStruct").Values(
 					jen.ID("Thing").Op(":").Lit("stuff"),
@@ -410,7 +406,7 @@ func helpersTestDotGo() *jen.File {
 					jen.ID("x"),
 				),
 				jen.Line(),
-				assertError(
+				utils.AssertError(
 					jen.ID("err"),
 					jen.Lit("expected no error creating JSON from valid struct"),
 				),

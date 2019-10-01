@@ -3,7 +3,9 @@ package client
 import (
 	"fmt"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 )
 
 const (
@@ -18,7 +20,7 @@ func mainDotGo() *jen.File {
 	ret := jen.NewFile("client")
 	ret.Add(jen.Null())
 
-	addImports(ret)
+	utils.AddImports(ret)
 	ret.Add(jen.Line())
 
 	// consts
@@ -42,16 +44,16 @@ func mainDotGo() *jen.File {
 	)
 
 	// types
-	ret.Add(comments(fmt.Sprintf("%s is a client for interacting with v1 of our REST API", v1))...)
+	ret.Add(utils.Comments(fmt.Sprintf("%s is a client for interacting with v1 of our REST API", v1))...)
 	ret.Add(
 		jen.Type().ID(v1).Struct(
 			jen.ID("plainClient").Op("*").Qual("net/http", "Client"),
 			jen.ID("authedClient").Op("*").Qual("net/http", "Client"),
-			jen.ID("logger").Qual(loggingPkg, "Logger"),
+			jen.ID("logger").Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("Debug").ID("bool"),
 			jen.ID("URL").Op("*").Qual("net/url", "URL"),
 			jen.ID("Scopes").Index().ID("string"),
-			jen.ID("tokenSource").Qual(coreOAuth2Pkg, "TokenSource"),
+			jen.ID("tokenSource").Qual(utils.CoreOAuth2Pkg, "TokenSource"),
 		),
 		jen.Line(),
 	)
@@ -89,14 +91,14 @@ func mainDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("NewClient builds a new API client for us"),
 		jen.Line(),
-		jen.Func().ID("NewClient").ParamsLn(
-			ctxParam(),
-			jen.ListLn(
+		jen.Func().ID("NewClient").Paramsln(
+			utils.CtxParam(),
+			jen.Listln(
 				jen.ID("clientID"),
 				jen.ID("clientSecret"),
 			).ID("string"),
 			jen.ID("address").Op("*").Qual("net/url", "URL"),
-			jen.ID("logger").Qual(loggingPkg, "Logger"),
+			jen.ID("logger").Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("hclient").Op("*").Qual("net/http", "Client"),
 			jen.ID("scopes").Index().ID("string"),
 			jen.ID("debug").ID("bool"),
@@ -106,7 +108,7 @@ func mainDotGo() *jen.File {
 		).Block(
 			jen.Var().ID("client").Op("=").ID("hclient"),
 			jen.If(jen.ID("client").Op("==").ID("nil")).Block(
-				jen.ID("client").Op("=").Op("&").Qual("net/http", "Client").ValuesLn(
+				jen.ID("client").Op("=").Op("&").Qual("net/http", "Client").Valuesln(
 					jen.ID("Timeout").Op(":").ID("defaultTimeout"),
 				),
 			),
@@ -116,7 +118,7 @@ func mainDotGo() *jen.File {
 			jen.Line(),
 			jen.If(jen.ID("debug")).Block(
 				jen.ID("logger").Dot("SetLevel").Call(
-					jen.Qual(loggingPkg, "DebugLevel"),
+					jen.Qual(utils.LoggingPkg, "DebugLevel"),
 				),
 				jen.ID("logger").Dot("Debug").Call(
 					jen.Lit("log level set to debug!"),
@@ -134,7 +136,7 @@ func mainDotGo() *jen.File {
 				jen.ID("scopes"),
 			),
 			jen.Line(),
-			jen.ID("c").Op(":=").Op("&").ID(v1).ValuesLn(
+			jen.ID("c").Op(":=").Op("&").ID(v1).Valuesln(
 				jen.ID("URL").Op(":").ID("address"),
 				jen.ID("plainClient").Op(":").ID("client"),
 				jen.ID("logger").Op(":").Qual("logger", "WithName").Call(jen.ID("clientName")),
@@ -159,10 +161,10 @@ func mainDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildOAuthClient does too much"),
 		jen.Line(),
-		jen.Func().ID("buildOAuthClient").ParamsLn(
-			ctxParam(),
+		jen.Func().ID("buildOAuthClient").Paramsln(
+			utils.CtxParam(),
 			jen.ID("uri").Op("*").Qual("net/url", "URL"),
-			jen.ListLn(
+			jen.Listln(
 				jen.ID("clientID"),
 				jen.ID("clientSecret"),
 			).ID("string"),
@@ -171,11 +173,11 @@ func mainDotGo() *jen.File {
 			jen.Op("*").Qual("net/http", "Client"),
 			jen.ID("oauth2").Dot("TokenSource"),
 		).Block(
-			jen.ID("conf").Op(":=").Qual("golang.org/x/oauth2/clientcredentials", "Config").ValuesLn(
+			jen.ID("conf").Op(":=").Qual("golang.org/x/oauth2/clientcredentials", "Config").Valuesln(
 				jen.ID("ClientID").Op(":").ID("clientID"),
 				jen.ID("ClientSecret").Op(":").ID("clientSecret"),
 				jen.ID("Scopes").Op(":").ID("scopes"),
-				jen.ID("EndpointParams").Op(":").Qual("net/url", "Values").ValuesLn(
+				jen.ID("EndpointParams").Op(":").Qual("net/url", "Values").Valuesln(
 					jen.Lit("client_id").Op(":").Index().ID("string").Values(jen.ID("clientID")),
 					jen.Lit("client_secret").Op(":").Index().ID("string").Values(jen.ID("clientSecret")),
 				),
@@ -190,9 +192,9 @@ func mainDotGo() *jen.File {
 					jen.ID("ctx"),
 				),
 			),
-			jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").ValuesLn(
-				jen.ID("Transport").Op(":").Op("&").ID("oauth2").Dot("Transport").ValuesLn(
-					jen.ID("Base").Op(":").Op("&").Qual("go.opencensus.io/plugin/ochttp", "Transport").ValuesLn(
+			jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Valuesln(
+				jen.ID("Transport").Op(":").Op("&").ID("oauth2").Dot("Transport").Valuesln(
+					jen.ID("Base").Op(":").Op("&").Qual("go.opencensus.io/plugin/ochttp", "Transport").Valuesln(
 						jen.ID("Base").Op(":").ID("newDefaultRoundTripper").Call(),
 					),
 					jen.ID("Source").Op(":").ID("ts"),
@@ -227,7 +229,7 @@ func mainDotGo() *jen.File {
 				jen.Lit("oauth2/authorize"),
 			),
 			jen.Line(),
-			jen.Return().ID("oauth2").Dot("Endpoint").ValuesLn(
+			jen.Return().ID("oauth2").Dot("Endpoint").Valuesln(
 				jen.ID("TokenURL").Op(":").ID("tu").Dot("String").Call(),
 				jen.ID("AuthURL").Op(":").ID("au").Dot("String").Call(),
 			),
@@ -236,7 +238,7 @@ func mainDotGo() *jen.File {
 	)
 
 	// NewSimpleClient
-	ret.Add(comments(
+	ret.Add(utils.Comments(
 		"NewSimpleClient is a client that is capable of much less than the normal client",
 		"and has noops or empty values for most of its authentication and debug parts.",
 		"Its purpose at the time of this writing is merely so I can make users (which",
@@ -244,14 +246,14 @@ func mainDotGo() *jen.File {
 	)...)
 	ret.Add(
 		jen.Func().ID("NewSimpleClient").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("address").Op("*").Qual("net/url", "URL"),
 			jen.ID("debug").ID("bool"),
 		).Params(
 			jen.Op("*").ID(v1),
 			jen.ID("error"),
 		).Block(
-			jen.ID("l").Op(":=").Qual(noopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("l").Op(":=").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("h").Op(":=").Op("&").Qual("net/http", "Client").Values(
 				jen.ID("Timeout").Op(":").Lit(5).Op("*").Qual("time", "Second"),
 			),
@@ -277,13 +279,13 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.executeRawRequest
-	ret.Add(comments(
+	ret.Add(utils.Comments(
 		"executeRawRequest takes a given *http.Request and executes it with the provided",
 		"client, alongside some debugging logging.",
 	)...)
 	ret.Add(
 		newClientMethod("executeRawRequest").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("client").Op("*").Qual("net/http", "Client"),
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
 		).Params(jen.Op("*").Qual("net/http", "Response"),
@@ -371,7 +373,7 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.buildURL
-	ret.Add(comments(
+	ret.Add(utils.Comments(
 		"buildURL takes a given set of query parameters and URL parts, and returns",
 		"a parsed URL object from them.",
 	)...)
@@ -416,7 +418,7 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.buildVersionlessURL
-	ret.Add(comments(
+	ret.Add(utils.Comments(
 		"buildVersionlessURL builds a URL without the `/api/v1/` prefix. It should",
 		"otherwise be identical to buildURL",
 	)...)
@@ -456,7 +458,7 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.BuildWebsocketURL
-	ret.Add(comments("BuildWebsocketURL builds a standard URL and then converts its scheme to the websocket protocol")...)
+	ret.Add(utils.Comments("BuildWebsocketURL builds a standard URL and then converts its scheme to the websocket protocol")...)
 	ret.Add(
 		newClientMethod("BuildWebsocketURL").Params(
 			jen.ID("parts").Op("...").ID("string"),
@@ -473,7 +475,7 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.BuildHealthCheckRequest
-	ret.Add(comments("BuildHealthCheckRequest builds a health check HTTP Request")...)
+	ret.Add(utils.Comments("BuildHealthCheckRequest builds a health check HTTP Request")...)
 	ret.Add(
 		newClientMethod("BuildHealthCheckRequest").Params().Params(
 			jen.Op("*").Qual("net/http", "Request"),
@@ -496,7 +498,7 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.IsUp
-	ret.Add(comments("IsUp returns whether or not the service's health endpoint is returning 200s")...)
+	ret.Add(utils.Comments("IsUp returns whether or not the service's health endpoint is returning 200s")...)
 	ret.Add(
 		newClientMethod("IsUp").Params().Params(jen.ID("bool")).Block(
 			jen.List(
@@ -541,7 +543,7 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.buildDataRequest
-	ret.Add(comments("buildDataRequest builds an HTTP request for a given method, URL, and body data.")...)
+	ret.Add(utils.Comments("buildDataRequest builds an HTTP request for a given method, URL, and body data.")...)
 	ret.Add(
 		newClientMethod("buildDataRequest").Params(
 			jen.List(
@@ -588,10 +590,10 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.retrieve
-	ret.Add(comments("retrieve executes an HTTP request and loads the response content into a struct")...)
+	ret.Add(utils.Comments("retrieve executes an HTTP request and loads the response content into a struct")...)
 	ret.Add(
 		newClientMethod("retrieve").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
 			jen.ID("obj").Interface(),
 		).Params(jen.ID("error")).Block(
@@ -633,13 +635,13 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.executeRequest
-	ret.Add(comments(
+	ret.Add(utils.Comments(
 		"executeRequest takes a given request and executes it with the auth client. It returns some errors",
 		"upon receiving certain status codes, but otherwise will return nil upon success.",
 	)...)
 	ret.Add(
 		newClientMethod("executeRequest").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
 			jen.ID("out").Interface(),
 		).Params(jen.ID("error")).Block(
@@ -685,10 +687,10 @@ func mainDotGo() *jen.File {
 	)
 
 	// c.executeUnathenticatedDataRequest
-	ret.Add(comments("executeUnathenticatedDataRequest takes a given request and loads the response into an interface value.")...)
+	ret.Add(utils.Comments("executeUnathenticatedDataRequest takes a given request and loads the response into an interface value.")...)
 	ret.Add(
 		newClientMethod("executeUnathenticatedDataRequest").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
 			jen.ID("out").Interface(),
 		).Params(jen.ID("error")).Block(

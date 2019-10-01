@@ -158,7 +158,7 @@ func ifStmt(t *ast.IfStmt) jen.Code {
 	if t.Cond != nil {
 		cond = append(cond, jen.ID("jen").Add(genExpr(t.Cond)))
 	}
-	ret := jen.ID("jen").Dot("If").Call(
+	ret := jen.ID("jen").Dot("If").Callln(
 		cond...,
 	).Add(blockStmt(t.Body))
 	if t.Else != nil {
@@ -210,7 +210,7 @@ func rangeStmt(t *ast.RangeStmt) jen.Code {
 
 func blockStmt(s *ast.BlockStmt) jen.Code {
 	ret := stmts(s.List)
-	return jen.Dot("Block").Call(ret...)
+	return jen.Dot("Block").Callln(ret...)
 }
 
 func stmts(s []ast.Stmt) []jen.Code {

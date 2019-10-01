@@ -53,3 +53,7 @@ install: $(EMBEDDED_PACKAGE)
 .PHONY: test-new-templates
 test-new-templates:
 	go run new_templates/main.go
+
+.PHONY: install-tojen
+install-tojen:
+	go build -o $(INSTALL_PATH)/tojen -ldflags "-X main.Version=$(VERSION)" $(GO_PACKAGE)/forks/tojen

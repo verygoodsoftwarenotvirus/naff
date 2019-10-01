@@ -1,11 +1,14 @@
 package client
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func oauth2ClientsDotGo() *jen.File {
 	ret := jen.NewFile("client")
 
-	addImports(ret)
+	utils.AddImports(ret)
 
 	ret.Add(jen.Null())
 	ret.Add(jen.Const().Defs(
@@ -16,7 +19,7 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment("BuildGetOAuth2ClientRequest builds an HTTP request for fetching an OAuth2 client"),
 		jen.Line(),
 		newClientMethod("BuildGetOAuth2ClientRequest").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
@@ -43,10 +46,10 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment("GetOAuth2Client gets an OAuth2 client"),
 		jen.Line(),
 		newClientMethod("GetOAuth2Client").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.ID("oauth2Client").Op("*").Qual(modelsPkg, "OAuth2Client"),
+			jen.ID("oauth2Client").Op("*").Qual(utils.ModelsPkg, "OAuth2Client"),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -83,8 +86,8 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment("BuildGetOAuth2ClientsRequest builds an HTTP request for fetching a list of OAuth2 clients"),
 		jen.Line(),
 		newClientMethod("BuildGetOAuth2ClientsRequest").Params(
-			ctxParam(),
-			jen.ID("filter").Op("*").Qual(modelsPkg, "QueryFilter"),
+			utils.CtxParam(),
+			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -107,10 +110,10 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients"),
 		jen.Line(),
 		newClientMethod("GetOAuth2Clients").Params(
-			ctxParam(),
-			jen.ID("filter").Op("*").Qual(modelsPkg, "QueryFilter"),
+			utils.CtxParam(),
+			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
 		).Params(
-			jen.Op("*").Qual(modelsPkg, "OAuth2ClientList"),
+			jen.Op("*").Qual(utils.ModelsPkg, "OAuth2ClientList"),
 			jen.ID("error"),
 		).Block(
 			jen.List(
@@ -130,7 +133,7 @@ func oauth2ClientsDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			jen.Var().ID("oauth2Clients").Op("*").Qual(modelsPkg, "OAuth2ClientList"),
+			jen.Var().ID("oauth2Clients").Op("*").Qual(utils.ModelsPkg, "OAuth2ClientList"),
 			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
@@ -147,10 +150,10 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("BuildCreateOAuth2ClientRequest builds an HTTP request for creating OAuth2 clients"),
 		jen.Line(),
-		newClientMethod("BuildCreateOAuth2ClientRequest").ParamsLn(
-			ctxParam(),
+		newClientMethod("BuildCreateOAuth2ClientRequest").Paramsln(
+			utils.CtxParam(),
 			jen.ID("cookie").Op("*").Qual("net/http", "Cookie"),
-			jen.ID("body").Op("*").Qual(modelsPkg, "OAuth2ClientCreationInput"),
+			jen.ID("body").Op("*").Qual(utils.ModelsPkg, "OAuth2ClientCreationInput"),
 		).Params(jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error")).Block(
 			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
@@ -185,20 +188,20 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(comments(
+	ret.Add(utils.Comments(
 		"CreateOAuth2Client creates an OAuth2 client. Note that cookie must not be nil",
 		"in order to receive a valid response",
 	)...)
 	ret.Add(
-		newClientMethod("CreateOAuth2Client").ParamsLn(
-			ctxParam(),
+		newClientMethod("CreateOAuth2Client").Paramsln(
+			utils.CtxParam(),
 			jen.ID("cookie").Op("*").Qual("net/http", "Cookie"),
-			jen.ID("input").Op("*").Qual(modelsPkg, "OAuth2ClientCreationInput"),
+			jen.ID("input").Op("*").Qual(utils.ModelsPkg, "OAuth2ClientCreationInput"),
 		).Params(
-			jen.Op("*").Qual(modelsPkg, "OAuth2Client"),
+			jen.Op("*").Qual(utils.ModelsPkg, "OAuth2Client"),
 			jen.ID("error"),
 		).Block(
-			jen.Var().ID("oauth2Client").Op("*").Qual(modelsPkg, "OAuth2Client"),
+			jen.Var().ID("oauth2Client").Op("*").Qual(utils.ModelsPkg, "OAuth2Client"),
 			jen.If(jen.ID("cookie").Op("==").ID("nil")).Block(
 				jen.Return().List(
 					jen.ID("nil"),
@@ -275,7 +278,7 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment("BuildArchiveOAuth2ClientRequest builds an HTTP request for archiving an oauth2 client"),
 		jen.Line(),
 		newClientMethod("BuildArchiveOAuth2ClientRequest").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
@@ -303,7 +306,7 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client"),
 		jen.Line(),
 		newClientMethod("ArchiveOAuth2Client").Params(
-			ctxParam(),
+			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.ID("error"),

@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 	"net/http"
 	"net/http/httputil"
 	"strconv"
-
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 const usersBasePath = "users"

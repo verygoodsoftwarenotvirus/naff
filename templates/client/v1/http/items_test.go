@@ -2,267 +2,106 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"strconv"
-	"strings"
-	"testing"
-
 	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"net/http"
+	"strconv"
 )
 
-func TestV1Client_BuildGetItemRequest(T *testing.T) {
-	T.Parallel()
+const (
+	itemsBasePath = "items"
+)
 
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-		expectedMethod := http.MethodGet
-		ts := httptest.NewTLSServer(nil)
+// BuildGetItemRequest builds an HTTP request for fetching an item
+func (c *V1Client) BuildGetItemRequest(ctx context.Context, id uint64) (*http.Request, error) {
+	uri := c.BuildURL(nil, itemsBasePath, strconv.FormatUint(id, 10))
 
-		c := buildTestClient(t, ts)
-		expectedID := uint64(1)
-		actual, err := c.BuildGetItemRequest(ctx, expectedID)
-
-		require.NotNil(t, actual)
-		assert.NoError(t, err, "no error should be returned")
-		assert.True(t, strings.HasSuffix(actual.URL.String(), fmt.Sprintf("%d", expectedID)))
-		assert.Equal(t, actual.Method, expectedMethod, "request should be a %s request", expectedMethod)
-	})
+	return http.NewRequest(http.MethodGet, uri, nil)
 }
 
-func TestV1Client_GetItem(T *testing.T) {
-	T.Parallel()
+// GetItem retrieves an item
+func (c *V1Client) GetItem(ctx context.Context, id uint64) (item *models.Item, err error) {
+	req, err := c.BuildGetItemRequest(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("building request: %w", err)
+	}
 
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-		expected := &models.Item{
-			ID:      1,
-			Name:    "example",
-			Details: "blah",
-		}
+	if retrieveErr := c.retrieve(ctx, req, &item); retrieveErr != nil {
+		return nil, retrieveErr
+	}
 
-		ts := httptest.NewTLSServer(
-			http.HandlerFunc(
-				func(res http.ResponseWriter, req *http.Request) {
-					assert.True(t, strings.HasSuffix(req.URL.String(), strconv.Itoa(int(expected.ID))))
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/items/%d", expected.ID), "expected and actual path don't match")
-					assert.Equal(t, req.Method, http.MethodGet)
-					require.NoError(t, json.NewEncoder(res).Encode(expected))
-				},
-			),
-		)
-
-		c := buildTestClient(t, ts)
-		actual, err := c.GetItem(ctx, expected.ID)
-
-		require.NotNil(t, actual)
-		assert.NoError(t, err, "no error should be returned")
-		assert.Equal(t, expected, actual)
-	})
+	return item, nil
 }
 
-func TestV1Client_BuildGetItemsRequest(T *testing.T) {
-	T.Parallel()
+// BuildGetItemsRequest builds an HTTP request for fetching items
+func (c *V1Client) BuildGetItemsRequest(ctx context.Context, filter *models.QueryFilter) (*http.Request, error) {
+	uri := c.BuildURL(filter.ToValues(), itemsBasePath)
 
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-		expectedMethod := http.MethodGet
-		ts := httptest.NewTLSServer(nil)
-
-		c := buildTestClient(t, ts)
-		actual, err := c.BuildGetItemsRequest(ctx, nil)
-
-		require.NotNil(t, actual)
-		assert.NoError(t, err, "no error should be returned")
-		assert.Equal(t, actual.Method, expectedMethod, "request should be a %s request", expectedMethod)
-	})
+	return http.NewRequest(http.MethodGet, uri, nil)
 }
 
-func TestV1Client_GetItems(T *testing.T) {
-	T.Parallel()
+// GetItems retrieves a list of items
+func (c *V1Client) GetItems(ctx context.Context, filter *models.QueryFilter) (items *models.ItemList, err error) {
+	req, err := c.BuildGetItemsRequest(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("building request: %w", err)
+	}
 
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-		expected := &models.ItemList{
-			Items: []models.Item{
-				{
-					ID:      1,
-					Name:    "example",
-					Details: "blah",
-				},
-			},
-		}
+	if retrieveErr := c.retrieve(ctx, req, &items); retrieveErr != nil {
+		return nil, retrieveErr
+	}
 
-		ts := httptest.NewTLSServer(
-			http.HandlerFunc(
-				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, "/api/v1/items", "expected and actual path don't match")
-					assert.Equal(t, req.Method, http.MethodGet)
-					require.NoError(t, json.NewEncoder(res).Encode(expected))
-				},
-			),
-		)
-
-		c := buildTestClient(t, ts)
-		actual, err := c.GetItems(ctx, nil)
-
-		require.NotNil(t, actual)
-		assert.NoError(t, err, "no error should be returned")
-		assert.Equal(t, expected, actual)
-	})
+	return items, nil
 }
 
-func TestV1Client_BuildCreateItemRequest(T *testing.T) {
-	T.Parallel()
+// BuildCreateItemRequest builds an HTTP request for creating an item
+func (c *V1Client) BuildCreateItemRequest(ctx context.Context, body *models.ItemCreationInput) (*http.Request, error) {
+	uri := c.BuildURL(nil, itemsBasePath)
 
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-		expectedMethod := http.MethodPost
-		ts := httptest.NewTLSServer(nil)
-
-		exampleInput := &models.ItemCreationInput{
-			Name:    "expected name",
-			Details: "expected details",
-		}
-		c := buildTestClient(t, ts)
-		actual, err := c.BuildCreateItemRequest(ctx, exampleInput)
-
-		require.NotNil(t, actual)
-		assert.NoError(t, err, "no error should be returned")
-		assert.Equal(t, actual.Method, expectedMethod, "request should be a %s request", expectedMethod)
-	})
+	return c.buildDataRequest(http.MethodPost, uri, body)
 }
 
-func TestV1Client_CreateItem(T *testing.T) {
-	T.Parallel()
+// CreateItem creates an item
+func (c *V1Client) CreateItem(ctx context.Context, input *models.ItemCreationInput) (item *models.Item, err error) {
+	req, err := c.BuildCreateItemRequest(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("building request: %w", err)
+	}
 
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-		expected := &models.Item{
-			ID:      1,
-			Name:    "example",
-			Details: "blah",
-		}
-		exampleInput := &models.ItemCreationInput{
-			Name:    expected.Name,
-			Details: expected.Details,
-		}
-
-		ts := httptest.NewTLSServer(
-			http.HandlerFunc(
-				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, "/api/v1/items", "expected and actual path don't match")
-					assert.Equal(t, req.Method, http.MethodPost)
-
-					var x *models.ItemCreationInput
-					require.NoError(t, json.NewDecoder(req.Body).Decode(&x))
-					assert.Equal(t, exampleInput, x)
-
-					require.NoError(t, json.NewEncoder(res).Encode(expected))
-					res.WriteHeader(http.StatusOK)
-				},
-			),
-		)
-
-		c := buildTestClient(t, ts)
-		actual, err := c.CreateItem(ctx, exampleInput)
-
-		require.NotNil(t, actual)
-		assert.NoError(t, err, "no error should be returned")
-		assert.Equal(t, expected, actual)
-	})
+	err = c.executeRequest(ctx, req, &item)
+	return item, err
 }
 
-func TestV1Client_BuildUpdateItemRequest(T *testing.T) {
-	T.Parallel()
+// BuildUpdateItemRequest builds an HTTP request for updating an item
+func (c *V1Client) BuildUpdateItemRequest(ctx context.Context, updated *models.Item) (*http.Request, error) {
+	uri := c.BuildURL(nil, itemsBasePath, strconv.FormatUint(updated.ID, 10))
 
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-		expectedMethod := http.MethodPut
-		exampleInput := &models.Item{
-			Name:    "changed name",
-			Details: "changed details",
-		}
-
-		ts := httptest.NewTLSServer(nil)
-		c := buildTestClient(t, ts)
-		actual, err := c.BuildUpdateItemRequest(ctx, exampleInput)
-
-		require.NotNil(t, actual)
-		assert.NoError(t, err, "no error should be returned")
-		assert.Equal(t, actual.Method, expectedMethod, "request should be a %s request", expectedMethod)
-	})
+	return c.buildDataRequest(http.MethodPut, uri, updated)
 }
 
-func TestV1Client_UpdateItem(T *testing.T) {
-	T.Parallel()
+// UpdateItem updates an item
+func (c *V1Client) UpdateItem(ctx context.Context, updated *models.Item) error {
+	req, err := c.BuildUpdateItemRequest(ctx, updated)
+	if err != nil {
+		return fmt.Errorf("building request: %w", err)
+	}
 
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-		expected := &models.Item{
-			ID:      1,
-			Name:    "example",
-			Details: "blah",
-		}
-
-		ts := httptest.NewTLSServer(
-			http.HandlerFunc(
-				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/items/%d", expected.ID), "expected and actual path don't match")
-					assert.Equal(t, req.Method, http.MethodPut)
-					res.WriteHeader(http.StatusOK)
-				},
-			),
-		)
-
-		err := buildTestClient(t, ts).UpdateItem(ctx, expected)
-		assert.NoError(t, err, "no error should be returned")
-	})
+	return c.executeRequest(ctx, req, &updated)
 }
 
-func TestV1Client_BuildArchiveItemRequest(T *testing.T) {
-	T.Parallel()
+// BuildArchiveItemRequest builds an HTTP request for updating an item
+func (c *V1Client) BuildArchiveItemRequest(ctx context.Context, id uint64) (*http.Request, error) {
+	uri := c.BuildURL(nil, itemsBasePath, strconv.FormatUint(id, 10))
 
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-		expectedMethod := http.MethodDelete
-		ts := httptest.NewTLSServer(nil)
-
-		expectedID := uint64(1)
-		c := buildTestClient(t, ts)
-		actual, err := c.BuildArchiveItemRequest(ctx, expectedID)
-
-		require.NotNil(t, actual)
-		require.NotNil(t, actual.URL)
-		assert.True(t, strings.HasSuffix(actual.URL.String(), fmt.Sprintf("%d", expectedID)))
-		assert.NoError(t, err, "no error should be returned")
-		assert.Equal(t, actual.Method, expectedMethod, "request should be a %s request", expectedMethod)
-	})
+	return http.NewRequest(http.MethodDelete, uri, nil)
 }
 
-func TestV1Client_ArchiveItem(T *testing.T) {
-	T.Parallel()
+// ArchiveItem archives an item
+func (c *V1Client) ArchiveItem(ctx context.Context, id uint64) error {
+	req, err := c.BuildArchiveItemRequest(ctx, id)
+	if err != nil {
+		return fmt.Errorf("building request: %w", err)
+	}
 
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-		expected := uint64(1)
-
-		ts := httptest.NewTLSServer(
-			http.HandlerFunc(
-				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/items/%d", expected), "expected and actual path don't match")
-					assert.Equal(t, req.Method, http.MethodDelete)
-					res.WriteHeader(http.StatusOK)
-				},
-			),
-		)
-
-		err := buildTestClient(t, ts).ArchiveItem(ctx, expected)
-		assert.NoError(t, err, "no error should be returned")
-	})
+	return c.executeRequest(ctx, req, nil)
 }

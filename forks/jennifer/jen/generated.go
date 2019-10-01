@@ -54,20 +54,20 @@ func (s *Statement) List(items ...Code) *Statement {
 	return s
 }
 
-// ListLn renders a comma separated list. Use for multiple return functions.
-func ListLn(items ...Code) *Statement {
-	return newStatement().ListLn(items...)
+// Listln renders a comma separated list. Use for multiple return functions.
+func Listln(items ...Code) *Statement {
+	return newStatement().Listln(items...)
 }
 
-// ListLn renders a comma separated list. Use for multiple return functions.
-func (g *Group) ListLn(items ...Code) *Statement {
-	s := ListLn(items...)
+// Listln renders a comma separated list. Use for multiple return functions.
+func (g *Group) Listln(items ...Code) *Statement {
+	s := Listln(items...)
 	g.items = append(g.items, s)
 	return s
 }
 
-// ListLn renders a comma separated list. Use for multiple return functions.
-func (s *Statement) ListLn(items ...Code) *Statement {
+// Listln renders a comma separated list. Use for multiple return functions.
+func (s *Statement) Listln(items ...Code) *Statement {
 	g := &Group{
 		close:     "",
 		items:     items,
@@ -132,20 +132,20 @@ func (s *Statement) Values(values ...Code) *Statement {
 	return s
 }
 
-// ValuesLn renders a comma-and-newline separated list enclosed by curly braces. Use for slice or composite literals.
-func ValuesLn(values ...Code) *Statement {
-	return newStatement().ValuesLn(values...)
+// Valuesln renders a comma-and-newline separated list enclosed by curly braces. Use for slice or composite literals.
+func Valuesln(values ...Code) *Statement {
+	return newStatement().Valuesln(values...)
 }
 
-// ValuesLn renders a comma-and-newline separated list enclosed by curly braces. Use for slice or composite literals.
-func (g *Group) ValuesLn(values ...Code) *Statement {
-	s := ValuesLn(values...)
+// Valuesln renders a comma-and-newline separated list enclosed by curly braces. Use for slice or composite literals.
+func (g *Group) Valuesln(values ...Code) *Statement {
+	s := Valuesln(values...)
 	g.items = append(g.items, s)
 	return s
 }
 
-// ValuesLn renders a comma-and-newline separated list enclosed by curly braces. Use for slice or composite literals.
-func (s *Statement) ValuesLn(values ...Code) *Statement {
+// Valuesln renders a comma-and-newline separated list enclosed by curly braces. Use for slice or composite literals.
+func (s *Statement) Valuesln(values ...Code) *Statement {
 	g := &Group{
 		close:     ",\n}",
 		items:     values,
@@ -366,20 +366,20 @@ func (s *Statement) Call(params ...Code) *Statement {
 	return s
 }
 
-// CallLn renders a comma separated list enclosed by parenthesis. Use for function calls.
-func CallLn(params ...Code) *Statement {
+// Callln renders a comma separated list enclosed by parenthesis. Use for function calls.
+func Callln(params ...Code) *Statement {
 	return newStatement().Call(params...)
 }
 
-// CallLn renders a comma separated list enclosed by parenthesis. Use for function calls.
-func (g *Group) CallLn(params ...Code) *Statement {
+// Callln renders a comma separated list enclosed by parenthesis. Use for function calls.
+func (g *Group) Callln(params ...Code) *Statement {
 	s := Call(params...)
 	g.items = append(g.items, s)
 	return s
 }
 
-// CallLn renders a comma separated list enclosed by parenthesis. Use for function calls.
-func (s *Statement) CallLn(params ...Code) *Statement {
+// Callln renders a comma separated list enclosed by parenthesis. Use for function calls.
+func (s *Statement) Callln(params ...Code) *Statement {
 	g := &Group{
 		close:     ",\n)",
 		items:     params,
@@ -444,20 +444,20 @@ func (s *Statement) Params(params ...Code) *Statement {
 	return s
 }
 
-// ParamsLn renders a comma-and-newline separated list enclosed by parenthesis. Use for function parameters and method receivers.
-func ParamsLn(params ...Code) *Statement {
-	return newStatement().ParamsLn(params...)
+// Paramsln renders a comma-and-newline separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func Paramsln(params ...Code) *Statement {
+	return newStatement().Paramsln(params...)
 }
 
-// ParamsLn renders a comma-and-newline separated list enclosed by parenthesis. Use for function parameters and method receivers.
-func (g *Group) ParamsLn(params ...Code) *Statement {
-	s := ParamsLn(params...)
+// Paramsln renders a comma-and-newline separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func (g *Group) Paramsln(params ...Code) *Statement {
+	s := Paramsln(params...)
 	g.items = append(g.items, s)
 	return s
 }
 
-// ParamsLn renders a comma-and-newline separated list enclosed by parenthesis. Use for function parameters and method receivers.
-func (s *Statement) ParamsLn(params ...Code) *Statement {
+// Paramsln renders a comma-and-newline separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func (s *Statement) Paramsln(params ...Code) *Statement {
 	g := &Group{
 		close:     ",\n)",
 		items:     params,

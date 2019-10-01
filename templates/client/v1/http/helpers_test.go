@@ -4,17 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	mockutil "gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
-
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
-	mockutil "gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
 type testingType struct {
@@ -45,21 +43,18 @@ func TestArgIsNotPointer(T *testing.T) {
 
 	T.Run("expected use", func(t *testing.T) {
 		notAPointer, err := argIsNotPointer(&testingType{})
-
 		assert.False(t, notAPointer, "expected `false` when a pointer is provided")
 		assert.NoError(t, err, "error should not be returned when a pointer is provided")
 	})
 
 	T.Run("with non-pointer", func(t *testing.T) {
 		notAPointer, err := argIsNotPointer(testingType{})
-
 		assert.True(t, notAPointer, "expected `true` when a non-pointer is provided")
 		assert.Error(t, err, "error should be returned when a non-pointer is provided")
 	})
 
 	T.Run("with nil", func(t *testing.T) {
 		notAPointer, err := argIsNotPointer(nil)
-
 		assert.True(t, notAPointer, "expected `true` when nil is provided")
 		assert.Error(t, err, "error should be returned when nil is provided")
 	})
@@ -70,21 +65,18 @@ func TestArgIsNotNil(T *testing.T) {
 
 	T.Run("without nil", func(t *testing.T) {
 		isNil, err := argIsNotNil(&testingType{})
-
 		assert.False(t, isNil, "expected `false` when a pointer is provided")
 		assert.NoError(t, err, "error should not be returned when a pointer is provided")
 	})
 
 	T.Run("with non-pointer", func(t *testing.T) {
 		isNil, err := argIsNotNil(testingType{})
-
 		assert.False(t, isNil, "expected `true` when a non-pointer is provided")
 		assert.NoError(t, err, "error should not be returned when a non-pointer is provided")
 	})
 
 	T.Run("with nil", func(t *testing.T) {
 		isNil, err := argIsNotNil(nil)
-
 		assert.True(t, isNil, "expected `true` when nil is provided")
 		assert.Error(t, err, "error should be returned when nil is provided")
 	})

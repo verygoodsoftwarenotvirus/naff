@@ -2,6 +2,7 @@ package gen
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -164,6 +165,13 @@ func parseFile(code []byte) *ast.File {
 
 func genDecl(g *ast.GenDecl) jen.Code {
 	ret := jen.Qual(jenImp, "Null").Call()
+
+	if g.Doc != nil {
+		for _, comment := range g.Doc.List {
+			ret.Add(jen.Qual(jenImp, "Comment").Call(jen.Lit(fmt.Sprintf("// %s", comment.Text))))
+		}
+	}
+
 	for _, spec := range g.Specs {
 		switch s := spec.(type) {
 		case *ast.ValueSpec:
@@ -203,7 +211,7 @@ func basicLit(b *ast.BasicLit) jen.Code {
 	case token.IMAG:
 		panic("Cannot parse Imaginary Numbers")
 	case token.CHAR:
-		return jen.Dot("Id").Call(jen.ID("\"" + b.Value + "\""))
+		return jen.Dot("ID").Call(jen.ID("\"" + b.Value + "\""))
 	case token.STRING:
 		return jen.Dot("Lit").Call(jen.ID(b.Value))
 	}
