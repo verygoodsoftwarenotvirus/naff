@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	tojen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/tojen/gen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/new_templates/client/v1/http"
@@ -15,7 +16,9 @@ import (
 	"go/token"
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 func runDiffForFiles(file1, file2 string) (string, error) {
@@ -94,12 +97,12 @@ func main() {
 	cmdv1server.RenderPackage(todoDataTypes)
 	twofactor.RenderPackage(todoDataTypes)
 
-	//sourcePath := filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/todo")
-	//path := fmt.Sprintf("%s/cmd/toosls/two_factor/main.go", sourcePath)
-	//thing := doTheThingForFile(path, "main")
-	//if thing != nil {
-	//	println()
-	//}
+	sourcePath := filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/todo")
+	path := fmt.Sprintf("%s/cmd/toosls/two_factor/main.go", sourcePath)
+	thing := doTheThingForFile(path, "main")
+	if thing != nil {
+		println()
+	}
 }
 
 func doTheThingForFile(path, pkg string) error {

@@ -2,12 +2,13 @@ package twofactor
 
 import (
 	"bytes"
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"io/ioutil"
 	"log"
 	"os"
+
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 var (
@@ -120,18 +121,10 @@ func mainDotGo() *jen.File {
 			jen.ID("string")).Block(
 			jen.Var().ID("out").ID("string"),
 			jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
-				jen.If(
-					jen.ID("i").Op("!=").Lit(0),
-				).Block(
-					jen.ID("out").Op("+=").Lit("\n"),
-				),
+				jen.If(jen.ID("i").Op("!=").Lit(0)).Block(jen.ID("out").Op("+=").Lit("\n")),
 				jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().Qual("strings", "Split").Call(jen.ID("token"), jen.Lit(""))).Block(
 					jen.List(jen.ID("y"), jen.ID("err")).Op(":=").Qual("strconv", "Atoi").Call(jen.ID("x")),
-					jen.If(
-						jen.ID("err").Op("!=").ID("nil"),
-					).Block(
-						jen.ID("panic").Call(jen.ID("err")),
-					),
+					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(jen.ID("panic").Call(jen.ID("err"))),
 					jen.ID("out").Op("+=").Lit("  "),
 					jen.ID("out").Op("+=").ID("numbers").Index(jen.ID("y")).Index(jen.ID("i")),
 				),
@@ -139,7 +132,8 @@ func mainDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("out").Op("+=").Lit("\n\n").Op("+").Parens(
 				jen.Lit(30).Op("*").Qual("time", "Second").
-					Op("-").Qual("time", "Since").Call(jen.ID("lastChange")).Dot("Round").
+					Op("-").Qual("time", "Since").
+					Call(jen.ID("lastChange")).Dot("Round").
 					Call(jen.Qual("time", "Second")),
 			).Dot("String").Call().Op("+").Lit("\n"),
 			jen.Line(),
@@ -169,7 +163,7 @@ func mainDotGo() *jen.File {
 					"Validate",
 				).Call(jen.ID("code"), jen.ID("t")),
 			).Block(
-				jen.ID("panic").Call(jen.Lit("omg are you serious???????????")),
+				jen.ID("panic").Call(jen.Lit("this shouldn't happen")),
 			),
 			jen.Line(),
 			jen.ID("clearTheScreen").Call(),

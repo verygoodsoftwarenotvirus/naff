@@ -122,7 +122,7 @@ func buildDoubleValueTestifyFunc(pkg, method string) func(expected, actual, mess
 }
 
 func BuildTemplatePath(tail string) string {
-	return filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/naff/templates", tail)
+	return filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/naff/test_output", tail)
 }
 
 func BuildSubTest(name string, testInstructions ...jen.Code) jen.Code {
