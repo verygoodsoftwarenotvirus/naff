@@ -1,13 +1,15 @@
-package main
+package load
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func webhooksDotGo() *jen.File {
-	ret := jen.NewFile("main")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
+	ret.Add(jen.Func())
 	ret.Add(jen.Func().ID("buildWebhookActions").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
 		jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(jen.Lit("GetWebhooks").Op(":").Valuesln(jen.ID("Name").Op(":").Lit("GetWebhooks"), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
 			jen.Return().ID("c").Dot(

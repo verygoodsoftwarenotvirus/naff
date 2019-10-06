@@ -1,11 +1,14 @@
-package main
+package webhooks
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func webhooksServiceDotGo() *jen.File {
 	ret := jen.NewFile("webhooks")
-	ret.Add(jen.Null(),
-	)
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null().Var().ID("CreateMiddlewareCtxKey").ID("models").Dot(
 		"ContextKey",
 	).Op("=").Lit("webhook_create_input").Var().ID("UpdateMiddlewareCtxKey").ID("models").Dot(
@@ -40,7 +43,6 @@ func webhooksServiceDotGo() *jen.File {
 		jen.ID("eventManager").ID("eventManager"),
 	).Type().ID("UserIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Type().ID("WebhookIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
 	return ret
 }

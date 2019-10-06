@@ -1,11 +1,14 @@
-package main
+package randmodel
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func usersDotGo() *jen.File {
-	ret := jen.NewFile("randmodel")
-	ret.Add(jen.Null(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
 	ret.Add(jen.Func().ID("init").Params().Block(
 		jen.ID("fake").Dot(
 			"Seed",
@@ -28,7 +31,6 @@ func usersDotGo() *jen.File {
 		jen.Return().ID("code"),
 	),
 	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
 	return ret
 }

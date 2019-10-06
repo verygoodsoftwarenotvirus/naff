@@ -1,15 +1,16 @@
-package main
+package frontend
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func initDotGo() *jen.File {
 	ret := jen.NewFile("frontend")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Null().Var().ID("urlToUse").ID("string"),
-	)
-	ret.Add(jen.Null().Var().ID("seleniumHubAddr").Op("=").Lit("http://selenium-hub:4444/wd/hub"),
-	)
+	utils.AddImports(ret)
+
+	ret.Add(jen.Null().Var().ID("urlToUse").ID("string"))
+	ret.Add(jen.Null().Var().ID("seleniumHubAddr").Op("=").Lit("http://selenium-hub:4444/wd/hub"))
 	ret.Add(jen.Func().ID("init").Params().Block(
 		jen.ID("urlToUse").Op("=").ID("testutil").Dot(
 			"DetermineServiceURL",

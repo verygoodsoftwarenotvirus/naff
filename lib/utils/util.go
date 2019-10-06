@@ -81,6 +81,10 @@ func AssertNoError(value, message *jen.Statement, formatArgs ...*jen.Statement) 
 	return buildSingleValueTestifyFunc(a, "NoError")(value, message, formatArgs...)
 }
 
+func AssertNotEmpty(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
+	return buildSingleValueTestifyFunc(a, "NotEmpty")(value, message, formatArgs...)
+}
+
 func AssertEqual(expected, actual, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildDoubleValueTestifyFunc(a, "Equal")(expected, actual, message, formatArgs...)
 }

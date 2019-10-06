@@ -1,11 +1,14 @@
-package main
+package server
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func serverDotGo() *jen.File {
-	ret := jen.NewFile("server")
-	ret.Add(jen.Null(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null().Type().ID("Server").Struct(
 		jen.ID("config").Op("*").ID("config").Dot(
 			"ServerConfig",
@@ -17,9 +20,7 @@ func serverDotGo() *jen.File {
 		"NewSet",
 	).Call(jen.ID("ProvideServer")),
 	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
 	return ret
 }

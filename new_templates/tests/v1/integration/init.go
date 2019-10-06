@@ -1,15 +1,16 @@
-package main
+package integration
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func initDotGo() *jen.File {
 	ret := jen.NewFile("integration")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Null().Var().ID("debug").Op("=").ID("true").Var().ID("nonexistentID").Op("=").Lit(999999999),
-	)
-	ret.Add(jen.Null().Var().ID("urlToUse").ID("string").Var().ID("todoClient").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client"),
-	)
+	utils.AddImports(ret)
+
+	ret.Add(jen.Null().Var().ID("debug").Op("=").ID("true").Var().ID("nonexistentID").Op("=").Lit(999999999))
+	ret.Add(jen.Null().Var().ID("urlToUse").ID("string").Var().ID("todoClient").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client"))
 	ret.Add(jen.Func().ID("init").Params().Block(
 		jen.ID("urlToUse").Op("=").ID("testutil").Dot(
 			"DetermineServiceURL",

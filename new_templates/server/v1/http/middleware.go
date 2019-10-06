@@ -1,13 +1,15 @@
-package main
+package httpserver
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func middlewareDotGo() *jen.File {
-	ret := jen.NewFile("httpserver")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Null().Var().ID("idReplacementRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.Lit(`[^(v|oauth)]\d+`)),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
+	ret.Add(jen.Null().Var().ID("idReplacementRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.Lit(`[^(v|oauth)]\d+`)))
 	ret.Add(jen.Func().ID("formatSpanNameForRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("string")).Block(
 		jen.Return().Qual("fmt", "Sprintf").Call(jen.Lit("%s %s"), jen.ID("req").Dot(
 			"Method",

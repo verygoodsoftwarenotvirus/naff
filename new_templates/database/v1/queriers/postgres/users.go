@@ -1,43 +1,30 @@
-package main
+package postgres
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func usersDotGo() *jen.File {
-	ret := jen.NewFile("postgres")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Null().Var().ID("usersTableName").Op("=").Lit("users"),
-	)
-	ret.Add(jen.Null().Var().ID("usersTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("username"), jen.Lit("hashed_password"), jen.Lit("password_last_changed_on"), jen.Lit("two_factor_secret"), jen.Lit("is_admin"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on")),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
+	ret.Add(jen.Null().Var().ID("usersTableName").Op("=").Lit("users"))
+	ret.Add(jen.Null().Var().ID("usersTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("username"), jen.Lit("hashed_password"), jen.Lit("password_last_changed_on"), jen.Lit("two_factor_secret"), jen.Lit("is_admin"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on")))
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
 	ret.Add(jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildArchiveUserQuery").Params(jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 		jen.Null().Var().ID("err").ID("error"),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
@@ -67,7 +54,6 @@ func usersDotGo() *jen.File {
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
 	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
 	return ret
 }

@@ -1,4 +1,4 @@
-package main
+package testutilmock
 
 import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 

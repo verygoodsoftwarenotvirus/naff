@@ -1,11 +1,14 @@
-package main
+package sqlite
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func migrationsDotGo() *jen.File {
-	ret := jen.NewFile("sqlite")
-	ret.Add(jen.Null(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null().Var().ID("migrations").Op("=").Index().ID("darwin").Dot(
 		"Migration",
 	).Valuesln(jen.Valuesln(jen.ID("Version").Op(":").Lit(1), jen.ID("Description").Op(":").Lit("create users table"), jen.ID("Script").Op(":").Lit(`
@@ -61,9 +64,7 @@ func migrationsDotGo() *jen.File {
 				FOREIGN KEY(belongs_to) REFERENCES users(id)
 			);`))),
 	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
 	return ret
 }

@@ -40,5 +40,7 @@ func renderFile(path string, file *jen.File) {
 		log.Fatal(err)
 	}
 
-	utils.RunGoimportsForFile(fp)
+if err := utils.RunGoimportsForFile(fp); err != nil {
+	log.Println(err)
+	}
 }

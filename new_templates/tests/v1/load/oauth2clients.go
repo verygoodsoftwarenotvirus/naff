@@ -1,13 +1,15 @@
-package main
+package load
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func oauth2ClientsDotGo() *jen.File {
-	ret := jen.NewFile("main")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
+	ret.Add(jen.Func())
 	ret.Add(jen.Func().ID("buildOAuth2ClientActions").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
 		jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(jen.Lit("CreateOAuth2Client").Op(":").Valuesln(jen.ID("Name").Op(":").Lit("CreateOAuth2Client"), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
 			jen.ID("ui").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/rand/model", "RandomUserInput").Call(),

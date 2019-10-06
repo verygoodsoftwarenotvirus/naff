@@ -1,11 +1,14 @@
-package main
+package load
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func initDotGo() *jen.File {
-	ret := jen.NewFile("main")
-	ret.Add(jen.Null(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null().Var().ID("debug").ID("bool").Var().ID("urlToUse").ID("string").Var().ID("oa2Client").Op("*").ID("models").Dot(
 		"OAuth2Client",
 	),

@@ -1,13 +1,15 @@
-package main
+package frontend
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func httpRoutesDotGo() *jen.File {
 	ret := jen.NewFile("frontend")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Func(),
-	)
+	utils.AddImports(ret)
+
+	ret.Add(jen.Func())
 	ret.Add(jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").ID("string")).Params(jen.Op("*").ID("afero").Dot(
 		"HttpFs",
 	), jen.ID("error")).Block(
@@ -89,9 +91,7 @@ func httpRoutesDotGo() *jen.File {
 		).Call(jen.ID("afs")), jen.ID("nil")),
 	),
 	)
-	ret.Add(jen.Null().Var().ID("itemsFrontendPathRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.Lit(`/items/\d+`)),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Null().Var().ID("itemsFrontendPathRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.Lit(`/items/\d+`)))
+	ret.Add(jen.Func())
 	return ret
 }

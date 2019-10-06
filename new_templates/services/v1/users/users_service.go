@@ -1,11 +1,14 @@
-package main
+package users
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func usersServiceDotGo() *jen.File {
 	ret := jen.NewFile("users")
-	ret.Add(jen.Null(),
-	)
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null().Var().ID("MiddlewareCtxKey").ID("models").Dot(
 		"ContextKey",
 	).Op("=").Lit("user_input").Var().ID("counterName").ID("metrics").Dot(
@@ -40,7 +43,6 @@ func usersServiceDotGo() *jen.File {
 		jen.ID("userCreationEnabled").ID("bool"),
 	).Type().ID("UserIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
 	return ret
 }

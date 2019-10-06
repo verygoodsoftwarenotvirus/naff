@@ -1,13 +1,15 @@
-package main
+package httpserver
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func routesDotGo() *jen.File {
-	ret := jen.NewFile("httpserver")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Null().Var().ID("numericIDPattern").Op("=").Lit(`/{%s:[0-9]+}`).Var().ID("oauth2IDPattern").Op("=").Lit(`/{%s:[0-9_\-]+}`),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
+	ret.Add(jen.Null().Var().ID("numericIDPattern").Op("=").Lit(`/{%s:[0-9]+}`).Var().ID("oauth2IDPattern").Op("=").Lit(`/{%s:[0-9_\-]+}`))
 	ret.Add(jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").ID("config").Dot(
 		"FrontendSettings",
 	), jen.ID("metricsHandler").ID("metrics").Dot(

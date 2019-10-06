@@ -1,13 +1,15 @@
-package main
+package mariadb
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func mariadbDotGo() *jen.File {
-	ret := jen.NewFile("mariadb")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Null().Var().ID("loggerName").Op("=").Lit("mariadb").Var().ID("mariaDBDriverName").Op("=").Lit("wrapped-mariadb-driver").Var().ID("CountQuery").Op("=").Lit("COUNT(id)").Var().ID("CurrentUnixTimeQuery").Op("=").Lit("UNIX_TIMESTAMP()"),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
+	ret.Add(jen.Null().Var().ID("loggerName").Op("=").Lit("mariadb").Var().ID("mariaDBDriverName").Op("=").Lit("wrapped-mariadb-driver").Var().ID("CountQuery").Op("=").Lit("COUNT(id)").Var().ID("CurrentUnixTimeQuery").Op("=").Lit("UNIX_TIMESTAMP()"))
 	ret.Add(jen.Func().ID("init").Params().Block(
 		jen.ID("driver").Op(":=").ID("ocsql").Dot(
 			"Wrap",
@@ -37,17 +39,11 @@ func mariadbDotGo() *jen.File {
 		jen.ID("debug").ID("bool"),
 	).Type().ID("ConnectionDetails").ID("string").Type().ID("Querier").Interface(jen.ID("ExecContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.ID("error")), jen.ID("QueryContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Op("*").Qual("database/sql", "Rows"), jen.ID("error")), jen.ID("QueryRowContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Op("*").Qual("database/sql", "Row"))),
 	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
 	return ret
 }

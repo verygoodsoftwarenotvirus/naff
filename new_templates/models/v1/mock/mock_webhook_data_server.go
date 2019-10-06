@@ -1,11 +1,14 @@
-package main
+package mockmodels
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func mockWebhookDataServerDotGo() *jen.File {
-	ret := jen.NewFile("mock")
-	ret.Add(jen.Null(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null().Var().ID("_").ID("models").Dot(
 		"WebhookDataServer",
 	).Op("=").Parens(jen.Op("*").ID("WebhookDataServer")).Call(jen.ID("nil")),
@@ -16,19 +19,12 @@ func mockWebhookDataServerDotGo() *jen.File {
 		),
 	),
 	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
 	return ret
 }

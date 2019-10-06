@@ -1,4 +1,4 @@
-package main
+package server
 
 import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 

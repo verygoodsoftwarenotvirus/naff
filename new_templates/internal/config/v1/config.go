@@ -1,13 +1,15 @@
-package main
+package config
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func configDotGo() *jen.File {
-	ret := jen.NewFile("config")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Null().Var().ID("defaultStartupDeadline").Op("=").Qual("time", "Minute").Var().ID("defaultCookieLifetime").Op("=").Lit(24).Op("*").Qual("time", "Hour").Var().ID("defaultMetricsCollectionInterval").Op("=").Lit(2).Op("*").Qual("time", "Second").Var().ID("defaultDatabaseMetricsCollectionInterval").Op("=").Lit(2).Op("*").Qual("time", "Second").Var().ID("randStringSize").Op("=").Lit(32),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
+	ret.Add(jen.Null().Var().ID("defaultStartupDeadline").Op("=").Qual("time", "Minute").Var().ID("defaultCookieLifetime").Op("=").Lit(24).Op("*").Qual("time", "Hour").Var().ID("defaultMetricsCollectionInterval").Op("=").Lit(2).Op("*").Qual("time", "Second").Var().ID("defaultDatabaseMetricsCollectionInterval").Op("=").Lit(2).Op("*").Qual("time", "Second").Var().ID("randStringSize").Op("=").Lit(32))
 	ret.Add(jen.Func().ID("init").Params().Block(
 		jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
 		jen.If(
@@ -55,13 +57,9 @@ func configDotGo() *jen.File {
 		jen.ID("Metrics").ID("MetricsSettings"),
 	).Type().ID("MarshalFunc").Params(jen.ID("v").Interface()).Params(jen.Index().ID("byte"), jen.ID("error")),
 	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
 	return ret
 }

@@ -1,13 +1,15 @@
-package main
+package httpserver
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func serverDotGo() *jen.File {
-	ret := jen.NewFile("httpserver")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Null().Var().ID("maxTimeout").Op("=").Lit(120).Op("*").Qual("time", "Second"),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
+	ret.Add(jen.Null().Var().ID("maxTimeout").Op("=").Lit(120).Op("*").Qual("time", "Second"))
 	ret.Add(jen.Null().Type().ID("Server").Struct(
 		jen.ID("DebugMode").ID("bool"),
 		jen.ID("authService").Op("*").ID("auth").Dot(
@@ -49,9 +51,7 @@ func serverDotGo() *jen.File {
 		),
 	),
 	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
 	return ret
 }

@@ -1,8 +1,8 @@
-package main
+package models
 
 import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
-func cookieauthDotGo() *jen.File {
+func cookieAuthDotGo() *jen.File {
 	ret := jen.NewFile("models")
 	ret.Add(jen.Null().Type().ID("CookieAuth").Struct(
 		jen.ID("UserID").ID("uint64"),

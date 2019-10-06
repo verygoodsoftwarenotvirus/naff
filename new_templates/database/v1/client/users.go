@@ -1,11 +1,14 @@
-package main
+package dbclient
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func usersDotGo() *jen.File {
-	ret := jen.NewFile("dbclient")
-	ret.Add(jen.Null(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null().Var().ID("_").ID("models").Dot(
 		"UserDataManager",
 	).Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")).Var().ID("ErrUserExists").Op("=").Qual("errors", "New").Call(jen.Lit("error: username already exists")),
@@ -20,19 +23,12 @@ func usersDotGo() *jen.File {
 		),
 	),
 	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
 	return ret
 }

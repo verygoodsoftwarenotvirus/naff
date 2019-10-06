@@ -6,9 +6,7 @@ import (
 )
 
 func mainTestDotGo() *jen.File {
-	ret := jen.NewFile("client")
-	ret.Add(jen.Null())
-
+	ret := jen.NewFile("$1")
 	utils.AddImports(ret)
 
 	// vars

@@ -1,13 +1,15 @@
-package main
+package sqlite
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func sqliteDotGo() *jen.File {
-	ret := jen.NewFile("sqlite")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Null().Var().ID("loggerName").Op("=").Lit("sqlite").Var().ID("sqliteDriverName").Op("=").Lit("wrapped-sqlite-driver").Var().ID("CountQuery").Op("=").Lit("COUNT(id)").Var().ID("CurrentUnixTimeQuery").Op("=").Lit("(strftime('%s','now'))"),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
+	ret.Add(jen.Null().Var().ID("loggerName").Op("=").Lit("sqlite").Var().ID("sqliteDriverName").Op("=").Lit("wrapped-sqlite-driver").Var().ID("CountQuery").Op("=").Lit("COUNT(id)").Var().ID("CurrentUnixTimeQuery").Op("=").Lit("(strftime('%s','now'))"))
 	ret.Add(jen.Func().ID("init").Params().Block(
 		jen.ID("driver").Op(":=").ID("ocsql").Dot(
 			"Wrap",
@@ -41,17 +43,11 @@ func sqliteDotGo() *jen.File {
 		jen.ID("debug").ID("bool"),
 	).Type().ID("ConnectionDetails").ID("string").Type().ID("Querier").Interface(jen.ID("ExecContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.ID("error")), jen.ID("QueryContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Op("*").Qual("database/sql", "Rows"), jen.ID("error")), jen.ID("QueryRowContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Op("*").Qual("database/sql", "Row"))),
 	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
 	return ret
 }

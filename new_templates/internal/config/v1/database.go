@@ -1,14 +1,15 @@
-package main
+package config
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func databaseDotGo() *jen.File {
-	ret := jen.NewFile("config")
-	ret.Add(jen.Null(),
-	)
-	ret.Add(jen.Null().Var().ID("postgresProviderKey").Op("=").Lit("postgres").Var().ID("mariaDBProviderKey").Op("=").Lit("mariadb").Var().ID("sqliteProviderKey").Op("=").Lit("sqlite"),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
+	ret.Add(jen.Null().Var().ID("postgresProviderKey").Op("=").Lit("postgres").Var().ID("mariaDBProviderKey").Op("=").Lit("mariadb").Var().ID("sqliteProviderKey").Op("=").Lit("sqlite"))
+	ret.Add(jen.Func())
 	return ret
 }

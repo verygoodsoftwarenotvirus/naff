@@ -1,23 +1,22 @@
-package main
+package load
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func mainDotGo() *jen.File {
-	ret := jen.NewFile("main")
-	ret.Add(jen.Null(),
-	)
+	ret := jen.NewFile("$1")
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null().Type().ID("ServiceAttacker").Struct(
 		jen.ID("todoClient").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client"),
 	),
 	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
-	ret.Add(jen.Func(),
-	)
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
+	ret.Add(jen.Func())
 	ret.Add(jen.Func().ID("main").Params().Block(
 		jen.ID("todoClient").Op(":=").ID("initializeClient").Call(jen.ID("oa2Client")),
 		jen.Null().Var().ID("runTime").Op("=").Lit(10).Op("*").Qual("time", "Minute"),

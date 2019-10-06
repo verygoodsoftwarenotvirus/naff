@@ -8,17 +8,12 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 )
 
-const (
-	apiV1 = "api/v1"
-)
-
 func newClientMethod(name string) *jen.Statement {
 	return jen.Func().Params(jen.ID("c").Op("*").ID(v1)).ID(name)
 }
 
 func mainDotGo() *jen.File {
-	ret := jen.NewFile("client")
-	ret.Add(jen.Null())
+	ret := jen.NewFile("$1")
 
 	utils.AddImports(ret)
 	ret.Add(jen.Line())

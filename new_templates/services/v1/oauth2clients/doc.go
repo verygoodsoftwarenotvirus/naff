@@ -1,4 +1,4 @@
-package main
+package oauth2clients
 
 import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
