@@ -39,6 +39,11 @@ template-clean:
 	rm -rf template
 	mkdir -p template
 
+template-dirs:
+	for dir in `go list gitlab.com/verygoodsoftwarenotvirus/todo/...`; do \
+		echo $(subst gitlab.com/verygoodsoftwarenotvirus/naff/new_templates,gitlab.com/verygoodsoftwarenotvirus/todo,$$dir); \
+	done;
+
 templates: template-clean
 	go run cmd/tools/template_builder/main.go
 

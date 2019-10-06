@@ -2,20 +2,27 @@ package gen
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"log"
 	"strconv"
 	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 )
 
-var jenImp = "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+const jenImp = "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 func funcDecl(s *ast.FuncDecl) jen.Code {
-	ret := jen.Qual("gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen", "Func").Call()
+	ret := jen.Qual(jenImp, "Func").Call()
+
+	if s.Doc != nil {
+		for _, com := range s.Doc.List {
+			ret.Add(jen.Line(), jen.Qual(jenImp, "Comment").Call(jen.Lit(com.Text)))
+		}
+	}
+
 	if s.Recv != nil {
 		ret.Dot("Params").Call(fieldList(s.Recv)...)
 	}
@@ -26,11 +33,11 @@ func funcDecl(s *ast.FuncDecl) jen.Code {
 }
 
 var paths = map[string]string{}
-var formating = false
+var formatting = false
 
 // GenerateFileBytes takes an array of bytes and transforms it into jennifer
 // code
-func GenerateFileBytes(s []byte, packName string, main bool, formating bool) ([]byte, error) {
+func GenerateFileBytes(s []byte, packName string, main bool, formatting bool) ([]byte, error) {
 	file := GenerateFile(s, packName, main)
 	b := &bytes.Buffer{}
 	err := file.Render(b)
@@ -38,11 +45,7 @@ func GenerateFileBytes(s []byte, packName string, main bool, formating bool) ([]
 		return s, err
 	}
 	ret := b.Bytes()
-	if formating {
-		ret = formatNulls(ret)
-		ret = formatStructs(ret)
-		ret = formatBlock(ret)
-		ret = formatParams(ret)
+	if formatting {
 		ret, err = goFormat(ret)
 		if err != nil {
 			return ret, err
@@ -95,7 +98,7 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 		decls = append(decls, name)
 	}
 
-	// generate the function that pieces togeather all the code
+	// generate the function that pieces together all the code
 	var codes []jen.Code
 	codes = append(codes, genNewJenFile(astFile.Name.String()))
 	// add anon imports i.e. _ for side effects
@@ -144,6 +147,8 @@ func makeJenCode(s ast.Decl) (jen.Code, string) {
 	case *ast.FuncDecl:
 		name = "genFunc" + t.Name.String()
 		inner.Add(funcDecl(t))
+	default:
+		log.Println("UNHANDLED TYPE")
 	}
 	return makeJenFileFunc(name, inner), name
 }
@@ -165,12 +170,6 @@ func parseFile(code []byte) *ast.File {
 
 func genDecl(g *ast.GenDecl) jen.Code {
 	ret := jen.Qual(jenImp, "Null").Call()
-
-	if g.Doc != nil {
-		for _, comment := range g.Doc.List {
-			ret.Add(jen.Qual(jenImp, "Comment").Call(jen.Lit(fmt.Sprintf("// %s", comment.Text))))
-		}
-	}
 
 	for _, spec := range g.Specs {
 		switch s := spec.(type) {

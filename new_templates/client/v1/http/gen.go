@@ -51,7 +51,7 @@ func RenderPackage(types []models.DataType) {
 }
 
 func renderFile(path string, file *jen.File) {
-	fp := fmt.Sprintf("/home/jeffrey/src/gitlab.com/verygoodsoftwarenotvirus/naff/templates/%s", path)
+	fp := fmt.Sprintf("/home/jeffrey/src/gitlab.com/verygoodsoftwarenotvirus/naff/example_output/%s", path)
 	_ = os.Remove(fp)
 
 	var b bytes.Buffer
@@ -62,6 +62,8 @@ func renderFile(path string, file *jen.File) {
 	if err := ioutil.WriteFile(fp, b.Bytes(), os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
+
+	utils.RunGoimportsForFile(fp)
 }
 
 func itemsDotGo(typ models.DataType) *jen.File {

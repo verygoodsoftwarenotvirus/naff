@@ -39,4 +39,6 @@ func renderFile(path string, file *jen.File) {
 	if err := ioutil.WriteFile(fp, b.Bytes(), os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
+
+	utils.RunGoimportsForFile(fp)
 }

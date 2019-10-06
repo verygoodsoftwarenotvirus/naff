@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -122,7 +123,7 @@ func buildDoubleValueTestifyFunc(pkg, method string) func(expected, actual, mess
 }
 
 func BuildTemplatePath(tail string) string {
-	return filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/naff/test_output", tail)
+	return filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/naff/example_output", tail)
 }
 
 func BuildSubTest(name string, testInstructions ...jen.Code) jen.Code {
@@ -215,4 +216,8 @@ func AddImports(file *jen.File) {
 		"github.com/google/wire":                                 "wire",
 	})
 	file.Add(jen.Line())
+}
+
+func RunGoimportsForFile(filename string) error {
+	return exec.Command("/home/jeffrey/bin/goimports", "-w", filename).Run()
 }

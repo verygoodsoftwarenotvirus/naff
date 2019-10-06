@@ -2,13 +2,6 @@ package main
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
-	tojen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/tojen/gen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
-	client "gitlab.com/verygoodsoftwarenotvirus/naff/new_templates/client/v1/http"
-	cmdv1server "gitlab.com/verygoodsoftwarenotvirus/naff/new_templates/cmd/server/v1"
-	twofactor "gitlab.com/verygoodsoftwarenotvirus/naff/new_templates/cmd/tools/two_factor"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -19,39 +12,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
+	"syscall"
+
+	"github.com/codemodus/kace"
+
+	tojen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/tojen/gen"
 )
-
-func runDiffForFiles(file1, file2 string) (string, error) {
-	cmd := exec.Command("diff", file1, file2)
-	var e *exec.ExitError
-
-	b, err := cmd.Output()
-	if err != nil {
-		if !errors.Is(err, e) {
-			return "", err
-		}
-	}
-
-	if f, err := format.Source(b); err == nil {
-		b = f
-	}
-
-	return string(b), nil
-}
-
-func getJenniferForFile(filename string) (string, error) {
-	b, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return "", err
-	}
-
-	retBytes, err := tojen.GenerateFileBytes(b, "main", true, true)
-	if err != nil {
-		return "", err
-	}
-
-	return string(retBytes), nil
-}
 
 func makeFuncLit(x *ast.FuncDecl) *ast.FuncLit {
 	return &ast.FuncLit{
@@ -60,16 +27,29 @@ func makeFuncLit(x *ast.FuncDecl) *ast.FuncLit {
 	}
 }
 
+func runGoimportsForFile(filename string) error {
+	return exec.Command("/home/jeffrey/bin/goimports", "-w", filename).Run()
+}
+
 func runTojenForFile(filename, pkg string) (string, error) {
 	//cmd := exec.Command("/home/jeffrey/bin/tojen", "gen", "--formatted", fmt.Sprintf("--package=%s", pkg), filename)
 	fileBytes, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return "", err
+		if e, ok := err.(*os.PathError); ok {
+			if e.Err == syscall.EISDIR {
+				return "", nil
+			} else {
+				return "", err
+			}
+		} else {
+			return "", err
+		}
 	}
 
 	b, err := tojen.GenerateFileBytes(fileBytes, pkg, false, true)
 	if err != nil {
-		return "", err
+		log.Printf("file %q futzed up\n%s", filename, string(b))
+		return "", nil
 	}
 
 	if f, err := format.Source(b); err == nil {
@@ -80,41 +60,102 @@ func runTojenForFile(filename, pkg string) (string, error) {
 }
 
 func main() {
-	todoDataTypes := []models.DataType{
-		{
-			Name: models.Name{
-				Singular:                "Item",
-				Plural:                  "Items",
-				RouteName:               "items",
-				PluralRouteName:         "item",
-				UnexportedVarName:       "item",
-				PluralUnexportedVarName: "items",
-			},
-		},
+	allPackages := []string{
+		// completed
+		//		"gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http",
+		//		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/server/v1",
+		//		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/two_factor",
+		// to complete
+		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/config_gen/v1",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/mariadb",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/postgres",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/sqlite",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/auth/v1",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/auth/v1/mock",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/config/v1",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/encoding/v1",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/encoding/v1/mock",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/metrics/v1",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/metrics/v1/mock",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/server/v1",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/server/v1/http",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/auth",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/frontend",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/items",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/users",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/webhooks",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/frontend",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/integration",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/load",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/rand/model",
 	}
 
-	client.RenderPackage(todoDataTypes)
-	cmdv1server.RenderPackage(todoDataTypes)
-	twofactor.RenderPackage(todoDataTypes)
+	//todoDataTypes := []models.DataType{
+	//	{
+	//		Name: models.Name{
+	//			Singular:                "Item",
+	//			Plural:                  "Items",
+	//			RouteName:               "items",
+	//			PluralRouteName:         "item",
+	//			UnexportedVarName:       "item",
+	//			PluralUnexportedVarName: "items",
+	//		},
+	//	},
+	//}
+	//
+	//client.RenderPackage(todoDataTypes)
+	//cmdv1server.RenderPackage(todoDataTypes)
+	//twofactor.RenderPackage(todoDataTypes)
 
-	sourcePath := filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/todo")
-	path := fmt.Sprintf("%s/cmd/toosls/two_factor/main.go", sourcePath)
-	thing := doTheThingForFile(path, "main")
-	if thing != nil {
-		println()
+	//path := "gitlab.com/verygoodsoftwarenotvirus/todo/cmd/config_gen/v1"
+
+	for _, pkg := range allPackages {
+		err := doTheThingForPackage("main", pkg)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
-func doTheThingForFile(path, pkg string) error {
-	src, err := runTojenForFile(path, pkg)
+func doTheThingForPackage(pkg, pkgPath string) error {
+	sourcePath := filepath.Join(os.Getenv("GOPATH"), "src", pkgPath)
+	outputPath := strings.Replace(sourcePath, "verygoodsoftwarenotvirus/todo", "verygoodsoftwarenotvirus/naff/new_templates", 1)
+
+	files, err := ioutil.ReadDir(sourcePath)
 	if err != nil {
 		return err
+	}
+
+	for _, file := range files {
+		if !file.IsDir() {
+			fp := filepath.Join(sourcePath, file.Name())
+			op := filepath.Join(outputPath, file.Name())
+			if code, err := doTheThingForFile(fp, pkg, op, true); err != nil {
+				log.Printf("error rendering file %q: %v\n\n%s", fp, err, code)
+			}
+		}
+	}
+
+	return nil
+}
+
+func doTheThingForFile(path, pkg, outputPath string, writeFile bool) (string, error) {
+	src, err := runTojenForFile(path, pkg)
+	if err != nil {
+		return "", err
 	}
 
 	fset := token.NewFileSet()
 	code, err := parser.ParseFile(fset, "", src, parser.AllErrors)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	funcLits := map[string]*ast.FuncLit{}
@@ -168,16 +209,26 @@ func doTheThingForFile(path, pkg string) error {
 		}
 	}
 	code.Decls = decls
+
+	code.Decls[1].(*ast.FuncDecl).Name.Name = kace.Camel(strings.ReplaceAll(filepath.Base(path), ".go", "DotGo"))
 	//if fileFunc != nil {
 	//	exprs[path] = fileFunc
 	//}
 
 	var b bytes.Buffer
 	if err := printer.Fprint(&b, fset, code); err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	final := b.String()
-	print(final)
 
-	return nil
+	_, existenceErr := os.Stat("/path/to/whatever")
+	fileExists := existenceErr != nil && os.IsNotExist(err)
+
+	if writeFile && !fileExists {
+		if err := ioutil.WriteFile(outputPath, b.Bytes(), 0644); err != nil {
+			return "", err
+		}
+		runGoimportsForFile(outputPath)
+	}
+
+	return b.String(), nil
 }
