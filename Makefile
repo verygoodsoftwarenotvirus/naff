@@ -39,13 +39,11 @@ template-clean:
 	rm -rf template
 	mkdir -p template
 
-template-dirs:
-	for dir in `go list gitlab.com/verygoodsoftwarenotvirus/todo/...`; do \
-		echo $(subst gitlab.com/verygoodsoftwarenotvirus/naff/new_templates,gitlab.com/verygoodsoftwarenotvirus/todo,$$dir); \
-	done;
-
 templates: template-clean
 	go run cmd/tools/template_builder/main.go
+
+template-dirs:
+	for dir in `go list gitlab.com/verygoodsoftwarenotvirus/todo/...`; do echo `echo $$dir | sed -r 's/gitlab\.com\/verygoodsoftwarenotvirus\/todo/templates\/experimental/g'`; done
 
 .PHONY: $(EMBEDDED_PACKAGE)
 $(EMBEDDED_PACKAGE): templates
@@ -55,9 +53,13 @@ $(EMBEDDED_PACKAGE): templates
 install: $(EMBEDDED_PACKAGE)
 	go build -o $(INSTALL_PATH)/naff -ldflags "-X main.Version=$(VERSION)" $(GO_PACKAGE)/cmd/cli
 
-.PHONY: test-new-templates
-test-new-templates:
-	go run new_templates/main.go
+.PHONY: example_output_subdirs
+example_output_subdirs:
+	for dir in `go list gitlab.com/verygoodsoftwarenotvirus/todo/...`; do mkdir -p `echo $$dir | sed -r 's/gitlab\.com\/verygoodsoftwarenotvirus\/todo/example_output/g')`; done
+
+.PHONY: example_output
+example_output:
+	go run cmd/todoproj/main.go
 
 .PHONY: install-tojen
 install-tojen:

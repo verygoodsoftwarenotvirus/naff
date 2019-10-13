@@ -25,3 +25,8 @@ type Name struct {
 	Plural, // plural title cased
 	_ string
 }
+
+type Project struct {
+	Name      Name
+	DataTypes []DataType
+}

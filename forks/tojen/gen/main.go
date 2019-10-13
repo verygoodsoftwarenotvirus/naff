@@ -19,7 +19,7 @@ func funcDecl(s *ast.FuncDecl) jen.Code {
 
 	if s.Doc != nil {
 		for _, com := range s.Doc.List {
-			ret.Add(jen.Line(), jen.Qual(jenImp, "Comment").Call(jen.Lit(com.Text)))
+			ret.Add(jen.ID(".Comment").Call(jen.Lit(com.Text)))
 		}
 	}
 
@@ -107,7 +107,7 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 	}
 	// add the generated functions to the created jen file
 	for _, name := range decls {
-		codes = append(codes, jen.ID("ret").Dot("Add").Call(jen.ID(name).Call()))
+		codes = append(codes, jen.ID("ret").Dot("Add").Callln(jen.ID(name).Call(), jen.Qual(jenImp, "Line").Call()))
 	}
 	// return the created jen file
 	codes = append(codes, jen.Return().ID("ret"))

@@ -158,11 +158,40 @@ func ifStmt(t *ast.IfStmt) jen.Code {
 	if t.Cond != nil {
 		cond = append(cond, jen.ID("jen").Add(genExpr(t.Cond)))
 	}
-	ret := jen.ID("jen").Dot("If").Callln(
+	ret := jen.ID("jen").Dot("If").Call(
 		cond...,
 	).Add(blockStmt(t.Body))
 	if t.Else != nil {
-		ret.Dot("Else").Call().Add(stmt(t.Else))
+		s := stmt(t.Else)
+		switch e := t.Else.(type) {
+		case *ast.IfStmt:
+			ret.Dot("Else").Call().Add(elseIfStmt(e))
+		default:
+			ret.Dot("Else").Call().Add(s)
+		}
+
+	}
+	return ret
+}
+
+func elseIfStmt(t *ast.IfStmt) jen.Code {
+	var cond []jen.Code
+	if t.Init != nil {
+		cond = append(cond, stmt(t.Init))
+	}
+	if t.Cond != nil {
+		cond = append(cond, jen.ID("jen").Add(genExpr(t.Cond)))
+	}
+	ret := jen.Dot("If").Call(
+		cond...,
+	).Add(blockStmt(t.Body))
+	if t.Else != nil {
+		s := stmt(t.Else)
+		switch /* e := */ t.Else.(type) {
+		default:
+			ret.Dot("Else").Call().Add(s)
+		}
+
 	}
 	return ret
 }

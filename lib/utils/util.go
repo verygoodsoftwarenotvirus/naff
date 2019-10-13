@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -187,6 +189,7 @@ const (
 
 func AddImports(file *jen.File) {
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock", "mockutil")
+	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/internal/config/v1", "config")
 
 	file.ImportNames(map[string]string{
 		"context":           "context",
@@ -208,20 +211,60 @@ func AddImports(file *jen.File) {
 		NoopLoggingPkg: "noop",
 		ModelsPkg:      "models",
 		//
+		"contrib.go.opencensus.io/exporter/jaeger":     "jaeger",
+		"contrib.go.opencensus.io/exporter/prometheus": "prometheus",
+		"contrib.go.opencensus.io/integrations/ocsql":  "ocsql",
+		"github.com/DATA-DOG/go-sqlmock":               "sqlmock",
+		"github.com/GuiaBolso/darwin":                  "darwin",
+		"github.com/Masterminds/squirrel":              "squirrel",
+		"github.com/boombuler/barcode":                 "barcode",
+		"github.com/emicklei/hazana":                   "hazana",
+		"github.com/go-chi/chi":                        "chi",
+		"github.com/go-chi/cors":                       "cors",
+		"github.com/google/wire":                       "wire",
+		"github.com/gorilla/securecookie":              "securecookie",
+		"github.com/heptiolabs/healthcheck":            "healthcheck",
+		"github.com/icrowley/fake":                     "fake",
+		"github.com/lib/pq":                            "pq",
+		"github.com/mattn/go-sqlite3":                  "sqlite3",
+		"github.com/moul/http2curl":                    "http2curl",
+		"github.com/pquerna/otp":                       "otp",
+		"github.com/spf13/afero":                       "afero",
+		"github.com/spf13/viper":                       "viper",
+		"github.com/tebeka/selenium":                   "selenium",
+		"gitlab.com/verygoodsoftwarenotvirus/newsman":  "newsman",
+		"go.opencensus.io":                             "opencensus",
+		"golang.org/x/crypto":                          "crypto",
+		"gopkg.in/oauth2.v3":                           "oauth2",
+		//
 		AssertPkg:     "assert",
 		MustAssertPkg: "require",
 		MockPkg:       "mock",
 		CoreOAuth2Pkg: "oauth2",
 		"gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog": "zerolog",
-		"github.com/moul/http2curl":                              "http2curl",
 		"go.opencensus.io/plugin/ochttp":                         "ochttp",
 		"github.com/pquerna/otp/totp":                            "totp",
 		"golang.org/x/oauth2/clientcredentials":                  "clientcredentials",
-		"github.com/google/wire":                                 "wire",
 	})
 	file.Add(jen.Line())
 }
 
 func RunGoimportsForFile(filename string) error {
 	return exec.Command("/home/jeffrey/bin/goimports", "-w", filename).Run()
+}
+
+func RenderFile(path string, file *jen.File) error {
+	fp := BuildTemplatePath(path)
+	_ = os.Remove(fp)
+
+	var b bytes.Buffer
+	if err := file.Render(&b); err != nil {
+		return err
+	}
+
+	if err := ioutil.WriteFile(fp, b.Bytes(), 0644); err != nil {
+		return err
+	}
+
+	return RunGoimportsForFile(fp)
 }
