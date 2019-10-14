@@ -262,11 +262,11 @@ func RenderFile(path string, file *jen.File) error {
 
 	var b bytes.Buffer
 	if err := file.Render(&b); err != nil {
-		return err
+		return fmt.Errorf("error rendering file %q: %w", path, err)
 	}
 
 	if err := ioutil.WriteFile(fp, b.Bytes(), 0644); err != nil {
-		return err
+		return fmt.Errorf("error rendering file %q: %w", path, err)
 	}
 
 	gie := RunGoimportsForFile(fp)

@@ -65,31 +65,14 @@ func RenderProject(in *naffmodels.Project) error {
 			renderFunc: twofactorcmd.RenderPackage,
 			activated:  false,
 		},
-		// to do
 		"database": {
 			renderFunc: database.RenderPackage,
 			activated:  false,
 		},
 		// to do
-		"dbclient": {
-			renderFunc: dbclient.RenderPackage,
-			activated:  true,
-		},
-		"mariaDB": {
-			renderFunc: mariaDB.RenderPackage,
-			activated:  false,
-		},
-		"postgresql": {
-			renderFunc: postgresql.RenderPackage,
-			activated:  false,
-		},
-		"sqlite3": {
-			renderFunc: sqlite3.RenderPackage,
-			activated:  false,
-		},
 		"internalauth": {
 			renderFunc: internalauth.RenderPackage,
-			activated:  false,
+			activated:  true,
 		},
 		"internalauthmock": {
 			renderFunc: internalauthmock.RenderPackage,
@@ -121,6 +104,22 @@ func RenderProject(in *naffmodels.Project) error {
 		},
 		"modelsmock": {
 			renderFunc: modelsmock.RenderPackage,
+			activated:  false,
+		},
+		"dbclient": {
+			renderFunc: dbclient.RenderPackage,
+			activated:  false,
+		},
+		"mariaDB": {
+			renderFunc: mariaDB.RenderPackage,
+			activated:  false,
+		},
+		"postgresql": {
+			renderFunc: postgresql.RenderPackage,
+			activated:  false,
+		},
+		"sqlite3": {
+			renderFunc: sqlite3.RenderPackage,
 			activated:  false,
 		},
 		"server": {

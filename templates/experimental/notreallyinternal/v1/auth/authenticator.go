@@ -14,28 +14,63 @@ func authenticatorDotGo() *jen.File {
 
 		jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("ErrInvalidTwoFactorCode").Op("=").Qual("errors", "New").Call(jen.Lit("invalid two factor code")).Var().ID("ErrPasswordHashTooWeak").Op("=").Qual("errors", "New").Call(jen.Lit("password's hash is too weak")).Var().ID("Providers").Op("=").ID("wire").Dot(
-		"NewSet",
-	).Call(jen.ID("ProvideBcryptAuthenticator"), jen.ID("ProvideBcryptHashCost")),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// ProvideBcryptHashCost provides a BcryptHashCost").ID("ProvideBcryptHashCost").Params().Params(jen.ID("BcryptHashCost")).Block(
-		jen.Return().ID("DefaultBcryptHashCost"),
-	),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Null().Type().ID("PasswordHasher").Interface(jen.ID("PasswordIsAcceptable").Params(jen.ID("password").ID("string")).Params(jen.ID("bool")), jen.ID("HashPassword").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")), jen.ID("PasswordMatches").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("salt").Index().ID("byte")).Params(jen.ID("bool"))).Type().ID("Authenticator").Interface(jen.ID("PasswordHasher"), jen.ID("ValidateLogin").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("HashedPassword"), jen.ID("ProvidedPassword"), jen.ID("TwoFactorSecret"), jen.ID("TwoFactorCode")).ID("string"), jen.ID("Salt").Index().ID("byte")).Params(jen.ID("valid").ID("bool"), jen.ID("err").ID("error"))),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// we run this function to ensure that we have no problem reading from crypto/rand").ID("init").Params().Block(
-		jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
-		jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
-			jen.ID("panic").Call(jen.ID("err")),
+	ret.Add(
+		jen.Var().Defs(
+			jen.Comment("ErrInvalidTwoFactorCode indicates that a provided two factor code is invalid"),
+			jen.ID("ErrInvalidTwoFactorCode").Op("=").Qual("errors", "New").Call(jen.Lit("invalid two factor code")),
+			jen.Comment("ErrPasswordHashTooWeak indicates that a provided password hash is too weak"),
+			jen.ID("ErrPasswordHashTooWeak").Op("=").Qual("errors", "New").Call(jen.Lit("password's hash is too weak")),
+			jen.Line(),
+			jen.Comment("Providers represents what this package offers to external libraries in the way of constructors"),
+			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Call(jen.ID("ProvideBcryptAuthenticator"), jen.ID("ProvideBcryptHashCost")),
+			jen.Line(),
 		),
-	),
+	)
+
+	ret.Add(
+		jen.Comment("// ProvideBcryptHashCost provides a BcryptHashCost"),
+		jen.Line(),
+		jen.Func().ID("ProvideBcryptHashCost").Params().Params(jen.ID("BcryptHashCost")).Block(
+			jen.Return().ID("DefaultBcryptHashCost"),
+		),
+		jen.Line(),
+	)
+
+	ret.Add(
+		jen.Type().Defs(
+			jen.Comment("PasswordHasher hashes passwords"),
+			jen.ID("PasswordHasher").Interface(
+				jen.ID("PasswordIsAcceptable").Params(jen.ID("password").ID("string")).Params(jen.ID("bool")),
+				jen.ID("HashPassword").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")),
+				jen.ID("PasswordMatches").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("salt").Index().ID("byte")).Params(jen.ID("bool")),
+			),
+			jen.Line(),
+			jen.ID("Authenticator").Interface(
+				jen.ID("PasswordHasher"),
+				jen.Line(),
+				jen.ID("ValidateLogin").Paramsln(
+					jen.ID("ctx").Qual("context", "Context"),
+					jen.List(
+						jen.ID("HashedPassword"),
+						jen.ID("ProvidedPassword"),
+						jen.ID("TwoFactorSecret"),
+						jen.ID("TwoFactorCode"),
+					).ID("string"),
+					jen.ID("Salt").Index().ID("byte"),
+				).Params(jen.ID("valid").ID("bool"), jen.ID("err").ID("error")),
+			),
+		),
+		jen.Line(),
+	)
+	ret.Add(
+		jen.Comment("// we run this function to ensure that we have no problem reading from crypto/rand"),
+		jen.Line(),
+		jen.Func().ID("init").Params().Block(
+			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
+			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.ID("err")),
+			),
+		),
 
 		jen.Line(),
 	)
