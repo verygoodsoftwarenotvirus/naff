@@ -1,9 +1,15 @@
 package mock
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func mockUserDataServerDotGo() *jen.File {
 	ret := jen.NewFile("mock")
+
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null(),
 
 		jen.Line(),

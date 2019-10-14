@@ -189,7 +189,10 @@ const (
 
 func AddImports(file *jen.File) {
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock", "mockutil")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/internal/config/v1", "config")
+	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "database")
+	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/server/v1", "server")
+	file.ImportAlias(ModelsPkg, "models")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/internal/v1/config", "")
 
 	file.ImportNames(map[string]string{
 		"context":           "context",
@@ -266,5 +269,10 @@ func RenderFile(path string, file *jen.File) error {
 		return err
 	}
 
-	return RunGoimportsForFile(fp)
+	gie := RunGoimportsForFile(fp)
+	if gie != nil {
+		return fmt.Errorf("error rendering file %q: %w", path, gie)
+	}
+
+	return nil
 }

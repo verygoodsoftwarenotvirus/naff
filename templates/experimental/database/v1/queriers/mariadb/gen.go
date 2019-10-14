@@ -10,18 +10,18 @@ import (
 func RenderPackage(types []models.DataType) error {
 	files := map[string]*jen.File{
 		"database/v1/queriers/mariadb/mariadb.go":             mariadbDotGo(),
-		"database/v1/queriers/mariadb/mariadb_test.go":        mariadbTestDotGo(),
-		"database/v1/queriers/mariadb/oauth2_clients.go":      oauth2ClientsDotGo(),
+		"database/v1/queriers/mariadb/oauth2_clients_test.go": oauth2ClientsTestDotGo(),
 		"database/v1/queriers/mariadb/users_test.go":          usersTestDotGo(),
-		"database/v1/queriers/mariadb/wire.go":                wireDotGo(),
-		"database/v1/queriers/mariadb/webhooks.go":            webhooksDotGo(),
 		"database/v1/queriers/mariadb/webhooks_test.go":       webhooksTestDotGo(),
-		"database/v1/queriers/mariadb/doc.go":                 docDotGo(),
 		"database/v1/queriers/mariadb/items.go":               itemsDotGo(),
 		"database/v1/queriers/mariadb/items_test.go":          itemsTestDotGo(),
+		"database/v1/queriers/mariadb/mariadb_test.go":        mariadbTestDotGo(),
 		"database/v1/queriers/mariadb/migrations.go":          migrationsDotGo(),
-		"database/v1/queriers/mariadb/oauth2_clients_test.go": oauth2ClientsTestDotGo(),
+		"database/v1/queriers/mariadb/oauth2_clients.go":      oauth2ClientsDotGo(),
 		"database/v1/queriers/mariadb/users.go":               usersDotGo(),
+		"database/v1/queriers/mariadb/webhooks.go":            webhooksDotGo(),
+		"database/v1/queriers/mariadb/wire.go":                wireDotGo(),
+		"database/v1/queriers/mariadb/doc.go":                 docDotGo(),
 	}
 
 	//for _, typ := range types {

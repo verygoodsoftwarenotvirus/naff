@@ -13,7 +13,7 @@ func newClientMethod(name string) *jen.Statement {
 }
 
 func mainDotGo() *jen.File {
-	ret := jen.NewFile("$1")
+	ret := jen.NewFile("client")
 
 	utils.AddImports(ret)
 	ret.Add(jen.Line())

@@ -3,6 +3,7 @@ GO_PACKAGE        := gitlab.com/verygoodsoftwarenotvirus/naff
 COVERAGE_OUT      := coverage.out
 INSTALL_PATH      := ~/.bin
 EMBEDDED_PACKAGE  := embedded
+GO_FORMAT         := gofmt -s -w
 
 VERSION := $(shell git rev-parse --short HEAD)
 
@@ -43,7 +44,11 @@ templates: template-clean
 	go run cmd/tools/template_builder/main.go
 
 template-dirs:
-	for dir in `go list gitlab.com/verygoodsoftwarenotvirus/todo/...`; do echo `echo $$dir | sed -r 's/gitlab\.com\/verygoodsoftwarenotvirus\/todo/templates\/experimental/g'`; done
+	for dir in `find ../todo -type d -not -path "*\.git*" -not -path "*node_modules*" -not -path "*vendor*" | sed -r 's/\.\.\/todo\/?/templates\/experimental\//g'`; do mkdir -p $$dir; done
+	for dir in `find ../todo -type d -not -path "*\.git*" -not -path "*node_modules*" -not -path "*vendor*" | sed -r 's/\.\.\/todo\/?/templates\/blessed\//g'`; do mkdir -p $$dir; done
+
+fix-template-test-files:
+	find templates/ -name "*_test.go" -exec bash -c 'mv "$1" `echo "$1" | sed -r "s/_test\.go/test_\.go/g"` ' - '{}' \;
 
 .PHONY: $(EMBEDDED_PACKAGE)
 $(EMBEDDED_PACKAGE): templates
@@ -64,3 +69,7 @@ example_output:
 .PHONY: install-tojen
 install-tojen:
 	go build -o $(INSTALL_PATH)/tojen -ldflags "-X main.Version=$(VERSION)" $(GO_PACKAGE)/forks/tojen
+
+.PHONY: format
+format:
+	for file in `find $(PWD) -name '*.go'`; do $(GO_FORMAT) $$file; done

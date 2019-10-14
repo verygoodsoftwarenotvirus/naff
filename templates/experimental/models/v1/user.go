@@ -1,9 +1,15 @@
 package v1
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func userDotGo() *jen.File {
 	ret := jen.NewFile("models")
+
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null(),
 
 		jen.Line(),

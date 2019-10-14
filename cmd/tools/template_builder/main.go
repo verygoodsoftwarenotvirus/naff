@@ -62,10 +62,10 @@ func main() {
 	allPackages := []string{
 		//// completed
 		// "gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http",
+		//"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/config_gen/v1",
 		//// to be completed
 		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/server/v1",
 		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/two_factor",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/config_gen/v1",
 		"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1",
 		"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client",
 		"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/mariadb",
@@ -108,7 +108,7 @@ func main() {
 
 func doTheThingForPackage(pkg, pkgPath string) error {
 	sourcePath := filepath.Join(os.Getenv("GOPATH"), "src", pkgPath)
-	outputPath := strings.Replace(sourcePath, "verygoodsoftwarenotvirus/todo", "verygoodsoftwarenotvirus/naff/templates/experimental", 1)
+	outputPath := strings.Replace(strings.Replace(sourcePath, "verygoodsoftwarenotvirus/todo", "verygoodsoftwarenotvirus/naff/templates/experimental", 1), "_test.go", "test_.go", 1)
 
 	files, err := ioutil.ReadDir(sourcePath)
 	if err != nil {
@@ -138,7 +138,6 @@ func doTheThingForPackage(pkg, pkgPath string) error {
 
 	genDotGo := buildGenDotGo(pkg, fileMap)
 	ggfp := fmt.Sprintf("%s/gen.go", outputPath)
-
 	if err := ioutil.WriteFile(ggfp, []byte(genDotGo), 0644); err != nil {
 		return err
 	}

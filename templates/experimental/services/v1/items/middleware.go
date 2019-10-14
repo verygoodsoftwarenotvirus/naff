@@ -1,9 +1,15 @@
 package items
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func middlewareDotGo() *jen.File {
 	ret := jen.NewFile("items")
+
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null(),
 
 		jen.Line(),

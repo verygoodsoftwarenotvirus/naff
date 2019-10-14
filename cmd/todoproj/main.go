@@ -2,7 +2,8 @@ package main
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
-	project "gitlab.com/verygoodsoftwarenotvirus/naff/new_templates"
+	project "gitlab.com/verygoodsoftwarenotvirus/naff/templates"
+	"log"
 )
 
 func main() {
@@ -21,5 +22,8 @@ func main() {
 			},
 		},
 	}
-	project.RenderProject(todoProject)
+
+	if err := project.RenderProject(todoProject); err != nil {
+		log.Fatal(err)
+	}
 }

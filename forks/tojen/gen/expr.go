@@ -94,7 +94,8 @@ func parenExpr(t *ast.ParenExpr) jen.Code {
 }
 
 func indexExpr(t *ast.IndexExpr) jen.Code {
-	return jen.Add(genExpr(t.X)).Dot("Index").Call(jen.ID("jen").Add(genExpr(t.Index)))
+	x := genExpr(t.Index)
+	return jen.Add(genExpr(t.X)).Dot("Index").Call(jen.ID("jen").Add(x))
 }
 
 func starExpr(t *ast.StarExpr) jen.Code {

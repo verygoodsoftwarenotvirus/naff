@@ -9,15 +9,15 @@ import (
 // RenderPackage renders the package
 func RenderPackage(types []models.DataType) error {
 	files := map[string]*jen.File{
-		"models/v1/mock/mock_webhook_data_server.go":        mockWebhookDataServerDotGo(),
-		"models/v1/mock/mock_item_data_manager.go":          mockItemDataManagerDotGo(),
-		"models/v1/mock/mock_item_data_server.go":           mockItemDataServerDotGo(),
+		"models/v1/mock/doc.go":                             docDotGo(),
+		"models/v1/mock/mock_user_data_server.go":           mockUserDataServerDotGo(),
 		"models/v1/mock/mock_oauth2_client_data_manager.go": mockOauth2ClientDataManagerDotGo(),
 		"models/v1/mock/mock_oauth2_client_data_server.go":  mockOauth2ClientDataServerDotGo(),
 		"models/v1/mock/mock_user_data_manager.go":          mockUserDataManagerDotGo(),
-		"models/v1/mock/mock_user_data_server.go":           mockUserDataServerDotGo(),
-		"models/v1/mock/doc.go":                             docDotGo(),
 		"models/v1/mock/mock_webhook_data_manager.go":       mockWebhookDataManagerDotGo(),
+		"models/v1/mock/mock_webhook_data_server.go":        mockWebhookDataServerDotGo(),
+		"models/v1/mock/mock_item_data_manager.go":          mockItemDataManagerDotGo(),
+		"models/v1/mock/mock_item_data_server.go":           mockItemDataServerDotGo(),
 	}
 
 	//for _, typ := range types {

@@ -1,13 +1,20 @@
+/*
+Command two_factor is a CLI that takes in a secret as a positional argument
+and draws the TOTP code for that secret in big ASCII numbers. This command is
+helpful when you need to repeatedly test the logic of registering an account
+and logging in.
+*/
 package main
 
 import (
 	"bufio"
 	"fmt"
-	"github.com/pquerna/otp/totp"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pquerna/otp/totp"
 )
 
 const (
@@ -27,8 +34,6 @@ var (
 	lastChange  time.Time
 	currentCode string
 
-	// feel free to link to this variable and the related  non-stdlib
-	// functions as a demonstration of useless over-engineering
 	numbers = [10][5]string{
 		limitSlice(strings.Split(zero, "&")),
 		limitSlice(strings.Split(one, "&")),
@@ -60,8 +65,8 @@ func mustnt(err error) {
 }
 
 func clearTheScreen() {
-	fmt.Println("033[2J")
-	fmt.Printf("033[0;0H")
+	fmt.Println("\x1b[2J")
+	fmt.Printf("\x1b[0;0H")
 }
 
 func buildTheThing(token string) string {
@@ -80,7 +85,8 @@ func buildTheThing(token string) string {
 		}
 	}
 
-	out += "\n\n" + (30*time.Second - time.Since(lastChange).Round(time.Second)).String() + "\n"
+	timeLeft := (30*time.Second - time.Since(lastChange).Round(time.Second)).String()
+	out += fmt.Sprintf("\n\n%s\n", timeLeft)
 
 	return out
 }

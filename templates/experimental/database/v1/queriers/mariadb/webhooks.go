@@ -1,9 +1,15 @@
 package mariadb
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func webhooksDotGo() *jen.File {
 	ret := jen.NewFile("mariadb")
+
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null(),
 
 		jen.Line(),

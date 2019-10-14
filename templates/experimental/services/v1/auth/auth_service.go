@@ -1,9 +1,15 @@
 package auth
 
-import jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+)
 
 func authServiceDotGo() *jen.File {
 	ret := jen.NewFile("auth")
+
+	utils.AddImports(ret)
+
 	ret.Add(jen.Null(),
 
 		jen.Line(),

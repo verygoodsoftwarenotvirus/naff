@@ -5,22 +5,23 @@ package main
 import (
 	"context"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+	auth "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	encoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
+	metrics "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
+	server "gitlab.com/verygoodsoftwarenotvirus/todo/server/v1"
+	httpserver "gitlab.com/verygoodsoftwarenotvirus/todo/server/v1/http"
+	authservice "gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/auth"
+	frontendservice "gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/frontend"
+	itemsservice "gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/items"
+	oauth2clientsservice "gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients"
+	usersservice "gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/users"
+	webhooksservice "gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/webhooks"
+
 	"github.com/google/wire"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	"gitlab.com/verygoodsoftwarenotvirus/newsman"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
-	libauth "gitlab.com/verygoodsoftwarenotvirus/todo/internal/auth/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/config/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/encoding/v1"
-	metricsProvider "gitlab.com/verygoodsoftwarenotvirus/todo/internal/metrics/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/server/v1"
-	httpserver "gitlab.com/verygoodsoftwarenotvirus/todo/server/v1/http"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/auth"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/frontend"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/items"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/users"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/webhooks"
 )
 
 // ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day
@@ -37,28 +38,23 @@ func BuildServer(
 ) (*server.Server, error) {
 	wire.Build(
 		config.Providers,
-		libauth.Providers,
-
-		// Server things,
+		auth.Providers,
+		// server things,
 		server.Providers,
 		encoding.Providers,
 		httpserver.Providers,
-
-		// Server things,
-		metricsProvider.Providers,
-
+		// metrics,
+		metrics.Providers,
 		// external libs,
-		ProvideReporter,
 		newsman.NewNewsman,
-
+		ProvideReporter,
 		// services,
-		auth.Providers,
-		users.Providers,
-		items.Providers,
-		frontend.Providers,
-		webhooks.Providers,
-		oauth2clients.Providers,
+		authservice.Providers,
+		usersservice.Providers,
+		itemsservice.Providers,
+		frontendservice.Providers,
+		webhooksservice.Providers,
+		oauth2clientsservice.Providers,
 	)
-
 	return nil, nil
 }

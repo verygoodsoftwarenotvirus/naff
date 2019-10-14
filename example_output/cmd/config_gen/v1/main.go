@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	v1 "gitlab.com/verygoodsoftwarenotvirus/internal/config/v1"
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
 )
 
 const (
@@ -49,7 +49,7 @@ var (
 )
 
 func developmentConfig(filepath string) error {
-	cfg := v1.BuildConfig()
+	cfg := config.BuildConfig()
 
 	cfg.Set(metaStartupDeadline, time.Minute)
 	cfg.Set(serverHTTPPort, defaultPort)
@@ -77,8 +77,9 @@ func developmentConfig(filepath string) error {
 
 	return cfg.WriteConfigAs(filepath)
 }
+
 func coverageConfig(filepath string) error {
-	cfg := v1.BuildConfig()
+	cfg := config.BuildConfig()
 
 	cfg.Set(serverHTTPPort, defaultPort)
 	cfg.Set(serverDebug, true)
@@ -96,8 +97,9 @@ func coverageConfig(filepath string) error {
 
 	return cfg.WriteConfigAs(filepath)
 }
+
 func productionConfig(filepath string) error {
-	cfg := v1.BuildConfig()
+	cfg := config.BuildConfig()
 
 	cfg.Set(metaDebug, false)
 	cfg.Set(metaStartupDeadline, time.Minute)
@@ -127,9 +129,10 @@ func productionConfig(filepath string) error {
 
 	return cfg.WriteConfigAs(filepath)
 }
+
 func buildIntegrationTestForDBImplementation(dbprov, dbDeet string) configFunc {
 	return func(filepath string) error {
-		cfg := v1.BuildConfig()
+		cfg := config.BuildConfig()
 
 		cfg.Set(metaDebug, false)
 		cfg.Set(metaStartupDeadline, time.Minute)
@@ -150,6 +153,7 @@ func buildIntegrationTestForDBImplementation(dbprov, dbDeet string) configFunc {
 		return cfg.WriteConfigAs(filepath)
 	}
 }
+
 func main() {
 	for filepath, fun := range files {
 		if err := fun(filepath); err != nil {

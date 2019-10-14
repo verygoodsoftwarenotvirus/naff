@@ -9,14 +9,14 @@ import (
 // RenderPackage renders the package
 func RenderPackage(types []models.DataType) error {
 	files := map[string]*jen.File{
-		"services/v1/users/http_routes.go":        httpRoutesDotGo(),
-		"services/v1/users/http_routes_test.go":   httpRoutesTestDotGo(),
 		"services/v1/users/middleware.go":         middlewareDotGo(),
 		"services/v1/users/middleware_test.go":    middlewareTestDotGo(),
 		"services/v1/users/users_service.go":      usersServiceDotGo(),
 		"services/v1/users/users_service_test.go": usersServiceTestDotGo(),
 		"services/v1/users/wire.go":               wireDotGo(),
 		"services/v1/users/doc.go":                docDotGo(),
+		"services/v1/users/http_routes.go":        httpRoutesDotGo(),
+		"services/v1/users/http_routes_test.go":   httpRoutesTestDotGo(),
 	}
 
 	//for _, typ := range types {

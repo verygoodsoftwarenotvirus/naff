@@ -9,12 +9,12 @@ import (
 // RenderPackage renders the package
 func RenderPackage(types []models.DataType) error {
 	files := map[string]*jen.File{
-		"tests/v1/load/main.go":          mainDotGo(),
-		"tests/v1/load/oauth2clients.go": oauth2ClientsDotGo(),
-		"tests/v1/load/webhooks.go":      webhooksDotGo(),
 		"tests/v1/load/actions.go":       actionsDotGo(),
 		"tests/v1/load/init.go":          initDotGo(),
 		"tests/v1/load/items.go":         itemsDotGo(),
+		"tests/v1/load/main.go":          mainDotGo(),
+		"tests/v1/load/oauth2clients.go": oauth2ClientsDotGo(),
+		"tests/v1/load/webhooks.go":      webhooksDotGo(),
 	}
 
 	//for _, typ := range types {

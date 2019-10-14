@@ -13,6 +13,7 @@ import (
 )
 
 const jenImp = "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+const utilsImp = "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 
 func funcDecl(s *ast.FuncDecl) jen.Code {
 	ret := jen.Qual(jenImp, "Func").Call()
@@ -124,7 +125,8 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 }
 
 func genNewJenFile(name string) jen.Code {
-	return jen.ID("ret").Op(":=").Qual(jenImp, "NewFile").Call(jen.Lit(name))
+	const varName = "ret"
+	return jen.ID(varName).Op(":=").Qual(jenImp, "NewFile").Call(jen.Lit(name)).Line().Line().Qual(utilsImp, "AddImports").Call(jen.ID(varName)).Line().Line()
 }
 
 func genMainFunc() jen.Code {
