@@ -34,6 +34,7 @@ require (
 	gitlab.com/verygoodsoftwarenotvirus/newsman v0.0.0-20190528023929-c49dc073f989
 	gitlab.com/verygoodsoftwarenotvirus/todo v0.0.0-20191011035215-0af8f863736f
 	go.opencensus.io v0.22.1
+	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	gopkg.in/AlecAivazis/survey.v1 v1.8.5
 	gopkg.in/oauth2.v3 v3.10.0

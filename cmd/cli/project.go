@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	"go/ast"
-	"go/parser"
-	"go/token"
 	"io/ioutil"
 	"log"
 	"os"
@@ -21,16 +18,14 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
-// Project is our project type
-type Project struct {
-	Name                    string `survey:"name"`
-	DataTypes               []models.DataType
-	IterableServicesImports []string
-	OutputRepository        string `survey:"outputRepository"`
-	ModelsPackage           string `survey:"modelsPackage"`
+// project is our project type
+type project struct {
+	Name             string `survey:"name"`
+	OutputRepository string `survey:"outputRepository"`
+	ModelsPackage    string `survey:"modelsPackage"`
 }
 
-func fillSurvey() (*Project, error) {
+func fillSurvey() (*models.Project, error) {
 	// the questions to ask
 	questions := []*survey.Question{
 		{
@@ -57,85 +52,13 @@ func fillSurvey() (*Project, error) {
 	}
 
 	// perform the questions
-	p := Project{}
+	p := project{}
 	if surveyErr := survey.Ask(questions, &p); surveyErr != nil {
 		return nil, surveyErr
 	}
 	os.RemoveAll(filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository))
 
 	return &p, nil
-}
-
-func (p *Project) parseModels() {
-	fullModelsPath := filepath.Join(os.Getenv("GOPATH"), "src", p.ModelsPackage)
-
-	packages, err := parser.ParseDir(token.NewFileSet(), fullModelsPath, nil, parser.AllErrors)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, pkg := range packages {
-		for _, file := range pkg.Files {
-			ast.Inspect(file, func(n ast.Node) bool {
-				if dec, ok := n.(*ast.TypeSpec); ok {
-					dt := models.DataType{
-						Name:   dec.Name.Name,
-						Fields: []models.DataField{},
-					}
-
-					if _, ok := dec.Type.(*ast.StructType); !ok {
-						log.Println("ERROR: only structs allowed in model declarations")
-						return false
-					}
-
-					for _, field := range dec.Type.(*ast.StructType).Fields.List {
-						df := models.DataField{
-							Name:                  field.Names[0].Name,
-							ValidForCreationInput: true,
-							ValidForUpdateInput:   true,
-						}
-
-						if x, ok := field.Type.(*ast.Ident); ok {
-							df.Type = x.Name
-						} else if y, ok2 := field.Type.(*ast.StarExpr); ok2 {
-							df.Pointer = true
-							df.Type = y.X.(*ast.Ident).Name
-						}
-
-						var tag string
-						if field != nil && field.Tag != nil {
-							tag = strings.Replace(strings.Replace(
-								strings.Replace(field.Tag.Value, `naff:`, "", 1),
-								"`", "", -1), `"`, "", -1)
-						}
-
-						for _, t := range strings.Split(tag, ",") {
-							_t := strings.ToLower(strings.TrimSpace(t))
-							if _t == "!createable" {
-								df.ValidForCreationInput = false
-							} else if _t == "!editable" {
-								df.ValidForUpdateInput = false
-							}
-						}
-						dt.Fields = append(dt.Fields, df)
-					}
-
-					p.DataTypes = append(p.DataTypes, dt)
-					p.IterableServicesImports = append(
-						p.IterableServicesImports,
-						filepath.Join(
-							p.OutputRepository,
-							"services",
-							"v1",
-							strings.ToLower(dt.Name)+"s",
-						),
-					)
-				}
-				return true
-			})
-		}
-	}
-
 }
 
 // ValidateName validates a project name

@@ -11,6 +11,7 @@ import (
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/cmd/server/v1"
 	twofactorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/cmd/tools/two_factor"
 	database "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1"
+	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/notreallyinternal/v1/auth"
 
 	// to do
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/client"
@@ -19,7 +20,6 @@ import (
 	sqlite3 "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/sqlite"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/models/v1"
 	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/models/v1/mock"
-	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/notreallyinternal/v1/auth"
 	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/notreallyinternal/v1/auth/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/notreallyinternal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/notreallyinternal/v1/encoding"
@@ -69,14 +69,14 @@ func RenderProject(in *naffmodels.Project) error {
 			renderFunc: database.RenderPackage,
 			activated:  false,
 		},
-		// to do
 		"internalauth": {
 			renderFunc: internalauth.RenderPackage,
-			activated:  true,
+			activated:  false,
 		},
+		// to do
 		"internalauthmock": {
 			renderFunc: internalauthmock.RenderPackage,
-			activated:  false,
+			activated:  true,
 		},
 		"config": {
 			renderFunc: config.RenderPackage,

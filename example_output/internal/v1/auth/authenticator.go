@@ -15,7 +15,10 @@ var (
 	ErrPasswordHashTooWeak = errors.New("password's hash is too weak")
 
 	// Providers represents what this package offers to external libraries in the way of constructors
-	Providers = wire.NewSet(ProvideBcryptAuthenticator, ProvideBcryptHashCost)
+	Providers = wire.NewSet(
+		ProvideBcryptAuthenticator,
+		ProvideBcryptHashCost,
+	)
 )
 
 // ProvideBcryptHashCost provides a BcryptHashCost
@@ -31,12 +34,16 @@ type (
 		PasswordMatches(ctx context.Context, hashedPassword, providedPassword string, salt []byte) bool
 	}
 
+	// Authenticator is a poorly named Authenticator interface
 	Authenticator interface {
 		PasswordHasher
 
 		ValidateLogin(
 			ctx context.Context,
-			HashedPassword, ProvidedPassword, TwoFactorSecret, TwoFactorCode string,
+			HashedPassword,
+			ProvidedPassword,
+			TwoFactorSecret,
+			TwoFactorCode string,
 			Salt []byte,
 		) (valid bool, err error)
 	}

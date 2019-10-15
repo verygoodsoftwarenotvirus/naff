@@ -8,6 +8,7 @@ import (
 
 func TestProvideBcryptHashCost(T *testing.T) {
 	T.Parallel()
+
 	T.Run("obligatory", func(t *testing.T) {
 		auth.ProvideBcryptHashCost()
 	})

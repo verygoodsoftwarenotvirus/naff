@@ -14,6 +14,7 @@ import (
 const (
 	bcryptCostCompensation     = 2
 	defaultMinimumPasswordSize = 16
+
 	// DefaultBcryptHashCost is what it says on the tin
 	DefaultBcryptHashCost = BcryptHashCost(bcrypt.DefaultCost + bcryptCostCompensation)
 )
@@ -28,7 +29,7 @@ var (
 type (
 	// BcryptAuthenticator is our bcrypt-based authenticator
 	BcryptAuthenticator struct {
-		logging.Logger
+		logger              logging.Logger
 		hashCost            uint
 		minimumPasswordSize uint
 	}
@@ -51,6 +52,7 @@ func ProvideBcryptAuthenticator(hashCost BcryptHashCost, logger logging.Logger) 
 func (b *BcryptAuthenticator) HashPassword(c context.Context, password string) (string, error) {
 	_, span := trace.StartSpan(c, "HashPassword")
 	defer span.End()
+
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), int(b.hashCost))
 	return string(hashedPass), err
 }
@@ -59,22 +61,37 @@ func (b *BcryptAuthenticator) HashPassword(c context.Context, password string) (
 // 1. checking that the provided password matches the stored hashed password
 // 2. checking that the temporary one-time password provided jives with the stored two factor secret
 // 3. checking that the provided hashed password isn't too weak, and returning an error otherwise
-func (b *BcryptAuthenticator) ValidateLogin(ctx context.Context, hashedPassword, providedPassword, twoFactorSecret, twoFactorCode string, salt []byte) (passwordMatches bool, err error) {
+func (b *BcryptAuthenticator) ValidateLogin(
+	ctx context.Context,
+	hashedPassword,
+	providedPassword,
+	twoFactorSecret,
+	twoFactorCode string,
+	salt []byte,
+) (passwordMatches bool, err error) {
 	ctx, span := trace.StartSpan(ctx, "ValidateLogin")
 	defer span.End()
+
 	passwordMatches = b.PasswordMatches(ctx, hashedPassword, providedPassword, nil)
 	tooWeak := b.hashedPasswordIsTooWeak(hashedPassword)
+
 	if !totp.Validate(twoFactorCode, twoFactorSecret) {
 		b.logger.WithValues(map[string]interface{}{
 			"password_matches": passwordMatches,
 			"2fa_secret":       twoFactorSecret,
 			"provided_code":    twoFactorCode,
 		}).Debug("invalid code provided")
+
 		return passwordMatches, ErrInvalidTwoFactorCode
 	}
+
 	if tooWeak {
+		// NOTE: this can end up with a return set where passwordMatches is true and the err is not nil.
+		// This is the valid case in the event the user has logged in with a valid password, but the
+		// bcrypt cost has been raised since they last logged in.
 		return passwordMatches, ErrCostTooLow
 	}
+
 	return passwordMatches, nil
 }
 
@@ -86,6 +103,7 @@ func (b *BcryptAuthenticator) PasswordMatches(ctx context.Context, hashedPasswor
 // hashedPasswordIsTooWeak determines if a given hashed password was hashed with too weak a bcrypt cost
 func (b *BcryptAuthenticator) hashedPasswordIsTooWeak(hashedPassword string) bool {
 	cost, err := bcrypt.Cost([]byte(hashedPassword))
+
 	return err != nil || uint(cost) < b.hashCost
 }
 
