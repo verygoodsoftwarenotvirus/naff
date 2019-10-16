@@ -10,11 +10,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("buildMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").ID("models").Dot(
+	ret.Add(
+		jen.Func().ID("buildMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").ID("models").Dot(
 		"OAuth2Client",
 	)).Params(jen.Op("*").ID("sqlmock").Dot(
 		"Rows",
@@ -46,10 +43,11 @@ func oauth2ClientsTestDotGo() *jen.File {
 		)),
 		jen.Return().ID("exampleRows"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildErroneousMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("buildErroneousMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").ID("models").Dot(
 		"OAuth2Client",
 	)).Params(jen.Op("*").ID("sqlmock").Dot(
 		"Rows",
@@ -81,16 +79,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 		)),
 		jen.Return().ID("exampleRows"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetOAuth2ClientByClientIDQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetOAuth2ClientByClientIDQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedClientID").Op(":=").Lit("ClientID"),
 			jen.ID("expectedArgCount").Op(":=").Lit(1),
@@ -109,16 +105,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedClientID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetOAuth2ClientByClientID").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetOAuth2ClientByClientID").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
@@ -150,9 +144,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND client_id = $1"),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -181,9 +173,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with erroneous row"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous row"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
@@ -216,16 +206,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetAllOAuth2ClientsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetAllOAuth2ClientsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
 			jen.ID("actualQuery").Op(":=").ID("p").Dot(
@@ -236,16 +224,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetAllOAuth2Clients").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetAllOAuth2Clients").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Index().Op("*").ID("models").Dot(
 				"OAuth2Client",
@@ -274,9 +260,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(
@@ -302,9 +286,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error executing query"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error executing query"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(
@@ -327,9 +309,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Index().Op("*").ID("models").Dot(
 				"OAuth2Client",
@@ -359,16 +339,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetAllOAuth2ClientsForUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetAllOAuth2ClientsForUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -402,9 +380,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123)),
@@ -432,9 +408,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123)),
@@ -462,9 +436,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -499,16 +471,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetOAuth2ClientQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetOAuth2ClientQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedClientID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -531,16 +501,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedClientID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetOAuth2Client").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetOAuth2Client").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -579,9 +547,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -623,9 +589,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -665,16 +629,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetOAuth2ClientCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetOAuth2ClientCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedArgCount").Op(":=").Lit(1),
@@ -695,16 +657,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetOAuth2ClientCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetOAuth2ClientCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"),
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
@@ -738,16 +698,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetAllOAuth2ClientCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetAllOAuth2ClientCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL"),
 			jen.ID("actualQuery").Op(":=").ID("p").Dot(
@@ -758,16 +716,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetAllOAuth2ClientCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetAllOAuth2ClientCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL"),
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -796,16 +752,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetOAuth2ClientsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetOAuth2ClientsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedArgCount").Op(":=").Lit(1),
@@ -826,16 +780,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetOAuth2Clients").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetOAuth2Clients").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
@@ -892,9 +844,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no rows returned from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -920,9 +870,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -948,9 +896,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with erroneous response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2ClientList",
@@ -987,9 +933,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2ClientList",
@@ -1039,16 +983,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildCreateOAuth2ClientQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildCreateOAuth2ClientQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -1096,16 +1038,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			), jen.ID("args").Index(jen.Lit(5)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_CreateOAuth2Client").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_CreateOAuth2Client").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -1164,9 +1104,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -1217,16 +1155,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildUpdateOAuth2ClientQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildUpdateOAuth2ClientQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -1274,16 +1210,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			), jen.ID("args").Index(jen.Lit(5)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_UpdateOAuth2Client").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_UpdateOAuth2Client").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("UPDATE oauth2_clients SET client_id = $1, client_secret = $2, scopes = $3, redirect_uri = $4, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $5 AND id = $6 RETURNING updated_on"),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -1312,9 +1246,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("UPDATE oauth2_clients SET client_id = $1, client_secret = $2, scopes = $3, redirect_uri = $4, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $5 AND id = $6 RETURNING updated_on"),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -1338,16 +1270,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildArchiveOAuth2ClientQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildArchiveOAuth2ClientQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedClientID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -1370,16 +1300,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedClientID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_ArchiveOAuth2Client").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_ArchiveOAuth2Client").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("UPDATE oauth2_clients SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE belongs_to = $1 AND id = $2 RETURNING archived_on"),
 			jen.ID("exampleClientID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
@@ -1405,9 +1333,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("UPDATE oauth2_clients SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE belongs_to = $1 AND id = $2 RETURNING archived_on"),
 			jen.ID("exampleClientID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
@@ -1432,8 +1358,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

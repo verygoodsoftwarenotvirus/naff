@@ -114,6 +114,7 @@ func mainDotGo() *jen.File {
 		),
 		jen.Line(),
 	)
+
 	ret.Add(
 		jen.Func().ID("productionConfig").Params(jen.ID("filepath").ID("string")).Params(jen.ID("error")).Block(
 			jen.ID("cfg").Op(":=").ID("config").Dot("BuildConfig").Call(),

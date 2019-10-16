@@ -10,11 +10,8 @@ func usersTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("buildMockRowFromUser").Params(jen.ID("user").Op("*").ID("models").Dot(
+	ret.Add(
+		jen.Func().ID("buildMockRowFromUser").Params(jen.ID("user").Op("*").ID("models").Dot(
 		"User",
 	)).Params(jen.Op("*").ID("sqlmock").Dot(
 		"Rows",
@@ -44,10 +41,11 @@ func usersTestDotGo() *jen.File {
 		)),
 		jen.Return().ID("exampleRows"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").Op("*").ID("models").Dot(
 		"User",
 	)).Params(jen.Op("*").ID("sqlmock").Dot(
 		"Rows",
@@ -77,16 +75,14 @@ func usersTestDotGo() *jen.File {
 		)),
 		jen.Return().ID("exampleRows"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_buildGetUserQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_buildGetUserQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("m"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedArgCount").Op(":=").Lit(1),
@@ -105,16 +101,14 @@ func usersTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_GetUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_GetUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = ?"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -146,9 +140,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = ?"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -184,16 +176,14 @@ func usersTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_buildGetUsersQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_buildGetUsersQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("m"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedArgCount").Op(":=").Lit(0),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
@@ -210,16 +200,14 @@ func usersTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_GetUsers").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_GetUsers").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.ID("expectedUsersQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -268,9 +256,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUsersQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.List(jen.ID("m"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(
@@ -298,9 +284,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUsersQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.List(jen.ID("m"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(
@@ -325,9 +309,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUsersQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"UserList",
@@ -359,9 +341,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.ID("expectedUsersQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -407,16 +387,14 @@ func usersTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_buildGetUserByUsernameQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_buildGetUserByUsernameQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("m"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedUsername").Op(":=").Lit("username"),
 			jen.ID("expectedArgCount").Op(":=").Lit(1),
@@ -435,16 +413,14 @@ func usersTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedUsername"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_GetUserByUsername").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_GetUserByUsername").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = ?"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -476,9 +452,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = ?"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -513,9 +487,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = ?"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -548,16 +520,14 @@ func usersTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_buildGetUserCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_buildGetUserCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("m"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedArgCount").Op(":=").Lit(0),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
@@ -574,16 +544,14 @@ func usersTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_GetUserCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_GetUserCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.List(jen.ID("m"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -613,9 +581,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.List(jen.ID("m"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(
@@ -641,16 +607,14 @@ func usersTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_buildCreateUserQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_buildCreateUserQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("m"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"UserInput",
@@ -668,16 +632,14 @@ func usersTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_CreateUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_CreateUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Username").Op(":").Lit("username"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -736,9 +698,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Username").Op(":").Lit("username"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -782,16 +742,14 @@ func usersTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_buildUpdateUserQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_buildUpdateUserQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("m"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -809,16 +767,14 @@ func usersTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_UpdateUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_UpdateUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Username").Op(":").Lit("username"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -856,16 +812,14 @@ func usersTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_buildArchiveUserQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_buildArchiveUserQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("m"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedArgCount").Op(":=").Lit(1),
@@ -884,16 +838,14 @@ func usersTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMariaDB_ArchiveUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMariaDB_ArchiveUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Username").Op(":").Lit("username"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -927,8 +879,7 @@ func usersTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

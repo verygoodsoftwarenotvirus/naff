@@ -10,15 +10,11 @@ func wireDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Null().Var().ID("Providers").Op("=").ID("wire").Dot(
+	ret.Add(
+		jen.Var().ID("Providers").Op("=").ID("wire").Dot(
 		"NewSet",
 	).Call(jen.ID("ProvideUnitCounter"), jen.ID("ProvideUnitCounterProvider")),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

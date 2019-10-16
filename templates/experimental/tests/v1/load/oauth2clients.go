@@ -10,11 +10,10 @@ func oauth2ClientsDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Comment("fetchRandomOAuth2Client retrieves a random client from the list of available clients"),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// fetchRandomOAuth2Client retrieves a random client from the list of available clients").ID("fetchRandomOAuth2Client").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().ID("fetchRandomOAuth2Client").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Op("*").ID("models").Dot(
 		"OAuth2Client",
 	)).Block(
 		jen.List(jen.ID("clientsRes"), jen.ID("err")).Op(":=").ID("c").Dot(
@@ -25,7 +24,8 @@ func oauth2ClientsDotGo() *jen.File {
 		)).Op("<=").Lit(1)).Block(
 			jen.Return().ID("nil"),
 		),
-		jen.Null().Var().ID("selectedClient").Op("*").ID("models").Dot(
+
+		jen.Var().ID("selectedClient").Op("*").ID("models").Dot(
 			"OAuth2Client",
 		),
 		jen.For(jen.ID("selectedClient").Op("==").ID("nil")).Block(
@@ -43,10 +43,11 @@ func oauth2ClientsDotGo() *jen.File {
 		),
 		jen.Return().ID("selectedClient"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildOAuth2ClientActions").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
+
+	ret.Add(
+		jen.Func().ID("buildOAuth2ClientActions").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
 		jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(jen.Lit("CreateOAuth2Client").Op(":").Valuesln(jen.ID("Name").Op(":").Lit("CreateOAuth2Client"), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
 			jen.ID("ui").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/rand/model", "RandomUserInput").Call(),
 			jen.List(jen.ID("u"), jen.ID("err")).Op(":=").ID("c").Dot(
@@ -96,8 +97,7 @@ func oauth2ClientsDotGo() *jen.File {
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
 		), jen.ID("Weight").Op(":").Lit(100))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

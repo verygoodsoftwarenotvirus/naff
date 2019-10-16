@@ -10,11 +10,8 @@ func authTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("loginUser").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpSecret")).ID("string")).Params(jen.Op("*").Qual("net/http", "Cookie")).Block(
+	ret.Add(
+		jen.Func().ID("loginUser").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpSecret")).ID("string")).Params(jen.Op("*").Qual("net/http", "Cookie")).Block(
 		jen.ID("loginURL").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%s://%s:%s/users/login"), jen.ID("todoClient").Dot(
 			"URL",
 		).Dot(
@@ -70,10 +67,11 @@ func authTestDotGo() *jen.File {
 		).Call(),
 		jen.Return().ID("nil"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestAuth").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestAuth").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
 		jen.ID("test").Dot(
 			"Parallel",
 		).Call(),
@@ -310,7 +308,8 @@ func authTestDotGo() *jen.File {
 			)).Dot(
 				"Decode",
 			).Call(jen.ID("ucr"))),
-			jen.Null().Var().ID("badPassword").ID("string"),
+
+		jen.Var().ID("badPassword").ID("string"),
 			jen.For(jen.List(jen.ID("_"), jen.ID("v")).Op(":=").Range().ID("ui").Dot(
 				"Password",
 			)).Block(
@@ -446,7 +445,8 @@ func authTestDotGo() *jen.File {
 			jen.ID("require").Dot(
 				"NotNil",
 			).Call(jen.ID("test"), jen.ID("cookie")),
-			jen.Null().Var().ID("backwardsPass").ID("string"),
+
+		jen.Var().ID("backwardsPass").ID("string"),
 			jen.For(jen.List(jen.ID("_"), jen.ID("v")).Op(":=").Range().ID("ui").Dot(
 				"Password",
 			)).Block(
@@ -887,8 +887,7 @@ func authTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err"), jen.Lit("should experience error trying to fetch entry they're not authorized for")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

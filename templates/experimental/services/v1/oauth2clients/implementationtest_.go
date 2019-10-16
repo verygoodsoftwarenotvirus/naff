@@ -10,21 +10,16 @@ func implementationTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("apiURLPrefix").Op("=").Lit("/api/v1"),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("apiURLPrefix").Op("=").Lit("/api/v1"),
 
+	ret.Add(
+		jen.Func().ID("TestService_OAuth2InternalErrorHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("TestService_OAuth2InternalErrorHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Qual("errors", "New").Call(jen.Lit("blah")),
 			jen.ID("actual").Op(":=").ID("s").Dot(
@@ -37,32 +32,28 @@ func implementationTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_OAuth2ResponseErrorHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_OAuth2ResponseErrorHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleInput").Op(":=").Op("&").Qual("gopkg.in/oauth2.v3/errors", "Response").Valuesln(),
 			jen.ID("buildTestService").Call(jen.ID("t")).Dot(
 				"OAuth2ResponseErrorHandler",
 			).Call(jen.ID("exampleInput")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_AuthorizeScopeHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_AuthorizeScopeHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Lit("blah"),
 			jen.ID("exampleClient").Op(":=").Op("&").ID("models").Dot(
@@ -99,9 +90,7 @@ func implementationTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without client attached to request but with client ID attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request but with client ID attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Lit("blah"),
 			jen.ID("exampleClient").Op(":=").Op("&").ID("models").Dot(
@@ -155,9 +144,7 @@ func implementationTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without client attached to request and now rows found fetching client info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request and now rows found fetching client info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Lit("blah,flarg"),
 			jen.ID("exampleClient").Op(":=").Op("&").ID("models").Dot(
@@ -208,9 +195,7 @@ func implementationTestDotGo() *jen.File {
 				"Empty",
 			).Call(jen.ID("t"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without client attached to request and error fetching client info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request and error fetching client info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Lit("blah,flarg"),
 			jen.ID("exampleClient").Op(":=").Op("&").ID("models").Dot(
@@ -261,9 +246,7 @@ func implementationTestDotGo() *jen.File {
 				"Empty",
 			).Call(jen.ID("t"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without client attached to request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
 			jen.ID("res").Op(":=").ID("httptest").Dot(
@@ -284,9 +267,7 @@ func implementationTestDotGo() *jen.File {
 				"Empty",
 			).Call(jen.ID("t"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with invalid scope & client ID but no client"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid scope & client ID but no client"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleClient").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -340,16 +321,14 @@ func implementationTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("actual")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_UserAuthorizationHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_UserAuthorizationHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleClient").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -378,9 +357,7 @@ func implementationTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("actual"), jen.ID("expected")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without client attached to request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -409,9 +386,7 @@ func implementationTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("actual"), jen.ID("expected")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no user info attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no user info attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
 			jen.ID("res").Op(":=").ID("httptest").Dot(
@@ -428,16 +403,14 @@ func implementationTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("actual")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_ClientAuthorizedHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_ClientAuthorizedHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").ID("true"),
 			jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot(
@@ -474,9 +447,7 @@ func implementationTestDotGo() *jen.File {
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with password credentials grant"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with password credentials grant"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").ID("false"),
 			jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot(
@@ -492,9 +463,7 @@ func implementationTestDotGo() *jen.File {
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").ID("false"),
 			jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot(
@@ -533,9 +502,7 @@ func implementationTestDotGo() *jen.File {
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with disallowed implicit"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with disallowed implicit"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").ID("false"),
 			jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot(
@@ -573,16 +540,14 @@ func implementationTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_ClientScopeHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_ClientScopeHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").ID("true"),
 			jen.ID("exampleScope").Op(":=").Lit("halb"),
@@ -617,9 +582,7 @@ func implementationTestDotGo() *jen.File {
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").ID("false"),
 			jen.ID("exampleScope").Op(":=").Lit("halb"),
@@ -656,9 +619,7 @@ func implementationTestDotGo() *jen.File {
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without valid scope"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without valid scope"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").ID("false"),
 			jen.ID("exampleScope").Op(":=").Lit("halb"),
@@ -694,8 +655,7 @@ func implementationTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

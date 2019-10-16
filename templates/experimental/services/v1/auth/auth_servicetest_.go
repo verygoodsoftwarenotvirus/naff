@@ -10,11 +10,8 @@ func authServiceTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
+	ret.Add(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
 		jen.ID("t").Dot(
 			"Helper",
 		).Call(),
@@ -38,8 +35,7 @@ func authServiceTestDotGo() *jen.File {
 		jen.ID("service").Op(":=").ID("ProvideAuthService").Call(jen.ID("logger"), jen.ID("cfg"), jen.ID("auth"), jen.ID("userDB"), jen.ID("oauth"), jen.ID("userIDFetcher"), jen.ID("ed")),
 		jen.Return().ID("service"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

@@ -10,17 +10,11 @@ func httpRoutesTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Func().ID("TestWebhooksService_List").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("TestWebhooksService_List").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -84,9 +78,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -147,9 +139,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching webhooks from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching webhooks from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -210,9 +200,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -277,16 +265,14 @@ func httpRoutesTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusOK")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestValidateWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestValidateWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"WebhookCreationInput",
 			).Valuesln(jen.ID("Method").Op(":").Qual("net/http", "MethodPost"), jen.ID("URL").Op(":").Lit("https://todo.verygoodsoftwarenotvirus.ru")),
@@ -294,9 +280,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("validateWebhook").Call(jen.ID("exampleInput"))),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with invalid method"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid method"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"WebhookCreationInput",
 			).Valuesln(jen.ID("Method").Op(":").Lit(` MEATLOAF `), jen.ID("URL").Op(":").Lit("https://todo.verygoodsoftwarenotvirus.ru")),
@@ -304,9 +288,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Error",
 			).Call(jen.ID("t"), jen.ID("validateWebhook").Call(jen.ID("exampleInput"))),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with invalid url"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid url"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"WebhookCreationInput",
 			).Valuesln(jen.ID("Method").Op(":").Qual("net/http", "MethodPost"), jen.ID("URL").Op(":").Lit("%zzzzz")),
@@ -315,16 +297,14 @@ func httpRoutesTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("validateWebhook").Call(jen.ID("exampleInput"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestWebhooksService_Create").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestWebhooksService_Create").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -403,9 +383,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusCreated")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with invalid webhook request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid webhook request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -482,9 +460,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusBadRequest")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without input attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without input attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -528,9 +504,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusBadRequest")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error creating webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error creating webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -602,9 +576,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -684,16 +656,14 @@ func httpRoutesTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusCreated")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestWebhooksService_Read").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestWebhooksService_Read").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -762,9 +732,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no such webhook in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no such webhook in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -822,9 +790,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusNotFound")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching webhook from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching webhook from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -882,9 +848,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -954,16 +918,14 @@ func httpRoutesTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusOK")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestWebhooksService_Update").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestWebhooksService_Update").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1060,9 +1022,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without update input"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without update input"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("res").Op(":=").ID("httptest").Dot(
 				"NewRecorder",
@@ -1083,9 +1043,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusBadRequest")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no rows fetching webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no rows fetching webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1153,9 +1111,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusNotFound")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1223,9 +1179,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error updating webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error updating webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1322,9 +1276,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1422,16 +1374,14 @@ func httpRoutesTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusOK")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestWebhooksService_Archive").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestWebhooksService_Archive").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1509,9 +1459,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusNoContent")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no webhook in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no webhook in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1567,9 +1515,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusNotFound")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1626,8 +1572,7 @@ func httpRoutesTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

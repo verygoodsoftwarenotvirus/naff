@@ -80,6 +80,7 @@ and logging in.`)
 		),
 		jen.Line(),
 	)
+
 	ret.Add(
 		jen.Func().ID("mustnt").Params(jen.ID("err").ID("error")).Block(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -88,6 +89,7 @@ and logging in.`)
 		),
 		jen.Line(),
 	)
+
 	ret.Add(
 		jen.Func().ID("clearTheScreen").Params().Block(
 			jen.Qual("fmt", "Println").Call(jen.Lit("\033[2J")),

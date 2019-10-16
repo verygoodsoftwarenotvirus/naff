@@ -10,17 +10,11 @@ func counterTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Func().ID("Test_opencensusCounter_Increment").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("Test_opencensusCounter_Increment").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("ct"), jen.ID("err")).Op(":=").ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
 			jen.ID("c").Op(":=").ID("ct").Assert(jen.Op("*").ID("opencensusCounter")),
 			jen.ID("require").Dot(
@@ -41,16 +35,14 @@ func counterTestDotGo() *jen.File {
 			), jen.ID("uint64").Call(jen.Lit(1))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("Test_opencensusCounter_IncrementBy").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("Test_opencensusCounter_IncrementBy").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("ct"), jen.ID("err")).Op(":=").ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
 			jen.ID("c").Op(":=").ID("ct").Assert(jen.Op("*").ID("opencensusCounter")),
 			jen.ID("require").Dot(
@@ -71,16 +63,14 @@ func counterTestDotGo() *jen.File {
 			), jen.ID("uint64").Call(jen.Lit(666))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("Test_opencensusCounter_Decrement").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("Test_opencensusCounter_Decrement").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("ct"), jen.ID("err")).Op(":=").ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
 			jen.ID("c").Op(":=").ID("ct").Assert(jen.Op("*").ID("opencensusCounter")),
 			jen.ID("require").Dot(
@@ -109,19 +99,18 @@ func counterTestDotGo() *jen.File {
 			), jen.ID("uint64").Call(jen.Lit(0))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestProvideUnitCounterProvider").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
+
+	ret.Add(
+		jen.Func().ID("TestProvideUnitCounterProvider").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
 		jen.ID("assert").Dot(
 			"NotNil",
 		).Call(jen.ID("T"), jen.ID("ProvideUnitCounterProvider").Call()),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

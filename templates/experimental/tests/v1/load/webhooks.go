@@ -10,11 +10,10 @@ func webhooksDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Comment("fetchRandomWebhook retrieves a random webhook from the list of available webhooks"),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// fetchRandomWebhook retrieves a random webhook from the list of available webhooks").ID("fetchRandomWebhook").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().ID("fetchRandomWebhook").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Op("*").ID("models").Dot(
 		"Webhook",
 	)).Block(
 		jen.List(jen.ID("webhooks"), jen.ID("err")).Op(":=").ID("c").Dot(
@@ -32,10 +31,11 @@ func webhooksDotGo() *jen.File {
 			"Webhooks",
 		).Index(jen.ID("randIndex")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildWebhookActions").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
+
+	ret.Add(
+		jen.Func().ID("buildWebhookActions").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
 		jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(jen.Lit("GetWebhooks").Op(":").Valuesln(jen.ID("Name").Op(":").Lit("GetWebhooks"), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
 			jen.Return().ID("c").Dot(
 				"BuildGetWebhooksRequest",
@@ -76,8 +76,7 @@ func webhooksDotGo() *jen.File {
 			jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
 		), jen.ID("Weight").Op(":").Lit(50))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

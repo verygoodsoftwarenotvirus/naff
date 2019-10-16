@@ -10,27 +10,22 @@ func httpRoutesTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Func().ID("Test_randString").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("Test_randString").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("actual").Op(":=").ID("randString").Call(),
 			jen.ID("assert").Dot(
 				"NotEmpty",
 			).Call(jen.ID("t"), jen.ID("actual")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildRequest").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual("net/http", "Request")).Block(
+
+	ret.Add(
+		jen.Func().ID("buildRequest").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual("net/http", "Request")).Block(
 		jen.ID("t").Dot(
 			"Helper",
 		).Call(),
@@ -43,16 +38,14 @@ func httpRoutesTestDotGo() *jen.File {
 		).Call(jen.ID("t"), jen.ID("err")),
 		jen.Return().ID("req"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("Test_fetchUserID").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("Test_fetchUserID").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("req").Op("=").ID("req").Dot(
@@ -70,9 +63,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without context value present"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without context value present"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -84,16 +75,14 @@ func httpRoutesTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_ListHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_ListHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -148,9 +137,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -205,9 +192,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -262,9 +247,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -320,16 +303,14 @@ func httpRoutesTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_CreateHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_CreateHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("HashedPassword").Op(":").Lit("hashed_pass"), jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)), jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET")),
@@ -439,9 +420,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with missing input"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with missing input"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
 			jen.ID("res").Op(":=").ID("httptest").Dot(
@@ -456,9 +435,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error getting user"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error getting user"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("HashedPassword").Op(":").Lit("hashed_pass"), jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)), jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET")),
@@ -514,9 +491,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with invalid credentials"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid credentials"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("HashedPassword").Op(":").Lit("hashed_pass"), jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)), jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET")),
@@ -602,9 +577,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error validating password"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error validating password"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("HashedPassword").Op(":").Lit("hashed_pass"), jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)), jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET")),
@@ -690,9 +663,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error creating oauth2 client"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error creating oauth2 client"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("HashedPassword").Op(":").Lit("hashed_pass"), jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)), jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET")),
@@ -778,9 +749,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("HashedPassword").Op(":").Lit("hashed_pass"), jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)), jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET")),
@@ -891,16 +860,14 @@ func httpRoutesTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_ReadHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_ReadHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
@@ -959,9 +926,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no rows found"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no rows found"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
@@ -1020,9 +985,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching client from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching client from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
@@ -1081,9 +1044,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
@@ -1143,16 +1104,14 @@ func httpRoutesTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_ArchiveHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_ArchiveHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
@@ -1220,9 +1179,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no rows found"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no rows found"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
@@ -1266,9 +1223,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error deleting record"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error deleting record"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
 			jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
@@ -1313,8 +1268,7 @@ func httpRoutesTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

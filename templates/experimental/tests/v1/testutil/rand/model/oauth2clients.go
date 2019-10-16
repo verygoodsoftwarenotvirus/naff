@@ -10,11 +10,10 @@ func oauth2ClientsDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Comment("RandomOAuth2ClientInput creates a random OAuth2ClientCreationInput"),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// RandomOAuth2ClientInput creates a random OAuth2ClientCreationInput").ID("RandomOAuth2ClientInput").Params(jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().ID("RandomOAuth2ClientInput").Params(jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.Op("*").ID("models").Dot(
 		"OAuth2ClientCreationInput",
 	)).Block(
 		jen.ID("x").Op(":=").Op("&").ID("models").Dot(
@@ -24,8 +23,7 @@ func oauth2ClientsDotGo() *jen.File {
 		).Valuesln(jen.ID("Username").Op(":").ID("username"), jen.ID("Password").Op(":").ID("password"), jen.ID("TOTPToken").Op(":").ID("mustBuildCode").Call(jen.ID("totpToken")))),
 		jen.Return().ID("x"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

@@ -10,11 +10,10 @@ func webhooksDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Comment("RandomWebhookInput creates a random WebhookCreationInput"),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// RandomWebhookInput creates a random WebhookCreationInput").ID("RandomWebhookInput").Params().Params(jen.Op("*").ID("models").Dot(
+		jen.Func().ID("RandomWebhookInput").Params().Params(jen.Op("*").ID("models").Dot(
 		"WebhookCreationInput",
 	)).Block(
 		jen.ID("x").Op(":=").Op("&").ID("models").Dot(
@@ -26,8 +25,7 @@ func webhooksDotGo() *jen.File {
 		).Call(), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("Method").Op(":").Lit("POST")),
 		jen.Return().ID("x"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

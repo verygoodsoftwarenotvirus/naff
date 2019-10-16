@@ -10,35 +10,41 @@ func httpRoutesDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("URIParamKey").Op("=").Lit("webhookID"),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("URIParamKey").Op("=").Lit("webhookID"),
 
+	ret.Add(
+		jen.Comment("attachWebhookIDToSpan provides a consistent way to attach a webhook ID to a given span"),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// attachWebhookIDToSpan provides a consistent way to attach a webhook ID to a given span").ID("attachWebhookIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("webhookID").ID("uint64")).Block(
+		jen.Func().ID("attachWebhookIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("webhookID").ID("uint64")).Block(
 		jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
 			jen.ID("span").Dot(
 				"AddAttributes",
 			).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("webhook_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("webhookID"), jen.Lit(10)))),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// attachUserIDToSpan provides a consistent way to attach a user ID to a given span").ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
+
+	ret.Add(
+		jen.Comment("attachUserIDToSpan provides a consistent way to attach a user ID to a given span"),
+		jen.Line(),
+		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
 		jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
 			jen.ID("span").Dot(
 				"AddAttributes",
 			).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10)))),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ListHandler is our list route").Params(jen.ID("s").Op("*").ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("ListHandler is our list route"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -91,10 +97,13 @@ func httpRoutesDotGo() *jen.File {
 			),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// validateWebhook does some validation on a WebhookCreationInput and returns an error if anything runs foul").ID("validateWebhook").Params(jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("validateWebhook does some validation on a WebhookCreationInput and returns an error if anything runs foul"),
+		jen.Line(),
+		jen.Func().ID("validateWebhook").Params(jen.ID("input").Op("*").ID("models").Dot(
 		"WebhookCreationInput",
 	)).Params(jen.ID("error")).Block(
 		jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("input").Dot(
@@ -118,10 +127,13 @@ func httpRoutesDotGo() *jen.File {
 		),
 		jen.Return().ID("nil"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// CreateHandler is our webhook creation route").Params(jen.ID("s").Op("*").ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("CreateHandler is our webhook creation route"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -219,10 +231,13 @@ func httpRoutesDotGo() *jen.File {
 			),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ReadHandler returns a GET handler that returns an webhook").Params(jen.ID("s").Op("*").ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("ReadHandler returns a GET handler that returns an webhook"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -276,10 +291,13 @@ func httpRoutesDotGo() *jen.File {
 			),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// UpdateHandler returns a handler that updates an webhook").Params(jen.ID("s").Op("*").ID("Service")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("UpdateHandler returns a handler that updates an webhook"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -374,10 +392,13 @@ func httpRoutesDotGo() *jen.File {
 			),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ArchiveHandler returns a handler that archives an webhook").Params(jen.ID("s").Op("*").ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("ArchiveHandler returns a handler that archives an webhook"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -441,8 +462,7 @@ func httpRoutesDotGo() *jen.File {
 			).Call(jen.Qual("net/http", "StatusNoContent")),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

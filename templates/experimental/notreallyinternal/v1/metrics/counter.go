@@ -10,21 +10,22 @@ func counterDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Type().ID("Counter").Interface(jen.ID("Increment").Params(), jen.ID("IncrementBy").Params(jen.ID("val").ID("uint64")), jen.ID("Decrement").Params()),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Type().ID("Counter").Interface(jen.ID("Increment").Params(), jen.ID("IncrementBy").Params(jen.ID("val").ID("uint64")), jen.ID("Decrement").Params()),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Null().Type().ID("opencensusCounter").Struct(jen.ID("name").ID("string"), jen.ID("actualCount").ID("uint64"), jen.ID("count").Op("*").Qual("go.opencensus.io/stats", "Int64Measure"), jen.ID("counter").Op("*").ID("view").Dot(
+	ret.Add(
+		jen.Type().ID("opencensusCounter").Struct(jen.ID("name").ID("string"), jen.ID("actualCount").ID("uint64"), jen.ID("count").Op("*").Qual("go.opencensus.io/stats", "Int64Measure"), jen.ID("counter").Op("*").ID("view").Dot(
 		"View",
 	)),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// Increment satisfies our Counter interface").Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("Increment").Params(jen.ID("ctx").Qual("context", "Context")).Block(
+
+	ret.Add(
+		jen.Comment("Increment satisfies our Counter interface"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("Increment").Params(jen.ID("ctx").Qual("context", "Context")).Block(
 		jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot(
 			"actualCount",
 		), jen.Lit(1)),
@@ -34,10 +35,13 @@ func counterDotGo() *jen.File {
 			"M",
 		).Call(jen.Lit(1))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// IncrementBy satisfies our Counter interface").Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("IncrementBy").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("val").ID("uint64")).Block(
+
+	ret.Add(
+		jen.Comment("IncrementBy satisfies our Counter interface"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("IncrementBy").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("val").ID("uint64")).Block(
 		jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot(
 			"actualCount",
 		), jen.ID("val")),
@@ -47,10 +51,13 @@ func counterDotGo() *jen.File {
 			"M",
 		).Call(jen.ID("int64").Call(jen.ID("val")))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// Decrement satisfies our Counter interface").Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("Decrement").Params(jen.ID("ctx").Qual("context", "Context")).Block(
+
+	ret.Add(
+		jen.Comment("Decrement satisfies our Counter interface"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("Decrement").Params(jen.ID("ctx").Qual("context", "Context")).Block(
 		jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot(
 			"actualCount",
 		), jen.Op("^").ID("uint64").Call(jen.Lit(0))),
@@ -60,16 +67,22 @@ func counterDotGo() *jen.File {
 			"M",
 		).Call(jen.Op("-").Lit(1))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ProvideUnitCounterProvider provides UnitCounter providers").ID("ProvideUnitCounterProvider").Params().Params(jen.ID("UnitCounterProvider")).Block(
+
+	ret.Add(
+		jen.Comment("ProvideUnitCounterProvider provides UnitCounter providers"),
+		jen.Line(),
+		jen.Func().ID("ProvideUnitCounterProvider").Params().Params(jen.ID("UnitCounterProvider")).Block(
 		jen.Return().ID("ProvideUnitCounter"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ProvideUnitCounter provides a new counter").ID("ProvideUnitCounter").Params(jen.ID("counterName").ID("CounterName"), jen.ID("description").ID("string")).Params(jen.ID("UnitCounter"), jen.ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("ProvideUnitCounter provides a new counter"),
+		jen.Line(),
+		jen.Func().ID("ProvideUnitCounter").Params(jen.ID("counterName").ID("CounterName"), jen.ID("description").ID("string")).Params(jen.ID("UnitCounter"), jen.ID("error")).Block(
 		jen.ID("name").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%s_count"), jen.ID("string").Call(jen.ID("counterName"))),
 		jen.ID("count").Op(":=").Qual("go.opencensus.io/stats", "Int64").Call(jen.ID("name"), jen.Lit(""), jen.Lit("By")),
 		jen.ID("countView").Op(":=").Op("&").ID("view").Dot(
@@ -84,8 +97,7 @@ func counterDotGo() *jen.File {
 		),
 		jen.Return().List(jen.Op("&").ID("opencensusCounter").Valuesln(jen.ID("name").Op(":").ID("name"), jen.ID("count").Op(":").ID("count"), jen.ID("counter").Op(":").ID("countView")), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

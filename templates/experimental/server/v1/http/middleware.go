@@ -10,15 +10,13 @@ func middlewareDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("idReplacementRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.Lit(`[^(v|oauth)]\d+`)),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("idReplacementRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.Lit(`[^(v|oauth)]\d+`)),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("formatSpanNameForRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("string")).Block(
+	ret.Add(
+		jen.Func().ID("formatSpanNameForRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("string")).Block(
 		jen.Return().Qual("fmt", "Sprintf").Call(jen.Lit("%s %s"), jen.ID("req").Dot(
 			"Method",
 		), jen.ID("idReplacementRegex").Dot(
@@ -29,10 +27,11 @@ func middlewareDotGo() *jen.File {
 			"Path",
 		), jen.Lit(`/{id}`))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("loggingMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+
+	ret.Add(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("loggingMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 		jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.ID("ww").Op(":=").ID("middleware").Dot(
 				"NewWrapResponseWriter",
@@ -58,8 +57,7 @@ func middlewareDotGo() *jen.File {
 			).Call(jen.Lit("request received")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

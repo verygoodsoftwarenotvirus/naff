@@ -10,11 +10,8 @@ func webhooksServiceTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
+	ret.Add(
+		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
 		jen.Return().Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 			"ProvideNoopLogger",
 		).Call(), jen.ID("webhookCounter").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(), jen.ID("webhookDatabase").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "WebhookDataManager").Valuesln(), jen.ID("userIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -25,16 +22,14 @@ func webhooksServiceTestDotGo() *jen.File {
 			"NewNewsman",
 		).Call(jen.ID("nil"), jen.ID("nil"))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestProvideWebhooksService").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestProvideWebhooksService").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
 			jen.ID("uc").Dot(
@@ -42,7 +37,8 @@ func webhooksServiceTestDotGo() *jen.File {
 			).Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot(
 				"Return",
 			).Call(),
-			jen.Null().Var().ID("ucp").ID("metrics").Dot(
+
+		jen.Var().ID("ucp").ID("metrics").Dot(
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
@@ -75,10 +71,9 @@ func webhooksServiceTestDotGo() *jen.File {
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error providing counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.Null().Var().ID("ucp").ID("metrics").Dot(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error providing counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+		jen.Var().ID("ucp").ID("metrics").Dot(
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
@@ -103,9 +98,7 @@ func webhooksServiceTestDotGo() *jen.File {
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error setting count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error setting count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
 			jen.ID("uc").Dot(
@@ -113,7 +106,8 @@ func webhooksServiceTestDotGo() *jen.File {
 			).Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot(
 				"Return",
 			).Call(),
-			jen.Null().Var().ID("ucp").ID("metrics").Dot(
+
+		jen.Var().ID("ucp").ID("metrics").Dot(
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
@@ -147,8 +141,7 @@ func webhooksServiceTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

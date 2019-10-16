@@ -10,24 +10,24 @@ func usersDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("usersTableName").Op("=").Lit("users"),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("usersTableName").Op("=").Lit("users"),
 
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("usersTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("username"), jen.Lit("hashed_password"), jen.Lit("password_last_changed_on"), jen.Lit("two_factor_secret"), jen.Lit("is_admin"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on")),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("usersTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("username"), jen.Lit("hashed_password"), jen.Lit("password_last_changed_on"), jen.Lit("two_factor_secret"), jen.Lit("is_admin"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on")),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// scanUser provides a consistent way to scan something like a *sql.Row into a User struct").ID("scanUser").Params(jen.ID("scan").ID("database").Dot(
+	ret.Add(
+		jen.Func().Comment("// scanUser provides a consistent way to scan something like a *sql.Row into a User struct").ID("scanUser").Params(jen.ID("scan").ID("database").Dot(
 		"Scanner",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"User",
 	), jen.ID("error")).Block(
-		jen.Null().Var().ID("x").Op("=").Op("&").ID("models").Dot(
+
+		jen.Var().ID("x").Op("=").Op("&").ID("models").Dot(
 			"User",
 		).Valuesln(),
 		jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
@@ -55,15 +55,19 @@ func usersDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("x"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// scanUsers takes database rows and loads them into a slice of User structs").ID("scanUsers").Params(jen.ID("logger").ID("logging").Dot(
+
+	ret.Add(
+		jen.Comment("scanUsers takes database rows and loads them into a slice of User structs"),
+		jen.Line(),
+		jen.Func().ID("scanUsers").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 		"Logger",
 	), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().ID("models").Dot(
 		"User",
 	), jen.ID("error")).Block(
-		jen.Null().Var().ID("list").Index().ID("models").Dot(
+
+		jen.Var().ID("list").Index().ID("models").Dot(
 			"User",
 		),
 		jen.For(jen.ID("rows").Dot(
@@ -89,11 +93,13 @@ func usersDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("list"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildGetUserQuery returns a SQL query (and argument) for retrieving a user by their database ID").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetUserQuery").Params(jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+	ret.Add(
+		jen.Func().Comment("// buildGetUserQuery returns a SQL query (and argument) for retrieving a user by their database ID").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetUserQuery").Params(jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+
+		jen.Var().ID("err").ID("error"),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -112,10 +118,13 @@ func usersDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetUser fetches a user").Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetUser fetches a user"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 		"User",
 	), jen.ID("error")).Block(
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -132,11 +141,13 @@ func usersDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("u"), jen.ID("err")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildGetUserByUsernameQuery returns a SQL query (and argument) for retrieving a user by their username").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetUserByUsernameQuery").Params(jen.ID("username").ID("string")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+	ret.Add(
+		jen.Func().Comment("// buildGetUserByUsernameQuery returns a SQL query (and argument) for retrieving a user by their username").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetUserByUsernameQuery").Params(jen.ID("username").ID("string")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+
+		jen.Var().ID("err").ID("error"),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -155,10 +166,13 @@ func usersDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetUserByUsername fetches a user by their username").Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetUserByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetUserByUsername fetches a user by their username"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetUserByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.Op("*").ID("models").Dot(
 		"User",
 	), jen.ID("error")).Block(
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -178,13 +192,15 @@ func usersDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("u"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildGetUserCountQuery returns a SQL query (and arguments) for retrieving the number of users who adhere").Comment("// to a given filter's criteria.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetUserCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().Comment("// buildGetUserCountQuery returns a SQL query (and arguments) for retrieving the number of users who adhere").Comment("// to a given filter's criteria.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetUserCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
 	)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+		jen.Var().ID("err").ID("error"),
 		jen.ID("builder").Op(":=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -209,10 +225,13 @@ func usersDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetUserCount fetches a count of users from the database that meet a particular filter").Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetUserCount fetches a count of users from the database that meet a particular filter"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
 	)).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -227,13 +246,15 @@ func usersDotGo() *jen.File {
 		).Call(jen.Op("&").ID("count")),
 		jen.Return(),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildGetUserCountQuery returns a SQL query (and arguments) for retrieving a slice of users who adhere").Comment("// to a given filter's criteria.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetUsersQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().Comment("// buildGetUserCountQuery returns a SQL query (and arguments) for retrieving a slice of users who adhere").Comment("// to a given filter's criteria.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetUsersQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
 	)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+		jen.Var().ID("err").ID("error"),
 		jen.ID("builder").Op(":=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -258,10 +279,13 @@ func usersDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetUsers fetches a list of users from the database that meet a particular filter").Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"UserList",
@@ -300,13 +324,15 @@ func usersDotGo() *jen.File {
 		), jen.ID("TotalCount").Op(":").ID("count")), jen.ID("Users").Op(":").ID("userList")),
 		jen.Return().List(jen.ID("x"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildCreateUserQuery returns a SQL query (and arguments) that would create a given User").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildCreateUserQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().Comment("// buildCreateUserQuery returns a SQL query (and arguments) that would create a given User").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildCreateUserQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
 		"UserInput",
 	)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+		jen.Var().ID("err").ID("error"),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -331,10 +357,13 @@ func usersDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// CreateUser creates a user").Params(jen.ID("p").Op("*").ID("Postgres")).ID("CreateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("CreateUser creates a user"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("CreateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
 		"UserInput",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"User",
@@ -376,13 +405,15 @@ func usersDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("x"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildUpdateUserQuery returns a SQL query (and arguments) that would update the given user's row").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildUpdateUserQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().Comment("// buildUpdateUserQuery returns a SQL query (and arguments) that would update the given user's row").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildUpdateUserQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
 		"User",
 	)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+		jen.Var().ID("err").ID("error"),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -419,10 +450,13 @@ func usersDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// UpdateUser receives a complete User struct and updates its place in the db.").Comment("// NOTE this function uses the ID provided in the input to make its query. Pass in").Comment("// anonymous structs or incomplete models at your peril.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("UpdateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+	jen.Comment("UpdateUser receives a complete User struct and updates its place in the db."),
+	jen.Line(),
+	jen.Func().Comment("// NOTE this function uses the ID provided in the input to make its query. Pass in").Comment("// anonymous structs or incomplete models at your peril.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("UpdateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
 		"User",
 	)).Params(jen.ID("error")).Block(
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -438,11 +472,13 @@ func usersDotGo() *jen.File {
 			"UpdatedOn",
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildArchiveUserQuery").Params(jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+	ret.Add(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildArchiveUserQuery").Params(jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+
+		jen.Var().ID("err").ID("error"),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -469,10 +505,13 @@ func usersDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ArchiveUser archives a user by their username").Params(jen.ID("p").Op("*").ID("Postgres")).ID("ArchiveUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("ArchiveUser archives a user by their username"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("ArchiveUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.ID("error")).Block(
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
 			"buildArchiveUserQuery",
 		).Call(jen.ID("userID")),
@@ -483,8 +522,7 @@ func usersDotGo() *jen.File {
 		).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 		jen.Return().ID("err"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

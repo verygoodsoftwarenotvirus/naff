@@ -10,17 +10,11 @@ func itemsTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Func().ID("TestClient_GetItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("TestClient_GetItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleItemID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
@@ -50,16 +44,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestClient_GetItemCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestClient_GetItemCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
@@ -89,9 +81,7 @@ func itemsTestDotGo() *jen.File {
 				"AssertExpectations",
 			).Call(jen.ID("t")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
@@ -120,16 +110,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestClient_GetAllItemsCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestClient_GetAllItemsCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 			jen.ID("mockDB").Dot(
@@ -155,16 +143,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestClient_GetItems").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestClient_GetItems").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
@@ -196,9 +182,7 @@ func itemsTestDotGo() *jen.File {
 				"AssertExpectations",
 			).Call(jen.ID("t")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
@@ -229,16 +213,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestClient_CreateItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestClient_CreateItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"ItemCreationInput",
 			).Valuesln(),
@@ -269,21 +251,20 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestClient_UpdateItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestClient_UpdateItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"Item",
 			).Valuesln(),
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-			jen.Null().Var().ID("expected").ID("error"),
+
+		jen.Var().ID("expected").ID("error"),
 			jen.ID("mockDB").Dot(
 				"ItemDataManager",
 			).Dot(
@@ -301,19 +282,18 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestClient_ArchiveItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestClient_ArchiveItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("exampleItemID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-			jen.Null().Var().ID("expected").ID("error"),
+
+		jen.Var().ID("expected").ID("error"),
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 			jen.ID("mockDB").Dot(
 				"ItemDataManager",
@@ -332,8 +312,7 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

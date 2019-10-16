@@ -10,35 +10,41 @@ func httpRoutesDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("CookieName").Op("=").Lit("todocookie").Var().ID("cookieErrorLogName").Op("=").Lit("_COOKIE_CONSTRUCTION_ERROR_"),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("CookieName").Op("=").Lit("todocookie").Var().ID("cookieErrorLogName").Op("=").Lit("_COOKIE_CONSTRUCTION_ERROR_"),
 
+	ret.Add(
+		jen.Comment("attachUserIDToSpan provides a consistent way to attach a userID to a given span"),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// attachUserIDToSpan provides a consistent way to attach a userID to a given span").ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
+		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
 		jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
 			jen.ID("span").Dot(
 				"AddAttributes",
 			).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10)))),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// attachUsernameToSpan provides a consistent way to attach a username to a given span").ID("attachUsernameToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("username").ID("string")).Block(
+
+	ret.Add(
+		jen.Comment("attachUsernameToSpan provides a consistent way to attach a username to a given span"),
+		jen.Line(),
+		jen.Func().ID("attachUsernameToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("username").ID("string")).Block(
 		jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
 			jen.ID("span").Dot(
 				"AddAttributes",
 			).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("username"), jen.ID("username"))),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// DecodeCookieFromRequest takes a request object and fetches the cookie data if it is present").Params(jen.ID("s").Op("*").ID("Service")).ID("DecodeCookieFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("ca").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("DecodeCookieFromRequest takes a request object and fetches the cookie data if it is present"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("DecodeCookieFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("ca").Op("*").ID("models").Dot(
 		"CookieAuth",
 	), jen.ID("err").ID("error")).Block(
 		jen.List(jen.ID("_"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("DecodeCookieFromRequest")),
@@ -68,10 +74,13 @@ func httpRoutesDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("nil"), jen.Qual("net/http", "ErrNoCookie")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// WebsocketAuthFunction is provided to Newsman to determine if a user has access to websockets").Params(jen.ID("s").Op("*").ID("Service")).ID("WebsocketAuthFunction").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("bool")).Block(
+
+	ret.Add(
+		jen.Comment("WebsocketAuthFunction is provided to Newsman to determine if a user has access to websockets"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("WebsocketAuthFunction").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("bool")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 			"Context",
 		).Call(), jen.Lit("WebsocketAuthFunction")),
@@ -99,10 +108,11 @@ func httpRoutesDotGo() *jen.File {
 		).Call(jen.ID("err"), jen.Lit("error authenticated token-authenticated request")),
 		jen.Return().ID("false"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// FetchUserFromRequest takes a request object and fetches the cookie, and then the user for that cookie").Params(jen.ID("s").Op("*").ID("Service")).ID("FetchUserFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().Comment("// FetchUserFromRequest takes a request object and fetches the cookie, and then the user for that cookie").Params(jen.ID("s").Op("*").ID("Service")).ID("FetchUserFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("models").Dot(
 		"User",
 	), jen.ID("error")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("FetchUserFromRequest")),
@@ -135,10 +145,13 @@ func httpRoutesDotGo() *jen.File {
 		)),
 		jen.Return().List(jen.ID("user"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// LoginHandler is our login route").Params(jen.ID("s").Op("*").ID("Service")).ID("LoginHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("LoginHandler is our login route"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("LoginHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -256,10 +269,13 @@ func httpRoutesDotGo() *jen.File {
 			).Call(jen.Qual("net/http", "StatusNoContent")),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// LogoutHandler is our logout route").Params(jen.ID("s").Op("*").ID("Service")).ID("LogoutHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("LogoutHandler is our logout route"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("LogoutHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -294,10 +310,13 @@ func httpRoutesDotGo() *jen.File {
 			).Call(jen.Qual("net/http", "StatusOK")),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// CycleSecretHandler rotates the cookie building secret with a new random secret").Params(jen.ID("s").Op("*").ID("Service")).ID("CycleSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("CycleSecretHandler rotates the cookie building secret with a new random secret"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CycleSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.ID("s").Dot(
 				"logger",
@@ -326,18 +345,20 @@ func httpRoutesDotGo() *jen.File {
 			).Call(jen.Qual("net/http", "StatusCreated")),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Type().ID("loginData").Struct(jen.ID("loginInput").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Type().ID("loginData").Struct(jen.ID("loginInput").Op("*").ID("models").Dot(
 		"UserLoginInput",
 	), jen.ID("user").Op("*").ID("models").Dot(
 		"User",
 	)),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// fetchLoginDataFromRequest searches a given HTTP request for parsed login input data, and").Comment("// returns a helper struct with the relevant login information").Params(jen.ID("s").Op("*").ID("Service")).ID("fetchLoginDataFromRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("loginData"), jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().Comment("// fetchLoginDataFromRequest searches a given HTTP request for parsed login input data, and").Comment("// returns a helper struct with the relevant login information").Params(jen.ID("s").Op("*").ID("Service")).ID("fetchLoginDataFromRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("loginData"), jen.Op("*").ID("models").Dot(
 		"ErrorResponse",
 	)).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
@@ -395,10 +416,13 @@ func httpRoutesDotGo() *jen.File {
 		jen.ID("ld").Op(":=").Op("&").ID("loginData").Valuesln(jen.ID("loginInput").Op(":").ID("loginInput"), jen.ID("user").Op(":").ID("user")),
 		jen.Return().List(jen.ID("ld"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// validateLogin takes login information and returns whether or not the login is valid.").Comment("// In the event that there's an error, this function will return false and the error.").Params(jen.ID("s").Op("*").ID("Service")).ID("validateLogin").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("loginInfo").ID("loginData")).Params(jen.ID("bool"), jen.ID("error")).Block(
+
+	ret.Add(
+	jen.Comment("validateLogin takes login information and returns whether or not the login is valid."),
+	jen.Line(),
+	jen.Func().Comment("// In the event that there's an error, this function will return false and the error.").Params(jen.ID("s").Op("*").ID("Service")).ID("validateLogin").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("loginInfo").ID("loginData")).Params(jen.ID("bool"), jen.ID("error")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("validateLogin")),
 		jen.Defer().ID("span").Dot(
 			"End",
@@ -467,10 +491,13 @@ func httpRoutesDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("loginValid"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildAuthCookie returns an authentication cookie for a given user").Params(jen.ID("s").Op("*").ID("Service")).ID("buildAuthCookie").Params(jen.ID("user").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("buildAuthCookie returns an authentication cookie for a given user"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildAuthCookie").Params(jen.ID("user").Op("*").ID("models").Dot(
 		"User",
 	)).Params(jen.Op("*").Qual("net/http", "Cookie"), jen.ID("error")).Block(
 		jen.List(jen.ID("encoded"), jen.ID("err")).Op(":=").ID("s").Dot(
@@ -504,10 +531,13 @@ func httpRoutesDotGo() *jen.File {
 			"buildCookie",
 		).Call(jen.ID("encoded")), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildCookie provides a consistent way of constructing an HTTP cookie").Params(jen.ID("s").Op("*").ID("Service")).ID("buildCookie").Params(jen.ID("value").ID("string")).Params(jen.Op("*").Qual("net/http", "Cookie")).Block(
+
+	ret.Add(
+		jen.Comment("buildCookie provides a consistent way of constructing an HTTP cookie"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildCookie").Params(jen.ID("value").ID("string")).Params(jen.Op("*").Qual("net/http", "Cookie")).Block(
 		jen.Return().Op("&").Qual("net/http", "Cookie").Valuesln(jen.ID("Name").Op(":").ID("CookieName"), jen.ID("Value").Op(":").ID("value"), jen.ID("Path").Op(":").Lit("/"), jen.ID("HttpOnly").Op(":").ID("true"), jen.ID("Secure").Op(":").ID("s").Dot(
 			"config",
 		).Dot(
@@ -524,8 +554,7 @@ func httpRoutesDotGo() *jen.File {
 			"CookieLifetime",
 		))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

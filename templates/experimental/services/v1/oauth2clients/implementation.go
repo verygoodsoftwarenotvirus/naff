@@ -10,17 +10,15 @@ func implementationDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Null().Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "InternalErrorHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
+	ret.Add(
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "InternalErrorHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
 		"OAuth2InternalErrorHandler",
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// OAuth2InternalErrorHandler fulfills a role for the OAuth2 server-side provider").Params(jen.ID("s").Op("*").ID("Service")).ID("OAuth2InternalErrorHandler").Params(jen.ID("err").ID("error")).Params(jen.Op("*").Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
+
+	ret.Add(
+		jen.Func().Comment("// OAuth2InternalErrorHandler fulfills a role for the OAuth2 server-side provider").Params(jen.ID("s").Op("*").ID("Service")).ID("OAuth2InternalErrorHandler").Params(jen.ID("err").ID("error")).Params(jen.Op("*").Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
 		jen.ID("s").Dot(
 			"logger",
 		).Dot(
@@ -29,16 +27,18 @@ func implementationDotGo() *jen.File {
 		jen.ID("res").Op(":=").Op("&").Qual("gopkg.in/oauth2.v3/errors", "Response").Valuesln(jen.ID("Error").Op(":").ID("err"), jen.ID("Description").Op(":").Lit("Internal error"), jen.ID("ErrorCode").Op(":").Qual("net/http", "StatusInternalServerError"), jen.ID("StatusCode").Op(":").Qual("net/http", "StatusInternalServerError")),
 		jen.Return().ID("res"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
+
+	ret.Add(
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
 		"OAuth2ResponseErrorHandler",
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// OAuth2ResponseErrorHandler fulfills a role for the OAuth2 server-side provider").Params(jen.ID("s").Op("*").ID("Service")).ID("OAuth2ResponseErrorHandler").Params(jen.ID("re").Op("*").Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
+
+	ret.Add(
+		jen.Func().Comment("// OAuth2ResponseErrorHandler fulfills a role for the OAuth2 server-side provider").Params(jen.ID("s").Op("*").ID("Service")).ID("OAuth2ResponseErrorHandler").Params(jen.ID("re").Op("*").Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
 		jen.ID("s").Dot(
 			"logger",
 		).Dot(
@@ -59,16 +59,20 @@ func implementationDotGo() *jen.File {
 			"Error",
 		), jen.Lit("OAuth2ResponseErrorHandler")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
+
+	ret.Add(
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
 		"AuthorizeScopeHandler",
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// AuthorizeScopeHandler satisfies the oauth2server AuthorizeScopeHandler interface").Params(jen.ID("s").Op("*").ID("Service")).ID("AuthorizeScopeHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("scope").ID("string"), jen.ID("err").ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("AuthorizeScopeHandler satisfies the oauth2server AuthorizeScopeHandler interface"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("AuthorizeScopeHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("scope").ID("string"), jen.ID("err").ID("error")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 			"Context",
 		).Call(), jen.Lit("AuthorizeScopeHandler")),
@@ -83,7 +87,8 @@ func implementationDotGo() *jen.File {
 		).Call(jen.Lit("scope"), jen.ID("scope")).Dot(
 			"WithRequest",
 		).Call(jen.ID("req")),
-		jen.Null().Var().ID("client").Op("=").ID("s").Dot(
+
+		jen.Var().ID("client").Op("=").ID("s").Dot(
 			"fetchOAuth2ClientFromRequest",
 		).Call(jen.ID("req")),
 		jen.If(jen.ID("client").Op("!=").ID("nil").Op("&&").ID("client").Dot(
@@ -134,23 +139,28 @@ func implementationDotGo() *jen.File {
 		).Call(jen.Qual("net/http", "StatusBadRequest")),
 		jen.Return().List(jen.Lit(""), jen.Qual("errors", "New").Call(jen.Lit("no scope information found"))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "UserAuthorizationHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
+
+	ret.Add(
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "UserAuthorizationHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
 		"UserAuthorizationHandler",
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// UserAuthorizationHandler satisfies the oauth2server UserAuthorizationHandler interface").Params(jen.ID("s").Op("*").ID("Service")).ID("UserAuthorizationHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("userID").ID("string"), jen.ID("err").ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("UserAuthorizationHandler satisfies the oauth2server UserAuthorizationHandler interface"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UserAuthorizationHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("userID").ID("string"), jen.ID("err").ID("error")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 			"Context",
 		).Call(), jen.Lit("UserAuthorizationHandler")),
 		jen.Defer().ID("span").Dot(
 			"End",
 		).Call(),
-		jen.Null().Var().ID("uid").ID("uint64"),
+
+		jen.Var().ID("uid").ID("uint64"),
 		jen.If(jen.List(jen.ID("client"), jen.ID("clientOk")).Op(":=").ID("ctx").Dot(
 			"Value",
 		).Call(jen.ID("models").Dot(
@@ -183,16 +193,20 @@ func implementationDotGo() *jen.File {
 		),
 		jen.Return().List(jen.Qual("strconv", "FormatUint").Call(jen.ID("uid"), jen.Lit(10)), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ClientAuthorizedHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
+
+	ret.Add(
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ClientAuthorizedHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
 		"ClientAuthorizedHandler",
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ClientAuthorizedHandler satisfies the oauth2server ClientAuthorizedHandler interface").Params(jen.ID("s").Op("*").ID("Service")).ID("ClientAuthorizedHandler").Params(jen.ID("clientID").ID("string"), jen.ID("grant").ID("oauth2").Dot(
+
+	ret.Add(
+		jen.Comment("ClientAuthorizedHandler satisfies the oauth2server ClientAuthorizedHandler interface"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientAuthorizedHandler").Params(jen.ID("clientID").ID("string"), jen.ID("grant").ID("oauth2").Dot(
 		"GrantType",
 	)).Params(jen.ID("allowed").ID("bool"), jen.ID("err").ID("error")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.Qual("context", "Background").Call(), jen.Lit("ClientAuthorizedHandler")),
@@ -229,16 +243,20 @@ func implementationDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("true"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ClientScopeHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
+
+	ret.Add(
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ClientScopeHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot(
 		"ClientScopeHandler",
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ClientScopeHandler satisfies the oauth2server ClientScopeHandler interface").Params(jen.ID("s").Op("*").ID("Service")).ID("ClientScopeHandler").Params(jen.List(jen.ID("clientID"), jen.ID("scope")).ID("string")).Params(jen.ID("authed").ID("bool"), jen.ID("err").ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("ClientScopeHandler satisfies the oauth2server ClientScopeHandler interface"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientScopeHandler").Params(jen.List(jen.ID("clientID"), jen.ID("scope")).ID("string")).Params(jen.ID("authed").ID("bool"), jen.ID("err").ID("error")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.Qual("context", "Background").Call(), jen.Lit("UserAuthorizationHandler")),
 		jen.Defer().ID("span").Dot(
 			"End",
@@ -266,8 +284,7 @@ func implementationDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("unauthorized"))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

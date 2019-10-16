@@ -10,11 +10,8 @@ func middlewareDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// CreationInputMiddleware is a middleware for fetching, parsing, and attaching a parsed WebhookCreationInput struct from a request").Params(jen.ID("s").Op("*").ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+	ret.Add(
+		jen.Func().Comment("// CreationInputMiddleware is a middleware for fetching, parsing, and attaching a parsed WebhookCreationInput struct from a request").Params(jen.ID("s").Op("*").ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 		jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.ID("x").Op(":=").ID("new").Call(jen.ID("models").Dot(
 				"WebhookCreationInput",
@@ -48,10 +45,11 @@ func middlewareDotGo() *jen.File {
 			).Call(jen.ID("ctx"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// UpdateInputMiddleware is a middleware for fetching, parsing, and attaching a parsed WebhookCreationInput struct from a request").Comment("// This is the same as the creation one, but it won't always be").Params(jen.ID("s").Op("*").ID("Service")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+
+	ret.Add(
+		jen.Func().Comment("// UpdateInputMiddleware is a middleware for fetching, parsing, and attaching a parsed WebhookCreationInput struct from a request").Comment("// This is the same as the creation one, but it won't always be").Params(jen.ID("s").Op("*").ID("Service")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 		jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.ID("x").Op(":=").ID("new").Call(jen.ID("models").Dot(
 				"WebhookUpdateInput",
@@ -85,8 +83,7 @@ func middlewareDotGo() *jen.File {
 			).Call(jen.ID("ctx"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

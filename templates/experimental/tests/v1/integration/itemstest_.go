@@ -10,11 +10,8 @@ func itemsTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("checkItemEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").ID("models").Dot(
+	ret.Add(
+		jen.Func().ID("checkItemEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").ID("models").Dot(
 		"Item",
 	)).Block(
 		jen.ID("t").Dot(
@@ -45,10 +42,11 @@ func itemsTestDotGo() *jen.File {
 			"CreatedOn",
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildDummyItem").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("buildDummyItem").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("models").Dot(
 		"Item",
 	)).Block(
 		jen.ID("t").Dot(
@@ -69,10 +67,11 @@ func itemsTestDotGo() *jen.File {
 		).Call(jen.ID("t"), jen.ID("err")),
 		jen.Return().ID("y"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestItems").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestItems").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
 		jen.ID("test").Dot(
 			"Parallel",
 		).Call(),
@@ -138,7 +137,8 @@ func itemsTestDotGo() *jen.File {
 				jen.Defer().ID("span").Dot(
 					"End",
 				).Call(),
-				jen.Null().Var().ID("expected").Index().Op("*").ID("models").Dot(
+
+		jen.Var().ID("expected").Index().Op("*").ID("models").Dot(
 					"Item",
 				),
 				jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
@@ -344,8 +344,7 @@ func itemsTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

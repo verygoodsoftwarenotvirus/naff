@@ -10,19 +10,18 @@ func initDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("urlToUse").ID("string"),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("urlToUse").ID("string"),
 
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("seleniumHubAddr").Op("=").Lit("http://selenium-hub:4444/wd/hub"),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("seleniumHubAddr").Op("=").Lit("http://selenium-hub:4444/wd/hub"),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("init").Params().Block(
+	ret.Add(
+		jen.Func().ID("init").Params().Block(
 		jen.ID("urlToUse").Op("=").ID("testutil").Dot(
 			"DetermineServiceURL",
 		).Call(),
@@ -46,8 +45,7 @@ func initDotGo() *jen.File {
 		jen.ID("fiftySpaces").Op(":=").Qual("strings", "Repeat").Call(jen.Lit("\n"), jen.Lit(50)),
 		jen.Qual("fmt", "Printf").Call(jen.Lit("%s\tRunning tests%s"), jen.ID("fiftySpaces"), jen.ID("fiftySpaces")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

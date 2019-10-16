@@ -10,11 +10,8 @@ func mainTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("T").Op("*").Qual("testing", "T"), jen.ID("tp").ID("testProvider")).Block(
+	ret.Add(
+		jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("T").Op("*").Qual("testing", "T"), jen.ID("tp").ID("testProvider")).Block(
 		jen.For(jen.List(jen.ID("_"), jen.ID("bn")).Op(":=").Range().Index().ID("string").Valuesln(jen.Lit("firefox"), jen.Lit("chrome"))).Block(
 			jen.ID("browserName").Op(":=").ID("bn"),
 			jen.ID("caps").Op(":=").ID("selenium").Dot(
@@ -34,16 +31,18 @@ func mainTestDotGo() *jen.File {
 			).Call(jen.ID("bn"), jen.ID("tp").Call(jen.ID("wd"))),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Type().ID("testProvider").Params(jen.ID("driver").ID("selenium").Dot(
+
+	ret.Add(
+		jen.Type().ID("testProvider").Params(jen.ID("driver").ID("selenium").Dot(
 		"WebDriver",
 	)).Params(jen.Params(jen.ID("t").Op("*").Qual("testing", "T"))),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestLoginPage").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestLoginPage").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 		jen.ID("runTestOnAllSupportedBrowsers").Call(jen.ID("T"), jen.Func().Params(jen.ID("driver").ID("selenium").Dot(
 			"WebDriver",
 		)).Params(jen.Params(jen.ID("t").Op("*").Qual("testing", "T"))).Block(
@@ -73,8 +72,7 @@ func mainTestDotGo() *jen.File {
 			),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

@@ -10,19 +10,20 @@ func actionsDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("ErrUnavailableYet").Op("=").Qual("errors", "New").Call(jen.Lit("can't do this yet")),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("ErrUnavailableYet").Op("=").Qual("errors", "New").Call(jen.Lit("can't do this yet")),
 
-		jen.Line(),
+	ret.Add(
+		jen.Type().ID("actionFunc").Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Type().ID("Action").Struct(jen.ID("Action").ID("actionFunc"), jen.ID("Weight").ID("int"), jen.ID("Name").ID("string")),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Type().ID("actionFunc").Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Type().ID("Action").Struct(jen.ID("Action").ID("actionFunc"), jen.ID("Weight").ID("int"), jen.ID("Name").ID("string")),
 
+	ret.Add(
+		jen.Comment("RandomAction takes a client and returns a closure which is an action"),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// RandomAction takes a client and returns a closure which is an action").ID("RandomAction").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Op("*").ID("Action")).Block(
+		jen.Func().ID("RandomAction").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Op("*").ID("Action")).Block(
 		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 		jen.ID("allActions").Op(":=").Map(jen.ID("string")).Op("*").ID("Action").Valuesln(jen.Lit("GetHealthCheck").Op(":").Valuesln(jen.ID("Name").Op(":").Lit("GetHealthCheck"), jen.ID("Action").Op(":").ID("c").Dot(
 			"BuildHealthCheckRequest",
@@ -61,8 +62,7 @@ func actionsDotGo() *jen.File {
 		),
 		jen.Return().ID("nil"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

@@ -10,35 +10,32 @@ func middlewareTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("_").Qual("net/http", "Handler").Op("=").Parens(jen.Op("*").ID("MockHTTPHandler")).Call(jen.ID("nil")),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("_").Qual("net/http", "Handler").Op("=").Parens(jen.Op("*").ID("MockHTTPHandler")).Call(jen.ID("nil")),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Null().Type().ID("MockHTTPHandler").Struct(jen.ID("mock").Dot(
+	ret.Add(
+		jen.Type().ID("MockHTTPHandler").Struct(jen.ID("mock").Dot(
 		"Mock",
 	)),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Params(jen.ID("m").Op("*").ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
+
+	ret.Add(
+		jen.Func().Params(jen.ID("m").Op("*").ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 		jen.ID("m").Dot(
 			"Called",
 		).Call(jen.ID("res"), jen.ID("req")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_UserInputMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_UserInputMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -81,9 +78,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -127,16 +122,14 @@ func middlewareTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusBadRequest")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_PasswordUpdateInputMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_PasswordUpdateInputMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -179,9 +172,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -242,16 +233,14 @@ func middlewareTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusBadRequest")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_TOTPSecretRefreshInputMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_TOTPSecretRefreshInputMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -294,9 +283,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -340,8 +327,7 @@ func middlewareTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusBadRequest")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

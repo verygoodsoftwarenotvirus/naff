@@ -10,11 +10,8 @@ func serverTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("buildTestServer").Params().Params(jen.Op("*").ID("Server")).Block(
+	ret.Add(
+		jen.Func().ID("buildTestServer").Params().Params(jen.Op("*").ID("Server")).Block(
 		jen.ID("s").Op(":=").Op("&").ID("Server").Valuesln(jen.ID("DebugMode").Op(":").ID("true"), jen.ID("db").Op(":").ID("database").Dot(
 			"BuildMockDatabase",
 		).Call(), jen.ID("config").Op(":").Op("&").ID("config").Dot(
@@ -32,16 +29,14 @@ func serverTestDotGo() *jen.File {
 		).Valuesln(), jen.ID("itemsService").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataServer").Valuesln(), jen.ID("oauth2ClientsService").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "OAuth2ClientDataServer").Valuesln()),
 		jen.Return().ID("s"),
 	),
-
 		jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestProvideServer").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestProvideServer").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
 				"BuildMockDatabase",
 			).Call(),
@@ -85,7 +80,6 @@ func serverTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
 	),
-
 		jen.Line(),
 	)
 	return ret

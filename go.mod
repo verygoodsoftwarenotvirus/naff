@@ -3,6 +3,9 @@ module gitlab.com/verygoodsoftwarenotvirus/naff
 go 1.12
 
 require (
+	contrib.go.opencensus.io/exporter/jaeger v0.1.0
+	contrib.go.opencensus.io/exporter/prometheus v0.1.0
+	contrib.go.opencensus.io/integrations/ocsql v0.1.4
 	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/sprig v2.20.0+incompatible

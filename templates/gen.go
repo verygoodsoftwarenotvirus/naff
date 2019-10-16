@@ -43,52 +43,26 @@ import (
 )
 
 func RenderProject(in *naffmodels.Project) error {
-
-	packageRenderers := map[string]struct {
+	type x struct {
 		renderFunc func([]naffmodels.DataType) error
 		activated  bool
-	}{
+	}
+
+	packageRenderers := map[string]x{
 		// completed
-		"httpclient": {
-			renderFunc: httpclient.RenderPackage,
-			activated:  false,
-		},
-		"configgen": {
-			renderFunc: configgen.RenderPackage,
-			activated:  false,
-		},
-		"servercmd": {
-			renderFunc: servercmd.RenderPackage,
-			activated:  false,
-		},
-		"twofactorcmd": {
-			renderFunc: twofactorcmd.RenderPackage,
-			activated:  false,
-		},
-		"database": {
-			renderFunc: database.RenderPackage,
-			activated:  false,
-		},
-		"internalauth": {
-			renderFunc: internalauth.RenderPackage,
-			activated:  false,
-		},
+		"httpclient":       {renderFunc: httpclient.RenderPackage, activated: false},
+		"configgen":        {renderFunc: configgen.RenderPackage, activated: false},
+		"servercmd":        {renderFunc: servercmd.RenderPackage, activated: false},
+		"twofactorcmd":     {renderFunc: twofactorcmd.RenderPackage, activated: false},
+		"database":         {renderFunc: database.RenderPackage, activated: false},
+		"internalauth":     {renderFunc: internalauth.RenderPackage, activated: false},
+		"internalauthmock": {renderFunc: internalauthmock.RenderPackage, activated: false},
+		"config":           {renderFunc: config.RenderPackage, activated: false},
+		"encoding":         {renderFunc: encoding.RenderPackage, activated: false},
 		// to do
-		"internalauthmock": {
-			renderFunc: internalauthmock.RenderPackage,
-			activated:  true,
-		},
-		"config": {
-			renderFunc: config.RenderPackage,
-			activated:  false,
-		},
-		"encoding": {
-			renderFunc: encoding.RenderPackage,
-			activated:  false,
-		},
 		"encodingmock": {
 			renderFunc: encodingmock.RenderPackage,
-			activated:  false,
+			activated:  true,
 		},
 		"metrics": {
 			renderFunc: metrics.RenderPackage,

@@ -10,21 +10,19 @@ func usersDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("init").Params().Block(
+	ret.Add(
+		jen.Func().ID("init").Params().Block(
 		jen.ID("fake").Dot(
 			"Seed",
 		).Call(jen.Qual("time", "Now").Call().Dot(
 			"UnixNano",
 		).Call()),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("mustBuildCode").Params(jen.ID("totpSecret").ID("string")).Params(jen.ID("string")).Block(
+
+	ret.Add(
+		jen.Func().ID("mustBuildCode").Params(jen.ID("totpSecret").ID("string")).Params(jen.ID("string")).Block(
 		jen.List(jen.ID("code"), jen.ID("err")).Op(":=").ID("totp").Dot(
 			"GenerateCode",
 		).Call(jen.ID("totpSecret"), jen.Qual("time", "Now").Call().Dot(
@@ -35,10 +33,13 @@ func usersDotGo() *jen.File {
 		),
 		jen.Return().ID("code"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// RandomUserInput creates a random UserInput").ID("RandomUserInput").Params().Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("RandomUserInput creates a random UserInput"),
+		jen.Line(),
+		jen.Func().ID("RandomUserInput").Params().Params(jen.Op("*").ID("models").Dot(
 		"UserInput",
 	)).Block(
 		jen.ID("username").Op(":=").ID("fake").Dot(
@@ -55,8 +56,7 @@ func usersDotGo() *jen.File {
 		).Call(jen.Lit(64), jen.Lit(128), jen.ID("true"), jen.ID("true"), jen.ID("true"))),
 		jen.Return().ID("x"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

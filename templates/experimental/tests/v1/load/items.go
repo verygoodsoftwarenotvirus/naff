@@ -10,11 +10,10 @@ func itemsDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Comment("fetchRandomItem retrieves a random item from the list of available items"),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// fetchRandomItem retrieves a random item from the list of available items").ID("fetchRandomItem").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().ID("fetchRandomItem").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Op("*").ID("models").Dot(
 		"Item",
 	)).Block(
 		jen.List(jen.ID("itemsRes"), jen.ID("err")).Op(":=").ID("c").Dot(
@@ -32,10 +31,11 @@ func itemsDotGo() *jen.File {
 			"Items",
 		).Index(jen.ID("randIndex")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildItemActions").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
+
+	ret.Add(
+		jen.Func().ID("buildItemActions").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
 		jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(jen.Lit("CreateItem").Op(":").Valuesln(jen.ID("Name").Op(":").Lit("CreateItem"), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
 			jen.Return().ID("c").Dot(
 				"BuildCreateItemRequest",
@@ -76,8 +76,7 @@ func itemsDotGo() *jen.File {
 			jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
 		), jen.ID("Weight").Op(":").Lit(85))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

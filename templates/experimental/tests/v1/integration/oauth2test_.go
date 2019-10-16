@@ -10,11 +10,8 @@ func oauth2TestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("mustBuildCode").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("totpSecret").ID("string")).Params(jen.ID("string")).Block(
+	ret.Add(
+		jen.Func().ID("mustBuildCode").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("totpSecret").ID("string")).Params(jen.ID("string")).Block(
 		jen.ID("t").Dot(
 			"Helper",
 		).Call(),
@@ -28,10 +25,11 @@ func oauth2TestDotGo() *jen.File {
 		).Call(jen.ID("t"), jen.ID("err")),
 		jen.Return().ID("code"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildDummyOAuth2ClientInput").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("buildDummyOAuth2ClientInput").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.Op("*").ID("models").Dot(
 		"OAuth2ClientCreationInput",
 	)).Block(
 		jen.ID("t").Dot(
@@ -44,10 +42,11 @@ func oauth2TestDotGo() *jen.File {
 		).Valuesln(jen.ID("Username").Op(":").ID("username"), jen.ID("Password").Op(":").ID("password"), jen.ID("TOTPToken").Op(":").ID("mustBuildCode").Call(jen.ID("t"), jen.ID("totpToken"))), jen.ID("Scopes").Op(":").Index().ID("string").Valuesln(jen.Lit("*")), jen.ID("RedirectURI").Op(":").Lit("http://localhost")),
 		jen.Return().ID("x"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("convertInputToClient").Params(jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("convertInputToClient").Params(jen.ID("input").Op("*").ID("models").Dot(
 		"OAuth2ClientCreationInput",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"OAuth2Client",
@@ -66,10 +65,11 @@ func oauth2TestDotGo() *jen.File {
 			"BelongsTo",
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("checkOAuth2ClientEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("checkOAuth2ClientEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").ID("models").Dot(
 		"OAuth2Client",
 	)).Block(
 		jen.ID("t").Dot(
@@ -115,10 +115,11 @@ func oauth2TestDotGo() *jen.File {
 			"ArchivedOn",
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestOAuth2Clients").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestOAuth2Clients").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
 		jen.ID("test").Dot(
 			"Parallel",
 		).Call(),
@@ -302,7 +303,8 @@ func oauth2TestDotGo() *jen.File {
 				"Run",
 			).Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-				jen.Null().Var().ID("expected").Index().Op("*").ID("models").Dot(
+
+		jen.Var().ID("expected").Index().Op("*").ID("models").Dot(
 					"OAuth2Client",
 				),
 				jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
@@ -365,8 +367,7 @@ func oauth2TestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

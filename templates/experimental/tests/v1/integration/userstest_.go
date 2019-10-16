@@ -10,20 +10,20 @@ func usersTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("init").Params().Block(
+	ret.Add(
+		jen.Func().ID("init").Params().Block(
 		jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
 		jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("panic").Call(jen.ID("err")),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// randString produces a random string").Comment("// https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/").ID("randString").Params().Params(jen.ID("string"), jen.ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("randString produces a random string"),
+		jen.Line(),
+		jen.Func().Comment("// https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/").ID("randString").Params().Params(jen.ID("string"), jen.ID("error")).Block(
 		jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
 		jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.Return().List(jen.Lit(""), jen.ID("err")),
@@ -32,10 +32,11 @@ func usersTestDotGo() *jen.File {
 			"EncodeToString",
 		).Call(jen.ID("b")), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("models").Dot(
 		"UserInput",
 	)).Block(
 		jen.ID("t").Dot(
@@ -55,10 +56,11 @@ func usersTestDotGo() *jen.File {
 		).Call(jen.Lit(8), jen.Lit(64), jen.ID("true"), jen.ID("true"), jen.ID("true"))),
 		jen.Return().ID("userInput"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildDummyUser").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("buildDummyUser").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("models").Dot(
 		"UserCreationResponse",
 	), jen.Op("*").ID("models").Dot(
 		"UserInput",
@@ -97,10 +99,11 @@ func usersTestDotGo() *jen.File {
 		).Call(jen.ID("t"), jen.ID("cookie")),
 		jen.Return().List(jen.ID("user"), jen.ID("userInput"), jen.ID("cookie")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("expected").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("expected").Op("*").ID("models").Dot(
 		"UserInput",
 	), jen.ID("actual").Op("*").ID("models").Dot(
 		"UserCreationResponse",
@@ -141,10 +144,11 @@ func usersTestDotGo() *jen.File {
 			"ArchivedOn",
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("checkUserEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("expected").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("checkUserEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("expected").Op("*").ID("models").Dot(
 		"UserInput",
 	), jen.ID("actual").Op("*").ID("models").Dot(
 		"User",
@@ -180,10 +184,11 @@ func usersTestDotGo() *jen.File {
 			"ArchivedOn",
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestUsers").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestUsers").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
 		jen.ID("test").Dot(
 			"Parallel",
 		).Call(),
@@ -317,7 +322,8 @@ func usersTestDotGo() *jen.File {
 				"Run",
 			).Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-				jen.Null().Var().ID("expected").Index().Op("*").ID("models").Dot(
+
+		jen.Var().ID("expected").Index().Op("*").ID("models").Dot(
 					"UserCreationResponse",
 				),
 				jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
@@ -351,8 +357,7 @@ func usersTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

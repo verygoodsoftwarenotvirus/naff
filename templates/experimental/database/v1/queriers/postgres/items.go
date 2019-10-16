@@ -10,19 +10,18 @@ func itemsDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("itemsTableName").Op("=").Lit("items"),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("itemsTableName").Op("=").Lit("items"),
 
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("itemsTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("name"), jen.Lit("details"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("itemsTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("name"), jen.Lit("details"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// scanItem takes a database Scanner (i.e. *sql.Row) and scans").Comment("// the result into an Item struct").ID("scanItem").Params(jen.ID("scan").ID("database").Dot(
+	ret.Add(
+		jen.Func().Comment("// scanItem takes a database Scanner (i.e. *sql.Row) and scans").Comment("// the result into an Item struct").ID("scanItem").Params(jen.ID("scan").ID("database").Dot(
 		"Scanner",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"Item",
@@ -51,15 +50,19 @@ func itemsDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("x"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// scanItems takes a logger and some database rows and turns them into a slice of items").ID("scanItems").Params(jen.ID("logger").ID("logging").Dot(
+
+	ret.Add(
+		jen.Comment("scanItems takes a logger and some database rows and turns them into a slice of items"),
+		jen.Line(),
+		jen.Func().ID("scanItems").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 		"Logger",
 	), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().ID("models").Dot(
 		"Item",
 	), jen.ID("error")).Block(
-		jen.Null().Var().ID("list").Index().ID("models").Dot(
+
+		jen.Var().ID("list").Index().ID("models").Dot(
 			"Item",
 		),
 		jen.For(jen.ID("rows").Dot(
@@ -85,11 +88,15 @@ func itemsDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("list"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildGetItemQuery constructs a SQL query for fetching an item with a given ID belong to a user with a given ID.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetItemQuery").Params(jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+	ret.Add(
+	jen.Comment("buildGetItemQuery constructs a SQL query for fetching an item with a given ID belong to a user with a given ID."),
+	jen.Line(),
+	jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetItemQuery").Params(jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+
+		jen.Var().ID("err").ID("error"),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -108,10 +115,13 @@ func itemsDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetItem fetches an item from the postgres database").Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetItem fetches an item from the postgres database"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 		"Item",
 	), jen.ID("error")).Block(
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -124,13 +134,15 @@ func itemsDotGo() *jen.File {
 		).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 		jen.Return().ID("scanItem").Call(jen.ID("row")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildGetItemCountQuery takes a QueryFilter and a user ID and returns a SQL query (and the relevant arguments) for").Comment("// fetching the number of items belonging to a given user that meet a given query").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetItemCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().Comment("// buildGetItemCountQuery takes a QueryFilter and a user ID and returns a SQL query (and the relevant arguments) for").Comment("// fetching the number of items belonging to a given user that meet a given query").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetItemCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
 	), jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+		jen.Var().ID("err").ID("error"),
 		jen.ID("builder").Op(":=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -155,10 +167,13 @@ func itemsDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetItemCount will fetch the count of items from the database that meet a particular filter and belong to a particular user.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetItemCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
+
+	ret.Add(
+	jen.Comment("GetItemCount will fetch the count of items from the database that meet a particular filter and belong to a particular user."),
+	jen.Line(),
+	jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetItemCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
 	), jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -173,18 +188,23 @@ func itemsDotGo() *jen.File {
 		).Call(jen.Op("&").ID("count")),
 		jen.Return().List(jen.ID("count"), jen.ID("err")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("allItemsCountQueryBuilder").Qual("sync", "Once").Var().ID("allItemsCountQuery").ID("string"),
 
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("allItemsCountQueryBuilder").Qual("sync", "Once").Var().ID("allItemsCountQuery").ID("string"),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildGetAllItemsCountQuery returns a query that fetches the total number of items in the database.").Comment("// This query only gets generated once, and is otherwise returned from cache.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetAllItemsCountQuery").Params().Params(jen.ID("string")).Block(
+
+	ret.Add(
+	jen.Comment("buildGetAllItemsCountQuery returns a query that fetches the total number of items in the database."),
+	jen.Line(),
+	jen.Func().Comment("// This query only gets generated once, and is otherwise returned from cache.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetAllItemsCountQuery").Params().Params(jen.ID("string")).Block(
 		jen.ID("allItemsCountQueryBuilder").Dot(
 			"Do",
 		).Call(jen.Func().Params().Block(
-			jen.Null().Var().ID("err").ID("error"),
+
+		jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("allItemsCountQuery"), jen.ID("_"), jen.ID("err")).Op("=").ID("p").Dot(
 				"sqlBuilder",
 			).Dot(
@@ -204,10 +224,13 @@ func itemsDotGo() *jen.File {
 		)),
 		jen.Return().ID("allItemsCountQuery"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetAllItemsCount will fetch the count of items from the database").Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllItemsCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("GetAllItemsCount will fetch the count of items from the database"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllItemsCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 		jen.ID("err").Op("=").ID("p").Dot(
 			"db",
 		).Dot(
@@ -219,13 +242,15 @@ func itemsDotGo() *jen.File {
 		).Call(jen.Op("&").ID("count")),
 		jen.Return().List(jen.ID("count"), jen.ID("err")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,").Comment("// and returns both the query and the relevant args to pass to the query executor.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetItemsQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().Comment("// buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,").Comment("// and returns both the query and the relevant args to pass to the query executor.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetItemsQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
 	), jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+		jen.Var().ID("err").ID("error"),
 		jen.ID("builder").Op(":=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -250,10 +275,13 @@ func itemsDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetItems fetches a list of items from the database that meet a particular filter").Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetItems fetches a list of items from the database that meet a particular filter"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
 	), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 		"ItemList",
@@ -292,10 +320,13 @@ func itemsDotGo() *jen.File {
 		), jen.ID("TotalCount").Op(":").ID("count")), jen.ID("Items").Op(":").ID("list")),
 		jen.Return().List(jen.ID("x"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetAllItemsForUser fetches every item belonging to a user").Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllItemsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetAllItemsForUser fetches every item belonging to a user"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllItemsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().ID("models").Dot(
 		"Item",
 	), jen.ID("error")).Block(
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -317,13 +348,17 @@ func itemsDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("list"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildCreateItemQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+	jen.Comment("buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments."),
+	jen.Line(),
+	jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildCreateItemQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
 		"Item",
 	)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+		jen.Var().ID("err").ID("error"),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -348,10 +383,13 @@ func itemsDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// CreateItem creates an item in the database").Params(jen.ID("p").Op("*").ID("Postgres")).ID("CreateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("CreateItem creates an item in the database"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("CreateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
 		"ItemCreationInput",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"Item",
@@ -384,13 +422,15 @@ func itemsDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("x"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildUpdateItemQuery takes an item and returns an update SQL query, with the relevant query parameters").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildUpdateItemQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().Comment("// buildUpdateItemQuery takes an item and returns an update SQL query, with the relevant query parameters").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildUpdateItemQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
 		"Item",
 	)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+		jen.Var().ID("err").ID("error"),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -425,10 +465,13 @@ func itemsDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// UpdateItem updates a particular item. Note that UpdateItem expects the provided input to have a valid ID.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("UpdateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+	jen.Comment("UpdateItem updates a particular item. Note that UpdateItem expects the provided input to have a valid ID."),
+	jen.Line(),
+	jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("UpdateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
 		"Item",
 	)).Params(jen.ID("error")).Block(
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -444,11 +487,15 @@ func itemsDotGo() *jen.File {
 			"UpdatedOn",
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildArchiveItemQuery returns a SQL query which marks a given item belonging to a given user as archived.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildArchiveItemQuery").Params(jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-		jen.Null().Var().ID("err").ID("error"),
+
+	ret.Add(
+	jen.Comment("buildArchiveItemQuery returns a SQL query which marks a given item belonging to a given user as archived."),
+	jen.Line(),
+	jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildArchiveItemQuery").Params(jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+
+		jen.Var().ID("err").ID("error"),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
 			"sqlBuilder",
 		).Dot(
@@ -475,10 +522,13 @@ func itemsDotGo() *jen.File {
 		).Call(jen.ID("err")),
 		jen.Return().List(jen.ID("query"), jen.ID("args")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ArchiveItem marks an item as archived in the database").Params(jen.ID("p").Op("*").ID("Postgres")).ID("ArchiveItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("ArchiveItem marks an item as archived in the database"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("ArchiveItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
 			"buildArchiveItemQuery",
 		).Call(jen.ID("itemID"), jen.ID("userID")),
@@ -489,8 +539,7 @@ func itemsDotGo() *jen.File {
 		).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 		jen.Return().ID("err"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

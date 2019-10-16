@@ -10,11 +10,8 @@ func runtimeDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Null().Var().ID("RuntimeTotalAllocMeasurement").Op("=").Qual("go.opencensus.io/stats", "Int64").Call(jen.Lit("total_alloc"), jen.Lit("cumulative bytes allocated for heap objects"), jen.Qual("go.opencensus.io/stats", "UnitDimensionless")).Var().ID("RuntimeTotalAllocView").Op("=").Op("&").ID("view").Dot(
+	ret.Add(
+		jen.Var().ID("RuntimeTotalAllocMeasurement").Op("=").Qual("go.opencensus.io/stats", "Int64").Call(jen.Lit("total_alloc"), jen.Lit("cumulative bytes allocated for heap objects"), jen.Qual("go.opencensus.io/stats", "UnitDimensionless")).Var().ID("RuntimeTotalAllocView").Op("=").Op("&").ID("view").Dot(
 		"View",
 	).Valuesln(jen.ID("Name").Op(":").Lit("total_alloc"), jen.ID("Measure").Op(":").ID("RuntimeTotalAllocMeasurement"), jen.ID("Description").Op(":").Lit("cumulative bytes allocated for heap objects"), jen.ID("Aggregation").Op(":").ID("view").Dot(
 		"Count",
@@ -141,11 +138,15 @@ func runtimeDotGo() *jen.File {
 	), jen.ID("ochttp").Dot(
 		"ServerResponseCountByStatusCode",
 	)),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// RecordRuntimeStats records runtime statistics at the provided interval.").Comment("// Returns a stop function and an error").ID("RecordRuntimeStats").Params(jen.ID("interval").Qual("time", "Duration")).Params(jen.ID("stopFn").Params()).Block(
-		jen.Null().Var().ID("closeOnce").Qual("sync", "Once").Var().ID("ticker").Op("=").Qual("time", "NewTicker").Call(jen.ID("interval")).Var().ID("done").Op("=").ID("make").Call(jen.Chan().Struct()),
+
+	ret.Add(
+	jen.Comment("RecordRuntimeStats records runtime statistics at the provided interval."),
+	jen.Line(),
+	jen.Func().Comment("// Returns a stop function and an error").ID("RecordRuntimeStats").Params(jen.ID("interval").Qual("time", "Duration")).Params(jen.ID("stopFn").Params()).Block(
+
+		jen.Var().ID("closeOnce").Qual("sync", "Once").Var().ID("ticker").Op("=").Qual("time", "NewTicker").Call(jen.ID("interval")).Var().ID("done").Op("=").ID("make").Call(jen.Chan().Struct()),
 		jen.ID("ms").Op(":=").Op("&").Qual("runtime", "MemStats").Valuesln(),
 		jen.Go().Func().Params().Block(
 			jen.For().Block(
@@ -283,8 +284,7 @@ func runtimeDotGo() *jen.File {
 			)),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

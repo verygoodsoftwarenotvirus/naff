@@ -10,44 +10,51 @@ func httpRoutesDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("URIParamKey").Op("=").Lit("userID"),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("URIParamKey").Op("=").Lit("userID"),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// this function tests that we have appropriate access to crypto/rand").ID("init").Params().Block(
+	ret.Add(
+		jen.Func().Comment("// this function tests that we have appropriate access to crypto/rand").ID("init").Params().Block(
 		jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
 		jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("panic").Call(jen.ID("err")),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// attachUsernameToSpan provides a consistent way to attach a username to a span").ID("attachUsernameToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("username").ID("string")).Block(
+
+	ret.Add(
+		jen.Comment("attachUsernameToSpan provides a consistent way to attach a username to a span"),
+		jen.Line(),
+		jen.Func().ID("attachUsernameToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("username").ID("string")).Block(
 		jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
 			jen.ID("span").Dot(
 				"AddAttributes",
 			).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("username"), jen.ID("username"))),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// attachUserIDToSpan provides a consistent way to attach a user ID to a span").ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
+
+	ret.Add(
+		jen.Comment("attachUserIDToSpan provides a consistent way to attach a user ID to a span"),
+		jen.Line(),
+		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
 		jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
 			jen.ID("span").Dot(
 				"AddAttributes",
 			).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10)))),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// randString produces a random string").Comment("// https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/").ID("randString").Params().Params(jen.ID("string"), jen.ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("randString produces a random string"),
+		jen.Line(),
+		jen.Func().Comment("// https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/").ID("randString").Params().Params(jen.ID("string"), jen.ID("error")).Block(
 		jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
 		jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.Return().List(jen.Lit(""), jen.ID("err")),
@@ -56,10 +63,13 @@ func httpRoutesDotGo() *jen.File {
 			"EncodeToString",
 		).Call(jen.ID("b")), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// validateCredentialChangeRequest takes a user's credentials and determines").Comment("// if they match what is on record").Params(jen.ID("s").Op("*").ID("Service")).ID("validateCredentialChangeRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.List(jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.ID("user").Op("*").ID("models").Dot(
+
+	ret.Add(
+	jen.Comment("validateCredentialChangeRequest takes a user's credentials and determines"),
+	jen.Line(),
+	jen.Func().Comment("// if they match what is on record").Params(jen.ID("s").Op("*").ID("Service")).ID("validateCredentialChangeRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.List(jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.ID("user").Op("*").ID("models").Dot(
 		"User",
 	), jen.ID("httpStatus").ID("int")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("validateCredentialChangeRequest")),
@@ -110,10 +120,13 @@ func httpRoutesDotGo() *jen.File {
 		),
 		jen.Return().List(jen.ID("user"), jen.Qual("net/http", "StatusOK")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ListHandler is a handler for responding with a list of users").Params(jen.ID("s").Op("*").ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("ListHandler is a handler for responding with a list of users"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -153,10 +166,13 @@ func httpRoutesDotGo() *jen.File {
 			),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// CreateHandler is our user creation route").Params(jen.ID("s").Op("*").ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("CreateHandler is our user creation route"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -313,10 +329,13 @@ func httpRoutesDotGo() *jen.File {
 			),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildQRCode builds a QR code for a given username and secret").Params(jen.ID("s").Op("*").ID("Service")).ID("buildQRCode").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("username"), jen.ID("twoFactorSecret")).ID("string")).Params(jen.ID("string")).Block(
+
+	ret.Add(
+		jen.Comment("buildQRCode builds a QR code for a given username and secret"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildQRCode").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("username"), jen.ID("twoFactorSecret")).ID("string")).Params(jen.ID("string")).Block(
 		jen.List(jen.ID("_"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("buildQRCode")),
 		jen.Defer().ID("span").Dot(
 			"End",
@@ -347,7 +366,8 @@ func httpRoutesDotGo() *jen.File {
 			).Call(jen.ID("err"), jen.Lit("trying to enlarge qr code")),
 			jen.Return().Lit(""),
 		),
-		jen.Null().Var().ID("b").Qual("bytes", "Buffer"),
+
+		jen.Var().ID("b").Qual("bytes", "Buffer"),
 		jen.If(jen.ID("err").Op("=").Qual("image/png", "Encode").Call(jen.Op("&").ID("b"), jen.ID("qrcode")), jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("s").Dot(
 				"logger",
@@ -362,10 +382,13 @@ func httpRoutesDotGo() *jen.File {
 			"Bytes",
 		).Call())),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ReadHandler is our read route").Params(jen.ID("s").Op("*").ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("ReadHandler is our read route"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -417,10 +440,11 @@ func httpRoutesDotGo() *jen.File {
 			),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// NewTOTPSecretHandler fetches a user, and issues them a new TOTP secret, after validating").Comment("// that information received from TOTPSecretRefreshInputContextMiddleware is valid").Params(jen.ID("s").Op("*").ID("Service")).ID("NewTOTPSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Func().Comment("// NewTOTPSecretHandler fetches a user, and issues them a new TOTP secret, after validating").Comment("// that information received from TOTPSecretRefreshInputContextMiddleware is valid").Params(jen.ID("s").Op("*").ID("Service")).ID("NewTOTPSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -532,10 +556,11 @@ func httpRoutesDotGo() *jen.File {
 			),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// UpdatePasswordHandler updates a user's password, after validating that information received").Comment("// from PasswordUpdateInputContextMiddleware is valid").Params(jen.ID("s").Op("*").ID("Service")).ID("UpdatePasswordHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Func().Comment("// UpdatePasswordHandler updates a user's password, after validating that information received").Comment("// from PasswordUpdateInputContextMiddleware is valid").Params(jen.ID("s").Op("*").ID("Service")).ID("UpdatePasswordHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -599,7 +624,8 @@ func httpRoutesDotGo() *jen.File {
 			).Call(jen.Lit("user"), jen.ID("user").Dot(
 				"ID",
 			)),
-			jen.Null().Var().ID("err").ID("error"),
+
+		jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("user").Dot(
 				"HashedPassword",
 			), jen.ID("err")).Op("=").ID("s").Dot(
@@ -636,10 +662,13 @@ func httpRoutesDotGo() *jen.File {
 			).Call(jen.Qual("net/http", "StatusAccepted")),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ArchiveHandler is a handler for archiving a user").Params(jen.ID("s").Op("*").ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+
+	ret.Add(
+		jen.Comment("ArchiveHandler is a handler for archiving a user"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
@@ -690,8 +719,7 @@ func httpRoutesDotGo() *jen.File {
 			).Call(jen.Qual("net/http", "StatusNoContent")),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

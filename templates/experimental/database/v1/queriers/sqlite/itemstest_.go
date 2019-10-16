@@ -10,11 +10,8 @@ func itemsTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("buildMockRowFromItem").Params(jen.ID("item").Op("*").ID("models").Dot(
+	ret.Add(
+		jen.Func().ID("buildMockRowFromItem").Params(jen.ID("item").Op("*").ID("models").Dot(
 		"Item",
 	)).Params(jen.Op("*").ID("sqlmock").Dot(
 		"Rows",
@@ -40,10 +37,11 @@ func itemsTestDotGo() *jen.File {
 		)),
 		jen.Return().ID("exampleRows"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildErroneousMockRowFromItem").Params(jen.ID("item").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("buildErroneousMockRowFromItem").Params(jen.ID("item").Op("*").ID("models").Dot(
 		"Item",
 	)).Params(jen.Op("*").ID("sqlmock").Dot(
 		"Rows",
@@ -69,16 +67,14 @@ func itemsTestDotGo() *jen.File {
 		)),
 		jen.Return().ID("exampleRows"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_buildGetItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_buildGetItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("s"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleItemID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -101,16 +97,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("exampleItemID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_GetItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_GetItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE belongs_to = ? AND id = ?"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -143,9 +137,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE belongs_to = ? AND id = ?"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -182,16 +174,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_buildGetItemCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_buildGetItemCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("s"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedArgCount").Op(":=").Lit(1),
@@ -212,16 +202,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_GetItemCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_GetItemCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM items WHERE archived_on IS NULL AND belongs_to = ? LIMIT 20"),
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
@@ -255,16 +243,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_buildGetAllItemsCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_buildGetAllItemsCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("s"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM items WHERE archived_on IS NULL"),
 			jen.ID("actualQuery").Op(":=").ID("s").Dot(
@@ -275,16 +261,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_GetAllItemsCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_GetAllItemsCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM items WHERE archived_on IS NULL"),
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
 			jen.List(jen.ID("s"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -313,16 +297,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_buildGetItemsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_buildGetItemsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("s"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedArgCount").Op(":=").Lit(1),
@@ -343,16 +325,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_GetItems").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_GetItems").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedItem1").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -401,9 +381,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = ? LIMIT 20"),
 			jen.List(jen.ID("s"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -434,9 +412,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error executing read query"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error executing read query"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = ? LIMIT 20"),
 			jen.List(jen.ID("s"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -464,9 +440,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error scanning item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error scanning item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedItem1").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -497,9 +471,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error querying for count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error querying for count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedItem1").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -537,16 +509,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_GetAllItemsForUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_GetAllItemsForUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedItem").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -578,9 +548,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = ?"),
 			jen.List(jen.ID("s"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -609,9 +577,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = ?"),
 			jen.List(jen.ID("s"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -637,9 +603,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedItem").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -669,16 +633,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_buildCreateItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_buildCreateItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("s"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -711,16 +673,14 @@ func itemsTestDotGo() *jen.File {
 			), jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_CreateItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_CreateItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -784,9 +744,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("example").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -831,16 +789,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_buildUpdateItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_buildUpdateItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("s"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -878,16 +834,14 @@ func itemsTestDotGo() *jen.File {
 			), jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_UpdateItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_UpdateItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -927,9 +881,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("example").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -966,16 +918,14 @@ func itemsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_buildArchiveItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_buildArchiveItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("s"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -1007,16 +957,14 @@ func itemsTestDotGo() *jen.File {
 			), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestSqlite_ArchiveItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestSqlite_ArchiveItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -1052,9 +1000,7 @@ func itemsTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("example").Op(":=").Op("&").ID("models").Dot(
 				"Item",
@@ -1089,8 +1035,7 @@ func itemsTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

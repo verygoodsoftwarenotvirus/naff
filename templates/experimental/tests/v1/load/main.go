@@ -10,23 +10,26 @@ func mainDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Type().ID("ServiceAttacker").Struct(jen.ID("todoClient").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Type().ID("ServiceAttacker").Struct(jen.ID("todoClient").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// Setup implement's hazana's Attacker interface").Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Setup").Params(jen.ID("c").ID("hazana").Dot(
+	ret.Add(
+	jen.Comment("Setup implement's hazana's Attacker interface"),
+	jen.Line(),
+	jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Setup").Params(jen.ID("c").ID("hazana").Dot(
 		"Config",
 	)).Params(jen.ID("error")).Block(
 		jen.Return().ID("nil"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// Do implement's hazana's Attacker interface").Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Do").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("hazana").Dot(
+
+	ret.Add(
+	jen.Comment("Do implement's hazana's Attacker interface"),
+	jen.Line(),
+	jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Do").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("hazana").Dot(
 		"DoResult",
 	)).Block(
 		jen.ID("act").Op(":=").ID("RandomAction").Call(jen.ID("a").Dot(
@@ -48,7 +51,8 @@ func mainDotGo() *jen.File {
 				"DoResult",
 			).Valuesln(jen.ID("Error").Op(":").ID("err")),
 		),
-		jen.Null().Var().ID("sc").ID("int").Var().ID("bo").ID("int64").Var().ID("bi").Index().ID("byte"),
+
+		jen.Var().ID("sc").ID("int").Var().ID("bo").ID("int64").Var().ID("bi").Index().ID("byte"),
 		jen.If(jen.ID("req").Dot(
 			"Body",
 		).Op("!=").ID("nil")).Block(
@@ -87,26 +91,34 @@ func mainDotGo() *jen.File {
 		), jen.ID("Error").Op(":").ID("err"), jen.ID("StatusCode").Op(":").ID("sc"), jen.ID("BytesIn").Op(":").ID("int64").Call(jen.ID("len").Call(jen.ID("bi"))), jen.ID("BytesOut").Op(":").ID("bo")),
 		jen.Return().ID("dr"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// Teardown implement's hazana's Attacker interface").Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Teardown").Params().Params(jen.ID("error")).Block(
+
+	ret.Add(
+	jen.Comment("Teardown implement's hazana's Attacker interface"),
+	jen.Line(),
+	jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Teardown").Params().Params(jen.ID("error")).Block(
 		jen.Return().ID("nil"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// Clone implement's hazana's Attacker interface").Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Clone").Params().Params(jen.ID("hazana").Dot(
+
+	ret.Add(
+	jen.Comment("Clone implement's hazana's Attacker interface"),
+	jen.Line(),
+	jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Clone").Params().Params(jen.ID("hazana").Dot(
 		"Attack",
 	)).Block(
 		jen.Return().ID("a"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("main").Params().Block(
+
+	ret.Add(
+		jen.Func().ID("main").Params().Block(
 		jen.ID("todoClient").Op(":=").ID("initializeClient").Call(jen.ID("oa2Client")),
-		jen.Null().Var().ID("runTime").Op("=").Lit(10).Op("*").Qual("time", "Minute"),
+
+		jen.Var().ID("runTime").Op("=").Lit(10).Op("*").Qual("time", "Minute"),
 		jen.If(jen.ID("rt").Op(":=").Qual("os", "Getenv").Call(jen.Lit("LOADTEST_RUN_TIME")), jen.ID("rt").Op("!=").Lit("")).Block(
 			jen.List(jen.ID("_rt"), jen.ID("err")).Op(":=").Qual("time", "ParseDuration").Call(jen.ID("rt")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -130,8 +142,7 @@ func mainDotGo() *jen.File {
 			"PrintReport",
 		).Call(jen.ID("r")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

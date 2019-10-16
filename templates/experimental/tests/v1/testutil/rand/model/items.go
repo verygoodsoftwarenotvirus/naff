@@ -10,11 +10,10 @@ func itemsDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Comment("RandomItemCreationInput creates a random ItemInput"),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// RandomItemCreationInput creates a random ItemInput").ID("RandomItemCreationInput").Params().Params(jen.Op("*").ID("models").Dot(
+		jen.Func().ID("RandomItemCreationInput").Params().Params(jen.Op("*").ID("models").Dot(
 		"ItemCreationInput",
 	)).Block(
 		jen.ID("x").Op(":=").Op("&").ID("models").Dot(
@@ -26,8 +25,7 @@ func itemsDotGo() *jen.File {
 		).Call()),
 		jen.Return().ID("x"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

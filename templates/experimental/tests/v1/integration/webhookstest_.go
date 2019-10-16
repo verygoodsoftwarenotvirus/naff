@@ -10,11 +10,8 @@ func webhooksTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").ID("models").Dot(
+	ret.Add(
+		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").ID("models").Dot(
 		"Webhook",
 	)).Block(
 		jen.ID("t").Dot(
@@ -59,10 +56,11 @@ func webhooksTestDotGo() *jen.File {
 			"CreatedOn",
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.Op("*").ID("models").Dot(
 		"WebhookCreationInput",
 	)).Block(
 		jen.ID("x").Op(":=").Op("&").ID("models").Dot(
@@ -74,10 +72,11 @@ func webhooksTestDotGo() *jen.File {
 		).Call(), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("Method").Op(":").Qual("net/http", "MethodPost")),
 		jen.Return().ID("x"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("models").Dot(
 		"Webhook",
 	)).Block(
 		jen.ID("t").Dot(
@@ -91,20 +90,22 @@ func webhooksTestDotGo() *jen.File {
 		).Call(jen.ID("t"), jen.ID("err")),
 		jen.Return().ID("y"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("reverse").Params(jen.ID("s").ID("string")).Params(jen.ID("string")).Block(
+
+	ret.Add(
+		jen.Func().ID("reverse").Params(jen.ID("s").ID("string")).Params(jen.ID("string")).Block(
 		jen.ID("runes").Op(":=").Index().ID("rune").Call(jen.ID("s")),
 		jen.For(jen.List(jen.ID("i"), jen.ID("j")).Op(":=").List(jen.Lit(0), jen.ID("len").Call(jen.ID("runes")).Op("-").Lit(1)), jen.ID("i").Op("<").ID("j"), jen.List(jen.ID("i"), jen.ID("j")).Op("=").List(jen.ID("i").Op("+").Lit(1), jen.ID("j").Op("-").Lit(1))).Block(
 			jen.List(jen.ID("runes").Index(jen.ID("i")), jen.ID("runes").Index(jen.ID("j"))).Op("=").List(jen.ID("runes").Index(jen.ID("j")), jen.ID("runes").Index(jen.ID("i"))),
 		),
 		jen.Return().ID("string").Call(jen.ID("runes")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestWebhooks").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestWebhooks").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
 		jen.ID("test").Dot(
 			"Parallel",
 		).Call(),
@@ -171,7 +172,8 @@ func webhooksTestDotGo() *jen.File {
 				"Run",
 			).Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-				jen.Null().Var().ID("expected").Index().Op("*").ID("models").Dot(
+
+		jen.Var().ID("expected").Index().Op("*").ID("models").Dot(
 					"Webhook",
 				),
 				jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
@@ -389,8 +391,7 @@ func webhooksTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

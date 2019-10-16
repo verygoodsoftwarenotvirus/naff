@@ -10,21 +10,19 @@ func testutilDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("init").Params().Block(
+	ret.Add(
+		jen.Func().ID("init").Params().Block(
 		jen.ID("fake").Dot(
 			"Seed",
 		).Call(jen.Qual("time", "Now").Call().Dot(
 			"UnixNano",
 		).Call()),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// DetermineServiceURL returns the URL, if properly configured").ID("DetermineServiceURL").Params().Params(jen.ID("string")).Block(
+
+	ret.Add(
+		jen.Func().Comment("// DetermineServiceURL returns the URL, if properly configured").ID("DetermineServiceURL").Params().Params(jen.ID("string")).Block(
 		jen.ID("ta").Op(":=").Qual("os", "Getenv").Call(jen.Lit("TARGET_ADDRESS")),
 		jen.If(jen.ID("ta").Op("==").Lit("")).Block(
 			jen.ID("panic").Call(jen.Lit("must provide target address!")),
@@ -37,11 +35,15 @@ func testutilDotGo() *jen.File {
 			"String",
 		).Call(),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// EnsureServerIsUp checks that a server is up and doesn't return until it's certain one way or the other").ID("EnsureServerIsUp").Params(jen.ID("address").ID("string")).Block(
-		jen.Null().Var().ID("isDown").Op("=").ID("true").Var().ID("interval").Op("=").Qual("time", "Second").Var().ID("maxAttempts").Op("=").Lit(50).Var().ID("numberOfAttempts").Op("=").Lit(0),
+
+	ret.Add(
+	jen.Comment("EnsureServerIsUp checks that a server is up and doesn't return until it's certain one way or the other"),
+	jen.Line(),
+	jen.Func().ID("EnsureServerIsUp").Params(jen.ID("address").ID("string")).Block(
+
+		jen.Var().ID("isDown").Op("=").ID("true").Var().ID("interval").Op("=").Qual("time", "Second").Var().ID("maxAttempts").Op("=").Lit(50).Var().ID("numberOfAttempts").Op("=").Lit(0),
 		jen.For(jen.ID("isDown")).Block(
 			jen.If(jen.Op("!").ID("IsUp").Call(jen.ID("address"))).Block(
 				jen.Qual("log", "Print").Call(jen.Lit("waiting before pinging again")),
@@ -55,10 +57,13 @@ func testutilDotGo() *jen.File {
 			),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// IsUp can check if an instance of our server is alive").ID("IsUp").Params(jen.ID("address").ID("string")).Params(jen.ID("bool")).Block(
+
+	ret.Add(
+		jen.Comment("IsUp can check if an instance of our server is alive"),
+		jen.Line(),
+		jen.Func().ID("IsUp").Params(jen.ID("address").ID("string")).Params(jen.ID("bool")).Block(
 		jen.ID("uri").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%s/_meta_/ready"), jen.ID("address")),
 		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.ID("uri"), jen.ID("nil")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -81,10 +86,13 @@ func testutilDotGo() *jen.File {
 			"StatusCode",
 		).Op("==").Qual("net/http", "StatusOK"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// CreateObligatoryUser creates a user for the sake of having an OAuth2 client").ID("CreateObligatoryUser").Params(jen.ID("address").ID("string"), jen.ID("debug").ID("bool")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("CreateObligatoryUser creates a user for the sake of having an OAuth2 client"),
+		jen.Line(),
+		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").ID("string"), jen.ID("debug").ID("bool")).Params(jen.Op("*").ID("models").Dot(
 		"User",
 	), jen.ID("error")).Block(
 		jen.List(jen.ID("tu"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("address")),
@@ -138,10 +146,11 @@ func testutilDotGo() *jen.File {
 		)),
 		jen.Return().List(jen.ID("u"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildURL").Params(jen.ID("address").ID("string"), jen.ID("parts").Op("...").ID("string")).Params(jen.ID("string")).Block(
+
+	ret.Add(
+		jen.Func().ID("buildURL").Params(jen.ID("address").ID("string"), jen.ID("parts").Op("...").ID("string")).Params(jen.ID("string")).Block(
 		jen.List(jen.ID("tu"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("address")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("panic").Call(jen.ID("err")),
@@ -156,10 +165,11 @@ func testutilDotGo() *jen.File {
 			"String",
 		).Call(),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").ID("models").Dot(
 		"User",
 	)).Params(jen.Op("*").Qual("net/http", "Cookie"), jen.ID("error")).Block(
 		jen.ID("uri").Op(":=").ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("users"), jen.Lit("login")),
@@ -210,10 +220,13 @@ func testutilDotGo() *jen.File {
 			"New",
 		).Call(jen.Lit("no cookie found :("))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// CreateObligatoryClient creates the OAuth2 client we need for tests").ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests"),
+		jen.Line(),
+		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").ID("models").Dot(
 		"User",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"OAuth2Client",
@@ -259,10 +272,12 @@ cookie problems!
 		jen.ID("req").Dot(
 			"AddCookie",
 		).Call(jen.ID("cookie")),
-		jen.Null().Var().ID("o").ID("models").Dot(
+
+		jen.Var().ID("o").ID("models").Dot(
 			"OAuth2Client",
 		),
-		jen.Null().Var().ID("command").Qual("fmt", "Stringer"),
+
+		jen.Var().ID("command").Qual("fmt", "Stringer"),
 		jen.If(jen.List(jen.ID("command"), jen.ID("err")).Op("=").ID("http2curl").Dot(
 			"GetCurlCommand",
 		).Call(jen.ID("req")), jen.ID("err").Op("==").ID("nil")).Block(
@@ -306,8 +321,7 @@ cookie problems!
 		).Call(jen.Op("&").ID("o")),
 		jen.Return().List(jen.Op("&").ID("o"), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

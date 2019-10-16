@@ -10,11 +10,8 @@ func webhooksTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("buildMockRowFromWebhook").Params(jen.ID("w").Op("*").ID("models").Dot(
+	ret.Add(
+		jen.Func().ID("buildMockRowFromWebhook").Params(jen.ID("w").Op("*").ID("models").Dot(
 		"Webhook",
 	)).Params(jen.Op("*").ID("sqlmock").Dot(
 		"Rows",
@@ -50,10 +47,11 @@ func webhooksTestDotGo() *jen.File {
 		)),
 		jen.Return().ID("exampleRows"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").Op("*").ID("models").Dot(
 		"Webhook",
 	)).Params(jen.Op("*").ID("sqlmock").Dot(
 		"Rows",
@@ -89,16 +87,14 @@ func webhooksTestDotGo() *jen.File {
 		)),
 		jen.Return().ID("exampleRows"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetWebhookQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetWebhookQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleWebhookID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -121,16 +117,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("exampleWebhookID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE belongs_to = $1 AND id = $2"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
@@ -163,9 +157,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE belongs_to = $1 AND id = $2"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
@@ -201,9 +193,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE belongs_to = $1 AND id = $2"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
@@ -236,9 +226,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with invalid response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE belongs_to = $1 AND id = $2"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
@@ -273,16 +261,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetWebhookCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetWebhookCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedArgCount").Op(":=").Lit(1),
@@ -303,16 +289,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetWebhookCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetWebhookCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"),
 			jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -345,9 +329,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -376,16 +358,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetAllWebhooksCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetAllWebhooksCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
 			jen.ID("actualQuery").Op(":=").ID("p").Dot(
@@ -396,16 +376,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetAllWebhooksCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetAllWebhooksCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
 			jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -433,9 +411,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(
@@ -459,16 +435,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetAllWebhooksQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetAllWebhooksQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
 			jen.ID("actual").Op(":=").ID("p").Dot(
@@ -479,16 +453,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetAllWebhooks").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetAllWebhooks").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
 			jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
@@ -535,9 +507,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(
@@ -563,9 +533,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(
@@ -588,9 +556,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
 			jen.ID("example").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
@@ -616,9 +582,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
 			jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
@@ -662,16 +626,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetAllWebhooksForUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetAllWebhooksForUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123)),
@@ -702,9 +664,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123)),
@@ -735,9 +695,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123)),
@@ -765,9 +723,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123)),
@@ -799,16 +755,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildGetWebhooksQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildGetWebhooksQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expectedArgCount").Op(":=").Lit(1),
@@ -829,16 +783,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_GetWebhooks").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_GetWebhooks").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
@@ -888,9 +840,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -919,9 +869,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -947,9 +895,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
@@ -978,9 +924,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
@@ -1027,16 +971,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildWebhookCreationQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildWebhookCreationQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
@@ -1054,16 +996,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_CreateWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_CreateWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
@@ -1126,9 +1066,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error interacting with database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error interacting with database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
@@ -1183,16 +1121,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildUpdateWebhookQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildUpdateWebhookQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
@@ -1210,16 +1146,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_UpdateWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_UpdateWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
@@ -1269,9 +1203,7 @@ func webhooksTestDotGo() *jen.File {
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
@@ -1315,16 +1247,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_buildArchiveWebhookQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_buildArchiveWebhookQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleWebhookID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 			jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -1347,16 +1277,14 @@ func webhooksTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("exampleWebhookID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestPostgres_ArchiveWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestPostgres_ArchiveWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
 			).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").Lit(321), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -1394,8 +1322,7 @@ func webhooksTestDotGo() *jen.File {
 			).Call(), jen.Lit("not all database expectations were met")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

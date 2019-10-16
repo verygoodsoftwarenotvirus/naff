@@ -10,11 +10,8 @@ func clientTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("buildTestClient").Params().Params(jen.Op("*").ID("Client"), jen.Op("*").ID("database").Dot(
+	ret.Add(
+		jen.Func().ID("buildTestClient").Params().Params(jen.Op("*").ID("Client"), jen.Op("*").ID("database").Dot(
 		"MockDatabase",
 	)).Block(
 		jen.ID("db").Op(":=").ID("database").Dot(
@@ -24,16 +21,14 @@ func clientTestDotGo() *jen.File {
 			"ProvideNoopLogger",
 		).Call(), jen.ID("querier").Op(":").ID("db")), jen.ID("db")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestMigrate").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestMigrate").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
 				"BuildMockDatabase",
 			).Call(),
@@ -52,9 +47,7 @@ func clientTestDotGo() *jen.File {
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("bubbles up errors"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("bubbles up errors"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
 				"BuildMockDatabase",
 			).Call(),
@@ -74,16 +67,14 @@ func clientTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("actual")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestIsReady").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestIsReady").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
 				"BuildMockDatabase",
 			).Call(),
@@ -103,16 +94,14 @@ func clientTestDotGo() *jen.File {
 			).Call(jen.ID("t")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestProvideDatabaseClient").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestProvideDatabaseClient").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
 				"BuildMockDatabase",
 			).Call(),
@@ -133,9 +122,7 @@ func clientTestDotGo() *jen.File {
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error migrating querier"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error migrating querier"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").Qual("errors", "New").Call(jen.Lit("blah")),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
 				"BuildMockDatabase",
@@ -161,8 +148,7 @@ func clientTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

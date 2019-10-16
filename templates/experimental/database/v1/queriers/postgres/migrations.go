@@ -10,11 +10,8 @@ func migrationsDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Null().Var().ID("migrations").Op("=").Index().ID("darwin").Dot(
+	ret.Add(
+		jen.Var().ID("migrations").Op("=").Index().ID("darwin").Dot(
 		"Migration",
 	).Valuesln(jen.Valuesln(jen.ID("Version").Op(":").Lit(1), jen.ID("Description").Op(":").Lit("create users table"), jen.ID("Script").Op(":").Lit(`
 			CREATE TABLE IF NOT EXISTS users (
@@ -68,10 +65,13 @@ func migrationsDotGo() *jen.File {
 				"belongs_to" bigint NOT NULL,
 				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")
 			);`))),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// buildMigrationFunc returns a sync.Once compatible function closure that will").Comment("// migrate a postgres database").ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Params()).Block(
+
+	ret.Add(
+	jen.Comment("buildMigrationFunc returns a sync.Once compatible function closure that will"),
+	jen.Line(),
+	jen.Func().Comment("// migrate a postgres database").ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Params()).Block(
 		jen.Return().Func().Params().Block(
 			jen.ID("driver").Op(":=").ID("darwin").Dot(
 				"NewGenericDriver",
@@ -87,10 +87,11 @@ func migrationsDotGo() *jen.File {
 			),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// Migrate migrates the database. It does so by invoking the migrateOnce function via sync.Once, so it should be").Comment("// safe (as in idempotent, though not recommended) to call this function multiple times.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
+
+	ret.Add(
+		jen.Func().Comment("// Migrate migrates the database. It does so by invoking the migrateOnce function via sync.Once, so it should be").Comment("// safe (as in idempotent, though not recommended) to call this function multiple times.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
 		jen.ID("p").Dot(
 			"logger",
 		).Dot(
@@ -112,8 +113,7 @@ func migrationsDotGo() *jen.File {
 		))),
 		jen.Return().ID("nil"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

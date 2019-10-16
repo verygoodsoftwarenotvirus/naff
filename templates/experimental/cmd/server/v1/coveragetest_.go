@@ -10,10 +10,6 @@ func coverageTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
 	ret.Add(
 		jen.Func().ID("TestRunMain").Params(jen.ID("_").Op("*").Qual("testing", "T")).Block(
 			jen.Comment("This test is built specifically to capture the coverage that the integration"),

@@ -10,23 +10,24 @@ func mockItemDataManagerDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Null().Var().ID("_").ID("models").Dot(
+	ret.Add(
+		jen.Var().ID("_").ID("models").Dot(
 		"ItemDataManager",
 	).Op("=").Parens(jen.Op("*").ID("ItemDataManager")).Call(jen.ID("nil")),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Type().ID("ItemDataManager").Struct(jen.ID("mock").Dot(
+
+	ret.Add(
+		jen.Type().ID("ItemDataManager").Struct(jen.ID("mock").Dot(
 		"Mock",
 	)),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetItem is a mock function").Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("GetItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetItem is a mock function"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("GetItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 		"Item",
 	), jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
@@ -40,10 +41,13 @@ func mockItemDataManagerDotGo() *jen.File {
 			"Error",
 		).Call(jen.Lit(1))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetItemCount is a mock function").Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("GetItemCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetItemCount is a mock function"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("GetItemCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
 	), jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
@@ -55,10 +59,13 @@ func mockItemDataManagerDotGo() *jen.File {
 			"Error",
 		).Call(jen.Lit(1))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetAllItemsCount is a mock function").Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("GetAllItemsCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("GetAllItemsCount is a mock function"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("GetAllItemsCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx")),
@@ -68,10 +75,13 @@ func mockItemDataManagerDotGo() *jen.File {
 			"Error",
 		).Call(jen.Lit(1))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetItems is a mock function").Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("GetItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetItems is a mock function"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("GetItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
 	), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 		"ItemList",
@@ -87,10 +97,13 @@ func mockItemDataManagerDotGo() *jen.File {
 			"Error",
 		).Call(jen.Lit(1))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// GetAllItemsForUser is a mock function").Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("GetAllItemsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("GetAllItemsForUser is a mock function"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("GetAllItemsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().ID("models").Dot(
 		"Item",
 	), jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
@@ -104,10 +117,13 @@ func mockItemDataManagerDotGo() *jen.File {
 			"Error",
 		).Call(jen.Lit(1))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// CreateItem is a mock function").Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("CreateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("CreateItem is a mock function"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("CreateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
 		"ItemCreationInput",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"Item",
@@ -123,10 +139,13 @@ func mockItemDataManagerDotGo() *jen.File {
 			"Error",
 		).Call(jen.Lit(1))),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// UpdateItem is a mock function").Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("UpdateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Comment("UpdateItem is a mock function"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("UpdateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").ID("models").Dot(
 		"Item",
 	)).Params(jen.ID("error")).Block(
 		jen.Return().ID("m").Dot(
@@ -135,18 +154,20 @@ func mockItemDataManagerDotGo() *jen.File {
 			"Error",
 		).Call(jen.Lit(0)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ArchiveItem is a mock function").Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("ArchiveItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("id"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("ArchiveItem is a mock function"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("ItemDataManager")).ID("ArchiveItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("id"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
 		jen.Return().ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("id"), jen.ID("userID")).Dot(
 			"Error",
 		).Call(jen.Lit(0)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

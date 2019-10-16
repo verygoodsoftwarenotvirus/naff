@@ -10,20 +10,15 @@ func metaTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Func().ID("TestRegisterDefaultViews").Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("TestRegisterDefaultViews").Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-		jen.ID("t").Dot(
-			"Parallel",
-		).Call(),
 		jen.ID("require").Dot(
 			"NoError",
 		).Call(jen.ID("t"), jen.ID("RegisterDefaultViews").Call()),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

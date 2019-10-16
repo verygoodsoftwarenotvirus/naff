@@ -10,11 +10,8 @@ func itemsServiceTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
+	ret.Add(
+		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
 		jen.Return().Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 			"ProvideNoopLogger",
 		).Call(), jen.ID("itemCounter").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(), jen.ID("itemDatabase").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Valuesln(), jen.ID("userIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -23,19 +20,18 @@ func itemsServiceTestDotGo() *jen.File {
 			jen.Return().Lit(0),
 		), jen.ID("encoderDecoder").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(), jen.ID("reporter").Op(":").ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestProvideItemsService").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestProvideItemsService").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
 			jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
-			jen.Null().Var().ID("ucp").ID("metrics").Dot(
+
+		jen.Var().ID("ucp").ID("metrics").Dot(
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
@@ -71,12 +67,11 @@ func itemsServiceTestDotGo() *jen.File {
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error providing unit counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error providing unit counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
 			jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
-			jen.Null().Var().ID("ucp").ID("metrics").Dot(
+
+		jen.Var().ID("ucp").ID("metrics").Dot(
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
@@ -112,12 +107,11 @@ func itemsServiceTestDotGo() *jen.File {
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching item count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching item count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
 			jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
-			jen.Null().Var().ID("ucp").ID("metrics").Dot(
+
+		jen.Var().ID("ucp").ID("metrics").Dot(
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
@@ -154,8 +148,7 @@ func itemsServiceTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

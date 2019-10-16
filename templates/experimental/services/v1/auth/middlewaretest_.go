@@ -10,17 +10,11 @@ func middlewareTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Func().ID("TestService_CookieAuthenticationMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("TestService_CookieAuthenticationMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -77,9 +71,7 @@ func middlewareTestDotGo() *jen.File {
 				"ServeHTTP",
 			).Call(jen.ID("res"), jen.ID("req")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with nil user"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with nil user"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -143,9 +135,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusUnauthorized")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without user attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without user attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
 			jen.ID("require").Dot(
@@ -175,16 +165,14 @@ func middlewareTestDotGo() *jen.File {
 			).Call(jen.ID("res"), jen.ID("req")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_AuthenticationMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_AuthenticationMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -253,9 +241,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path without allowing cookies"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path without allowing cookies"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -324,9 +310,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching client but able to use cookie"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching client but able to use cookie"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -396,9 +380,7 @@ func middlewareTestDotGo() *jen.File {
 				"ServeHTTP",
 			).Call(jen.ID("res"), jen.ID("req")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("able to use cookies but error fetching user info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("able to use cookies but error fetching user info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -478,9 +460,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("no cookies allowed, with error fetching user info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("no cookies allowed, with error fetching user info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -551,9 +531,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching client but able to use cookie but unable to decode cookie"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching client but able to use cookie but unable to decode cookie"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Valuesln(),
 			jen.ID("ocv").Dot(
@@ -618,9 +596,7 @@ func middlewareTestDotGo() *jen.File {
 				"ServeHTTP",
 			).Call(jen.ID("res"), jen.ID("req")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with invalid authentication"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid authentication"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Valuesln(),
 			jen.ID("ocv").Dot(
@@ -666,9 +642,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusUnauthorized")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("nightmare path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("nightmare path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -740,16 +714,14 @@ func middlewareTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("Test_parseLoginInputFromForm").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("Test_parseLoginInputFromForm").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -777,9 +749,7 @@ func middlewareTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("returns nil with error parsing form"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("returns nil with error parsing form"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -801,20 +771,19 @@ func middlewareTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("actual")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_UserLoginInputMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_UserLoginInputMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"UserLoginInput",
 			).Valuesln(jen.ID("Username").Op(":").Lit("username"), jen.ID("Password").Op(":").Lit("password"), jen.ID("TOTPToken").Op(":").Lit("1233456")),
-			jen.Null().Var().ID("b").Qual("bytes", "Buffer"),
+
+		jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.ID("require").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.Qual("encoding/json", "NewEncoder").Call(jen.Op("&").ID("b")).Dot(
@@ -851,13 +820,12 @@ func middlewareTestDotGo() *jen.File {
 				"AssertExpectations",
 			).Call(jen.ID("t")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"UserLoginInput",
 			).Valuesln(jen.ID("Username").Op(":").Lit("username"), jen.ID("Password").Op(":").Lit("password"), jen.ID("TOTPToken").Op(":").Lit("1233456")),
-			jen.Null().Var().ID("b").Qual("bytes", "Buffer"),
+
+		jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.ID("require").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.Qual("encoding/json", "NewEncoder").Call(jen.Op("&").ID("b")).Dot(
@@ -898,9 +866,7 @@ func middlewareTestDotGo() *jen.File {
 				"AssertExpectations",
 			).Call(jen.ID("t")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error decoding request but valid value attached to form"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request but valid value attached to form"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"UserLoginInput",
 			).Valuesln(jen.ID("Username").Op(":").Lit("username"), jen.ID("Password").Op(":").Lit("password"), jen.ID("TOTPToken").Op(":").Lit("1233456")),
@@ -963,16 +929,14 @@ func middlewareTestDotGo() *jen.File {
 			).Call(jen.ID("t")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_AdminMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_AdminMiddleware").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -1018,9 +982,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without user attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without user attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -1048,9 +1010,7 @@ func middlewareTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with non-admin user"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with non-admin user"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -1088,8 +1048,7 @@ func middlewareTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

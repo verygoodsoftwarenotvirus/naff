@@ -10,25 +10,28 @@ func wireDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Null().Var().ID("Providers").Op("=").ID("wire").Dot(
+	ret.Add(
+		jen.Var().ID("Providers").Op("=").ID("wire").Dot(
 		"NewSet",
 	).Call(jen.ID("paramFetcherProviders"), jen.ID("ProvideServer"), jen.ID("ProvideNamespace"), jen.ID("ProvideNewsmanTypeNameManipulationFunc")),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ProvideNamespace provides a namespace").ID("ProvideNamespace").Params().Params(jen.ID("metrics").Dot(
+
+	ret.Add(
+		jen.Comment("ProvideNamespace provides a namespace"),
+		jen.Line(),
+		jen.Func().ID("ProvideNamespace").Params().Params(jen.ID("metrics").Dot(
 		"Namespace",
 	)).Block(
 		jen.Return().Lit("todo-service"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ProvideNewsmanTypeNameManipulationFunc provides an WebhookIDFetcher").ID("ProvideNewsmanTypeNameManipulationFunc").Params(jen.ID("logger").ID("logging").Dot(
+
+	ret.Add(
+		jen.Comment("ProvideNewsmanTypeNameManipulationFunc provides an WebhookIDFetcher"),
+		jen.Line(),
+		jen.Func().ID("ProvideNewsmanTypeNameManipulationFunc").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 		"Logger",
 	)).Params(jen.ID("newsman").Dot(
 		"TypeNameManipulationFunc",
@@ -44,15 +47,17 @@ func wireDotGo() *jen.File {
 			jen.Return().ID("s"),
 		),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// provideHTTPServer provides an HTTP httpServer").ID("provideHTTPServer").Params().Params(jen.Op("*").Qual("net/http", "Server")).Block(
+
+	ret.Add(
+		jen.Comment("provideHTTPServer provides an HTTP httpServer"),
+		jen.Line(),
+		jen.Func().ID("provideHTTPServer").Params().Params(jen.Op("*").Qual("net/http", "Server")).Block(
 		jen.ID("srv").Op(":=").Op("&").Qual("net/http", "Server").Valuesln(jen.ID("ReadTimeout").Op(":").Lit(5).Op("*").Qual("time", "Second"), jen.ID("WriteTimeout").Op(":").Lit(10).Op("*").Qual("time", "Second"), jen.ID("IdleTimeout").Op(":").Lit(120).Op("*").Qual("time", "Second"), jen.ID("TLSConfig").Op(":").Op("&").Qual("crypto/tls", "Config").Valuesln(jen.ID("PreferServerCipherSuites").Op(":").ID("true"), jen.ID("CurvePreferences").Op(":").Index().Qual("crypto/tls", "CurveID").Valuesln(jen.Qual("crypto/tls", "CurveP256"), jen.Qual("crypto/tls", "X25519")), jen.ID("MinVersion").Op(":").Qual("crypto/tls", "VersionTLS12"), jen.ID("CipherSuites").Op(":").Index().ID("uint16").Valuesln(jen.Qual("crypto/tls", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"), jen.Qual("crypto/tls", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"), jen.Qual("crypto/tls", "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305"), jen.Qual("crypto/tls", "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"), jen.Qual("crypto/tls", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"), jen.Qual("crypto/tls", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256")))),
 		jen.Return().ID("srv"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

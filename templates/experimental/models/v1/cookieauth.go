@@ -10,9 +10,9 @@ func cookieauthDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null().Type().ID("CookieAuth").Struct(jen.ID("UserID").ID("uint64"), jen.ID("Admin").ID("bool"), jen.ID("Username").ID("string")),
-
-		jen.Line(),
+	ret.Add(
+		jen.Type().ID("CookieAuth").Struct(jen.ID("UserID").ID("uint64"), jen.ID("Admin").ID("bool"), jen.ID("Username").ID("string")),
+	jen.Line(),
 	)
 	return ret
 }

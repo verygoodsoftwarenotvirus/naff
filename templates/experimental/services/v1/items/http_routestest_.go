@@ -10,17 +10,11 @@ func httpRoutesTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Func().ID("TestItemsService_List").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("TestItemsService_List").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -84,9 +78,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -147,9 +139,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching items from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching items from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -210,9 +200,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -277,16 +265,14 @@ func httpRoutesTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusOK")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestItemsService_Create").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestItemsService_Create").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -376,9 +362,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusCreated")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without input attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without input attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -422,9 +406,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusBadRequest")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error creating item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error creating item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -496,9 +478,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -589,16 +569,14 @@ func httpRoutesTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusCreated")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestItemsService_Read").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestItemsService_Read").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -667,9 +645,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no such item in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no such item in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -727,9 +703,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusNotFound")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching item from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching item from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -787,9 +761,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -859,16 +831,14 @@ func httpRoutesTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusOK")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestItemsService_Update").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestItemsService_Update").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -976,9 +946,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("without update input"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("without update input"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("res").Op(":=").ID("httptest").Dot(
 				"NewRecorder",
@@ -999,9 +967,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusBadRequest")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no rows fetching item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no rows fetching item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1069,9 +1035,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusNotFound")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error fetching item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1139,9 +1103,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error updating item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error updating item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1249,9 +1211,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1360,16 +1320,14 @@ func httpRoutesTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusOK")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestItemsService_Archive").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestItemsService_Archive").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1458,9 +1416,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusNoContent")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with no item in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with no item in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1516,9 +1472,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			), jen.Qual("net/http", "StatusNotFound")),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
 			jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
@@ -1575,8 +1529,7 @@ func httpRoutesTestDotGo() *jen.File {
 			), jen.Qual("net/http", "StatusInternalServerError")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

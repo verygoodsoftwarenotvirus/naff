@@ -10,23 +10,24 @@ func frontendServiceDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("serviceName").Op("=").Lit("frontend_service"),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("serviceName").Op("=").Lit("frontend_service"),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Null().Type().ID("Service").Struct(jen.ID("logger").ID("logging").Dot(
+	ret.Add(
+		jen.Type().ID("Service").Struct(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 		"Logger",
 	), jen.ID("config").ID("config").Dot(
 		"FrontendSettings",
 	)),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// ProvideFrontendService provides the frontend service to dependency injection").ID("ProvideFrontendService").Params(jen.ID("logger").ID("logging").Dot(
+
+	ret.Add(
+		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection"),
+		jen.Line(),
+		jen.Func().ID("ProvideFrontendService").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 		"Logger",
 	), jen.ID("cfg").ID("config").Dot(
 		"FrontendSettings",
@@ -36,8 +37,7 @@ func frontendServiceDotGo() *jen.File {
 		).Call(jen.ID("serviceName"))),
 		jen.Return().ID("svc"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

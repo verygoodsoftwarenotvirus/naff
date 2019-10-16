@@ -10,15 +10,13 @@ func routesDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("numericIDPattern").Op("=").Lit(`/{%s:[0-9]+}`).Var().ID("oauth2IDPattern").Op("=").Lit(`/{%s:[0-9_\-]+}`),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("numericIDPattern").Op("=").Lit(`/{%s:[0-9]+}`).Var().ID("oauth2IDPattern").Op("=").Lit(`/{%s:[0-9_\-]+}`),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").ID("config").Dot(
+	ret.Add(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").ID("config").Dot(
 		"FrontendSettings",
 	), jen.ID("metricsHandler").ID("metrics").Dot(
 		"Handler",
@@ -456,8 +454,7 @@ func routesDotGo() *jen.File {
 			"router",
 		).Op("=").ID("router"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

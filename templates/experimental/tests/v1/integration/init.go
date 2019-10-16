@@ -10,19 +10,18 @@ func initDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("debug").Op("=").ID("true").Var().ID("nonexistentID").Op("=").Lit(999999999),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("debug").Op("=").ID("true").Var().ID("nonexistentID").Op("=").Lit(999999999),
 
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("urlToUse").ID("string").Var().ID("todoClient").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client"),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("urlToUse").ID("string").Var().ID("todoClient").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client"),
 
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("init").Params().Block(
+	ret.Add(
+		jen.Func().ID("init").Params().Block(
 		jen.ID("urlToUse").Op("=").ID("testutil").Dot(
 			"DetermineServiceURL",
 		).Call(),
@@ -62,17 +61,19 @@ func initDotGo() *jen.File {
 		jen.ID("fiftySpaces").Op(":=").Qual("strings", "Repeat").Call(jen.Lit("\n"), jen.Lit(50)),
 		jen.Qual("fmt", "Printf").Call(jen.Lit("%s\tRunning tests%s"), jen.ID("fiftySpaces"), jen.ID("fiftySpaces")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("buildHTTPClient").Params().Params(jen.Op("*").Qual("net/http", "Client")).Block(
+
+	ret.Add(
+		jen.Func().ID("buildHTTPClient").Params().Params(jen.Op("*").Qual("net/http", "Client")).Block(
 		jen.ID("httpc").Op(":=").Op("&").Qual("net/http", "Client").Valuesln(jen.ID("Transport").Op(":").Qual("net/http", "DefaultTransport"), jen.ID("Timeout").Op(":").Lit(5).Op("*").Qual("time", "Second")),
 		jen.Return().ID("httpc"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").Op("*").ID("models").Dot(
+
+	ret.Add(
+		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").Op("*").ID("models").Dot(
 		"OAuth2Client",
 	)).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "V1Client")).Block(
 		jen.List(jen.ID("uri"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("urlToUse")),
@@ -93,8 +94,7 @@ func initDotGo() *jen.File {
 		),
 		jen.Return().ID("c"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

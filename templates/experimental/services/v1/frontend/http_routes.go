@@ -10,20 +10,24 @@ func httpRoutesDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
+	ret.Add(
+		jen.Comment("Routes returns a map of route to HandlerFunc for the parent router to set"),
 		jen.Line(),
-	)
-	ret.Add(jen.Func().Comment("// Routes returns a map of route to HandlerFunc for the parent router to set").Comment("// this keeps routing logic in the frontend service and not in the server itself.").Params(jen.ID("s").Op("*").ID("Service")).ID("Routes").Params().Params(jen.Map(jen.ID("string")).Qual("net/http", "HandlerFunc")).Block(
+
+	jen.Comment("this keeps routing logic in the frontend service and not in the server itself."),
+	jen.Line(),
+	jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("Routes").Params().Params(jen.Map(jen.ID("string")).Qual("net/http", "HandlerFunc")).Block(
 		jen.Return().Map(jen.ID("string")).Qual("net/http", "HandlerFunc").Valuesln(),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").ID("string")).Params(jen.Op("*").ID("afero").Dot(
+
+	ret.Add(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").ID("string")).Params(jen.Op("*").ID("afero").Dot(
 		"HttpFs",
 	), jen.ID("error")).Block(
-		jen.Null().Var().ID("afs").ID("afero").Dot(
+
+		jen.Var().ID("afs").ID("afero").Dot(
 			"Fs",
 		),
 		jen.If(jen.ID("s").Dot(
@@ -84,14 +88,18 @@ func httpRoutesDotGo() *jen.File {
 			"NewHttpFs",
 		).Call(jen.ID("afs")), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Null().Var().ID("itemsFrontendPathRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.Lit(`/items/\d+`)),
 
-		jen.Line(),
+	ret.Add(
+		jen.Var().ID("itemsFrontendPathRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.Lit(`/items/\d+`)),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().Comment("// StaticDir builds a static directory handler").Params(jen.ID("s").Op("*").ID("Service")).ID("StaticDir").Params(jen.ID("staticFilesDirectory").ID("string")).Params(jen.Qual("net/http", "HandlerFunc"), jen.ID("error")).Block(
+
+	ret.Add(
+		jen.Comment("StaticDir builds a static directory handler"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("StaticDir").Params(jen.ID("staticFilesDirectory").ID("string")).Params(jen.Qual("net/http", "HandlerFunc"), jen.ID("error")).Block(
 		jen.List(jen.ID("fileDir"), jen.ID("err")).Op(":=").Qual("path/filepath", "Abs").Call(jen.ID("staticFilesDirectory")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("determining absolute path of static files directory: %w"), jen.ID("err"))),
@@ -155,8 +163,7 @@ func httpRoutesDotGo() *jen.File {
 			).Call(jen.ID("res"), jen.ID("req")),
 		), jen.ID("nil")),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

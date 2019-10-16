@@ -10,11 +10,8 @@ func httpRoutesTestDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
-	ret.Add(jen.Func().ID("buildRequest").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual("net/http", "Request")).Block(
+	ret.Add(
+		jen.Func().ID("buildRequest").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual("net/http", "Request")).Block(
 		jen.ID("t").Dot(
 			"Helper",
 		).Call(),
@@ -27,16 +24,14 @@ func httpRoutesTestDotGo() *jen.File {
 		).Call(jen.ID("t"), jen.ID("err")),
 		jen.Return().ID("req"),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_StaticDir").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_StaticDir").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -68,9 +63,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with frontend routing path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with frontend routing path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -99,9 +92,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Code",
 			)),
 		)),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("with frontend items routing path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("with frontend items routing path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -131,16 +122,14 @@ func httpRoutesTestDotGo() *jen.File {
 			)),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_Routes").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_Routes").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("assert").Dot(
 				"NotNil",
 			).Call(jen.ID("t"), jen.Parens(jen.Op("&").ID("Service").Valuesln()).Dot(
@@ -148,16 +137,14 @@ func httpRoutesTestDotGo() *jen.File {
 			).Call()),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
-	ret.Add(jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-		jen.ID("T").Dot(
-			"Parallel",
-		).Call(),
-		jen.ID("T").Dot(
-			"Run",
-		).Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+
+	ret.Add(
+		jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("config").Op(":").ID("config").Dot(
 				"FrontendSettings",
 			).Valuesln(jen.ID("CacheStaticFiles").Op(":").ID("true"))),
@@ -176,8 +163,7 @@ func httpRoutesTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err")),
 		)),
 	),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

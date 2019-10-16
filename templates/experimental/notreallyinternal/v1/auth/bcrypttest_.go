@@ -19,6 +19,7 @@ func bcryptTestDotGo() *jen.File {
 		),
 		jen.Line(),
 	)
+
 	ret.Add(
 		jen.Func().ID("TestBcrypt_HashPassword").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -175,8 +176,7 @@ func bcryptTestDotGo() *jen.File {
 				),
 			)),
 		),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }

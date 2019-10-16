@@ -10,10 +10,6 @@ func authenticatorDotGo() *jen.File {
 
 	utils.AddImports(ret)
 
-	ret.Add(jen.Null(),
-
-		jen.Line(),
-	)
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("ErrInvalidTwoFactorCode indicates that a provided two factor code is invalid"),
@@ -63,6 +59,7 @@ func authenticatorDotGo() *jen.File {
 		),
 		jen.Line(),
 	)
+
 	ret.Add(
 		jen.Comment("we run this function to ensure that we have no problem reading from crypto/rand"),
 		jen.Line(),
@@ -72,8 +69,7 @@ func authenticatorDotGo() *jen.File {
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 		),
-
-		jen.Line(),
+	jen.Line(),
 	)
 	return ret
 }
