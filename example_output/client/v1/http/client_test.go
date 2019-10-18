@@ -45,13 +45,14 @@ func buildTestClient(t *testing.T, ts *httptest.Server) *V1Client {
 
 	l := noop.ProvideNoopLogger()
 	u := mustParseURL(ts.URL)
+	c := ts.Client()
 
 	return &V1Client{
 		URL:          u,
-		plainClient:  ts.Client(),
+		plainClient:  c,
 		logger:       l,
 		Debug:        true,
-		authedClient: ts.Client(),
+		authedClient: c,
 	}
 }
 

@@ -184,6 +184,32 @@ func (s *Statement) ValuesFunc(f func(*Group)) *Statement {
 	return s
 }
 
+// ImportBlock renders a comma-and-newline separated list enclosed by curly braces. Use for slice or composite literals.
+func ImportBlock(values ...Code) *Statement {
+	return newStatement().Valuesln(values...)
+}
+
+// ImportBlock renders a comma-and-newline separated list enclosed by curly braces. Use for slice or composite literals.
+func (g *Group) ImportBlock(values ...Code) *Statement {
+	s := Valuesln(values...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// ImportBlock renders a comma-and-newline separated list enclosed by curly braces. Use for slice or composite literals.
+func (s *Statement) ImportBlock(values ...Code) *Statement {
+	g := &Group{
+		close:     "\n)",
+		items:     values,
+		multi:     false,
+		name:      "import",
+		open:      "import (\n",
+		separator: "\n",
+	}
+	*s = append(*s, g)
+	return s
+}
+
 // Index renders a colon separated list enclosed by square brackets. Use for array / slice indexes and definitions.
 func Index(items ...Code) *Statement {
 	return newStatement().Index(items...)

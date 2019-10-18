@@ -24,6 +24,7 @@ require (
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/mibk/dupl v1.0.0 // indirect
+	github.com/moul/http2curl v1.0.0
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/phogolabs/parcello v0.8.1 // indirect
@@ -39,6 +40,7 @@ require (
 	go.opencensus.io v0.22.1
 	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+	golang.org/x/oauth2 v0.0.0-20190523182746-aaccbc9213b0
 	gopkg.in/AlecAivazis/survey.v1 v1.8.5
 	gopkg.in/oauth2.v3 v3.10.0
 	gopkg.in/op/go-logging.v1 v1.0.0-20160211212156-b2cb9fa56473

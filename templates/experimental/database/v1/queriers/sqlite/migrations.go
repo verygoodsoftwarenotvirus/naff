@@ -71,7 +71,9 @@ func migrationsDotGo() *jen.File {
 	ret.Add(
 	jen.Comment("buildMigrationFunc returns a sync.Once compatible function closure that will"),
 	jen.Line(),
-	jen.Func().Comment("// migrate a sqlite database").ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Params()).Block(
+	jen.Comment("migrate a sqlite database"),
+	jen.Line(),
+	jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Params()).Block(
 		jen.Return().Func().Params().Block(
 			jen.ID("driver").Op(":=").ID("darwin").Dot(
 				"NewGenericDriver",

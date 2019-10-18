@@ -188,11 +188,43 @@ const (
 )
 
 func AddImports(file *jen.File) {
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock", "mockutil")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "database")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/server/v1", "server")
-	file.ImportAlias(ModelsPkg, "models")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/internal/v1/config", "")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "client")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "database")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "auth")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "mockauth")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "config")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "encoding")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "mockencoding")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "metrics")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "mockmetrics")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client", "dbclient")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/mariadb", "mariadb")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/postgres", "postgres")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/sqlite", "sqlite")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "models")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "mockmodels")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/server/v1", "server")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/server/v1/http", "httpserver")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/auth", "auth")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/frontend", "frontend")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/items", "items")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients", "oauth2clients")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/users", "users")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/webhooks", "webhooks")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/frontend", "frontend")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/integration", "integration")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/load", "load")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil", "testutil")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock", "mockutil")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/rand/model", "randmodel")
+
+	file.ImportName("golang.org/x/oauth2", "oauth2")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "logging")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop", "noop")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "zerolog")
+	file.ImportName("github.com/stretchr/testify/assert", "assert")
+	file.ImportName("github.com/stretchr/testify/require", "require")
+	file.ImportName("github.com/stretchr/testify/mock", "mock")
 
 	file.ImportNames(map[string]string{
 		"context":           "context",
@@ -209,11 +241,7 @@ func AddImports(file *jen.File) {
 		"io":                "io",
 		"io/ioutil":         "ioutil",
 		"reflect":           "reflect",
-		//
-		LoggingPkg:     "logging",
-		NoopLoggingPkg: "noop",
-		ModelsPkg:      "models",
-		//
+
 		"contrib.go.opencensus.io/exporter/jaeger":     "jaeger",
 		"contrib.go.opencensus.io/exporter/prometheus": "prometheus",
 		"contrib.go.opencensus.io/integrations/ocsql":  "ocsql",
@@ -239,17 +267,12 @@ func AddImports(file *jen.File) {
 		"go.opencensus.io":                             "opencensus",
 		"golang.org/x/crypto":                          "crypto",
 		"gopkg.in/oauth2.v3":                           "oauth2",
-		//
-		AssertPkg:     "assert",
-		MustAssertPkg: "require",
-		MockPkg:       "mock",
-		CoreOAuth2Pkg: "oauth2",
-		"gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog": "zerolog",
-		"go.opencensus.io/plugin/ochttp":                         "ochttp",
-		"github.com/pquerna/otp/totp":                            "totp",
-		"golang.org/x/oauth2/clientcredentials":                  "clientcredentials",
+		"go.opencensus.io/plugin/ochttp":               "ochttp",
+		"github.com/pquerna/otp/totp":                  "totp",
+		"golang.org/x/oauth2/clientcredentials":        "clientcredentials",
 	})
-	file.Add(jen.Line())
+
+	file.Line()
 }
 
 func RunGoimportsForFile(filename string) error {

@@ -1,9 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	project "gitlab.com/verygoodsoftwarenotvirus/naff/templates"
-	"log"
 )
 
 func main() {
@@ -14,8 +15,8 @@ func main() {
 				Name: models.Name{
 					Singular:                "Item",
 					Plural:                  "Items",
-					RouteName:               "items",
-					PluralRouteName:         "item",
+					RouteName:               "item",
+					PluralRouteName:         "items",
 					UnexportedVarName:       "item",
 					PluralUnexportedVarName: "items",
 				},

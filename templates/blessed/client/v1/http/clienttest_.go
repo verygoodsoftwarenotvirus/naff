@@ -80,13 +80,14 @@ func mainTestDotGo() *jen.File {
 			jen.ID("u").Op(":=").ID("mustParseURL").Call(
 				jen.ID("ts").Dot("URL"),
 			),
+			jen.ID("c").Op(":=").ID("ts").Dot("Client").Call(),
 			jen.Line(),
 			jen.Return().Op("&").ID(v1).Valuesln(
 				jen.ID("URL").Op(":").ID("u"),
-				jen.ID("plainClient").Op(":").ID("ts").Dot("Client").Call(),
+				jen.ID("plainClient").Op(":").ID("c"),
 				jen.ID("logger").Op(":").ID("l"),
 				jen.ID("Debug").Op(":").ID("true"),
-				jen.ID("authedClient").Op(":").ID("ts").Dot("Client").Call(),
+				jen.ID("authedClient").Op(":").ID("c"),
 			),
 		),
 		jen.Line(),

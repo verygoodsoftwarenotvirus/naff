@@ -20,8 +20,9 @@ const (
 // RenderPackage renders the package
 func RenderPackage(types []models.DataType) error {
 	files := map[string]*jen.File{
-		"client/v1/http/main.go":                mainDotGo(),
-		"client/v1/http/main_test.go":           mainTestDotGo(),
+		"client/v1/http/doc.go":                 docDotGo(),
+		"client/v1/http/client.go":              mainDotGo(),
+		"client/v1/http/client_test.go":         mainTestDotGo(),
 		"client/v1/http/helpers.go":             helpersDotGo(),
 		"client/v1/http/helpers_test.go":        helpersTestDotGo(),
 		"client/v1/http/users.go":               usersDotGo(),

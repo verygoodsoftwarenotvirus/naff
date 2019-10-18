@@ -69,7 +69,9 @@ func httpRoutesDotGo() *jen.File {
 	ret.Add(
 	jen.Comment("validateCredentialChangeRequest takes a user's credentials and determines"),
 	jen.Line(),
-	jen.Func().Comment("// if they match what is on record").Params(jen.ID("s").Op("*").ID("Service")).ID("validateCredentialChangeRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.List(jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.ID("user").Op("*").ID("models").Dot(
+	jen.Comment("if they match what is on record"),
+	jen.Line(),
+	jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("validateCredentialChangeRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.List(jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.ID("user").Op("*").ID("models").Dot(
 		"User",
 	), jen.ID("httpStatus").ID("int")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("validateCredentialChangeRequest")),
