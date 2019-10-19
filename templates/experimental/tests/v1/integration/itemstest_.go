@@ -26,14 +26,16 @@ func itemsTestDotGo() *jen.File {
 			"Equal",
 		).Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Name",
-		), jen.ID("actual").Dot(
+	),
+	jen.ID("actual").Dot(
 			"Name",
 		)),
 		jen.ID("assert").Dot(
 			"Equal",
 		).Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Details",
-		), jen.ID("actual").Dot(
+	),
+	jen.ID("actual").Dot(
 			"Details",
 		)),
 		jen.ID("assert").Dot(
@@ -97,7 +99,8 @@ func itemsTestDotGo() *jen.File {
 					"ItemCreationInput",
 				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
-				), jen.ID("Details").Op(":").ID("expected").Dot(
+	),
+	jen.ID("Details").Op(":").ID("expected").Dot(
 					"Details",
 				))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
@@ -208,7 +211,8 @@ func itemsTestDotGo() *jen.File {
 					"ItemCreationInput",
 				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
-				), jen.ID("Details").Op(":").ID("expected").Dot(
+	),
+	jen.ID("Details").Op(":").ID("expected").Dot(
 					"Details",
 				))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
@@ -272,11 +276,13 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
 				jen.List(jen.ID("premade").Dot(
 					"Name",
-				), jen.ID("premade").Dot(
+	),
+	jen.ID("premade").Dot(
 					"Details",
 				)).Op("=").List(jen.ID("expected").Dot(
 					"Name",
-				), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 					"Details",
 				)),
 				jen.ID("err").Op("=").ID("todoClient").Dot(
@@ -329,7 +335,8 @@ func itemsTestDotGo() *jen.File {
 					"ItemCreationInput",
 				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
-				), jen.ID("Details").Op(":").ID("expected").Dot(
+	),
+	jen.ID("Details").Op(":").ID("expected").Dot(
 					"Details",
 				))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),

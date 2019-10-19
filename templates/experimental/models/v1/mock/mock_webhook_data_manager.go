@@ -29,7 +29,8 @@ func mockWebhookDataManagerDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataManager")).ID("GetWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 		"Webhook",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")),
@@ -49,7 +50,8 @@ func mockWebhookDataManagerDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataManager")).ID("GetWebhookCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
-	), jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")).Block(
+	),
+	jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
@@ -83,9 +85,11 @@ func mockWebhookDataManagerDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataManager")).ID("GetWebhooks").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
 		"QueryFilter",
-	), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
+	),
+	jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 		"WebhookList",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
@@ -105,7 +109,8 @@ func mockWebhookDataManagerDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataManager")).ID("GetAllWebhooks").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Op("*").ID("models").Dot(
 		"WebhookList",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx")),
@@ -125,7 +130,8 @@ func mockWebhookDataManagerDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataManager")).ID("GetAllWebhooksForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().ID("models").Dot(
 		"Webhook",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("userID")),
@@ -147,7 +153,8 @@ func mockWebhookDataManagerDotGo() *jen.File {
 		"WebhookCreationInput",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"Webhook",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("input")),

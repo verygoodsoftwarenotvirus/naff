@@ -18,7 +18,8 @@ func routesDotGo() *jen.File {
 	ret.Add(
 		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").ID("config").Dot(
 		"FrontendSettings",
-	), jen.ID("metricsHandler").ID("metrics").Dot(
+	),
+	jen.ID("metricsHandler").ID("metrics").Dot(
 		"Handler",
 	)).Block(
 		jen.ID("router").Op(":=").ID("chi").Dot(
@@ -33,11 +34,13 @@ func routesDotGo() *jen.File {
 			"Use",
 		).Call(jen.ID("middleware").Dot(
 			"RequestID",
-		), jen.ID("middleware").Dot(
+	),
+	jen.ID("middleware").Dot(
 			"Timeout",
 		).Call(jen.ID("maxTimeout")), jen.ID("s").Dot(
 			"loggingMiddleware",
-		), jen.ID("ch").Dot(
+	),
+	jen.ID("ch").Dot(
 			"Handler",
 		)),
 		jen.ID("router").Dot(
@@ -205,7 +208,8 @@ func routesDotGo() *jen.File {
 				"authService",
 			).Dot(
 				"CookieAuthenticationMiddleware",
-			), jen.ID("s").Dot(
+	),
+	jen.ID("s").Dot(
 				"usersService",
 			).Dot(
 				"TOTPSecretRefreshInputMiddleware",
@@ -222,7 +226,8 @@ func routesDotGo() *jen.File {
 				"authService",
 			).Dot(
 				"CookieAuthenticationMiddleware",
-			), jen.ID("s").Dot(
+	),
+	jen.ID("s").Dot(
 				"usersService",
 			).Dot(
 				"PasswordUpdateInputMiddleware",
@@ -245,7 +250,8 @@ func routesDotGo() *jen.File {
 				"authService",
 			).Dot(
 				"CookieAuthenticationMiddleware",
-			), jen.ID("s").Dot(
+	),
+	jen.ID("s").Dot(
 				"oauth2ClientsService",
 			).Dot(
 				"CreationInputMiddleware",

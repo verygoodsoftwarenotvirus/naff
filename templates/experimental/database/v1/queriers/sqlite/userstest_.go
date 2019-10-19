@@ -22,21 +22,29 @@ func usersTestDotGo() *jen.File {
 			"AddRow",
 		).Call(jen.ID("user").Dot(
 			"ID",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"Username",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"HashedPassword",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"PasswordLastChangedOn",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"TwoFactorSecret",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"IsAdmin",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"CreatedOn",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"UpdatedOn",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"ArchivedOn",
 		)),
 		jen.Return().ID("exampleRows"),
@@ -56,21 +64,29 @@ func usersTestDotGo() *jen.File {
 			"AddRow",
 		).Call(jen.ID("user").Dot(
 			"ArchivedOn",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"ID",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"Username",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"HashedPassword",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"PasswordLastChangedOn",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"TwoFactorSecret",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"IsAdmin",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"CreatedOn",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"UpdatedOn",
 		)),
 		jen.Return().ID("exampleRows"),
@@ -658,11 +674,14 @@ func usersTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"Username",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"HashedPassword",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"TwoFactorSecret",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"IsAdmin",
 			)).Dot(
 				"WillReturnResult",
@@ -717,11 +736,14 @@ func usersTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"Username",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"HashedPassword",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"TwoFactorSecret",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"IsAdmin",
 			)).Dot(
 				"WillReturnError",
@@ -788,11 +810,14 @@ func usersTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"Username",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"HashedPassword",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"TwoFactorSecret",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"WillReturnResult",

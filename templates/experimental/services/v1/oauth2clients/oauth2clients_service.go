@@ -41,17 +41,23 @@ func oauth2ClientsServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Type().ID("oauth2Handler").Interface(jen.ID("SetAllowGetAccessRequest").Params(jen.ID("bool")), jen.ID("SetClientAuthorizedHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ClientAuthorizedHandler")), jen.ID("SetClientScopeHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ClientScopeHandler")), jen.ID("SetClientInfoHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ClientInfoHandler")), jen.ID("SetUserAuthorizationHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "UserAuthorizationHandler")), jen.ID("SetAuthorizeScopeHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler")), jen.ID("SetResponseErrorHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler")), jen.ID("SetInternalErrorHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "InternalErrorHandler")), jen.ID("ValidationBearerToken").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("oauth2").Dot(
 			"TokenInfo",
-		), jen.ID("error")), jen.ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("error")), jen.ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("error"))).Type().ID("ClientIDFetcher").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Type().ID("Service").Struct(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
+	),
+	jen.ID("error")), jen.ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("error")), jen.ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("error"))).Type().ID("ClientIDFetcher").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Type().ID("Service").Struct(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		), jen.ID("database").ID("database").Dot(
+	),
+	jen.ID("database").ID("database").Dot(
 			"Database",
-		), jen.ID("authenticator").ID("auth").Dot(
+	),
+	jen.ID("authenticator").ID("auth").Dot(
 			"Authenticator",
-		), jen.ID("encoderDecoder").ID("encoding").Dot(
+	),
+	jen.ID("encoderDecoder").ID("encoding").Dot(
 			"EncoderDecoder",
-		), jen.ID("urlClientIDExtractor").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")), jen.ID("tokenStore").ID("oauth2").Dot(
+	),
+	jen.ID("urlClientIDExtractor").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")), jen.ID("tokenStore").ID("oauth2").Dot(
 			"TokenStore",
-		), jen.ID("oauth2Handler").ID("oauth2Handler"), jen.ID("oauth2ClientCounter").ID("metrics").Dot(
+	),
+	jen.ID("oauth2Handler").ID("oauth2Handler"), jen.ID("oauth2ClientCounter").ID("metrics").Dot(
 			"UnitCounter",
 		)).Type().ID("clientStore").Struct(jen.ID("database").ID("database").Dot(
 			"Database",
@@ -74,7 +80,8 @@ func oauth2ClientsServiceDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("clientStore")).ID("GetByID").Params(jen.ID("id").ID("string")).Params(jen.ID("oauth2").Dot(
 			"ClientInfo",
-		), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("s").Dot(
 				"database",
 			).Dot(
@@ -95,13 +102,17 @@ func oauth2ClientsServiceDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientsService").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		), jen.ID("db").ID("database").Dot(
+	),
+	jen.ID("db").ID("database").Dot(
 			"Database",
-		), jen.ID("authenticator").ID("auth").Dot(
+	),
+	jen.ID("authenticator").ID("auth").Dot(
 			"Authenticator",
-		), jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").ID("encoding").Dot(
+	),
+	jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").ID("encoding").Dot(
 			"EncoderDecoder",
-		), jen.ID("counterProvider").ID("metrics").Dot(
+	),
+	jen.ID("counterProvider").ID("metrics").Dot(
 			"UnitCounterProvider",
 		)).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("counter"), jen.ID("err")).Op(":=").ID("counterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")),
@@ -138,7 +149,8 @@ func oauth2ClientsServiceDotGo() *jen.File {
 			).Call(jen.ID("serviceName")), jen.ID("encoderDecoder").Op(":").ID("encoderDecoder"), jen.ID("authenticator").Op(":").ID("authenticator"), jen.ID("urlClientIDExtractor").Op(":").ID("clientIDFetcher"), jen.ID("oauth2ClientCounter").Op(":").ID("counter"), jen.ID("tokenStore").Op(":").ID("tokenStore"), jen.ID("oauth2Handler").Op(":").ID("oHandler")),
 			jen.ID("initializeOAuth2Handler").Call(jen.ID("s").Dot(
 				"oauth2Handler",
-			), jen.ID("s")),
+	),
+	jen.ID("s")),
 			jen.List(jen.ID("count"), jen.ID("err")).Op(":=").ID("s").Dot(
 				"database",
 			).Dot(

@@ -34,7 +34,8 @@ func mainDotGo() *jen.File {
 		jen.Func().Params(jen.ID("er").Op("*").ID("ErrorResponse")).ID("Error").Params().Params(jen.ID("string")).Block(
 		jen.Return().Qual("fmt", "Sprintf").Call(jen.Lit("%d - %s"), jen.ID("er").Dot(
 			"Code",
-		), jen.ID("er").Dot(
+	),
+	jen.ID("er").Dot(
 			"Message",
 		)),
 	),

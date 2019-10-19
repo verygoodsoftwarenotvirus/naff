@@ -45,19 +45,24 @@ func implementationDotGo() *jen.File {
 			"WithValues",
 		).Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("error_code").Op(":").ID("re").Dot(
 			"ErrorCode",
-		), jen.Lit("description").Op(":").ID("re").Dot(
+	),
+	jen.Lit("description").Op(":").ID("re").Dot(
 			"Description",
-		), jen.Lit("uri").Op(":").ID("re").Dot(
+	),
+	jen.Lit("uri").Op(":").ID("re").Dot(
 			"URI",
-		), jen.Lit("status_code").Op(":").ID("re").Dot(
+	),
+	jen.Lit("status_code").Op(":").ID("re").Dot(
 			"StatusCode",
-		), jen.Lit("header").Op(":").ID("re").Dot(
+	),
+	jen.Lit("header").Op(":").ID("re").Dot(
 			"Header",
 		))).Dot(
 			"Error",
 		).Call(jen.ID("re").Dot(
 			"Error",
-		), jen.Lit("OAuth2ResponseErrorHandler")),
+	),
+	jen.Lit("OAuth2ResponseErrorHandler")),
 	),
 	jen.Line(),
 	)

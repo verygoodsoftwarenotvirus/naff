@@ -18,7 +18,8 @@ func frontendServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Type().ID("Service").Struct(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 		"Logger",
-	), jen.ID("config").ID("config").Dot(
+	),
+	jen.ID("config").ID("config").Dot(
 		"FrontendSettings",
 	)),
 	jen.Line(),
@@ -29,7 +30,8 @@ func frontendServiceDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideFrontendService").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 		"Logger",
-	), jen.ID("cfg").ID("config").Dot(
+	),
+	jen.ID("cfg").ID("config").Dot(
 		"FrontendSettings",
 	)).Params(jen.Op("*").ID("Service")).Block(
 		jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("config").Op(":").ID("cfg"), jen.ID("logger").Op(":").ID("logger").Dot(

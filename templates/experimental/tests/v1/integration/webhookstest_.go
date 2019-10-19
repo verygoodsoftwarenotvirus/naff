@@ -26,28 +26,32 @@ func webhooksTestDotGo() *jen.File {
 			"Equal",
 		).Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Name",
-		), jen.ID("actual").Dot(
+	),
+	jen.ID("actual").Dot(
 			"Name",
 		)),
 		jen.ID("assert").Dot(
 			"Equal",
 		).Call(jen.ID("t"), jen.ID("expected").Dot(
 			"ContentType",
-		), jen.ID("actual").Dot(
+	),
+	jen.ID("actual").Dot(
 			"ContentType",
 		)),
 		jen.ID("assert").Dot(
 			"Equal",
 		).Call(jen.ID("t"), jen.ID("expected").Dot(
 			"URL",
-		), jen.ID("actual").Dot(
+	),
+	jen.ID("actual").Dot(
 			"URL",
 		)),
 		jen.ID("assert").Dot(
 			"Equal",
 		).Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Method",
-		), jen.ID("actual").Dot(
+	),
+	jen.ID("actual").Dot(
 			"Method",
 		)),
 		jen.ID("assert").Dot(
@@ -121,11 +125,14 @@ func webhooksTestDotGo() *jen.File {
 					"Webhook",
 				).Valuesln(jen.ID("Name").Op(":").ID("input").Dot(
 					"Name",
-				), jen.ID("URL").Op(":").ID("input").Dot(
+	),
+	jen.ID("URL").Op(":").ID("input").Dot(
 					"URL",
-				), jen.ID("ContentType").Op(":").ID("input").Dot(
+	),
+	jen.ID("ContentType").Op(":").ID("input").Dot(
 					"ContentType",
-				), jen.ID("Method").Op(":").ID("input").Dot(
+	),
+	jen.ID("Method").Op(":").ID("input").Dot(
 					"Method",
 				)),
 				jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
@@ -134,11 +141,14 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookCreationInput",
 				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
-				), jen.ID("ContentType").Op(":").ID("expected").Dot(
+	),
+	jen.ID("ContentType").Op(":").ID("expected").Dot(
 					"ContentType",
-				), jen.ID("URL").Op(":").ID("expected").Dot(
+	),
+	jen.ID("URL").Op(":").ID("expected").Dot(
 					"URL",
-				), jen.ID("Method").Op(":").ID("expected").Dot(
+	),
+	jen.ID("Method").Op(":").ID("expected").Dot(
 					"Method",
 				))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
@@ -225,11 +235,14 @@ func webhooksTestDotGo() *jen.File {
 					"Webhook",
 				).Valuesln(jen.ID("Name").Op(":").ID("input").Dot(
 					"Name",
-				), jen.ID("URL").Op(":").ID("input").Dot(
+	),
+	jen.ID("URL").Op(":").ID("input").Dot(
 					"URL",
-				), jen.ID("ContentType").Op(":").ID("input").Dot(
+	),
+	jen.ID("ContentType").Op(":").ID("input").Dot(
 					"ContentType",
-				), jen.ID("Method").Op(":").ID("input").Dot(
+	),
+	jen.ID("Method").Op(":").ID("input").Dot(
 					"Method",
 				)),
 				jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
@@ -238,11 +251,14 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookCreationInput",
 				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
-				), jen.ID("ContentType").Op(":").ID("expected").Dot(
+	),
+	jen.ID("ContentType").Op(":").ID("expected").Dot(
 					"ContentType",
-				), jen.ID("URL").Op(":").ID("expected").Dot(
+	),
+	jen.ID("URL").Op(":").ID("expected").Dot(
 					"URL",
-				), jen.ID("Method").Op(":").ID("expected").Dot(
+	),
+	jen.ID("Method").Op(":").ID("expected").Dot(
 					"Method",
 				))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
@@ -288,11 +304,14 @@ func webhooksTestDotGo() *jen.File {
 					"Webhook",
 				).Valuesln(jen.ID("Name").Op(":").ID("input").Dot(
 					"Name",
-				), jen.ID("URL").Op(":").ID("input").Dot(
+	),
+	jen.ID("URL").Op(":").ID("input").Dot(
 					"URL",
-				), jen.ID("ContentType").Op(":").ID("input").Dot(
+	),
+	jen.ID("ContentType").Op(":").ID("input").Dot(
 					"ContentType",
-				), jen.ID("Method").Op(":").ID("input").Dot(
+	),
+	jen.ID("Method").Op(":").ID("input").Dot(
 					"Method",
 				)),
 				jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
@@ -301,11 +320,14 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookCreationInput",
 				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
-				), jen.ID("ContentType").Op(":").ID("expected").Dot(
+	),
+	jen.ID("ContentType").Op(":").ID("expected").Dot(
 					"ContentType",
-				), jen.ID("URL").Op(":").ID("expected").Dot(
+	),
+	jen.ID("URL").Op(":").ID("expected").Dot(
 					"URL",
-				), jen.ID("Method").Op(":").ID("expected").Dot(
+	),
+	jen.ID("Method").Op(":").ID("expected").Dot(
 					"Method",
 				))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
@@ -359,11 +381,14 @@ func webhooksTestDotGo() *jen.File {
 					"Webhook",
 				).Valuesln(jen.ID("Name").Op(":").ID("input").Dot(
 					"Name",
-				), jen.ID("URL").Op(":").ID("input").Dot(
+	),
+	jen.ID("URL").Op(":").ID("input").Dot(
 					"URL",
-				), jen.ID("ContentType").Op(":").ID("input").Dot(
+	),
+	jen.ID("ContentType").Op(":").ID("input").Dot(
 					"ContentType",
-				), jen.ID("Method").Op(":").ID("input").Dot(
+	),
+	jen.ID("Method").Op(":").ID("input").Dot(
 					"Method",
 				)),
 				jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
@@ -372,11 +397,14 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookCreationInput",
 				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
-				), jen.ID("ContentType").Op(":").ID("expected").Dot(
+	),
+	jen.ID("ContentType").Op(":").ID("expected").Dot(
 					"ContentType",
-				), jen.ID("URL").Op(":").ID("expected").Dot(
+	),
+	jen.ID("URL").Op(":").ID("expected").Dot(
 					"URL",
-				), jen.ID("Method").Op(":").ID("expected").Dot(
+	),
+	jen.ID("Method").Op(":").ID("expected").Dot(
 					"Method",
 				))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),

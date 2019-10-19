@@ -60,7 +60,8 @@ func middlewareDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("models").Dot(
 			"OAuth2Client",
-		), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("ExtractOAuth2ClientFromRequest")),
 			jen.Defer().ID("span").Dot(
 				"End",
@@ -105,7 +106,8 @@ func middlewareDotGo() *jen.File {
 				"WithValue",
 			).Call(jen.Lit("scopes"), jen.Qual("strings", "Join").Call(jen.ID("c").Dot(
 				"Scopes",
-			), jen.ID("scopesSeparator"))),
+	),
+	jen.ID("scopesSeparator"))),
 			jen.If(jen.Op("!").ID("hasScope")).Block(
 				jen.ID("logger").Dot(
 					"Info",
@@ -129,12 +131,14 @@ func middlewareDotGo() *jen.File {
 				"URL",
 			).Dot(
 				"Path",
-			), jen.ID("apiPathPrefix"))).Block(
+	),
+	jen.ID("apiPathPrefix"))).Block(
 				jen.ID("x").Op(":=").Qual("strings", "TrimPrefix").Call(jen.ID("req").Dot(
 					"URL",
 				).Dot(
 					"Path",
-				), jen.ID("apiPathPrefix")),
+	),
+	jen.ID("apiPathPrefix")),
 				jen.If(jen.ID("y").Op(":=").Qual("strings", "Split").Call(jen.ID("x"), jen.Lit("/")), jen.ID("len").Call(jen.ID("y")).Op(">").Lit(0)).Block(
 					jen.ID("x").Op("=").ID("y").Index(jen.Lit(0)),
 				),
@@ -179,10 +183,12 @@ func middlewareDotGo() *jen.File {
 				)),
 				jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.ID("models").Dot(
 					"OAuth2ClientKey",
-				), jen.ID("c")),
+	),
+	jen.ID("c")),
 				jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.ID("models").Dot(
 					"UserIDKey",
-				), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 					"BelongsTo",
 				)),
 				jen.ID("next").Dot(
@@ -241,10 +247,12 @@ func middlewareDotGo() *jen.File {
 					)),
 					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.ID("models").Dot(
 						"OAuth2ClientKey",
-					), jen.ID("client")),
+	),
+	jen.ID("client")),
 					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.ID("models").Dot(
 						"UserIDKey",
-					), jen.ID("client").Dot(
+	),
+	jen.ID("client").Dot(
 						"BelongsTo",
 					)),
 					jen.ID("req").Op("=").ID("req").Dot(

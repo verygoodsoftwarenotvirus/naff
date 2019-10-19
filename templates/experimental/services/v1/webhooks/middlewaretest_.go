@@ -37,12 +37,13 @@ func middlewareTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -50,12 +51,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"encoderDecoder",
 			).Op("=").ID("ed"),
-			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("mh").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -80,16 +82,18 @@ func middlewareTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
-			), jen.Qual("net/http", "StatusOK")),
+	),
+	jen.Qual("net/http", "StatusOK")),
 		)),
 		jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -97,12 +101,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"encoderDecoder",
 			).Op("=").ID("ed"),
-			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("mh").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -127,7 +132,8 @@ func middlewareTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
-			), jen.Qual("net/http", "StatusBadRequest")),
+	),
+	jen.Qual("net/http", "StatusBadRequest")),
 		)),
 	),
 	jen.Line(),
@@ -139,12 +145,13 @@ func middlewareTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -152,12 +159,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"encoderDecoder",
 			).Op("=").ID("ed"),
-			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("mh").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -182,16 +190,18 @@ func middlewareTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
-			), jen.Qual("net/http", "StatusOK")),
+	),
+	jen.Qual("net/http", "StatusOK")),
 		)),
 		jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -199,12 +209,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"encoderDecoder",
 			).Op("=").ID("ed"),
-			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("mh").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -229,7 +240,8 @@ func middlewareTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
-			), jen.Qual("net/http", "StatusBadRequest")),
+	),
+	jen.Qual("net/http", "StatusBadRequest")),
 		)),
 	),
 	jen.Line(),

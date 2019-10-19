@@ -25,7 +25,8 @@ func mockTestDotGo() *jen.File {
 	ret.Add(
 		jen.Func().Params(jen.ID("m").Op("*").ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("models").Dot(
 		"OAuth2Client",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("req")),

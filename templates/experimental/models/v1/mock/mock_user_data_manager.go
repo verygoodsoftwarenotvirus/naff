@@ -29,7 +29,8 @@ func mockUserDataManagerDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataManager")).ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 		"User",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("userID")),
@@ -49,7 +50,8 @@ func mockUserDataManagerDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataManager")).ID("GetUserByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.Op("*").ID("models").Dot(
 		"User",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("username")),
@@ -89,7 +91,8 @@ func mockUserDataManagerDotGo() *jen.File {
 		"QueryFilter",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"UserList",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("filter")),
@@ -111,7 +114,8 @@ func mockUserDataManagerDotGo() *jen.File {
 		"UserInput",
 	)).Params(jen.Op("*").ID("models").Dot(
 		"User",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("input")),

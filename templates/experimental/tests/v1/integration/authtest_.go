@@ -16,7 +16,8 @@ func authTestDotGo() *jen.File {
 			"URL",
 		).Dot(
 			"Scheme",
-		), jen.ID("todoClient").Dot(
+	),
+	jen.ID("todoClient").Dot(
 			"URL",
 		).Dot(
 			"Hostname",
@@ -52,7 +53,8 @@ func authTestDotGo() *jen.File {
 			"Equal",
 		).Call(jen.ID("t"), jen.Qual("net/http", "StatusNoContent"), jen.ID("resp").Dot(
 			"StatusCode",
-		), jen.Lit("login should be successful")),
+	),
+	jen.Lit("login should be successful")),
 		jen.ID("cookies").Op(":=").ID("resp").Dot(
 			"Cookies",
 		).Call(),
@@ -92,7 +94,7 @@ func authTestDotGo() *jen.File {
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.ID("err")),
 			jen.ID("ucr").Op(":=").Op("&").ID("models").Dot(
 				"UserCreationResponse",
-			).Valuesln(),
+			).Values(),
 			jen.ID("require").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot(
@@ -104,7 +106,8 @@ func authTestDotGo() *jen.File {
 				"GenerateCode",
 			).Call(jen.ID("ucr").Dot(
 				"TwoFactorSecret",
-			), jen.Qual("time", "Now").Call().Dot(
+	),
+	jen.Qual("time", "Now").Call().Dot(
 				"UTC",
 			).Call()),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
@@ -112,9 +115,11 @@ func authTestDotGo() *jen.File {
 				"UserLoginInput",
 			).Valuesln(jen.ID("Username").Op(":").ID("ucr").Dot(
 				"Username",
-			), jen.ID("Password").Op(":").ID("ui").Dot(
+	),
+	jen.ID("Password").Op(":").ID("ui").Dot(
 				"Password",
-			), jen.ID("TOTPToken").Op(":").ID("token")),
+	),
+	jen.ID("TOTPToken").Op(":").ID("token")),
 			jen.List(jen.ID("out"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("r")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -168,7 +173,7 @@ func authTestDotGo() *jen.File {
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.ID("err")),
 			jen.ID("ucr").Op(":=").Op("&").ID("models").Dot(
 				"UserCreationResponse",
-			).Valuesln(),
+			).Values(),
 			jen.ID("require").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot(
@@ -180,7 +185,8 @@ func authTestDotGo() *jen.File {
 				"GenerateCode",
 			).Call(jen.ID("ucr").Dot(
 				"TwoFactorSecret",
-			), jen.Qual("time", "Now").Call().Dot(
+	),
+	jen.Qual("time", "Now").Call().Dot(
 				"UTC",
 			).Call()),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
@@ -188,9 +194,11 @@ func authTestDotGo() *jen.File {
 				"UserLoginInput",
 			).Valuesln(jen.ID("Username").Op(":").ID("ucr").Dot(
 				"Username",
-			), jen.ID("Password").Op(":").ID("ui").Dot(
+	),
+	jen.ID("Password").Op(":").ID("ui").Dot(
 				"Password",
-			), jen.ID("TOTPToken").Op(":").ID("token")),
+	),
+	jen.ID("TOTPToken").Op(":").ID("token")),
 			jen.List(jen.ID("out"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("r")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -300,7 +308,7 @@ func authTestDotGo() *jen.File {
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.ID("err")),
 			jen.ID("ucr").Op(":=").Op("&").ID("models").Dot(
 				"UserCreationResponse",
-			).Valuesln(),
+			).Values(),
 			jen.ID("require").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot(
@@ -319,7 +327,8 @@ func authTestDotGo() *jen.File {
 				"GenerateCode",
 			).Call(jen.ID("ucr").Dot(
 				"TwoFactorSecret",
-			), jen.Qual("time", "Now").Call().Dot(
+	),
+	jen.Qual("time", "Now").Call().Dot(
 				"UTC",
 			).Call()),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
@@ -327,7 +336,8 @@ func authTestDotGo() *jen.File {
 				"UserLoginInput",
 			).Valuesln(jen.ID("Username").Op(":").ID("ucr").Dot(
 				"Username",
-			), jen.ID("Password").Op(":").ID("badPassword"), jen.ID("TOTPToken").Op(":").ID("token")),
+	),
+	jen.ID("Password").Op(":").ID("badPassword"), jen.ID("TOTPToken").Op(":").ID("token")),
 			jen.List(jen.ID("out"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("r")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -376,9 +386,11 @@ func authTestDotGo() *jen.File {
 				"UserLoginInput",
 			).Valuesln(jen.ID("Username").Op(":").ID("ui").Dot(
 				"Username",
-			), jen.ID("Password").Op(":").ID("ui").Dot(
+	),
+	jen.ID("Password").Op(":").ID("ui").Dot(
 				"Password",
-			), jen.ID("TOTPToken").Op(":").ID("token")),
+	),
+	jen.ID("TOTPToken").Op(":").ID("token")),
 			jen.List(jen.ID("out"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("r")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -456,7 +468,8 @@ func authTestDotGo() *jen.File {
 				"GenerateCode",
 			).Call(jen.ID("user").Dot(
 				"TwoFactorSecret",
-			), jen.Qual("time", "Now").Call().Dot(
+	),
+	jen.Qual("time", "Now").Call().Dot(
 				"UTC",
 			).Call()),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
@@ -464,7 +477,8 @@ func authTestDotGo() *jen.File {
 				"PasswordUpdateInput",
 			).Valuesln(jen.ID("CurrentPassword").Op(":").ID("ui").Dot(
 				"Password",
-			), jen.ID("TOTPToken").Op(":").ID("token"), jen.ID("NewPassword").Op(":").ID("backwardsPass")),
+	),
+	jen.ID("TOTPToken").Op(":").ID("token"), jen.ID("NewPassword").Op(":").ID("backwardsPass")),
 			jen.List(jen.ID("out"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("r")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -528,7 +542,8 @@ func authTestDotGo() *jen.File {
 				"GenerateCode",
 			).Call(jen.ID("user").Dot(
 				"TwoFactorSecret",
-			), jen.Qual("time", "Now").Call().Dot(
+	),
+	jen.Qual("time", "Now").Call().Dot(
 				"UTC",
 			).Call()),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("newToken"), jen.ID("err")),
@@ -536,7 +551,8 @@ func authTestDotGo() *jen.File {
 				"UserLoginInput",
 			).Valuesln(jen.ID("Username").Op(":").ID("user").Dot(
 				"Username",
-			), jen.ID("Password").Op(":").ID("backwardsPass"), jen.ID("TOTPToken").Op(":").ID("newToken"))),
+	),
+	jen.ID("Password").Op(":").ID("backwardsPass"), jen.ID("TOTPToken").Op(":").ID("newToken"))),
 			jen.ID("require").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -586,7 +602,8 @@ func authTestDotGo() *jen.File {
 				"GenerateCode",
 			).Call(jen.ID("user").Dot(
 				"TwoFactorSecret",
-			), jen.Qual("time", "Now").Call().Dot(
+	),
+	jen.Qual("time", "Now").Call().Dot(
 				"UTC",
 			).Call()),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
@@ -594,7 +611,8 @@ func authTestDotGo() *jen.File {
 				"TOTPSecretRefreshInput",
 			).Valuesln(jen.ID("CurrentPassword").Op(":").ID("ui").Dot(
 				"Password",
-			), jen.ID("TOTPToken").Op(":").ID("token")),
+	),
+	jen.ID("TOTPToken").Op(":").ID("token")),
 			jen.List(jen.ID("out"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("ir")),
 			jen.ID("require").Dot(
 				"NoError",
@@ -629,7 +647,7 @@ func authTestDotGo() *jen.File {
 			)),
 			jen.ID("r").Op(":=").Op("&").ID("models").Dot(
 				"TOTPSecretRefreshResponse",
-			).Valuesln(),
+			).Values(),
 			jen.ID("require").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot(
@@ -641,7 +659,8 @@ func authTestDotGo() *jen.File {
 				"NotEqual",
 			).Call(jen.ID("t"), jen.ID("user").Dot(
 				"TwoFactorSecret",
-			), jen.ID("r").Dot(
+	),
+	jen.ID("r").Dot(
 				"TwoFactorSecret",
 			)),
 			jen.List(jen.ID("u2"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("todoClient").Dot(
@@ -675,7 +694,8 @@ func authTestDotGo() *jen.File {
 				"GenerateCode",
 			).Call(jen.ID("r").Dot(
 				"TwoFactorSecret",
-			), jen.Qual("time", "Now").Call().Dot(
+	),
+	jen.Qual("time", "Now").Call().Dot(
 				"UTC",
 			).Call()),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("newToken"), jen.ID("err")),
@@ -683,9 +703,11 @@ func authTestDotGo() *jen.File {
 				"UserLoginInput",
 			).Valuesln(jen.ID("Username").Op(":").ID("user").Dot(
 				"Username",
-			), jen.ID("Password").Op(":").ID("ui").Dot(
+	),
+	jen.ID("Password").Op(":").ID("ui").Dot(
 				"Password",
-			), jen.ID("TOTPToken").Op(":").ID("newToken"))),
+	),
+	jen.ID("TOTPToken").Op(":").ID("newToken"))),
 			jen.ID("require").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -770,15 +792,19 @@ func authTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err")),
 			jen.List(jen.ID("clientA"), jen.ID("err")).Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "NewClient").Call(jen.ID("tctx"), jen.ID("ca").Dot(
 				"ClientID",
-			), jen.ID("ca").Dot(
+	),
+	jen.ID("ca").Dot(
 				"ClientSecret",
-			), jen.ID("todoClient").Dot(
+	),
+	jen.ID("todoClient").Dot(
 				"URL",
-			), jen.ID("noop").Dot(
+	),
+	jen.ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call(), jen.ID("buildHTTPClient").Call(), jen.ID("ca").Dot(
 				"Scopes",
-			), jen.ID("true")),
+	),
+	jen.ID("true")),
 			jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.ID("err")),
 			jen.List(jen.ID("userB"), jen.ID("err")).Op(":=").ID("testutil").Dot(
 				"CreateObligatoryUser",
@@ -794,15 +820,19 @@ func authTestDotGo() *jen.File {
 			).Call(jen.ID("t"), jen.ID("err")),
 			jen.List(jen.ID("clientB"), jen.ID("err")).Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "NewClient").Call(jen.ID("tctx"), jen.ID("cb").Dot(
 				"ClientID",
-			), jen.ID("cb").Dot(
+	),
+	jen.ID("cb").Dot(
 				"ClientSecret",
-			), jen.ID("todoClient").Dot(
+	),
+	jen.ID("todoClient").Dot(
 				"URL",
-			), jen.ID("noop").Dot(
+	),
+	jen.ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call(), jen.ID("buildHTTPClient").Call(), jen.ID("cb").Dot(
 				"Scopes",
-			), jen.ID("true")),
+	),
+	jen.ID("true")),
 			jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.ID("err")),
 			jen.List(jen.ID("webhookA"), jen.ID("err")).Op(":=").ID("clientA").Dot(
 				"CreateWebhook",
@@ -852,9 +882,11 @@ func authTestDotGo() *jen.File {
 			).Call(jen.ID("test"), jen.ID("cookie")),
 			jen.ID("input").Op(":=").ID("buildDummyOAuth2ClientInput").Call(jen.ID("test"), jen.ID("x").Dot(
 				"Username",
-			), jen.ID("y").Dot(
+	),
+	jen.ID("y").Dot(
 				"Password",
-			), jen.ID("x").Dot(
+	),
+	jen.ID("x").Dot(
 				"TwoFactorSecret",
 			)),
 			jen.ID("input").Dot(
@@ -866,15 +898,19 @@ func authTestDotGo() *jen.File {
 			jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.ID("err")),
 			jen.List(jen.ID("c"), jen.ID("err")).Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "NewClient").Call(jen.Qual("context", "Background").Call(), jen.ID("premade").Dot(
 				"ClientID",
-			), jen.ID("premade").Dot(
+	),
+	jen.ID("premade").Dot(
 				"ClientSecret",
-			), jen.ID("todoClient").Dot(
+	),
+	jen.ID("todoClient").Dot(
 				"URL",
-			), jen.ID("noop").Dot(
+	),
+	jen.ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call(), jen.ID("buildHTTPClient").Call(), jen.ID("premade").Dot(
 				"Scopes",
-			), jen.ID("true")),
+	),
+	jen.ID("true")),
 			jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("c"), jen.ID("err")),
 			jen.List(jen.ID("i"), jen.ID("err")).Op(":=").ID("c").Dot(
 				"GetOAuth2Clients",

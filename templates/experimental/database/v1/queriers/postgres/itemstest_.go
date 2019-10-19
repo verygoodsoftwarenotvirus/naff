@@ -22,17 +22,23 @@ func itemsTestDotGo() *jen.File {
 				"AddRow",
 			).Call(jen.ID("item").Dot(
 				"ID",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"Name",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"Details",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"CreatedOn",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"UpdatedOn",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"ArchivedOn",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"BelongsTo",
 			)),
 			jen.Return().ID("exampleRows"),
@@ -52,17 +58,23 @@ func itemsTestDotGo() *jen.File {
 				"AddRow",
 			).Call(jen.ID("item").Dot(
 				"ArchivedOn",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"Name",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"Details",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"CreatedOn",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"UpdatedOn",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"BelongsTo",
-			), jen.ID("item").Dot(
+	),
+	jen.ID("item").Dot(
 				"ID",
 			)),
 			jen.Return().ID("exampleRows"),
@@ -124,7 +136,8 @@ func itemsTestDotGo() *jen.File {
 					"GetItem",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 					"ID",
-				), jen.ID("expectedUserID")),
+	),
+	jen.ID("expectedUserID")),
 				jen.ID("assert").Dot(
 					"NoError",
 				).Call(jen.ID("t"), jen.ID("err")),
@@ -157,7 +170,8 @@ func itemsTestDotGo() *jen.File {
 					"GetItem",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 					"ID",
-				), jen.ID("expectedUserID")),
+	),
+	jen.ID("expectedUserID")),
 				jen.ID("assert").Dot(
 					"Error",
 				).Call(jen.ID("t"), jen.ID("err")),
@@ -660,17 +674,20 @@ func itemsTestDotGo() *jen.File {
 					"Equal",
 				).Call(jen.ID("t"), jen.ID("expected").Dot(
 					"Name",
-				), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
 				jen.ID("assert").Dot(
 					"Equal",
 				).Call(jen.ID("t"), jen.ID("expected").Dot(
 					"Details",
-				), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
 				jen.ID("assert").Dot(
 					"Equal",
 				).Call(jen.ID("t"), jen.ID("expected").Dot(
 					"BelongsTo",
-				), jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("uint64"))),
+	),
+	jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("uint64"))),
 			)),
 		),
 		jen.Line(),
@@ -691,7 +708,8 @@ func itemsTestDotGo() *jen.File {
 					"ItemCreationInput",
 				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
-				), jen.ID("BelongsTo").Op(":").ID("expected").Dot(
+	),
+	jen.ID("BelongsTo").Op(":").ID("expected").Dot(
 					"BelongsTo",
 				)),
 				jen.ID("exampleRows").Op(":=").ID("sqlmock").Dot(
@@ -700,7 +718,8 @@ func itemsTestDotGo() *jen.File {
 					"AddRow",
 				).Call(jen.ID("expected").Dot(
 					"ID",
-				), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+	),
+	jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 					"Unix",
 				).Call())),
 				jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO items (name,details,belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"),
@@ -711,9 +730,11 @@ func itemsTestDotGo() *jen.File {
 					"WithArgs",
 				).Call(jen.ID("expected").Dot(
 					"Name",
-				), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 					"Details",
-				), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 					"BelongsTo",
 				)).Dot(
 					"WillReturnRows",
@@ -744,7 +765,8 @@ func itemsTestDotGo() *jen.File {
 					"ItemCreationInput",
 				).Valuesln(jen.ID("Name").Op(":").ID("example").Dot(
 					"Name",
-				), jen.ID("BelongsTo").Op(":").ID("example").Dot(
+	),
+	jen.ID("BelongsTo").Op(":").ID("example").Dot(
 					"BelongsTo",
 				)),
 				jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO items (name,details,belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"),
@@ -755,9 +777,11 @@ func itemsTestDotGo() *jen.File {
 					"WithArgs",
 				).Call(jen.ID("example").Dot(
 					"Name",
-				), jen.ID("example").Dot(
+	),
+	jen.ID("example").Dot(
 					"Details",
-				), jen.ID("example").Dot(
+	),
+	jen.ID("example").Dot(
 					"BelongsTo",
 				)).Dot(
 					"WillReturnError",
@@ -805,22 +829,26 @@ func itemsTestDotGo() *jen.File {
 					"Equal",
 				).Call(jen.ID("t"), jen.ID("expected").Dot(
 					"Name",
-				), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
 				jen.ID("assert").Dot(
 					"Equal",
 				).Call(jen.ID("t"), jen.ID("expected").Dot(
 					"Details",
-				), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
 				jen.ID("assert").Dot(
 					"Equal",
 				).Call(jen.ID("t"), jen.ID("expected").Dot(
 					"BelongsTo",
-				), jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("uint64"))),
+	),
+	jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("uint64"))),
 				jen.ID("assert").Dot(
 					"Equal",
 				).Call(jen.ID("t"), jen.ID("expected").Dot(
 					"ID",
-				), jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("uint64"))),
+	),
+	jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("uint64"))),
 			)),
 		),
 		jen.Line(),
@@ -852,11 +880,14 @@ func itemsTestDotGo() *jen.File {
 					"WithArgs",
 				).Call(jen.ID("expected").Dot(
 					"Name",
-				), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 					"Details",
-				), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 					"BelongsTo",
-				), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 					"ID",
 				)).Dot(
 					"WillReturnRows",
@@ -888,11 +919,14 @@ func itemsTestDotGo() *jen.File {
 					"WithArgs",
 				).Call(jen.ID("example").Dot(
 					"Name",
-				), jen.ID("example").Dot(
+	),
+	jen.ID("example").Dot(
 					"Details",
-				), jen.ID("example").Dot(
+	),
+	jen.ID("example").Dot(
 					"BelongsTo",
-				), jen.ID("example").Dot(
+	),
+	jen.ID("example").Dot(
 					"ID",
 				)).Dot(
 					"WillReturnError",
@@ -928,7 +962,8 @@ func itemsTestDotGo() *jen.File {
 					"buildArchiveItemQuery",
 				).Call(jen.ID("expected").Dot(
 					"ID",
-				), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 					"BelongsTo",
 				)),
 				jen.ID("assert").Dot(
@@ -941,12 +976,14 @@ func itemsTestDotGo() *jen.File {
 					"Equal",
 				).Call(jen.ID("t"), jen.ID("expected").Dot(
 					"BelongsTo",
-				), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
+	),
+	jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 				jen.ID("assert").Dot(
 					"Equal",
 				).Call(jen.ID("t"), jen.ID("expected").Dot(
 					"ID",
-				), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
+	),
+	jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
 			)),
 		),
 		jen.Line(),
@@ -971,7 +1008,8 @@ func itemsTestDotGo() *jen.File {
 					"WithArgs",
 				).Call(jen.ID("expected").Dot(
 					"BelongsTo",
-				), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 					"ID",
 				)).Dot(
 					"WillReturnResult",
@@ -982,7 +1020,8 @@ func itemsTestDotGo() *jen.File {
 					"ArchiveItem",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 					"ID",
-				), jen.ID("expectedUserID")),
+	),
+	jen.ID("expectedUserID")),
 				jen.ID("assert").Dot(
 					"NoError",
 				).Call(jen.ID("t"), jen.ID("err")),
@@ -1007,7 +1046,8 @@ func itemsTestDotGo() *jen.File {
 					"WithArgs",
 				).Call(jen.ID("example").Dot(
 					"BelongsTo",
-				), jen.ID("example").Dot(
+	),
+	jen.ID("example").Dot(
 					"ID",
 				)).Dot(
 					"WillReturnError",
@@ -1016,7 +1056,8 @@ func itemsTestDotGo() *jen.File {
 					"ArchiveItem",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("example").Dot(
 					"ID",
-				), jen.ID("expectedUserID")),
+	),
+	jen.ID("expectedUserID")),
 				jen.ID("assert").Dot(
 					"Error",
 				).Call(jen.ID("t"), jen.ID("err")),

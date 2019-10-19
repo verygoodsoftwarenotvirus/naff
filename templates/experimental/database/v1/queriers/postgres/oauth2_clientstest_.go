@@ -22,23 +22,32 @@ func oauth2ClientsTestDotGo() *jen.File {
 			"AddRow",
 		).Call(jen.ID("c").Dot(
 			"ID",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"Name",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"ClientID",
-		), jen.Qual("strings", "Join").Call(jen.ID("c").Dot(
+	),
+	jen.Qual("strings", "Join").Call(jen.ID("c").Dot(
 			"Scopes",
-		), jen.ID("scopesSeparator")), jen.ID("c").Dot(
+	),
+	jen.ID("scopesSeparator")), jen.ID("c").Dot(
 			"RedirectURI",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"ClientSecret",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"CreatedOn",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"UpdatedOn",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"ArchivedOn",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"BelongsTo",
 		)),
 		jen.Return().ID("exampleRows"),
@@ -58,23 +67,32 @@ func oauth2ClientsTestDotGo() *jen.File {
 			"AddRow",
 		).Call(jen.ID("c").Dot(
 			"ArchivedOn",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"Name",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"ClientID",
-		), jen.Qual("strings", "Join").Call(jen.ID("c").Dot(
+	),
+	jen.Qual("strings", "Join").Call(jen.ID("c").Dot(
 			"Scopes",
-		), jen.ID("scopesSeparator")), jen.ID("c").Dot(
+	),
+	jen.ID("scopesSeparator")), jen.ID("c").Dot(
 			"RedirectURI",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"ClientSecret",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"CreatedOn",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"UpdatedOn",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"BelongsTo",
-		), jen.ID("c").Dot(
+	),
+	jen.ID("c").Dot(
 			"ID",
 		)),
 		jen.Return().ID("exampleRows"),
@@ -523,7 +541,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"BelongsTo",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"WillReturnRows",
@@ -532,7 +551,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"GetOAuth2Client",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"BelongsTo",
 			)),
 			jen.ID("assert").Dot(
@@ -562,7 +582,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"BelongsTo",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"WillReturnError",
@@ -571,7 +592,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"GetOAuth2Client",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"BelongsTo",
 			)),
 			jen.ID("assert").Dot(
@@ -604,7 +626,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"BelongsTo",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"WillReturnRows",
@@ -613,7 +636,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"GetOAuth2Client",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"BelongsTo",
 			)),
 			jen.ID("assert").Dot(
@@ -1010,17 +1034,20 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("exampleInput").Dot(
 				"Name",
-			), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
 			jen.ID("assert").Dot(
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("exampleInput").Dot(
 				"ClientID",
-			), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
 			jen.ID("assert").Dot(
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("exampleInput").Dot(
 				"ClientSecret",
-			), jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("string"))),
 			jen.ID("assert").Dot(
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("exampleInput").Dot(
@@ -1030,12 +1057,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("exampleInput").Dot(
 				"RedirectURI",
-			), jen.ID("args").Index(jen.Lit(4)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(4)).Assert(jen.ID("string"))),
 			jen.ID("assert").Dot(
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("exampleInput").Dot(
 				"BelongsTo",
-			), jen.ID("args").Index(jen.Lit(5)).Assert(jen.ID("uint64"))),
+	),
+	jen.ID("args").Index(jen.Lit(5)).Assert(jen.ID("uint64"))),
 		)),
 	),
 	jen.Line(),
@@ -1056,7 +1085,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"OAuth2ClientCreationInput",
 			).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 				"Name",
-			), jen.ID("BelongsTo").Op(":").ID("expected").Dot(
+	),
+	jen.ID("BelongsTo").Op(":").ID("expected").Dot(
 				"BelongsTo",
 			)),
 			jen.ID("exampleRows").Op(":=").ID("sqlmock").Dot(
@@ -1065,7 +1095,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"AddRow",
 			).Call(jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+	),
+	jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 				"Unix",
 			).Call())),
 			jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, created_on"),
@@ -1076,15 +1107,20 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"Name",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ClientID",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ClientSecret",
-			), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"Scopes",
-			), jen.ID("scopesSeparator")), jen.ID("expected").Dot(
+	),
+	jen.ID("scopesSeparator")), jen.ID("expected").Dot(
 				"RedirectURI",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"BelongsTo",
 			)).Dot(
 				"WillReturnRows",
@@ -1115,7 +1151,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"OAuth2ClientCreationInput",
 			).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 				"Name",
-			), jen.ID("BelongsTo").Op(":").ID("expected").Dot(
+	),
+	jen.ID("BelongsTo").Op(":").ID("expected").Dot(
 				"BelongsTo",
 			)),
 			jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, created_on"),
@@ -1126,15 +1163,20 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"Name",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ClientID",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ClientSecret",
-			), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"Scopes",
-			), jen.ID("scopesSeparator")), jen.ID("expected").Dot(
+	),
+	jen.ID("scopesSeparator")), jen.ID("expected").Dot(
 				"RedirectURI",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"BelongsTo",
 			)).Dot(
 				"WillReturnError",
@@ -1182,12 +1224,14 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected").Dot(
 				"ClientID",
-			), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
 			jen.ID("assert").Dot(
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected").Dot(
 				"ClientSecret",
-			), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
 			jen.ID("assert").Dot(
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected").Dot(
@@ -1197,17 +1241,20 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected").Dot(
 				"RedirectURI",
-			), jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("string"))),
+	),
+	jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("string"))),
 			jen.ID("assert").Dot(
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected").Dot(
 				"BelongsTo",
-			), jen.ID("args").Index(jen.Lit(4)).Assert(jen.ID("uint64"))),
+	),
+	jen.ID("args").Index(jen.Lit(4)).Assert(jen.ID("uint64"))),
 			jen.ID("assert").Dot(
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("args").Index(jen.Lit(5)).Assert(jen.ID("uint64"))),
+	),
+	jen.ID("args").Index(jen.Lit(5)).Assert(jen.ID("uint64"))),
 		)),
 	),
 	jen.Line(),
@@ -1221,7 +1268,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.ID("expectedQuery").Op(":=").Lit("UPDATE oauth2_clients SET client_id = $1, client_secret = $2, scopes = $3, redirect_uri = $4, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $5 AND id = $6 RETURNING updated_on"),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
-			).Valuesln(),
+			).Values(),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(
 				"ExpectQuery",
@@ -1250,7 +1297,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.ID("expectedQuery").Op(":=").Lit("UPDATE oauth2_clients SET client_id = $1, client_secret = $2, scopes = $3, redirect_uri = $4, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $5 AND id = $6 RETURNING updated_on"),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
-			).Valuesln(),
+			).Values(),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(
 				"ExpectQuery",

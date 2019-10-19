@@ -34,7 +34,7 @@ func webhookTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("w").Op(":=").Op("&").ID("Webhook").Valuesln(),
+				jen.ID("w").Op(":=").Op("&").ID("Webhook").Values(),
 				jen.ID("w").Dot(
 					"ToListener",
 				).Call(jen.ID("noop").Dot(
@@ -50,7 +50,7 @@ func webhookTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("w").Op(":=").Op("&").ID("Webhook").Valuesln(),
+				jen.ID("w").Op(":=").Op("&").ID("Webhook").Values(),
 				jen.ID("actual").Op(":=").ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID("noop").Dot(
 					"ProvideNoopLogger",
 				).Call()),

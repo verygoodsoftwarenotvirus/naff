@@ -35,7 +35,8 @@ func itemsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 			"Item",
-		), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetItem")),
 			jen.Defer().ID("span").Dot(
 				"End",
@@ -63,7 +64,8 @@ func itemsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetItemCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
 			"QueryFilter",
-		), jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
+	),
+	jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetItemCount")),
 			jen.Defer().ID("span").Dot(
 				"End",
@@ -113,9 +115,11 @@ func itemsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
 			"QueryFilter",
-		), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
+	),
+	jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 			"ItemList",
-		), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetItems")),
 			jen.Defer().ID("span").Dot(
 				"End",
@@ -144,7 +148,8 @@ func itemsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllItemsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().ID("models").Dot(
 			"Item",
-		), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllItemsForUser")),
 			jen.Defer().ID("span").Dot(
 				"End",
@@ -174,7 +179,8 @@ func itemsDotGo() *jen.File {
 			"ItemCreationInput",
 		)).Params(jen.Op("*").ID("models").Dot(
 			"Item",
-		), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("CreateItem")),
 			jen.Defer().ID("span").Dot(
 				"End",
@@ -198,7 +204,9 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 	jen.Comment("UpdateItem updates a particular item. Note that UpdateItem expects the"),
 	jen.Line(),
-	jen.Func().Comment("// provided input to have a valid ID.").Params(jen.ID("c").Op("*").ID("Client")).ID("UpdateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+	jen.Comment("provided input to have a valid ID."),
+	jen.Line(),
+	jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("UpdateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
 		"Item",
 	)).Params(jen.ID("error")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("UpdateItem")),

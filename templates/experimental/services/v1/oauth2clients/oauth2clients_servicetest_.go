@@ -30,9 +30,10 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 			"BuildMockDatabase",
 		).Call(), jen.ID("logger").Op(":").ID("noop").Dot(
 			"ProvideNoopLogger",
-		).Call(), jen.ID("encoderDecoder").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(), jen.ID("authenticator").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(), jen.ID("urlClientIDExtractor").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+		).Call(), jen.ID("encoderDecoder").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(), jen.ID("authenticator").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(), jen.ID("urlClientIDExtractor").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 			jen.Return().Lit(0),
-		), jen.ID("oauth2ClientCounter").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(), jen.ID("tokenStore").Op(":").ID("tokenStore"), jen.ID("oauth2Handler").Op(":").ID("server")),
+	),
+	jen.ID("oauth2ClientCounter").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(), jen.ID("tokenStore").Op(":").ID("tokenStore"), jen.ID("oauth2Handler").Op(":").ID("server")),
 		jen.Return().ID("service"),
 	),
 	jen.Line(),
@@ -57,7 +58,7 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 				"Return",
 			).Call(jen.Index().Op("*").ID("models").Dot(
 				"OAuth2Client",
-			).Valuesln(), jen.ID("nil")),
+			).Values(), jen.ID("nil")),
 			jen.ID("mockDB").Dot(
 				"OAuth2ClientDataManager",
 			).Dot(
@@ -67,7 +68,7 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 			)).Dot(
 				"Return",
 			).Call(jen.ID("expected"), jen.ID("nil")),
-			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("uc").Dot(
 				"On",
 			).Call(jen.Lit("IncrementBy"), jen.ID("expected")).Dot(
@@ -78,16 +79,19 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
-			), jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	),
+	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
 				"UnitCounter",
-			), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 				jen.Return().List(jen.ID("uc"), jen.ID("nil")),
 			),
 			jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideOAuth2ClientsService").Call(jen.Qual("context", "Background").Call(), jen.ID("noop").Dot(
 				"ProvideNoopLogger",
-			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Return().Lit(0),
-			), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(), jen.ID("ucp")),
+	),
+	jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(), jen.ID("ucp")),
 			jen.ID("assert").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -110,7 +114,7 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 				"Return",
 			).Call(jen.Index().Op("*").ID("models").Dot(
 				"OAuth2Client",
-			).Valuesln(), jen.ID("nil")),
+			).Values(), jen.ID("nil")),
 			jen.ID("mockDB").Dot(
 				"OAuth2ClientDataManager",
 			).Dot(
@@ -120,7 +124,7 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 			)).Dot(
 				"Return",
 			).Call(jen.ID("expected"), jen.ID("nil")),
-			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("uc").Dot(
 				"On",
 			).Call(jen.Lit("IncrementBy"), jen.ID("expected")).Dot(
@@ -131,16 +135,19 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
-			), jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	),
+	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
 				"UnitCounter",
-			), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			),
 			jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideOAuth2ClientsService").Call(jen.Qual("context", "Background").Call(), jen.ID("noop").Dot(
 				"ProvideNoopLogger",
-			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Return().Lit(0),
-			), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(), jen.ID("ucp")),
+	),
+	jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(), jen.ID("ucp")),
 			jen.ID("assert").Dot(
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -163,7 +170,7 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 				"Return",
 			).Call(jen.Index().Op("*").ID("models").Dot(
 				"OAuth2Client",
-			).Valuesln(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			).Values(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.ID("mockDB").Dot(
 				"OAuth2ClientDataManager",
 			).Dot(
@@ -173,7 +180,7 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 			)).Dot(
 				"Return",
 			).Call(jen.ID("expected"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("uc").Dot(
 				"On",
 			).Call(jen.Lit("IncrementBy"), jen.ID("expected")).Dot(
@@ -184,16 +191,19 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
-			), jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	),
+	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
 				"UnitCounter",
-			), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 				jen.Return().List(jen.ID("uc"), jen.ID("nil")),
 			),
 			jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideOAuth2ClientsService").Call(jen.Qual("context", "Background").Call(), jen.ID("noop").Dot(
 				"ProvideNoopLogger",
-			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Return().Lit(0),
-			), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(), jen.ID("ucp")),
+	),
+	jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(), jen.ID("ucp")),
 			jen.ID("assert").Dot(
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -220,7 +230,8 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetOAuth2ClientByClientID"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleID")).Dot(
+	),
+	jen.ID("exampleID")).Dot(
 				"Return",
 			).Call(jen.Op("&").ID("models").Dot(
 				"OAuth2Client",
@@ -249,7 +260,8 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetOAuth2ClientByClientID"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleID")).Dot(
+	),
+	jen.ID("exampleID")).Dot(
 				"Return",
 			).Call(jen.Parens(jen.Op("*").ID("models").Dot(
 				"OAuth2Client",
@@ -273,7 +285,8 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetOAuth2ClientByClientID"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleID")).Dot(
+	),
+	jen.ID("exampleID")).Dot(
 				"Return",
 			).Call(jen.Parens(jen.Op("*").ID("models").Dot(
 				"OAuth2Client",
@@ -296,12 +309,13 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("moah").Op(":=").Op("&").ID("mockOauth2Handler").Valuesln(),
+			jen.ID("moah").Op(":=").Op("&").ID("mockOauth2Handler").Values(),
 			jen.ID("moah").Dot(
 				"On",
 			).Call(jen.Lit("HandleAuthorizeRequest"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -328,12 +342,13 @@ func oauth2ClientsServiceTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("moah").Op(":=").Op("&").ID("mockOauth2Handler").Valuesln(),
+			jen.ID("moah").Op(":=").Op("&").ID("mockOauth2Handler").Values(),
 			jen.ID("moah").Dot(
 				"On",
 			).Call(jen.Lit("HandleTokenRequest"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",

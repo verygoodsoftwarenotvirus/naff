@@ -25,12 +25,13 @@ func usersServiceTestDotGo() *jen.File {
 			"On",
 		).Call(jen.Lit("GetUserCount"), jen.ID("mock").Dot(
 			"Anything",
-		), jen.Parens(jen.Op("*").ID("models").Dot(
+	),
+	jen.Parens(jen.Op("*").ID("models").Dot(
 			"QueryFilter",
 		)).Call(jen.ID("nil"))).Dot(
 			"Return",
 		).Call(jen.ID("expectedUserCount"), jen.ID("nil")),
-		jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+		jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 		jen.ID("uc").Dot(
 			"On",
 		).Call(jen.Lit("IncrementBy"), jen.ID("mock").Dot(
@@ -41,18 +42,21 @@ func usersServiceTestDotGo() *jen.File {
 			"UnitCounterProvider",
 		).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 			"CounterName",
-		), jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	),
+	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
 			"UnitCounter",
-		), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 			jen.Return().List(jen.ID("uc"), jen.ID("nil")),
 		),
 		jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Call(jen.Qual("context", "Background").Call(), jen.ID("config").Dot(
 			"AuthSettings",
-		).Valuesln(), jen.ID("noop").Dot(
+		).Values(), jen.ID("noop").Dot(
 			"ProvideNoopLogger",
-		).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+		).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 			jen.Return().Lit(0),
-		), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(), jen.ID("ucp"), jen.ID("newsman").Dot(
+	),
+	jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("newsman").Dot(
 			"NewNewsman",
 		).Call(jen.ID("nil"), jen.ID("nil"))),
 		jen.ID("require").Dot(
@@ -78,12 +82,13 @@ func usersServiceTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUserCount"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("mockUserCount"), jen.ID("nil")),
-			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("uc").Dot(
 				"On",
 			).Call(jen.Lit("IncrementBy"), jen.ID("mockUserCount")).Dot(
@@ -94,18 +99,21 @@ func usersServiceTestDotGo() *jen.File {
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
-			), jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	),
+	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
 				"UnitCounter",
-			), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 				jen.Return().List(jen.ID("uc"), jen.ID("nil")),
 			),
 			jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Call(jen.Qual("context", "Background").Call(), jen.ID("config").Dot(
 				"AuthSettings",
-			).Valuesln(), jen.ID("noop").Dot(
+			).Values(), jen.ID("noop").Dot(
 				"ProvideNoopLogger",
-			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Return().Lit(0),
-			), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(), jen.ID("ucp"), jen.ID("nil")),
+	),
+	jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("nil")),
 			jen.ID("assert").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -124,12 +132,13 @@ func usersServiceTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUserCount"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("mockUserCount"), jen.ID("nil")),
-			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("uc").Dot(
 				"On",
 			).Call(jen.Lit("IncrementBy"), jen.ID("mockUserCount")).Dot(
@@ -140,16 +149,18 @@ func usersServiceTestDotGo() *jen.File {
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
-			), jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	),
+	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
 				"UnitCounter",
-			), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 				jen.Return().List(jen.ID("uc"), jen.ID("nil")),
 			),
 			jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Call(jen.Qual("context", "Background").Call(), jen.ID("config").Dot(
 				"AuthSettings",
-			).Valuesln(), jen.ID("noop").Dot(
+			).Values(), jen.ID("noop").Dot(
 				"ProvideNoopLogger",
-			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(), jen.ID("nil"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(), jen.ID("ucp"), jen.ID("nil")),
+			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(), jen.ID("nil"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("nil")),
 			jen.ID("assert").Dot(
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -168,12 +179,13 @@ func usersServiceTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUserCount"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("mockUserCount"), jen.ID("nil")),
-			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("uc").Dot(
 				"On",
 			).Call(jen.Lit("IncrementBy"), jen.ID("mockUserCount")).Dot(
@@ -184,18 +196,21 @@ func usersServiceTestDotGo() *jen.File {
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
-			), jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	),
+	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
 				"UnitCounter",
-			), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 				jen.Return().List(jen.ID("uc"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			),
 			jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Call(jen.Qual("context", "Background").Call(), jen.ID("config").Dot(
 				"AuthSettings",
-			).Valuesln(), jen.ID("noop").Dot(
+			).Values(), jen.ID("noop").Dot(
 				"ProvideNoopLogger",
-			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Return().Lit(0),
-			), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(), jen.ID("ucp"), jen.ID("nil")),
+	),
+	jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("nil")),
 			jen.ID("assert").Dot(
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -214,29 +229,33 @@ func usersServiceTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUserCount"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("mockUserCount"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 
 		jen.Var().ID("ucp").ID("metrics").Dot(
 				"UnitCounterProvider",
 			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
 				"CounterName",
-			), jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	),
+	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
 				"UnitCounter",
-			), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 				jen.Return().List(jen.ID("uc"), jen.ID("nil")),
 			),
 			jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Call(jen.Qual("context", "Background").Call(), jen.ID("config").Dot(
 				"AuthSettings",
-			).Valuesln(), jen.ID("noop").Dot(
+			).Values(), jen.ID("noop").Dot(
 				"ProvideNoopLogger",
-			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+			).Call(), jen.ID("mockDB"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(), jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Return().Lit(0),
-			), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(), jen.ID("ucp"), jen.ID("nil")),
+	),
+	jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("nil")),
 			jen.ID("assert").Dot(
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),

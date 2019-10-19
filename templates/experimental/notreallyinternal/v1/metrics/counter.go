@@ -48,7 +48,8 @@ func counterDotGo() *jen.File {
 		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("IncrementBy").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("val").ID("uint64")).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot(
 				"actualCount",
-			), jen.ID("val")),
+	),
+	jen.ID("val")),
 			jen.Qual("go.opencensus.io/stats", "Record").Call(jen.ID("ctx"), jen.ID("c").Dot(
 				"count",
 			).Dot(
@@ -64,7 +65,8 @@ func counterDotGo() *jen.File {
 		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("Decrement").Params(jen.ID("ctx").Qual("context", "Context")).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot(
 				"actualCount",
-			), jen.Op("^").ID("uint64").Call(jen.Lit(0))),
+	),
+	jen.Op("^").ID("uint64").Call(jen.Lit(0))),
 			jen.Qual("go.opencensus.io/stats", "Record").Call(jen.ID("ctx"), jen.ID("c").Dot(
 				"count",
 			).Dot(

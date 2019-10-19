@@ -47,9 +47,11 @@ func middlewareDotGo() *jen.File {
 					"WithContext",
 				).Call(jen.Qual("context", "WithValue").Call(jen.Qual("context", "WithValue").Call(jen.ID("ctx"), jen.ID("models").Dot(
 					"UserKey",
-				), jen.ID("user")), jen.ID("models").Dot(
+	),
+	jen.ID("user")), jen.ID("models").Dot(
 					"UserIDKey",
-				), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 					"ID",
 				))),
 				jen.ID("next").Dot(
@@ -119,7 +121,8 @@ func middlewareDotGo() *jen.File {
 					),
 					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.ID("models").Dot(
 						"OAuth2ClientKey",
-					), jen.ID("oauth2Client")),
+	),
+	jen.ID("oauth2Client")),
 					jen.List(jen.ID("user"), jen.ID("err")).Op("=").ID("s").Dot(
 						"userDB",
 					).Dot(
@@ -148,15 +151,18 @@ func middlewareDotGo() *jen.File {
 				),
 				jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.ID("models").Dot(
 					"UserKey",
-				), jen.ID("user")),
+	),
+	jen.ID("user")),
 				jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.ID("models").Dot(
 					"UserIDKey",
-				), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 					"ID",
 				)),
 				jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.ID("models").Dot(
 					"UserIsAdminKey",
-				), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 					"IsAdmin",
 				)),
 				jen.ID("next").Dot(
@@ -222,7 +228,9 @@ func middlewareDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// parseLoginInputFromForm checks a request for a login form, and returns the parsed login data if relevant").ID("parseLoginInputFromForm").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("models").Dot(
+		jen.Comment("parseLoginInputFromForm checks a request for a login form, and returns the parsed login data if relevant"),
+	jen.Line(),
+	jen.Func().ID("parseLoginInputFromForm").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("models").Dot(
 		"UserLoginInput",
 	)).Block(
 		jen.If(jen.ID("err").Op(":=").ID("req").Dot(

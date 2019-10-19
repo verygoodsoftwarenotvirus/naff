@@ -15,9 +15,7 @@ func mainTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").Parens(jen.Op("&").ID("ErrorResponse").Valuesln()).Dot(
-					"Error",
-				).Call(),
+				jen.ID("_").Op("=").Parens(jen.Op("&").ID("ErrorResponse").Values()).Dot("Error").Call(),
 			)),
 		),
 		jen.Line(),

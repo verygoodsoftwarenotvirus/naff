@@ -19,13 +19,15 @@ func middlewareDotGo() *jen.File {
 		jen.Func().ID("formatSpanNameForRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("string")).Block(
 		jen.Return().Qual("fmt", "Sprintf").Call(jen.Lit("%s %s"), jen.ID("req").Dot(
 			"Method",
-		), jen.ID("idReplacementRegex").Dot(
+	),
+	jen.ID("idReplacementRegex").Dot(
 			"ReplaceAllString",
 		).Call(jen.ID("req").Dot(
 			"URL",
 		).Dot(
 			"Path",
-		), jen.Lit(`/{id}`))),
+	),
+	jen.Lit(`/{id}`))),
 	),
 	jen.Line(),
 	)

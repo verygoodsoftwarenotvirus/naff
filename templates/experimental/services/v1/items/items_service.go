@@ -31,13 +31,17 @@ func itemsServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Type().ID("Service").Struct(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		), jen.ID("itemCounter").ID("metrics").Dot(
+	),
+	jen.ID("itemCounter").ID("metrics").Dot(
 			"UnitCounter",
-		), jen.ID("itemDatabase").ID("models").Dot(
+	),
+	jen.ID("itemDatabase").ID("models").Dot(
 			"ItemDataManager",
-		), jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("itemIDFetcher").ID("ItemIDFetcher"), jen.ID("encoderDecoder").ID("encoding").Dot(
+	),
+	jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("itemIDFetcher").ID("ItemIDFetcher"), jen.ID("encoderDecoder").ID("encoding").Dot(
 			"EncoderDecoder",
-		), jen.ID("reporter").ID("newsman").Dot(
+	),
+	jen.ID("reporter").ID("newsman").Dot(
 			"Reporter",
 		)).Type().ID("UserIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Type().ID("ItemIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 		jen.Line(),
@@ -48,13 +52,17 @@ func itemsServiceDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideItemsService").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		), jen.ID("db").ID("models").Dot(
+	),
+	jen.ID("db").ID("models").Dot(
 			"ItemDataManager",
-		), jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("itemIDFetcher").ID("ItemIDFetcher"), jen.ID("encoder").ID("encoding").Dot(
+	),
+	jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("itemIDFetcher").ID("ItemIDFetcher"), jen.ID("encoder").ID("encoding").Dot(
 			"EncoderDecoder",
-		), jen.ID("itemCounterProvider").ID("metrics").Dot(
+	),
+	jen.ID("itemCounterProvider").ID("metrics").Dot(
 			"UnitCounterProvider",
-		), jen.ID("reporter").ID("newsman").Dot(
+	),
+	jen.ID("reporter").ID("newsman").Dot(
 			"Reporter",
 		)).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("itemCounter"), jen.ID("err")).Op(":=").ID("itemCounterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")),

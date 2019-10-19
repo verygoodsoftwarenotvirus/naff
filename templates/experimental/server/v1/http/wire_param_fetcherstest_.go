@@ -108,7 +108,8 @@ func wireParamFetchersTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserIDKey",
-			), jen.ID("expected"))),
+	),
+	jen.ID("expected"))),
 			jen.ID("actual").Op(":=").ID("UserIDFetcher").Call(jen.ID("req")),
 			jen.ID("assert").Dot(
 				"Equal",
@@ -134,7 +135,8 @@ func wireParamFetchersTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("chi").Dot(
 				"RouteCtxKey",
-			), jen.Op("&").ID("chi").Dot(
+	),
+	jen.Op("&").ID("chi").Dot(
 				"Context",
 			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
@@ -158,7 +160,8 @@ func wireParamFetchersTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("chi").Dot(
 				"RouteCtxKey",
-			), jen.Op("&").ID("chi").Dot(
+	),
+	jen.Op("&").ID("chi").Dot(
 				"Context",
 			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
@@ -190,7 +193,8 @@ func wireParamFetchersTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("chi").Dot(
 				"RouteCtxKey",
-			), jen.Op("&").ID("chi").Dot(
+	),
+	jen.Op("&").ID("chi").Dot(
 				"Context",
 			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
@@ -214,7 +218,8 @@ func wireParamFetchersTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("chi").Dot(
 				"RouteCtxKey",
-			), jen.Op("&").ID("chi").Dot(
+	),
+	jen.Op("&").ID("chi").Dot(
 				"Context",
 			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
@@ -246,7 +251,8 @@ func wireParamFetchersTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("chi").Dot(
 				"RouteCtxKey",
-			), jen.Op("&").ID("chi").Dot(
+	),
+	jen.Op("&").ID("chi").Dot(
 				"Context",
 			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
@@ -270,7 +276,8 @@ func wireParamFetchersTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("chi").Dot(
 				"RouteCtxKey",
-			), jen.Op("&").ID("chi").Dot(
+	),
+	jen.Op("&").ID("chi").Dot(
 				"Context",
 			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
@@ -302,7 +309,8 @@ func wireParamFetchersTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("chi").Dot(
 				"RouteCtxKey",
-			), jen.Op("&").ID("chi").Dot(
+	),
+	jen.Op("&").ID("chi").Dot(
 				"Context",
 			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
@@ -326,7 +334,8 @@ func wireParamFetchersTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("chi").Dot(
 				"RouteCtxKey",
-			), jen.Op("&").ID("chi").Dot(
+	),
+	jen.Op("&").ID("chi").Dot(
 				"Context",
 			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",

@@ -16,7 +16,7 @@ func queryFilterTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").ID("QueryFilter").Valuesln(jen.ID("Page").Op(":").Lit(100), jen.ID("Limit").Op(":").ID("MaxLimit"), jen.ID("CreatedAfter").Op(":").Lit(123456789), jen.ID("CreatedBefore").Op(":").Lit(123456789), jen.ID("UpdatedAfter").Op(":").Lit(123456789), jen.ID("UpdatedBefore").Op(":").Lit(123456789), jen.ID("SortBy").Op(":").ID("SortDescending")),
-				jen.ID("actual").Op(":=").Op("&").ID("QueryFilter").Valuesln(),
+				jen.ID("actual").Op(":=").Op("&").ID("QueryFilter").Values(),
 				jen.ID("exampleInput").Op(":=").Qual("net/url", "Values").Valuesln(jen.ID("pageKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
 					"Page",
 				)))), jen.ID("limitKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
@@ -57,7 +57,7 @@ func queryFilterTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Valuesln(),
+				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Values(),
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("qf").Dot(
 					"SetPage",

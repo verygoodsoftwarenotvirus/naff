@@ -122,7 +122,7 @@ func queryFilterDotGo() *jen.File {
 					"ToValues",
 				).Call(),
 			),
-			jen.ID("v").Op(":=").Qual("net/url", "Values").Valuesln(),
+			jen.ID("v").Op(":=").Qual("net/url", "Values").Values(),
 			jen.If(jen.ID("qf").Dot(
 				"Page",
 			).Op("!=").Lit(0)).Block(
@@ -130,7 +130,8 @@ func queryFilterDotGo() *jen.File {
 					"Set",
 				).Call(jen.Lit("page"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"Page",
-				), jen.Lit(10))),
+				),
+					jen.Lit(10))),
 			),
 			jen.If(jen.ID("qf").Dot(
 				"Limit",
@@ -139,7 +140,8 @@ func queryFilterDotGo() *jen.File {
 					"Set",
 				).Call(jen.Lit("limit"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"Limit",
-				), jen.Lit(10))),
+				),
+					jen.Lit(10))),
 			),
 			jen.If(jen.ID("qf").Dot(
 				"SortBy",
@@ -157,7 +159,8 @@ func queryFilterDotGo() *jen.File {
 					"Set",
 				).Call(jen.Lit("created_before"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"CreatedBefore",
-				), jen.Lit(10))),
+				),
+					jen.Lit(10))),
 			),
 			jen.If(jen.ID("qf").Dot(
 				"CreatedAfter",
@@ -166,7 +169,8 @@ func queryFilterDotGo() *jen.File {
 					"Set",
 				).Call(jen.Lit("created_after"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"CreatedAfter",
-				), jen.Lit(10))),
+				),
+					jen.Lit(10))),
 			),
 			jen.If(jen.ID("qf").Dot(
 				"UpdatedBefore",
@@ -175,7 +179,8 @@ func queryFilterDotGo() *jen.File {
 					"Set",
 				).Call(jen.Lit("updated_before"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"UpdatedBefore",
-				), jen.Lit(10))),
+				),
+					jen.Lit(10))),
 			),
 			jen.If(jen.ID("qf").Dot(
 				"UpdatedAfter",
@@ -184,7 +189,8 @@ func queryFilterDotGo() *jen.File {
 					"Set",
 				).Call(jen.Lit("updated_after"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"UpdatedAfter",
-				), jen.Lit(10))),
+				),
+					jen.Lit(10))),
 			),
 			jen.Return().ID("v"),
 		),
@@ -280,7 +286,7 @@ func queryFilterDotGo() *jen.File {
 		jen.Comment("ExtractQueryFilter can extract a QueryFilter from a request"),
 		jen.Line(),
 		jen.Func().ID("ExtractQueryFilter").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("QueryFilter")).Block(
-			jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Valuesln(),
+			jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Values(),
 			jen.ID("qf").Dot(
 				"FromParams",
 			).Call(jen.ID("req").Dot(

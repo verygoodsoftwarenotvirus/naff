@@ -65,7 +65,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -73,16 +74,19 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"HashedPassword",
-			), jen.ID("examplePassword"), jen.ID("expected").Dot(
+	),
+	jen.ID("examplePassword"), jen.ID("expected").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleTOTPToken"), jen.ID("expected").Dot(
+	),
+	jen.ID("exampleTOTPToken"), jen.ID("expected").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -96,7 +100,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("examplePassword"), jen.ID("exampleTOTPToken")),
+	),
+	jen.ID("examplePassword"), jen.ID("exampleTOTPToken")),
 			jen.ID("assert").Dot(
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
@@ -120,7 +125,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -134,7 +140,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"validateCredentialChangeRequest",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("examplePassword"), jen.ID("exampleTOTPToken")),
+	),
+	jen.ID("examplePassword"), jen.ID("exampleTOTPToken")),
 			jen.ID("assert").Dot(
 				"Nil",
 			).Call(jen.ID("t"), jen.ID("actual")),
@@ -158,7 +165,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -172,7 +180,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"validateCredentialChangeRequest",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("examplePassword"), jen.ID("exampleTOTPToken")),
+	),
+	jen.ID("examplePassword"), jen.ID("exampleTOTPToken")),
 			jen.ID("assert").Dot(
 				"Nil",
 			).Call(jen.ID("t"), jen.ID("actual")),
@@ -196,7 +205,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -204,16 +214,19 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"HashedPassword",
-			), jen.ID("examplePassword"), jen.ID("expected").Dot(
+	),
+	jen.ID("examplePassword"), jen.ID("expected").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleTOTPToken"), jen.ID("expected").Dot(
+	),
+	jen.ID("exampleTOTPToken"), jen.ID("expected").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -225,7 +238,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"validateCredentialChangeRequest",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("examplePassword"), jen.ID("exampleTOTPToken")),
+	),
+	jen.ID("examplePassword"), jen.ID("exampleTOTPToken")),
 			jen.ID("assert").Dot(
 				"Nil",
 			).Call(jen.ID("t"), jen.ID("actual")),
@@ -249,7 +263,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -257,16 +272,19 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"HashedPassword",
-			), jen.ID("examplePassword"), jen.ID("expected").Dot(
+	),
+	jen.ID("examplePassword"), jen.ID("expected").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleTOTPToken"), jen.ID("expected").Dot(
+	),
+	jen.ID("exampleTOTPToken"), jen.ID("expected").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -278,7 +296,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"validateCredentialChangeRequest",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("examplePassword"), jen.ID("exampleTOTPToken")),
+	),
+	jen.ID("examplePassword"), jen.ID("exampleTOTPToken")),
 			jen.ID("assert").Dot(
 				"Nil",
 			).Call(jen.ID("t"), jen.ID("actual")),
@@ -305,22 +324,24 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUsers"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.Op("&").ID("models").Dot(
 				"UserList",
-			).Valuesln(), jen.ID("nil")),
+			).Values(), jen.ID("nil")),
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -351,7 +372,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUsers"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -361,12 +383,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -397,22 +420,24 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUsers"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.Op("&").ID("models").Dot(
 				"UserList",
-			).Valuesln(), jen.ID("nil")),
+			).Values(), jen.ID("nil")),
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -449,19 +474,22 @@ func httpRoutesTestDotGo() *jen.File {
 				"User",
 			).Valuesln(jen.ID("Username").Op(":").ID("exampleInput").Dot(
 				"Username",
-			), jen.ID("HashedPassword").Op(":").Lit("blahblah")),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+	),
+	jen.ID("HashedPassword").Op(":").Lit("blahblah")),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("HashPassword"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"Password",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("expectedUser").Dot(
 				"HashedPassword",
-			), jen.ID("nil")),
+	),
+	jen.ID("nil")),
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
@@ -474,13 +502,14 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("CreateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput")).Dot(
+	),
+	jen.ID("exampleInput")).Dot(
 				"Return",
 			).Call(jen.ID("expectedUser"), jen.ID("nil")),
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("db"),
-			jen.ID("mc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+			jen.ID("mc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("mc").Dot(
 				"On",
 			).Call(jen.Lit("Increment"), jen.ID("mock").Dot(
@@ -489,7 +518,7 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"userCounter",
 			).Op("=").ID("mc"),
-			jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Valuesln(),
+			jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 			jen.ID("r").Dot(
 				"On",
 			).Call(jen.Lit("Report"), jen.ID("mock").Dot(
@@ -500,12 +529,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"reporter",
 			).Op("=").ID("r"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -576,19 +606,22 @@ func httpRoutesTestDotGo() *jen.File {
 				"User",
 			).Valuesln(jen.ID("Username").Op(":").ID("exampleInput").Dot(
 				"Username",
-			), jen.ID("HashedPassword").Op(":").Lit("blahblah")),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+	),
+	jen.ID("HashedPassword").Op(":").Lit("blahblah")),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("HashPassword"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"Password",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("expectedUser").Dot(
 				"HashedPassword",
-			), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+	),
+	jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
@@ -621,19 +654,22 @@ func httpRoutesTestDotGo() *jen.File {
 				"User",
 			).Valuesln(jen.ID("Username").Op(":").ID("exampleInput").Dot(
 				"Username",
-			), jen.ID("HashedPassword").Op(":").Lit("blahblah")),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+	),
+	jen.ID("HashedPassword").Op(":").Lit("blahblah")),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("HashPassword"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"Password",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("expectedUser").Dot(
 				"HashedPassword",
-			), jen.ID("nil")),
+	),
+	jen.ID("nil")),
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
@@ -646,7 +682,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("CreateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput")).Dot(
+	),
+	jen.ID("exampleInput")).Dot(
 				"Return",
 			).Call(jen.ID("expectedUser"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.ID("s").Dot(
@@ -681,19 +718,22 @@ func httpRoutesTestDotGo() *jen.File {
 				"User",
 			).Valuesln(jen.ID("Username").Op(":").ID("exampleInput").Dot(
 				"Username",
-			), jen.ID("HashedPassword").Op(":").Lit("blahblah")),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+	),
+	jen.ID("HashedPassword").Op(":").Lit("blahblah")),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("HashPassword"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"Password",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("expectedUser").Dot(
 				"HashedPassword",
-			), jen.ID("nil")),
+	),
+	jen.ID("nil")),
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
@@ -706,7 +746,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("CreateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput")).Dot(
+	),
+	jen.ID("exampleInput")).Dot(
 				"Return",
 			).Call(jen.ID("expectedUser"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client", "ErrUserExists")),
 			jen.ID("s").Dot(
@@ -741,19 +782,22 @@ func httpRoutesTestDotGo() *jen.File {
 				"User",
 			).Valuesln(jen.ID("Username").Op(":").ID("exampleInput").Dot(
 				"Username",
-			), jen.ID("HashedPassword").Op(":").Lit("blahblah")),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+	),
+	jen.ID("HashedPassword").Op(":").Lit("blahblah")),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("HashPassword"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"Password",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("expectedUser").Dot(
 				"HashedPassword",
-			), jen.ID("nil")),
+	),
+	jen.ID("nil")),
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
@@ -766,13 +810,14 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("CreateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput")).Dot(
+	),
+	jen.ID("exampleInput")).Dot(
 				"Return",
 			).Call(jen.ID("expectedUser"), jen.ID("nil")),
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("db"),
-			jen.ID("mc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+			jen.ID("mc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("mc").Dot(
 				"On",
 			).Call(jen.Lit("Increment"), jen.ID("mock").Dot(
@@ -781,7 +826,7 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"userCounter",
 			).Op("=").ID("mc"),
-			jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Valuesln(),
+			jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 			jen.ID("r").Dot(
 				"On",
 			).Call(jen.Lit("Report"), jen.ID("mock").Dot(
@@ -792,12 +837,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"reporter",
 			).Op("=").ID("r"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -844,22 +890,24 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.Op("&").ID("models").Dot(
 				"User",
-			).Valuesln(), jen.ID("nil")),
+			).Values(), jen.ID("nil")),
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -890,13 +938,14 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.Op("&").ID("models").Dot(
 				"User",
-			).Valuesln(), jen.Qual("database/sql", "ErrNoRows")),
+			).Values(), jen.Qual("database/sql", "ErrNoRows")),
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
@@ -923,13 +972,14 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.Op("&").ID("models").Dot(
 				"User",
-			).Valuesln(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			).Values(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
@@ -956,22 +1006,24 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.Op("&").ID("models").Dot(
 				"User",
-			).Valuesln(), jen.ID("nil")),
+			).Values(), jen.ID("nil")),
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1003,7 +1055,7 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"TOTPSecretRefreshInput",
-			).Valuesln(),
+			).Values(),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").ID("uint64").Call(jen.Lit(123)), jen.ID("HashedPassword").Op(":").Lit("not really lol"), jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`nah`)), jen.ID("TwoFactorSecret").Op(":").Lit("still no")),
@@ -1021,7 +1073,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserIDKey",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			))),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -1033,7 +1086,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -1044,7 +1098,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("UpdateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1052,20 +1107,25 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"HashedPassword",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"CurrentPassword",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"TOTPToken",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -1073,12 +1133,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1113,7 +1174,7 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"TOTPSecretRefreshInput",
-			).Valuesln(),
+			).Values(),
 			jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot(
 				"NewRecorder",
 			).Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
@@ -1135,7 +1196,7 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"TOTPSecretRefreshInput",
-			).Valuesln(),
+			).Values(),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").ID("uint64").Call(jen.Lit(123)), jen.ID("HashedPassword").Op(":").Lit("not really lol"), jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`nah`)), jen.ID("TwoFactorSecret").Op(":").Lit("still no")),
@@ -1153,7 +1214,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserIDKey",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			))),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -1165,7 +1227,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -1176,7 +1239,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("UpdateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1184,20 +1248,25 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"HashedPassword",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"CurrentPassword",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"TOTPToken",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -1205,12 +1274,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1231,7 +1301,7 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"TOTPSecretRefreshInput",
-			).Valuesln(),
+			).Values(),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").ID("uint64").Call(jen.Lit(123)), jen.ID("HashedPassword").Op(":").Lit("not really lol"), jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`nah`)), jen.ID("TwoFactorSecret").Op(":").Lit("still no")),
@@ -1249,7 +1319,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserIDKey",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			))),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -1261,7 +1332,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -1272,7 +1344,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("UpdateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1280,20 +1353,25 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"HashedPassword",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"CurrentPassword",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"TOTPToken",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -1301,12 +1379,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1327,7 +1406,7 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"TOTPSecretRefreshInput",
-			).Valuesln(),
+			).Values(),
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").ID("uint64").Call(jen.Lit(123)), jen.ID("HashedPassword").Op(":").Lit("not really lol"), jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`nah`)), jen.ID("TwoFactorSecret").Op(":").Lit("still no")),
@@ -1345,7 +1424,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserIDKey",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			))),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -1357,7 +1437,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -1368,7 +1449,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("UpdateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1376,20 +1458,25 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"HashedPassword",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"CurrentPassword",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"TOTPToken",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -1397,12 +1484,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1449,7 +1537,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserIDKey",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			))),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -1461,7 +1550,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -1472,7 +1562,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("UpdateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1480,20 +1571,25 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"HashedPassword",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"CurrentPassword",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"TOTPToken",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -1502,7 +1598,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("HashPassword"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"NewPassword",
 			)).Dot(
 				"Return",
@@ -1510,12 +1607,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1590,7 +1688,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserIDKey",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			))),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -1602,7 +1701,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -1613,7 +1713,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("UpdateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1621,20 +1722,25 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"HashedPassword",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"CurrentPassword",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"TOTPToken",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -1673,7 +1779,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserIDKey",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			))),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -1685,7 +1792,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -1696,7 +1804,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("UpdateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1704,20 +1813,25 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"HashedPassword",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"CurrentPassword",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"TOTPToken",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -1726,7 +1840,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("HashPassword"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"NewPassword",
 			)).Dot(
 				"Return",
@@ -1734,12 +1849,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"authenticator",
 			).Op("=").ID("auth"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1778,7 +1894,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserIDKey",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			))),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -1790,7 +1907,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -1801,7 +1919,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("UpdateUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1809,20 +1928,25 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Valuesln(),
+			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("auth").Dot(
 				"On",
 			).Call(jen.Lit("ValidateLogin"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"HashedPassword",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"CurrentPassword",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"TwoFactorSecret",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"TOTPToken",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"Salt",
 			)).Dot(
 				"Return",
@@ -1831,7 +1955,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("HashPassword"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleInput").Dot(
+	),
+	jen.ID("exampleInput").Dot(
 				"NewPassword",
 			)).Dot(
 				"Return",
@@ -1876,13 +2001,14 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("ArchiveUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("expectedUserID")).Dot(
+	),
+	jen.ID("expectedUserID")).Dot(
 				"Return",
 			).Call(jen.ID("nil")),
 			jen.ID("s").Dot(
 				"database",
 			).Op("=").ID("mockDB"),
-			jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Valuesln(),
+			jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 			jen.ID("r").Dot(
 				"On",
 			).Call(jen.Lit("Report"), jen.ID("mock").Dot(
@@ -1890,7 +2016,7 @@ func httpRoutesTestDotGo() *jen.File {
 			)).Dot(
 				"Return",
 			).Call(),
-			jen.ID("mc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Valuesln(),
+			jen.ID("mc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("mc").Dot(
 				"On",
 			).Call(jen.Lit("Decrement"), jen.ID("mock").Dot(
@@ -1899,12 +2025,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"userCounter",
 			).Op("=").ID("mc"),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("EncodeResponse"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -1941,7 +2068,8 @@ func httpRoutesTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("ArchiveUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("expectedUserID")).Dot(
+	),
+	jen.ID("expectedUserID")).Dot(
 				"Return",
 			).Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.ID("s").Dot(

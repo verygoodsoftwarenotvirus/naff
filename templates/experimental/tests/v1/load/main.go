@@ -44,7 +44,8 @@ func mainDotGo() *jen.File {
 					"DoResult",
 				).Valuesln(jen.ID("RequestLabel").Op(":").ID("act").Dot(
 					"Name",
-				), jen.ID("Error").Op(":").ID("nil"), jen.ID("StatusCode").Op(":").Lit(200)),
+	),
+	jen.ID("Error").Op(":").ID("nil"), jen.ID("StatusCode").Op(":").Lit(200)),
 			),
 			jen.Qual("log", "Printf").Call(jen.Lit("something has gone awry: %v\n"), jen.ID("err")),
 			jen.Return().ID("hazana").Dot(
@@ -88,7 +89,8 @@ func mainDotGo() *jen.File {
 			"DoResult",
 		).Valuesln(jen.ID("RequestLabel").Op(":").ID("act").Dot(
 			"Name",
-		), jen.ID("Error").Op(":").ID("err"), jen.ID("StatusCode").Op(":").ID("sc"), jen.ID("BytesIn").Op(":").ID("int64").Call(jen.ID("len").Call(jen.ID("bi"))), jen.ID("BytesOut").Op(":").ID("bo")),
+	),
+	jen.ID("Error").Op(":").ID("err"), jen.ID("StatusCode").Op(":").ID("sc"), jen.ID("BytesIn").Op(":").ID("int64").Call(jen.ID("len").Call(jen.ID("bi"))), jen.ID("BytesOut").Op(":").ID("bo")),
 		jen.Return().ID("dr"),
 	),
 	jen.Line(),

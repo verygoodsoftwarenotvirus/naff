@@ -20,7 +20,8 @@ func clientDotGo() *jen.File {
 	ret.Add(
 		jen.Type().ID("Client").Struct(jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("querier").ID("database").Dot(
 			"Database",
-		), jen.ID("debug").ID("bool"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
+	),
+	jen.ID("debug").ID("bool"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
 		)),
 		jen.Line(),
@@ -57,11 +58,13 @@ func clientDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideDatabaseClient").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("querier").ID("database").Dot(
 			"Database",
-		), jen.ID("debug").ID("bool"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
+	),
+	jen.ID("debug").ID("bool"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
 		)).Params(jen.ID("database").Dot(
 			"Database",
-		), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(jen.ID("db").Op(":").ID("db"), jen.ID("querier").Op(":").ID("querier"), jen.ID("debug").Op(":").ID("debug"), jen.ID("logger").Op(":").ID("logger").Dot(
 				"WithName",
 			).Call(jen.Lit("db_client"))),
@@ -122,7 +125,8 @@ func clientDotGo() *jen.File {
 					"QueryPage",
 				).Call(), jen.Lit(10))), jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("filter_limit"), jen.Qual("strconv", "FormatUint").Call(jen.ID("filter").Dot(
 					"Limit",
-				), jen.Lit(10)))),
+	),
+	jen.Lit(10)))),
 			),
 		),
 		jen.Line(),

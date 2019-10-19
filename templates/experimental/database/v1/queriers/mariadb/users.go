@@ -25,32 +25,41 @@ func usersDotGo() *jen.File {
 			"Scanner",
 		)).Params(jen.Op("*").ID("models").Dot(
 			"User",
-		), jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 
 			jen.Var().ID("x").Op("=").Op("&").ID("models").Dot(
 				"User",
-			).Valuesln(),
+			).Values(),
 			jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
 				"Scan",
 			).Call(jen.Op("&").ID("x").Dot(
 				"ID",
-			), jen.Op("&").ID("x").Dot(
-				"Username",
-			), jen.Op("&").ID("x").Dot(
-				"HashedPassword",
-			), jen.Op("&").ID("x").Dot(
-				"PasswordLastChangedOn",
-			), jen.Op("&").ID("x").Dot(
-				"TwoFactorSecret",
-			), jen.Op("&").ID("x").Dot(
-				"IsAdmin",
-			), jen.Op("&").ID("x").Dot(
-				"CreatedOn",
-			), jen.Op("&").ID("x").Dot(
-				"UpdatedOn",
-			), jen.Op("&").ID("x").Dot(
-				"ArchivedOn",
-			)), jen.ID("err").Op("!=").ID("nil")).Block(
+			),
+				jen.Op("&").ID("x").Dot(
+					"Username",
+				),
+				jen.Op("&").ID("x").Dot(
+					"HashedPassword",
+				),
+				jen.Op("&").ID("x").Dot(
+					"PasswordLastChangedOn",
+				),
+				jen.Op("&").ID("x").Dot(
+					"TwoFactorSecret",
+				),
+				jen.Op("&").ID("x").Dot(
+					"IsAdmin",
+				),
+				jen.Op("&").ID("x").Dot(
+					"CreatedOn",
+				),
+				jen.Op("&").ID("x").Dot(
+					"UpdatedOn",
+				),
+				jen.Op("&").ID("x").Dot(
+					"ArchivedOn",
+				)), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
@@ -63,9 +72,11 @@ func usersDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("scanUsers").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().ID("models").Dot(
+		),
+			jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().ID("models").Dot(
 			"User",
-		), jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 
 			jen.Var().ID("list").Index().ID("models").Dot(
 				"User",
@@ -126,7 +137,8 @@ func usersDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 			"User",
-		), jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildGetUserQuery",
 			).Call(jen.ID("userID")),
@@ -174,7 +186,8 @@ func usersDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetUserByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.Op("*").ID("models").Dot(
 			"User",
-		), jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildGetUserByUsernameQuery",
 			).Call(jen.ID("username")),
@@ -289,7 +302,8 @@ func usersDotGo() *jen.File {
 			"QueryFilter",
 		)).Params(jen.Op("*").ID("models").Dot(
 			"UserList",
-		), jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildGetUsersQuery",
 			).Call(jen.ID("filter")),
@@ -303,7 +317,8 @@ func usersDotGo() *jen.File {
 			),
 			jen.List(jen.ID("userList"), jen.ID("err")).Op(":=").ID("scanUsers").Call(jen.ID("m").Dot(
 				"logger",
-			), jen.ID("rows")),
+			),
+				jen.ID("rows")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("loading response from database: %w"), jen.ID("err"))),
 			),
@@ -319,9 +334,11 @@ func usersDotGo() *jen.File {
 				"Pagination",
 			).Valuesln(jen.ID("Page").Op(":").ID("filter").Dot(
 				"Page",
-			), jen.ID("Limit").Op(":").ID("filter").Dot(
-				"Limit",
-			), jen.ID("TotalCount").Op(":").ID("count")), jen.ID("Users").Op(":").ID("userList")),
+			),
+				jen.ID("Limit").Op(":").ID("filter").Dot(
+					"Limit",
+				),
+				jen.ID("TotalCount").Op(":").ID("count")), jen.ID("Users").Op(":").ID("userList")),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
 		),
 		jen.Line(),
@@ -343,13 +360,16 @@ func usersDotGo() *jen.File {
 				"Values",
 			).Call(jen.ID("input").Dot(
 				"Username",
-			), jen.ID("input").Dot(
-				"Password",
-			), jen.ID("input").Dot(
-				"TwoFactorSecret",
-			), jen.ID("false"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+			),
+				jen.ID("input").Dot(
+					"Password",
+				),
+				jen.ID("input").Dot(
+					"TwoFactorSecret",
+				),
+				jen.ID("false"), jen.ID("squirrel").Dot(
+					"Expr",
+				).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("m").Dot(
@@ -392,14 +412,16 @@ func usersDotGo() *jen.File {
 			"UserInput",
 		)).Params(jen.Op("*").ID("models").Dot(
 			"User",
-		), jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("Username").Op(":").ID("input").Dot(
 				"Username",
-			), jen.ID("TwoFactorSecret").Op(":").ID("input").Dot(
-				"TwoFactorSecret",
-			)),
+			),
+				jen.ID("TwoFactorSecret").Op(":").ID("input").Dot(
+					"TwoFactorSecret",
+				)),
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildCreateUserQuery",
 			).Call(jen.ID("input")),
@@ -496,7 +518,11 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("UpdateUser receives a complete User struct and updates its place in the db."),
 		jen.Line(),
-		jen.Func().Comment("// NOTE this function uses the ID provided in the input to make its query. Pass in").Comment("// anonymous structs or incomplete models at your peril.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("UpdateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+		jen.Comment("NOTE this function uses the ID provided in the input to make its query. Pass in"),
+		jen.Line(),
+		jen.Comment("anonymous structs or incomplete models at your peril."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("UpdateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
 			"User",
 		)).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(

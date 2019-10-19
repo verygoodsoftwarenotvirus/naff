@@ -17,7 +17,7 @@ func httpRoutesDotGo() *jen.File {
 	jen.Comment("this keeps routing logic in the frontend service and not in the server itself."),
 	jen.Line(),
 	jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("Routes").Params().Params(jen.Map(jen.ID("string")).Qual("net/http", "HandlerFunc")).Block(
-		jen.Return().Map(jen.ID("string")).Qual("net/http", "HandlerFunc").Valuesln(),
+		jen.Return().Map(jen.ID("string")).Qual("net/http", "HandlerFunc").Values(),
 	),
 	jen.Line(),
 	)
@@ -25,7 +25,8 @@ func httpRoutesDotGo() *jen.File {
 	ret.Add(
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").ID("string")).Params(jen.Op("*").ID("afero").Dot(
 		"HttpFs",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 
 		jen.Var().ID("afs").ID("afero").Dot(
 			"Fs",
@@ -161,7 +162,8 @@ func httpRoutesDotGo() *jen.File {
 			jen.ID("fs").Dot(
 				"ServeHTTP",
 			).Call(jen.ID("res"), jen.ID("req")),
-		), jen.ID("nil")),
+	),
+	jen.ID("nil")),
 	),
 	jen.Line(),
 	)

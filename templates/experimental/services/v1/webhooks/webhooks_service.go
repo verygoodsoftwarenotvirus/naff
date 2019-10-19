@@ -11,54 +11,70 @@ func webhooksServiceDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("CreateMiddlewareCtxKey").ID("models").Dot(
-			"ContextKey",
-		).Op("=").Lit("webhook_create_input").Var().ID("UpdateMiddlewareCtxKey").ID("models").Dot(
-			"ContextKey",
-		).Op("=").Lit("webhook_update_input").Var().ID("counterName").ID("metrics").Dot(
-			"CounterName",
-		).Op("=").Lit("webhooks").Var().ID("topicName").ID("string").Op("=").Lit("webhooks").Var().ID("serviceName").ID("string").Op("=").Lit("webhooks_service"),
+		jen.Const().Defs(
+			jen.Comment("CreateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts"),
+			jen.ID("CreateMiddlewareCtxKey").ID("models").Dot("ContextKey").Op("=").Lit("webhook_create_input"),
+			jen.Comment("UpdateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts"),
+			jen.ID("UpdateMiddlewareCtxKey").ID("models").Dot("ContextKey").Op("=").Lit("webhook_update_input"),
+			jen.Line(),
+			jen.ID("counterName").ID("metrics").Dot("CounterName").Op("=").Lit("webhooks"),
+			jen.ID("topicName").ID("string").Op("=").Lit("webhooks"),
+			jen.ID("serviceName").ID("string").Op("=").Lit("webhooks_service"),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Var().ID("_").ID("models").Dot(
-			"WebhookDataServer",
-		).Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
+		jen.Var().Defs(
+			jen.ID("_").ID("models").Dot("WebhookDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Type().ID("eventManager").Interface(jen.ID("newsman").Dot(
-			"Reporter",
-		), jen.ID("TuneIn").Params(jen.ID("newsman").Dot(
-			"Listener",
-		))).Type().ID("Service").Struct(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-		), jen.ID("webhookCounter").ID("metrics").Dot(
-			"UnitCounter",
-		), jen.ID("webhookDatabase").ID("models").Dot(
-			"WebhookDataManager",
-		), jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"), jen.ID("encoderDecoder").ID("encoding").Dot(
-			"EncoderDecoder",
-		), jen.ID("eventManager").ID("eventManager")).Type().ID("UserIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Type().ID("WebhookIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+		jen.Type().Defs(
+			jen.ID("eventManager").Interface(
+				jen.ID("newsman").Dot("Reporter"),
+				jen.Line(),
+				jen.ID("TuneIn").Params(jen.ID("newsman").Dot("Listener")),
+			),
+			jen.Line(),
+			jen.ID("Service").Struct(
+				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+				jen.ID("webhookCounter").ID("metrics").Dot("UnitCounter"),
+				jen.ID("webhookDatabase").ID("models").Dot("WebhookDataManager"),
+				jen.ID("userIDFetcher").ID("UserIDFetcher"),
+				jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
+				jen.ID("encoderDecoder").ID("encoding").Dot("EncoderDecoder"),
+				jen.ID("eventManager").ID("eventManager"),
+			),
+			jen.Line(),
+			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
+			jen.ID("UserIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.Line(),
+			jen.Comment("WebhookIDFetcher is a function that fetches webhook IDs"),
+			jen.ID("WebhookIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+		),
+
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Comment("ProvideWebhooksService builds a new WebhooksService"),
 		jen.Line(),
-		jen.Func().ID("ProvideWebhooksService").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-		), jen.ID("webhookDatabase").ID("models").Dot(
-			"WebhookDataManager",
-		), jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"), jen.ID("encoder").ID("encoding").Dot(
-			"EncoderDecoder",
-		), jen.ID("webhookCounterProvider").ID("metrics").Dot(
-			"UnitCounterProvider",
-		), jen.ID("em").Op("*").ID("newsman").Dot(
-			"Newsman",
-		)).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
+		jen.Func().ID("ProvideWebhooksService").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+			jen.ID("webhookDatabase").ID("models").Dot(
+				"WebhookDataManager",
+			),
+			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"), jen.ID("encoder").ID("encoding").Dot(
+				"EncoderDecoder",
+			),
+			jen.ID("webhookCounterProvider").ID("metrics").Dot(
+				"UnitCounterProvider",
+			),
+			jen.ID("em").Op("*").ID("newsman").Dot(
+				"Newsman",
+			)).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("webhookCounter"), jen.ID("err")).Op(":=").ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.Lit("the number of webhooks managed by the webhooks service")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.ID("err"))),

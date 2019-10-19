@@ -18,6 +18,8 @@ import (
 	encodingmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/metrics"
 	metricsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/metrics/mock"
+	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil"
+	testutilmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/testutil/mock"
 
 	// to do
 	server "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/server/v1"
@@ -27,8 +29,6 @@ import (
 	users "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/users"
 	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/webhooks"
 	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/frontend"
-	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/testutil"
-	testutilmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/testutil/mock"
 
 	// requires models
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/client"
@@ -63,11 +63,11 @@ func RenderProject(in *naffmodels.Project) error {
 		"metrics":          {renderFunc: metrics.RenderPackage, activated: false},
 		"metricsmock":      {renderFunc: metricsmock.RenderPackage, activated: false},
 		"server":           {renderFunc: server.RenderPackage, activated: false},
+		"testutil":         {renderFunc: testutil.RenderPackage, activated: false},
+		"testutilmock":     {renderFunc: testutilmock.RenderPackage, activated: false},
+		"frontendtests":    {renderFunc: frontendtests.RenderPackage, activated: false},
 		// to do
-		"testutil":      {renderFunc: testutil.RenderPackage, activated: false},
-		"testutilmock":  {renderFunc: testutilmock.RenderPackage, activated: false},
-		"frontendtests": {renderFunc: frontendtests.RenderPackage, activated: false},
-		"webhooks":      {renderFunc: webhooks.RenderPackage, activated: false},
+		"webhooks":      {renderFunc: webhooks.RenderPackage, activated: true},
 		"oauth2clients": {renderFunc: oauth2clients.RenderPackage, activated: false},
 		"frontend":      {renderFunc: frontend.RenderPackage, activated: false},
 		"auth":          {renderFunc: auth.RenderPackage, activated: false},

@@ -27,12 +27,14 @@ func actionsDotGo() *jen.File {
 		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 		jen.ID("allActions").Op(":=").Map(jen.ID("string")).Op("*").ID("Action").Valuesln(jen.Lit("GetHealthCheck").Op(":").Valuesln(jen.ID("Name").Op(":").Lit("GetHealthCheck"), jen.ID("Action").Op(":").ID("c").Dot(
 			"BuildHealthCheckRequest",
-		), jen.ID("Weight").Op(":").Lit(100)), jen.Lit("CreateUser").Op(":").Valuesln(jen.ID("Name").Op(":").Lit("CreateUser"), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
+	),
+	jen.ID("Weight").Op(":").Lit(100)), jen.Lit("CreateUser").Op(":").Valuesln(jen.ID("Name").Op(":").Lit("CreateUser"), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
 			jen.ID("ui").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/rand/model", "RandomUserInput").Call(),
 			jen.Return().ID("c").Dot(
 				"BuildCreateUserRequest",
 			).Call(jen.ID("ctx"), jen.ID("ui")),
-		), jen.ID("Weight").Op(":").Lit(100))),
+	),
+	jen.ID("Weight").Op(":").Lit(100))),
 		jen.For(jen.List(jen.ID("k"), jen.ID("v")).Op(":=").Range().ID("buildItemActions").Call(jen.ID("c"))).Block(
 			jen.ID("allActions").Index(jen.ID("k")).Op("=").ID("v"),
 		),

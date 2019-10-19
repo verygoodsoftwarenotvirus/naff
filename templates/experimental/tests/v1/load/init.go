@@ -78,13 +78,16 @@ func initDotGo() *jen.File {
 		),
 		jen.List(jen.ID("c"), jen.ID("err")).Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "NewClient").Call(jen.Qual("context", "Background").Call(), jen.ID("oa2Client").Dot(
 			"ClientID",
-		), jen.ID("oa2Client").Dot(
+	),
+	jen.ID("oa2Client").Dot(
 			"ClientSecret",
-		), jen.ID("uri"), jen.ID("zerolog").Dot(
+	),
+	jen.ID("uri"), jen.ID("zerolog").Dot(
 			"NewZeroLogger",
 		).Call(), jen.ID("buildHTTPClient").Call(), jen.ID("oa2Client").Dot(
 			"Scopes",
-		), jen.ID("debug")),
+	),
+	jen.ID("debug")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("panic").Call(jen.ID("err")),
 		),

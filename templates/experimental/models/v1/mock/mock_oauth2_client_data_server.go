@@ -113,7 +113,8 @@ func mockOauth2ClientDataServerDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("models").Dot(
 		"OAuth2Client",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("req")),

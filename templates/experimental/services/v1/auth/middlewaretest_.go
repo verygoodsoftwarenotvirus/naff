@@ -19,12 +19,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("Username").Op(":").Lit("username")),
-			jen.ID("md").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "UserDataManager").Valuesln(),
+			jen.ID("md").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "UserDataManager").Values(),
 			jen.ID("md").Dot(
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -54,12 +55,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("req").Dot(
 				"AddCookie",
 			).Call(jen.ID("cookie")),
-			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("ms").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -76,12 +78,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("Username").Op(":").Lit("username")),
-			jen.ID("md").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "UserDataManager").Valuesln(),
+			jen.ID("md").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "UserDataManager").Values(),
 			jen.ID("md").Dot(
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -113,12 +116,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("req").Dot(
 				"AddCookie",
 			).Call(jen.ID("cookie")),
-			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("ms").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -133,7 +137,8 @@ func middlewareTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
-			), jen.Qual("net/http", "StatusUnauthorized")),
+	),
+	jen.Qual("net/http", "StatusUnauthorized")),
 		)),
 		jen.ID("T").Dot("Run").Call(jen.Lit("without user attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -147,12 +152,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("res").Op(":=").ID("httptest").Dot(
 				"NewRecorder",
 			).Call(),
-			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("ms").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -182,7 +188,7 @@ func middlewareTestDotGo() *jen.File {
 			).Valuesln(jen.ID("ClientID").Op(":").Lit("PRETEND_THIS_IS_A_REAL_CLIENT_ID"), jen.ID("ClientSecret").Op(":").Lit("PRETEND_THIS_IS_A_REAL_CLIENT_SECRET"), jen.ID("BelongsTo").Op(":").ID("exampleUser").Dot(
 				"ID",
 			)),
-			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Valuesln(),
+			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("ocv").Dot(
 				"On",
 			).Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.ID("mock").Dot(
@@ -202,7 +208,8 @@ func middlewareTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleClient").Dot(
+	),
+	jen.ID("exampleClient").Dot(
 				"BelongsTo",
 			)).Dot(
 				"Return",
@@ -210,12 +217,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"userDB",
 			).Op("=").ID("mockDB"),
-			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -251,7 +259,7 @@ func middlewareTestDotGo() *jen.File {
 			).Valuesln(jen.ID("ClientID").Op(":").Lit("PRETEND_THIS_IS_A_REAL_CLIENT_ID"), jen.ID("ClientSecret").Op(":").Lit("PRETEND_THIS_IS_A_REAL_CLIENT_SECRET"), jen.ID("BelongsTo").Op(":").ID("exampleUser").Dot(
 				"ID",
 			)),
-			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Valuesln(),
+			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("ocv").Dot(
 				"On",
 			).Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.ID("mock").Dot(
@@ -271,7 +279,8 @@ func middlewareTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleClient").Dot(
+	),
+	jen.ID("exampleClient").Dot(
 				"BelongsTo",
 			)).Dot(
 				"Return",
@@ -279,12 +288,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"userDB",
 			).Op("=").ID("mockDB"),
-			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -315,7 +325,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("ID").Op(":").Lit(1), jen.ID("Username").Op(":").Lit("username")),
-			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Valuesln(),
+			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("ocv").Dot(
 				"On",
 			).Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.ID("mock").Dot(
@@ -328,12 +338,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"oauth2ClientsService",
 			).Op("=").ID("ocv"),
-			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -366,7 +377,8 @@ func middlewareTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleUser").Dot(
+	),
+	jen.ID("exampleUser").Dot(
 				"ID",
 			)).Dot(
 				"Return",
@@ -390,7 +402,7 @@ func middlewareTestDotGo() *jen.File {
 			).Valuesln(jen.ID("ClientID").Op(":").Lit("PRETEND_THIS_IS_A_REAL_CLIENT_ID"), jen.ID("ClientSecret").Op(":").Lit("PRETEND_THIS_IS_A_REAL_CLIENT_SECRET"), jen.ID("BelongsTo").Op(":").ID("exampleUser").Dot(
 				"ID",
 			)),
-			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Valuesln(),
+			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("ocv").Dot(
 				"On",
 			).Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.ID("mock").Dot(
@@ -410,7 +422,8 @@ func middlewareTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleClient").Dot(
+	),
+	jen.ID("exampleClient").Dot(
 				"BelongsTo",
 			)).Dot(
 				"Return",
@@ -420,12 +433,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"userDB",
 			).Op("=").ID("mockDB"),
-			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -470,7 +484,7 @@ func middlewareTestDotGo() *jen.File {
 			).Valuesln(jen.ID("ClientID").Op(":").Lit("PRETEND_THIS_IS_A_REAL_CLIENT_ID"), jen.ID("ClientSecret").Op(":").Lit("PRETEND_THIS_IS_A_REAL_CLIENT_SECRET"), jen.ID("BelongsTo").Op(":").ID("exampleUser").Dot(
 				"ID",
 			)),
-			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Valuesln(),
+			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("ocv").Dot(
 				"On",
 			).Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.ID("mock").Dot(
@@ -490,7 +504,8 @@ func middlewareTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleClient").Dot(
+	),
+	jen.ID("exampleClient").Dot(
 				"BelongsTo",
 			)).Dot(
 				"Return",
@@ -500,12 +515,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"userDB",
 			).Op("=").ID("mockDB"),
-			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -533,7 +549,7 @@ func middlewareTestDotGo() *jen.File {
 		)),
 		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching client but able to use cookie but unable to decode cookie"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Valuesln(),
+			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("ocv").Dot(
 				"On",
 			).Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.ID("mock").Dot(
@@ -546,12 +562,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"oauth2ClientsService",
 			).Op("=").ID("ocv"),
-			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -577,12 +594,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("req").Dot(
 				"AddCookie",
 			).Call(jen.ID("c")),
-			jen.ID("cb").Op(":=").Op("&").ID("mockCookieEncoderDecoder").Valuesln(),
+			jen.ID("cb").Op(":=").Op("&").ID("mockCookieEncoderDecoder").Values(),
 			jen.ID("cb").Dot(
 				"On",
 			).Call(jen.Lit("Decode"), jen.ID("CookieName"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -598,7 +616,7 @@ func middlewareTestDotGo() *jen.File {
 		)),
 		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid authentication"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Valuesln(),
+			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("ocv").Dot(
 				"On",
 			).Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.ID("mock").Dot(
@@ -611,12 +629,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"oauth2ClientsService",
 			).Op("=").ID("ocv"),
-			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -640,7 +659,8 @@ func middlewareTestDotGo() *jen.File {
 				"Equal",
 			).Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
-			), jen.Qual("net/http", "StatusUnauthorized")),
+	),
+	jen.Qual("net/http", "StatusUnauthorized")),
 		)),
 		jen.ID("T").Dot("Run").Call(jen.Lit("nightmare path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -652,7 +672,7 @@ func middlewareTestDotGo() *jen.File {
 			).Valuesln(jen.ID("ClientID").Op(":").Lit("PRETEND_THIS_IS_A_REAL_CLIENT_ID"), jen.ID("ClientSecret").Op(":").Lit("PRETEND_THIS_IS_A_REAL_CLIENT_SECRET"), jen.ID("BelongsTo").Op(":").ID("exampleUser").Dot(
 				"ID",
 			)),
-			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Valuesln(),
+			jen.ID("ocv").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("ocv").Dot(
 				"On",
 			).Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.ID("mock").Dot(
@@ -672,7 +692,8 @@ func middlewareTestDotGo() *jen.File {
 				"On",
 			).Call(jen.Lit("GetUser"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("exampleClient").Dot(
+	),
+	jen.ID("exampleClient").Dot(
 				"BelongsTo",
 			)).Dot(
 				"Return",
@@ -682,12 +703,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"userDB",
 			).Op("=").ID("mockDB"),
-			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("h").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -800,12 +822,13 @@ func middlewareTestDotGo() *jen.File {
 				"NewRecorder",
 			).Call(),
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("ms").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -842,12 +865,13 @@ func middlewareTestDotGo() *jen.File {
 				"NewRecorder",
 			).Call(),
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -855,7 +879,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"encoderDecoder",
 			).Op("=").ID("ed"),
-			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Op(":=").ID("s").Dot(
 				"UserLoginInputMiddleware",
 			).Call(jen.ID("ms")),
@@ -895,12 +919,13 @@ func middlewareTestDotGo() *jen.File {
 				"Set",
 			).Call(jen.Lit("Content-type"), jen.Lit("application/x-www-form-urlencoded")),
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Valuesln(),
+			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
 			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -908,12 +933,13 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("s").Dot(
 				"encoderDecoder",
 			).Op("=").ID("ed"),
-			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("ms").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -953,16 +979,18 @@ func middlewareTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserKey",
-			), jen.Op("&").ID("models").Dot(
+	),
+	jen.Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("IsAdmin").Op(":").ID("true")))),
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("ms").Dot(
 				"On",
 			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
 				"Anything",
-			), jen.ID("mock").Dot(
+	),
+	jen.ID("mock").Dot(
 				"Anything",
 			)).Dot(
 				"Return",
@@ -994,7 +1022,7 @@ func middlewareTestDotGo() *jen.File {
 				"NewRecorder",
 			).Call(),
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Op(":=").ID("s").Dot(
 				"AdminMiddleware",
 			).Call(jen.ID("ms")),
@@ -1027,11 +1055,12 @@ func middlewareTestDotGo() *jen.File {
 				"Context",
 			).Call(), jen.ID("models").Dot(
 				"UserKey",
-			), jen.Op("&").ID("models").Dot(
+	),
+	jen.Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(jen.ID("IsAdmin").Op(":").ID("false")))),
 			jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Valuesln(),
+			jen.ID("ms").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("h").Op(":=").ID("s").Dot(
 				"AdminMiddleware",
 			).Call(jen.ID("ms")),

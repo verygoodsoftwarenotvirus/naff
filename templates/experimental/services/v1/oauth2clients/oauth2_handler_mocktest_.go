@@ -97,7 +97,8 @@ func oauth2HandlerMockTestDotGo() *jen.File {
 	ret.Add(
 		jen.Func().Params(jen.ID("m").Op("*").ID("mockOauth2Handler")).ID("ValidationBearerToken").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("oauth2").Dot(
 		"TokenInfo",
-	), jen.ID("error")).Block(
+	),
+	jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("req")),

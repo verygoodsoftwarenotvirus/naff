@@ -18,27 +18,38 @@ func serverDotGo() *jen.File {
 	ret.Add(
 		jen.Type().ID("Server").Struct(jen.ID("DebugMode").ID("bool"), jen.ID("authService").Op("*").ID("auth").Dot(
 			"Service",
-		), jen.ID("frontendService").Op("*").ID("frontend").Dot(
+	),
+	jen.ID("frontendService").Op("*").ID("frontend").Dot(
 			"Service",
-		), jen.ID("usersService").ID("models").Dot(
+	),
+	jen.ID("usersService").ID("models").Dot(
 			"UserDataServer",
-		), jen.ID("oauth2ClientsService").ID("models").Dot(
+	),
+	jen.ID("oauth2ClientsService").ID("models").Dot(
 			"OAuth2ClientDataServer",
-		), jen.ID("webhooksService").ID("models").Dot(
+	),
+	jen.ID("webhooksService").ID("models").Dot(
 			"WebhookDataServer",
-		), jen.ID("itemsService").ID("models").Dot(
+	),
+	jen.ID("itemsService").ID("models").Dot(
 			"ItemDataServer",
-		), jen.ID("db").ID("database").Dot(
+	),
+	jen.ID("db").ID("database").Dot(
 			"Database",
-		), jen.ID("config").Op("*").ID("config").Dot(
+	),
+	jen.ID("config").Op("*").ID("config").Dot(
 			"ServerConfig",
-		), jen.ID("router").Op("*").ID("chi").Dot(
+	),
+	jen.ID("router").Op("*").ID("chi").Dot(
 			"Mux",
-		), jen.ID("httpServer").Op("*").Qual("net/http", "Server"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
+	),
+	jen.ID("httpServer").Op("*").Qual("net/http", "Server"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		), jen.ID("encoder").ID("encoding").Dot(
+	),
+	jen.ID("encoder").ID("encoding").Dot(
 			"EncoderDecoder",
-		), jen.ID("newsManager").Op("*").ID("newsman").Dot(
+	),
+	jen.ID("newsManager").Op("*").ID("newsman").Dot(
 			"Newsman",
 		)),
 		jen.Line(),
@@ -49,25 +60,35 @@ func serverDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideServer").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("cfg").Op("*").ID("config").Dot(
 			"ServerConfig",
-		), jen.ID("authService").Op("*").ID("auth").Dot(
+	),
+	jen.ID("authService").Op("*").ID("auth").Dot(
 			"Service",
-		), jen.ID("frontendService").Op("*").ID("frontend").Dot(
+	),
+	jen.ID("frontendService").Op("*").ID("frontend").Dot(
 			"Service",
-		), jen.ID("itemsService").ID("models").Dot(
+	),
+	jen.ID("itemsService").ID("models").Dot(
 			"ItemDataServer",
-		), jen.ID("usersService").ID("models").Dot(
+	),
+	jen.ID("usersService").ID("models").Dot(
 			"UserDataServer",
-		), jen.ID("oauth2Service").ID("models").Dot(
+	),
+	jen.ID("oauth2Service").ID("models").Dot(
 			"OAuth2ClientDataServer",
-		), jen.ID("webhooksService").ID("models").Dot(
+	),
+	jen.ID("webhooksService").ID("models").Dot(
 			"WebhookDataServer",
-		), jen.ID("db").ID("database").Dot(
+	),
+	jen.ID("db").ID("database").Dot(
 			"Database",
-		), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
+	),
+	jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		), jen.ID("encoder").ID("encoding").Dot(
+	),
+	jen.ID("encoder").ID("encoding").Dot(
 			"EncoderDecoder",
-		), jen.ID("newsManager").Op("*").ID("newsman").Dot(
+	),
+	jen.ID("newsManager").Op("*").ID("newsman").Dot(
 			"Newsman",
 		)).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
 			jen.If(jen.ID("len").Call(jen.ID("cfg").Dot(
@@ -87,7 +108,8 @@ func serverDotGo() *jen.File {
 				"Server",
 			).Dot(
 				"Debug",
-			), jen.ID("db").Op(":").ID("db"), jen.ID("config").Op(":").ID("cfg"), jen.ID("encoder").Op(":").ID("encoder"), jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(), jen.ID("logger").Op(":").ID("logger").Dot(
+	),
+	jen.ID("db").Op(":").ID("db"), jen.ID("config").Op(":").ID("cfg"), jen.ID("encoder").Op(":").ID("encoder"), jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(), jen.ID("logger").Op(":").ID("logger").Dot(
 				"WithName",
 			).Call(jen.Lit("api_server")), jen.ID("newsManager").Op(":").ID("newsManager"), jen.ID("webhooksService").Op(":").ID("webhooksService"), jen.ID("frontendService").Op(":").ID("frontendService"), jen.ID("usersService").Op(":").ID("usersService"), jen.ID("authService").Op(":").ID("authService"), jen.ID("itemsService").Op(":").ID("itemsService"), jen.ID("oauth2ClientsService").Op(":").ID("oauth2Service")),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot(
@@ -110,7 +132,8 @@ func serverDotGo() *jen.File {
 					"setupRouter",
 				).Call(jen.ID("cfg").Dot(
 					"Frontend",
-				), jen.ID("ih")),
+	),
+	jen.ID("ih")),
 			),
 			jen.ID("srv").Dot(
 				"httpServer",
@@ -120,7 +143,8 @@ func serverDotGo() *jen.File {
 				"Handler",
 			).Valuesln(jen.ID("Handler").Op(":").ID("srv").Dot(
 				"router",
-			), jen.ID("FormatSpanName").Op(":").ID("formatSpanNameForRequest")),
+	),
+	jen.ID("FormatSpanName").Op(":").ID("formatSpanNameForRequest")),
 			jen.List(jen.ID("allWebhooks"), jen.ID("err")).Op(":=").ID("db").Dot(
 				"GetAllWebhooks",
 			).Call(jen.ID("ctx")),

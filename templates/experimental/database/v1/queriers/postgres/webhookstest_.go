@@ -22,27 +22,38 @@ func webhooksTestDotGo() *jen.File {
 			"AddRow",
 		).Call(jen.ID("w").Dot(
 			"ID",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"Name",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"ContentType",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"URL",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"Method",
-		), jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
+	),
+	jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
 			"Events",
-		), jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
+	),
+	jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
 			"DataTypes",
-		), jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
+	),
+	jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
 			"Topics",
-		), jen.ID("topicsSeparator")), jen.ID("w").Dot(
+	),
+	jen.ID("topicsSeparator")), jen.ID("w").Dot(
 			"CreatedOn",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"UpdatedOn",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"ArchivedOn",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"BelongsTo",
 		)),
 		jen.Return().ID("exampleRows"),
@@ -62,27 +73,38 @@ func webhooksTestDotGo() *jen.File {
 			"AddRow",
 		).Call(jen.ID("w").Dot(
 			"ArchivedOn",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"BelongsTo",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"Name",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"ContentType",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"URL",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"Method",
-		), jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
+	),
+	jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
 			"Events",
-		), jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
+	),
+	jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
 			"DataTypes",
-		), jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
+	),
+	jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("w").Dot(
 			"Topics",
-		), jen.ID("topicsSeparator")), jen.ID("w").Dot(
+	),
+	jen.ID("topicsSeparator")), jen.ID("w").Dot(
 			"CreatedOn",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"UpdatedOn",
-		), jen.ID("w").Dot(
+	),
+	jen.ID("w").Dot(
 			"ID",
 		)),
 		jen.Return().ID("exampleRows"),
@@ -144,7 +166,8 @@ func webhooksTestDotGo() *jen.File {
 				"GetWebhook",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("expectedUserID")),
+	),
+	jen.ID("expectedUserID")),
 			jen.ID("assert").Dot(
 				"NoError",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -177,7 +200,8 @@ func webhooksTestDotGo() *jen.File {
 				"GetWebhook",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("expectedUserID")),
+	),
+	jen.ID("expectedUserID")),
 			jen.ID("assert").Dot(
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -213,7 +237,8 @@ func webhooksTestDotGo() *jen.File {
 				"GetWebhook",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("expectedUserID")),
+	),
+	jen.ID("expectedUserID")),
 			jen.ID("assert").Dot(
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -247,7 +272,8 @@ func webhooksTestDotGo() *jen.File {
 				"GetWebhook",
 			).Call(jen.ID("ctx"), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("expectedUserID")),
+	),
+	jen.ID("expectedUserID")),
 			jen.ID("assert").Dot(
 				"Error",
 			).Call(jen.ID("t"), jen.ID("err")),
@@ -982,7 +1008,7 @@ func webhooksTestDotGo() *jen.File {
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
-			).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"), jen.ID("Events").Op(":").Index().ID("string").Valuesln(), jen.ID("DataTypes").Op(":").Index().ID("string").Valuesln(), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(), jen.ID("BelongsTo").Op(":").Lit(1)),
+			).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"), jen.ID("Events").Op(":").Index().ID("string").Values(), jen.ID("DataTypes").Op(":").Index().ID("string").Values(), jen.ID("Topics").Op(":").Index().ID("string").Values(), jen.ID("BelongsTo").Op(":").Lit(1)),
 			jen.ID("expectedArgCount").Op(":=").Lit(8),
 			jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, created_on"),
 			jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -1014,7 +1040,8 @@ func webhooksTestDotGo() *jen.File {
 				"WebhookCreationInput",
 			).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 				"Name",
-			), jen.ID("BelongsTo").Op(":").ID("expected").Dot(
+	),
+	jen.ID("BelongsTo").Op(":").ID("expected").Dot(
 				"BelongsTo",
 			)),
 			jen.ID("exampleRows").Op(":=").ID("sqlmock").Dot(
@@ -1023,7 +1050,8 @@ func webhooksTestDotGo() *jen.File {
 				"AddRow",
 			).Call(jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+	),
+	jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 				"Unix",
 			).Call())),
 			jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, created_on"),
@@ -1034,19 +1062,26 @@ func webhooksTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"Name",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ContentType",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"URL",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"Method",
-			), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"Events",
-			), jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"DataTypes",
-			), jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"Topics",
-			), jen.ID("topicsSeparator")), jen.ID("expected").Dot(
+	),
+	jen.ID("topicsSeparator")), jen.ID("expected").Dot(
 				"BelongsTo",
 			)).Dot(
 				"WillReturnRows",
@@ -1077,7 +1112,8 @@ func webhooksTestDotGo() *jen.File {
 				"WebhookCreationInput",
 			).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
 				"Name",
-			), jen.ID("BelongsTo").Op(":").ID("expected").Dot(
+	),
+	jen.ID("BelongsTo").Op(":").ID("expected").Dot(
 				"BelongsTo",
 			)),
 			jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, created_on"),
@@ -1088,19 +1124,26 @@ func webhooksTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"Name",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ContentType",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"URL",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"Method",
-			), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"Events",
-			), jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"DataTypes",
-			), jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"Topics",
-			), jen.ID("topicsSeparator")), jen.ID("expected").Dot(
+	),
+	jen.ID("topicsSeparator")), jen.ID("expected").Dot(
 				"BelongsTo",
 			)).Dot(
 				"WillReturnError",
@@ -1132,7 +1175,7 @@ func webhooksTestDotGo() *jen.File {
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
-			).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"), jen.ID("Events").Op(":").Index().ID("string").Valuesln(), jen.ID("DataTypes").Op(":").Index().ID("string").Valuesln(), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(), jen.ID("BelongsTo").Op(":").Lit(1)),
+			).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"), jen.ID("Events").Op(":").Index().ID("string").Values(), jen.ID("DataTypes").Op(":").Index().ID("string").Values(), jen.ID("Topics").Op(":").Index().ID("string").Values(), jen.ID("BelongsTo").Op(":").Lit(1)),
 			jen.ID("expectedArgCount").Op(":=").Lit(9),
 			jen.ID("expectedQuery").Op(":=").Lit("UPDATE webhooks SET name = $1, content_type = $2, url = $3, method = $4, events = $5, data_types = $6, topics = $7, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $8 AND id = $9 RETURNING updated_on"),
 			jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -1157,7 +1200,7 @@ func webhooksTestDotGo() *jen.File {
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
-			).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"), jen.ID("Events").Op(":").Index().ID("string").Valuesln(), jen.ID("DataTypes").Op(":").Index().ID("string").Valuesln(), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(), jen.ID("BelongsTo").Op(":").Lit(1)),
+			).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"), jen.ID("Events").Op(":").Index().ID("string").Values(), jen.ID("DataTypes").Op(":").Index().ID("string").Values(), jen.ID("Topics").Op(":").Index().ID("string").Values(), jen.ID("BelongsTo").Op(":").Lit(1)),
 			jen.ID("exampleRows").Op(":=").ID("sqlmock").Dot(
 				"NewRows",
 			).Call(jen.Index().ID("string").Valuesln(jen.Lit("updated_on"))).Dot(
@@ -1172,21 +1215,29 @@ func webhooksTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"Name",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ContentType",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"URL",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"Method",
-			), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"Events",
-			), jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"DataTypes",
-			), jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"Topics",
-			), jen.ID("topicsSeparator")), jen.ID("expected").Dot(
+	),
+	jen.ID("topicsSeparator")), jen.ID("expected").Dot(
 				"BelongsTo",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"WillReturnRows",
@@ -1207,7 +1258,7 @@ func webhooksTestDotGo() *jen.File {
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
-			).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"), jen.ID("Events").Op(":").Index().ID("string").Valuesln(), jen.ID("DataTypes").Op(":").Index().ID("string").Valuesln(), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(), jen.ID("BelongsTo").Op(":").Lit(1)),
+			).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"), jen.ID("Events").Op(":").Index().ID("string").Values(), jen.ID("DataTypes").Op(":").Index().ID("string").Values(), jen.ID("Topics").Op(":").Index().ID("string").Values(), jen.ID("BelongsTo").Op(":").Lit(1)),
 			jen.ID("expectedQuery").Op(":=").Lit("UPDATE webhooks SET name = $1, content_type = $2, url = $3, method = $4, events = $5, data_types = $6, topics = $7, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $8 AND id = $9 RETURNING updated_on"),
 			jen.ID("mockDB").Dot(
 				"ExpectQuery",
@@ -1215,21 +1266,29 @@ func webhooksTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"Name",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ContentType",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"URL",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"Method",
-			), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"Events",
-			), jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"DataTypes",
-			), jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
+	),
+	jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot(
 				"Topics",
-			), jen.ID("topicsSeparator")), jen.ID("expected").Dot(
+	),
+	jen.ID("topicsSeparator")), jen.ID("expected").Dot(
 				"BelongsTo",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"WillReturnError",
@@ -1298,7 +1357,8 @@ func webhooksTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot(
 				"BelongsTo",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"ID",
 			)).Dot(
 				"WillReturnResult",
@@ -1309,7 +1369,8 @@ func webhooksTestDotGo() *jen.File {
 				"ArchiveWebhook",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
 				"ID",
-			), jen.ID("expected").Dot(
+	),
+	jen.ID("expected").Dot(
 				"BelongsTo",
 			)),
 			jen.ID("assert").Dot(

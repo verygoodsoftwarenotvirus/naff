@@ -12,8 +12,8 @@ func migrationsDotGo() *jen.File {
 
 	ret.Add(
 		jen.Var().ID("migrations").Op("=").Index().ID("darwin").Dot(
-		"Migration",
-	).Valuesln(jen.Valuesln(jen.ID("Version").Op(":").Lit(1), jen.ID("Description").Op(":").Lit("create users table"), jen.ID("Script").Op(":").Lit(`
+			"Migration",
+		).Valuesln(jen.Valuesln(jen.ID("Version").Op(":").Lit(1), jen.ID("Description").Op(":").Lit("create users table"), jen.ID("Script").Op(":").Lit(`
 			CREATE TABLE IF NOT EXISTS users (
 				"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				"username" TEXT NOT NULL,
@@ -65,62 +65,48 @@ func migrationsDotGo() *jen.File {
 				"belongs_to" INTEGER NOT NULL,
 				FOREIGN KEY(belongs_to) REFERENCES users(id)
 			);`))),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
-	jen.Comment("buildMigrationFunc returns a sync.Once compatible function closure that will"),
-	jen.Line(),
-	jen.Comment("migrate a sqlite database"),
-	jen.Line(),
-	jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Params()).Block(
-		jen.Return().Func().Params().Block(
-			jen.ID("driver").Op(":=").ID("darwin").Dot(
-				"NewGenericDriver",
-			).Call(jen.ID("db"), jen.ID("darwin").Dot(
-				"SqliteDialect",
-			).Valuesln()),
-			jen.If(jen.ID("err").Op(":=").ID("darwin").Dot(
-				"New",
-			).Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot(
-				"Migrate",
-			).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+		jen.Comment("buildMigrationFunc returns a sync.Once compatible function closure that will"),
+		jen.Line(),
+		jen.Comment("migrate a sqlite database"),
+		jen.Line(),
+		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Params()).Block(
+			jen.Return().Func().Params().Block(
+				jen.ID("driver").Op(":=").ID("darwin").Dot(
+					"NewGenericDriver",
+				).Call(jen.ID("db"), jen.ID("darwin").Dot(
+					"SqliteDialect",
+				).Values()),
+				jen.If(jen.ID("err").Op(":=").ID("darwin").Dot(
+					"New",
+				).Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot(
+					"Migrate",
+				).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
+					jen.ID("panic").Call(jen.ID("err")),
+				),
 			),
 		),
-	),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().Comment("// Migrate migrates the database. It does so by invoking the migrateOnce function via sync.Once, so it should be").Comment("// safe (as in idempotent, though not recommended) to call this function multiple times.").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
-		jen.ID("s").Dot(
-			"logger",
-		).Dot(
-			"Info",
-		).Call(jen.Lit("migrating db")),
-		jen.If(jen.Op("!").ID("s").Dot(
-			"IsReady",
-		).Call(jen.ID("ctx"))).Block(
-			jen.Return().ID("errors").Dot(
-				"New",
-			).Call(jen.Lit("db is not ready yet")),
+		jen.Comment("Migrate migrates the database. It does so by invoking the migrateOnce function via sync.Once, so it should be"),
+		jen.Line(),
+		jen.Func().Comment("// safe (as in idempotent, though not recommended) to call this function multiple times.").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
+			jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("migrating db")),
+			jen.If(jen.Op("!").ID("s").Dot("IsReady").Call(jen.ID("ctx"))).Block(
+				jen.Return().ID("errors").Dot("New").Call(jen.Lit("db is not ready yet")),
+			),
+			jen.ID("s").Dot("migrateOnce").Dot("Do").Call(jen.ID("buildMigrationFunc").Call(jen.ID("s").Dot(
+				"db",
+			))),
+			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("database migrated without error!")),
+			jen.Return().ID("nil"),
 		),
-		jen.ID("s").Dot(
-			"migrateOnce",
-		).Dot(
-			"Do",
-		).Call(jen.ID("buildMigrationFunc").Call(jen.ID("s").Dot(
-			"db",
-		))),
-		jen.ID("s").Dot(
-			"logger",
-		).Dot(
-			"Debug",
-		).Call(jen.Lit("database migrated without error!")),
-		jen.Return().ID("nil"),
-	),
-	jen.Line(),
+		jen.Line(),
 	)
 	return ret
 }

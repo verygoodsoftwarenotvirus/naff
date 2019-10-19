@@ -101,9 +101,11 @@ func webhookDotGo() *jen.File {
 					"WithValues",
 				).Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("url").Op(":").ID("w").Dot(
 					"URL",
-				), jen.Lit("method").Op(":").ID("w").Dot(
+	),
+	jen.Lit("method").Op(":").ID("w").Dot(
 					"Method",
-				), jen.Lit("content_type").Op(":").ID("w").Dot(
+	),
+	jen.Lit("content_type").Op(":").ID("w").Dot(
 					"ContentType",
 				))).Dot(
 					"Error",
@@ -127,17 +129,21 @@ func webhookDotGo() *jen.File {
 				"WebhookConfig",
 			).Valuesln(jen.ID("Method").Op(":").ID("w").Dot(
 				"Method",
-			), jen.ID("URL").Op(":").ID("w").Dot(
+	),
+	jen.ID("URL").Op(":").ID("w").Dot(
 				"URL",
-			), jen.ID("ContentType").Op(":").ID("w").Dot(
+	),
+	jen.ID("ContentType").Op(":").ID("w").Dot(
 				"ContentType",
 			)), jen.Op("&").ID("newsman").Dot(
 				"ListenerConfig",
 			).Valuesln(jen.ID("Events").Op(":").ID("w").Dot(
 				"Events",
-			), jen.ID("DataTypes").Op(":").ID("w").Dot(
+	),
+	jen.ID("DataTypes").Op(":").ID("w").Dot(
 				"DataTypes",
-			), jen.ID("Topics").Op(":").ID("w").Dot(
+	),
+	jen.ID("Topics").Op(":").ID("w").Dot(
 				"Topics",
 			))),
 		),

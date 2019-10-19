@@ -62,9 +62,11 @@ func usersTestDotGo() *jen.File {
 	ret.Add(
 		jen.Func().ID("buildDummyUser").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("models").Dot(
 		"UserCreationResponse",
-	), jen.Op("*").ID("models").Dot(
+	),
+	jen.Op("*").ID("models").Dot(
 		"UserInput",
-	), jen.Op("*").Qual("net/http", "Cookie")).Block(
+	),
+	jen.Op("*").Qual("net/http", "Cookie")).Block(
 		jen.ID("t").Dot(
 			"Helper",
 		).Call(),
@@ -86,9 +88,11 @@ func usersTestDotGo() *jen.File {
 		),
 		jen.ID("cookie").Op(":=").ID("loginUser").Call(jen.ID("t"), jen.ID("userInput").Dot(
 			"Username",
-		), jen.ID("userInput").Dot(
+	),
+	jen.ID("userInput").Dot(
 			"Password",
-		), jen.ID("user").Dot(
+	),
+	jen.ID("user").Dot(
 			"TwoFactorSecret",
 		)),
 		jen.ID("require").Dot(
@@ -105,7 +109,8 @@ func usersTestDotGo() *jen.File {
 	ret.Add(
 		jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("expected").Op("*").ID("models").Dot(
 		"UserInput",
-	), jen.ID("actual").Op("*").ID("models").Dot(
+	),
+	jen.ID("actual").Op("*").ID("models").Dot(
 		"UserCreationResponse",
 	)).Block(
 		jen.ID("t").Dot(
@@ -120,7 +125,8 @@ func usersTestDotGo() *jen.File {
 			"Equal",
 		).Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Username",
-		), jen.ID("actual").Dot(
+	),
+	jen.ID("actual").Dot(
 			"Username",
 		)),
 		jen.ID("assert").Dot(
@@ -150,7 +156,8 @@ func usersTestDotGo() *jen.File {
 	ret.Add(
 		jen.Func().ID("checkUserEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("expected").Op("*").ID("models").Dot(
 		"UserInput",
-	), jen.ID("actual").Op("*").ID("models").Dot(
+	),
+	jen.ID("actual").Op("*").ID("models").Dot(
 		"User",
 	)).Block(
 		jen.ID("t").Dot(
@@ -165,7 +172,8 @@ func usersTestDotGo() *jen.File {
 			"Equal",
 		).Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Username",
-		), jen.ID("actual").Dot(
+	),
+	jen.ID("actual").Dot(
 			"Username",
 		)),
 		jen.ID("assert").Dot(
@@ -206,7 +214,8 @@ func usersTestDotGo() *jen.File {
 					"UserInput",
 				).Valuesln(jen.ID("Username").Op(":").ID("expected").Dot(
 					"Username",
-				), jen.ID("Password").Op(":").ID("expected").Dot(
+	),
+	jen.ID("Password").Op(":").ID("expected").Dot(
 					"Password",
 				))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
@@ -248,7 +257,8 @@ func usersTestDotGo() *jen.File {
 					"UserInput",
 				).Valuesln(jen.ID("Username").Op(":").ID("expected").Dot(
 					"Username",
-				), jen.ID("Password").Op(":").ID("expected").Dot(
+	),
+	jen.ID("Password").Op(":").ID("expected").Dot(
 					"Password",
 				))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
@@ -267,7 +277,8 @@ func usersTestDotGo() *jen.File {
 						"Logf",
 					).Call(jen.Lit("error encountered trying to fetch user %q: %v\n"), jen.ID("premade").Dot(
 						"Username",
-					), jen.ID("err")),
+	),
+	jen.ID("err")),
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
 				jen.ID("checkUserEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
