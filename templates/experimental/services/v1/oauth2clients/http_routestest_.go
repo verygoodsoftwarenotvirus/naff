@@ -118,6 +118,7 @@ func httpRoutesTestDotGo() *jen.File {
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("models").Dot("UserIDKey"), jen.ID("userID")),
@@ -382,26 +383,15 @@ func httpRoutesTestDotGo() *jen.File {
 				).Values(), jen.ID("nil")),
 				jen.ID("s").Dot("Database").Op("=").ID("mockDB"),
 				jen.ID("a").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
-				jen.ID("a").Dot("On").Call(
+				jen.ID("a").Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.ID("exampleUser").Dot(
-						"HashedPassword",
-					),
-					jen.ID("exampleInput").Dot(
-						"Password",
-					),
-					jen.ID("exampleUser").Dot(
-						"TwoFactorSecret",
-					),
-					jen.ID("exampleInput").Dot(
-						"TOTPToken",
-					),
-					jen.ID("exampleUser").Dot(
-						"Salt",
-					)).Dot(
-					"Return",
-				).Call(jen.ID("false"), jen.ID("nil")),
+					jen.ID("exampleUser").Dot("HashedPassword"),
+					jen.ID("exampleInput").Dot("Password"),
+					jen.ID("exampleUser").Dot("TwoFactorSecret"),
+					jen.ID("exampleInput").Dot("TOTPToken"),
+					jen.ID("exampleUser").Dot("Salt"),
+				).Dot("Return").Call(jen.ID("false"), jen.ID("nil")),
 				jen.ID("s").Dot(
 					"authenticator",
 				).Op("=").ID("a"),
