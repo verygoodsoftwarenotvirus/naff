@@ -23,9 +23,7 @@ func httpRoutesDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("attachWebhookIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("webhookID").ID("uint64")).Block(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot(
-					"AddAttributes",
-				).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("webhook_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("webhookID"), jen.Lit(10)))),
+				jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("webhook_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("webhookID"), jen.Lit(10)))),
 			),
 		),
 		jen.Line(),
@@ -36,9 +34,7 @@ func httpRoutesDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot(
-					"AddAttributes",
-				).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10)))),
+				jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10)))),
 			),
 		),
 		jen.Line(),

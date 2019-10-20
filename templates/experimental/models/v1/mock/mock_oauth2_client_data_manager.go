@@ -65,9 +65,7 @@ func mockOauth2ClientDataManagerDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2ClientCount is a mock function"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataManager")).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
-		"QueryFilter",
-	),
+		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataManager")).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
 	jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
@@ -134,9 +132,7 @@ func mockOauth2ClientDataManagerDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2Clients is a mock function"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataManager")).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
-		"QueryFilter",
-	),
+		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataManager")).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
 	jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 		"OAuth2ClientList",
 	),

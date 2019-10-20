@@ -20,9 +20,7 @@ func usersTestDotGo() *jen.File {
 			"NewRows",
 		).Call(jen.ID("usersTableColumns")).Dot(
 			"AddRow",
-		).Call(jen.ID("user").Dot(
-			"ID",
-	),
+		).Call(jen.ID("user").Dot("ID"),
 	jen.ID("user").Dot(
 			"Username",
 	),
@@ -38,15 +36,9 @@ func usersTestDotGo() *jen.File {
 	jen.ID("user").Dot(
 			"IsAdmin",
 	),
-	jen.ID("user").Dot(
-			"CreatedOn",
-	),
-	jen.ID("user").Dot(
-			"UpdatedOn",
-	),
-	jen.ID("user").Dot(
-			"ArchivedOn",
-		)),
+	jen.ID("user").Dot("CreatedOn"),
+	jen.ID("user").Dot("UpdatedOn"),
+	jen.ID("user").Dot("ArchivedOn")),
 		jen.Return().ID("exampleRows"),
 	),
 	jen.Line(),
@@ -62,12 +54,8 @@ func usersTestDotGo() *jen.File {
 			"NewRows",
 		).Call(jen.ID("usersTableColumns")).Dot(
 			"AddRow",
-		).Call(jen.ID("user").Dot(
-			"ArchivedOn",
-	),
-	jen.ID("user").Dot(
-			"ID",
-	),
+		).Call(jen.ID("user").Dot("ArchivedOn"),
+	jen.ID("user").Dot("ID"),
 	jen.ID("user").Dot(
 			"Username",
 	),
@@ -83,12 +71,8 @@ func usersTestDotGo() *jen.File {
 	jen.ID("user").Dot(
 			"IsAdmin",
 	),
-	jen.ID("user").Dot(
-			"CreatedOn",
-	),
-	jen.ID("user").Dot(
-			"UpdatedOn",
-		)),
+	jen.ID("user").Dot("CreatedOn"),
+	jen.ID("user").Dot("UpdatedOn")),
 		jen.Return().ID("exampleRows"),
 	),
 	jen.Line(),
@@ -131,16 +115,12 @@ func usersTestDotGo() *jen.File {
 				"ExpectQuery",
 			).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot(
 				"WithArgs",
-			).Call(jen.ID("expected").Dot(
-				"ID",
-			)).Dot(
+			).Call(jen.ID("expected").Dot("ID")).Dot(
 				"WillReturnRows",
 			).Call(jen.ID("buildMockRowFromUser").Call(jen.ID("expected"))),
 			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 				"GetUser",
-			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
-				"ID",
-			)),
+			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
@@ -159,20 +139,14 @@ func usersTestDotGo() *jen.File {
 				"ExpectQuery",
 			).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot(
 				"WithArgs",
-			).Call(jen.ID("expected").Dot(
-				"ID",
-			)).Dot(
+			).Call(jen.ID("expected").Dot("ID")).Dot(
 				"WillReturnError",
 			).Call(jen.Qual("database/sql", "ErrNoRows")),
 			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 				"GetUser",
-			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
-				"ID",
-			)),
+			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID")),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot(
-				"Nil",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 				"ExpectationsWereMet",
@@ -271,9 +245,7 @@ func usersTestDotGo() *jen.File {
 				"DefaultQueryFilter",
 			).Call()),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot(
-				"Nil",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 				"ExpectationsWereMet",
@@ -294,9 +266,7 @@ func usersTestDotGo() *jen.File {
 				"DefaultQueryFilter",
 			).Call()),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot(
-				"Nil",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
@@ -326,9 +296,7 @@ func usersTestDotGo() *jen.File {
 				"DefaultQueryFilter",
 			).Call()),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot(
-				"Nil",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
@@ -372,9 +340,7 @@ func usersTestDotGo() *jen.File {
 				"DefaultQueryFilter",
 			).Call()),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot(
-				"Nil",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
@@ -459,9 +425,7 @@ func usersTestDotGo() *jen.File {
 				"Username",
 			)),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot(
-				"Nil",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 				"ExpectationsWereMet",
@@ -490,9 +454,7 @@ func usersTestDotGo() *jen.File {
 				"Username",
 			)),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot(
-				"Nil",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
@@ -624,9 +586,7 @@ func usersTestDotGo() *jen.File {
 			).Call(jen.Index().ID("string").Valuesln(
 	jen.Lit("id"), jen.Lit("created_on"))).Dot(
 				"AddRow",
-			).Call(jen.ID("expected").Dot(
-				"ID",
-	),
+			).Call(jen.ID("expected").Dot("ID"),
 	jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 				"Unix",
 			).Call())),
@@ -698,9 +658,7 @@ func usersTestDotGo() *jen.File {
 				"CreateUser",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot(
-				"Nil",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("err"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client", "ErrUserExists")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 				"ExpectationsWereMet",
@@ -744,9 +702,7 @@ func usersTestDotGo() *jen.File {
 				"CreateUser",
 			).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot(
-				"Nil",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 				"ExpectationsWereMet",
 			).Call(), jen.Lit("not all database expectations were met")),
@@ -813,9 +769,7 @@ func usersTestDotGo() *jen.File {
 	jen.ID("expected").Dot(
 				"TwoFactorSecret",
 	),
-	jen.ID("expected").Dot(
-				"ID",
-			)).Dot(
+	jen.ID("expected").Dot("ID")).Dot(
 				"WillReturnRows",
 			).Call(jen.ID("exampleRows")),
 			jen.ID("err").Op(":=").ID("p").Dot(
@@ -869,18 +823,14 @@ func usersTestDotGo() *jen.File {
 				"ExpectExec",
 			).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot(
 				"WithArgs",
-			).Call(jen.ID("expected").Dot(
-				"ID",
-			)).Dot(
+			).Call(jen.ID("expected").Dot("ID")).Dot(
 				"WillReturnResult",
 			).Call(jen.ID("sqlmock").Dot(
 				"NewResult",
 			).Call(jen.Lit(1), jen.Lit(1))),
 			jen.ID("err").Op(":=").ID("p").Dot(
 				"ArchiveUser",
-			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot(
-				"ID",
-			)),
+			).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 				"ExpectationsWereMet",

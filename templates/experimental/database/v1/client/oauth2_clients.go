@@ -22,9 +22,7 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("attachOAuth2ClientDatabaseIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("oauth2ClientID").ID("uint64")).Block(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot(
-					"AddAttributes",
-				).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("oauth2client_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("oauth2ClientID"), jen.Lit(10)))),
+				jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("oauth2client_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("oauth2ClientID"), jen.Lit(10)))),
 			),
 		),
 		jen.Line(),
@@ -35,9 +33,7 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("attachOAuth2ClientIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("clientID").ID("string")).Block(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot(
-					"AddAttributes",
-				).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("client_id"), jen.ID("clientID"))),
+				jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("client_id"), jen.ID("clientID"))),
 			),
 		),
 		jen.Line(),
@@ -54,18 +50,10 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("attachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("clientID")),
-			jen.ID("logger").Op(":=").ID("c").Dot(
-				"logger",
-			).Dot(
-				"WithValues",
-			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-	jen.Lit("client_id").Op(":").ID("clientID"), jen.Lit("user_id").Op(":").ID("userID"))),
-			jen.ID("logger").Dot(
-				"Debug",
-			).Call(jen.Lit("GetOAuth2Client called")),
-			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("c").Dot(
-				"querier",
-			).Dot(
+			jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+				jen.Lit("client_id").Op(":").ID("clientID"), jen.Lit("user_id").Op(":").ID("userID"))),
+			jen.ID("logger").Dot("Debug").Call(jen.Lit("GetOAuth2Client called")),
+			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("c").Dot("querier").Dot(
 				"GetOAuth2Client",
 			).Call(jen.ID("ctx"), jen.ID("clientID"), jen.ID("userID")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -89,17 +77,9 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetOAuth2ClientByClientID")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachOAuth2ClientIDToSpan").Call(jen.ID("span"), jen.ID("clientID")),
-			jen.ID("logger").Op(":=").ID("c").Dot(
-				"logger",
-			).Dot(
-				"WithValue",
-			).Call(jen.Lit("oauth2client_client_id"), jen.ID("clientID")),
-			jen.ID("logger").Dot(
-				"Debug",
-			).Call(jen.Lit("GetOAuth2ClientByClientID called")),
-			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("c").Dot(
-				"querier",
-			).Dot(
+			jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("oauth2client_client_id"), jen.ID("clientID")),
+			jen.ID("logger").Dot("Debug").Call(jen.Lit("GetOAuth2ClientByClientID called")),
+			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("c").Dot("querier").Dot(
 				"GetOAuth2ClientByClientID",
 			).Call(jen.ID("ctx"), jen.ID("clientID")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -114,24 +94,14 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2ClientCount gets the count of OAuth2 clients in the database that match the current filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
-			"QueryFilter",
-		),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetOAuth2ClientCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
-			jen.ID("c").Dot(
-				"logger",
-			).Dot(
-				"WithValue",
-			).Call(jen.Lit("user_id"), jen.ID("userID")).Dot(
-				"Debug",
-			).Call(jen.Lit("GetOAuth2ClientCount called")),
-			jen.Return().ID("c").Dot(
-				"querier",
-			).Dot(
+			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetOAuth2ClientCount called")),
+			jen.Return().ID("c").Dot("querier").Dot(
 				"GetOAuth2ClientCount",
 			).Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
 		),
@@ -144,14 +114,8 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllOAuth2ClientCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.ID("c").Dot(
-				"logger",
-			).Dot(
-				"Debug",
-			).Call(jen.Lit("GetAllOAuth2ClientCount called")),
-			jen.Return().ID("c").Dot(
-				"querier",
-			).Dot(
+			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("GetAllOAuth2ClientCount called")),
+			jen.Return().ID("c").Dot("querier").Dot(
 				"GetAllOAuth2ClientCount",
 			).Call(jen.ID("ctx")),
 		),
@@ -168,16 +132,8 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllOAuth2ClientsForUser")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-			jen.ID("c").Dot(
-				"logger",
-			).Dot(
-				"WithValue",
-			).Call(jen.Lit("user_id"), jen.ID("userID")).Dot(
-				"Debug",
-			).Call(jen.Lit("GetAllOAuth2ClientsForUser called")),
-			jen.Return().ID("c").Dot(
-				"querier",
-			).Dot(
+			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetAllOAuth2ClientsForUser called")),
+			jen.Return().ID("c").Dot("querier").Dot(
 				"GetAllOAuth2ClientsForUser",
 			).Call(jen.ID("ctx"), jen.ID("userID")),
 		),
@@ -193,14 +149,8 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllOAuth2Clients")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.ID("c").Dot(
-				"logger",
-			).Dot(
-				"Debug",
-			).Call(jen.Lit("GetAllOAuth2Clients called")),
-			jen.Return().ID("c").Dot(
-				"querier",
-			).Dot(
+			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("GetAllOAuth2Clients called")),
+			jen.Return().ID("c").Dot("querier").Dot(
 				"GetAllOAuth2Clients",
 			).Call(jen.ID("ctx")),
 		),
@@ -210,9 +160,7 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
-			"QueryFilter",
-		),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 			"OAuth2ClientList",
 		),
@@ -221,16 +169,8 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
-			jen.ID("c").Dot(
-				"logger",
-			).Dot(
-				"WithValue",
-			).Call(jen.Lit("user_id"), jen.ID("userID")).Dot(
-				"Debug",
-			).Call(jen.Lit("GetOAuth2Clients called")),
-			jen.Return().ID("c").Dot(
-				"querier",
-			).Dot(
+			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetOAuth2Clients called")),
+			jen.Return().ID("c").Dot("querier").Dot(
 				"GetOAuth2Clients",
 			).Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
 		),
@@ -248,33 +188,21 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("CreateOAuth2Client")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.ID("logger").Op(":=").ID("c").Dot(
-				"logger",
-			).Dot(
-				"WithValues",
-			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-	jen.Lit("client_id").Op(":").ID("input").Dot(
-				"ClientID",
-			),
-				jen.Lit("belongs_to").Op(":").ID("input").Dot(
-					"BelongsTo",
-				))),
-			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("c").Dot(
-				"querier",
-			).Dot(
+			jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+				jen.Lit("client_id").Op(":").ID("input").Dot(
+					"ClientID",
+				),
+				jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo"))),
+			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("c").Dot("querier").Dot(
 				"CreateOAuth2Client",
 			).Call(jen.ID("ctx"), jen.ID("input")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot(
 					"WithError",
-				).Call(jen.ID("err")).Dot(
-					"Debug",
-				).Call(jen.Lit("error writing oauth2 client to the querier")),
+				).Call(jen.ID("err")).Dot("Debug").Call(jen.Lit("error writing oauth2 client to the querier")),
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
-			jen.ID("logger").Dot(
-				"Debug",
-			).Call(jen.Lit("new oauth2 client created successfully")),
+			jen.ID("logger").Dot("Debug").Call(jen.Lit("new oauth2 client created successfully")),
 			jen.Return().List(jen.ID("client"), jen.ID("nil")),
 		),
 		jen.Line(),
@@ -290,9 +218,7 @@ func oauth2ClientsDotGo() *jen.File {
 		)).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("UpdateOAuth2Client")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Return().ID("c").Dot(
-				"querier",
-			).Dot(
+			jen.Return().ID("c").Dot("querier").Dot(
 				"UpdateOAuth2Client",
 			).Call(jen.ID("ctx"), jen.ID("updated")),
 		),
@@ -307,28 +233,18 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("attachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("clientID")),
-			jen.ID("logger").Op(":=").ID("c").Dot(
-				"logger",
-			).Dot(
-				"WithValues",
-			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-	jen.Lit("client_id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"))),
-			jen.ID("err").Op(":=").ID("c").Dot(
-				"querier",
-			).Dot(
+			jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+				jen.Lit("client_id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"))),
+			jen.ID("err").Op(":=").ID("c").Dot("querier").Dot(
 				"ArchiveOAuth2Client",
 			).Call(jen.ID("ctx"), jen.ID("clientID"), jen.ID("userID")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot(
 					"WithError",
-				).Call(jen.ID("err")).Dot(
-					"Debug",
-				).Call(jen.Lit("error deleting oauth2 client to the querier")),
+				).Call(jen.ID("err")).Dot("Debug").Call(jen.Lit("error deleting oauth2 client to the querier")),
 				jen.Return().ID("err"),
 			),
-			jen.ID("logger").Dot(
-				"Debug",
-			).Call(jen.Lit("removed oauth2 client successfully")),
+			jen.ID("logger").Dot("Debug").Call(jen.Lit("removed oauth2 client successfully")),
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),

@@ -85,9 +85,7 @@ func migrationsDotGo() *jen.File {
 				).Call(jen.ID("db"), jen.ID("darwin").Dot(
 					"SqliteDialect",
 				).Values()),
-				jen.If(jen.ID("err").Op(":=").ID("darwin").Dot("New").Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot(
-					"Migrate",
-				).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.If(jen.ID("err").Op(":=").ID("darwin").Dot("New").Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot("Migrate").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("panic").Call(jen.ID("err")),
 				),
 			),
@@ -103,9 +101,7 @@ func migrationsDotGo() *jen.File {
 			jen.If(jen.Op("!").ID("s").Dot("IsReady").Call(jen.ID("ctx"))).Block(
 				jen.Return().ID("errors").Dot("New").Call(jen.Lit("db is not ready yet")),
 			),
-			jen.ID("s").Dot("migrateOnce").Dot("Do").Call(jen.ID("buildMigrationFunc").Call(jen.ID("s").Dot(
-				"db",
-			))),
+			jen.ID("s").Dot("migrateOnce").Dot("Do").Call(jen.ID("buildMigrationFunc").Call(jen.ID("s").Dot("db"))),
 			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("database migrated without error!")),
 			jen.Return().ID("nil"),
 		),

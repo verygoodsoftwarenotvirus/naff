@@ -44,9 +44,7 @@ func serverTestDotGo() *jen.File {
 				).Call(),
 				jen.ID("mockDB").Dot(
 					"WebhookDataManager",
-				).Dot(
-					"On",
-				).Call(jen.Lit("GetAllWebhooks"), jen.Qual("github.com/stretchr/testify/mock",
+				).Dot("On").Call(jen.Lit("GetAllWebhooks"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				)).Dot(
 					"Return",
@@ -76,9 +74,7 @@ func serverTestDotGo() *jen.File {
 				).Call(), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(), jen.ID("newsman").Dot(
 					"NewNewsman",
 				).Call(jen.ID("nil"), jen.ID("nil"))),
-				jen.ID("assert").Dot(
-					"NotNil",
-				).Call(jen.ID("t"), jen.ID("actual")),
+				jen.ID("assert").Dot("NotNil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),
 		),

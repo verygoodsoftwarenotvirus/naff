@@ -62,10 +62,8 @@ func oauth2ClientDotGo() *jen.File {
 		jen.Comment("GetUserID returns the client's UserID"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("OAuth2Client")).ID("GetUserID").Params().Params(jen.ID("string")).Block(
-			jen.Return().Qual("strconv", "FormatUint").Call(jen.ID("c").Dot(
-				"BelongsTo",
-	),
-	jen.Lit(10)),
+			jen.Return().Qual("strconv", "FormatUint").Call(jen.ID("c").Dot("BelongsTo"),
+				jen.Lit(10)),
 		),
 		jen.Line(),
 	)

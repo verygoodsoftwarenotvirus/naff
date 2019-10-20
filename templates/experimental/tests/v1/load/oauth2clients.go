@@ -94,9 +94,7 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.If(jen.ID("randomOAuth2Client").Op(":=").ID("fetchRandomOAuth2Client").Call(jen.ID("c")), jen.ID("randomOAuth2Client").Op("!=").ID("nil")).Block(
 				jen.Return().ID("c").Dot(
 					"BuildGetOAuth2ClientRequest",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("randomOAuth2Client").Dot(
-					"ID",
-				)),
+				).Call(jen.Qual("context", "Background").Call(), jen.ID("randomOAuth2Client").Dot("ID")),
 			),
 			jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
 	),

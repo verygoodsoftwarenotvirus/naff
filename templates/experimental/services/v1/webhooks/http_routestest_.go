@@ -614,9 +614,7 @@ func httpRoutesTestDotGo() *jen.File {
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot("WebhookUpdateInput").Valuesln(
-	jen.ID("Name").Op(":").ID("expected").Dot(
-					"Name",
-				)),
+					jen.ID("Name").Op(":").ID("expected").Dot("Name")),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),

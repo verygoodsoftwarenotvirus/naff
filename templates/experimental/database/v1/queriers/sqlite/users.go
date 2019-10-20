@@ -17,7 +17,7 @@ func usersDotGo() *jen.File {
 
 	ret.Add(
 		jen.Var().ID("usersTableColumns").Op("=").Index().ID("string").Valuesln(
-	jen.Lit("id"), jen.Lit("username"), jen.Lit("hashed_password"), jen.Lit("password_last_changed_on"), jen.Lit("two_factor_secret"), jen.Lit("is_admin"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on")),
+			jen.Lit("id"), jen.Lit("username"), jen.Lit("hashed_password"), jen.Lit("password_last_changed_on"), jen.Lit("two_factor_secret"), jen.Lit("is_admin"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on")),
 		jen.Line(),
 	)
 
@@ -34,9 +34,7 @@ func usersDotGo() *jen.File {
 			).Values(),
 			jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
 				"Scan",
-			).Call(jen.Op("&").ID("x").Dot(
-				"ID",
-			),
+			).Call(jen.Op("&").ID("x").Dot("ID"),
 				jen.Op("&").ID("x").Dot(
 					"Username",
 				),
@@ -52,15 +50,9 @@ func usersDotGo() *jen.File {
 				jen.Op("&").ID("x").Dot(
 					"IsAdmin",
 				),
-				jen.Op("&").ID("x").Dot(
-					"CreatedOn",
-				),
-				jen.Op("&").ID("x").Dot(
-					"UpdatedOn",
-				),
-				jen.Op("&").ID("x").Dot(
-					"ArchivedOn",
-				)), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Op("&").ID("x").Dot("CreatedOn"),
+				jen.Op("&").ID("x").Dot("UpdatedOn"),
+				jen.Op("&").ID("x").Dot("ArchivedOn")), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
@@ -118,7 +110,7 @@ func usersDotGo() *jen.File {
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
 			).Valuesln(
-	jen.Lit("id").Op(":").ID("userID"))).Dot(
+				jen.Lit("id").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("s").Dot(
@@ -139,9 +131,7 @@ func usersDotGo() *jen.File {
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetUserQuery",
 			).Call(jen.ID("userID")),
-			jen.ID("row").Op(":=").ID("s").Dot(
-				"db",
-			).Dot(
+			jen.ID("row").Op(":=").ID("s").Dot("db").Dot(
 				"QueryRowContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.List(jen.ID("u"), jen.ID("err")).Op(":=").ID("scanUser").Call(jen.ID("row")),
@@ -168,7 +158,7 @@ func usersDotGo() *jen.File {
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
 			).Valuesln(
-	jen.Lit("username").Op(":").ID("username"))).Dot(
+				jen.Lit("username").Op(":").ID("username"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("s").Dot(
@@ -189,9 +179,7 @@ func usersDotGo() *jen.File {
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetUserByUsernameQuery",
 			).Call(jen.ID("username")),
-			jen.ID("row").Op(":=").ID("s").Dot(
-				"db",
-			).Dot(
+			jen.ID("row").Op(":=").ID("s").Dot("db").Dot(
 				"QueryRowContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.List(jen.ID("u"), jen.ID("err")).Op(":=").ID("scanUser").Call(jen.ID("row")),
@@ -207,9 +195,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetUserCountQuery returns a SQL query (and arguments) for retrieving the number of users who adhere").Comment("// to a given filter's criteria.").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetUserCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
-			"QueryFilter",
-		)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Comment("// buildGetUserCountQuery returns a SQL query (and arguments) for retrieving the number of users who adhere").Comment("// to a given filter's criteria.").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetUserCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID("s").Dot(
@@ -223,7 +209,7 @@ func usersDotGo() *jen.File {
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
 			).Valuesln(
-	jen.Lit("archived_on").Op(":").ID("nil"))),
+				jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
 					"ApplyToQueryBuilder",
@@ -243,15 +229,11 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUserCount fetches a count of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
-			"QueryFilter",
-		)).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetUserCountQuery",
 			).Call(jen.ID("filter")),
-			jen.ID("err").Op("=").ID("s").Dot(
-				"db",
-			).Dot(
+			jen.ID("err").Op("=").ID("s").Dot("db").Dot(
 				"QueryRowContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot(
 				"Scan",
@@ -262,9 +244,7 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetUserCountQuery returns a SQL query (and arguments) for retrieving a slice of users who adhere").Comment("// to a given filter's criteria.").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetUsersQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
-			"QueryFilter",
-		)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Comment("// buildGetUserCountQuery returns a SQL query (and arguments) for retrieving a slice of users who adhere").Comment("// to a given filter's criteria.").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetUsersQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID("s").Dot(
@@ -278,7 +258,7 @@ func usersDotGo() *jen.File {
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
 			).Valuesln(
-	jen.Lit("archived_on").Op(":").ID("nil"))),
+				jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
 					"ApplyToQueryBuilder",
@@ -298,18 +278,14 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
-			"QueryFilter",
-		)).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.Op("*").ID("models").Dot(
 			"UserList",
 		),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetUsersQuery",
 			).Call(jen.ID("filter")),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("s").Dot(
-				"db",
-			).Dot(
+			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("s").Dot("db").Dot(
 				"QueryContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -330,16 +306,16 @@ func usersDotGo() *jen.File {
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"UserList",
 			).Valuesln(
-	jen.ID("Pagination").Op(":").ID("models").Dot(
-				"Pagination",
-			).Valuesln(
-	jen.ID("Page").Op(":").ID("filter").Dot(
-				"Page",
-			),
-				jen.ID("Limit").Op(":").ID("filter").Dot(
-					"Limit",
-				),
-				jen.ID("TotalCount").Op(":").ID("count")), jen.ID("Users").Op(":").ID("userList")),
+				jen.ID("Pagination").Op(":").ID("models").Dot(
+					"Pagination",
+				).Valuesln(
+					jen.ID("Page").Op(":").ID("filter").Dot(
+						"Page",
+					),
+					jen.ID("Limit").Op(":").ID("filter").Dot(
+						"Limit",
+					),
+					jen.ID("TotalCount").Op(":").ID("count")), jen.ID("Users").Op(":").ID("userList")),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
 		),
 		jen.Line(),
@@ -394,7 +370,7 @@ func usersDotGo() *jen.File {
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
 			).Valuesln(
-	jen.Lit("id").Op(":").ID("userID"))).Dot(
+				jen.Lit("id").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("s").Dot(
@@ -417,18 +393,16 @@ func usersDotGo() *jen.File {
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"User",
 			).Valuesln(
-	jen.ID("Username").Op(":").ID("input").Dot(
-				"Username",
-			),
+				jen.ID("Username").Op(":").ID("input").Dot(
+					"Username",
+				),
 				jen.ID("TwoFactorSecret").Op(":").ID("input").Dot(
 					"TwoFactorSecret",
 				)),
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildCreateUserQuery",
 			).Call(jen.ID("input")),
-			jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID("s").Dot(
-				"db",
-			).Dot(
+			jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID("s").Dot("db").Dot(
 				"ExecContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -437,25 +411,17 @@ func usersDotGo() *jen.File {
 			jen.If(jen.List(jen.ID("id"), jen.ID("idErr")).Op(":=").ID("res").Dot(
 				"LastInsertId",
 			).Call(), jen.ID("idErr").Op("==").ID("nil")).Block(
-				jen.ID("x").Dot(
-					"ID",
-				).Op("=").ID("uint64").Call(jen.ID("id")),
+				jen.ID("x").Dot("ID").Op("=").ID("uint64").Call(jen.ID("id")),
 				jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 					"buildUserCreationTimeQuery",
-				).Call(jen.ID("x").Dot(
-					"ID",
-				)),
+				).Call(jen.ID("x").Dot("ID")),
 				jen.ID("s").Dot(
 					"logCreationTimeRetrievalError",
-				).Call(jen.ID("s").Dot(
-					"db",
-				).Dot(
+				).Call(jen.ID("s").Dot("db").Dot(
 					"QueryRowContext",
 				).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot(
 					"Scan",
-				).Call(jen.Op("&").ID("x").Dot(
-					"CreatedOn",
-				))),
+				).Call(jen.Op("&").ID("x").Dot("CreatedOn"))),
 			),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
 		),
@@ -485,9 +451,7 @@ func usersDotGo() *jen.File {
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
 			).Valuesln(
-	jen.Lit("id").Op(":").ID("input").Dot(
-				"ID",
-			))).Dot(
+				jen.Lit("id").Op(":").ID("input").Dot("ID"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("s").Dot(
@@ -511,9 +475,7 @@ func usersDotGo() *jen.File {
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildUpdateUserQuery",
 			).Call(jen.ID("input")),
-			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("s").Dot(
-				"db",
-			).Dot(
+			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("s").Dot("db").Dot(
 				"ExecContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("err"),
@@ -538,7 +500,7 @@ func usersDotGo() *jen.File {
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
 			).Valuesln(
-	jen.Lit("id").Op(":").ID("userID"))).Dot(
+				jen.Lit("id").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("s").Dot(
@@ -556,9 +518,7 @@ func usersDotGo() *jen.File {
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildArchiveUserQuery",
 			).Call(jen.ID("userID")),
-			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("s").Dot(
-				"db",
-			).Dot(
+			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("s").Dot("db").Dot(
 				"ExecContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("err"),

@@ -17,15 +17,11 @@ func itemsTestDotGo() *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleItemID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
-					"Item",
-				).Values(),
+				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("Item").Values(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot(
 					"ItemDataManager",
-				).Dot(
-					"On",
-				).Call(jen.Lit("GetItem"), jen.Qual("github.com/stretchr/testify/mock",
+				).Dot("On").Call(jen.Lit("GetItem"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("exampleItemID"), jen.ID("exampleUserID")).Dot(
@@ -36,9 +32,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleItemID"), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("mockDB").Dot(
-					"AssertExpectations",
-				).Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
 		jen.Line(),
@@ -54,9 +48,7 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot(
 					"ItemDataManager",
-				).Dot(
-					"On",
-				).Call(jen.Lit("GetItemCount"), jen.Qual("github.com/stretchr/testify/mock",
+				).Dot("On").Call(jen.Lit("GetItemCount"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("models").Dot(
@@ -71,9 +63,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("mockDB").Dot(
-					"AssertExpectations",
-				).Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -82,14 +72,10 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot(
 					"ItemDataManager",
-				).Dot(
-					"On",
-				).Call(jen.Lit("GetItemCount"), jen.Qual("github.com/stretchr/testify/mock",
+				).Dot("On").Call(jen.Lit("GetItemCount"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
-					jen.Parens(jen.Op("*").ID("models").Dot(
-						"QueryFilter",
-					)).Call(jen.ID("nil")), jen.ID("exampleUserID")).Dot(
+					jen.Parens(jen.Op("*").ID("models").Dot("QueryFilter")).Call(jen.ID("nil")), jen.ID("exampleUserID")).Dot(
 					"Return",
 				).Call(jen.ID("expected"), jen.ID("nil")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
@@ -97,9 +83,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("nil"), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("mockDB").Dot(
-					"AssertExpectations",
-				).Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
 		jen.Line(),
@@ -114,9 +98,7 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot(
 					"ItemDataManager",
-				).Dot(
-					"On",
-				).Call(jen.Lit("GetAllItemsCount"), jen.Qual("github.com/stretchr/testify/mock",
+				).Dot("On").Call(jen.Lit("GetAllItemsCount"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				)).Dot(
 					"Return",
@@ -126,9 +108,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call()),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("mockDB").Dot(
-					"AssertExpectations",
-				).Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
 		jen.Line(),
@@ -146,9 +126,7 @@ func itemsTestDotGo() *jen.File {
 				).Values(),
 				jen.ID("mockDB").Dot(
 					"ItemDataManager",
-				).Dot(
-					"On",
-				).Call(jen.Lit("GetItems"), jen.Qual("github.com/stretchr/testify/mock",
+				).Dot("On").Call(jen.Lit("GetItems"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("models").Dot(
@@ -163,9 +141,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("mockDB").Dot(
-					"AssertExpectations",
-				).Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -176,14 +152,10 @@ func itemsTestDotGo() *jen.File {
 				).Values(),
 				jen.ID("mockDB").Dot(
 					"ItemDataManager",
-				).Dot(
-					"On",
-				).Call(jen.Lit("GetItems"), jen.Qual("github.com/stretchr/testify/mock",
+				).Dot("On").Call(jen.Lit("GetItems"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
-					jen.Parens(jen.Op("*").ID("models").Dot(
-						"QueryFilter",
-					)).Call(jen.ID("nil")), jen.ID("exampleUserID")).Dot(
+					jen.Parens(jen.Op("*").ID("models").Dot("QueryFilter")).Call(jen.ID("nil")), jen.ID("exampleUserID")).Dot(
 					"Return",
 				).Call(jen.ID("expected"), jen.ID("nil")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
@@ -191,9 +163,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("nil"), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("mockDB").Dot(
-					"AssertExpectations",
-				).Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
 		jen.Line(),
@@ -208,14 +178,10 @@ func itemsTestDotGo() *jen.File {
 					"ItemCreationInput",
 				).Values(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
-					"Item",
-				).Values(),
+				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("Item").Values(),
 				jen.ID("mockDB").Dot(
 					"ItemDataManager",
-				).Dot(
-					"On",
-				).Call(jen.Lit("CreateItem"), jen.Qual("github.com/stretchr/testify/mock",
+				).Dot("On").Call(jen.Lit("CreateItem"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("exampleInput")).Dot(
@@ -226,9 +192,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("mockDB").Dot(
-					"AssertExpectations",
-				).Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
 		jen.Line(),
@@ -239,17 +203,13 @@ func itemsTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
-					"Item",
-				).Values(),
+				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot("Item").Values(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 
 				jen.Var().ID("expected").ID("error"),
 				jen.ID("mockDB").Dot(
 					"ItemDataManager",
-				).Dot(
-					"On",
-				).Call(jen.Lit("UpdateItem"), jen.Qual("github.com/stretchr/testify/mock",
+				).Dot("On").Call(jen.Lit("UpdateItem"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("exampleInput")).Dot(
@@ -276,9 +236,7 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot(
 					"ItemDataManager",
-				).Dot(
-					"On",
-				).Call(jen.Lit("ArchiveItem"), jen.Qual("github.com/stretchr/testify/mock",
+				).Dot("On").Call(jen.Lit("ArchiveItem"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("exampleItemID"), jen.ID("exampleUserID")).Dot(

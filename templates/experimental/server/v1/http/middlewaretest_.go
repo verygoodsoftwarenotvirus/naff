@@ -37,9 +37,7 @@ func middlewareTestDotGo() *jen.File {
 				"Helper",
 			).Call(),
 			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
-			jen.ID("require").Dot(
-				"NotNil",
-			).Call(jen.ID("t"), jen.ID("req")),
+			jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.Return().ID("req"),
 		),
@@ -75,9 +73,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestServer").Call(),
 				jen.ID("mh").Op(":=").Op("&").ID("mockHTTPHandler").Values(),
-				jen.ID("mh").Dot(
-					"On",
-				).Call(jen.Lit("ServeHTTP"), jen.Qual("github.com/stretchr/testify/mock",
+				jen.ID("mh").Dot("On").Call(jen.Lit("ServeHTTP"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.Qual("github.com/stretchr/testify/mock",

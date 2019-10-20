@@ -37,9 +37,7 @@ func wireDotGo() *jen.File {
 			jen.ID("logger").Qual(loggingImp, "Logger"),
 			jen.ID("database").Qual(databaseClientImp, "Database")).
 			Params(jen.Op("*").Qual(serverImp, "Server"), jen.ID("error")).Block(
-			jen.ID("wire").Dot(
-				"Build",
-			).Callln(
+			jen.ID("wire").Dot("Build").Callln(
 				jen.Qual(internalConfigImp, "Providers"),
 				jen.Qual(internalAuthImp, "Providers"),
 				jen.Comment("server things"),

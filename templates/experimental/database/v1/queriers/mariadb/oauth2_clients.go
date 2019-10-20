@@ -12,65 +12,53 @@ func oauth2ClientsDotGo() *jen.File {
 
 	ret.Add(
 		jen.Var().ID("scopesSeparator").Op("=").Lit(`,`).Var().ID("oauth2ClientsTableName").Op("=").Lit("oauth2_clients"),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Var().ID("oauth2ClientsTableColumns").Op("=").Index().ID("string").Valuesln(
-	jen.Lit("id"), jen.Lit("name"), jen.Lit("client_id"), jen.Lit("scopes"), jen.Lit("redirect_uri"), jen.Lit("client_secret"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
-	jen.Line(),
+			jen.Lit("id"), jen.Lit("name"), jen.Lit("client_id"), jen.Lit("scopes"), jen.Lit("redirect_uri"), jen.Lit("client_secret"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
+		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().Comment("// scanOAuth2Client takes a Scanner (i.e. *sql.Row) and scans its ressults into an OAuth2Client struct").ID("scanOAuth2Client").Params(jen.ID("scan").ID("database").Dot(
-		"Scanner",
-	)).Params(jen.Op("*").ID("models").Dot(
-		"OAuth2Client",
-	),
-	jen.ID("error")).Block(
-
-		jen.Var().ID("x").Op("=").Op("&").ID("models").Dot(
+			"Scanner",
+		)).Params(jen.Op("*").ID("models").Dot(
 			"OAuth2Client",
-		).Values().Var().ID("scopes").ID("string"),
-		jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
-			"Scan",
-		).Call(jen.Op("&").ID("x").Dot(
-			"ID",
-	),
-	jen.Op("&").ID("x").Dot(
-			"Name",
-	),
-	jen.Op("&").ID("x").Dot(
-			"ClientID",
-	),
-	jen.Op("&").ID("scopes"), jen.Op("&").ID("x").Dot(
-			"RedirectURI",
-	),
-	jen.Op("&").ID("x").Dot(
-			"ClientSecret",
-	),
-	jen.Op("&").ID("x").Dot(
-			"CreatedOn",
-	),
-	jen.Op("&").ID("x").Dot(
-			"UpdatedOn",
-	),
-	jen.Op("&").ID("x").Dot(
-			"ArchivedOn",
-	),
-	jen.Op("&").ID("x").Dot(
-			"BelongsTo",
-		)), jen.ID("err").Op("!=").ID("nil")).Block(
-			jen.Return().List(jen.ID("nil"), jen.ID("err")),
 		),
-		jen.If(jen.ID("scopes").Op(":=").Qual("strings", "Split").Call(jen.ID("scopes"), jen.ID("scopesSeparator")), jen.ID("len").Call(jen.ID("scopes")).Op(">=").Lit(1).Op("&&").ID("scopes").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
-			jen.ID("x").Dot(
-				"Scopes",
-			).Op("=").ID("scopes"),
+			jen.ID("error")).Block(
+
+			jen.Var().ID("x").Op("=").Op("&").ID("models").Dot(
+				"OAuth2Client",
+			).Values().Var().ID("scopes").ID("string"),
+			jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
+				"Scan",
+			).Call(jen.Op("&").ID("x").Dot("ID"),
+				jen.Op("&").ID("x").Dot("Name"),
+				jen.Op("&").ID("x").Dot(
+					"ClientID",
+				),
+				jen.Op("&").ID("scopes"), jen.Op("&").ID("x").Dot(
+					"RedirectURI",
+				),
+				jen.Op("&").ID("x").Dot(
+					"ClientSecret",
+				),
+				jen.Op("&").ID("x").Dot("CreatedOn"),
+				jen.Op("&").ID("x").Dot("UpdatedOn"),
+				jen.Op("&").ID("x").Dot("ArchivedOn"),
+				jen.Op("&").ID("x").Dot("BelongsTo")), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			),
+			jen.If(jen.ID("scopes").Op(":=").Qual("strings", "Split").Call(jen.ID("scopes"), jen.ID("scopesSeparator")), jen.ID("len").Call(jen.ID("scopes")).Op(">=").Lit(1).Op("&&").ID("scopes").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
+				jen.ID("x").Dot(
+					"Scopes",
+				).Op("=").ID("scopes"),
+			),
+			jen.Return().List(jen.ID("x"), jen.ID("nil")),
 		),
-		jen.Return().List(jen.ID("x"), jen.ID("nil")),
-	),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -78,13 +66,13 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("scanOAuth2Clients").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-	),
-	jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Op("*").ID("models").Dot(
+		),
+			jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Op("*").ID("models").Dot(
 			"OAuth2Client",
-	),
-	jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 
-		jen.Var().ID("list").Index().Op("*").ID("models").Dot(
+			jen.Var().ID("list").Index().Op("*").ID("models").Dot(
 				"OAuth2Client",
 			),
 			jen.For(jen.ID("rows").Dot(
@@ -108,7 +96,7 @@ func oauth2ClientsDotGo() *jen.File {
 			),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -116,7 +104,7 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetOAuth2ClientByClientIDQuery").Params(jen.ID("clientID").ID("string")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
-		jen.Var().ID("err").ID("error"),
+			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
 				"sqlBuilder",
 			).Dot(
@@ -128,7 +116,7 @@ func oauth2ClientsDotGo() *jen.File {
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
 			).Valuesln(
-	jen.Lit("client_id").Op(":").ID("clientID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+				jen.Lit("client_id").Op(":").ID("clientID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("m").Dot(
@@ -136,7 +124,7 @@ func oauth2ClientsDotGo() *jen.File {
 			).Call(jen.ID("err")),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -144,24 +132,22 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetOAuth2ClientByClientID").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("string")).Params(jen.Op("*").ID("models").Dot(
 			"OAuth2Client",
-	),
-	jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildGetOAuth2ClientByClientIDQuery",
 			).Call(jen.ID("clientID")),
-			jen.ID("row").Op(":=").ID("m").Dot(
-				"db",
-			).Dot(
+			jen.ID("row").Op(":=").ID("m").Dot("db").Dot(
 				"QueryRowContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("scanOAuth2Client").Call(jen.ID("row")),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Var().ID("getAllOAuth2ClientsQueryBuilder").Qual("sync", "Once").Var().ID("getAllOAuth2ClientsQuery").ID("string"),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -172,7 +158,7 @@ func oauth2ClientsDotGo() *jen.File {
 				"Do",
 			).Call(jen.Func().Params().Block(
 
-		jen.Var().ID("err").ID("error"),
+				jen.Var().ID("err").ID("error"),
 				jen.List(jen.ID("getAllOAuth2ClientsQuery"), jen.ID("_"), jen.ID("err")).Op("=").ID("m").Dot(
 					"sqlBuilder",
 				).Dot(
@@ -184,7 +170,7 @@ func oauth2ClientsDotGo() *jen.File {
 				).Call(jen.ID("squirrel").Dot(
 					"Eq",
 				).Valuesln(
-	jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+					jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 					"ToSql",
 				).Call(),
 				jen.ID("m").Dot(
@@ -193,7 +179,7 @@ func oauth2ClientsDotGo() *jen.File {
 			)),
 			jen.Return().ID("getAllOAuth2ClientsQuery"),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -201,11 +187,9 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetAllOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Index().Op("*").ID("models").Dot(
 			"OAuth2Client",
-	),
-	jen.ID("error")).Block(
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("m").Dot(
-				"db",
-			).Dot(
+		),
+			jen.ID("error")).Block(
+			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("m").Dot("db").Dot(
 				"QueryContext",
 			).Call(jen.ID("ctx"), jen.ID("m").Dot(
 				"buildGetAllOAuth2ClientsQuery",
@@ -216,16 +200,14 @@ func oauth2ClientsDotGo() *jen.File {
 				),
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying database for oauth2 clients: %w"), jen.ID("err"))),
 			),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID("m").Dot(
-				"logger",
-	),
-	jen.ID("rows")),
+			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID("m").Dot("logger"),
+				jen.ID("rows")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching list of OAuth2Clients: %w"), jen.ID("err"))),
 			),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -233,14 +215,12 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetAllOAuth2ClientsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Op("*").ID("models").Dot(
 			"OAuth2Client",
-	),
-	jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildGetOAuth2ClientsQuery",
 			).Call(jen.ID("nil"), jen.ID("userID")),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("m").Dot(
-				"db",
-			).Dot(
+			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("m").Dot("db").Dot(
 				"QueryContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -249,16 +229,14 @@ func oauth2ClientsDotGo() *jen.File {
 				),
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying database for oauth2 clients: %w"), jen.ID("err"))),
 			),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID("m").Dot(
-				"logger",
-	),
-	jen.ID("rows")),
+			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID("m").Dot("logger"),
+				jen.ID("rows")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching list of OAuth2Clients: %w"), jen.ID("err"))),
 			),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -266,7 +244,7 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetOAuth2ClientQuery").Params(jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
-		jen.Var().ID("err").ID("error"),
+			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
 				"sqlBuilder",
 			).Dot(
@@ -278,7 +256,7 @@ func oauth2ClientsDotGo() *jen.File {
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
 			).Valuesln(
-	jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+				jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("m").Dot(
@@ -286,7 +264,7 @@ func oauth2ClientsDotGo() *jen.File {
 			).Call(jen.ID("err")),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -294,14 +272,12 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 			"OAuth2Client",
-	),
-	jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildGetOAuth2ClientQuery",
 			).Call(jen.ID("clientID"), jen.ID("userID")),
-			jen.ID("row").Op(":=").ID("m").Dot(
-				"db",
-			).Dot(
+			jen.ID("row").Op(":=").ID("m").Dot("db").Dot(
 				"QueryRowContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("scanOAuth2Client").Call(jen.ID("row")),
@@ -313,82 +289,76 @@ func oauth2ClientsDotGo() *jen.File {
 			),
 			jen.Return().List(jen.ID("client"), jen.ID("nil")),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetOAuth2ClientCountQuery returns a SQL query (and arguments) that fetches a list of OAuth2 clients that meet certain filter").Comment("// restrictions (if relevant) and belong to a given user").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetOAuth2ClientCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
-		"QueryFilter",
-	),
-	jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Comment("// buildGetOAuth2ClientCountQuery returns a SQL query (and arguments) that fetches a list of OAuth2 clients that meet certain filter").Comment("// restrictions (if relevant) and belong to a given user").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetOAuth2ClientCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
-		jen.Var().ID("err").ID("error"),
-		jen.ID("builder").Op(":=").ID("m").Dot(
-			"sqlBuilder",
-		).Dot(
-			"Select",
-		).Call(jen.ID("CountQuery")).Dot(
-			"From",
-		).Call(jen.ID("oauth2ClientsTableName")).Dot(
-			"Where",
-		).Call(jen.ID("squirrel").Dot(
-			"Eq",
-		).Valuesln(
-	jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
-		jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
-			jen.ID("builder").Op("=").ID("filter").Dot(
-				"ApplyToQueryBuilder",
-			).Call(jen.ID("builder")),
+			jen.Var().ID("err").ID("error"),
+			jen.ID("builder").Op(":=").ID("m").Dot(
+				"sqlBuilder",
+			).Dot(
+				"Select",
+			).Call(jen.ID("CountQuery")).Dot(
+				"From",
+			).Call(jen.ID("oauth2ClientsTableName")).Dot(
+				"Where",
+			).Call(jen.ID("squirrel").Dot(
+				"Eq",
+			).Valuesln(
+				jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
+			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
+				jen.ID("builder").Op("=").ID("filter").Dot(
+					"ApplyToQueryBuilder",
+				).Call(jen.ID("builder")),
+			),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("builder").Dot(
+				"ToSql",
+			).Call(),
+			jen.ID("m").Dot(
+				"logQueryBuildingError",
+			).Call(jen.ID("err")),
+			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
-		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("builder").Dot(
-			"ToSql",
-		).Call(),
-		jen.ID("m").Dot(
-			"logQueryBuildingError",
-		).Call(jen.ID("err")),
-		jen.Return().List(jen.ID("query"), jen.ID("args")),
-	),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Comment("GetOAuth2ClientCount will get the count of OAuth2 clients that match the given filter and belong to the user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
-			"QueryFilter",
-	),
-	jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildGetOAuth2ClientCountQuery",
 			).Call(jen.ID("filter"), jen.ID("userID")),
-			jen.ID("err").Op("=").ID("m").Dot(
-				"db",
-			).Dot(
+			jen.ID("err").Op("=").ID("m").Dot("db").Dot(
 				"QueryRowContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot(
 				"Scan",
 			).Call(jen.Op("&").ID("count")),
 			jen.Return(),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Var().ID("getAllOAuth2ClientCountQueryBuilder").Qual("sync", "Once").Var().ID("getAllOAuth2ClientCountQuery").ID("string"),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Comment("buildGetAllOAuth2ClientCountQuery returns a SQL query for the number of OAuth2 clients"),
 		jen.Line(),
 		jen.Comment("in the database, regardless of ownership."),
-	jen.Line(),
-	jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetAllOAuth2ClientCountQuery").Params().Params(jen.ID("string")).Block(
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetAllOAuth2ClientCountQuery").Params().Params(jen.ID("string")).Block(
 			jen.ID("getAllOAuth2ClientCountQueryBuilder").Dot(
 				"Do",
 			).Call(jen.Func().Params().Block(
 
-		jen.Var().ID("err").ID("error"),
+				jen.Var().ID("err").ID("error"),
 				jen.List(jen.ID("getAllOAuth2ClientCountQuery"), jen.ID("_"), jen.ID("err")).Op("=").ID("m").Dot(
 					"sqlBuilder",
 				).Dot(
@@ -400,7 +370,7 @@ func oauth2ClientsDotGo() *jen.File {
 				).Call(jen.ID("squirrel").Dot(
 					"Eq",
 				).Valuesln(
-	jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+					jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 					"ToSql",
 				).Call(),
 				jen.ID("m").Dot(
@@ -409,7 +379,7 @@ func oauth2ClientsDotGo() *jen.File {
 			)),
 			jen.Return().ID("getAllOAuth2ClientCountQuery"),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -417,10 +387,8 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetAllOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 
-		jen.Var().ID("count").ID("uint64"),
-			jen.ID("err").Op(":=").ID("m").Dot(
-				"db",
-			).Dot(
+			jen.Var().ID("count").ID("uint64"),
+			jen.ID("err").Op(":=").ID("m").Dot("db").Dot(
 				"QueryRowContext",
 			).Call(jen.ID("ctx"), jen.ID("m").Dot(
 				"buildGetAllOAuth2ClientCountQuery",
@@ -429,60 +397,54 @@ func oauth2ClientsDotGo() *jen.File {
 			).Call(jen.Op("&").ID("count")),
 			jen.Return().List(jen.ID("count"), jen.ID("err")),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetOAuth2ClientsQuery returns a SQL query (and arguments) that will retrieve a list of OAuth2 clients that").Comment("// meet the given filter's criteria (if relevant) and belong to a given user.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetOAuth2ClientsQuery").Params(jen.ID("filter").Op("*").ID("models").Dot(
-		"QueryFilter",
-	),
-	jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Comment("// buildGetOAuth2ClientsQuery returns a SQL query (and arguments) that will retrieve a list of OAuth2 clients that").Comment("// meet the given filter's criteria (if relevant) and belong to a given user.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetOAuth2ClientsQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
-		jen.Var().ID("err").ID("error"),
-		jen.ID("builder").Op(":=").ID("m").Dot(
-			"sqlBuilder",
-		).Dot(
-			"Select",
-		).Call(jen.ID("oauth2ClientsTableColumns").Op("...")).Dot(
-			"From",
-		).Call(jen.ID("oauth2ClientsTableName")).Dot(
-			"Where",
-		).Call(jen.ID("squirrel").Dot(
-			"Eq",
-		).Valuesln(
-	jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
-		jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
-			jen.ID("builder").Op("=").ID("filter").Dot(
-				"ApplyToQueryBuilder",
-			).Call(jen.ID("builder")),
+			jen.Var().ID("err").ID("error"),
+			jen.ID("builder").Op(":=").ID("m").Dot(
+				"sqlBuilder",
+			).Dot(
+				"Select",
+			).Call(jen.ID("oauth2ClientsTableColumns").Op("...")).Dot(
+				"From",
+			).Call(jen.ID("oauth2ClientsTableName")).Dot(
+				"Where",
+			).Call(jen.ID("squirrel").Dot(
+				"Eq",
+			).Valuesln(
+				jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
+			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
+				jen.ID("builder").Op("=").ID("filter").Dot(
+					"ApplyToQueryBuilder",
+				).Call(jen.ID("builder")),
+			),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("builder").Dot(
+				"ToSql",
+			).Call(),
+			jen.ID("m").Dot(
+				"logQueryBuildingError",
+			).Call(jen.ID("err")),
+			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
-		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("builder").Dot(
-			"ToSql",
-		).Call(),
-		jen.ID("m").Dot(
-			"logQueryBuildingError",
-		).Call(jen.ID("err")),
-		jen.Return().List(jen.ID("query"), jen.ID("args")),
-	),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
-			"QueryFilter",
-	),
-	jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+			jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
 			"OAuth2ClientList",
-	),
-	jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildGetOAuth2ClientsQuery",
 			).Call(jen.ID("filter"), jen.ID("userID")),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("m").Dot(
-				"db",
-			).Dot(
+			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("m").Dot("db").Dot(
 				"QueryContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -491,19 +453,17 @@ func oauth2ClientsDotGo() *jen.File {
 				),
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for oauth2 clients: %w"), jen.ID("err"))),
 			),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID("m").Dot(
-				"logger",
-	),
-	jen.ID("rows")),
+			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID("m").Dot("logger"),
+				jen.ID("rows")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.ID("err"))),
 			),
 			jen.ID("ll").Op(":=").ID("len").Call(jen.ID("list")),
 
-		jen.Var().ID("clients").Op("=").ID("make").Call(jen.Index().ID("models").Dot(
+			jen.Var().ID("clients").Op("=").ID("make").Call(jen.Index().ID("models").Dot(
 				"OAuth2Client",
-	),
-	jen.ID("ll")),
+			),
+				jen.ID("ll")),
 			jen.For(jen.List(jen.ID("i"), jen.ID("t")).Op(":=").Range().ID("list")).Block(
 				jen.ID("clients").Index(jen.ID("i")).Op("=").Op("*").ID("t"),
 			),
@@ -516,92 +476,88 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.ID("ocl").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2ClientList",
 			).Valuesln(
-	jen.ID("Pagination").Op(":").ID("models").Dot(
-				"Pagination",
-			).Valuesln(
-	jen.ID("Page").Op(":").ID("filter").Dot(
-				"Page",
-	),
-	jen.ID("Limit").Op(":").ID("filter").Dot(
-				"Limit",
-	),
-	jen.ID("TotalCount").Op(":").ID("totalCount")), jen.ID("Clients").Op(":").ID("clients")),
+				jen.ID("Pagination").Op(":").ID("models").Dot(
+					"Pagination",
+				).Valuesln(
+					jen.ID("Page").Op(":").ID("filter").Dot(
+						"Page",
+					),
+					jen.ID("Limit").Op(":").ID("filter").Dot(
+						"Limit",
+					),
+					jen.ID("TotalCount").Op(":").ID("totalCount")), jen.ID("Clients").Op(":").ID("clients")),
 			jen.Return().List(jen.ID("ocl"), jen.ID("nil")),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().Comment("// buildCreateOAuth2ClientQuery returns a SQL query (and args) that will create the given OAuth2Client in the database").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildCreateOAuth2ClientQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
-		"OAuth2Client",
-	)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+			"OAuth2Client",
+		)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
-		jen.Var().ID("err").ID("error"),
-		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
-			"sqlBuilder",
-		).Dot(
-			"Insert",
-		).Call(jen.ID("oauth2ClientsTableName")).Dot(
-			"Columns",
-		).Call(jen.Lit("name"), jen.Lit("client_id"), jen.Lit("client_secret"), jen.Lit("scopes"), jen.Lit("redirect_uri"), jen.Lit("belongs_to"), jen.Lit("created_on")).Dot(
-			"Values",
-		).Call(jen.ID("input").Dot(
-			"Name",
-	),
-	jen.ID("input").Dot(
-			"ClientID",
-	),
-	jen.ID("input").Dot(
-			"ClientSecret",
-	),
-	jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
-			"Scopes",
-	),
-	jen.ID("scopesSeparator")), jen.ID("input").Dot(
-			"RedirectURI",
-	),
-	jen.ID("input").Dot(
-			"BelongsTo",
-	),
-	jen.ID("squirrel").Dot(
-			"Expr",
-		).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
-			"ToSql",
-		).Call(),
-		jen.ID("m").Dot(
-			"logQueryBuildingError",
-		).Call(jen.ID("err")),
-		jen.Return().List(jen.ID("query"), jen.ID("args")),
-	),
-	jen.Line(),
+			jen.Var().ID("err").ID("error"),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
+				"sqlBuilder",
+			).Dot(
+				"Insert",
+			).Call(jen.ID("oauth2ClientsTableName")).Dot(
+				"Columns",
+			).Call(jen.Lit("name"), jen.Lit("client_id"), jen.Lit("client_secret"), jen.Lit("scopes"), jen.Lit("redirect_uri"), jen.Lit("belongs_to"), jen.Lit("created_on")).Dot(
+				"Values",
+			).Call(jen.ID("input").Dot("Name"),
+				jen.ID("input").Dot(
+					"ClientID",
+				),
+				jen.ID("input").Dot(
+					"ClientSecret",
+				),
+				jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
+					"Scopes",
+				),
+					jen.ID("scopesSeparator")), jen.ID("input").Dot(
+					"RedirectURI",
+				),
+				jen.ID("input").Dot("BelongsTo"),
+				jen.ID("squirrel").Dot(
+					"Expr",
+				).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+				"ToSql",
+			).Call(),
+			jen.ID("m").Dot(
+				"logQueryBuildingError",
+			).Call(jen.ID("err")),
+			jen.Return().List(jen.ID("query"), jen.ID("args")),
+		),
+		jen.Line(),
 	)
 
 	ret.Add(
-	jen.Comment("buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments."),
-	jen.Line(),
-	jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildOAuth2ClientCreationTimeQuery").Params(jen.ID("clientID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Comment("buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildOAuth2ClientCreationTimeQuery").Params(jen.ID("clientID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
-		jen.Var().ID("err").ID("error"),
-		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
-			"sqlBuilder",
-		).Dot(
-			"Select",
-		).Call(jen.Lit("created_on")).Dot(
-			"From",
-		).Call(jen.ID("oauth2ClientsTableName")).Dot(
-			"Where",
-		).Call(jen.ID("squirrel").Dot(
-			"Eq",
-		).Valuesln(
-	jen.Lit("id").Op(":").ID("clientID"))).Dot(
-			"ToSql",
-		).Call(),
-		jen.ID("m").Dot(
-			"logQueryBuildingError",
-		).Call(jen.ID("err")),
-		jen.Return().List(jen.ID("query"), jen.ID("args")),
-	),
-	jen.Line(),
+			jen.Var().ID("err").ID("error"),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
+				"sqlBuilder",
+			).Dot(
+				"Select",
+			).Call(jen.Lit("created_on")).Dot(
+				"From",
+			).Call(jen.ID("oauth2ClientsTableName")).Dot(
+				"Where",
+			).Call(jen.ID("squirrel").Dot(
+				"Eq",
+			).Valuesln(
+				jen.Lit("id").Op(":").ID("clientID"))).Dot(
+				"ToSql",
+			).Call(),
+			jen.ID("m").Dot(
+				"logQueryBuildingError",
+			).Call(jen.ID("err")),
+			jen.Return().List(jen.ID("query"), jen.ID("args")),
+		),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -611,35 +567,29 @@ func oauth2ClientsDotGo() *jen.File {
 			"OAuth2ClientCreationInput",
 		)).Params(jen.Op("*").ID("models").Dot(
 			"OAuth2Client",
-	),
-	jen.ID("error")).Block(
+		),
+			jen.ID("error")).Block(
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
 			).Valuesln(
-	jen.ID("Name").Op(":").ID("input").Dot(
-				"Name",
-	),
-	jen.ID("ClientID").Op(":").ID("input").Dot(
-				"ClientID",
-	),
-	jen.ID("ClientSecret").Op(":").ID("input").Dot(
-				"ClientSecret",
-	),
-	jen.ID("RedirectURI").Op(":").ID("input").Dot(
-				"RedirectURI",
-	),
-	jen.ID("Scopes").Op(":").ID("input").Dot(
-				"Scopes",
-	),
-	jen.ID("BelongsTo").Op(":").ID("input").Dot(
-				"BelongsTo",
-			)),
+				jen.ID("Name").Op(":").ID("input").Dot("Name"),
+				jen.ID("ClientID").Op(":").ID("input").Dot(
+					"ClientID",
+				),
+				jen.ID("ClientSecret").Op(":").ID("input").Dot(
+					"ClientSecret",
+				),
+				jen.ID("RedirectURI").Op(":").ID("input").Dot(
+					"RedirectURI",
+				),
+				jen.ID("Scopes").Op(":").ID("input").Dot(
+					"Scopes",
+				),
+				jen.ID("BelongsTo").Op(":").ID("input").Dot("BelongsTo")),
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildCreateOAuth2ClientQuery",
 			).Call(jen.ID("x")),
-			jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID("m").Dot(
-				"db",
-			).Dot(
+			jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID("m").Dot("db").Dot(
 				"ExecContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -648,118 +598,104 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.If(jen.List(jen.ID("id"), jen.ID("idErr")).Op(":=").ID("res").Dot(
 				"LastInsertId",
 			).Call(), jen.ID("idErr").Op("==").ID("nil")).Block(
-				jen.ID("x").Dot(
-					"ID",
-				).Op("=").ID("uint64").Call(jen.ID("id")),
+				jen.ID("x").Dot("ID").Op("=").ID("uint64").Call(jen.ID("id")),
 				jen.List(jen.ID("query"), jen.ID("args")).Op("=").ID("m").Dot(
 					"buildOAuth2ClientCreationTimeQuery",
-				).Call(jen.ID("x").Dot(
-					"ID",
-				)),
+				).Call(jen.ID("x").Dot("ID")),
 				jen.ID("m").Dot(
 					"logCreationTimeRetrievalError",
-				).Call(jen.ID("m").Dot(
-					"db",
-				).Dot(
+				).Call(jen.ID("m").Dot("db").Dot(
 					"QueryRowContext",
 				).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot(
 					"Scan",
-				).Call(jen.Op("&").ID("x").Dot(
-					"CreatedOn",
-				))),
+				).Call(jen.Op("&").ID("x").Dot("CreatedOn"))),
 			),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().Comment("// buildUpdateOAuth2ClientQuery returns a SQL query (and args) that will update a given OAuth2 client in the database").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildUpdateOAuth2ClientQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
-		"OAuth2Client",
-	)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+			"OAuth2Client",
+		)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
-		jen.Var().ID("err").ID("error"),
-		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
-			"sqlBuilder",
-		).Dot(
-			"Update",
-		).Call(jen.ID("oauth2ClientsTableName")).Dot("Set").Call(jen.Lit("client_id"), jen.ID("input").Dot(
-			"ClientID",
-		)).Dot("Set").Call(jen.Lit("client_secret"), jen.ID("input").Dot(
-			"ClientSecret",
-		)).Dot("Set").Call(jen.Lit("scopes"), jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
-			"Scopes",
-	),
-	jen.ID("scopesSeparator"))).Dot("Set").Call(jen.Lit("redirect_uri"), jen.ID("input").Dot(
-			"RedirectURI",
-		)).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
-			"Expr",
-		).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
-			"Where",
-		).Call(jen.ID("squirrel").Dot(
-			"Eq",
-		).Valuesln(
-	jen.Lit("id").Op(":").ID("input").Dot(
-			"ID",
-	),
-	jen.Lit("belongs_to").Op(":").ID("input").Dot(
-			"BelongsTo",
-		))).Dot(
-			"ToSql",
-		).Call(),
-		jen.ID("m").Dot(
-			"logQueryBuildingError",
-		).Call(jen.ID("err")),
-		jen.Return().List(jen.ID("query"), jen.ID("args")),
-	),
-	jen.Line(),
+			jen.Var().ID("err").ID("error"),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
+				"sqlBuilder",
+			).Dot(
+				"Update",
+			).Call(jen.ID("oauth2ClientsTableName")).Dot("Set").Call(jen.Lit("client_id"), jen.ID("input").Dot(
+				"ClientID",
+			)).Dot("Set").Call(jen.Lit("client_secret"), jen.ID("input").Dot(
+				"ClientSecret",
+			)).Dot("Set").Call(jen.Lit("scopes"), jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
+				"Scopes",
+			),
+				jen.ID("scopesSeparator"))).Dot("Set").Call(jen.Lit("redirect_uri"), jen.ID("input").Dot(
+				"RedirectURI",
+			)).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
+				"Expr",
+			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+				"Where",
+			).Call(jen.ID("squirrel").Dot(
+				"Eq",
+			).Valuesln(
+				jen.Lit("id").Op(":").ID("input").Dot("ID"),
+				jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo"))).Dot(
+				"ToSql",
+			).Call(),
+			jen.ID("m").Dot(
+				"logQueryBuildingError",
+			).Call(jen.ID("err")),
+			jen.Return().List(jen.ID("query"), jen.ID("args")),
+		),
+		jen.Line(),
 	)
 
 	ret.Add(
-	jen.Comment("UpdateOAuth2Client updates a OAuth2 client."),
-	jen.Line(),
-	jen.Func().Comment("// NOTE: this function expects the input's ID field to be valid and non-zero.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("UpdateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
-		"OAuth2Client",
-	)).Params(jen.ID("error")).Block(
-		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
-			"buildUpdateOAuth2ClientQuery",
-		).Call(jen.ID("input")),
-		jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("m").Dot(
-			"db",
-		).Dot(
-			"ExecContext",
-		).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
-		jen.Return().ID("err"),
-	),
-	jen.Line(),
+		jen.Comment("UpdateOAuth2Client updates a OAuth2 client."),
+		jen.Line(),
+		jen.Func().Comment("// NOTE: this function expects the input's ID field to be valid and non-zero.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("UpdateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+			"OAuth2Client",
+		)).Params(jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
+				"buildUpdateOAuth2ClientQuery",
+			).Call(jen.ID("input")),
+			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("m").Dot("db").Dot(
+				"ExecContext",
+			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.Return().ID("err"),
+		),
+		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().Comment("// buildArchiveOAuth2ClientQuery returns a SQL query (and arguments) that will mark an OAuth2 client as archived.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildArchiveOAuth2ClientQuery").Params(jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
-		jen.Var().ID("err").ID("error"),
-		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
-			"sqlBuilder",
-		).Dot(
-			"Update",
-		).Call(jen.ID("oauth2ClientsTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
-			"Expr",
-		).Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
-			"Expr",
-		).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
-			"Where",
-		).Call(jen.ID("squirrel").Dot(
-			"Eq",
-		).Valuesln(
-	jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
-			"ToSql",
-		).Call(),
-		jen.ID("m").Dot(
-			"logQueryBuildingError",
-		).Call(jen.ID("err")),
-		jen.Return().List(jen.ID("query"), jen.ID("args")),
-	),
-	jen.Line(),
+			jen.Var().ID("err").ID("error"),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
+				"sqlBuilder",
+			).Dot(
+				"Update",
+			).Call(jen.ID("oauth2ClientsTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
+				"Expr",
+			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
+				"Expr",
+			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+				"Where",
+			).Call(jen.ID("squirrel").Dot(
+				"Eq",
+			).Valuesln(
+				jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
+				"ToSql",
+			).Call(),
+			jen.ID("m").Dot(
+				"logQueryBuildingError",
+			).Call(jen.ID("err")),
+			jen.Return().List(jen.ID("query"), jen.ID("args")),
+		),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -769,14 +705,12 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("m").Dot(
 				"buildArchiveOAuth2ClientQuery",
 			).Call(jen.ID("clientID"), jen.ID("userID")),
-			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("m").Dot(
-				"db",
-			).Dot(
+			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("m").Dot("db").Dot(
 				"ExecContext",
 			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("err"),
 		),
-	jen.Line(),
+		jen.Line(),
 	)
 	return ret
 }

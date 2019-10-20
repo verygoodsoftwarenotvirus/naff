@@ -16,9 +16,7 @@ func httpRoutesTestDotGo() *jen.File {
 				"Helper",
 			).Call(),
 			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
-			jen.ID("require").Dot(
-				"NotNil",
-			).Call(jen.ID("t"), jen.ID("req")),
+			jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.Return().ID("req"),
 		),
@@ -31,18 +29,16 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
-	jen.ID("logger").Op(":").ID("noop").Dot(
-					"ProvideNoopLogger",
-				).Call()),
+					jen.ID("logger").Op(":").ID("noop").Dot(
+						"ProvideNoopLogger",
+					).Call()),
 				jen.List(jen.ID("cwd"), jen.ID("err")).Op(":=").Qual("os", "Getwd").Call(),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.List(jen.ID("hf"), jen.ID("err")).Op(":=").ID("s").Dot(
 					"StaticDir",
 				).Call(jen.ID("cwd")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"NotNil",
-				).Call(jen.ID("t"), jen.ID("hf")),
+				jen.ID("assert").Dot("NotNil").Call(jen.ID("t"), jen.ID("hf")),
 				jen.List(jen.ID("req"), jen.ID("res")).Op(":=").List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot(
 					"NewRecorder",
 				).Call()),
@@ -59,17 +55,15 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with frontend routing path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
-	jen.ID("logger").Op(":").ID("noop").Dot(
-					"ProvideNoopLogger",
-				).Call()),
+					jen.ID("logger").Op(":").ID("noop").Dot(
+						"ProvideNoopLogger",
+					).Call()),
 				jen.ID("exampleDir").Op(":=").Lit("."),
 				jen.List(jen.ID("hf"), jen.ID("err")).Op(":=").ID("s").Dot(
 					"StaticDir",
 				).Call(jen.ID("exampleDir")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"NotNil",
-				).Call(jen.ID("t"), jen.ID("hf")),
+				jen.ID("assert").Dot("NotNil").Call(jen.ID("t"), jen.ID("hf")),
 				jen.List(jen.ID("req"), jen.ID("res")).Op(":=").List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot(
 					"NewRecorder",
 				).Call()),
@@ -86,17 +80,15 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with frontend items routing path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
-	jen.ID("logger").Op(":").ID("noop").Dot(
-					"ProvideNoopLogger",
-				).Call()),
+					jen.ID("logger").Op(":").ID("noop").Dot(
+						"ProvideNoopLogger",
+					).Call()),
 				jen.ID("exampleDir").Op(":=").Lit("."),
 				jen.List(jen.ID("hf"), jen.ID("err")).Op(":=").ID("s").Dot(
 					"StaticDir",
 				).Call(jen.ID("exampleDir")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"NotNil",
-				).Call(jen.ID("t"), jen.ID("hf")),
+				jen.ID("assert").Dot("NotNil").Call(jen.ID("t"), jen.ID("hf")),
 				jen.List(jen.ID("req"), jen.ID("res")).Op(":=").List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot(
 					"NewRecorder",
 				).Call()),
@@ -119,9 +111,7 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("assert").Dot(
-					"NotNil",
-				).Call(jen.ID("t"), jen.Parens(jen.Op("&").ID("Service").Values()).Dot(
+				jen.ID("assert").Dot("NotNil").Call(jen.ID("t"), jen.Parens(jen.Op("&").ID("Service").Values()).Dot(
 					"Routes",
 				).Call()),
 			)),
@@ -135,18 +125,16 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
-	jen.ID("config").Op(":").ID("config").Dot(
-					"FrontendSettings",
-				).Valuesln(
-	jen.ID("CacheStaticFiles").Op(":").ID("true"))),
+					jen.ID("config").Op(":").ID("config").Dot(
+						"FrontendSettings",
+					).Valuesln(
+						jen.ID("CacheStaticFiles").Op(":").ID("true"))),
 				jen.List(jen.ID("cwd"), jen.ID("err")).Op(":=").Qual("os", "Getwd").Call(),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("s").Dot(
 					"buildStaticFileServer",
 				).Call(jen.ID("cwd")),
-				jen.ID("assert").Dot(
-					"NotNil",
-				).Call(jen.ID("t"), jen.ID("actual")),
+				jen.ID("assert").Dot("NotNil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),
 		),

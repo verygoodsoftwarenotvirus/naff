@@ -408,9 +408,7 @@ func authTestDotGo() *jen.File {
 				"Run",
 			).Call(jen.Lit("should be able to change password"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID("user"), jen.ID("ui"), jen.ID("cookie")).Op(":=").ID("buildDummyUser").Call(jen.ID("test")),
-				jen.ID("require").Dot(
-					"NotNil",
-				).Call(jen.ID("test"), jen.ID("cookie")),
+				jen.ID("require").Dot("NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 
 				jen.Var().ID("backwardsPass").ID("string"),
 				jen.For(jen.List(jen.ID("_"), jen.ID("v")).Op(":=").Range().ID("ui").Dot(
@@ -533,9 +531,7 @@ func authTestDotGo() *jen.File {
 				"Run",
 			).Call(jen.Lit("should be able to change 2FA Token"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID("user"), jen.ID("ui"), jen.ID("cookie")).Op(":=").ID("buildDummyUser").Call(jen.ID("test")),
-				jen.ID("require").Dot(
-					"NotNil",
-				).Call(jen.ID("test"), jen.ID("cookie")),
+				jen.ID("require").Dot("NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot(
 					"GenerateCode",
 				).Call(jen.ID("user").Dot(
@@ -668,9 +664,7 @@ func authTestDotGo() *jen.File {
 				"Run",
 			).Call(jen.Lit("should accept a login cookie if a token is missing"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID("_"), jen.ID("_"), jen.ID("cookie")).Op(":=").ID("buildDummyUser").Call(jen.ID("test")),
-				jen.ID("assert").Dot(
-					"NotNil",
-				).Call(jen.ID("test"), jen.ID("cookie")),
+				jen.ID("assert").Dot("NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.ID("todoClient").Dot(
 					"BuildURL",
 				).Call(jen.ID("nil"), jen.Lit("webhooks")), jen.ID("nil")),
@@ -755,32 +749,22 @@ func authTestDotGo() *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("webhookB"), jen.ID("err")),
 				jen.List(jen.ID("i"), jen.ID("err")).Op(":=").ID("clientB").Dot(
 					"GetWebhook",
-				).Call(jen.ID("tctx"), jen.ID("webhookA").Dot(
-					"ID",
-				)),
-				jen.ID("assert").Dot(
-					"Nil",
-				).Call(jen.ID("t"), jen.ID("i")),
+				).Call(jen.ID("tctx"), jen.ID("webhookA").Dot("ID")),
+				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("i")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err"), jen.Lit("should experience error trying to fetch entry they're not authorized for")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("todoClient").Dot(
 					"ArchiveWebhook",
-				).Call(jen.ID("tctx"), jen.ID("webhookA").Dot(
-					"ID",
-				))),
+				).Call(jen.ID("tctx"), jen.ID("webhookA").Dot("ID"))),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("todoClient").Dot(
 					"ArchiveWebhook",
-				).Call(jen.ID("tctx"), jen.ID("webhookB").Dot(
-					"ID",
-				))),
+				).Call(jen.ID("tctx"), jen.ID("webhookB").Dot("ID"))),
 			)),
 			jen.ID("test").Dot(
 				"Run",
 			).Call(jen.Lit("should only allow clients with a given scope to see that scope's content"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 				jen.List(jen.ID("x"), jen.ID("y"), jen.ID("cookie")).Op(":=").ID("buildDummyUser").Call(jen.ID("test")),
-				jen.ID("assert").Dot(
-					"NotNil",
-				).Call(jen.ID("test"), jen.ID("cookie")),
+				jen.ID("assert").Dot("NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 				jen.ID("input").Op(":=").ID("buildDummyOAuth2ClientInput").Call(jen.ID("test"), jen.ID("x").Dot(
 					"Username",
 				),
@@ -817,9 +801,7 @@ func authTestDotGo() *jen.File {
 				jen.List(jen.ID("i"), jen.ID("err")).Op(":=").ID("c").Dot(
 					"GetOAuth2Clients",
 				).Call(jen.ID("tctx"), jen.ID("nil")),
-				jen.ID("assert").Dot(
-					"Nil",
-				).Call(jen.ID("t"), jen.ID("i")),
+				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("i")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err"), jen.Lit("should experience error trying to fetch entry they're not authorized for")),
 			)),
 		),

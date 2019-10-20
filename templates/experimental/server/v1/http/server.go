@@ -99,12 +99,8 @@ func serverDotGo() *jen.File {
 			jen.ID("srv").Op(":=").Op("&").ID("Server").Valuesln(
 				jen.ID("DebugMode").Op(":").ID("cfg").Dot(
 					"Server",
-				).Dot(
-					"Debug",
-				),
-				jen.ID("db").Op(":").ID("db"), jen.ID("config").Op(":").ID("cfg"), jen.ID("encoder").Op(":").ID("encoder"), jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(), jen.ID("logger").Op(":").ID("logger").Dot(
-					"WithName",
-				).Call(jen.Lit("api_server")), jen.ID("newsManager").Op(":").ID("newsManager"), jen.ID("webhooksService").Op(":").ID("webhooksService"), jen.ID("frontendService").Op(":").ID("frontendService"), jen.ID("usersService").Op(":").ID("usersService"), jen.ID("authService").Op(":").ID("authService"), jen.ID("itemsService").Op(":").ID("itemsService"), jen.ID("oauth2ClientsService").Op(":").ID("oauth2Service")),
+				).Dot("Debug"),
+				jen.ID("db").Op(":").ID("db"), jen.ID("config").Op(":").ID("cfg"), jen.ID("encoder").Op(":").ID("encoder"), jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(), jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.Lit("api_server")), jen.ID("newsManager").Op(":").ID("newsManager"), jen.ID("webhooksService").Op(":").ID("webhooksService"), jen.ID("frontendService").Op(":").ID("frontendService"), jen.ID("usersService").Op(":").ID("usersService"), jen.ID("authService").Op(":").ID("authService"), jen.ID("itemsService").Op(":").ID("itemsService"), jen.ID("oauth2ClientsService").Op(":").ID("oauth2Service")),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot(
 				"ProvideTracing",
 			).Call(jen.ID("logger")), jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").ID("config").Dot(
@@ -145,17 +141,11 @@ func serverDotGo() *jen.File {
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.ID("err"))),
 			),
-			jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").ID("len").Call(jen.ID("allWebhooks").Dot(
-				"Webhooks",
-			)), jen.ID("i").Op("++")).Block(
-				jen.ID("wh").Op(":=").ID("allWebhooks").Dot(
-					"Webhooks",
-				).Index(jen.ID("i")),
+			jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Block(
+				jen.ID("wh").Op(":=").ID("allWebhooks").Dot("Webhooks").Index(jen.ID("i")),
 				jen.ID("l").Op(":=").ID("wh").Dot(
 					"ToListener",
-				).Call(jen.ID("srv").Dot(
-					"logger",
-				)),
+				).Call(jen.ID("srv").Dot("logger")),
 				jen.ID("srv").Dot(
 					"newsManager",
 				).Dot(
@@ -182,11 +172,7 @@ func serverDotGo() *jen.File {
 			).Dot(
 				"HTTPPort",
 			)),
-			jen.ID("s").Dot(
-				"logger",
-			).Dot(
-				"Debug",
-			).Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("Listening for HTTP requests on %q"), jen.ID("s").Dot(
+			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("Listening for HTTP requests on %q"), jen.ID("s").Dot(
 				"httpServer",
 			).Dot(
 				"Addr",
@@ -196,9 +182,7 @@ func serverDotGo() *jen.File {
 			).Dot(
 				"ListenAndServe",
 			).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("s").Dot(
-					"logger",
-				).Dot("Error").Call(jen.ID("err"), jen.Lit("server shutting down")),
+				jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("server shutting down")),
 				jen.If(jen.ID("err").Op("==").Qual("net/http", "ErrServerClosed")).Block(
 					jen.Qual("os", "Exit").Call(jen.Lit(0)),
 				),

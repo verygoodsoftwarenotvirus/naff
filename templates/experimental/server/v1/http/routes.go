@@ -66,11 +66,7 @@ func routesDotGo() *jen.File {
 				)),
 			)),
 			jen.If(jen.ID("metricsHandler").Op("!=").ID("nil")).Block(
-				jen.ID("s").Dot(
-					"logger",
-				).Dot(
-					"Debug",
-				).Call(jen.Lit("establishing metrics handler")),
+				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("establishing metrics handler")),
 				jen.ID("router").Dot(
 					"Handle",
 				).Call(jen.Lit("/metrics"), jen.ID("metricsHandler")),
@@ -82,11 +78,7 @@ func routesDotGo() *jen.File {
 			).Dot(
 				"StaticFilesDirectory",
 			).Op("!=").Lit("")).Block(
-				jen.ID("s").Dot(
-					"logger",
-				).Dot(
-					"Debug",
-				).Call(jen.Lit("setting static file server")),
+				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("setting static file server")),
 				jen.List(jen.ID("staticFileServer"), jen.ID("err")).Op(":=").ID("s").Dot(
 					"frontendService",
 				).Dot(
@@ -95,9 +87,7 @@ func routesDotGo() *jen.File {
 					"StaticFilesDirectory",
 				)),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("s").Dot(
-						"logger",
-					).Dot("Error").Call(jen.ID("err"), jen.Lit("establishing static file server")),
+					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("establishing static file server")),
 				),
 				jen.ID("router").Dot(
 					"Get",
@@ -272,13 +262,9 @@ func routesDotGo() *jen.File {
 				)).Dot(
 					"Post",
 				).Call(jen.Lit("/authorize"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-					jen.ID("s").Dot(
-						"logger",
-					).Dot(
+					jen.ID("s").Dot("logger").Dot(
 						"WithRequest",
-					).Call(jen.ID("req")).Dot(
-						"Debug",
-					).Call(jen.Lit("oauth2 authorize route hit")),
+					).Call(jen.ID("req")).Dot("Debug").Call(jen.Lit("oauth2 authorize route hit")),
 					jen.If(jen.ID("err").Op(":=").ID("s").Dot(
 						"oauth2ClientsService",
 					).Dot(

@@ -55,11 +55,7 @@ func postgresDotGo() *jen.File {
 			jen.ID("connectionDetails").ID("database").Dot(
 				"ConnectionDetails",
 			)).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
-			jen.ID("logger").Dot(
-				"WithValue",
-			).Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot(
-				"Debug",
-			).Call(jen.Lit("Establishing connection to postgres")),
+			jen.ID("logger").Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Lit("Establishing connection to postgres")),
 			jen.Return().Qual("database/sql", "Open").Call(jen.ID("postgresDriverName"), jen.ID("string").Call(jen.ID("connectionDetails"))),
 		),
 		jen.Line(),
@@ -72,15 +68,13 @@ func postgresDotGo() *jen.File {
 			"Logger",
 		)).Params(jen.ID("database").Dot("Database")).Block(
 			jen.Return().Op("&").ID("Postgres").Valuesln(
-	jen.ID("db").Op(":").ID("db"), jen.ID("debug").Op(":").ID("debug"), jen.ID("logger").Op(":").ID("logger").Dot(
-				"WithName",
-			).Call(jen.ID("loggerName")), jen.ID("sqlBuilder").Op(":").ID("squirrel").Dot(
-				"StatementBuilder",
-			).Dot(
-				"PlaceholderFormat",
-			).Call(jen.ID("squirrel").Dot(
-				"Dollar",
-			))),
+				jen.ID("db").Op(":").ID("db"), jen.ID("debug").Op(":").ID("debug"), jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("loggerName")), jen.ID("sqlBuilder").Op(":").ID("squirrel").Dot(
+					"StatementBuilder",
+				).Dot(
+					"PlaceholderFormat",
+				).Call(jen.ID("squirrel").Dot(
+					"Dollar",
+				))),
 		),
 		jen.Line(),
 	)
@@ -90,26 +84,14 @@ func postgresDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("IsReady").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
 			jen.ID("numberOfUnsuccessfulAttempts").Op(":=").Lit(0),
-			jen.ID("p").Dot(
-				"logger",
-			).Dot(
-				"WithValues",
-			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-	jen.Lit("interval").Op(":").Qual("time", "Second"), jen.Lit("max_attempts").Op(":").Lit(50))).Dot(
-				"Debug",
-			).Call(jen.Lit("IsReady called")),
+			jen.ID("p").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+				jen.Lit("interval").Op(":").Qual("time", "Second"), jen.Lit("max_attempts").Op(":").Lit(50))).Dot("Debug").Call(jen.Lit("IsReady called")),
 			jen.For(jen.Op("!").ID("ready")).Block(
-				jen.ID("err").Op(":=").ID("p").Dot(
-					"db",
-				).Dot(
+				jen.ID("err").Op(":=").ID("p").Dot("db").Dot(
 					"Ping",
 				).Call(),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("p").Dot(
-						"logger",
-					).Dot(
-						"Debug",
-					).Call(jen.Lit("ping failed, waiting for db")),
+					jen.ID("p").Dot("logger").Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 					jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
 					jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
 					jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
@@ -134,11 +116,7 @@ func postgresDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Comment("// any log entries with the given name, and those alerts should be investigated").Comment("// with the utmost priority.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("logQueryBuildingError").Params(jen.ID("err").ID("error")).Block(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("p").Dot(
-					"logger",
-				).Dot(
-					"WithName",
-				).Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
+				jen.ID("p").Dot("logger").Dot("WithName").Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
 			),
 		),
 		jen.Line(),

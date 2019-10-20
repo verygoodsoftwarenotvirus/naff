@@ -17,16 +17,12 @@ func itemTestDotGo() *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("i").Op(":=").Op("&").ID("Item").Values(),
 				jen.ID("expected").Op(":=").Op("&").ID("ItemUpdateInput").Valuesln(
-	jen.ID("Name").Op(":").Lit("expected name"), jen.ID("Details").Op(":").Lit("expected details")),
+					jen.ID("Name").Op(":").Lit("expected name"), jen.ID("Details").Op(":").Lit("expected details")),
 				jen.ID("i").Dot(
 					"Update",
 				).Call(jen.ID("expected")),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
-					"Name",
-				),
-					jen.ID("i").Dot(
-						"Name",
-					)),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Name"),
+					jen.ID("i").Dot("Name")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 					"Details",
 				),

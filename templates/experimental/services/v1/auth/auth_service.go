@@ -57,9 +57,7 @@ func authServiceDotGo() *jen.File {
 				"EncoderDecoder",
 			)).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(
-				jen.ID("logger").Op(":").ID("logger").Dot(
-					"WithName",
-				).Call(jen.ID("serviceName")), jen.ID("encoderDecoder").Op(":").ID("encoder"), jen.ID("config").Op(":").ID("cfg").Dot(
+				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("serviceName")), jen.ID("encoderDecoder").Op(":").ID("encoder"), jen.ID("config").Op(":").ID("cfg").Dot(
 					"Auth",
 				),
 				jen.ID("userDB").Op(":").ID("database"), jen.ID("oauth2ClientsService").Op(":").ID("oauth2ClientsService"), jen.ID("authenticator").Op(":").ID("authenticator"), jen.ID("userIDFetcher").Op(":").ID("userIDFetcher"), jen.ID("cookieManager").Op(":").ID("securecookie").Dot("New").Call(jen.ID("securecookie").Dot(

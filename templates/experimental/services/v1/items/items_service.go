@@ -31,19 +31,19 @@ func itemsServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Type().ID("Service").Struct(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-	),
-	jen.ID("itemCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
-			"UnitCounter",
-	),
-	jen.ID("itemDatabase").ID("models").Dot(
-			"ItemDataManager",
-	),
-	jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("itemIDFetcher").ID("ItemIDFetcher"), jen.ID("encoderDecoder").ID("encoding").Dot(
-			"EncoderDecoder",
-	),
-	jen.ID("reporter").ID("newsman").Dot(
-			"Reporter",
-		)).Type().ID("UserIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Type().ID("ItemIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+		),
+			jen.ID("itemCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
+				"UnitCounter",
+			),
+			jen.ID("itemDatabase").ID("models").Dot(
+				"ItemDataManager",
+			),
+			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("itemIDFetcher").ID("ItemIDFetcher"), jen.ID("encoderDecoder").ID("encoding").Dot(
+				"EncoderDecoder",
+			),
+			jen.ID("reporter").ID("newsman").Dot(
+				"Reporter",
+			)).Type().ID("UserIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Type().ID("ItemIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 		jen.Line(),
 	)
 
@@ -52,27 +52,25 @@ func itemsServiceDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideItemsService").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-	),
-	jen.ID("db").ID("models").Dot(
-			"ItemDataManager",
-	),
-	jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("itemIDFetcher").ID("ItemIDFetcher"), jen.ID("encoder").ID("encoding").Dot(
-			"EncoderDecoder",
-	),
-	jen.ID("itemCounterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
-			"UnitCounterProvider",
-	),
-	jen.ID("reporter").ID("newsman").Dot(
-			"Reporter",
-		)).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
+		),
+			jen.ID("db").ID("models").Dot(
+				"ItemDataManager",
+			),
+			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("itemIDFetcher").ID("ItemIDFetcher"), jen.ID("encoder").ID("encoding").Dot(
+				"EncoderDecoder",
+			),
+			jen.ID("itemCounterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
+				"UnitCounterProvider",
+			),
+			jen.ID("reporter").ID("newsman").Dot(
+				"Reporter",
+			)).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("itemCounter"), jen.ID("err")).Op(":=").ID("itemCounterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.ID("err"))),
 			),
 			jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(
-	jen.ID("logger").Op(":").ID("logger").Dot(
-				"WithName",
-			).Call(jen.ID("serviceName")), jen.ID("itemDatabase").Op(":").ID("db"), jen.ID("encoderDecoder").Op(":").ID("encoder"), jen.ID("itemCounter").Op(":").ID("itemCounter"), jen.ID("userIDFetcher").Op(":").ID("userIDFetcher"), jen.ID("itemIDFetcher").Op(":").ID("itemIDFetcher"), jen.ID("reporter").Op(":").ID("reporter")),
+				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("serviceName")), jen.ID("itemDatabase").Op(":").ID("db"), jen.ID("encoderDecoder").Op(":").ID("encoder"), jen.ID("itemCounter").Op(":").ID("itemCounter"), jen.ID("userIDFetcher").Op(":").ID("userIDFetcher"), jen.ID("itemIDFetcher").Op(":").ID("itemIDFetcher"), jen.ID("reporter").Op(":").ID("reporter")),
 			jen.List(jen.ID("itemCount"), jen.ID("err")).Op(":=").ID("svc").Dot(
 				"itemDatabase",
 			).Dot(

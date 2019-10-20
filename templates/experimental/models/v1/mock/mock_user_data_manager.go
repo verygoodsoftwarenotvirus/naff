@@ -65,9 +65,7 @@ func mockUserDataManagerDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUserCount is a mock function"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataManager")).ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
-		"QueryFilter",
-	)).Params(jen.ID("uint64"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataManager")).ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("ctx"), jen.ID("filter")),
@@ -81,9 +79,7 @@ func mockUserDataManagerDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUsers is a mock function"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataManager")).ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot(
-		"QueryFilter",
-	)).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataManager")).ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.Op("*").ID("models").Dot(
 		"UserList",
 	),
 	jen.ID("error")).Block(

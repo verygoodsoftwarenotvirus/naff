@@ -84,9 +84,7 @@ func queryFilterTestDotGo() *jen.File {
 				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Valuesln(
 					jen.ID("Limit").Op(":").Lit(10), jen.ID("Page").Op(":").Lit(11)),
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(100)),
-				jen.ID("actual").Op(":=").ID("qf").Dot(
-					"QueryPage",
-				).Call(),
+				jen.ID("actual").Op(":=").ID("qf").Dot("AddAttributes").Call(),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			)),
 		),
@@ -196,9 +194,7 @@ func queryFilterTestDotGo() *jen.File {
 					"ToSql",
 				).Call(),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
-				jen.ID("assert").Dot(
-					"Nil",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"NotEmpty",
 				).Call(jen.ID("t"), jen.ID("args")),
@@ -213,9 +209,7 @@ func queryFilterTestDotGo() *jen.File {
 					"ToSql",
 				).Call(),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
-				jen.ID("assert").Dot(
-					"Nil",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"NotEmpty",
 				).Call(jen.ID("t"), jen.ID("args")),
@@ -240,9 +234,7 @@ func queryFilterTestDotGo() *jen.File {
 					"ToSql",
 				).Call(),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
-				jen.ID("assert").Dot(
-					"Nil",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"NotEmpty",
 				).Call(jen.ID("t"), jen.ID("args")),
@@ -259,9 +251,7 @@ func queryFilterTestDotGo() *jen.File {
 					"ToSql",
 				).Call(),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
-				jen.ID("assert").Dot(
-					"Nil",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"NotEmpty",
 				).Call(jen.ID("t"), jen.ID("args")),
@@ -302,9 +292,7 @@ func queryFilterTestDotGo() *jen.File {
 						)))),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("require").Dot(
-					"NotNil",
-				).Call(jen.ID("t"), jen.ID("req")),
+				jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.ID("req").Dot(
 					"URL",
 				).Dot(

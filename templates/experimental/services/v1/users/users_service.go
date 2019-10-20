@@ -28,22 +28,22 @@ func usersServiceDotGo() *jen.File {
 
 	ret.Add(
 		jen.Type().ID("RequestValidator").Interface(jen.ID("Validate").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("bool"), jen.ID("error"))).Type().ID("Service").Struct(jen.ID("cookieSecret").Index().ID("byte"), jen.ID("database").ID("database").Dot("Database"),
-	jen.ID("authenticator").ID("auth").Dot(
-			"Authenticator",
-	),
-	jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-	),
-	jen.ID("encoderDecoder").ID("encoding").Dot(
-			"EncoderDecoder",
-	),
-	jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("userCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
-			"UnitCounter",
-	),
-	jen.ID("reporter").ID("newsman").Dot(
-			"Reporter",
-	),
-	jen.ID("userCreationEnabled").ID("bool")).Type().ID("UserIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.ID("authenticator").ID("auth").Dot(
+				"Authenticator",
+			),
+			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
+				"Logger",
+			),
+			jen.ID("encoderDecoder").ID("encoding").Dot(
+				"EncoderDecoder",
+			),
+			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("userCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
+				"UnitCounter",
+			),
+			jen.ID("reporter").ID("newsman").Dot(
+				"Reporter",
+			),
+			jen.ID("userCreationEnabled").ID("bool")).Type().ID("UserIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 		jen.Line(),
 	)
 
@@ -52,23 +52,23 @@ func usersServiceDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideUsersService").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("authSettings").ID("config").Dot(
 			"AuthSettings",
-	),
-	jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-	),
-	jen.ID("db").ID("database").Dot("Database"),
-	jen.ID("authenticator").ID("auth").Dot(
-			"Authenticator",
-	),
-	jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").ID("encoding").Dot(
-			"EncoderDecoder",
-	),
-	jen.ID("counterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
-			"UnitCounterProvider",
-	),
-	jen.ID("reporter").ID("newsman").Dot(
-			"Reporter",
-		)).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
+		),
+			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
+				"Logger",
+			),
+			jen.ID("db").ID("database").Dot("Database"),
+			jen.ID("authenticator").ID("auth").Dot(
+				"Authenticator",
+			),
+			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").ID("encoding").Dot(
+				"EncoderDecoder",
+			),
+			jen.ID("counterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
+				"UnitCounterProvider",
+			),
+			jen.ID("reporter").ID("newsman").Dot(
+				"Reporter",
+			)).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.If(jen.ID("userIDFetcher").Op("==").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("userIDFetcher must be provided"))),
 			),
@@ -86,13 +86,11 @@ func usersServiceDotGo() *jen.File {
 				"IncrementBy",
 			).Call(jen.ID("ctx"), jen.ID("userCount")),
 			jen.ID("us").Op(":=").Op("&").ID("Service").Valuesln(
-	jen.ID("cookieSecret").Op(":").Index().ID("byte").Call(jen.ID("authSettings").Dot(
-				"CookieSecret",
-			)), jen.ID("logger").Op(":").ID("logger").Dot(
-				"WithName",
-			).Call(jen.ID("serviceName")), jen.ID("database").Op(":").ID("db"), jen.ID("authenticator").Op(":").ID("authenticator"), jen.ID("userIDFetcher").Op(":").ID("userIDFetcher"), jen.ID("encoderDecoder").Op(":").ID("encoder"), jen.ID("userCounter").Op(":").ID("counter"), jen.ID("reporter").Op(":").ID("reporter"), jen.ID("userCreationEnabled").Op(":").ID("authSettings").Dot(
-				"EnableUserSignup",
-			)),
+				jen.ID("cookieSecret").Op(":").Index().ID("byte").Call(jen.ID("authSettings").Dot(
+					"CookieSecret",
+				)), jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("serviceName")), jen.ID("database").Op(":").ID("db"), jen.ID("authenticator").Op(":").ID("authenticator"), jen.ID("userIDFetcher").Op(":").ID("userIDFetcher"), jen.ID("encoderDecoder").Op(":").ID("encoder"), jen.ID("userCounter").Op(":").ID("counter"), jen.ID("reporter").Op(":").ID("reporter"), jen.ID("userCreationEnabled").Op(":").ID("authSettings").Dot(
+					"EnableUserSignup",
+				)),
 			jen.Return().List(jen.ID("us"), jen.ID("nil")),
 		),
 		jen.Line(),

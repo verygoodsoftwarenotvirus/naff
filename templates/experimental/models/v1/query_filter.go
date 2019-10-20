@@ -202,9 +202,7 @@ func queryFilterDotGo() *jen.File {
 			).Call(jen.ID("qf").Dot(
 				"Page",
 			)),
-			jen.If(jen.ID("qp").Op(":=").ID("qf").Dot(
-				"QueryPage",
-			).Call(), jen.ID("qp").Op(">").Lit(0)).Block(
+			jen.If(jen.ID("qp").Op(":=").ID("qf").Dot("AddAttributes").Call(), jen.ID("qp").Op(">").Lit(0)).Block(
 				jen.ID("queryBuilder").Op("=").ID("queryBuilder").Dot(
 					"Offset",
 				).Call(jen.ID("qp")),

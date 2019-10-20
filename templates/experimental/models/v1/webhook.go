@@ -19,14 +19,8 @@ func webhookDotGo() *jen.File {
 		jen.Comment("Update merges an WebhookCreationInput with an Webhook"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("w").Op("*").ID("Webhook")).ID("Update").Params(jen.ID("input").Op("*").ID("WebhookUpdateInput")).Block(
-			jen.If(jen.ID("input").Dot(
-				"Name",
-			).Op("!=").Lit("")).Block(
-				jen.ID("w").Dot(
-					"Name",
-				).Op("=").ID("input").Dot(
-					"Name",
-				),
+			jen.If(jen.ID("input").Dot("Name").Op("!=").Lit("")).Block(
+				jen.ID("w").Dot("Name").Op("=").ID("input").Dot("Name"),
 			),
 			jen.If(jen.ID("input").Dot(
 				"ContentType",
@@ -97,18 +91,16 @@ func webhookDotGo() *jen.File {
 			"Logger",
 		)).Params(jen.Params(jen.ID("error"))).Block(
 			jen.Return().Func().Params(jen.ID("err").ID("error")).Block(
-				jen.ID("logger").Dot(
-					"WithValues",
-				).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-	jen.Lit("url").Op(":").ID("w").Dot(
-					"URL",
-	),
-	jen.Lit("method").Op(":").ID("w").Dot(
-					"Method",
-	),
-	jen.Lit("content_type").Op(":").ID("w").Dot(
-					"ContentType",
-				))).Dot("Error").Call(jen.ID("err"), jen.Lit("error executing webhook")),
+				jen.ID("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+					jen.Lit("url").Op(":").ID("w").Dot(
+						"URL",
+					),
+					jen.Lit("method").Op(":").ID("w").Dot(
+						"Method",
+					),
+					jen.Lit("content_type").Op(":").ID("w").Dot(
+						"ContentType",
+					))).Dot("Error").Call(jen.ID("err"), jen.Lit("error executing webhook")),
 			),
 		),
 		jen.Line(),
@@ -127,26 +119,26 @@ func webhookDotGo() *jen.File {
 			).Call(jen.ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID("logger")), jen.Op("&").ID("newsman").Dot(
 				"WebhookConfig",
 			).Valuesln(
-	jen.ID("Method").Op(":").ID("w").Dot(
-				"Method",
-	),
-	jen.ID("URL").Op(":").ID("w").Dot(
-				"URL",
-	),
-	jen.ID("ContentType").Op(":").ID("w").Dot(
-				"ContentType",
-			)), jen.Op("&").ID("newsman").Dot(
+				jen.ID("Method").Op(":").ID("w").Dot(
+					"Method",
+				),
+				jen.ID("URL").Op(":").ID("w").Dot(
+					"URL",
+				),
+				jen.ID("ContentType").Op(":").ID("w").Dot(
+					"ContentType",
+				)), jen.Op("&").ID("newsman").Dot(
 				"ListenerConfig",
 			).Valuesln(
-	jen.ID("Events").Op(":").ID("w").Dot(
-				"Events",
-	),
-	jen.ID("DataTypes").Op(":").ID("w").Dot(
-				"DataTypes",
-	),
-	jen.ID("Topics").Op(":").ID("w").Dot(
-				"Topics",
-			))),
+				jen.ID("Events").Op(":").ID("w").Dot(
+					"Events",
+				),
+				jen.ID("DataTypes").Op(":").ID("w").Dot(
+					"DataTypes",
+				),
+				jen.ID("Topics").Op(":").ID("w").Dot(
+					"Topics",
+				))),
 		),
 		jen.Line(),
 	)
