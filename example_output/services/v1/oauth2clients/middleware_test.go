@@ -85,7 +85,7 @@ func TestService_RequestIsAuthenticated(T *testing.T) {
 		s.oauth2Handler = mh
 		mockDB := database.BuildMockDatabase()
 		mockDB.OAuth2ClientDataManager.On("GetOAuth2ClientByClientID", mock.Anything, expected.ClientID).Return(expected, nil)
-		s.database = mockDB
+		s.Database = mockDB
 		req := buildRequest(t)
 		req.URL.Path = "/api/v1/things"
 		actual, err := s.ExtractOAuth2ClientFromRequest(req.Context(), req)
@@ -116,7 +116,7 @@ func TestService_RequestIsAuthenticated(T *testing.T) {
 		s.oauth2Handler = mh
 		mockDB := database.BuildMockDatabase()
 		mockDB.OAuth2ClientDataManager.On("GetOAuth2ClientByClientID", mock.Anything, expected.ClientID).Return((*models.OAuth2Client)(nil), errors.New("blah"))
-		s.database = mockDB
+		s.Database = mockDB
 		req := buildRequest(t)
 		actual, err := s.ExtractOAuth2ClientFromRequest(req.Context(), req)
 		assert.Error(t, err)
@@ -138,7 +138,7 @@ func TestService_RequestIsAuthenticated(T *testing.T) {
 		s.oauth2Handler = mh
 		mockDB := database.BuildMockDatabase()
 		mockDB.OAuth2ClientDataManager.On("GetOAuth2ClientByClientID", mock.Anything, expected.ClientID).Return(expected, nil)
-		s.database = mockDB
+		s.Database = mockDB
 		req := buildRequest(t)
 		req.URL.Path = "/api/v1/stuff"
 		actual, err := s.ExtractOAuth2ClientFromRequest(req.Context(), req)
@@ -165,7 +165,7 @@ func TestService_OAuth2TokenAuthenticationMiddleware(T *testing.T) {
 		s.oauth2Handler = mh
 		mockDB := database.BuildMockDatabase()
 		mockDB.OAuth2ClientDataManager.On("GetOAuth2ClientByClientID", mock.Anything, expected.ClientID).Return(expected, nil)
-		s.database = mockDB
+		s.Database = mockDB
 		req := buildRequest(t)
 		req.URL.Path = "/api/v1/things"
 		res := httptest.NewRecorder()
@@ -202,7 +202,7 @@ func TestService_OAuth2ClientInfoMiddleware(T *testing.T) {
 		req.URL.RawQuery = q.Encode()
 		mockDB := database.BuildMockDatabase()
 		mockDB.OAuth2ClientDataManager.On("GetOAuth2ClientByClientID", mock.Anything, expected).Return(&models.OAuth2Client{}, nil)
-		s.database = mockDB
+		s.Database = mockDB
 		s.OAuth2ClientInfoMiddleware(mhh).ServeHTTP(res, req)
 		assert.Equal(t, http.StatusOK, res.Code)
 	})
@@ -218,7 +218,7 @@ func TestService_OAuth2ClientInfoMiddleware(T *testing.T) {
 		req.URL.RawQuery = q.Encode()
 		mockDB := database.BuildMockDatabase()
 		mockDB.OAuth2ClientDataManager.On("GetOAuth2ClientByClientID", mock.Anything, expected).Return((*models.OAuth2Client)(nil), errors.New("blah"))
-		s.database = mockDB
+		s.Database = mockDB
 		s.OAuth2ClientInfoMiddleware(mhh).ServeHTTP(res, req)
 		assert.Equal(t, http.StatusUnauthorized, res.Code)
 	})

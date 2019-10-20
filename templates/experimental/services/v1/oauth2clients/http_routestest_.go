@@ -149,7 +149,9 @@ func httpRoutesTestDotGo() *jen.File {
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("models").Dot("UserIDKey"), jen.ID("userID"))),
+				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(
+					jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("models").Dot("UserIDKey"), jen.ID("userID")),
+				),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),

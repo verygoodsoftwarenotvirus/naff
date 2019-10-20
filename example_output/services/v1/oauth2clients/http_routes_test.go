@@ -116,9 +116,13 @@ func TestService_ListHandler(T *testing.T) {
 		ed := &mockencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).Return(nil)
 		s.encoderDecoder = ed
+
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, userID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, userID),
+		)
 		res := httptest.NewRecorder()
+
 		s.ListHandler()(res, req)
 		assert.Equal(t, http.StatusOK, res.Code)
 	})
@@ -126,6 +130,7 @@ func TestService_ListHandler(T *testing.T) {
 	T.Run("with error fetching from database", func(t *testing.T) {
 		s := buildTestService(t)
 		userID := uint64(1)
+
 		mockDB := database.BuildMockDatabase()
 		mockDB.OAuth2ClientDataManager.On(
 			"GetOAuth2Clients",
@@ -134,12 +139,15 @@ func TestService_ListHandler(T *testing.T) {
 			userID,
 		).Return((*models.OAuth2ClientList)(nil), errors.New("blah"))
 		s.database = mockDB
+
 		ed := &mockencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).Return(nil)
 		s.encoderDecoder = ed
+
 		req := buildRequest(t)
 		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, userID))
 		res := httptest.NewRecorder()
+
 		s.ListHandler()(res, req)
 		assert.Equal(t, http.StatusInternalServerError, res.Code)
 	})
@@ -154,12 +162,14 @@ func TestService_ListHandler(T *testing.T) {
 			mock.Anything,
 			userID,
 		).Return(&models.OAuth2ClientList{}, nil)
-		s.database = mockDB
+		s.Database = mockDB
 		ed := &mockencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).Return(errors.New("blah"))
 		s.encoderDecoder = ed
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, userID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, userID),
+		)
 		res := httptest.NewRecorder()
 		s.ListHandler()(res, req)
 		assert.Equal(t, http.StatusOK, res.Code)
@@ -195,7 +205,7 @@ func TestService_CreateHandler(T *testing.T) {
 			mock.Anything,
 			exampleInput,
 		).Return(&models.OAuth2Client{}, nil)
-		s.database = mockDB
+		s.Database = mockDB
 		a := &mockauth.Authenticator{}
 		a.On("ValidateLogin", mock.Anything, exampleUser.HashedPassword, exampleInput.Password, exampleUser.TwoFactorSecret, exampleInput.TOTPToken, exampleUser.Salt).Return(true, nil)
 		s.authenticator = a
@@ -206,8 +216,12 @@ func TestService_CreateHandler(T *testing.T) {
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).Return(nil)
 		s.encoderDecoder = ed
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput))
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput),
+		)
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID),
+		)
 		res := httptest.NewRecorder()
 		s.CreateHandler()(res, req)
 		assert.Equal(t, http.StatusCreated, res.Code)
@@ -242,10 +256,14 @@ func TestService_CreateHandler(T *testing.T) {
 			mock.Anything,
 			exampleInput.Username,
 		).Return((*models.User)(nil), errors.New("blah"))
-		s.database = mockDB
+		s.Database = mockDB
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput))
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput),
+		)
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID),
+		)
 		res := httptest.NewRecorder()
 		s.CreateHandler()(res, req)
 		assert.Equal(t, http.StatusInternalServerError, res.Code)
@@ -277,13 +295,25 @@ func TestService_CreateHandler(T *testing.T) {
 			mock.Anything,
 			exampleInput,
 		).Return(&models.OAuth2Client{}, nil)
-		s.database = mockDB
+		s.Database = mockDB
 		a := &mockauth.Authenticator{}
-		a.On("ValidateLogin", mock.Anything, exampleUser.HashedPassword, exampleInput.Password, exampleUser.TwoFactorSecret, exampleInput.TOTPToken, exampleUser.Salt).Return(false, nil)
+		a.On(
+			"ValidateLogin",
+			mock.Anything,
+			exampleUser.HashedPassword,
+			exampleInput.Password,
+			exampleUser.TwoFactorSecret,
+			exampleInput.TOTPToken,
+			exampleUser.Salt,
+		).Return(false, nil)
 		s.authenticator = a
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput))
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput),
+		)
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID),
+		)
 		res := httptest.NewRecorder()
 		s.CreateHandler()(res, req)
 		assert.Equal(t, http.StatusUnauthorized, res.Code)
@@ -320,8 +350,12 @@ func TestService_CreateHandler(T *testing.T) {
 		a.On("ValidateLogin", mock.Anything, exampleUser.HashedPassword, exampleInput.Password, exampleUser.TwoFactorSecret, exampleInput.TOTPToken, exampleUser.Salt).Return(true, errors.New("blah"))
 		s.authenticator = a
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput))
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput),
+		)
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID),
+		)
 		res := httptest.NewRecorder()
 		s.CreateHandler()(res, req)
 		assert.Equal(t, http.StatusInternalServerError, res.Code)
@@ -355,11 +389,23 @@ func TestService_CreateHandler(T *testing.T) {
 		).Return((*models.OAuth2Client)(nil), errors.New("blah"))
 		s.database = mockDB
 		a := &mockauth.Authenticator{}
-		a.On("ValidateLogin", mock.Anything, exampleUser.HashedPassword, exampleInput.Password, exampleUser.TwoFactorSecret, exampleInput.TOTPToken, exampleUser.Salt).Return(true, nil)
+		a.On(
+			"ValidateLogin",
+			mock.Anything,
+			exampleUser.HashedPassword,
+			exampleInput.Password,
+			exampleUser.TwoFactorSecret,
+			exampleInput.TOTPToken,
+			exampleUser.Salt,
+		).Return(true, nil)
 		s.authenticator = a
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput))
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput),
+		)
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID),
+		)
 		res := httptest.NewRecorder()
 		s.CreateHandler()(res, req)
 		assert.Equal(t, http.StatusInternalServerError, res.Code)
@@ -393,7 +439,15 @@ func TestService_CreateHandler(T *testing.T) {
 		).Return(&models.OAuth2Client{}, nil)
 		s.database = mockDB
 		a := &mockauth.Authenticator{}
-		a.On("ValidateLogin", mock.Anything, exampleUser.HashedPassword, exampleInput.Password, exampleUser.TwoFactorSecret, exampleInput.TOTPToken, exampleUser.Salt).Return(true, nil)
+		a.On(
+			"ValidateLogin",
+			mock.Anything,
+			exampleUser.HashedPassword,
+			exampleInput.Password,
+			exampleUser.TwoFactorSecret,
+			exampleInput.TOTPToken,
+			exampleUser.Salt,
+		).Return(true, nil)
 		s.authenticator = a
 		uc := &mockmetrics.UnitCounter{}
 		uc.On("Increment", mock.Anything).Return()
@@ -402,8 +456,12 @@ func TestService_CreateHandler(T *testing.T) {
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).Return(errors.New("blah"))
 		s.encoderDecoder = ed
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput))
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), CreationMiddlewareCtxKey, exampleInput),
+		)
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, exampleUser.ID),
+		)
 		res := httptest.NewRecorder()
 		s.CreateHandler()(res, req)
 		assert.Equal(t, http.StatusCreated, res.Code)
@@ -432,7 +490,9 @@ func TestService_ReadHandler(T *testing.T) {
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).Return(nil)
 		s.encoderDecoder = ed
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, userID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, userID),
+		)
 		res := httptest.NewRecorder()
 		s.ReadHandler()(res, req)
 		assert.Equal(t, http.StatusOK, res.Code)
@@ -457,7 +517,9 @@ func TestService_ReadHandler(T *testing.T) {
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).Return(nil)
 		s.encoderDecoder = ed
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, userID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, userID),
+		)
 		res := httptest.NewRecorder()
 		s.ReadHandler()(res, req)
 		assert.Equal(t, http.StatusNotFound, res.Code)
@@ -477,12 +539,14 @@ func TestService_ReadHandler(T *testing.T) {
 			exampleOAuth2ClientID,
 			userID,
 		).Return((*models.OAuth2Client)(nil), errors.New("blah"))
-		s.database = mockDB
+		s.Database = mockDB
 		ed := &mockencoding.EncoderDecoder{}
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).Return(nil)
 		s.encoderDecoder = ed
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, userID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, userID),
+		)
 		res := httptest.NewRecorder()
 		s.ReadHandler()(res, req)
 		assert.Equal(t, http.StatusInternalServerError, res.Code)
@@ -507,7 +571,9 @@ func TestService_ReadHandler(T *testing.T) {
 		ed.On("EncodeResponse", mock.Anything, mock.Anything).Return(errors.New("blah"))
 		s.encoderDecoder = ed
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, userID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, userID),
+		)
 		res := httptest.NewRecorder()
 		s.ReadHandler()(res, req)
 		assert.Equal(t, http.StatusOK, res.Code)
@@ -539,7 +605,9 @@ func TestService_ArchiveHandler(T *testing.T) {
 		uc.On("Decrement", mock.Anything).Return()
 		s.oauth2ClientCounter = uc
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, userID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, userID),
+		)
 		res := httptest.NewRecorder()
 		s.ArchiveHandler()(res, req)
 		assert.Equal(t, http.StatusNoContent, res.Code)
@@ -561,7 +629,9 @@ func TestService_ArchiveHandler(T *testing.T) {
 		).Return(sql.ErrNoRows)
 		s.database = mockDB
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, userID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, userID),
+		)
 		res := httptest.NewRecorder()
 		s.ArchiveHandler()(res, req)
 		assert.Equal(t, http.StatusNotFound, res.Code)
@@ -578,7 +648,9 @@ func TestService_ArchiveHandler(T *testing.T) {
 		mockDB.OAuth2ClientDataManager.On("ArchiveOAuth2Client", mock.Anything, exampleOAuth2ClientID, userID).Return(errors.New("blah"))
 		s.database = mockDB
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, userID))
+		req = req.WithContext(
+			context.WithValue(req.Context(), models.UserIDKey, userID),
+		)
 		res := httptest.NewRecorder()
 		s.ArchiveHandler()(res, req)
 		assert.Equal(t, http.StatusInternalServerError, res.Code)
