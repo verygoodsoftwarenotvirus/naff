@@ -80,7 +80,8 @@ func metricsDotGo() *jen.File {
 					),
 					jen.ID("view").Dot("RegisterExporter").Call(jen.ID("p")), jen.ID("log").Dot("Debug").Call(jen.Lit("metrics provider registered")),
 					jen.Return().List(jen.ID("p"), jen.ID("nil"))),
-				jen.Default().Block(jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidMetricsProvider"))),
+				jen.Default().Block(
+	jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidMetricsProvider"))),
 			),
 		),
 		jen.Line(),

@@ -111,9 +111,7 @@ func wireParamFetchersTestDotGo() *jen.File {
 	),
 	jen.ID("expected"))),
 			jen.ID("actual").Op(":=").ID("UserIDFetcher").Call(jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
 	),
 	jen.Line(),
@@ -138,17 +136,20 @@ func wireParamFetchersTestDotGo() *jen.File {
 	),
 	jen.Op("&").ID("chi").Dot(
 				"Context",
-			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
+			).Valuesln(
+	jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
-			).Valuesln(jen.ID("Keys").Op(":").Index().ID("string").Valuesln(jen.ID("users").Dot(
+			).Valuesln(
+	jen.ID("Keys").Op(":").Index().ID("string").Valuesln(
+	jen.ID("users").Dot(
 				"URIParamKey",
-			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))))))),
+			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(
+	jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))))))),
 			jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("fn").Op(":=").ID("buildChiUserIDFetcher").Call(jen.ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -163,15 +164,17 @@ func wireParamFetchersTestDotGo() *jen.File {
 	),
 	jen.Op("&").ID("chi").Dot(
 				"Context",
-			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
+			).Valuesln(
+	jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
-			).Valuesln(jen.ID("Keys").Op(":").Index().ID("string").Valuesln(jen.ID("users").Dot(
+			).Valuesln(
+	jen.ID("Keys").Op(":").Index().ID("string").Valuesln(
+	jen.ID("users").Dot(
 				"URIParamKey",
-			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(jen.Lit("expected")))))),
+			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(
+	jen.Lit("expected")))))),
 			jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
 	),
 	jen.Line(),
@@ -196,17 +199,20 @@ func wireParamFetchersTestDotGo() *jen.File {
 	),
 	jen.Op("&").ID("chi").Dot(
 				"Context",
-			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
+			).Valuesln(
+	jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
-			).Valuesln(jen.ID("Keys").Op(":").Index().ID("string").Valuesln(jen.ID("items").Dot(
+			).Valuesln(
+	jen.ID("Keys").Op(":").Index().ID("string").Valuesln(
+	jen.ID("items").Dot(
 				"URIParamKey",
-			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))))))),
+			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(
+	jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))))))),
 			jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("fn").Op(":=").ID("buildChiItemIDFetcher").Call(jen.ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -221,15 +227,17 @@ func wireParamFetchersTestDotGo() *jen.File {
 	),
 	jen.Op("&").ID("chi").Dot(
 				"Context",
-			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
+			).Valuesln(
+	jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
-			).Valuesln(jen.ID("Keys").Op(":").Index().ID("string").Valuesln(jen.ID("items").Dot(
+			).Valuesln(
+	jen.ID("Keys").Op(":").Index().ID("string").Valuesln(
+	jen.ID("items").Dot(
 				"URIParamKey",
-			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(jen.Lit("expected")))))),
+			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(
+	jen.Lit("expected")))))),
 			jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
 	),
 	jen.Line(),
@@ -254,17 +262,20 @@ func wireParamFetchersTestDotGo() *jen.File {
 	),
 	jen.Op("&").ID("chi").Dot(
 				"Context",
-			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
+			).Valuesln(
+	jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
-			).Valuesln(jen.ID("Keys").Op(":").Index().ID("string").Valuesln(jen.ID("webhooks").Dot(
+			).Valuesln(
+	jen.ID("Keys").Op(":").Index().ID("string").Valuesln(
+	jen.ID("webhooks").Dot(
 				"URIParamKey",
-			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))))))),
+			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(
+	jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))))))),
 			jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("fn").Op(":=").ID("buildChiWebhookIDFetcher").Call(jen.ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -279,15 +290,17 @@ func wireParamFetchersTestDotGo() *jen.File {
 	),
 	jen.Op("&").ID("chi").Dot(
 				"Context",
-			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
+			).Valuesln(
+	jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
-			).Valuesln(jen.ID("Keys").Op(":").Index().ID("string").Valuesln(jen.ID("webhooks").Dot(
+			).Valuesln(
+	jen.ID("Keys").Op(":").Index().ID("string").Valuesln(
+	jen.ID("webhooks").Dot(
 				"URIParamKey",
-			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(jen.Lit("expected")))))),
+			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(
+	jen.Lit("expected")))))),
 			jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
 	),
 	jen.Line(),
@@ -312,17 +325,20 @@ func wireParamFetchersTestDotGo() *jen.File {
 	),
 	jen.Op("&").ID("chi").Dot(
 				"Context",
-			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
+			).Valuesln(
+	jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
-			).Valuesln(jen.ID("Keys").Op(":").Index().ID("string").Valuesln(jen.ID("oauth2clients").Dot(
+			).Valuesln(
+	jen.ID("Keys").Op(":").Index().ID("string").Valuesln(
+	jen.ID("oauth2clients").Dot(
 				"URIParamKey",
-			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))))))),
+			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(
+	jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))))))),
 			jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("fn").Op(":=").ID("buildChiOAuth2ClientIDFetcher").Call(jen.ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
@@ -337,15 +353,17 @@ func wireParamFetchersTestDotGo() *jen.File {
 	),
 	jen.Op("&").ID("chi").Dot(
 				"Context",
-			).Valuesln(jen.ID("URLParams").Op(":").ID("chi").Dot(
+			).Valuesln(
+	jen.ID("URLParams").Op(":").ID("chi").Dot(
 				"RouteParams",
-			).Valuesln(jen.ID("Keys").Op(":").Index().ID("string").Valuesln(jen.ID("oauth2clients").Dot(
+			).Valuesln(
+	jen.ID("Keys").Op(":").Index().ID("string").Valuesln(
+	jen.ID("oauth2clients").Dot(
 				"URIParamKey",
-			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(jen.Lit("expected")))))),
+			)), jen.ID("Values").Op(":").Index().ID("string").Valuesln(
+	jen.Lit("expected")))))),
 			jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
 	),
 	jen.Line(),

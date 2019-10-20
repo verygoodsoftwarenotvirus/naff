@@ -16,7 +16,7 @@ func middlewareTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("MockHTTPHandler").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("MockHTTPHandler").Struct(jen.Qual("github.com/stretchr/testify/mock",
 		"Mock",
 	)),
 	jen.Line(),
@@ -36,16 +36,17 @@ func middlewareTestDotGo() *jen.File {
 		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
+			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
+	jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
 			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
-			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
+			).Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -56,10 +57,10 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("mh").Dot(
 				"On",
-			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
+			).Call(jen.Lit("ServeHTTP"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -74,24 +75,24 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("actual").Dot(
 				"ServeHTTP",
 			).Call(jen.ID("res"), jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("res").Dot(
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
 	),
 	jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
+	jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
 			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
-			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
+			).Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -102,10 +103,10 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("mh").Dot(
 				"On",
-			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
+			).Call(jen.Lit("ServeHTTP"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -120,9 +121,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("actual").Dot(
 				"ServeHTTP",
 			).Call(jen.ID("res"), jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("res").Dot(
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
 	),
 	jen.Qual("net/http", "StatusBadRequest")),
@@ -136,16 +135,17 @@ func middlewareTestDotGo() *jen.File {
 		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
+			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
+	jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
 			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
-			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
+			).Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -156,10 +156,10 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("mh").Dot(
 				"On",
-			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
+			).Call(jen.Lit("ServeHTTP"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -174,15 +174,15 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("actual").Dot(
 				"ServeHTTP",
 			).Call(jen.ID("res"), jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("res").Dot(
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
 	),
 	jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
+	jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
@@ -192,24 +192,22 @@ func middlewareTestDotGo() *jen.File {
 				"UserDataManager",
 			).Dot(
 				"On",
-			).Call(jen.Lit("GetUserCount"), jen.ID("mock").Dot(
+			).Call(jen.Lit("GetUserCount"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("uint64").Call(jen.Lit(123)), jen.ID("nil")),
-			jen.ID("s").Dot(
-				"database",
-			).Op("=").ID("mockDB"),
+			jen.ID("s").Dot("Database").Op("=").ID("mockDB"),
 			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
-			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
+			).Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -220,10 +218,10 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("mh").Dot(
 				"On",
-			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
+			).Call(jen.Lit("ServeHTTP"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -238,9 +236,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("actual").Dot(
 				"ServeHTTP",
 			).Call(jen.ID("res"), jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("res").Dot(
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
 	),
 	jen.Qual("net/http", "StatusBadRequest")),
@@ -254,16 +250,17 @@ func middlewareTestDotGo() *jen.File {
 		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
+			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
+	jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
 			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
-			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
+			).Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -274,10 +271,10 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("mh").Dot(
 				"On",
-			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
+			).Call(jen.Lit("ServeHTTP"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -292,24 +289,24 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("actual").Dot(
 				"ServeHTTP",
 			).Call(jen.ID("res"), jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("res").Dot(
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
 	),
 	jen.Qual("net/http", "StatusOK")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
+	jen.ID("logger").Op(":").ID("noop").Dot(
 				"ProvideNoopLogger",
 			).Call()),
 			jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 			jen.ID("ed").Dot(
 				"On",
-			).Call(jen.Lit("DecodeRequest"), jen.ID("mock").Dot(
+			).Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -320,10 +317,10 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
 			jen.ID("mh").Dot(
 				"On",
-			).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
+			).Call(jen.Lit("ServeHTTP"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 	),
-	jen.ID("mock").Dot(
+	jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -338,9 +335,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("actual").Dot(
 				"ServeHTTP",
 			).Call(jen.ID("res"), jen.ID("req")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("res").Dot(
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot(
 				"Code",
 	),
 	jen.Qual("net/http", "StatusBadRequest")),

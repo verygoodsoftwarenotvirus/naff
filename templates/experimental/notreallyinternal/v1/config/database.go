@@ -22,7 +22,7 @@ func databaseDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideDatabase provides a database implementation dependent on the configuration"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideDatabase").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.ID("database").Dot("Database"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideDatabase").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database"), jen.ID("error")).Block(
 			jen.Var().Defs(
 				jen.ID("debug").Op("=").ID("cfg").Dot("Database").Dot("Debug").Op("||").ID("cfg").Dot("Meta").Dot("Debug"),
 				jen.ID("connectionDetails").Op("=").ID("cfg").Dot("Database").Dot("ConnectionDetails"),
@@ -64,7 +64,8 @@ func databaseDotGo() *jen.File {
 					jen.ID("sdb").Op(":=").ID("sqlite").Dot("ProvideSqlite").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
 					jen.Line(),
 					jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client", "ProvideDatabaseClient").Call(jen.ID("ctx"), jen.ID("rawDB"), jen.ID("sdb"), jen.ID("debug"), jen.ID("logger"))),
-				jen.Default().Block(jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("invalid database type selected")))),
+				jen.Default().Block(
+					jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("invalid database type selected")))),
 			),
 		),
 		jen.Line(),

@@ -15,70 +15,33 @@ func mainDotGo() *jen.File {
 		jen.Type().ID("configFunc").Params(jen.ID("filepath").ID("string")).Params(jen.ID("error")))
 
 	ret.Add(
-		jen.Var().ID("files").Op("=").Map(jen.ID("string")).ID("configFunc").Valuesln(jen.Lit("config_files/coverage.toml").Op(":").ID("coverageConfig"), jen.Lit("config_files/development.toml").Op(":").ID("developmentConfig"), jen.Lit("config_files/integration-tests-postgres.toml").Op(":").ID("buildIntegrationTestForDBImplementation").Call(jen.Lit("postgres"), jen.ID("postgresDBConnDetails")), jen.Lit("config_files/integration-tests-sqlite.toml").Op(":").ID("buildIntegrationTestForDBImplementation").Call(jen.Lit("sqlite"), jen.Lit("/tmp/db")), jen.Lit("config_files/integration-tests-mariadb.toml").Op(":").ID("buildIntegrationTestForDBImplementation").Call(jen.Lit("mariadb"), jen.Lit("dbuser:hunter2@tcp(database:3306)/todo")), jen.Lit("config_files/production.toml").Op(":").ID("productionConfig")))
+		jen.Var().ID("files").Op("=").Map(jen.ID("string")).ID("configFunc").Valuesln(
+			jen.Lit("config_files/coverage.toml").Op(":").ID("coverageConfig"), jen.Lit("config_files/development.toml").Op(":").ID("developmentConfig"), jen.Lit("config_files/integration-tests-postgres.toml").Op(":").ID("buildIntegrationTestForDBImplementation").Call(jen.Lit("postgres"), jen.ID("postgresDBConnDetails")), jen.Lit("config_files/integration-tests-sqlite.toml").Op(":").ID("buildIntegrationTestForDBImplementation").Call(jen.Lit("sqlite"), jen.Lit("/tmp/db")), jen.Lit("config_files/integration-tests-mariadb.toml").Op(":").ID("buildIntegrationTestForDBImplementation").Call(jen.Lit("mariadb"), jen.Lit("dbuser:hunter2@tcp(database:3306)/todo")), jen.Lit("config_files/production.toml").Op(":").ID("productionConfig")))
 
 	ret.Add(
 		jen.Func().ID("developmentConfig").Params(jen.ID("filepath").ID("string")).Params(jen.ID("error")).Block(
 			jen.ID("cfg").Op(":=").ID("config").Dot(
 				"BuildConfig",
 			).Call(),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("serverDebug"), jen.ID("true")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("frontendDebug"), jen.ID("true")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("frontendStaticFilesDir"), jen.ID("defaultFrontendFilepath")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("frontendCacheStatics"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authDebug"), jen.ID("true")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authCookieDomain"), jen.Lit("")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authCookieSecret"), jen.ID("debugCookieSecret")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authCookieLifetime"), jen.ID("oneDay")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authSecureCookiesOnly"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authEnableUserSignup"), jen.ID("true")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metricsProvider"), jen.Lit("prometheus")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metricsTracer"), jen.Lit("jaeger")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metricsDBCollectionInterval"), jen.Qual("time", "Second")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metricsRuntimeCollectionInterval"), jen.Qual("time", "Second")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("dbDebug"), jen.ID("true")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("dbProvider"), jen.Lit("postgres")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("dbDeets"), jen.ID("postgresDBConnDetails")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("serverDebug"), jen.ID("true")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("frontendDebug"), jen.ID("true")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("frontendStaticFilesDir"), jen.ID("defaultFrontendFilepath")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("frontendCacheStatics"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authDebug"), jen.ID("true")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authCookieDomain"), jen.Lit("")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authCookieSecret"), jen.ID("debugCookieSecret")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authCookieLifetime"), jen.ID("oneDay")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authSecureCookiesOnly"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authEnableUserSignup"), jen.ID("true")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metricsProvider"), jen.Lit("prometheus")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metricsTracer"), jen.Lit("jaeger")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metricsDBCollectionInterval"), jen.Qual("time", "Second")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metricsRuntimeCollectionInterval"), jen.Qual("time", "Second")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("dbDebug"), jen.ID("true")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("dbProvider"), jen.Lit("postgres")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("dbDeets"), jen.ID("postgresDBConnDetails")),
 			jen.Return().ID("cfg").Dot(
 				"WriteConfigAs",
 			).Call(jen.ID("filepath")),
@@ -90,36 +53,16 @@ func mainDotGo() *jen.File {
 			jen.ID("cfg").Op(":=").ID("config").Dot(
 				"BuildConfig",
 			).Call(),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("serverDebug"), jen.ID("true")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("frontendDebug"), jen.ID("true")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("frontendStaticFilesDir"), jen.ID("defaultFrontendFilepath")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("frontendCacheStatics"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authDebug"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authCookieSecret"), jen.ID("debugCookieSecret")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("dbDebug"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("dbProvider"), jen.Lit("postgres")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("dbDeets"), jen.ID("postgresDBConnDetails")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("serverDebug"), jen.ID("true")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("frontendDebug"), jen.ID("true")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("frontendStaticFilesDir"), jen.ID("defaultFrontendFilepath")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("frontendCacheStatics"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authDebug"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authCookieSecret"), jen.ID("debugCookieSecret")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("dbDebug"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("dbProvider"), jen.Lit("postgres")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("dbDeets"), jen.ID("postgresDBConnDetails")),
 			jen.Return().ID("cfg").Dot(
 				"WriteConfigAs",
 			).Call(jen.ID("filepath")),
@@ -131,66 +74,26 @@ func mainDotGo() *jen.File {
 			jen.ID("cfg").Op(":=").ID("config").Dot(
 				"BuildConfig",
 			).Call(),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metaDebug"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("serverDebug"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("frontendDebug"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("frontendStaticFilesDir"), jen.ID("defaultFrontendFilepath")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("frontendCacheStatics"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authDebug"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authCookieDomain"), jen.Lit("")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authCookieSecret"), jen.ID("debugCookieSecret")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authCookieLifetime"), jen.ID("oneDay")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authSecureCookiesOnly"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("authEnableUserSignup"), jen.ID("true")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metricsProvider"), jen.Lit("prometheus")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metricsTracer"), jen.Lit("jaeger")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metricsDBCollectionInterval"), jen.Qual("time", "Second")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("metricsRuntimeCollectionInterval"), jen.Qual("time", "Second")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("dbDebug"), jen.ID("false")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("dbProvider"), jen.Lit("postgres")),
-			jen.ID("cfg").Dot(
-				"Set",
-			).Call(jen.ID("dbDeets"), jen.ID("postgresDBConnDetails")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metaDebug"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("serverDebug"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("frontendDebug"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("frontendStaticFilesDir"), jen.ID("defaultFrontendFilepath")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("frontendCacheStatics"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authDebug"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authCookieDomain"), jen.Lit("")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authCookieSecret"), jen.ID("debugCookieSecret")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authCookieLifetime"), jen.ID("oneDay")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authSecureCookiesOnly"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("authEnableUserSignup"), jen.ID("true")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metricsProvider"), jen.Lit("prometheus")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metricsTracer"), jen.Lit("jaeger")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metricsDBCollectionInterval"), jen.Qual("time", "Second")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("metricsRuntimeCollectionInterval"), jen.Qual("time", "Second")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("dbDebug"), jen.ID("false")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("dbProvider"), jen.Lit("postgres")),
+			jen.ID("cfg").Dot("Set").Call(jen.ID("dbDeets"), jen.ID("postgresDBConnDetails")),
 			jen.Return().ID("cfg").Dot(
 				"WriteConfigAs",
 			).Call(jen.ID("filepath")),
@@ -203,39 +106,17 @@ func mainDotGo() *jen.File {
 				jen.ID("cfg").Op(":=").ID("config").Dot(
 					"BuildConfig",
 				).Call(),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("metaDebug"), jen.ID("false")),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("serverDebug"), jen.ID("true")),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("frontendStaticFilesDir"), jen.ID("defaultFrontendFilepath")),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("authCookieSecret"), jen.ID("debugCookieSecret")),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("metricsProvider"), jen.Lit("prometheus")),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("metricsTracer"), jen.Lit("jaeger")),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("dbDebug"), jen.ID("false")),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("dbProvider"), jen.ID("dbprov")),
-				jen.ID("cfg").Dot(
-					"Set",
-				).Call(jen.ID("dbDeets"), jen.ID("dbDeet")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("metaDebug"), jen.ID("false")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("serverDebug"), jen.ID("true")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("frontendStaticFilesDir"), jen.ID("defaultFrontendFilepath")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("authCookieSecret"), jen.ID("debugCookieSecret")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("metricsProvider"), jen.Lit("prometheus")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("metricsTracer"), jen.Lit("jaeger")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("dbDebug"), jen.ID("false")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("dbProvider"), jen.ID("dbprov")),
+				jen.ID("cfg").Dot("Set").Call(jen.ID("dbDeets"), jen.ID("dbDeet")),
 				jen.Return().ID("cfg").Dot(
 					"WriteConfigAs",
 				).Call(jen.ID("filepath")),

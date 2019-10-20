@@ -48,9 +48,7 @@ func wireDotGo() *jen.File {
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
 		jen.Func().ID("ProvideConfigDatabaseSettings").Params(jen.ID("c").Op("*").ID("ServerConfig")).Params(jen.ID("DatabaseSettings")).Block(
-			jen.Return().ID("c").Dot(
-				"Database",
-			),
+			jen.Return().ID("c").Dot("Database"),
 		),
 		jen.Line(),
 	)

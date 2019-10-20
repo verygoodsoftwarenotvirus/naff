@@ -67,8 +67,10 @@ func encodingDotGo() *jen.File {
 			jen.Line(),
 			jen.Var().ID("e").ID("encoder"),
 			jen.Switch(jen.ID("ct")).Block(
-				jen.Case(jen.ID("XMLContentType")).Block(jen.ID("e").Op("=").Qual("encoding/xml", "NewEncoder").Call(jen.ID("res"))),
-				jen.Default().Block(jen.ID("e").Op("=").Qual("encoding/json", "NewEncoder").Call(jen.ID("res"))),
+				jen.Case(jen.ID("XMLContentType")).Block(
+	jen.ID("e").Op("=").Qual("encoding/xml", "NewEncoder").Call(jen.ID("res"))),
+				jen.Default().Block(
+	jen.ID("e").Op("=").Qual("encoding/json", "NewEncoder").Call(jen.ID("res"))),
 			),
 			jen.Line(),
 			jen.ID("res").Dot("Header").Call().Dot("Set").Call(jen.ID("ContentTypeHeader"), jen.ID("ct")),

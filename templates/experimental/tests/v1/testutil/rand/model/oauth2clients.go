@@ -18,9 +18,11 @@ func oauth2ClientsDotGo() *jen.File {
 	)).Block(
 		jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 			"OAuth2ClientCreationInput",
-		).Valuesln(jen.ID("UserLoginInput").Op(":").ID("models").Dot(
+		).Valuesln(
+	jen.ID("UserLoginInput").Op(":").ID("models").Dot(
 			"UserLoginInput",
-		).Valuesln(jen.ID("Username").Op(":").ID("username"), jen.ID("Password").Op(":").ID("password"), jen.ID("TOTPToken").Op(":").ID("mustBuildCode").Call(jen.ID("totpToken")))),
+		).Valuesln(
+	jen.ID("Username").Op(":").ID("username"), jen.ID("Password").Op(":").ID("password"), jen.ID("TOTPToken").Op(":").ID("mustBuildCode").Call(jen.ID("totpToken")))),
 		jen.Return().ID("x"),
 	),
 	jen.Line(),

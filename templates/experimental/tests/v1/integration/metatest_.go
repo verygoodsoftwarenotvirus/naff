@@ -26,9 +26,7 @@ func metaTestDotGo() *jen.File {
 		jen.ID("t").Dot(
 			"Helper",
 		).Call(),
-		jen.ID("require").Dot(
-			"NoError",
-		).Call(jen.ID("t"), jen.ID("err")),
+		jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.ID("require").Dot(
 			"NotNil",
 		).Call(jen.ID("t"), jen.ID("i")),

@@ -16,7 +16,7 @@ func middlewareTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("mockHTTPHandler").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("mockHTTPHandler").Struct(jen.Qual("github.com/stretchr/testify/mock",
 			"Mock",
 		)),
 		jen.Line(),
@@ -40,9 +40,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("require").Dot(
 				"NotNil",
 			).Call(jen.ID("t"), jen.ID("req")),
-			jen.ID("assert").Dot(
-				"NoError",
-			).Call(jen.ID("t"), jen.ID("err")),
+			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.Return().ID("req"),
 		),
 		jen.Line(),
@@ -64,9 +62,7 @@ func middlewareTestDotGo() *jen.File {
 				).Op("=").Lit("/blah"),
 				jen.ID("expected").Op(":=").Lit("PATCH /blah"),
 				jen.ID("actual").Op(":=").ID("formatSpanNameForRequest").Call(jen.ID("req")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			)),
 		),
 		jen.Line(),
@@ -81,10 +77,10 @@ func middlewareTestDotGo() *jen.File {
 				jen.ID("mh").Op(":=").Op("&").ID("mockHTTPHandler").Values(),
 				jen.ID("mh").Dot(
 					"On",
-				).Call(jen.Lit("ServeHTTP"), jen.ID("mock").Dot(
+				).Call(jen.Lit("ServeHTTP"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
-					jen.ID("mock").Dot(
+					jen.Qual("github.com/stretchr/testify/mock",
 						"Anything",
 					)).Dot(
 					"Return",
@@ -97,9 +93,7 @@ func middlewareTestDotGo() *jen.File {
 				).Call(jen.ID("mh")).Dot(
 					"ServeHTTP",
 				).Call(jen.ID("res"), jen.ID("req")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot(
 					"Code",
 				)),
 			)),

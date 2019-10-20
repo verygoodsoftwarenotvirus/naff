@@ -51,7 +51,8 @@ func usersDotGo() *jen.File {
 		).Call(),
 		jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 			"UserInput",
-		).Valuesln(jen.ID("Username").Op(":").ID("username"), jen.ID("Password").Op(":").ID("fake").Dot(
+		).Valuesln(
+	jen.ID("Username").Op(":").ID("username"), jen.ID("Password").Op(":").ID("fake").Dot(
 			"Password",
 		).Call(jen.Lit(64), jen.Lit(128), jen.ID("true"), jen.ID("true"), jen.ID("true"))),
 		jen.Return().ID("x"),

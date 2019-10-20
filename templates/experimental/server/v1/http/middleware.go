@@ -50,7 +50,8 @@ func middlewareDotGo() *jen.File {
 				"WithRequest",
 			).Call(jen.ID("req")).Dot(
 				"WithValues",
-			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("status").Op(":").ID("ww").Dot(
+			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+	jen.Lit("status").Op(":").ID("ww").Dot(
 				"Status",
 			).Call(), jen.Lit("bytes_written").Op(":").ID("ww").Dot(
 				"BytesWritten",

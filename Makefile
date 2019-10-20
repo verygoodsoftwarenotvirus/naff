@@ -64,7 +64,7 @@ example_output_subdirs:
 
 .PHONY: example_output
 example_output:
-	go run cmd/todoproj/main.go
+	@go run cmd/todoproj/main.go
 
 .PHONY: install-tojen
 install-tojen:

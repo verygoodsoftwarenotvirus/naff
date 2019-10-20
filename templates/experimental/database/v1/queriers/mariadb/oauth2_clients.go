@@ -16,7 +16,8 @@ func oauth2ClientsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("oauth2ClientsTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("name"), jen.Lit("client_id"), jen.Lit("scopes"), jen.Lit("redirect_uri"), jen.Lit("client_secret"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
+		jen.Var().ID("oauth2ClientsTableColumns").Op("=").Index().ID("string").Valuesln(
+	jen.Lit("id"), jen.Lit("name"), jen.Lit("client_id"), jen.Lit("scopes"), jen.Lit("redirect_uri"), jen.Lit("client_secret"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
 	jen.Line(),
 	)
 
@@ -103,9 +104,7 @@ func oauth2ClientsDotGo() *jen.File {
 			jen.If(jen.ID("err").Op(":=").ID("rows").Dot(
 				"Close",
 			).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("closing rows")),
+				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("closing rows")),
 			),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
 		),
@@ -128,7 +127,8 @@ func oauth2ClientsDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("client_id").Op(":").ID("clientID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+			).Valuesln(
+	jen.Lit("client_id").Op(":").ID("clientID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("m").Dot(
@@ -183,7 +183,8 @@ func oauth2ClientsDotGo() *jen.File {
 					"Where",
 				).Call(jen.ID("squirrel").Dot(
 					"Eq",
-				).Valuesln(jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+				).Valuesln(
+	jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 					"ToSql",
 				).Call(),
 				jen.ID("m").Dot(
@@ -276,7 +277,8 @@ func oauth2ClientsDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("m").Dot(
@@ -331,7 +333,8 @@ func oauth2ClientsDotGo() *jen.File {
 			"Where",
 		).Call(jen.ID("squirrel").Dot(
 			"Eq",
-		).Valuesln(jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
+		).Valuesln(
+	jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
 		jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 			jen.ID("builder").Op("=").ID("filter").Dot(
 				"ApplyToQueryBuilder",
@@ -396,7 +399,8 @@ func oauth2ClientsDotGo() *jen.File {
 					"Where",
 				).Call(jen.ID("squirrel").Dot(
 					"Eq",
-				).Valuesln(jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+				).Valuesln(
+	jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 					"ToSql",
 				).Call(),
 				jen.ID("m").Dot(
@@ -445,7 +449,8 @@ func oauth2ClientsDotGo() *jen.File {
 			"Where",
 		).Call(jen.ID("squirrel").Dot(
 			"Eq",
-		).Valuesln(jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
+		).Valuesln(
+	jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
 		jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 			jen.ID("builder").Op("=").ID("filter").Dot(
 				"ApplyToQueryBuilder",
@@ -510,9 +515,11 @@ func oauth2ClientsDotGo() *jen.File {
 			),
 			jen.ID("ocl").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2ClientList",
-			).Valuesln(jen.ID("Pagination").Op(":").ID("models").Dot(
+			).Valuesln(
+	jen.ID("Pagination").Op(":").ID("models").Dot(
 				"Pagination",
-			).Valuesln(jen.ID("Page").Op(":").ID("filter").Dot(
+			).Valuesln(
+	jen.ID("Page").Op(":").ID("filter").Dot(
 				"Page",
 	),
 	jen.ID("Limit").Op(":").ID("filter").Dot(
@@ -585,7 +592,8 @@ func oauth2ClientsDotGo() *jen.File {
 			"Where",
 		).Call(jen.ID("squirrel").Dot(
 			"Eq",
-		).Valuesln(jen.Lit("id").Op(":").ID("clientID"))).Dot(
+		).Valuesln(
+	jen.Lit("id").Op(":").ID("clientID"))).Dot(
 			"ToSql",
 		).Call(),
 		jen.ID("m").Dot(
@@ -607,7 +615,8 @@ func oauth2ClientsDotGo() *jen.File {
 	jen.ID("error")).Block(
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"OAuth2Client",
-			).Valuesln(jen.ID("Name").Op(":").ID("input").Dot(
+			).Valuesln(
+	jen.ID("Name").Op(":").ID("input").Dot(
 				"Name",
 	),
 	jen.ID("ClientID").Op(":").ID("input").Dot(
@@ -674,32 +683,23 @@ func oauth2ClientsDotGo() *jen.File {
 			"sqlBuilder",
 		).Dot(
 			"Update",
-		).Call(jen.ID("oauth2ClientsTableName")).Dot(
-			"Set",
-		).Call(jen.Lit("client_id"), jen.ID("input").Dot(
+		).Call(jen.ID("oauth2ClientsTableName")).Dot("Set").Call(jen.Lit("client_id"), jen.ID("input").Dot(
 			"ClientID",
-		)).Dot(
-			"Set",
-		).Call(jen.Lit("client_secret"), jen.ID("input").Dot(
+		)).Dot("Set").Call(jen.Lit("client_secret"), jen.ID("input").Dot(
 			"ClientSecret",
-		)).Dot(
-			"Set",
-		).Call(jen.Lit("scopes"), jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
+		)).Dot("Set").Call(jen.Lit("scopes"), jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
 			"Scopes",
 	),
-	jen.ID("scopesSeparator"))).Dot(
-			"Set",
-		).Call(jen.Lit("redirect_uri"), jen.ID("input").Dot(
+	jen.ID("scopesSeparator"))).Dot("Set").Call(jen.Lit("redirect_uri"), jen.ID("input").Dot(
 			"RedirectURI",
-		)).Dot(
-			"Set",
-		).Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
+		)).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
 			"Expr",
 		).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 			"Where",
 		).Call(jen.ID("squirrel").Dot(
 			"Eq",
-		).Valuesln(jen.Lit("id").Op(":").ID("input").Dot(
+		).Valuesln(
+	jen.Lit("id").Op(":").ID("input").Dot(
 			"ID",
 	),
 	jen.Lit("belongs_to").Op(":").ID("input").Dot(
@@ -742,19 +742,16 @@ func oauth2ClientsDotGo() *jen.File {
 			"sqlBuilder",
 		).Dot(
 			"Update",
-		).Call(jen.ID("oauth2ClientsTableName")).Dot(
-			"Set",
-		).Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
+		).Call(jen.ID("oauth2ClientsTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
 			"Expr",
-		).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
-			"Set",
-		).Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
+		).Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
 			"Expr",
 		).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 			"Where",
 		).Call(jen.ID("squirrel").Dot(
 			"Eq",
-		).Valuesln(jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
+		).Valuesln(
+	jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
 			"ToSql",
 		).Call(),
 		jen.ID("m").Dot(

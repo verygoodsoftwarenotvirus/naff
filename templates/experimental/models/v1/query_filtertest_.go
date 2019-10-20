@@ -15,36 +15,42 @@ func queryFilterTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").ID("QueryFilter").Valuesln(jen.ID("Page").Op(":").Lit(100), jen.ID("Limit").Op(":").ID("MaxLimit"), jen.ID("CreatedAfter").Op(":").Lit(123456789), jen.ID("CreatedBefore").Op(":").Lit(123456789), jen.ID("UpdatedAfter").Op(":").Lit(123456789), jen.ID("UpdatedBefore").Op(":").Lit(123456789), jen.ID("SortBy").Op(":").ID("SortDescending")),
+				jen.ID("expected").Op(":=").Op("&").ID("QueryFilter").Valuesln(
+					jen.ID("Page").Op(":").Lit(100), jen.ID("Limit").Op(":").ID("MaxLimit"), jen.ID("CreatedAfter").Op(":").Lit(123456789), jen.ID("CreatedBefore").Op(":").Lit(123456789), jen.ID("UpdatedAfter").Op(":").Lit(123456789), jen.ID("UpdatedBefore").Op(":").Lit(123456789), jen.ID("SortBy").Op(":").ID("SortDescending")),
 				jen.ID("actual").Op(":=").Op("&").ID("QueryFilter").Values(),
-				jen.ID("exampleInput").Op(":=").Qual("net/url", "Values").Valuesln(jen.ID("pageKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"Page",
-				)))), jen.ID("limitKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"Limit",
-				)))), jen.ID("createdBeforeKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"CreatedAfter",
-				)))), jen.ID("createdAfterKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"CreatedBefore",
-				)))), jen.ID("updatedBeforeKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"UpdatedAfter",
-				)))), jen.ID("updatedAfterKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"UpdatedBefore",
-				)))), jen.ID("sortByKey").Op(":").Index().ID("string").Valuesln(jen.ID("string").Call(jen.ID("expected").Dot(
-					"SortBy",
-				)))),
+				jen.ID("exampleInput").Op(":=").Qual("net/url", "Values").Valuesln(
+					jen.ID("pageKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"Page",
+						)))), jen.ID("limitKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"Limit",
+						)))), jen.ID("createdBeforeKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"CreatedAfter",
+						)))), jen.ID("createdAfterKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"CreatedBefore",
+						)))), jen.ID("updatedBeforeKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"UpdatedAfter",
+						)))), jen.ID("updatedAfterKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"UpdatedBefore",
+						)))), jen.ID("sortByKey").Op(":").Index().ID("string").Valuesln(
+						jen.ID("string").Call(jen.ID("expected").Dot(
+							"SortBy",
+						)))),
 				jen.ID("actual").Dot(
 					"FromParams",
 				).Call(jen.ID("exampleInput")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("exampleInput").Index(jen.ID("sortByKey")).Op("=").Index().ID("string").Valuesln(jen.ID("string").Call(jen.ID("SortAscending"))),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("exampleInput").Index(jen.ID("sortByKey")).Op("=").Index().ID("string").Valuesln(
+					jen.ID("string").Call(jen.ID("SortAscending"))),
 				jen.ID("actual").Dot(
 					"FromParams",
 				).Call(jen.ID("exampleInput")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("SortAscending"), jen.ID("actual").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("SortAscending"), jen.ID("actual").Dot(
 					"SortBy",
 				)),
 			)),
@@ -62,9 +68,7 @@ func queryFilterTestDotGo() *jen.File {
 				jen.ID("qf").Dot(
 					"SetPage",
 				).Call(jen.ID("expected")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("qf").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("qf").Dot(
 					"Page",
 				)),
 			)),
@@ -77,14 +81,13 @@ func queryFilterTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Valuesln(jen.ID("Limit").Op(":").Lit(10), jen.ID("Page").Op(":").Lit(11)),
+				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Valuesln(
+					jen.ID("Limit").Op(":").Lit(10), jen.ID("Page").Op(":").Lit(11)),
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(100)),
 				jen.ID("actual").Op(":=").ID("qf").Dot(
 					"QueryPage",
 				).Call(),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			)),
 		),
 		jen.Line(),
@@ -95,29 +98,37 @@ func queryFilterTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Valuesln(jen.ID("Page").Op(":").Lit(100), jen.ID("Limit").Op(":").Lit(50), jen.ID("CreatedAfter").Op(":").Lit(123456789), jen.ID("CreatedBefore").Op(":").Lit(123456789), jen.ID("UpdatedAfter").Op(":").Lit(123456789), jen.ID("UpdatedBefore").Op(":").Lit(123456789), jen.ID("SortBy").Op(":").ID("SortDescending")),
-				jen.ID("expected").Op(":=").Qual("net/url", "Values").Valuesln(jen.ID("pageKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
-					"Page",
-				)))), jen.ID("limitKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
-					"Limit",
-				)))), jen.ID("createdBeforeKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
-					"CreatedAfter",
-				)))), jen.ID("createdAfterKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
-					"CreatedBefore",
-				)))), jen.ID("updatedBeforeKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
-					"UpdatedAfter",
-				)))), jen.ID("updatedAfterKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
-					"UpdatedBefore",
-				)))), jen.ID("sortByKey").Op(":").Index().ID("string").Valuesln(jen.ID("string").Call(jen.ID("qf").Dot(
-					"SortBy",
-				)))),
+				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Valuesln(
+					jen.ID("Page").Op(":").Lit(100), jen.ID("Limit").Op(":").Lit(50), jen.ID("CreatedAfter").Op(":").Lit(123456789), jen.ID("CreatedBefore").Op(":").Lit(123456789), jen.ID("UpdatedAfter").Op(":").Lit(123456789), jen.ID("UpdatedBefore").Op(":").Lit(123456789), jen.ID("SortBy").Op(":").ID("SortDescending")),
+				jen.ID("expected").Op(":=").Qual("net/url", "Values").Valuesln(
+					jen.ID("pageKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
+							"Page",
+						)))), jen.ID("limitKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
+							"Limit",
+						)))), jen.ID("createdBeforeKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
+							"CreatedAfter",
+						)))), jen.ID("createdAfterKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
+							"CreatedBefore",
+						)))), jen.ID("updatedBeforeKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
+							"UpdatedAfter",
+						)))), jen.ID("updatedAfterKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("qf").Dot(
+							"UpdatedBefore",
+						)))), jen.ID("sortByKey").Op(":").Index().ID("string").Valuesln(
+						jen.ID("string").Call(jen.ID("qf").Dot(
+							"SortBy",
+						)))),
 				jen.ID("actual").Op(":=").ID("qf").Dot(
 					"ToValues",
 				).Call(),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("qf").Op(":=").Parens(jen.Op("*").ID("QueryFilter")).Call(jen.ID("nil")),
 				jen.ID("expected").Op(":=").ID("DefaultQueryFilter").Call().Dot(
@@ -126,9 +137,7 @@ func queryFilterTestDotGo() *jen.File {
 				jen.ID("actual").Op(":=").ID("qf").Dot(
 					"ToValues",
 				).Call(),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			)),
 		),
 		jen.Line(),
@@ -152,9 +161,12 @@ func queryFilterTestDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("condition").Op(":").ID("true"))),
+			).Valuesln(
+				jen.Lit("condition").Op(":").ID("true"))),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Valuesln(jen.ID("Page").Op(":").Lit(100), jen.ID("Limit").Op(":").Lit(50), jen.ID("CreatedAfter").Op(":").Lit(123456789), jen.ID("CreatedBefore").Op(":").Lit(123456789), jen.ID("UpdatedAfter").Op(":").Lit(123456789), jen.ID("UpdatedBefore").Op(":").Lit(123456789), jen.ID("SortBy").Op(":").ID("SortDescending")),
+				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Valuesln(
+					jen.ID("Page").Op(":").Lit(100), jen.ID("Limit").Op(":").Lit(50), jen.ID("CreatedAfter").Op(":").Lit(123456789), jen.ID("CreatedBefore").Op(":").Lit(123456789), jen.ID("UpdatedAfter").Op(":").Lit(123456789), jen.ID("UpdatedBefore").Op(":").Lit(123456789), jen.ID("SortBy").Op(":").ID("SortDescending")),
 				jen.ID("sb").Op(":=").ID("squirrel").Dot(
 					"StatementBuilder",
 				).Dot(
@@ -169,15 +181,13 @@ func queryFilterTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("_"), jen.ID("err")).Op(":=").ID("sb").Dot(
 					"ToSql",
 				).Call(),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("basic usecase"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleQF").Op(":=").Op("&").ID("QueryFilter").Valuesln(jen.ID("Limit").Op(":").Lit(15), jen.ID("Page").Op(":").Lit(2)),
+				jen.ID("exampleQF").Op(":=").Op("&").ID("QueryFilter").Valuesln(
+					jen.ID("Limit").Op(":").Lit(15), jen.ID("Page").Op(":").Lit(2)),
 				jen.ID("expected").Op(":=").Lit(`SELECT things FROM stuff WHERE condition = $1 LIMIT 15 OFFSET 15`),
 				jen.ID("x").Op(":=").ID("exampleQF").Dot(
 					"ApplyToQueryBuilder",
@@ -185,9 +195,7 @@ func queryFilterTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.ID("err")).Op(":=").ID("x").Dot(
 					"ToSql",
 				).Call(),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("err")),
@@ -195,6 +203,7 @@ func queryFilterTestDotGo() *jen.File {
 					"NotEmpty",
 				).Call(jen.ID("t"), jen.ID("args")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("returns query builder if query filter is nil"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Lit(`SELECT things FROM stuff WHERE condition = $1`),
 				jen.ID("x").Op(":=").Parens(jen.Op("*").ID("QueryFilter")).Call(jen.ID("nil")).Dot(
@@ -203,9 +212,7 @@ func queryFilterTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.ID("err")).Op(":=").ID("x").Dot(
 					"ToSql",
 				).Call(),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("err")),
@@ -213,16 +220,18 @@ func queryFilterTestDotGo() *jen.File {
 					"NotEmpty",
 				).Call(jen.ID("t"), jen.ID("args")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("whole kit and kaboodle"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleQF").Op(":=").Op("&").ID("QueryFilter").Valuesln(jen.ID("Limit").Op(":").Lit(20), jen.ID("Page").Op(":").Lit(6), jen.ID("CreatedAfter").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
-					"Unix",
-				).Call()), jen.ID("CreatedBefore").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
-					"Unix",
-				).Call()), jen.ID("UpdatedAfter").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
-					"Unix",
-				).Call()), jen.ID("UpdatedBefore").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
-					"Unix",
-				).Call())),
+				jen.ID("exampleQF").Op(":=").Op("&").ID("QueryFilter").Valuesln(
+					jen.ID("Limit").Op(":").Lit(20), jen.ID("Page").Op(":").Lit(6), jen.ID("CreatedAfter").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+						"Unix",
+					).Call()), jen.ID("CreatedBefore").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+						"Unix",
+					).Call()), jen.ID("UpdatedAfter").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+						"Unix",
+					).Call()), jen.ID("UpdatedBefore").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+						"Unix",
+					).Call())),
 				jen.ID("expected").Op(":=").Lit(`SELECT things FROM stuff WHERE condition = $1 AND created_on > $2 AND created_on < $3 AND updated_on > $4 AND updated_on < $5 LIMIT 20 OFFSET 100`),
 				jen.ID("x").Op(":=").ID("exampleQF").Dot(
 					"ApplyToQueryBuilder",
@@ -230,9 +239,7 @@ func queryFilterTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.ID("err")).Op(":=").ID("x").Dot(
 					"ToSql",
 				).Call(),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("err")),
@@ -240,8 +247,10 @@ func queryFilterTestDotGo() *jen.File {
 					"NotEmpty",
 				).Call(jen.ID("t"), jen.ID("args")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with zero limit"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleQF").Op(":=").Op("&").ID("QueryFilter").Valuesln(jen.ID("Limit").Op(":").Lit(0), jen.ID("Page").Op(":").Lit(1)),
+				jen.ID("exampleQF").Op(":=").Op("&").ID("QueryFilter").Valuesln(
+					jen.ID("Limit").Op(":").Lit(0), jen.ID("Page").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Lit(`SELECT things FROM stuff WHERE condition = $1 LIMIT 250`),
 				jen.ID("x").Op(":=").ID("exampleQF").Dot(
 					"ApplyToQueryBuilder",
@@ -249,9 +258,7 @@ func queryFilterTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.ID("err")).Op(":=").ID("x").Dot(
 					"ToSql",
 				).Call(),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("err")),
@@ -268,26 +275,33 @@ func queryFilterTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").ID("QueryFilter").Valuesln(jen.ID("Page").Op(":").Lit(100), jen.ID("Limit").Op(":").ID("MaxLimit"), jen.ID("CreatedAfter").Op(":").Lit(123456789), jen.ID("CreatedBefore").Op(":").Lit(123456789), jen.ID("UpdatedAfter").Op(":").Lit(123456789), jen.ID("UpdatedBefore").Op(":").Lit(123456789), jen.ID("SortBy").Op(":").ID("SortDescending")),
-				jen.ID("exampleInput").Op(":=").Qual("net/url", "Values").Valuesln(jen.ID("pageKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"Page",
-				)))), jen.ID("limitKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"Limit",
-				)))), jen.ID("createdBeforeKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"CreatedAfter",
-				)))), jen.ID("createdAfterKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"CreatedBefore",
-				)))), jen.ID("updatedBeforeKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"UpdatedAfter",
-				)))), jen.ID("updatedAfterKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
-					"UpdatedBefore",
-				)))), jen.ID("sortByKey").Op(":").Index().ID("string").Valuesln(jen.ID("string").Call(jen.ID("expected").Dot(
-					"SortBy",
-				)))),
+				jen.ID("expected").Op(":=").Op("&").ID("QueryFilter").Valuesln(
+					jen.ID("Page").Op(":").Lit(100), jen.ID("Limit").Op(":").ID("MaxLimit"), jen.ID("CreatedAfter").Op(":").Lit(123456789), jen.ID("CreatedBefore").Op(":").Lit(123456789), jen.ID("UpdatedAfter").Op(":").Lit(123456789), jen.ID("UpdatedBefore").Op(":").Lit(123456789), jen.ID("SortBy").Op(":").ID("SortDescending")),
+				jen.ID("exampleInput").Op(":=").Qual("net/url", "Values").Valuesln(
+					jen.ID("pageKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"Page",
+						)))), jen.ID("limitKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"Limit",
+						)))), jen.ID("createdBeforeKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"CreatedAfter",
+						)))), jen.ID("createdAfterKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"CreatedBefore",
+						)))), jen.ID("updatedBeforeKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"UpdatedAfter",
+						)))), jen.ID("updatedAfterKey").Op(":").Index().ID("string").Valuesln(
+						jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("expected").Dot(
+							"UpdatedBefore",
+						)))), jen.ID("sortByKey").Op(":").Index().ID("string").Valuesln(
+						jen.ID("string").Call(jen.ID("expected").Dot(
+							"SortBy",
+						)))),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("require").Dot(
 					"NotNil",
 				).Call(jen.ID("t"), jen.ID("req")),
@@ -299,9 +313,7 @@ func queryFilterTestDotGo() *jen.File {
 					"Encode",
 				).Call(),
 				jen.ID("actual").Op(":=").ID("ExtractQueryFilter").Call(jen.ID("req")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			)),
 		),
 		jen.Line(),

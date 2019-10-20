@@ -104,7 +104,8 @@ func counterDotGo() *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to register views: %w"), jen.ID("err"))),
 			),
 			jen.Line(),
-			jen.Return().List(jen.Op("&").ID("opencensusCounter").Valuesln(jen.ID("name").Op(":").ID("name"), jen.ID("count").Op(":").ID("count"), jen.ID("counter").Op(":").ID("countView")), jen.ID("nil")),
+			jen.Return().List(jen.Op("&").ID("opencensusCounter").Valuesln(
+	jen.ID("name").Op(":").ID("name"), jen.ID("count").Op(":").ID("count"), jen.ID("counter").Op(":").ID("countView")), jen.ID("nil")),
 		),
 		jen.Line(),
 	)

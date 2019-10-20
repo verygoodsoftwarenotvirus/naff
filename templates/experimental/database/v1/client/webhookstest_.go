@@ -25,7 +25,7 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("GetWebhook"), jen.ID("mock").Dot(
+				).Call(jen.Lit("GetWebhook"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("exampleID"), jen.ID("exampleUserID")).Dot(
@@ -34,12 +34,8 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
 					"GetWebhook",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleID"), jen.ID("exampleUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("mockDB").Dot(
 					"AssertExpectations",
 				).Call(jen.ID("t")),
@@ -60,7 +56,7 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("GetWebhookCount"), jen.ID("mock").Dot(
+				).Call(jen.Lit("GetWebhookCount"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("models").Dot(
@@ -73,16 +69,13 @@ func webhooksTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
 					"DefaultQueryFilter",
 				).Call(), jen.ID("exampleUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("mockDB").Dot(
 					"AssertExpectations",
 				).Call(jen.ID("t")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
@@ -91,7 +84,7 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("GetWebhookCount"), jen.ID("mock").Dot(
+				).Call(jen.Lit("GetWebhookCount"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.Parens(jen.Op("*").ID("models").Dot(
@@ -102,12 +95,8 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
 					"GetWebhookCount",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("nil"), jen.ID("exampleUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("mockDB").Dot(
 					"AssertExpectations",
 				).Call(jen.ID("t")),
@@ -127,7 +116,7 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("GetAllWebhooksCount"), jen.ID("mock").Dot(
+				).Call(jen.Lit("GetAllWebhooksCount"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				)).Dot(
 					"Return",
@@ -135,12 +124,8 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
 					"GetAllWebhooksCount",
 				).Call(jen.Qual("context", "Background").Call()),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("mockDB").Dot(
 					"AssertExpectations",
 				).Call(jen.ID("t")),
@@ -162,7 +147,7 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("GetAllWebhooks"), jen.ID("mock").Dot(
+				).Call(jen.Lit("GetAllWebhooks"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				)).Dot(
 					"Return",
@@ -170,12 +155,8 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
 					"GetAllWebhooks",
 				).Call(jen.Qual("context", "Background").Call()),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("mockDB").Dot(
 					"AssertExpectations",
 				).Call(jen.ID("t")),
@@ -198,7 +179,7 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("GetWebhooks"), jen.ID("mock").Dot(
+				).Call(jen.Lit("GetWebhooks"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("models").Dot(
@@ -211,16 +192,13 @@ func webhooksTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
 					"DefaultQueryFilter",
 				).Call(), jen.ID("exampleUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("mockDB").Dot(
 					"AssertExpectations",
 				).Call(jen.ID("t")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
@@ -231,7 +209,7 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("GetWebhooks"), jen.ID("mock").Dot(
+				).Call(jen.Lit("GetWebhooks"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.Parens(jen.Op("*").ID("models").Dot(
@@ -242,12 +220,8 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
 					"GetWebhooks",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("nil"), jen.ID("exampleUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("mockDB").Dot(
 					"AssertExpectations",
 				).Call(jen.ID("t")),
@@ -272,7 +246,7 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("CreateWebhook"), jen.ID("mock").Dot(
+				).Call(jen.Lit("CreateWebhook"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("exampleInput")).Dot(
@@ -281,12 +255,8 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
 					"CreateWebhook",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("mockDB").Dot(
 					"AssertExpectations",
 				).Call(jen.ID("t")),
@@ -310,7 +280,7 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("UpdateWebhook"), jen.ID("mock").Dot(
+				).Call(jen.Lit("UpdateWebhook"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("exampleInput")).Dot(
@@ -319,12 +289,8 @@ func webhooksTestDotGo() *jen.File {
 				jen.ID("actual").Op(":=").ID("c").Dot(
 					"UpdateWebhook",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("actual")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("mockDB").Dot(
 					"AssertExpectations",
 				).Call(jen.ID("t")),
@@ -347,7 +313,7 @@ func webhooksTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("ArchiveWebhook"), jen.ID("mock").Dot(
+				).Call(jen.Lit("ArchiveWebhook"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				),
 					jen.ID("exampleID"), jen.ID("exampleUserID")).Dot(
@@ -356,12 +322,8 @@ func webhooksTestDotGo() *jen.File {
 				jen.ID("actual").Op(":=").ID("c").Dot(
 					"ArchiveWebhook",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleID"), jen.ID("exampleUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("actual")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("mockDB").Dot(
 					"AssertExpectations",
 				).Call(jen.ID("t")),

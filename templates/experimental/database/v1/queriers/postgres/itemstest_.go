@@ -95,18 +95,12 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dot(
 					"buildGetItemQuery",
 				).Call(jen.ID("exampleItemID"), jen.ID("exampleUserID")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot(
 					"Len",
 				).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("exampleItemID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("exampleItemID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
 			)),
 		),
 		jen.Line(),
@@ -120,7 +114,8 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE belongs_to = $1 AND id = $2"),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
+				).Valuesln(
+	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(
@@ -138,23 +133,19 @@ func itemsTestDotGo() *jen.File {
 					"ID",
 	),
 	jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE belongs_to = $1 AND id = $2"),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
+				).Valuesln(
+	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(
@@ -172,18 +163,12 @@ func itemsTestDotGo() *jen.File {
 					"ID",
 	),
 	jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -205,15 +190,11 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("models").Dot(
 					"DefaultQueryFilter",
 				).Call(), jen.ID("exampleUserID")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot(
 					"Len",
 				).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 			)),
 		),
 		jen.Line(),
@@ -236,7 +217,8 @@ func itemsTestDotGo() *jen.File {
 					"WillReturnRows",
 				).Call(jen.ID("sqlmock").Dot(
 					"NewRows",
-				).Call(jen.Index().ID("string").Valuesln(jen.Lit("count"))).Dot(
+				).Call(jen.Index().ID("string").Valuesln(
+	jen.Lit("count"))).Dot(
 					"AddRow",
 				).Call(jen.ID("expectedCount"))),
 				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID("p").Dot(
@@ -244,15 +226,9 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -270,9 +246,7 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("actualQuery").Op(":=").ID("p").Dot(
 					"buildGetAllItemsCountQuery",
 				).Call(),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 			)),
 		),
 		jen.Line(),
@@ -292,21 +266,16 @@ func itemsTestDotGo() *jen.File {
 					"WillReturnRows",
 				).Call(jen.ID("sqlmock").Dot(
 					"NewRows",
-				).Call(jen.Index().ID("string").Valuesln(jen.Lit("count"))).Dot(
+				).Call(jen.Index().ID("string").Valuesln(
+	jen.Lit("count"))).Dot(
 					"AddRow",
 				).Call(jen.ID("expectedCount"))),
 				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID("p").Dot(
 					"GetAllItemsCount",
 				).Call(jen.Qual("context", "Background").Call()),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -328,15 +297,11 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("models").Dot(
 					"DefaultQueryFilter",
 				).Call(), jen.ID("exampleUserID")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot(
 					"Len",
 				).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 			)),
 		),
 		jen.Line(),
@@ -350,7 +315,8 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedItem1").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("Name").Op(":").Lit("name")),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("name")),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"),
 				jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM items WHERE archived_on IS NULL"),
 				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
@@ -368,33 +334,32 @@ func itemsTestDotGo() *jen.File {
 					"WillReturnRows",
 				).Call(jen.ID("sqlmock").Dot(
 					"NewRows",
-				).Call(jen.Index().ID("string").Valuesln(jen.Lit("count"))).Dot(
+				).Call(jen.Index().ID("string").Valuesln(
+	jen.Lit("count"))).Dot(
 					"AddRow",
 				).Call(jen.ID("expectedCount"))),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"ItemList",
-				).Valuesln(jen.ID("Pagination").Op(":").ID("models").Dot(
+				).Valuesln(
+	jen.ID("Pagination").Op(":").ID("models").Dot(
 					"Pagination",
-				).Valuesln(jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").Lit(20), jen.ID("TotalCount").Op(":").ID("expectedCount")), jen.ID("Items").Op(":").Index().ID("models").Dot(
+				).Valuesln(
+	jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").Lit(20), jen.ID("TotalCount").Op(":").ID("expectedCount")), jen.ID("Items").Op(":").Index().ID("models").Dot(
 					"Item",
-				).Valuesln(jen.Op("*").ID("expectedItem1"))),
+				).Valuesln(
+	jen.Op("*").ID("expectedItem1"))),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 					"GetItems",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"),
@@ -411,21 +376,16 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error executing read query"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"),
@@ -442,23 +402,21 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error scanning item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedItem1").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("Name").Op(":").Lit("name")),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("name")),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"),
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(
@@ -473,23 +431,21 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying for count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedItem1").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("Name").Op(":").Lit("name")),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("name")),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"),
 				jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM items WHERE archived_on IS NULL"),
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -510,15 +466,11 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -534,7 +486,8 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedItem").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("Name").Op(":").Lit("name")),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("name")),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1"),
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(
@@ -546,22 +499,18 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("buildMockRowFromItem").Call(jen.ID("expectedItem"))),
 				jen.ID("expected").Op(":=").Index().ID("models").Dot(
 					"Item",
-				).Valuesln(jen.Op("*").ID("expectedItem")),
+				).Valuesln(
+	jen.Op("*").ID("expectedItem")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 					"GetAllItemsForUser",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1"),
@@ -576,21 +525,16 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 					"GetAllItemsForUser",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1"),
@@ -605,23 +549,21 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 					"GetAllItemsForUser",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedItem").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("Name").Op(":").Lit("name")),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("name")),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1"),
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(
@@ -634,15 +576,11 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 					"GetAllItemsForUser",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -658,33 +596,26 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details"), jen.ID("BelongsTo").Op(":").Lit(123)),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details"), jen.ID("BelongsTo").Op(":").Lit(123)),
 				jen.ID("expectedArgCount").Op(":=").Lit(3),
 				jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO items (name,details,belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dot(
 					"buildCreateItemQuery",
 				).Call(jen.ID("expected")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot(
 					"Len",
 				).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 					"Name",
 	),
 	jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 					"Details",
 	),
 	jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 					"BelongsTo",
 	),
 	jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("uint64"))),
@@ -701,12 +632,14 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+				).Valuesln(
+	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 					"Unix",
 				).Call())),
 				jen.ID("expectedInput").Op(":=").Op("&").ID("models").Dot(
 					"ItemCreationInput",
-				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
+				).Valuesln(
+	jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
 	),
 	jen.ID("BelongsTo").Op(":").ID("expected").Dot(
@@ -714,7 +647,8 @@ func itemsTestDotGo() *jen.File {
 				)),
 				jen.ID("exampleRows").Op(":=").ID("sqlmock").Dot(
 					"NewRows",
-				).Call(jen.Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("created_on"))).Dot(
+				).Call(jen.Index().ID("string").Valuesln(
+	jen.Lit("id"), jen.Lit("created_on"))).Dot(
 					"AddRow",
 				).Call(jen.ID("expected").Dot(
 					"ID",
@@ -742,28 +676,25 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 					"CreateItem",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("example").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+				).Valuesln(
+	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 					"Unix",
 				).Call())),
 				jen.ID("expectedInput").Op(":=").Op("&").ID("models").Dot(
 					"ItemCreationInput",
-				).Valuesln(jen.ID("Name").Op(":").ID("example").Dot(
+				).Valuesln(
+	jen.ID("Name").Op(":").ID("example").Dot(
 					"Name",
 	),
 	jen.ID("BelongsTo").Op(":").ID("example").Dot(
@@ -789,15 +720,11 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 					"CreateItem",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -813,39 +740,30 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").Lit(321), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details"), jen.ID("BelongsTo").Op(":").Lit(123)),
+				).Valuesln(
+	jen.ID("ID").Op(":").Lit(321), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details"), jen.ID("BelongsTo").Op(":").Lit(123)),
 				jen.ID("expectedArgCount").Op(":=").Lit(4),
 				jen.ID("expectedQuery").Op(":=").Lit("UPDATE items SET name = $1, details = $2, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $3 AND id = $4 RETURNING updated_on"),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dot(
 					"buildUpdateItemQuery",
 				).Call(jen.ID("expected")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot(
 					"Len",
 				).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 					"Name",
 	),
 	jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 					"Details",
 	),
 	jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 					"BelongsTo",
 	),
 	jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("uint64"))),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 					"ID",
 	),
 	jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("uint64"))),
@@ -862,12 +780,14 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+				).Valuesln(
+	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 					"Unix",
 				).Call())),
 				jen.ID("exampleRows").Op(":=").ID("sqlmock").Dot(
 					"NewRows",
-				).Call(jen.Index().ID("string").Valuesln(jen.Lit("updated_on"))).Dot(
+				).Call(jen.Index().ID("string").Valuesln(
+	jen.Lit("updated_on"))).Dot(
 					"AddRow",
 				).Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 					"Unix",
@@ -895,20 +815,18 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("err").Op(":=").ID("p").Dot(
 					"UpdateItem",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("expected")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("example").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+				).Valuesln(
+	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 					"Unix",
 				).Call())),
 				jen.ID("expectedQuery").Op(":=").Lit("UPDATE items SET name = $1, details = $2, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $3 AND id = $4 RETURNING updated_on"),
@@ -934,12 +852,8 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("err").Op(":=").ID("p").Dot(
 					"UpdateItem",
 				).Call(jen.Qual("context", "Background").Call(), jen.ID("example")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -955,7 +869,8 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").Lit(321), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details"), jen.ID("BelongsTo").Op(":").Lit(123)),
+				).Valuesln(
+	jen.ID("ID").Op(":").Lit(321), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details"), jen.ID("BelongsTo").Op(":").Lit(123)),
 				jen.ID("expectedArgCount").Op(":=").Lit(2),
 				jen.ID("expectedQuery").Op(":=").Lit("UPDATE items SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dot(
@@ -966,21 +881,15 @@ func itemsTestDotGo() *jen.File {
 	jen.ID("expected").Dot(
 					"BelongsTo",
 				)),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot(
 					"Len",
 				).Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 					"BelongsTo",
 	),
 	jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-				jen.ID("assert").Dot(
-					"Equal",
-				).Call(jen.ID("t"), jen.ID("expected").Dot(
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 					"ID",
 	),
 	jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
@@ -997,7 +906,8 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+				).Valuesln(
+	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 					"Unix",
 				).Call())),
 				jen.ID("expectedQuery").Op(":=").Lit("UPDATE items SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"),
@@ -1022,20 +932,18 @@ func itemsTestDotGo() *jen.File {
 					"ID",
 	),
 	jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("example").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
+				).Valuesln(
+	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 					"Unix",
 				).Call())),
 				jen.ID("expectedQuery").Op(":=").Lit("UPDATE items SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"),
@@ -1058,12 +966,8 @@ func itemsTestDotGo() *jen.File {
 					"ID",
 	),
 	jen.ID("expectedUserID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("mockDB").Dot(
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot(
 					"ExpectationsWereMet",
 				).Call(), jen.Lit("not all database expectations were met")),
 			)),

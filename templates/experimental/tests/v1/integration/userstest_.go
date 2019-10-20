@@ -49,7 +49,8 @@ func usersTestDotGo() *jen.File {
 		).Call()),
 		jen.ID("userInput").Op(":=").Op("&").ID("models").Dot(
 			"UserInput",
-		).Valuesln(jen.ID("Username").Op(":").ID("fake").Dot(
+		).Valuesln(
+	jen.ID("Username").Op(":").ID("fake").Dot(
 			"UserName",
 		).Call(), jen.ID("Password").Op(":").ID("fake").Dot(
 			"Password",
@@ -78,9 +79,7 @@ func usersTestDotGo() *jen.File {
 		jen.ID("assert").Dot(
 			"NotNil",
 		).Call(jen.ID("t"), jen.ID("user")),
-		jen.ID("require").Dot(
-			"NoError",
-		).Call(jen.ID("t"), jen.ID("err")),
+		jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.If(jen.ID("user").Op("==").ID("nil").Op("||").ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("t").Dot(
 				"FailNow",
@@ -95,9 +94,7 @@ func usersTestDotGo() *jen.File {
 	jen.ID("user").Dot(
 			"TwoFactorSecret",
 		)),
-		jen.ID("require").Dot(
-			"NoError",
-		).Call(jen.ID("t"), jen.ID("err")),
+		jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.ID("require").Dot(
 			"NotNil",
 		).Call(jen.ID("t"), jen.ID("cookie")),
@@ -121,9 +118,7 @@ func usersTestDotGo() *jen.File {
 		).Call(jen.ID("t"), jen.ID("actual").Dot(
 			"ID",
 		)),
-		jen.ID("assert").Dot(
-			"Equal",
-		).Call(jen.ID("t"), jen.ID("expected").Dot(
+		jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Username",
 	),
 	jen.ID("actual").Dot(
@@ -168,9 +163,7 @@ func usersTestDotGo() *jen.File {
 		).Call(jen.ID("t"), jen.ID("actual").Dot(
 			"ID",
 		)),
-		jen.ID("assert").Dot(
-			"Equal",
-		).Call(jen.ID("t"), jen.ID("expected").Dot(
+		jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Username",
 	),
 	jen.ID("actual").Dot(
@@ -212,7 +205,8 @@ func usersTestDotGo() *jen.File {
 					"CreateUser",
 				).Call(jen.ID("tctx"), jen.Op("&").ID("models").Dot(
 					"UserInput",
-				).Valuesln(jen.ID("Username").Op(":").ID("expected").Dot(
+				).Valuesln(
+	jen.ID("Username").Op(":").ID("expected").Dot(
 					"Username",
 	),
 	jen.ID("Password").Op(":").ID("expected").Dot(
@@ -220,9 +214,7 @@ func usersTestDotGo() *jen.File {
 				))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
 				jen.ID("checkUserCreationEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("todoClient").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("todoClient").Dot(
 					"ArchiveUser",
 				).Call(jen.ID("tctx"), jen.ID("actual").Dot(
 					"ID",
@@ -242,9 +234,7 @@ func usersTestDotGo() *jen.File {
 				jen.ID("assert").Dot(
 					"Nil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 			)),
 			jen.ID("T").Dot(
 				"Run",
@@ -255,7 +245,8 @@ func usersTestDotGo() *jen.File {
 					"CreateUser",
 				).Call(jen.ID("tctx"), jen.Op("&").ID("models").Dot(
 					"UserInput",
-				).Valuesln(jen.ID("Username").Op(":").ID("expected").Dot(
+				).Valuesln(
+	jen.ID("Username").Op(":").ID("expected").Dot(
 					"Username",
 	),
 	jen.ID("Password").Op(":").ID("expected").Dot(
@@ -282,9 +273,7 @@ func usersTestDotGo() *jen.File {
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
 				jen.ID("checkUserEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("todoClient").Dot(
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("todoClient").Dot(
 					"ArchiveUser",
 				).Call(jen.ID("tctx"), jen.ID("actual").Dot(
 					"ID",
@@ -302,9 +291,7 @@ func usersTestDotGo() *jen.File {
 				jen.List(jen.ID("u"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
 					"CreateUser",
 				).Call(jen.ID("tctx"), jen.ID("y")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot(
 					"NotNil",
 				).Call(jen.ID("t"), jen.ID("u")),
@@ -321,9 +308,7 @@ func usersTestDotGo() *jen.File {
 				).Call(jen.ID("tctx"), jen.ID("u").Dot(
 					"ID",
 				)),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),
 		)),
 		jen.ID("test").Dot(
@@ -361,9 +346,7 @@ func usersTestDotGo() *jen.File {
 					).Call(jen.ID("tctx"), jen.ID("user").Dot(
 						"ID",
 					)),
-					jen.ID("assert").Dot(
-						"NoError",
-					).Call(jen.ID("t"), jen.ID("err")),
+					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				),
 			)),
 		)),

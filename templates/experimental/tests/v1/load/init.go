@@ -62,7 +62,8 @@ func initDotGo() *jen.File {
 
 	ret.Add(
 		jen.Func().ID("buildHTTPClient").Params().Params(jen.Op("*").Qual("net/http", "Client")).Block(
-		jen.ID("httpc").Op(":=").Op("&").Qual("net/http", "Client").Valuesln(jen.ID("Transport").Op(":").Qual("net/http", "DefaultTransport"), jen.ID("Timeout").Op(":").Lit(5).Op("*").Qual("time", "Second")),
+		jen.ID("httpc").Op(":=").Op("&").Qual("net/http", "Client").Valuesln(
+	jen.ID("Transport").Op(":").Qual("net/http", "DefaultTransport"), jen.ID("Timeout").Op(":").Lit(5).Op("*").Qual("time", "Second")),
 		jen.Return().ID("httpc"),
 	),
 	jen.Line(),

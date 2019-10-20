@@ -13,7 +13,7 @@ func usersServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Var().ID("MiddlewareCtxKey").ID("models").Dot(
 			"ContextKey",
-		).Op("=").Lit("user_input").Var().ID("counterName").ID("metrics").Dot(
+		).Op("=").Lit("user_input").Var().ID("counterName").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 			"CounterName",
 		).Op("=").Lit("users").Var().ID("topicName").Op("=").Lit("users").Var().ID("serviceName").Op("=").Lit("users_service"),
 		jen.Line(),
@@ -27,9 +27,7 @@ func usersServiceDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("RequestValidator").Interface(jen.ID("Validate").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("bool"), jen.ID("error"))).Type().ID("Service").Struct(jen.ID("cookieSecret").Index().ID("byte"), jen.ID("database").ID("database").Dot(
-			"Database",
-	),
+		jen.Type().ID("RequestValidator").Interface(jen.ID("Validate").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("bool"), jen.ID("error"))).Type().ID("Service").Struct(jen.ID("cookieSecret").Index().ID("byte"), jen.ID("database").ID("database").Dot("Database"),
 	jen.ID("authenticator").ID("auth").Dot(
 			"Authenticator",
 	),
@@ -39,7 +37,7 @@ func usersServiceDotGo() *jen.File {
 	jen.ID("encoderDecoder").ID("encoding").Dot(
 			"EncoderDecoder",
 	),
-	jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("userCounter").ID("metrics").Dot(
+	jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("userCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 			"UnitCounter",
 	),
 	jen.ID("reporter").ID("newsman").Dot(
@@ -58,16 +56,14 @@ func usersServiceDotGo() *jen.File {
 	jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
 	),
-	jen.ID("db").ID("database").Dot(
-			"Database",
-	),
+	jen.ID("db").ID("database").Dot("Database"),
 	jen.ID("authenticator").ID("auth").Dot(
 			"Authenticator",
 	),
 	jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").ID("encoding").Dot(
 			"EncoderDecoder",
 	),
-	jen.ID("counterProvider").ID("metrics").Dot(
+	jen.ID("counterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 			"UnitCounterProvider",
 	),
 	jen.ID("reporter").ID("newsman").Dot(
@@ -89,7 +85,8 @@ func usersServiceDotGo() *jen.File {
 			jen.ID("counter").Dot(
 				"IncrementBy",
 			).Call(jen.ID("ctx"), jen.ID("userCount")),
-			jen.ID("us").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("cookieSecret").Op(":").Index().ID("byte").Call(jen.ID("authSettings").Dot(
+			jen.ID("us").Op(":=").Op("&").ID("Service").Valuesln(
+	jen.ID("cookieSecret").Op(":").Index().ID("byte").Call(jen.ID("authSettings").Dot(
 				"CookieSecret",
 			)), jen.ID("logger").Op(":").ID("logger").Dot(
 				"WithName",

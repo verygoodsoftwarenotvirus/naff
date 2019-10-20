@@ -38,16 +38,15 @@ func itemsDotGo() *jen.File {
 	),
 	jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetItem")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("attachItemIDToSpan").Call(jen.ID("span"), jen.ID("itemID")),
 			jen.ID("c").Dot(
 				"logger",
 			).Dot(
 				"WithValues",
-			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("item_id").Op(":").ID("itemID"), jen.Lit("user_id").Op(":").ID("userID"))).Dot(
+			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+	jen.Lit("item_id").Op(":").ID("itemID"), jen.Lit("user_id").Op(":").ID("userID"))).Dot(
 				"Debug",
 			).Call(jen.Lit("GetItem called")),
 			jen.Return().ID("c").Dot(
@@ -67,9 +66,7 @@ func itemsDotGo() *jen.File {
 	),
 	jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetItemCount")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
 			jen.ID("c").Dot(
@@ -93,9 +90,7 @@ func itemsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllItemsCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllItemsCount")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("c").Dot(
 				"logger",
 			).Dot(
@@ -121,9 +116,7 @@ func itemsDotGo() *jen.File {
 	),
 	jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetItems")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
 			jen.ID("c").Dot(
@@ -151,9 +144,7 @@ func itemsDotGo() *jen.File {
 	),
 	jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllItemsForUser")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("c").Dot(
 				"logger",
@@ -182,9 +173,7 @@ func itemsDotGo() *jen.File {
 	),
 	jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("CreateItem")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("c").Dot(
 				"logger",
 			).Dot(
@@ -210,9 +199,7 @@ func itemsDotGo() *jen.File {
 		"Item",
 	)).Params(jen.ID("error")).Block(
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("UpdateItem")),
-		jen.Defer().ID("span").Dot(
-			"End",
-		).Call(),
+		jen.Defer().ID("span").Dot("End").Call(),
 		jen.ID("attachItemIDToSpan").Call(jen.ID("span"), jen.ID("input").Dot(
 			"ID",
 		)),
@@ -239,16 +226,15 @@ func itemsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("ArchiveItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("ArchiveItem")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("attachItemIDToSpan").Call(jen.ID("span"), jen.ID("itemID")),
 			jen.ID("c").Dot(
 				"logger",
 			).Dot(
 				"WithValues",
-			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("item_id").Op(":").ID("itemID"), jen.Lit("user_id").Op(":").ID("userID"))).Dot(
+			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+	jen.Lit("item_id").Op(":").ID("itemID"), jen.Lit("user_id").Op(":").ID("userID"))).Dot(
 				"Debug",
 			).Call(jen.Lit("ArchiveItem called")),
 			jen.Return().ID("c").Dot(

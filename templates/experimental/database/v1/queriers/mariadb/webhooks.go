@@ -16,7 +16,8 @@ func webhooksDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("webhooksTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("name"), jen.Lit("content_type"), jen.Lit("url"), jen.Lit("method"), jen.Lit("events"), jen.Lit("data_types"), jen.Lit("topics"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
+		jen.Var().ID("webhooksTableColumns").Op("=").Index().ID("string").Valuesln(
+	jen.Lit("id"), jen.Lit("name"), jen.Lit("content_type"), jen.Lit("url"), jen.Lit("method"), jen.Lit("events"), jen.Lit("data_types"), jen.Lit("topics"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
 		jen.Line(),
 	)
 
@@ -113,9 +114,7 @@ func webhooksDotGo() *jen.File {
 			jen.If(jen.ID("err").Op(":=").ID("rows").Dot(
 				"Close",
 			).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("closing rows")),
+				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("closing rows")),
 			),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
 		),
@@ -136,7 +135,8 @@ func webhooksDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("webhookID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("webhookID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("m").Dot(
@@ -188,7 +188,8 @@ func webhooksDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
+			).Valuesln(
+	jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
 					"ApplyToQueryBuilder",
@@ -253,7 +254,8 @@ func webhooksDotGo() *jen.File {
 					"Where",
 				).Call(jen.ID("squirrel").Dot(
 					"Eq",
-				).Valuesln(jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+				).Valuesln(
+	jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 					"ToSql",
 				).Call(),
 				jen.ID("m").Dot(
@@ -307,7 +309,8 @@ func webhooksDotGo() *jen.File {
 					"Where",
 				).Call(jen.ID("squirrel").Dot(
 					"Eq",
-				).Valuesln(jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+				).Valuesln(
+	jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 					"ToSql",
 				).Call(),
 				jen.ID("m").Dot(
@@ -354,9 +357,11 @@ func webhooksDotGo() *jen.File {
 			),
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"WebhookList",
-			).Valuesln(jen.ID("Pagination").Op(":").ID("models").Dot(
+			).Valuesln(
+	jen.ID("Pagination").Op(":").ID("models").Dot(
 				"Pagination",
-			).Valuesln(jen.ID("Page").Op(":").Lit(1), jen.ID("TotalCount").Op(":").ID("count")), jen.ID("Webhooks").Op(":").ID("list")),
+			).Valuesln(
+	jen.ID("Page").Op(":").Lit(1), jen.ID("TotalCount").Op(":").ID("count")), jen.ID("Webhooks").Op(":").ID("list")),
 			jen.Return().List(jen.ID("x"), jen.ID("err")),
 		),
 		jen.Line(),
@@ -412,7 +417,8 @@ func webhooksDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
+			).Valuesln(
+	jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
 					"ApplyToQueryBuilder",
@@ -468,9 +474,11 @@ func webhooksDotGo() *jen.File {
 			),
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"WebhookList",
-			).Valuesln(jen.ID("Pagination").Op(":").ID("models").Dot(
+			).Valuesln(
+	jen.ID("Pagination").Op(":").ID("models").Dot(
 				"Pagination",
-			).Valuesln(jen.ID("Page").Op(":").ID("filter").Dot(
+			).Valuesln(
+	jen.ID("Page").Op(":").ID("filter").Dot(
 				"Page",
 			),
 				jen.ID("TotalCount").Op(":").ID("count"), jen.ID("Limit").Op(":").ID("filter").Dot(
@@ -546,7 +554,8 @@ func webhooksDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("webhookID"))).Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("webhookID"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("m").Dot(
@@ -568,7 +577,8 @@ func webhooksDotGo() *jen.File {
 			jen.ID("error")).Block(
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"Webhook",
-			).Valuesln(jen.ID("Name").Op(":").ID("input").Dot(
+			).Valuesln(
+	jen.ID("Name").Op(":").ID("input").Dot(
 				"Name",
 			),
 				jen.ID("ContentType").Op(":").ID("input").Dot(
@@ -643,46 +653,31 @@ func webhooksDotGo() *jen.File {
 				"sqlBuilder",
 			).Dot(
 				"Update",
-			).Call(jen.ID("webhooksTableName")).Dot(
-				"Set",
-			).Call(jen.Lit("name"), jen.ID("input").Dot(
+			).Call(jen.ID("webhooksTableName")).Dot("Set").Call(jen.Lit("name"), jen.ID("input").Dot(
 				"Name",
-			)).Dot(
-				"Set",
-			).Call(jen.Lit("content_type"), jen.ID("input").Dot(
+			)).Dot("Set").Call(jen.Lit("content_type"), jen.ID("input").Dot(
 				"ContentType",
-			)).Dot(
-				"Set",
-			).Call(jen.Lit("url"), jen.ID("input").Dot(
+			)).Dot("Set").Call(jen.Lit("url"), jen.ID("input").Dot(
 				"URL",
-			)).Dot(
-				"Set",
-			).Call(jen.Lit("method"), jen.ID("input").Dot(
+			)).Dot("Set").Call(jen.Lit("method"), jen.ID("input").Dot(
 				"Method",
-			)).Dot(
-				"Set",
-			).Call(jen.Lit("events"), jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
+			)).Dot("Set").Call(jen.Lit("events"), jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
 				"Events",
 			),
-				jen.ID("topicsSeparator"))).Dot(
-				"Set",
-			).Call(jen.Lit("data_types"), jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
+				jen.ID("topicsSeparator"))).Dot("Set").Call(jen.Lit("data_types"), jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
 				"DataTypes",
 			),
-				jen.ID("typesSeparator"))).Dot(
-				"Set",
-			).Call(jen.Lit("topics"), jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
+				jen.ID("typesSeparator"))).Dot("Set").Call(jen.Lit("topics"), jen.Qual("strings", "Join").Call(jen.ID("input").Dot(
 				"Topics",
 			),
-				jen.ID("topicsSeparator"))).Dot(
-				"Set",
-			).Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
+				jen.ID("topicsSeparator"))).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
 				"Expr",
 			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("input").Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("input").Dot(
 				"ID",
 			),
 				jen.Lit("belongs_to").Op(":").ID("input").Dot(
@@ -725,19 +720,16 @@ func webhooksDotGo() *jen.File {
 				"sqlBuilder",
 			).Dot(
 				"Update",
-			).Call(jen.ID("webhooksTableName")).Dot(
-				"Set",
-			).Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
+			).Call(jen.ID("webhooksTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
 				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
-				"Set",
-			).Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
+			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
 				"Expr",
 			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("webhookID"), jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("webhookID"), jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("m").Dot(

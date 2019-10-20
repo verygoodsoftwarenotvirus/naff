@@ -24,7 +24,8 @@ func queryFilterDotGo() *jen.File {
 		jen.Comment("DefaultQueryFilter builds the default query filter"),
 		jen.Line(),
 		jen.Func().ID("DefaultQueryFilter").Params().Params(jen.Op("*").ID("QueryFilter")).Block(
-			jen.Return().Op("&").ID("QueryFilter").Valuesln(jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").ID("DefaultLimit"), jen.ID("SortBy").Op(":").ID("SortAscending")),
+			jen.Return().Op("&").ID("QueryFilter").Valuesln(
+				jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").ID("DefaultLimit"), jen.ID("SortBy").Op(":").ID("SortAscending")),
 		),
 		jen.Line(),
 	)
@@ -78,12 +79,14 @@ func queryFilterDotGo() *jen.File {
 			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.ID("params").Dot(
 				"Get",
 			).Call(jen.ID("sortByKey")))).Block(
-				jen.Case(jen.ID("string").Call(jen.ID("SortAscending"))).Block(jen.ID("qf").Dot(
-					"SortBy",
-				).Op("=").ID("SortAscending")),
-				jen.Case(jen.ID("string").Call(jen.ID("SortDescending"))).Block(jen.ID("qf").Dot(
-					"SortBy",
-				).Op("=").ID("SortDescending")),
+				jen.Case(jen.ID("string").Call(jen.ID("SortAscending"))).Block(
+					jen.ID("qf").Dot(
+						"SortBy",
+					).Op("=").ID("SortAscending")),
+				jen.Case(jen.ID("string").Call(jen.ID("SortDescending"))).Block(
+					jen.ID("qf").Dot(
+						"SortBy",
+					).Op("=").ID("SortDescending")),
 			),
 		),
 		jen.Line(),
@@ -126,9 +129,7 @@ func queryFilterDotGo() *jen.File {
 			jen.If(jen.ID("qf").Dot(
 				"Page",
 			).Op("!=").Lit(0)).Block(
-				jen.ID("v").Dot(
-					"Set",
-				).Call(jen.Lit("page"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
+				jen.ID("v").Dot("Set").Call(jen.Lit("page"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"Page",
 				),
 					jen.Lit(10))),
@@ -136,9 +137,7 @@ func queryFilterDotGo() *jen.File {
 			jen.If(jen.ID("qf").Dot(
 				"Limit",
 			).Op("!=").Lit(0)).Block(
-				jen.ID("v").Dot(
-					"Set",
-				).Call(jen.Lit("limit"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
+				jen.ID("v").Dot("Set").Call(jen.Lit("limit"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"Limit",
 				),
 					jen.Lit(10))),
@@ -146,18 +145,14 @@ func queryFilterDotGo() *jen.File {
 			jen.If(jen.ID("qf").Dot(
 				"SortBy",
 			).Op("!=").Lit("")).Block(
-				jen.ID("v").Dot(
-					"Set",
-				).Call(jen.Lit("sort_by"), jen.ID("string").Call(jen.ID("qf").Dot(
+				jen.ID("v").Dot("Set").Call(jen.Lit("sort_by"), jen.ID("string").Call(jen.ID("qf").Dot(
 					"SortBy",
 				))),
 			),
 			jen.If(jen.ID("qf").Dot(
 				"CreatedBefore",
 			).Op("!=").Lit(0)).Block(
-				jen.ID("v").Dot(
-					"Set",
-				).Call(jen.Lit("created_before"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
+				jen.ID("v").Dot("Set").Call(jen.Lit("created_before"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"CreatedBefore",
 				),
 					jen.Lit(10))),
@@ -165,9 +160,7 @@ func queryFilterDotGo() *jen.File {
 			jen.If(jen.ID("qf").Dot(
 				"CreatedAfter",
 			).Op("!=").Lit(0)).Block(
-				jen.ID("v").Dot(
-					"Set",
-				).Call(jen.Lit("created_after"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
+				jen.ID("v").Dot("Set").Call(jen.Lit("created_after"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"CreatedAfter",
 				),
 					jen.Lit(10))),
@@ -175,9 +168,7 @@ func queryFilterDotGo() *jen.File {
 			jen.If(jen.ID("qf").Dot(
 				"UpdatedBefore",
 			).Op("!=").Lit(0)).Block(
-				jen.ID("v").Dot(
-					"Set",
-				).Call(jen.Lit("updated_before"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
+				jen.ID("v").Dot("Set").Call(jen.Lit("updated_before"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"UpdatedBefore",
 				),
 					jen.Lit(10))),
@@ -185,9 +176,7 @@ func queryFilterDotGo() *jen.File {
 			jen.If(jen.ID("qf").Dot(
 				"UpdatedAfter",
 			).Op("!=").Lit(0)).Block(
-				jen.ID("v").Dot(
-					"Set",
-				).Call(jen.Lit("updated_after"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
+				jen.ID("v").Dot("Set").Call(jen.Lit("updated_after"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot(
 					"UpdatedAfter",
 				),
 					jen.Lit(10))),
@@ -240,9 +229,10 @@ func queryFilterDotGo() *jen.File {
 					"Where",
 				).Call(jen.ID("squirrel").Dot(
 					"Gt",
-				).Valuesln(jen.Lit("created_on").Op(":").ID("qf").Dot(
-					"CreatedAfter",
-				))),
+				).Valuesln(
+					jen.Lit("created_on").Op(":").ID("qf").Dot(
+						"CreatedAfter",
+					))),
 			),
 			jen.If(jen.ID("qf").Dot(
 				"CreatedBefore",
@@ -251,9 +241,10 @@ func queryFilterDotGo() *jen.File {
 					"Where",
 				).Call(jen.ID("squirrel").Dot(
 					"Lt",
-				).Valuesln(jen.Lit("created_on").Op(":").ID("qf").Dot(
-					"CreatedBefore",
-				))),
+				).Valuesln(
+					jen.Lit("created_on").Op(":").ID("qf").Dot(
+						"CreatedBefore",
+					))),
 			),
 			jen.If(jen.ID("qf").Dot(
 				"UpdatedAfter",
@@ -262,9 +253,10 @@ func queryFilterDotGo() *jen.File {
 					"Where",
 				).Call(jen.ID("squirrel").Dot(
 					"Gt",
-				).Valuesln(jen.Lit("updated_on").Op(":").ID("qf").Dot(
-					"UpdatedAfter",
-				))),
+				).Valuesln(
+					jen.Lit("updated_on").Op(":").ID("qf").Dot(
+						"UpdatedAfter",
+					))),
 			),
 			jen.If(jen.ID("qf").Dot(
 				"UpdatedBefore",
@@ -273,9 +265,10 @@ func queryFilterDotGo() *jen.File {
 					"Where",
 				).Call(jen.ID("squirrel").Dot(
 					"Lt",
-				).Valuesln(jen.Lit("updated_on").Op(":").ID("qf").Dot(
-					"UpdatedBefore",
-				))),
+				).Valuesln(
+					jen.Lit("updated_on").Op(":").ID("qf").Dot(
+						"UpdatedBefore",
+					))),
 			),
 			jen.Return().ID("queryBuilder"),
 		),

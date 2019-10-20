@@ -16,7 +16,7 @@ func oauth2HandlerMockTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("mockOauth2Handler").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("mockOauth2Handler").Struct(jen.Qual("github.com/stretchr/testify/mock",
 		"Mock",
 	)),
 	jen.Line(),
@@ -106,9 +106,7 @@ func oauth2HandlerMockTestDotGo() *jen.File {
 			"Get",
 		).Call(jen.Lit(0)).Assert(jen.ID("oauth2").Dot(
 			"TokenInfo",
-		)), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -117,9 +115,7 @@ func oauth2HandlerMockTestDotGo() *jen.File {
 		jen.Func().Params(jen.ID("m").Op("*").ID("mockOauth2Handler")).ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("error")).Block(
 		jen.Return().ID("m").Dot(
 			"Called",
-		).Call(jen.ID("res"), jen.ID("req")).Dot(
-			"Error",
-		).Call(jen.Lit(0)),
+		).Call(jen.ID("res"), jen.ID("req")).Dot("Error").Call(jen.Lit(0)),
 	),
 	jen.Line(),
 	)
@@ -128,9 +124,7 @@ func oauth2HandlerMockTestDotGo() *jen.File {
 		jen.Func().Params(jen.ID("m").Op("*").ID("mockOauth2Handler")).ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("error")).Block(
 		jen.Return().ID("m").Dot(
 			"Called",
-		).Call(jen.ID("res"), jen.ID("req")).Dot(
-			"Error",
-		).Call(jen.Lit(0)),
+		).Call(jen.ID("res"), jen.ID("req")).Dot("Error").Call(jen.Lit(0)),
 	),
 	jen.Line(),
 	)

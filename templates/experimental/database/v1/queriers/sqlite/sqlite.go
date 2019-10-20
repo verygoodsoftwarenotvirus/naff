@@ -36,9 +36,7 @@ func sqliteDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").ID("database").Dot(
-			"Database",
-		).Op("=").Parens(jen.Op("*").ID("Sqlite")).Call(jen.ID("nil")),
+		jen.Var().ID("_").ID("database").Dot("Database").Op("=").Parens(jen.Op("*").ID("Sqlite")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 
@@ -77,10 +75,9 @@ func sqliteDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideSqlite").Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		)).Params(jen.ID("database").Dot(
-			"Database",
-		)).Block(
-			jen.Return().Op("&").ID("Sqlite").Valuesln(jen.ID("db").Op(":").ID("db"), jen.ID("debug").Op(":").ID("debug"), jen.ID("logger").Op(":").ID("logger").Dot(
+		)).Params(jen.ID("database").Dot("Database")).Block(
+			jen.Return().Op("&").ID("Sqlite").Valuesln(
+	jen.ID("db").Op(":").ID("db"), jen.ID("debug").Op(":").ID("debug"), jen.ID("logger").Op(":").ID("logger").Dot(
 				"WithName",
 			).Call(jen.ID("loggerName")), jen.ID("sqlBuilder").Op(":").ID("squirrel").Dot(
 				"StatementBuilder",
@@ -111,9 +108,7 @@ func sqliteDotGo() *jen.File {
 					"logger",
 				).Dot(
 					"WithName",
-				).Call(jen.Lit("QUERY_ERROR")).Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("building query")),
+				).Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
 			),
 		),
 		jen.Line(),
@@ -132,9 +127,7 @@ func sqliteDotGo() *jen.File {
 					"logger",
 				).Dot(
 					"WithName",
-				).Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("building query")),
+				).Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
 			),
 		),
 		jen.Line(),

@@ -16,7 +16,8 @@ func itemsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("itemsTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("name"), jen.Lit("details"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
+		jen.Var().ID("itemsTableColumns").Op("=").Index().ID("string").Valuesln(
+	jen.Lit("id"), jen.Lit("name"), jen.Lit("details"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
 		jen.Line(),
 	)
 
@@ -91,9 +92,7 @@ func itemsDotGo() *jen.File {
 			jen.If(jen.ID("closeErr").Op(":=").ID("rows").Dot(
 				"Close",
 			).Call(), jen.ID("closeErr").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot(
-					"Error",
-				).Call(jen.ID("closeErr"), jen.Lit("closing database rows")),
+				jen.ID("logger").Dot("Error").Call(jen.ID("closeErr"), jen.Lit("closing database rows")),
 			),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
 		),
@@ -116,7 +115,8 @@ func itemsDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("itemID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("itemID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("s").Dot(
@@ -164,7 +164,8 @@ func itemsDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("archived_on").Op(":").ID("nil"), jen.Lit("belongs_to").Op(":").ID("userID"))),
+			).Valuesln(
+	jen.Lit("archived_on").Op(":").ID("nil"), jen.Lit("belongs_to").Op(":").ID("userID"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
 					"ApplyToQueryBuilder",
@@ -229,7 +230,8 @@ func itemsDotGo() *jen.File {
 					"Where",
 				).Call(jen.ID("squirrel").Dot(
 					"Eq",
-				).Valuesln(jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
+				).Valuesln(
+	jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 					"ToSql",
 				).Call(),
 				jen.ID("s").Dot(
@@ -280,7 +282,8 @@ func itemsDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("archived_on").Op(":").ID("nil"), jen.Lit("belongs_to").Op(":").ID("userID"))),
+			).Valuesln(
+	jen.Lit("archived_on").Op(":").ID("nil"), jen.Lit("belongs_to").Op(":").ID("userID"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
 					"ApplyToQueryBuilder",
@@ -333,9 +336,11 @@ func itemsDotGo() *jen.File {
 			),
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"ItemList",
-			).Valuesln(jen.ID("Pagination").Op(":").ID("models").Dot(
+			).Valuesln(
+	jen.ID("Pagination").Op(":").ID("models").Dot(
 				"Pagination",
-			).Valuesln(jen.ID("Page").Op(":").ID("filter").Dot(
+			).Valuesln(
+	jen.ID("Page").Op(":").ID("filter").Dot(
 				"Page",
 			),
 				jen.ID("Limit").Op(":").ID("filter").Dot(
@@ -428,7 +433,8 @@ func itemsDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("itemID"))).Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("itemID"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("s").Dot(
@@ -450,7 +456,8 @@ func itemsDotGo() *jen.File {
 			jen.ID("error")).Block(
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"Item",
-			).Valuesln(jen.ID("Name").Op(":").ID("input").Dot(
+			).Valuesln(
+	jen.ID("Name").Op(":").ID("input").Dot(
 				"Name",
 			),
 				jen.ID("Details").Op(":").ID("input").Dot(
@@ -511,23 +518,18 @@ func itemsDotGo() *jen.File {
 				"sqlBuilder",
 			).Dot(
 				"Update",
-			).Call(jen.ID("itemsTableName")).Dot(
-				"Set",
-			).Call(jen.Lit("name"), jen.ID("input").Dot(
+			).Call(jen.ID("itemsTableName")).Dot("Set").Call(jen.Lit("name"), jen.ID("input").Dot(
 				"Name",
-			)).Dot(
-				"Set",
-			).Call(jen.Lit("details"), jen.ID("input").Dot(
+			)).Dot("Set").Call(jen.Lit("details"), jen.ID("input").Dot(
 				"Details",
-			)).Dot(
-				"Set",
-			).Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
+			)).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
 				"Expr",
 			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("input").Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("input").Dot(
 				"ID",
 			),
 				jen.Lit("belongs_to").Op(":").ID("input").Dot(
@@ -572,19 +574,16 @@ func itemsDotGo() *jen.File {
 				"sqlBuilder",
 			).Dot(
 				"Update",
-			).Call(jen.ID("itemsTableName")).Dot(
-				"Set",
-			).Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
+			).Call(jen.ID("itemsTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
 				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
-				"Set",
-			).Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
+			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
 				"Expr",
 			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("itemID"), jen.Lit("archived_on").Op(":").ID("nil"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("itemID"), jen.Lit("archived_on").Op(":").ID("nil"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("s").Dot(

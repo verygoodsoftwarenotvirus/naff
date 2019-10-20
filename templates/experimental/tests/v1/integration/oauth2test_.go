@@ -20,9 +20,7 @@ func oauth2TestDotGo() *jen.File {
 		).Call(jen.ID("totpSecret"), jen.Qual("time", "Now").Call().Dot(
 			"UTC",
 		).Call()),
-		jen.ID("require").Dot(
-			"NoError",
-		).Call(jen.ID("t"), jen.ID("err")),
+		jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.Return().ID("code"),
 	),
 	jen.Line(),
@@ -37,9 +35,12 @@ func oauth2TestDotGo() *jen.File {
 		).Call(),
 		jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 			"OAuth2ClientCreationInput",
-		).Valuesln(jen.ID("UserLoginInput").Op(":").ID("models").Dot(
+		).Valuesln(
+	jen.ID("UserLoginInput").Op(":").ID("models").Dot(
 			"UserLoginInput",
-		).Valuesln(jen.ID("Username").Op(":").ID("username"), jen.ID("Password").Op(":").ID("password"), jen.ID("TOTPToken").Op(":").ID("mustBuildCode").Call(jen.ID("t"), jen.ID("totpToken"))), jen.ID("Scopes").Op(":").Index().ID("string").Valuesln(jen.Lit("*")), jen.ID("RedirectURI").Op(":").Lit("http://localhost")),
+		).Valuesln(
+	jen.ID("Username").Op(":").ID("username"), jen.ID("Password").Op(":").ID("password"), jen.ID("TOTPToken").Op(":").ID("mustBuildCode").Call(jen.ID("t"), jen.ID("totpToken"))), jen.ID("Scopes").Op(":").Index().ID("string").Valuesln(
+	jen.Lit("*")), jen.ID("RedirectURI").Op(":").Lit("http://localhost")),
 		jen.Return().ID("x"),
 	),
 	jen.Line(),
@@ -53,7 +54,8 @@ func oauth2TestDotGo() *jen.File {
 	)).Block(
 		jen.Return().Op("&").ID("models").Dot(
 			"OAuth2Client",
-		).Valuesln(jen.ID("ClientID").Op(":").ID("input").Dot(
+		).Valuesln(
+	jen.ID("ClientID").Op(":").ID("input").Dot(
 			"ClientID",
 	),
 	jen.ID("ClientSecret").Op(":").ID("input").Dot(
@@ -94,17 +96,13 @@ func oauth2TestDotGo() *jen.File {
 		).Call(jen.ID("t"), jen.ID("actual").Dot(
 			"ClientSecret",
 		)),
-		jen.ID("assert").Dot(
-			"Equal",
-		).Call(jen.ID("t"), jen.ID("expected").Dot(
+		jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 			"RedirectURI",
 	),
 	jen.ID("actual").Dot(
 			"RedirectURI",
 		)),
-		jen.ID("assert").Dot(
-			"Equal",
-		).Call(jen.ID("t"), jen.ID("expected").Dot(
+		jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Scopes",
 	),
 	jen.ID("actual").Dot(
@@ -163,9 +161,7 @@ func oauth2TestDotGo() *jen.File {
 			"Scopes",
 	),
 	jen.ID("debug")),
-		jen.ID("require").Dot(
-			"NoError",
-		).Call(jen.ID("test"), jen.ID("err"), jen.Lit("error setting up auxiliary client")),
+		jen.ID("require").Dot("NoError").Call(jen.ID("test"), jen.ID("err"), jen.Lit("error setting up auxiliary client")),
 		jen.ID("test").Dot(
 			"Run",
 		).Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -183,9 +179,7 @@ func oauth2TestDotGo() *jen.File {
 				).Call(jen.ID("tctx"), jen.ID("actual").Dot(
 					"ID",
 				)),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),
 		)),
 		jen.ID("test").Dot(
@@ -198,9 +192,7 @@ func oauth2TestDotGo() *jen.File {
 				jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("testClient").Dot(
 					"GetOAuth2Client",
 				).Call(jen.ID("tctx"), jen.ID("nonexistentID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 			)),
 			jen.ID("T").Dot(
 				"Run",
@@ -231,9 +223,7 @@ func oauth2TestDotGo() *jen.File {
 				).Call(jen.ID("tctx"), jen.ID("actual").Dot(
 					"ID",
 				)),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),
 		)),
 		jen.ID("test").Dot(
@@ -261,9 +251,7 @@ func oauth2TestDotGo() *jen.File {
 				).Call(jen.ID("tctx"), jen.ID("premade").Dot(
 					"ID",
 				)),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),
 			jen.ID("T").Dot(
 				"Run",
@@ -291,9 +279,7 @@ func oauth2TestDotGo() *jen.File {
 				).Call(jen.ID("tctx"), jen.ID("premade").Dot(
 					"ID",
 				)),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.List(jen.ID("c2"), jen.ID("err")).Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "NewClient").Call(jen.Qual("context", "Background").Call(), jen.ID("premade").Dot(
 					"ClientID",
 	),
@@ -313,9 +299,7 @@ func oauth2TestDotGo() *jen.File {
 				jen.List(jen.ID("_"), jen.ID("err")).Op("=").ID("c2").Dot(
 					"GetOAuth2Clients",
 				).Call(jen.ID("tctx"), jen.ID("nil")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err"), jen.Lit("expected error from what should be an unauthorized client")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err"), jen.Lit("expected error from what should be an unauthorized client")),
 			)),
 		)),
 		jen.ID("test").Dot(
@@ -382,9 +366,7 @@ func oauth2TestDotGo() *jen.File {
 					).Call(jen.ID("tctx"), jen.ID("oa2c").Dot(
 						"ID",
 					)),
-					jen.ID("assert").Dot(
-						"NoError",
-					).Call(jen.ID("t"), jen.ID("err"), jen.Lit("error deleting client %d: %v"), jen.ID("oa2c").Dot(
+					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err"), jen.Lit("error deleting client %d: %v"), jen.ID("oa2c").Dot(
 						"ID",
 	),
 	jen.ID("err")),

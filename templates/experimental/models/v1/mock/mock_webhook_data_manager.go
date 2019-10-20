@@ -18,7 +18,7 @@ func mockWebhookDataManagerDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("WebhookDataManager").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("WebhookDataManager").Struct(jen.Qual("github.com/stretchr/testify/mock",
 		"Mock",
 	)),
 	jen.Line(),
@@ -38,9 +38,7 @@ func mockWebhookDataManagerDotGo() *jen.File {
 			"Get",
 		).Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dot(
 			"Webhook",
-		)), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -57,9 +55,7 @@ func mockWebhookDataManagerDotGo() *jen.File {
 		).Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
 		jen.Return().List(jen.ID("args").Dot(
 			"Get",
-		).Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		).Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -73,9 +69,7 @@ func mockWebhookDataManagerDotGo() *jen.File {
 		).Call(jen.ID("ctx")),
 		jen.Return().List(jen.ID("args").Dot(
 			"Get",
-		).Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		).Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -97,9 +91,7 @@ func mockWebhookDataManagerDotGo() *jen.File {
 			"Get",
 		).Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dot(
 			"WebhookList",
-		)), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -118,9 +110,7 @@ func mockWebhookDataManagerDotGo() *jen.File {
 			"Get",
 		).Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dot(
 			"WebhookList",
-		)), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -139,9 +129,7 @@ func mockWebhookDataManagerDotGo() *jen.File {
 			"Get",
 		).Call(jen.Lit(0)).Assert(jen.Index().ID("models").Dot(
 			"Webhook",
-		)), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -162,9 +150,7 @@ func mockWebhookDataManagerDotGo() *jen.File {
 			"Get",
 		).Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dot(
 			"Webhook",
-		)), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -177,9 +163,7 @@ func mockWebhookDataManagerDotGo() *jen.File {
 	)).Params(jen.ID("error")).Block(
 		jen.Return().ID("m").Dot(
 			"Called",
-		).Call(jen.ID("ctx"), jen.ID("updated")).Dot(
-			"Error",
-		).Call(jen.Lit(0)),
+		).Call(jen.ID("ctx"), jen.ID("updated")).Dot("Error").Call(jen.Lit(0)),
 	),
 	jen.Line(),
 	)
@@ -190,9 +174,7 @@ func mockWebhookDataManagerDotGo() *jen.File {
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataManager")).ID("ArchiveWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
 		jen.Return().ID("m").Dot(
 			"Called",
-		).Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")).Dot(
-			"Error",
-		).Call(jen.Lit(0)),
+		).Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")).Dot("Error").Call(jen.Lit(0)),
 	),
 	jen.Line(),
 	)

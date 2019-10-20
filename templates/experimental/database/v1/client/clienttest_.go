@@ -17,7 +17,8 @@ func clientTestDotGo() *jen.File {
 		jen.ID("db").Op(":=").ID("database").Dot(
 			"BuildMockDatabase",
 		).Call(),
-		jen.Return().List(jen.Op("&").ID("Client").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
+		jen.Return().List(jen.Op("&").ID("Client").Valuesln(
+	jen.ID("logger").Op(":").ID("noop").Dot(
 			"ProvideNoopLogger",
 		).Call(), jen.ID("querier").Op(":").ID("db")), jen.ID("db")),
 	),
@@ -34,37 +35,36 @@ func clientTestDotGo() *jen.File {
 			).Call(),
 			jen.ID("mockDB").Dot(
 				"On",
-			).Call(jen.Lit("Migrate"), jen.ID("mock").Dot(
+			).Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("nil")),
-			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(jen.ID("querier").Op(":").ID("mockDB")),
+			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(
+	jen.ID("querier").Op(":").ID("mockDB")),
 			jen.ID("actual").Op(":=").ID("c").Dot(
 				"Migrate",
 			).Call(jen.Qual("context", "Background").Call()),
-			jen.ID("assert").Dot(
-				"NoError",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("actual")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("bubbles up errors"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("bubbles up errors"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
 				"BuildMockDatabase",
 			).Call(),
 			jen.ID("mockDB").Dot(
 				"On",
-			).Call(jen.Lit("Migrate"), jen.ID("mock").Dot(
+			).Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(jen.ID("querier").Op(":").ID("mockDB")),
+			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(
+	jen.ID("querier").Op(":").ID("mockDB")),
 			jen.ID("actual").Op(":=").ID("c").Dot(
 				"Migrate",
 			).Call(jen.Qual("context", "Background").Call()),
-			jen.ID("assert").Dot(
-				"Error",
-			).Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("actual")),
 		)),
 	),
 	jen.Line(),
@@ -80,12 +80,13 @@ func clientTestDotGo() *jen.File {
 			).Call(),
 			jen.ID("mockDB").Dot(
 				"On",
-			).Call(jen.Lit("IsReady"), jen.ID("mock").Dot(
+			).Call(jen.Lit("IsReady"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
 			).Call(jen.ID("true")),
-			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(jen.ID("querier").Op(":").ID("mockDB")),
+			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(
+	jen.ID("querier").Op(":").ID("mockDB")),
 			jen.ID("c").Dot(
 				"IsReady",
 			).Call(jen.Qual("context", "Background").Call()),
@@ -107,7 +108,7 @@ func clientTestDotGo() *jen.File {
 			).Call(),
 			jen.ID("mockDB").Dot(
 				"On",
-			).Call(jen.Lit("Migrate"), jen.ID("mock").Dot(
+			).Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -118,18 +119,17 @@ func clientTestDotGo() *jen.File {
 			jen.ID("assert").Dot(
 				"NotNil",
 			).Call(jen.ID("t"), jen.ID("actual")),
-			jen.ID("assert").Dot(
-				"NoError",
-			).Call(jen.ID("t"), jen.ID("err")),
+			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with error migrating querier"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error migrating querier"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").Qual("errors", "New").Call(jen.Lit("blah")),
 			jen.ID("mockDB").Op(":=").ID("database").Dot(
 				"BuildMockDatabase",
 			).Call(),
 			jen.ID("mockDB").Dot(
 				"On",
-			).Call(jen.Lit("Migrate"), jen.ID("mock").Dot(
+			).Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -140,12 +140,8 @@ func clientTestDotGo() *jen.File {
 			jen.ID("assert").Dot(
 				"Nil",
 			).Call(jen.ID("t"), jen.ID("x")),
-			jen.ID("assert").Dot(
-				"Error",
-			).Call(jen.ID("t"), jen.ID("actual")),
-			jen.ID("assert").Dot(
-				"Equal",
-			).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		)),
 	),
 	jen.Line(),

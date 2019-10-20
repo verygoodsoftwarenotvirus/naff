@@ -18,7 +18,8 @@ func webhooksDotGo() *jen.File {
 	)).Block(
 		jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 			"WebhookCreationInput",
-		).Valuesln(jen.ID("Name").Op(":").ID("fake").Dot(
+		).Valuesln(
+	jen.ID("Name").Op(":").ID("fake").Dot(
 			"Word",
 		).Call(), jen.ID("URL").Op(":").ID("fake").Dot(
 			"DomainName",

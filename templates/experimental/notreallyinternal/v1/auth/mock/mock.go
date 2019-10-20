@@ -17,7 +17,7 @@ func mockDotGo() *jen.File {
 
 	ret.Add(
 		jen.Comment("Authenticator is a mock Authenticator"), jen.Line(),
-		jen.Type().ID("Authenticator").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("Authenticator").Struct(jen.Qual("github.com/stretchr/testify/mock",
 			"Mock",
 		)),
 		jen.Line(),

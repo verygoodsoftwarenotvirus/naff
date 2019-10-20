@@ -18,7 +18,7 @@ func counterDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("UnitCounter is a mock metrics.UnitCounter"),
 		jen.Line(),
-		jen.Type().ID("UnitCounter").Struct(jen.ID("mock").Dot("Mock")),
+		jen.Type().ID("UnitCounter").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
 		jen.Line(),
 	)
 

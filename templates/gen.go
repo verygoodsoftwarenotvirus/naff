@@ -66,9 +66,9 @@ func RenderProject(in *naffmodels.Project) error {
 		"testutil":         {renderFunc: testutil.RenderPackage, activated: false},
 		"testutilmock":     {renderFunc: testutilmock.RenderPackage, activated: false},
 		"frontendtests":    {renderFunc: frontendtests.RenderPackage, activated: false},
+		"webhooks":         {renderFunc: webhooks.RenderPackage, activated: false},
 		// to do
-		"webhooks":      {renderFunc: webhooks.RenderPackage, activated: true},
-		"oauth2clients": {renderFunc: oauth2clients.RenderPackage, activated: false},
+		"oauth2clients": {renderFunc: oauth2clients.RenderPackage, activated: true},
 		"frontend":      {renderFunc: frontend.RenderPackage, activated: false},
 		"auth":          {renderFunc: auth.RenderPackage, activated: false},
 		"users":         {renderFunc: users.RenderPackage, activated: false},

@@ -18,7 +18,7 @@ func encodingDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("EncoderDecoder is a mock EncoderDecoder"),
 		jen.Line(),
-		jen.Type().ID("EncoderDecoder").Struct(jen.ID("mock").Dot("Mock")),
+		jen.Type().ID("EncoderDecoder").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
 		jen.Line(),
 	)
 
@@ -37,9 +37,7 @@ func encodingDotGo() *jen.File {
 		jen.Func().Params(jen.ID("m").Op("*").ID("EncoderDecoder")).ID("DecodeRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.ID("error")).Block(
 			jen.Return().ID("m").Dot(
 				"Called",
-			).Call(jen.ID("req"), jen.ID("v")).Dot(
-				"Error",
-			).Call(jen.Lit(0)),
+			).Call(jen.ID("req"), jen.ID("v")).Dot("Error").Call(jen.Lit(0)),
 		),
 		jen.Line(),
 	)

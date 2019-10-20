@@ -45,9 +45,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 					"Context",
 				).Call(), jen.Lit("ListHandler")),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.ID("qf").Op(":=").ID("models").Dot(
 					"ExtractQueryFilter",
 				).Call(jen.ID("req")),
@@ -68,13 +66,12 @@ func httpRoutesDotGo() *jen.File {
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("items").Op("=").Op("&").ID("models").Dot(
 						"ItemList",
-					).Valuesln(jen.ID("Items").Op(":").Index().ID("models").Dot(
+					).Valuesln(
+	jen.ID("Items").Op(":").Index().ID("models").Dot(
 						"Item",
 					).Values()),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("error encountered fetching items")),
+					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered fetching items")),
 					jen.ID("res").Dot(
 						"WriteHeader",
 					).Call(jen.Qual("net/http", "StatusInternalServerError")),
@@ -87,9 +84,7 @@ func httpRoutesDotGo() *jen.File {
 				).Call(jen.ID("res"), jen.ID("items")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot(
 						"logger",
-					).Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("encoding response")),
+					).Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
 				),
 			),
 		),
@@ -104,9 +99,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 					"Context",
 				).Call(), jen.Lit("CreateHandler")),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.ID("userID").Op(":=").ID("s").Dot(
 					"userIDFetcher",
 				).Call(jen.ID("req")),
@@ -144,9 +137,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot(
 						"logger",
-					).Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("error creating item")),
+					).Dot("Error").Call(jen.ID("err"), jen.Lit("error creating item")),
 					jen.ID("res").Dot(
 						"WriteHeader",
 					).Call(jen.Qual("net/http", "StatusInternalServerError")),
@@ -166,7 +157,9 @@ func httpRoutesDotGo() *jen.File {
 					"Report",
 				).Call(jen.ID("newsman").Dot(
 					"Event",
-				).Valuesln(jen.ID("Data").Op(":").ID("x"), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(jen.ID("topicName")), jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot(
+				).Valuesln(
+	jen.ID("Data").Op(":").ID("x"), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(
+	jen.ID("topicName")), jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot(
 					"Create",
 				)))),
 				jen.ID("res").Dot(
@@ -179,9 +172,7 @@ func httpRoutesDotGo() *jen.File {
 				).Call(jen.ID("res"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot(
 						"logger",
-					).Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("encoding response")),
+					).Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
 				),
 			),
 		),
@@ -196,9 +187,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 					"Context",
 				).Call(), jen.Lit("ReadHandler")),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.ID("userID").Op(":=").ID("s").Dot(
 					"userIDFetcher",
 				).Call(jen.ID("req")),
@@ -209,7 +198,8 @@ func httpRoutesDotGo() *jen.File {
 					"logger",
 				).Dot(
 					"WithValues",
-				).Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("user_id").Op(":").ID("userID"), jen.Lit("item_id").Op(":").ID("itemID"))),
+				).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+	jen.Lit("user_id").Op(":").ID("userID"), jen.Lit("item_id").Op(":").ID("itemID"))),
 				jen.ID("attachItemIDToSpan").Call(jen.ID("span"), jen.ID("itemID")),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot(
@@ -223,9 +213,7 @@ func httpRoutesDotGo() *jen.File {
 					).Call(jen.Qual("net/http", "StatusNotFound")),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("error fetching item from database")),
+					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching item from database")),
 					jen.ID("res").Dot(
 						"WriteHeader",
 					).Call(jen.Qual("net/http", "StatusInternalServerError")),
@@ -238,9 +226,7 @@ func httpRoutesDotGo() *jen.File {
 				).Call(jen.ID("res"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot(
 						"logger",
-					).Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("encoding response")),
+					).Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
 				),
 			),
 		),
@@ -255,9 +241,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 					"Context",
 				).Call(), jen.Lit("UpdateHandler")),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot(
 					"Value",
 				).Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").ID("models").Dot(
@@ -284,7 +268,8 @@ func httpRoutesDotGo() *jen.File {
 					"logger",
 				).Dot(
 					"WithValues",
-				).Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("user_id").Op(":").ID("userID"), jen.Lit("item_id").Op(":").ID("itemID"))),
+				).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+	jen.Lit("user_id").Op(":").ID("userID"), jen.Lit("item_id").Op(":").ID("itemID"))),
 				jen.ID("attachItemIDToSpan").Call(jen.ID("span"), jen.ID("itemID")),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot(
@@ -298,9 +283,7 @@ func httpRoutesDotGo() *jen.File {
 					).Call(jen.Qual("net/http", "StatusNotFound")),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("error encountered getting item")),
+					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered getting item")),
 					jen.ID("res").Dot(
 						"WriteHeader",
 					).Call(jen.Qual("net/http", "StatusInternalServerError")),
@@ -314,9 +297,7 @@ func httpRoutesDotGo() *jen.File {
 				).Dot(
 					"UpdateItem",
 				).Call(jen.ID("ctx"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("error encountered updating item")),
+					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered updating item")),
 					jen.ID("res").Dot(
 						"WriteHeader",
 					).Call(jen.Qual("net/http", "StatusInternalServerError")),
@@ -328,7 +309,9 @@ func httpRoutesDotGo() *jen.File {
 					"Report",
 				).Call(jen.ID("newsman").Dot(
 					"Event",
-				).Valuesln(jen.ID("Data").Op(":").ID("x"), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(jen.ID("topicName")), jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot(
+				).Valuesln(
+	jen.ID("Data").Op(":").ID("x"), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(
+	jen.ID("topicName")), jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot(
 					"Update",
 				)))),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot(
@@ -338,9 +321,7 @@ func httpRoutesDotGo() *jen.File {
 				).Call(jen.ID("res"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot(
 						"logger",
-					).Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("encoding response")),
+					).Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
 				),
 			),
 		),
@@ -355,9 +336,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 					"Context",
 				).Call(), jen.Lit("ArchiveHandler")),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.ID("userID").Op(":=").ID("s").Dot(
 					"userIDFetcher",
 				).Call(jen.ID("req")),
@@ -368,7 +347,8 @@ func httpRoutesDotGo() *jen.File {
 					"logger",
 				).Dot(
 					"WithValues",
-				).Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("item_id").Op(":").ID("itemID"), jen.Lit("user_id").Op(":").ID("userID"))),
+				).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+	jen.Lit("item_id").Op(":").ID("itemID"), jen.Lit("user_id").Op(":").ID("userID"))),
 				jen.ID("attachItemIDToSpan").Call(jen.ID("span"), jen.ID("itemID")),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.ID("err").Op(":=").ID("s").Dot(
@@ -382,9 +362,7 @@ func httpRoutesDotGo() *jen.File {
 					).Call(jen.Qual("net/http", "StatusNotFound")),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("error encountered deleting item")),
+					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered deleting item")),
 					jen.ID("res").Dot(
 						"WriteHeader",
 					).Call(jen.Qual("net/http", "StatusInternalServerError")),
@@ -401,11 +379,14 @@ func httpRoutesDotGo() *jen.File {
 					"Report",
 				).Call(jen.ID("newsman").Dot(
 					"Event",
-				).Valuesln(jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot(
+				).Valuesln(
+	jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot(
 					"Archive",
 				)), jen.ID("Data").Op(":").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").ID("itemID")), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(jen.ID("topicName")))),
+				).Valuesln(
+	jen.ID("ID").Op(":").ID("itemID")), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(
+	jen.ID("topicName")))),
 				jen.ID("res").Dot(
 					"WriteHeader",
 				).Call(jen.Qual("net/http", "StatusNoContent")),

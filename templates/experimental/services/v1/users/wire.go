@@ -20,9 +20,7 @@ func wireDotGo() *jen.File {
 	ret.Add(
 	jen.Comment("ProvideUserDataManager is an arbitrary function for dependency injection's sake"),
 	jen.Line(),
-	jen.Func().ID("ProvideUserDataManager").Params(jen.ID("db").ID("database").Dot(
-		"Database",
-	)).Params(jen.ID("models").Dot(
+	jen.Func().ID("ProvideUserDataManager").Params(jen.ID("db").ID("database").Dot("Database")).Params(jen.ID("models").Dot(
 		"UserDataManager",
 	)).Block(
 		jen.Return().ID("db"),

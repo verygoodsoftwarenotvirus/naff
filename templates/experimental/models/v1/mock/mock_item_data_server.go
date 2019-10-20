@@ -18,7 +18,7 @@ func mockItemDataServerDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("ItemDataServer").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("ItemDataServer").Struct(jen.Qual("github.com/stretchr/testify/mock",
 		"Mock",
 	)),
 	jen.Line(),

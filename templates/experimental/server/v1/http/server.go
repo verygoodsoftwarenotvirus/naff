@@ -18,40 +18,38 @@ func serverDotGo() *jen.File {
 	ret.Add(
 		jen.Type().ID("Server").Struct(jen.ID("DebugMode").ID("bool"), jen.ID("authService").Op("*").ID("auth").Dot(
 			"Service",
-	),
-	jen.ID("frontendService").Op("*").ID("frontend").Dot(
-			"Service",
-	),
-	jen.ID("usersService").ID("models").Dot(
-			"UserDataServer",
-	),
-	jen.ID("oauth2ClientsService").ID("models").Dot(
-			"OAuth2ClientDataServer",
-	),
-	jen.ID("webhooksService").ID("models").Dot(
-			"WebhookDataServer",
-	),
-	jen.ID("itemsService").ID("models").Dot(
-			"ItemDataServer",
-	),
-	jen.ID("db").ID("database").Dot(
-			"Database",
-	),
-	jen.ID("config").Op("*").ID("config").Dot(
-			"ServerConfig",
-	),
-	jen.ID("router").Op("*").ID("chi").Dot(
-			"Mux",
-	),
-	jen.ID("httpServer").Op("*").Qual("net/http", "Server"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-	),
-	jen.ID("encoder").ID("encoding").Dot(
-			"EncoderDecoder",
-	),
-	jen.ID("newsManager").Op("*").ID("newsman").Dot(
-			"Newsman",
-		)),
+		),
+			jen.ID("frontendService").Op("*").ID("frontend").Dot(
+				"Service",
+			),
+			jen.ID("usersService").ID("models").Dot(
+				"UserDataServer",
+			),
+			jen.ID("oauth2ClientsService").ID("models").Dot(
+				"OAuth2ClientDataServer",
+			),
+			jen.ID("webhooksService").ID("models").Dot(
+				"WebhookDataServer",
+			),
+			jen.ID("itemsService").ID("models").Dot(
+				"ItemDataServer",
+			),
+			jen.ID("db").ID("database").Dot("Database"),
+			jen.ID("config").Op("*").ID("config").Dot(
+				"ServerConfig",
+			),
+			jen.ID("router").Op("*").ID("chi").Dot(
+				"Mux",
+			),
+			jen.ID("httpServer").Op("*").Qual("net/http", "Server"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
+				"Logger",
+			),
+			jen.ID("encoder").ID("encoding").Dot(
+				"EncoderDecoder",
+			),
+			jen.ID("newsManager").Op("*").ID("newsman").Dot(
+				"Newsman",
+			)),
 		jen.Line(),
 	)
 
@@ -60,58 +58,53 @@ func serverDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideServer").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("cfg").Op("*").ID("config").Dot(
 			"ServerConfig",
-	),
-	jen.ID("authService").Op("*").ID("auth").Dot(
-			"Service",
-	),
-	jen.ID("frontendService").Op("*").ID("frontend").Dot(
-			"Service",
-	),
-	jen.ID("itemsService").ID("models").Dot(
-			"ItemDataServer",
-	),
-	jen.ID("usersService").ID("models").Dot(
-			"UserDataServer",
-	),
-	jen.ID("oauth2Service").ID("models").Dot(
-			"OAuth2ClientDataServer",
-	),
-	jen.ID("webhooksService").ID("models").Dot(
-			"WebhookDataServer",
-	),
-	jen.ID("db").ID("database").Dot(
-			"Database",
-	),
-	jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-	),
-	jen.ID("encoder").ID("encoding").Dot(
-			"EncoderDecoder",
-	),
-	jen.ID("newsManager").Op("*").ID("newsman").Dot(
-			"Newsman",
-		)).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
+		),
+			jen.ID("authService").Op("*").ID("auth").Dot(
+				"Service",
+			),
+			jen.ID("frontendService").Op("*").ID("frontend").Dot(
+				"Service",
+			),
+			jen.ID("itemsService").ID("models").Dot(
+				"ItemDataServer",
+			),
+			jen.ID("usersService").ID("models").Dot(
+				"UserDataServer",
+			),
+			jen.ID("oauth2Service").ID("models").Dot(
+				"OAuth2ClientDataServer",
+			),
+			jen.ID("webhooksService").ID("models").Dot(
+				"WebhookDataServer",
+			),
+			jen.ID("db").ID("database").Dot("Database"),
+			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
+				"Logger",
+			),
+			jen.ID("encoder").ID("encoding").Dot(
+				"EncoderDecoder",
+			),
+			jen.ID("newsManager").Op("*").ID("newsman").Dot(
+				"Newsman",
+			)).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
 			jen.If(jen.ID("len").Call(jen.ID("cfg").Dot(
 				"Auth",
 			).Dot(
 				"CookieSecret",
 			)).Op("<").Lit(32)).Block(
-				jen.ID("err").Op(":=").ID("errors").Dot(
-					"New",
-				).Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
-				jen.ID("logger").Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("cookie secret failure")),
+				jen.ID("err").Op(":=").ID("errors").Dot("New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
+				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("cookie secret failure")),
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
-			jen.ID("srv").Op(":=").Op("&").ID("Server").Valuesln(jen.ID("DebugMode").Op(":").ID("cfg").Dot(
-				"Server",
-			).Dot(
-				"Debug",
-	),
-	jen.ID("db").Op(":").ID("db"), jen.ID("config").Op(":").ID("cfg"), jen.ID("encoder").Op(":").ID("encoder"), jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(), jen.ID("logger").Op(":").ID("logger").Dot(
-				"WithName",
-			).Call(jen.Lit("api_server")), jen.ID("newsManager").Op(":").ID("newsManager"), jen.ID("webhooksService").Op(":").ID("webhooksService"), jen.ID("frontendService").Op(":").ID("frontendService"), jen.ID("usersService").Op(":").ID("usersService"), jen.ID("authService").Op(":").ID("authService"), jen.ID("itemsService").Op(":").ID("itemsService"), jen.ID("oauth2ClientsService").Op(":").ID("oauth2Service")),
+			jen.ID("srv").Op(":=").Op("&").ID("Server").Valuesln(
+				jen.ID("DebugMode").Op(":").ID("cfg").Dot(
+					"Server",
+				).Dot(
+					"Debug",
+				),
+				jen.ID("db").Op(":").ID("db"), jen.ID("config").Op(":").ID("cfg"), jen.ID("encoder").Op(":").ID("encoder"), jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(), jen.ID("logger").Op(":").ID("logger").Dot(
+					"WithName",
+				).Call(jen.Lit("api_server")), jen.ID("newsManager").Op(":").ID("newsManager"), jen.ID("webhooksService").Op(":").ID("webhooksService"), jen.ID("frontendService").Op(":").ID("frontendService"), jen.ID("usersService").Op(":").ID("usersService"), jen.ID("authService").Op(":").ID("authService"), jen.ID("itemsService").Op(":").ID("itemsService"), jen.ID("oauth2ClientsService").Op(":").ID("oauth2Service")),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot(
 				"ProvideTracing",
 			).Call(jen.ID("logger")), jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").ID("config").Dot(
@@ -132,8 +125,8 @@ func serverDotGo() *jen.File {
 					"setupRouter",
 				).Call(jen.ID("cfg").Dot(
 					"Frontend",
-	),
-	jen.ID("ih")),
+				),
+					jen.ID("ih")),
 			),
 			jen.ID("srv").Dot(
 				"httpServer",
@@ -141,10 +134,11 @@ func serverDotGo() *jen.File {
 				"Handler",
 			).Op("=").Op("&").ID("ochttp").Dot(
 				"Handler",
-			).Valuesln(jen.ID("Handler").Op(":").ID("srv").Dot(
-				"router",
-	),
-	jen.ID("FormatSpanName").Op(":").ID("formatSpanNameForRequest")),
+			).Valuesln(
+				jen.ID("Handler").Op(":").ID("srv").Dot(
+					"router",
+				),
+				jen.ID("FormatSpanName").Op(":").ID("formatSpanNameForRequest")),
 			jen.List(jen.ID("allWebhooks"), jen.ID("err")).Op(":=").ID("db").Dot(
 				"GetAllWebhooks",
 			).Call(jen.ID("ctx")),
@@ -204,9 +198,7 @@ func serverDotGo() *jen.File {
 			).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot(
 					"logger",
-				).Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("server shutting down")),
+				).Dot("Error").Call(jen.ID("err"), jen.Lit("server shutting down")),
 				jen.If(jen.ID("err").Op("==").Qual("net/http", "ErrServerClosed")).Block(
 					jen.Qual("os", "Exit").Call(jen.Lit(0)),
 				),

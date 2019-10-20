@@ -34,7 +34,8 @@ func frontendServiceDotGo() *jen.File {
 	jen.ID("cfg").ID("config").Dot(
 		"FrontendSettings",
 	)).Params(jen.Op("*").ID("Service")).Block(
-		jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(jen.ID("config").Op(":").ID("cfg"), jen.ID("logger").Op(":").ID("logger").Dot(
+		jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(
+	jen.ID("config").Op(":").ID("cfg"), jen.ID("logger").Op(":").ID("logger").Dot(
 			"WithName",
 		).Call(jen.ID("serviceName"))),
 		jen.Return().ID("svc"),

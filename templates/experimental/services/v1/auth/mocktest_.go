@@ -16,7 +16,7 @@ func mockTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("mockOAuth2ClientValidator").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("mockOAuth2ClientValidator").Struct(jen.Qual("github.com/stretchr/testify/mock",
 		"Mock",
 	)),
 	jen.Line(),
@@ -34,9 +34,7 @@ func mockTestDotGo() *jen.File {
 			"Get",
 		).Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dot(
 			"OAuth2Client",
-		)), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -47,7 +45,7 @@ func mockTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("mockCookieEncoderDecoder").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("mockCookieEncoderDecoder").Struct(jen.Qual("github.com/stretchr/testify/mock",
 		"Mock",
 	)),
 	jen.Line(),
@@ -60,9 +58,7 @@ func mockTestDotGo() *jen.File {
 		).Call(jen.ID("name"), jen.ID("value")),
 		jen.Return().List(jen.ID("args").Dot(
 			"String",
-		).Call(jen.Lit(0)), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		).Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -72,9 +68,7 @@ func mockTestDotGo() *jen.File {
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("name"), jen.ID("value"), jen.ID("dst")),
-		jen.Return().ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(0)),
+		jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
 	),
 	jen.Line(),
 	)
@@ -85,7 +79,7 @@ func mockTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("MockHTTPHandler").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("MockHTTPHandler").Struct(jen.Qual("github.com/stretchr/testify/mock",
 		"Mock",
 	)),
 	jen.Line(),

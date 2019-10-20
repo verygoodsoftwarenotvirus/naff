@@ -180,7 +180,8 @@ func runtimeDotGo() *jen.File {
 								),
 							),
 						),
-						jen.Case(jen.Op("<-").ID("done")).Block(jen.ID("ticker").Dot("Stop").Call(), jen.Return()),
+						jen.Case(jen.Op("<-").ID("done")).Block(
+	jen.ID("ticker").Dot("Stop").Call(), jen.Return()),
 					),
 				),
 			).Call(),

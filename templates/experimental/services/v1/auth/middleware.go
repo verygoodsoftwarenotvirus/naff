@@ -25,18 +25,14 @@ func middlewareDotGo() *jen.File {
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
 			).Call(), jen.Lit("CookieAuthenticationMiddleware")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("s").Dot(
 				"FetchUserFromRequest",
 			).Call(jen.ID("ctx"), jen.ID("req")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot(
 					"logger",
-				).Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("error encountered fetching user")),
+				).Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered fetching user")),
 				jen.ID("res").Dot(
 					"WriteHeader",
 				).Call(jen.Qual("net/http", "StatusUnauthorized")),
@@ -74,9 +70,7 @@ func middlewareDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 					"Context",
 				).Call(), jen.Lit("AuthenticationMiddleware")),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 
 		jen.Var().ID("user").Op("*").ID("models").Dot(
 					"User",
@@ -96,9 +90,7 @@ func middlewareDotGo() *jen.File {
 						jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 							jen.ID("s").Dot(
 								"logger",
-							).Dot(
-								"Error",
-							).Call(jen.ID("err"), jen.Lit("error authenticating request")),
+							).Dot("Error").Call(jen.ID("err"), jen.Lit("error authenticating request")),
 							jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.Lit("fetching user"), jen.Qual("net/http", "StatusInternalServerError")),
 							jen.Return(),
 						),
@@ -113,9 +105,7 @@ func middlewareDotGo() *jen.File {
 					jen.If(jen.ID("err").Op("!=").ID("nil").Op("||").ID("oauth2Client").Op("==").ID("nil")).Block(
 						jen.ID("s").Dot(
 							"logger",
-						).Dot(
-							"Error",
-						).Call(jen.ID("err"), jen.Lit("fetching oauth2 client")),
+						).Dot("Error").Call(jen.ID("err"), jen.Lit("fetching oauth2 client")),
 						jen.Qual("net/http", "Redirect").Call(jen.ID("res"), jen.ID("req"), jen.Lit("/login"), jen.Qual("net/http", "StatusUnauthorized")),
 						jen.Return(),
 					),
@@ -133,9 +123,7 @@ func middlewareDotGo() *jen.File {
 					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 						jen.ID("s").Dot(
 							"logger",
-						).Dot(
-							"Error",
-						).Call(jen.ID("err"), jen.Lit("error authenticating request")),
+						).Dot("Error").Call(jen.ID("err"), jen.Lit("error authenticating request")),
 						jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.Lit("fetching user"), jen.Qual("net/http", "StatusInternalServerError")),
 						jen.Return(),
 					),
@@ -184,9 +172,7 @@ func middlewareDotGo() *jen.File {
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
 			).Call(), jen.Lit("AdminMiddleware")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("s").Dot(
 				"logger",
 			).Dot(
@@ -238,7 +224,8 @@ func middlewareDotGo() *jen.File {
 		).Call(), jen.ID("err").Op("==").ID("nil")).Block(
 			jen.ID("uli").Op(":=").Op("&").ID("models").Dot(
 				"UserLoginInput",
-			).Valuesln(jen.ID("Username").Op(":").ID("req").Dot(
+			).Valuesln(
+	jen.ID("Username").Op(":").ID("req").Dot(
 				"FormValue",
 			).Call(jen.ID("UsernameFormKey")), jen.ID("Password").Op(":").ID("req").Dot(
 				"FormValue",
@@ -268,9 +255,7 @@ func middlewareDotGo() *jen.File {
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
 			).Call(), jen.Lit("UserLoginInputMiddleware")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("x").Op(":=").ID("new").Call(jen.ID("models").Dot(
 				"UserLoginInput",
 			)),
@@ -282,9 +267,7 @@ func middlewareDotGo() *jen.File {
 				jen.If(jen.ID("x").Op("=").ID("parseLoginInputFromForm").Call(jen.ID("req")), jen.ID("x").Op("==").ID("nil")).Block(
 					jen.ID("s").Dot(
 						"logger",
-					).Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),
+					).Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),
 					jen.ID("res").Dot(
 						"WriteHeader",
 					).Call(jen.Qual("net/http", "StatusBadRequest")),

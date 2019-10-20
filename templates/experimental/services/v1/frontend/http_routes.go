@@ -72,9 +72,7 @@ func httpRoutesDotGo() *jen.File {
 				).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot(
 						"logger",
-					).Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("closing file while setting up static dir")),
+					).Dot("Error").Call(jen.ID("err"), jen.Lit("closing file while setting up static dir")),
 				),
 			),
 			jen.ID("afs").Op("=").ID("afero").Dot(
@@ -135,7 +133,8 @@ func httpRoutesDotGo() *jen.File {
 			).Dot(
 				"Path",
 			)).Block(
-				jen.Case(jen.Lit("/register"), jen.Lit("/login"), jen.Lit("/items"), jen.Lit("/items/new"), jen.Lit("/password/new")).Block(jen.ID("rl").Dot(
+				jen.Case(jen.Lit("/register"), jen.Lit("/login"), jen.Lit("/items"), jen.Lit("/items/new"), jen.Lit("/password/new")).Block(
+	jen.ID("rl").Dot(
 					"Debug",
 				).Call(jen.Lit("rerouting")), jen.ID("req").Dot(
 					"URL",

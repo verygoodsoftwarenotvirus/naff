@@ -18,7 +18,8 @@ func itemsDotGo() *jen.File {
 	)).Block(
 		jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 			"ItemCreationInput",
-		).Valuesln(jen.ID("Name").Op(":").ID("fake").Dot(
+		).Valuesln(
+	jen.ID("Name").Op(":").ID("fake").Dot(
 			"Word",
 		).Call(), jen.ID("Details").Op(":").ID("fake").Dot(
 			"Sentence",

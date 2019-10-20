@@ -99,7 +99,8 @@ func webhookDotGo() *jen.File {
 			jen.Return().Func().Params(jen.ID("err").ID("error")).Block(
 				jen.ID("logger").Dot(
 					"WithValues",
-				).Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("url").Op(":").ID("w").Dot(
+				).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+	jen.Lit("url").Op(":").ID("w").Dot(
 					"URL",
 	),
 	jen.Lit("method").Op(":").ID("w").Dot(
@@ -107,9 +108,7 @@ func webhookDotGo() *jen.File {
 	),
 	jen.Lit("content_type").Op(":").ID("w").Dot(
 					"ContentType",
-				))).Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("error executing webhook")),
+				))).Dot("Error").Call(jen.ID("err"), jen.Lit("error executing webhook")),
 			),
 		),
 		jen.Line(),
@@ -127,7 +126,8 @@ func webhookDotGo() *jen.File {
 				"NewWebhookListener",
 			).Call(jen.ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID("logger")), jen.Op("&").ID("newsman").Dot(
 				"WebhookConfig",
-			).Valuesln(jen.ID("Method").Op(":").ID("w").Dot(
+			).Valuesln(
+	jen.ID("Method").Op(":").ID("w").Dot(
 				"Method",
 	),
 	jen.ID("URL").Op(":").ID("w").Dot(
@@ -137,7 +137,8 @@ func webhookDotGo() *jen.File {
 				"ContentType",
 			)), jen.Op("&").ID("newsman").Dot(
 				"ListenerConfig",
-			).Valuesln(jen.ID("Events").Op(":").ID("w").Dot(
+			).Valuesln(
+	jen.ID("Events").Op(":").ID("w").Dot(
 				"Events",
 	),
 	jen.ID("DataTypes").Op(":").ID("w").Dot(

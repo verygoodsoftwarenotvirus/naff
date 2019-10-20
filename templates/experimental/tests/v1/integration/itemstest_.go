@@ -22,17 +22,13 @@ func itemsTestDotGo() *jen.File {
 		).Call(jen.ID("t"), jen.ID("actual").Dot(
 			"ID",
 		)),
-		jen.ID("assert").Dot(
-			"Equal",
-		).Call(jen.ID("t"), jen.ID("expected").Dot(
+		jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Name",
 	),
 	jen.ID("actual").Dot(
 			"Name",
 		)),
-		jen.ID("assert").Dot(
-			"Equal",
-		).Call(jen.ID("t"), jen.ID("expected").Dot(
+		jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(
 			"Details",
 	),
 	jen.ID("actual").Dot(
@@ -56,7 +52,8 @@ func itemsTestDotGo() *jen.File {
 		).Call(),
 		jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 			"ItemCreationInput",
-		).Valuesln(jen.ID("Name").Op(":").ID("fake").Dot(
+		).Valuesln(
+	jen.ID("Name").Op(":").ID("fake").Dot(
 			"Word",
 		).Call(), jen.ID("Details").Op(":").ID("fake").Dot(
 			"Sentence",
@@ -64,9 +61,7 @@ func itemsTestDotGo() *jen.File {
 		jen.List(jen.ID("y"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
 			"CreateItem",
 		).Call(jen.Qual("context", "Background").Call(), jen.ID("x")),
-		jen.ID("require").Dot(
-			"NoError",
-		).Call(jen.ID("t"), jen.ID("err")),
+		jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.Return().ID("y"),
 	),
 	jen.Line(),
@@ -87,17 +82,17 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot(
 					"Name",
 				).Call()),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
 				jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
 					"CreateItem",
 				).Call(jen.ID("ctx"), jen.Op("&").ID("models").Dot(
 					"ItemCreationInput",
-				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
+				).Valuesln(
+	jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
 	),
 	jen.ID("Details").Op(":").ID("expected").Dot(
@@ -110,9 +105,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("ctx"), jen.ID("premade").Dot(
 					"ID",
 				)),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
 					"GetItem",
 				).Call(jen.ID("ctx"), jen.ID("premade").Dot(
@@ -137,9 +130,7 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot(
 					"Name",
 				).Call()),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 
 		jen.Var().ID("expected").Index().Op("*").ID("models").Dot(
 					"Item",
@@ -166,9 +157,7 @@ func itemsTestDotGo() *jen.File {
 					).Call(jen.ID("ctx"), jen.ID("item").Dot(
 						"ID",
 					)),
-					jen.ID("assert").Dot(
-						"NoError",
-					).Call(jen.ID("t"), jen.ID("err")),
+					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				),
 			)),
 		)),
@@ -182,15 +171,11 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot(
 					"Name",
 				).Call()),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
 					"GetItem",
 				).Call(jen.ID("ctx"), jen.ID("nonexistentID")),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 			)),
 			jen.ID("T").Dot(
 				"Run",
@@ -199,17 +184,17 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot(
 					"Name",
 				).Call()),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
 				jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
 					"CreateItem",
 				).Call(jen.ID("ctx"), jen.Op("&").ID("models").Dot(
 					"ItemCreationInput",
-				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
+				).Valuesln(
+	jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
 	),
 	jen.ID("Details").Op(":").ID("expected").Dot(
@@ -228,9 +213,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("ctx"), jen.ID("actual").Dot(
 					"ID",
 				)),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),
 		)),
 		jen.ID("test").Dot(
@@ -243,17 +226,14 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot(
 					"Name",
 				).Call()),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.ID("err").Op(":=").ID("todoClient").Dot(
 					"UpdateItem",
 				).Call(jen.ID("ctx"), jen.Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("ID").Op(":").ID("nonexistentID"))),
-				jen.ID("assert").Dot(
-					"Error",
-				).Call(jen.ID("t"), jen.ID("err")),
+				).Valuesln(
+	jen.ID("ID").Op(":").ID("nonexistentID"))),
+				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 			)),
 			jen.ID("T").Dot(
 				"Run",
@@ -262,17 +242,17 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot(
 					"Name",
 				).Call()),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("Name").Op(":").Lit("new name"), jen.ID("Details").Op(":").Lit("new details")),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("new name"), jen.ID("Details").Op(":").Lit("new details")),
 				jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
 					"CreateItem",
 				).Call(jen.ID("tctx"), jen.Op("&").ID("models").Dot(
 					"ItemCreationInput",
-				).Valuesln(jen.ID("Name").Op(":").Lit("old name"), jen.ID("Details").Op(":").Lit("old details"))),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("old name"), jen.ID("Details").Op(":").Lit("old details"))),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
 				jen.List(jen.ID("premade").Dot(
 					"Name",
@@ -288,9 +268,7 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("err").Op("=").ID("todoClient").Dot(
 					"UpdateItem",
 				).Call(jen.ID("ctx"), jen.ID("premade")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
 					"GetItem",
 				).Call(jen.ID("ctx"), jen.ID("premade").Dot(
@@ -308,9 +286,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("ctx"), jen.ID("actual").Dot(
 					"ID",
 				)),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),
 		)),
 		jen.ID("test").Dot(
@@ -323,17 +299,17 @@ func itemsTestDotGo() *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot(
 					"Name",
 				).Call()),
-				jen.Defer().ID("span").Dot(
-					"End",
-				).Call(),
+				jen.Defer().ID("span").Dot("End").Call(),
 				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
 					"Item",
-				).Valuesln(jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
+				).Valuesln(
+	jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
 				jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot(
 					"CreateItem",
 				).Call(jen.ID("ctx"), jen.Op("&").ID("models").Dot(
 					"ItemCreationInput",
-				).Valuesln(jen.ID("Name").Op(":").ID("expected").Dot(
+				).Valuesln(
+	jen.ID("Name").Op(":").ID("expected").Dot(
 					"Name",
 	),
 	jen.ID("Details").Op(":").ID("expected").Dot(
@@ -345,9 +321,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("ctx"), jen.ID("premade").Dot(
 					"ID",
 				)),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),
 		)),
 	),

@@ -32,9 +32,7 @@ func middlewareDotGo() *jen.File {
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
 			).Call(), jen.Lit("UserInputMiddleware")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.If(jen.ID("err").Op(":=").ID("s").Dot(
 				"encoderDecoder",
 			).Dot(
@@ -42,9 +40,7 @@ func middlewareDotGo() *jen.File {
 			).Call(jen.ID("req"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot(
 					"logger",
-				).Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),
+				).Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),
 				jen.ID("res").Dot(
 					"WriteHeader",
 				).Call(jen.Qual("net/http", "StatusBadRequest")),
@@ -72,9 +68,7 @@ func middlewareDotGo() *jen.File {
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
 			).Call(), jen.Lit("PasswordUpdateInputMiddleware")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.If(jen.ID("err").Op(":=").ID("s").Dot(
 				"encoderDecoder",
 			).Dot(
@@ -82,9 +76,7 @@ func middlewareDotGo() *jen.File {
 			).Call(jen.ID("req"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot(
 					"logger",
-				).Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),
+				).Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),
 				jen.ID("res").Dot(
 					"WriteHeader",
 				).Call(jen.Qual("net/http", "StatusBadRequest")),
@@ -112,9 +104,7 @@ func middlewareDotGo() *jen.File {
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 				"Context",
 			).Call(), jen.Lit("TOTPSecretRefreshInputMiddleware")),
-			jen.Defer().ID("span").Dot(
-				"End",
-			).Call(),
+			jen.Defer().ID("span").Dot("End").Call(),
 			jen.If(jen.ID("err").Op(":=").ID("s").Dot(
 				"encoderDecoder",
 			).Dot(
@@ -122,9 +112,7 @@ func middlewareDotGo() *jen.File {
 			).Call(jen.ID("req"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot(
 					"logger",
-				).Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),
+				).Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),
 				jen.ID("res").Dot(
 					"WriteHeader",
 				).Call(jen.Qual("net/http", "StatusBadRequest")),

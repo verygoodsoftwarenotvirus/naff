@@ -119,7 +119,8 @@ func testutilDotGo() *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.ID("errors").Dot("New").Call(jen.Lit("something happened"))),
 			),
 			jen.Line(),
-			jen.ID("u").Op(":=").Op("&").ID("models").Dot("User").Valuesln(jen.ID("ID").Op(":").ID("ucr").Dot("ID"),
+			jen.ID("u").Op(":=").Op("&").ID("models").Dot("User").Valuesln(
+	jen.ID("ID").Op(":").ID("ucr").Dot("ID"),
 				jen.ID("Username").Op(":").ID("ucr").Dot("Username"),
 				jen.ID("HashedPassword").Op(":").ID("in").Dot("Password"),
 				jen.ID("TwoFactorSecret").Op(":").ID("ucr").Dot("TwoFactorSecret"),

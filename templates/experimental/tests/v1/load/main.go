@@ -42,7 +42,8 @@ func mainDotGo() *jen.File {
 			jen.If(jen.ID("err").Op("==").ID("ErrUnavailableYet")).Block(
 				jen.Return().ID("hazana").Dot(
 					"DoResult",
-				).Valuesln(jen.ID("RequestLabel").Op(":").ID("act").Dot(
+				).Valuesln(
+	jen.ID("RequestLabel").Op(":").ID("act").Dot(
 					"Name",
 	),
 	jen.ID("Error").Op(":").ID("nil"), jen.ID("StatusCode").Op(":").Lit(200)),
@@ -50,7 +51,8 @@ func mainDotGo() *jen.File {
 			jen.Qual("log", "Printf").Call(jen.Lit("something has gone awry: %v\n"), jen.ID("err")),
 			jen.Return().ID("hazana").Dot(
 				"DoResult",
-			).Valuesln(jen.ID("Error").Op(":").ID("err")),
+			).Valuesln(
+	jen.ID("Error").Op(":").ID("err")),
 		),
 
 		jen.Var().ID("sc").ID("int").Var().ID("bo").ID("int64").Var().ID("bi").Index().ID("byte"),
@@ -63,7 +65,8 @@ func mainDotGo() *jen.File {
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().ID("hazana").Dot(
 					"DoResult",
-				).Valuesln(jen.ID("Error").Op(":").ID("err")),
+				).Valuesln(
+	jen.ID("Error").Op(":").ID("err")),
 			),
 			jen.ID("rdr").Op(":=").Qual("io/ioutil", "NopCloser").Call(jen.Qual("bytes", "NewBuffer").Call(jen.ID("bi"))),
 			jen.ID("req").Dot(
@@ -87,7 +90,8 @@ func mainDotGo() *jen.File {
 		),
 		jen.ID("dr").Op(":=").ID("hazana").Dot(
 			"DoResult",
-		).Valuesln(jen.ID("RequestLabel").Op(":").ID("act").Dot(
+		).Valuesln(
+	jen.ID("RequestLabel").Op(":").ID("act").Dot(
 			"Name",
 	),
 	jen.ID("Error").Op(":").ID("err"), jen.ID("StatusCode").Op(":").ID("sc"), jen.ID("BytesIn").Op(":").ID("int64").Call(jen.ID("len").Call(jen.ID("bi"))), jen.ID("BytesOut").Op(":").ID("bo")),
@@ -128,10 +132,12 @@ func mainDotGo() *jen.File {
 			),
 			jen.ID("runTime").Op("=").ID("_rt"),
 		),
-		jen.ID("attacker").Op(":=").Op("&").ID("ServiceAttacker").Valuesln(jen.ID("todoClient").Op(":").ID("todoClient")),
+		jen.ID("attacker").Op(":=").Op("&").ID("ServiceAttacker").Valuesln(
+	jen.ID("todoClient").Op(":").ID("todoClient")),
 		jen.ID("cfg").Op(":=").ID("hazana").Dot(
 			"Config",
-		).Valuesln(jen.ID("RPS").Op(":").Lit(50), jen.ID("AttackTimeSec").Op(":").ID("int").Call(jen.ID("runTime").Dot(
+		).Valuesln(
+	jen.ID("RPS").Op(":").Lit(50), jen.ID("AttackTimeSec").Op(":").ID("int").Call(jen.ID("runTime").Dot(
 			"Seconds",
 		).Call()), jen.ID("RampupTimeSec").Op(":").Lit(5), jen.ID("MaxAttackers").Op(":").Lit(50), jen.ID("Verbose").Op(":").ID("true"), jen.ID("DoTimeoutSec").Op(":").Lit(10)),
 		jen.ID("r").Op(":=").ID("hazana").Dot(

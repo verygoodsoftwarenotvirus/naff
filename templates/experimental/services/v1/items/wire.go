@@ -20,9 +20,7 @@ func wireDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideItemDataManager turns a database into an ItemDataManager"),
 		jen.Line(),
-		jen.Func().ID("ProvideItemDataManager").Params(jen.ID("db").ID("database").Dot(
-		"Database",
-	)).Params(jen.ID("models").Dot(
+		jen.Func().ID("ProvideItemDataManager").Params(jen.ID("db").ID("database").Dot("Database")).Params(jen.ID("models").Dot(
 		"ItemDataManager",
 	)).Block(
 		jen.Return().ID("db"),

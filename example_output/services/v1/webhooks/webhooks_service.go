@@ -7,8 +7,8 @@ import (
 
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	"gitlab.com/verygoodsoftwarenotvirus/newsman"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
@@ -34,6 +34,7 @@ type (
 		TuneIn(newsman.Listener)
 	}
 
+	// Service handles TODO ListHandler webhooks
 	Service struct {
 		logger           logging.Logger
 		webhookCounter   metrics.UnitCounter
@@ -52,11 +53,21 @@ type (
 )
 
 // ProvideWebhooksService builds a new WebhooksService
-func ProvideWebhooksService(ctx context.Context, logger logging.Logger, webhookDatabase models.WebhookDataManager, userIDFetcher UserIDFetcher, webhookIDFetcher WebhookIDFetcher, encoder encoding.EncoderDecoder, webhookCounterProvider metrics.UnitCounterProvider, em *newsman.Newsman) (*Service, error) {
+func ProvideWebhooksService(
+	ctx context.Context,
+	logger logging.Logger,
+	webhookDatabase models.WebhookDataManager,
+	userIDFetcher UserIDFetcher,
+	webhookIDFetcher WebhookIDFetcher,
+	encoder encoding.EncoderDecoder,
+	webhookCounterProvider metrics.UnitCounterProvider,
+	em *newsman.Newsman,
+) (*Service, error) {
 	webhookCounter, err := webhookCounterProvider(counterName, "the number of webhooks managed by the webhooks service")
 	if err != nil {
 		return nil, fmt.Errorf("error initializing counter: %w", err)
 	}
+
 	svc := &Service{
 		logger:           logger.WithName(serviceName),
 		webhookDatabase:  webhookDatabase,
@@ -66,10 +77,12 @@ func ProvideWebhooksService(ctx context.Context, logger logging.Logger, webhookD
 		webhookIDFetcher: webhookIDFetcher,
 		eventManager:     em,
 	}
+
 	webhookCount, err := svc.webhookDatabase.GetAllWebhooksCount(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("setting current webhook count: %w", err)
 	}
 	svc.webhookCounter.IncrementBy(ctx, webhookCount)
+
 	return svc, nil
 }

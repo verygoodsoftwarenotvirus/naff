@@ -46,7 +46,7 @@ func serverTestDotGo() *jen.File {
 					"WebhookDataManager",
 				).Dot(
 					"On",
-				).Call(jen.Lit("GetAllWebhooks"), jen.ID("mock").Dot(
+				).Call(jen.Lit("GetAllWebhooks"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
 				)).Dot(
 					"Return",
@@ -55,9 +55,11 @@ func serverTestDotGo() *jen.File {
 				).Values(), jen.ID("nil")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("ProvideServer").Call(jen.Qual("context", "Background").Call(), jen.Op("&").ID("config").Dot(
 					"ServerConfig",
-				).Valuesln(jen.ID("Auth").Op(":").ID("config").Dot(
-					"AuthSettings",
-				).Valuesln(jen.ID("CookieSecret").Op(":").Lit("THISISAVERYLONGSTRINGFORTESTPURPOSES"))), jen.Op("&").ID("auth").Dot(
+				).Valuesln(
+					jen.ID("Auth").Op(":").ID("config").Dot(
+						"AuthSettings",
+					).Valuesln(
+						jen.ID("CookieSecret").Op(":").Lit("THISISAVERYLONGSTRINGFORTESTPURPOSES"))), jen.Op("&").ID("auth").Dot(
 					"Service",
 				).Values(), jen.Op("&").ID("frontend").Dot(
 					"Service",
@@ -77,9 +79,7 @@ func serverTestDotGo() *jen.File {
 				jen.ID("assert").Dot(
 					"NotNil",
 				).Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot(
-					"NoError",
-				).Call(jen.ID("t"), jen.ID("err")),
+				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),
 		),
 		jen.Line(),

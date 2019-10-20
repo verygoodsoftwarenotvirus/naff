@@ -12,7 +12,8 @@ func itemsServiceTestDotGo() *jen.File {
 
 	ret.Add(
 		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
-		jen.Return().Op("&").ID("Service").Valuesln(jen.ID("logger").Op(":").ID("noop").Dot(
+		jen.Return().Op("&").ID("Service").Valuesln(
+	jen.ID("logger").Op(":").ID("noop").Dot(
 			"ProvideNoopLogger",
 		).Call(), jen.ID("itemCounter").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(), jen.ID("itemDatabase").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(), jen.ID("userIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 			jen.Return().Lit(0),
@@ -33,12 +34,12 @@ func itemsServiceTestDotGo() *jen.File {
 			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
 
-		jen.Var().ID("ucp").ID("metrics").Dot(
+		jen.Var().ID("ucp").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 				"UnitCounterProvider",
-			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
+			).Op("=").Func().Params(jen.ID("counterName").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 				"CounterName",
 	),
-	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	jen.ID("description").ID("string")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 				"UnitCounter",
 	),
 	jen.ID("error")).Block(
@@ -47,7 +48,7 @@ func itemsServiceTestDotGo() *jen.File {
 			jen.ID("idm").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
 			jen.ID("idm").Dot(
 				"On",
-			).Call(jen.Lit("GetAllItemsCount"), jen.ID("mock").Dot(
+			).Call(jen.Lit("GetAllItemsCount"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -69,20 +70,19 @@ func itemsServiceTestDotGo() *jen.File {
 			jen.ID("require").Dot(
 				"NotNil",
 			).Call(jen.ID("t"), jen.ID("s")),
-			jen.ID("require").Dot(
-				"NoError",
-			).Call(jen.ID("t"), jen.ID("err")),
+			jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with error providing unit counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing unit counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
 
-		jen.Var().ID("ucp").ID("metrics").Dot(
+		jen.Var().ID("ucp").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 				"UnitCounterProvider",
-			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
+			).Op("=").Func().Params(jen.ID("counterName").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 				"CounterName",
 	),
-	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	jen.ID("description").ID("string")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 				"UnitCounter",
 	),
 	jen.ID("error")).Block(
@@ -91,7 +91,7 @@ func itemsServiceTestDotGo() *jen.File {
 			jen.ID("idm").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
 			jen.ID("idm").Dot(
 				"On",
-			).Call(jen.Lit("GetAllItemsCount"), jen.ID("mock").Dot(
+			).Call(jen.Lit("GetAllItemsCount"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -113,20 +113,19 @@ func itemsServiceTestDotGo() *jen.File {
 			jen.ID("require").Dot(
 				"Nil",
 			).Call(jen.ID("t"), jen.ID("s")),
-			jen.ID("require").Dot(
-				"Error",
-			).Call(jen.ID("t"), jen.ID("err")),
+			jen.ID("require").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 		)),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching item count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.Line(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching item count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("uc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 			jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
 
-		jen.Var().ID("ucp").ID("metrics").Dot(
+		jen.Var().ID("ucp").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 				"UnitCounterProvider",
-			).Op("=").Func().Params(jen.ID("counterName").ID("metrics").Dot(
+			).Op("=").Func().Params(jen.ID("counterName").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 				"CounterName",
 	),
-	jen.ID("description").ID("string")).Params(jen.ID("metrics").Dot(
+	jen.ID("description").ID("string")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
 				"UnitCounter",
 	),
 	jen.ID("error")).Block(
@@ -135,7 +134,7 @@ func itemsServiceTestDotGo() *jen.File {
 			jen.ID("idm").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
 			jen.ID("idm").Dot(
 				"On",
-			).Call(jen.Lit("GetAllItemsCount"), jen.ID("mock").Dot(
+			).Call(jen.Lit("GetAllItemsCount"), jen.Qual("github.com/stretchr/testify/mock",
 				"Anything",
 			)).Dot(
 				"Return",
@@ -157,9 +156,7 @@ func itemsServiceTestDotGo() *jen.File {
 			jen.ID("require").Dot(
 				"Nil",
 			).Call(jen.ID("t"), jen.ID("s")),
-			jen.ID("require").Dot(
-				"Error",
-			).Call(jen.ID("t"), jen.ID("err")),
+			jen.ID("require").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 		)),
 	),
 	jen.Line(),

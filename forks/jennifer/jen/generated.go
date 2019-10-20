@@ -288,6 +288,32 @@ func (s *Statement) Block(statements ...Code) *Statement {
 	return s
 }
 
+// SingleLineBlock renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
+func SingleLineBlock(statements ...Code) *Statement {
+	return newStatement().SingleLineBlock(statements...)
+}
+
+// SingleLineBlock renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
+func (g *Group) SingleLineBlock(statements ...Code) *Statement {
+	s := SingleLineBlock(statements...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// SingleLineBlock renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
+func (s *Statement) SingleLineBlock(statements ...Code) *Statement {
+	g := &Group{
+		close:     "}",
+		items:     statements,
+		multi:     false,
+		name:      "block",
+		open:      "{",
+		separator: "",
+	}
+	*s = append(*s, g)
+	return s
+}
+
 // BlockFunc renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
 func BlockFunc(f func(*Group)) *Statement {
 	return newStatement().BlockFunc(f)
@@ -907,6 +933,32 @@ func (s *Statement) Case(cases ...Code) *Statement {
 		name:      "case",
 		open:      "case ",
 		separator: ",",
+	}
+	*s = append(*s, g)
+	return s
+}
+
+// Caseln renders the keyword followed by a comma separated list.
+func Caseln(cases ...Code) *Statement {
+	return newStatement().Caseln(cases...)
+}
+
+// Caseln renders the keyword followed by a comma separated list.
+func (g *Group) Caseln(cases ...Code) *Statement {
+	s := Caseln(cases...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// Caseln renders the keyword followed by a comma separated list.
+func (s *Statement) Caseln(cases ...Code) *Statement {
+	g := &Group{
+		close:     ":",
+		items:     cases,
+		multi:     false,
+		name:      "case",
+		open:      "case ",
+		separator: ",\n\t",
 	}
 	*s = append(*s, g)
 	return s

@@ -70,10 +70,9 @@ func mariadbDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideMariaDB").Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		)).Params(jen.ID("database").Dot(
-			"Database",
-		)).Block(
-			jen.Return().Op("&").ID("MariaDB").Valuesln(jen.ID("db").Op(":").ID("db"), jen.ID("debug").Op(":").ID("debug"), jen.ID("logger").Op(":").ID("logger").Dot(
+		)).Params(jen.ID("database").Dot("Database")).Block(
+			jen.Return().Op("&").ID("MariaDB").Valuesln(
+	jen.ID("db").Op(":").ID("db"), jen.ID("debug").Op(":").ID("debug"), jen.ID("logger").Op(":").ID("logger").Dot(
 				"WithName",
 			).Call(jen.ID("loggerName")), jen.ID("sqlBuilder").Op(":").ID("squirrel").Dot(
 				"StatementBuilder",
@@ -93,7 +92,8 @@ func mariadbDotGo() *jen.File {
 				"logger",
 			).Dot(
 				"WithValues",
-			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("wait_interval").Op(":").ID("waitInterval"), jen.Lit("max_attempts").Op(":").ID("maxAttempts"))).Dot(
+			).Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+	jen.Lit("wait_interval").Op(":").ID("waitInterval"), jen.Lit("max_attempts").Op(":").ID("maxAttempts"))).Dot(
 				"Debug",
 			).Call(jen.Lit("IsReady called")),
 			jen.For(jen.Op("!").ID("ready")).Block(
@@ -136,9 +136,7 @@ func mariadbDotGo() *jen.File {
 					"logger",
 				).Dot(
 					"WithName",
-				).Call(jen.Lit("QUERY_ERROR")).Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("building query")),
+				).Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
 			),
 		),
 		jen.Line(),
@@ -157,9 +155,7 @@ func mariadbDotGo() *jen.File {
 					"logger",
 				).Dot(
 					"WithName",
-				).Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("building query")),
+				).Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
 			),
 		),
 		jen.Line(),

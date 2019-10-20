@@ -13,7 +13,9 @@ func migrationsDotGo() *jen.File {
 	ret.Add(
 		jen.Var().ID("migrations").Op("=").Index().ID("darwin").Dot(
 			"Migration",
-		).Valuesln(jen.Valuesln(jen.ID("Version").Op(":").Lit(1), jen.ID("Description").Op(":").Lit("create users table"), jen.ID("Script").Op(":").Lit(`
+		).Valuesln(
+			jen.Valuesln(
+				jen.ID("Version").Op(":").Lit(1), jen.ID("Description").Op(":").Lit("create users table"), jen.ID("Script").Op(":").Lit(`
 			CREATE TABLE IF NOT EXISTS users (
 				"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				"username" TEXT NOT NULL,
@@ -25,7 +27,8 @@ func migrationsDotGo() *jen.File {
 				"updated_on" INTEGER,
 				"archived_on" INTEGER DEFAULT NULL,
 				CONSTRAINT username_unique UNIQUE (username)
-			);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(2), jen.ID("Description").Op(":").Lit("Add OAuth2 Clients table"), jen.ID("Script").Op(":").Lit(`
+			);`)), jen.Valuesln(
+				jen.ID("Version").Op(":").Lit(2), jen.ID("Description").Op(":").Lit("Add OAuth2 Clients table"), jen.ID("Script").Op(":").Lit(`
 			CREATE TABLE IF NOT EXISTS oauth2_clients (
 				"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				"name" TEXT DEFAULT '',
@@ -39,7 +42,8 @@ func migrationsDotGo() *jen.File {
 				"archived_on" INTEGER DEFAULT NULL,
 				"belongs_to" INTEGER NOT NULL,
 				FOREIGN KEY(belongs_to) REFERENCES users(id)
-			);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(3), jen.ID("Description").Op(":").Lit("Create items table"), jen.ID("Script").Op(":").Lit(`
+			);`)), jen.Valuesln(
+				jen.ID("Version").Op(":").Lit(3), jen.ID("Description").Op(":").Lit("Create items table"), jen.ID("Script").Op(":").Lit(`
 			CREATE TABLE IF NOT EXISTS items (
 				"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				"name" TEXT NOT NULL,
@@ -49,7 +53,8 @@ func migrationsDotGo() *jen.File {
 				"archived_on" INTEGER DEFAULT NULL,
 				"belongs_to" INTEGER NOT NULL,
 				FOREIGN KEY(belongs_to) REFERENCES users(id)
-			);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(4), jen.ID("Description").Op(":").Lit("Create webhooks table"), jen.ID("Script").Op(":").Lit(`
+			);`)), jen.Valuesln(
+				jen.ID("Version").Op(":").Lit(4), jen.ID("Description").Op(":").Lit("Create webhooks table"), jen.ID("Script").Op(":").Lit(`
 			CREATE TABLE IF NOT EXISTS webhooks (
 				"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				"name" text NOT NULL,
@@ -80,9 +85,7 @@ func migrationsDotGo() *jen.File {
 				).Call(jen.ID("db"), jen.ID("darwin").Dot(
 					"SqliteDialect",
 				).Values()),
-				jen.If(jen.ID("err").Op(":=").ID("darwin").Dot(
-					"New",
-				).Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot(
+				jen.If(jen.ID("err").Op(":=").ID("darwin").Dot("New").Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot(
 					"Migrate",
 				).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("panic").Call(jen.ID("err")),

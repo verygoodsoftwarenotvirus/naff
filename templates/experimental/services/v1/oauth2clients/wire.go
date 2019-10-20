@@ -11,21 +11,23 @@ func wireDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("Providers").Op("=").ID("wire").Dot(
-		"NewSet",
-	).Call(jen.ID("ProvideOAuth2ClientsService"), jen.ID("ProvideOAuth2ClientDataServer")),
-	jen.Line(),
+		jen.Var().Defs(
+			jen.Comment("Providers are what we provide for dependency injection"),
+			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet").Callln(
+				jen.ID("ProvideOAuth2ClientsService"),
+				jen.ID("ProvideOAuth2ClientDataServer"),
+			),
+		),
+		jen.Line(),
 	)
 
 	ret.Add(
-	jen.Comment("ProvideOAuth2ClientDataServer is an arbitrary function for dependency injection's sake"),
-	jen.Line(),
-	jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.ID("models").Dot(
-		"OAuth2ClientDataServer",
-	)).Block(
-		jen.Return().ID("s"),
-	),
-	jen.Line(),
+		jen.Comment("ProvideOAuth2ClientDataServer is an arbitrary function for dependency injection's sake"),
+		jen.Line(),
+		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.ID("models").Dot("OAuth2ClientDataServer")).Block(
+			jen.Return().ID("s"),
+		),
+		jen.Line(),
 	)
 	return ret
 }

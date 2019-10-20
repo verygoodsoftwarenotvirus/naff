@@ -16,7 +16,8 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("usersTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("id"), jen.Lit("username"), jen.Lit("hashed_password"), jen.Lit("password_last_changed_on"), jen.Lit("two_factor_secret"), jen.Lit("is_admin"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on")),
+		jen.Var().ID("usersTableColumns").Op("=").Index().ID("string").Valuesln(
+	jen.Lit("id"), jen.Lit("username"), jen.Lit("hashed_password"), jen.Lit("password_last_changed_on"), jen.Lit("two_factor_secret"), jen.Lit("is_admin"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on")),
 		jen.Line(),
 	)
 
@@ -98,9 +99,7 @@ func usersDotGo() *jen.File {
 			jen.If(jen.ID("err").Op(":=").ID("rows").Dot(
 				"Close",
 			).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot(
-					"Error",
-				).Call(jen.ID("err"), jen.Lit("closing rows")),
+				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("closing rows")),
 			),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
 		),
@@ -121,7 +120,8 @@ func usersDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("userID"))).Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("p").Dot(
@@ -170,7 +170,8 @@ func usersDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("username").Op(":").ID("username"))).Dot(
+			).Valuesln(
+	jen.Lit("username").Op(":").ID("username"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("p").Dot(
@@ -224,7 +225,8 @@ func usersDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("archived_on").Op(":").ID("nil"))),
+			).Valuesln(
+	jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
 					"ApplyToQueryBuilder",
@@ -278,7 +280,8 @@ func usersDotGo() *jen.File {
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("archived_on").Op(":").ID("nil"))),
+			).Valuesln(
+	jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
 					"ApplyToQueryBuilder",
@@ -330,9 +333,11 @@ func usersDotGo() *jen.File {
 			),
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"UserList",
-			).Valuesln(jen.ID("Pagination").Op(":").ID("models").Dot(
+			).Valuesln(
+	jen.ID("Pagination").Op(":").ID("models").Dot(
 				"Pagination",
-			).Valuesln(jen.ID("Page").Op(":").ID("filter").Dot(
+			).Valuesln(
+	jen.ID("Page").Op(":").ID("filter").Dot(
 				"Page",
 			),
 				jen.ID("Limit").Op(":").ID("filter").Dot(
@@ -391,7 +396,8 @@ func usersDotGo() *jen.File {
 			jen.ID("error")).Block(
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
 				"User",
-			).Valuesln(jen.ID("Username").Op(":").ID("input").Dot(
+			).Valuesln(
+	jen.ID("Username").Op(":").ID("input").Dot(
 				"Username",
 			),
 				jen.ID("TwoFactorSecret").Op(":").ID("input").Dot(
@@ -414,16 +420,16 @@ func usersDotGo() *jen.File {
 				)),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Switch(jen.ID("e").Op(":=").ID("err").Assert(jen.Type())).Block(
-					jen.Case(jen.Op("*").ID("pq").Dot(
-						"Error",
-					)).Block(jen.If(jen.ID("e").Dot(
+					jen.Case(jen.Op("*").ID("pq").Dot("Error")).Block(
+	jen.If(jen.ID("e").Dot(
 						"Code",
 					).Op("==").ID("pq").Dot(
 						"ErrorCode",
 					).Call(jen.Lit("23505"))).Block(
 						jen.Return().List(jen.ID("nil"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client", "ErrUserExists")),
 					)),
-					jen.Default().Block(jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing user creation query: %w"), jen.ID("err")))),
+					jen.Default().Block(
+	jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing user creation query: %w"), jen.ID("err")))),
 				),
 			),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
@@ -441,27 +447,20 @@ func usersDotGo() *jen.File {
 				"sqlBuilder",
 			).Dot(
 				"Update",
-			).Call(jen.ID("usersTableName")).Dot(
-				"Set",
-			).Call(jen.Lit("username"), jen.ID("input").Dot(
+			).Call(jen.ID("usersTableName")).Dot("Set").Call(jen.Lit("username"), jen.ID("input").Dot(
 				"Username",
-			)).Dot(
-				"Set",
-			).Call(jen.Lit("hashed_password"), jen.ID("input").Dot(
+			)).Dot("Set").Call(jen.Lit("hashed_password"), jen.ID("input").Dot(
 				"HashedPassword",
-			)).Dot(
-				"Set",
-			).Call(jen.Lit("two_factor_secret"), jen.ID("input").Dot(
+			)).Dot("Set").Call(jen.Lit("two_factor_secret"), jen.ID("input").Dot(
 				"TwoFactorSecret",
-			)).Dot(
-				"Set",
-			).Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
+			)).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
 				"Expr",
 			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("input").Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("input").Dot(
 				"ID",
 			))).Dot(
 				"Suffix",
@@ -510,19 +509,16 @@ func usersDotGo() *jen.File {
 				"sqlBuilder",
 			).Dot(
 				"Update",
-			).Call(jen.ID("usersTableName")).Dot(
-				"Set",
-			).Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
+			).Call(jen.ID("usersTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
 				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
-				"Set",
-			).Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
+			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
 				"Expr",
 			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
 			).Call(jen.ID("squirrel").Dot(
 				"Eq",
-			).Valuesln(jen.Lit("id").Op(":").ID("userID"))).Dot(
+			).Valuesln(
+	jen.Lit("id").Op(":").ID("userID"))).Dot(
 				"Suffix",
 			).Call(jen.Lit("RETURNING archived_on")).Dot(
 				"ToSql",

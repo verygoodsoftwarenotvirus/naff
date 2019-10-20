@@ -132,9 +132,7 @@ func wireParamFetchersDotGo() *jen.File {
 					"URIParamKey",
 				)), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("fetching user ID from request")),
+					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("fetching user ID from request")),
 				),
 				jen.Return().ID("u"),
 			),
@@ -155,9 +153,7 @@ func wireParamFetchersDotGo() *jen.File {
 					"URIParamKey",
 				)), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("fetching ItemID from request")),
+					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("fetching ItemID from request")),
 				),
 				jen.Return().ID("u"),
 			),
@@ -178,9 +174,7 @@ func wireParamFetchersDotGo() *jen.File {
 					"URIParamKey",
 				)), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("fetching WebhookID from request")),
+					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("fetching WebhookID from request")),
 				),
 				jen.Return().ID("u"),
 			),
@@ -201,9 +195,7 @@ func wireParamFetchersDotGo() *jen.File {
 					"URIParamKey",
 				)), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot(
-						"Error",
-					).Call(jen.ID("err"), jen.Lit("fetching OAuth2ClientID from request")),
+					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("fetching OAuth2ClientID from request")),
 				),
 				jen.Return().ID("u"),
 			),

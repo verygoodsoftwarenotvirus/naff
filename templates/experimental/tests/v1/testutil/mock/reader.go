@@ -18,7 +18,7 @@ func readerDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ReadCloser is a mock io.ReadCloser for testing purposes"),
 		jen.Line(),
-		jen.Type().ID("ReadCloser").Struct(jen.ID("mock").Dot("Mock")),
+		jen.Type().ID("ReadCloser").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
 		jen.Line(),
 	)
 
@@ -47,9 +47,7 @@ func readerDotGo() *jen.File {
 		jen.Func().Params(jen.ID("m").Op("*").ID("ReadCloser")).ID("Close").Params().Params(jen.ID("err").ID("error")).Block(
 			jen.Return().ID("m").Dot(
 				"Called",
-			).Call().Dot(
-				"Error",
-			).Call(jen.Lit(1)),
+			).Call().Dot("Error").Call(jen.Lit(1)),
 		),
 		jen.Line(),
 	)

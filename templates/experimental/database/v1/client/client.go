@@ -11,16 +11,12 @@ func clientDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("database").Dot(
-			"Database",
-		).Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
+		jen.Var().ID("_").ID("database").Dot("Database").Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Type().ID("Client").Struct(jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("querier").ID("database").Dot(
-			"Database",
-	),
+		jen.Type().ID("Client").Struct(jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("querier").ID("database").Dot("Database"),
 	jen.ID("debug").ID("bool"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
 		)),
@@ -56,16 +52,13 @@ func clientDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideDatabaseClient provides a new Database client"),
 		jen.Line(),
-		jen.Func().ID("ProvideDatabaseClient").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("querier").ID("database").Dot(
-			"Database",
-	),
+		jen.Func().ID("ProvideDatabaseClient").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("querier").ID("database").Dot("Database"),
 	jen.ID("debug").ID("bool"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		)).Params(jen.ID("database").Dot(
-			"Database",
-	),
+		)).Params(jen.ID("database").Dot("Database"),
 	jen.ID("error")).Block(
-			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(jen.ID("db").Op(":").ID("db"), jen.ID("querier").Op(":").ID("querier"), jen.ID("debug").Op(":").ID("debug"), jen.ID("logger").Op(":").ID("logger").Dot(
+			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(
+	jen.ID("db").Op(":").ID("db"), jen.ID("querier").Op(":").ID("querier"), jen.ID("debug").Op(":").ID("debug"), jen.ID("logger").Op(":").ID("logger").Dot(
 				"WithName",
 			).Call(jen.Lit("db_client"))),
 			jen.If(jen.ID("debug")).Block(

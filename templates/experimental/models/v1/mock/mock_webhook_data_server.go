@@ -18,7 +18,7 @@ func mockWebhookDataServerDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("WebhookDataServer").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("WebhookDataServer").Struct(jen.Qual("github.com/stretchr/testify/mock",
 		"Mock",
 	)),
 	jen.Line(),

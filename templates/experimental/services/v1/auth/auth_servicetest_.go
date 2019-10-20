@@ -20,9 +20,11 @@ func authServiceTestDotGo() *jen.File {
 			).Call(),
 			jen.ID("cfg").Op(":=").Op("&").ID("config").Dot(
 				"ServerConfig",
-			).Valuesln(jen.ID("Auth").Op(":").ID("config").Dot(
+			).Valuesln(
+	jen.ID("Auth").Op(":").ID("config").Dot(
 				"AuthSettings",
-			).Valuesln(jen.ID("CookieSecret").Op(":").Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"))),
+			).Valuesln(
+	jen.ID("CookieSecret").Op(":").Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"))),
 			jen.ID("auth").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 			jen.ID("userDB").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "UserDataManager").Values(),
 			jen.ID("oauth").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),

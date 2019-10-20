@@ -18,7 +18,7 @@ func mockOauth2ClientDataServerDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("OAuth2ClientDataServer").Struct(jen.ID("mock").Dot(
+		jen.Type().ID("OAuth2ClientDataServer").Struct(jen.Qual("github.com/stretchr/testify/mock",
 		"Mock",
 	)),
 	jen.Line(),
@@ -122,9 +122,7 @@ func mockOauth2ClientDataServerDotGo() *jen.File {
 			"Get",
 		).Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dot(
 			"OAuth2Client",
-		)), jen.ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(1))),
+		)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),
 	jen.Line(),
 	)
@@ -136,9 +134,7 @@ func mockOauth2ClientDataServerDotGo() *jen.File {
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("res"), jen.ID("req")),
-		jen.Return().ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(0)),
+		jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
 	),
 	jen.Line(),
 	)
@@ -150,9 +146,7 @@ func mockOauth2ClientDataServerDotGo() *jen.File {
 		jen.ID("args").Op(":=").ID("m").Dot(
 			"Called",
 		).Call(jen.ID("res"), jen.ID("req")),
-		jen.Return().ID("args").Dot(
-			"Error",
-		).Call(jen.Lit(0)),
+		jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
 	),
 	jen.Line(),
 	)
