@@ -20,11 +20,6 @@ func RenderPackage(types []models.DataType) error {
 		"services/v1/auth/middleware.go":        middlewareDotGo(),
 	}
 
-	//for _, typ := range types {
-	//	files[fmt.Sprintf("client/v1/http/%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
-	//	files[fmt.Sprintf("client/v1/http/%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
-	//}
-
 	for path, file := range files {
 		if err := utils.RenderFile(path, file); err != nil {
 			return err

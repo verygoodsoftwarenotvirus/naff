@@ -27,6 +27,7 @@ func formatQueryForSQLMock(query string) string {
 
 func TestProvidePostgres(T *testing.T) {
 	T.Parallel()
+
 	T.Run("obligatory", func(t *testing.T) {
 		buildTestService(t)
 	})
@@ -34,6 +35,7 @@ func TestProvidePostgres(T *testing.T) {
 
 func TestMariaDB_IsReady(T *testing.T) {
 	T.Parallel()
+
 	T.Run("obligatory", func(t *testing.T) {
 		m, _ := buildTestService(t)
 		assert.True(t, m.IsReady(context.Background()))
@@ -42,6 +44,7 @@ func TestMariaDB_IsReady(T *testing.T) {
 
 func Test_logQueryBuildingError(T *testing.T) {
 	T.Parallel()
+
 	T.Run("obligatory", func(t *testing.T) {
 		m, _ := buildTestService(t)
 		m.logQueryBuildingError(errors.New(""))

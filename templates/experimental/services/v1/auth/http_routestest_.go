@@ -1257,12 +1257,12 @@ func httpRoutesTestDotGo() *jen.File {
 				).Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 				jen.ID("exampleInput").Op(":=").ID("loginData").Valuesln(
-					jen.ID("loginInput").Op(":").Op("&").ID("models").Dot(
-						"UserLoginInput",
-					).Valuesln(
-						jen.ID("Username").Op(":").Lit("username"), jen.ID("Password").Op(":").Lit("password"), jen.ID("TOTPToken").Op(":").Lit("012345")), jen.ID("user").Op(":").Op("&").ID("models").Dot(
-						"User",
-					).Valuesln()),
+					jen.ID("loginInput").Op(":").Op("&").ID("models").Dot("UserLoginInput").Valuesln(
+						jen.ID("Username").Op(":").Lit("username"),
+						jen.ID("Password").Op(":").Lit("password"),
+						jen.ID("TOTPToken").Op(":").Lit("012345"),
+					),
+					jen.ID("user").Op(":").Op("&").ID("models").Dot("User").Values()),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("s").Dot(
 					"validateLogin",
 				).Call(jen.ID("ctx"), jen.ID("exampleInput")),
@@ -1292,12 +1292,13 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("cb").Op(":=").Op("&").ID("mockCookieEncoderDecoder").Valuesln(),
+				jen.ID("cb").Op(":=").Op("&").ID("mockCookieEncoderDecoder").Values(),
 				jen.ID("cb").Dot("On").Call(jen.Lit("Encode"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",
-				), jen.Qual("github.com/stretchr/testify/mock",
-					"Anything",
-				)).Dot(
+				),
+					jen.Qual("github.com/stretchr/testify/mock",
+						"Anything",
+					)).Dot(
 					"Return",
 				).Call(jen.Lit(""), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(

@@ -11,13 +11,11 @@ func middlewareDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("UserCreationMiddlewareCtxKey").ID("models").Dot(
-			"ContextKey",
-		).Op("=").Lit("user_creation_input").Var().ID("PasswordChangeMiddlewareCtxKey").ID("models").Dot(
-			"ContextKey",
-		).Op("=").Lit("user_password_change").Var().ID("TOTPSecretRefreshMiddlewareCtxKey").ID("models").Dot(
-			"ContextKey",
-		).Op("=").Lit("totp_refresh"),
+		jen.Var().Defs(
+			jen.ID("UserCreationMiddlewareCtxKey").ID("models").Dot("ContextKey").Op("=").Lit("user_creation_input"),
+			jen.ID("PasswordChangeMiddlewareCtxKey").ID("models").Dot("ContextKey").Op("=").Lit("user_password_change"),
+			jen.ID("TOTPSecretRefreshMiddlewareCtxKey").ID("models").Dot("ContextKey").Op("=").Lit("totp_refresh"),
+		),
 		jen.Line(),
 	)
 

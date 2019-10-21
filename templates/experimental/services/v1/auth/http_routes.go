@@ -11,7 +11,10 @@ func httpRoutesDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("CookieName").Op("=").Lit("todocookie").Var().ID("cookieErrorLogName").Op("=").Lit("_COOKIE_CONSTRUCTION_ERROR_"),
+		jen.Const().Defs(
+			jen.ID("CookieName").Op("=").Lit("todocookie"),
+			jen.ID("cookieErrorLogName").Op("=").Lit("_COOKIE_CONSTRUCTION_ERROR_"),
+		),
 		jen.Line(),
 	)
 
