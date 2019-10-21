@@ -41,6 +41,8 @@ func AddImports(file *jen.File) {
 	file.ImportName("github.com/stretchr/testify/require", "require")
 	file.ImportName("github.com/stretchr/testify/mock", "mock")
 	file.ImportName("go.opencensus.io/trace", "trace")
+
+	file.ImportAlias("gopkg.in/oauth2.v3/models", "oauth2models")
 	file.ImportAlias("gopkg.in/oauth2.v3/errors", "oauth2errors")
 	file.ImportAlias("gopkg.in/oauth2.v3/server", "oauth2server")
 	file.ImportAlias("gopkg.in/oauth2.v3/store", "oauth2store")

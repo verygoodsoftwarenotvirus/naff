@@ -19,16 +19,16 @@ import (
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/metrics"
 	metricsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/metrics/mock"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil"
+	server "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/server/v1"
+	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/oauth2clients"
+	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/webhooks"
+	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/frontend"
 	testutilmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/testutil/mock"
 
 	// to do
-	server "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/server/v1"
 	auth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/auth"
 	frontend "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/frontend"
-	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/oauth2clients"
 	users "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/users"
-	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/webhooks"
-	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/frontend"
 
 	// requires models
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/client"
@@ -67,11 +67,11 @@ func RenderProject(in *naffmodels.Project) error {
 		"testutilmock":     {renderFunc: testutilmock.RenderPackage, activated: false},
 		"frontendtests":    {renderFunc: frontendtests.RenderPackage, activated: false},
 		"webhooks":         {renderFunc: webhooks.RenderPackage, activated: false},
+		"oauth2clients":    {renderFunc: oauth2clients.RenderPackage, activated: false},
 		// to do
-		"oauth2clients": {renderFunc: oauth2clients.RenderPackage, activated: true},
-		"frontend":      {renderFunc: frontend.RenderPackage, activated: false},
-		"auth":          {renderFunc: auth.RenderPackage, activated: false},
-		"users":         {renderFunc: users.RenderPackage, activated: false},
+		"frontend": {renderFunc: frontend.RenderPackage, activated: true},
+		"auth":     {renderFunc: auth.RenderPackage, activated: false},
+		"users":    {renderFunc: users.RenderPackage, activated: false},
 		// requires models
 		"httpserver": {renderFunc: httpserver.RenderPackage, activated: false},
 		"models":     {renderFunc: models.RenderPackage, activated: false},

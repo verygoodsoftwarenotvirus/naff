@@ -186,7 +186,7 @@ func middlewareTestDotGo() *jen.File {
 					)).Dot(
 					"Return",
 				).Call(jen.ID("uint64").Call(jen.Lit(123)), jen.ID("nil")),
-				jen.ID("s").Dot("Database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock",
 					"Anything",

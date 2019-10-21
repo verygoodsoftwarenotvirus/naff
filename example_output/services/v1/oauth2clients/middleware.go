@@ -11,7 +11,7 @@ import (
 	"go.opencensus.io/trace"
 )
 
-var (
+const (
 	scopesSeparator = ","
 	apiPathPrefix   = "/api/v1/"
 )
