@@ -11,9 +11,7 @@ func webhooksDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("models").Dot(
-			"WebhookDataManager",
-		).Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
+		jen.Var().ID("_").ID("models").Dot("WebhookDataManager").Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 
@@ -152,7 +150,9 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("UpdateWebhook updates a particular webhook."),
 		jen.Line(),
-		jen.Func().Comment("// NOTE: this function expects the provided input to have a non-zero ID.").Params(jen.ID("c").Op("*").ID("Client")).ID("UpdateWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot("Webhook")).Params(jen.ID("error")).Block(
+		jen.Comment("// NOTE: this function expects the provided input to have a non-zero ID."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("UpdateWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot("Webhook")).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("UpdateWebhook")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("input").Dot("ID")),

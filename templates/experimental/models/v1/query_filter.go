@@ -11,12 +11,32 @@ func queryFilterDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("MaxLimit").Op("=").Lit(250).Var().ID("DefaultLimit").Op("=").Lit(20).Var().ID("pageKey").Op("=").Lit("page").Var().ID("limitKey").Op("=").Lit("limit").Var().ID("createdBeforeKey").Op("=").Lit("created_before").Var().ID("createdAfterKey").Op("=").Lit("created_after").Var().ID("updatedBeforeKey").Op("=").Lit("updated_before").Var().ID("updatedAfterKey").Op("=").Lit("updated_after").Var().ID("sortByKey").Op("=").Lit("sort_by"),
+		jen.Const().Defs(
+			jen.ID("MaxLimit").Op("=").Lit(250),
+			jen.ID("DefaultLimit").Op("=").Lit(20),
+			jen.ID("pageKey").Op("=").Lit("page"),
+			jen.ID("limitKey").Op("=").Lit("limit"),
+			jen.ID("createdBeforeKey").Op("=").Lit("created_before"),
+			jen.ID("createdAfterKey").Op("=").Lit("created_after"),
+			jen.ID("updatedBeforeKey").Op("=").Lit("updated_before"),
+			jen.ID("updatedAfterKey").Op("=").Lit("updated_after"),
+			jen.ID("sortByKey").Op("=").Lit("sort_by"),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Type().ID("QueryFilter").Struct(jen.ID("Page").ID("uint64"), jen.ID("Limit").ID("uint64"), jen.ID("CreatedAfter").ID("uint64"), jen.ID("CreatedBefore").ID("uint64"), jen.ID("UpdatedAfter").ID("uint64"), jen.ID("UpdatedBefore").ID("uint64"), jen.ID("SortBy").ID("sortType")),
+		jen.Type().Defs(
+			jen.ID("QueryFilter").Struct(
+				jen.ID("Page").ID("uint64"),
+				jen.ID("Limit").ID("uint64"),
+				jen.ID("CreatedAfter").ID("uint64"),
+				jen.ID("CreatedBefore").ID("uint64"),
+				jen.ID("UpdatedAfter").ID("uint64"),
+				jen.ID("UpdatedBefore").ID("uint64"),
+				jen.ID("SortBy").ID("sortType"),
+			),
+		),
 		jen.Line(),
 	)
 
@@ -25,7 +45,10 @@ func queryFilterDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("DefaultQueryFilter").Params().Params(jen.Op("*").ID("QueryFilter")).Block(
 			jen.Return().Op("&").ID("QueryFilter").Valuesln(
-				jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").ID("DefaultLimit"), jen.ID("SortBy").Op(":").ID("SortAscending")),
+				jen.ID("Page").Op(":").Lit(1),
+				jen.ID("Limit").Op(":").ID("DefaultLimit"),
+				jen.ID("SortBy").Op(":").ID("SortAscending"),
+			),
 		),
 		jen.Line(),
 	)

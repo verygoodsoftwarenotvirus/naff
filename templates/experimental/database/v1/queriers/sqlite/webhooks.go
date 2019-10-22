@@ -11,56 +11,64 @@ func webhooksDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("eventsSeparator").Op("=").Lit(`,`).Var().ID("typesSeparator").Op("=").Lit(`,`).Var().ID("topicsSeparator").Op("=").Lit(`,`).Var().ID("webhooksTableName").Op("=").Lit("webhooks"),
+		jen.Const().Defs(
+			jen.ID("eventsSeparator").Op("=").Lit(`,`),
+			jen.ID("typesSeparator").Op("=").Lit(`,`),
+			jen.ID("topicsSeparator").Op("=").Lit(`,`),
+			jen.ID("webhooksTableName").Op("=").Lit("webhooks"),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Var().ID("webhooksTableColumns").Op("=").Index().ID("string").Valuesln(
-			jen.Lit("id"), jen.Lit("name"), jen.Lit("content_type"), jen.Lit("url"), jen.Lit("method"), jen.Lit("events"), jen.Lit("data_types"), jen.Lit("topics"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on"), jen.Lit("belongs_to")),
+			jen.Lit("id"),
+			jen.Lit("name"),
+			jen.Lit("content_type"),
+			jen.Lit("url"),
+			jen.Lit("method"),
+			jen.Lit("events"),
+			jen.Lit("data_types"),
+			jen.Lit("topics"),
+			jen.Lit("created_on"),
+			jen.Lit("updated_on"),
+			jen.Lit("archived_on"),
+			jen.Lit("belongs_to"),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().Comment("// scanWebhook is a consistent way to turn a *sql.Row into a webhook struct").ID("scanWebhook").Params(jen.ID("scan").ID("database").Dot(
-			"Scanner",
-		)).Params(jen.Op("*").ID("models").Dot("Webhook"),
-			jen.ID("error")).Block(
-
-			jen.Var().ID("x").Op("=").Op("&").ID("models").Dot("Webhook").Values().Var().List(jen.ID("eventsStr"), jen.ID("dataTypesStr"), jen.ID("topicsStr")).ID("string"),
-			jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
-				"Scan",
-			).Call(jen.Op("&").ID("x").Dot("ID"),
+		jen.Comment("// scanWebhook is a consistent way to turn a *sql.Row into a webhook struct"),
+		jen.Line(),
+		jen.Func().ID("scanWebhook").Params(jen.ID("scan").ID("database").Dot("Scanner")).Params(jen.Op("*").ID("models").Dot("Webhook"), jen.ID("error")).Block(
+			jen.Var().Defs(
+				jen.ID("x").Op("=").Op("&").ID("models").Dot("Webhook").Values(),
+				jen.List(jen.ID("eventsStr"), jen.ID("dataTypesStr"), jen.ID("topicsStr")).ID("string"),
+			),
+			jen.If(jen.ID("err").Op(":=").ID("scan").Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"),
 				jen.Op("&").ID("x").Dot("Name"),
-				jen.Op("&").ID("x").Dot(
-					"ContentType",
-				),
-				jen.Op("&").ID("x").Dot(
-					"URL",
-				),
-				jen.Op("&").ID("x").Dot(
-					"Method",
-				),
-				jen.Op("&").ID("eventsStr"), jen.Op("&").ID("dataTypesStr"), jen.Op("&").ID("topicsStr"), jen.Op("&").ID("x").Dot("CreatedOn"),
+				jen.Op("&").ID("x").Dot("ContentType"),
+				jen.Op("&").ID("x").Dot("URL"),
+				jen.Op("&").ID("x").Dot("Method"),
+				jen.Op("&").ID("eventsStr"),
+				jen.Op("&").ID("dataTypesStr"),
+				jen.Op("&").ID("topicsStr"),
+				jen.Op("&").ID("x").Dot("CreatedOn"),
 				jen.Op("&").ID("x").Dot("UpdatedOn"),
 				jen.Op("&").ID("x").Dot("ArchivedOn"),
-				jen.Op("&").ID("x").Dot("BelongsTo")), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Op("&").ID("x").Dot("BelongsTo"),
+			), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
 			jen.If(jen.ID("events").Op(":=").Qual("strings", "Split").Call(jen.ID("eventsStr"), jen.ID("eventsSeparator")), jen.ID("len").Call(jen.ID("events")).Op(">=").Lit(1).Op("&&").ID("events").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
-				jen.ID("x").Dot(
-					"Events",
-				).Op("=").ID("events"),
+				jen.ID("x").Dot("Events").Op("=").ID("events"),
 			),
 			jen.If(jen.ID("dataTypes").Op(":=").Qual("strings", "Split").Call(jen.ID("dataTypesStr"), jen.ID("typesSeparator")), jen.ID("len").Call(jen.ID("dataTypes")).Op(">=").Lit(1).Op("&&").ID("dataTypes").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
-				jen.ID("x").Dot(
-					"DataTypes",
-				).Op("=").ID("dataTypes"),
+				jen.ID("x").Dot("DataTypes").Op("=").ID("dataTypes"),
 			),
 			jen.If(jen.ID("topics").Op(":=").Qual("strings", "Split").Call(jen.ID("topicsStr"), jen.ID("topicsSeparator")), jen.ID("len").Call(jen.ID("topics")).Op(">=").Lit(1).Op("&&").ID("topics").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
-				jen.ID("x").Dot(
-					"Topics",
-				).Op("=").ID("topics"),
+				jen.ID("x").Dot("Topics").Op("=").ID("topics"),
 			),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
 		),
@@ -99,7 +107,9 @@ func webhooksDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetWebhookQuery returns a SQL query (and arguments) for retrieving a given webhook").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetWebhookQuery").Params(jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Comment("buildGetWebhookQuery returns a SQL query (and arguments) for retrieving a given webhook"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetWebhookQuery").Params(jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("s").Dot(
@@ -145,7 +155,11 @@ func webhooksDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetWebhookCountQuery returns a SQL query (and arguments) that returns a list of webhooks").Comment("// meeting a given filter's criteria and belonging to a given user.").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetWebhookCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Comment("buildGetWebhookCountQuery returns a SQL query (and arguments) that returns a list of webhooks"),
+		jen.Line(),
+		jen.Comment("meeting a given filter's criteria and belonging to a given user."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetWebhookCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -198,7 +212,10 @@ func webhooksDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("getAllWebhooksCountQueryBuilder").Qual("sync", "Once").Var().ID("getAllWebhooksCountQuery").ID("string"),
+		jen.Var().Defs(
+			jen.ID("getAllWebhooksCountQueryBuilder").Qual("sync", "Once"),
+			jen.ID("getAllWebhooksCountQuery").ID("string"),
+		),
 		jen.Line(),
 	)
 
@@ -251,7 +268,10 @@ func webhooksDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("getAllWebhooksQueryBuilder").Qual("sync", "Once").Var().ID("getAllWebhooksQuery").ID("string"),
+		jen.Var().Defs(
+			jen.ID("getAllWebhooksQueryBuilder").Qual("sync", "Once"),
+			jen.ID("getAllWebhooksQuery").ID("string"),
+		),
 		jen.Line(),
 	)
 
@@ -358,7 +378,9 @@ func webhooksDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetWebhooksQuery returns a SQL query (and arguments) that would return a").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetWebhooksQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Comment("buildGetWebhooksQuery returns a SQL query (and arguments) that would return a"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetWebhooksQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -440,7 +462,9 @@ func webhooksDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildWebhookCreationQuery returns a SQL query (and arguments) that would create a given webhook").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildWebhookCreationQuery").Params(jen.ID("x").Op("*").ID("models").Dot("Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Comment("buildWebhookCreationQuery returns a SQL query (and arguments) that would create a given webhook"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildWebhookCreationQuery").Params(jen.ID("x").Op("*").ID("models").Dot("Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("s").Dot(
@@ -624,7 +648,9 @@ func webhooksDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildArchiveWebhookQuery returns a SQL query (and arguments) that will mark a webhook as archived.").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildArchiveWebhookQuery").Params(jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Comment("buildArchiveWebhookQuery returns a SQL query (and arguments) that will mark a webhook as archived."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildArchiveWebhookQuery").Params(jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("s").Dot(

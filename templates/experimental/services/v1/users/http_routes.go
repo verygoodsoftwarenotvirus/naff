@@ -16,7 +16,9 @@ func httpRoutesDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// this function tests that we have appropriate access to crypto/rand").ID("init").Params().Block(
+		jen.Comment("// this function tests that we have appropriate access to crypto/rand"),
+		jen.Line(),
+		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
 			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("panic").Call(jen.ID("err")),
@@ -50,7 +52,9 @@ func httpRoutesDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("randString produces a random string"),
 		jen.Line(),
-		jen.Func().Comment("// https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/").ID("randString").Params().Params(jen.ID("string"), jen.ID("error")).Block(
+		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
+		jen.Line(),
+		jen.Func().ID("randString").Params().Params(jen.ID("string"), jen.ID("error")).Block(
 			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
 			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.Lit(""), jen.ID("err")),
@@ -67,10 +71,7 @@ func httpRoutesDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("if they match what is on record"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("validateCredentialChangeRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.List(jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.ID("user").Op("*").ID("models").Dot(
-			"User",
-		),
-			jen.ID("httpStatus").ID("int")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("validateCredentialChangeRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.List(jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.ID("user").Op("*").ID("models").Dot("User"), jen.ID("httpStatus").ID("int")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("validateCredentialChangeRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
@@ -113,21 +114,13 @@ func httpRoutesDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
-					"Context",
-				).Call(), jen.Lit("ListHandler")),
+				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ListHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
-				jen.ID("qf").Op(":=").ID("models").Dot(
-					"ExtractQueryFilter",
-				).Call(jen.ID("req")),
-				jen.List(jen.ID("users"), jen.ID("err")).Op(":=").ID("s").Dot("Database").Dot(
-					"GetUsers",
-				).Call(jen.ID("ctx"), jen.ID("qf")),
+				jen.ID("qf").Op(":=").ID("models").Dot("ExtractQueryFilter").Call(jen.ID("req")),
+				jen.List(jen.ID("users"), jen.ID("err")).Op(":=").ID("s").Dot("Database").Dot("GetUsers").Call(jen.ID("ctx"), jen.ID("qf")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching users for ListHandler route")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot(
@@ -147,132 +140,67 @@ func httpRoutesDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
-					"Context",
-				).Call(), jen.Lit("CreateHandler")),
+				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreateHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
-				jen.If(jen.Op("!").ID("s").Dot(
-					"userCreationEnabled",
-				)).Block(
-					jen.ID("s").Dot("logger").Dot(
-						"Info",
-					).Call(jen.Lit("disallowing user creation")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusForbidden")),
+				jen.If(jen.Op("!").ID("s").Dot("userCreationEnabled")).Block(
+					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("disallowing user creation")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusForbidden")),
 					jen.Return(),
 				),
-				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot(
-					"Value",
-				).Call(jen.ID("UserCreationMiddlewareCtxKey")).Assert(jen.Op("*").ID("models").Dot(
-					"UserInput",
-				)),
+				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UserCreationMiddlewareCtxKey")).Assert(jen.Op("*").ID("models").Dot("UserInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
-					jen.ID("s").Dot("logger").Dot(
-						"Info",
-					).Call(jen.Lit("valid input not attached to UsersService CreateHandler request")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusBadRequest")),
+					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("valid input not attached to UsersService CreateHandler request")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
 					jen.Return(),
 				),
-				jen.ID("attachUsernameToSpan").Call(jen.ID("span"), jen.ID("input").Dot(
-					"Username",
-				)),
-				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("username"), jen.ID("input").Dot(
-					"Username",
-				)),
-				jen.List(jen.ID("hp"), jen.ID("err")).Op(":=").ID("s").Dot(
-					"authenticator",
-				).Dot(
-					"HashPassword",
-				).Call(jen.ID("ctx"), jen.ID("input").Dot(
-					"Password",
-				)),
+				jen.ID("attachUsernameToSpan").Call(jen.ID("span"), jen.ID("input").Dot("Username")),
+				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("username"), jen.ID("input").Dot("Username")),
+				jen.List(jen.ID("hp"), jen.ID("err")).Op(":=").ID("s").Dot("authenticator").Dot("HashPassword").Call(jen.ID("ctx"), jen.ID("input").Dot("Password")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("valid input not attached to request")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
-				jen.ID("input").Dot(
-					"Password",
-				).Op("=").ID("hp"),
-				jen.List(jen.ID("input").Dot(
-					"TwoFactorSecret",
-				),
-					jen.ID("err")).Op("=").ID("randString").Call(),
+				jen.ID("input").Dot("Password").Op("=").ID("hp"),
+				jen.List(jen.ID("input").Dot("TwoFactorSecret"), jen.ID("err")).Op("=").ID("randString").Call(),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error generating TOTP secret")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusBadRequest")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
 					jen.Return(),
 				),
-				jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("s").Dot("Database").Dot(
-					"CreateUser",
-				).Call(jen.ID("ctx"), jen.ID("input")),
+				jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("s").Dot("Database").Dot("CreateUser").Call(jen.ID("ctx"), jen.ID("input")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.If(jen.ID("err").Op("==").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client", "ErrUserExists")).Block(
-						jen.ID("logger").Dot(
-							"Info",
-						).Call(jen.Lit("duplicate username attempted")),
-						jen.ID("res").Dot(
-							"WriteHeader",
-						).Call(jen.Qual("net/http", "StatusBadRequest")),
+						jen.ID("logger").Dot("Info").Call(jen.Lit("duplicate username attempted")),
+						jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
 						jen.Return(),
 					),
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error creating user")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.ID("ucr").Op(":=").Op("&").ID("models").Dot(
 					"UserCreationResponse",
 				).Valuesln(
 					jen.ID("ID").Op(":").ID("user").Dot("ID"),
-					jen.ID("Username").Op(":").ID("user").Dot(
-						"Username",
-					),
-					jen.ID("TwoFactorSecret").Op(":").ID("user").Dot(
-						"TwoFactorSecret",
-					),
-					jen.ID("PasswordLastChangedOn").Op(":").ID("user").Dot(
-						"PasswordLastChangedOn",
-					),
+					jen.ID("Username").Op(":").ID("user").Dot("Username"),
+					jen.ID("TwoFactorSecret").Op(":").ID("user").Dot("TwoFactorSecret"),
+					jen.ID("PasswordLastChangedOn").Op(":").ID("user").Dot("PasswordLastChangedOn"),
 					jen.ID("CreatedOn").Op(":").ID("user").Dot("CreatedOn"),
 					jen.ID("UpdatedOn").Op(":").ID("user").Dot("UpdatedOn"),
 					jen.ID("ArchivedOn").Op(":").ID("user").Dot("ArchivedOn"),
-					jen.ID("TwoFactorQRCode").Op(":").ID("s").Dot(
-						"buildQRCode",
-					).Call(jen.ID("ctx"), jen.ID("user").Dot(
-						"Username",
-					),
-						jen.ID("user").Dot(
-							"TwoFactorSecret",
-						))),
+					jen.ID("TwoFactorQRCode").Op(":").ID("s").Dot("buildQRCode").Call(jen.ID("ctx"), jen.ID("user").Dot("Username"), jen.ID("user").Dot("TwoFactorSecret")),
+				),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("user").Dot("ID")),
-				jen.ID("s").Dot(
-					"userCounter",
-				).Dot(
-					"Increment",
-				).Call(jen.ID("ctx")),
-				jen.ID("s").Dot(
-					"reporter",
-				).Dot(
-					"Report",
-				).Call(jen.ID("newsman").Dot(
+				jen.ID("s").Dot("userCounter").Dot("Increment").Call(jen.ID("ctx")),
+				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.ID("newsman").Dot(
 					"Event",
 				).Valuesln(
 					jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot(
 						"Create",
 					)), jen.ID("Data").Op(":").ID("ucr"), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(
 						jen.ID("topicName")))),
-				jen.ID("res").Dot(
-					"WriteHeader",
-				).Call(jen.Qual("net/http", "StatusCreated")),
+				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusCreated")),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot(
 					"encoderDecoder",
 				).Dot(
@@ -344,15 +272,11 @@ func httpRoutesDotGo() *jen.File {
 				).Call(jen.ID("ctx"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("no such user")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusNotFound")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching user from database")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot(
@@ -387,9 +311,7 @@ func httpRoutesDotGo() *jen.File {
 				)),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no input found on TOTP secret refresh request")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusBadRequest")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
 					jen.Return(),
 				),
 				jen.List(jen.ID("userID"), jen.ID("ok")).Op(":=").ID("ctx").Dot(
@@ -399,9 +321,7 @@ func httpRoutesDotGo() *jen.File {
 				)).Assert(jen.ID("uint64")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no user ID attached to TOTP secret refresh request")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusUnauthorized")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
 					jen.Return(),
 				),
 				jen.List(jen.ID("user"), jen.ID("sc")).Op(":=").ID("s").Dot(
@@ -413,9 +333,7 @@ func httpRoutesDotGo() *jen.File {
 						"TOTPToken",
 					)),
 				jen.If(jen.ID("sc").Op("!=").Qual("net/http", "StatusOK")).Block(
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.ID("sc")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.ID("sc")),
 					jen.Return(),
 				),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -426,9 +344,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.List(jen.ID("tfs"), jen.ID("err")).Op(":=").ID("randString").Call(),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered generating random TOTP string")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.ID("user").Dot(
@@ -438,14 +354,10 @@ func httpRoutesDotGo() *jen.File {
 					"UpdateUser",
 				).Call(jen.ID("ctx"), jen.ID("user")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered updating TOTP token")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
-				jen.ID("res").Dot(
-					"WriteHeader",
-				).Call(jen.Qual("net/http", "StatusAccepted")),
+				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusAccepted")),
 				jen.If(jen.ID("err").Op(":=").ID("s").Dot(
 					"encoderDecoder",
 				).Dot(
@@ -468,7 +380,7 @@ func httpRoutesDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("from PasswordUpdateInputContextMiddleware is valid"),
 		jen.Line(),
-		jen.Params(jen.ID("s").Op("*").ID("Service")).ID("UpdatePasswordHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UpdatePasswordHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
 					"Context",
@@ -481,9 +393,7 @@ func httpRoutesDotGo() *jen.File {
 				)),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no input found on UpdatePasswordHandler request")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusBadRequest")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
 					jen.Return(),
 				),
 				jen.List(jen.ID("userID"), jen.ID("ok")).Op(":=").ID("ctx").Dot(
@@ -493,9 +403,7 @@ func httpRoutesDotGo() *jen.File {
 				)).Assert(jen.ID("uint64")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no user ID attached to UpdatePasswordHandler request")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusUnauthorized")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
 					jen.Return(),
 				),
 				jen.List(jen.ID("user"), jen.ID("sc")).Op(":=").ID("s").Dot(
@@ -507,9 +415,7 @@ func httpRoutesDotGo() *jen.File {
 						"TOTPToken",
 					)),
 				jen.If(jen.ID("sc").Op("!=").Qual("net/http", "StatusOK")).Block(
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.ID("sc")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.ID("sc")),
 					jen.Return(),
 				),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -531,23 +437,17 @@ func httpRoutesDotGo() *jen.File {
 				)),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error hashing password")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot("Database").Dot(
 					"UpdateUser",
 				).Call(jen.ID("ctx"), jen.ID("user")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered updating user")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
-				jen.ID("res").Dot(
-					"WriteHeader",
-				).Call(jen.Qual("net/http", "StatusAccepted")),
+				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusAccepted")),
 			),
 		),
 		jen.Line(),
@@ -558,46 +458,23 @@ func httpRoutesDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot(
-					"Context",
-				).Call(), jen.Lit("ArchiveHandler")),
+				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ArchiveHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
-				jen.ID("userID").Op(":=").ID("s").Dot(
-					"userIDFetcher",
-				).Call(jen.ID("req")),
+				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.If(jen.ID("err").Op(":=").ID("s").Dot("Database").Dot(
-					"ArchiveUser",
-				).Call(jen.ID("ctx"), jen.ID("userID")), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.If(jen.ID("err").Op(":=").ID("s").Dot("Database").Dot("ArchiveUser").Call(jen.ID("ctx"), jen.ID("userID")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("deleting user from database")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
-				jen.ID("s").Dot(
-					"userCounter",
-				).Dot(
-					"Decrement",
-				).Call(jen.ID("ctx")),
-				jen.ID("s").Dot(
-					"reporter",
-				).Dot(
-					"Report",
-				).Call(jen.ID("newsman").Dot(
-					"Event",
-				).Valuesln(
-					jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot(
-						"Archive",
-					)), jen.ID("Data").Op(":").ID("models").Dot(
-						"User",
-					).Valuesln(
+				jen.ID("s").Dot("userCounter").Dot("Decrement").Call(jen.ID("ctx")),
+				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
+					jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot("Archive")), jen.ID("Data").Op(":").ID("models").Dot("User").Valuesln(
 						jen.ID("ID").Op(":").ID("userID")), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(
-						jen.ID("topicName")))),
-				jen.ID("res").Dot(
-					"WriteHeader",
-				).Call(jen.Qual("net/http", "StatusNoContent")),
+						jen.ID("topicName")),
+				)),
+				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
 			),
 		),
 		jen.Line(),

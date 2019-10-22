@@ -11,134 +11,63 @@ func routesDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("numericIDPattern").Op("=").Lit(`/{%s:[0-9]+}`).Var().ID("oauth2IDPattern").Op("=").Lit(`/{%s:[0-9_\-]+}`),
+		jen.Const().Defs(
+			jen.ID("numericIDPattern").Op("=").Lit(`/{%s:[0-9]+}`),
+			jen.ID("oauth2IDPattern").Op("=").Lit(`/{%s:[0-9_\-]+}`),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").ID("config").Dot(
-			"FrontendSettings",
-		),
-			jen.ID("metricsHandler").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics",
-				"Handler",
-			)).Block(
-			jen.ID("router").Op(":=").ID("chi").Dot(
-				"NewRouter",
-			).Call(),
-			jen.ID("ch").Op(":=").ID("cors").Dot("New").Call(jen.ID("cors").Dot(
-				"Options",
-			).Valuesln(
-				jen.ID("AllowedOrigins").Op(":").Index().ID("string").Valuesln(
-					jen.Lit("*")), jen.ID("AllowedMethods").Op(":").Index().ID("string").Valuesln(
-					jen.Lit("GET"), jen.Lit("POST"), jen.Lit("PUT"), jen.Lit("DELETE"), jen.Lit("OPTIONS")), jen.ID("AllowedHeaders").Op(":").Index().ID("string").Valuesln(
-					jen.Lit("Accept"), jen.Lit("Authorization"), jen.Lit("Content-Provider"), jen.Lit("X-CSRF-Token")), jen.ID("ExposedHeaders").Op(":").Index().ID("string").Valuesln(
-					jen.Lit("Link")), jen.ID("AllowCredentials").Op(":").ID("true"), jen.ID("MaxAge").Op(":").Lit(300))),
-			jen.ID("router").Dot(
-				"Use",
-			).Call(jen.ID("middleware").Dot(
-				"RequestID",
-			),
-				jen.ID("middleware").Dot(
-					"Timeout",
-				).Call(jen.ID("maxTimeout")), jen.ID("s").Dot(
-					"loggingMiddleware",
+		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").ID("config").Dot("FrontendSettings"),
+			jen.ID("metricsHandler").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "Handler")).Block(
+			jen.ID("router").Op(":=").ID("chi").Dot("NewRouter").Call(),
+			jen.ID("ch").Op(":=").ID("cors").Dot("New").Call(jen.ID("cors").Dot("Options").Valuesln(
+				jen.ID("AllowedOrigins").Op(":").Index().ID("string").Values(jen.Lit("*")),
+				jen.ID("AllowedMethods").Op(":").Index().ID("string").Valuesln(
+					jen.Lit("GET"),
+					jen.Lit("POST"),
+					jen.Lit("PUT"),
+					jen.Lit("DELETE"),
+					jen.Lit("OPTIONS"),
 				),
-				jen.ID("ch").Dot(
-					"Handler",
-				)),
-			jen.ID("router").Dot(
-				"Route",
-			).Call(jen.Lit("/_meta_"), jen.Func().Params(jen.ID("metaRouter").ID("chi").Dot(
-				"Router",
-			)).Block(
-				jen.ID("health").Op(":=").ID("healthcheck").Dot(
-					"NewHandler",
-				).Call(),
-				jen.ID("metaRouter").Dot(
-					"Get",
-				).Call(jen.Lit("/live"), jen.ID("health").Dot(
-					"LiveEndpoint",
-				)),
-				jen.ID("metaRouter").Dot(
-					"Get",
-				).Call(jen.Lit("/ready"), jen.ID("health").Dot(
-					"ReadyEndpoint",
-				)),
+				jen.ID("AllowedHeaders").Op(":").Index().ID("string").Valuesln(
+					jen.Lit("Accept"),
+					jen.Lit("Authorization"),
+					jen.Lit("Content-Provider"),
+					jen.Lit("X-CSRF-Token"),
+				),
+				jen.ID("ExposedHeaders").Op(":").Index().ID("string").Values(jen.Lit("Link")),
+				jen.ID("AllowCredentials").Op(":").ID("true"), jen.ID("MaxAge").Op(":").Lit(300),
+			)),
+			jen.ID("router").Dot("Use").Call(jen.ID("middleware").Dot("RequestID"),
+				jen.ID("middleware").Dot("Timeout").Call(jen.ID("maxTimeout")), jen.ID("s").Dot("loggingMiddleware"),
+				jen.ID("ch").Dot("Handler")),
+			jen.ID("router").Dot("Route").Call(jen.Lit("/_meta_"), jen.Func().Params(jen.ID("metaRouter").ID("chi").Dot("Router")).Block(
+				jen.ID("health").Op(":=").ID("healthcheck").Dot("NewHandler").Call(),
+				jen.ID("metaRouter").Dot("Get").Call(jen.Lit("/live"), jen.ID("health").Dot("LiveEndpoint")),
+				jen.ID("metaRouter").Dot("Get").Call(jen.Lit("/ready"), jen.ID("health").Dot("ReadyEndpoint")),
 			)),
 			jen.If(jen.ID("metricsHandler").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("establishing metrics handler")),
-				jen.ID("router").Dot(
-					"Handle",
-				).Call(jen.Lit("/metrics"), jen.ID("metricsHandler")),
+				jen.ID("router").Dot("Handle").Call(jen.Lit("/metrics"), jen.ID("metricsHandler")),
 			),
-			jen.If(jen.ID("s").Dot(
-				"config",
-			).Dot(
-				"Frontend",
-			).Dot(
-				"StaticFilesDirectory",
-			).Op("!=").Lit("")).Block(
+			jen.If(jen.ID("s").Dot("config").Dot("Frontend").Dot("StaticFilesDirectory").Op("!=").Lit("")).Block(
 				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("setting static file server")),
-				jen.List(jen.ID("staticFileServer"), jen.ID("err")).Op(":=").ID("s").Dot(
-					"frontendService",
-				).Dot(
-					"StaticDir",
-				).Call(jen.ID("frontendConfig").Dot(
-					"StaticFilesDirectory",
-				)),
+				jen.List(jen.ID("staticFileServer"), jen.ID("err")).Op(":=").ID("s").Dot("frontendService").Dot("StaticDir").Call(jen.ID("frontendConfig").Dot("StaticFilesDirectory")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("establishing static file server")),
 				),
-				jen.ID("router").Dot(
-					"Get",
-				).Call(jen.Lit("/*"), jen.ID("staticFileServer")),
+				jen.ID("router").Dot("Get").Call(jen.Lit("/*"), jen.ID("staticFileServer")),
 			),
-			jen.For(jen.List(jen.ID("route"), jen.ID("handler")).Op(":=").Range().ID("s").Dot(
-				"frontendService",
-			).Dot(
-				"Routes",
-			).Call()).Block(
-				jen.ID("router").Dot(
-					"Get",
-				).Call(jen.ID("route"), jen.ID("handler")),
+			jen.For(jen.List(jen.ID("route"), jen.ID("handler")).Op(":=").Range().ID("s").Dot("frontendService").Dot("Routes").Call()).Block(
+				jen.ID("router").Dot("Get").Call(jen.ID("route"), jen.ID("handler")),
 			),
-			jen.ID("router").Dot(
-				"With",
-			).Call(jen.ID("s").Dot(
-				"authService",
-			).Dot(
-				"AuthenticationMiddleware",
-			).Call(jen.ID("true")), jen.ID("s").Dot(
-				"authService",
-			).Dot(
-				"AdminMiddleware",
-			)).Dot(
-				"Route",
-			).Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").ID("chi").Dot(
-				"Router",
-			)).Block(
-				jen.ID("adminRouter").Dot(
-					"Post",
-				).Call(jen.Lit("/cycle_cookie_secret"), jen.ID("s").Dot(
-					"authService",
-				).Dot(
-					"CycleSecretHandler",
-				).Call()),
+			jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.ID("true")), jen.ID("s").Dot("authService").Dot("AdminMiddleware")).Dot("Route").Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").ID("chi").Dot("Router")).Block(
+				jen.ID("adminRouter").Dot("Post").Call(jen.Lit("/cycle_cookie_secret"), jen.ID("s").Dot("authService").Dot("CycleSecretHandler").Call()),
 			)),
-			jen.ID("router").Dot(
-				"Route",
-			).Call(jen.Lit("/users"), jen.Func().Params(jen.ID("userRouter").ID("chi").Dot(
-				"Router",
-			)).Block(
-				jen.ID("userRouter").Dot(
-					"With",
-				).Call(jen.ID("s").Dot(
-					"authService",
-				).Dot(
-					"UserLoginInputMiddleware",
-				)).Dot(
-					"Post",
-				).Call(jen.Lit("/login"), jen.ID("s").Dot(
+			jen.ID("router").Dot("Route").Call(jen.Lit("/users"), jen.Func().Params(jen.ID("userRouter").ID("chi").Dot("Router")).Block(
+				jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("UserLoginInputMiddleware")).Dot("Post").Call(jen.Lit("/login"), jen.ID("s").Dot(
 					"authService",
 				).Dot(
 					"LoginHandler",

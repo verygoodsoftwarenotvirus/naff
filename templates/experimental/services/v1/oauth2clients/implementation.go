@@ -73,9 +73,7 @@ func implementationDotGo() *jen.File {
 			jen.Comment("check for client and return if valid"),
 			jen.Var().ID("client").Op("=").ID("s").Dot("fetchOAuth2ClientFromRequest").Call(jen.ID("req")),
 			jen.If(jen.ID("client").Op("!=").ID("nil").Op("&&").ID("client").Dot("HasScope").Call(jen.ID("scope"))).Block(
-				jen.ID("res").Dot(
-					"WriteHeader",
-				).Call(jen.Qual("net/http", "StatusOK")),
+				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
 				jen.Return().List(jen.ID("scope"), jen.ID("nil")),
 			),
 			jen.Line(),

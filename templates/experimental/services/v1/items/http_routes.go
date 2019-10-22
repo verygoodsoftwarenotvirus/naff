@@ -62,9 +62,7 @@ func httpRoutesDotGo() *jen.File {
 						jen.ID("Items").Op(":").Index().ID("models").Dot("Item").Values()),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered fetching items")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot(
@@ -103,9 +101,7 @@ func httpRoutesDotGo() *jen.File {
 					jen.ID("logger").Dot(
 						"Info",
 					).Call(jen.Lit("valid input not attached to request")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusBadRequest")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
 					jen.Return(),
 				),
 				jen.ID("input").Dot("BelongsTo").Op("=").ID("userID"),
@@ -116,9 +112,7 @@ func httpRoutesDotGo() *jen.File {
 				).Call(jen.ID("ctx"), jen.ID("input")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error creating item")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.ID("s").Dot(
@@ -138,9 +132,7 @@ func httpRoutesDotGo() *jen.File {
 						jen.ID("topicName")), jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot(
 						"Create",
 					)))),
-				jen.ID("res").Dot(
-					"WriteHeader",
-				).Call(jen.Qual("net/http", "StatusCreated")),
+				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusCreated")),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot(
 					"encoderDecoder",
 				).Dot(
@@ -178,15 +170,11 @@ func httpRoutesDotGo() *jen.File {
 					"GetItem",
 				).Call(jen.ID("ctx"), jen.ID("itemID"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusNotFound")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching item from database")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot(
@@ -219,9 +207,7 @@ func httpRoutesDotGo() *jen.File {
 					jen.ID("s").Dot("logger").Dot(
 						"Info",
 					).Call(jen.Lit("no input attached to request")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusBadRequest")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
 					jen.Return(),
 				),
 				jen.ID("userID").Op(":=").ID("s").Dot(
@@ -240,15 +226,11 @@ func httpRoutesDotGo() *jen.File {
 					"GetItem",
 				).Call(jen.ID("ctx"), jen.ID("itemID"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusNotFound")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered getting item")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.ID("x").Dot(
@@ -260,9 +242,7 @@ func httpRoutesDotGo() *jen.File {
 					"UpdateItem",
 				).Call(jen.ID("ctx"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered updating item")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.ID("s").Dot(
@@ -313,15 +293,11 @@ func httpRoutesDotGo() *jen.File {
 					"ArchiveItem",
 				).Call(jen.ID("ctx"), jen.ID("itemID"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusNotFound")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered deleting item")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
 				jen.ID("s").Dot(
@@ -341,9 +317,7 @@ func httpRoutesDotGo() *jen.File {
 					)), jen.ID("Data").Op(":").Op("&").ID("models").Dot("Item").Valuesln(
 						jen.ID("ID").Op(":").ID("itemID")), jen.ID("Topics").Op(":").Index().ID("string").Valuesln(
 						jen.ID("topicName")))),
-				jen.ID("res").Dot(
-					"WriteHeader",
-				).Call(jen.Qual("net/http", "StatusNoContent")),
+				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
 			),
 		),
 		jen.Line(),

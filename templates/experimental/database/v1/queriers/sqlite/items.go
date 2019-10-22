@@ -22,7 +22,11 @@ func itemsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// scanItem takes a database Scanner (i.e. *sql.Row) and scans").Comment("// the result into an Item struct").ID("scanItem").Params(jen.ID("scan").ID("database").Dot(
+		jen.Comment("// scanItem takes a database Scanner (i.e. *sql.Row) and scans"),
+		jen.Line(),
+		jen.Comment("// the result into an Item struct"),
+		jen.Line(),
+		jen.Func().ID("scanItem").Params(jen.ID("scan").ID("database").Dot(
 			"Scanner",
 		)).Params(jen.Op("*").ID("models").Dot("Item"),
 			jen.ID("error")).Block(
@@ -48,30 +52,19 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("scanItems takes a logger and some database rows and turns them into a slice of items"),
 		jen.Line(),
-		jen.Func().ID("scanItems").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-		),
-			jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().ID("models").Dot("Item"),
-			jen.ID("error")).Block(
-
+		jen.Func().ID("scanItems").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().ID("models").Dot("Item"), jen.ID("error")).Block(
 			jen.Var().ID("list").Index().ID("models").Dot("Item"),
-			jen.For(jen.ID("rows").Dot(
-				"Next",
-			).Call()).Block(
+			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
 				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("scanItem").Call(jen.ID("rows")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.Return().List(jen.ID("nil"), jen.ID("err")),
 				),
 				jen.ID("list").Op("=").ID("append").Call(jen.ID("list"), jen.Op("*").ID("x")),
 			),
-			jen.If(jen.ID("err").Op(":=").ID("rows").Dot(
-				"Err",
-			).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID("err").Op(":=").ID("rows").Dot("Err").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
-			jen.If(jen.ID("closeErr").Op(":=").ID("rows").Dot(
-				"Close",
-			).Call(), jen.ID("closeErr").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID("closeErr").Op(":=").ID("rows").Dot("Close").Call(), jen.ID("closeErr").Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.ID("closeErr"), jen.Lit("closing database rows")),
 			),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
@@ -83,7 +76,6 @@ func itemsDotGo() *jen.File {
 		jen.Comment("buildGetItemQuery constructs a SQL query for fetching an item with a given ID belong to a user with a given ID."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetItemQuery").Params(jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("s").Dot(
 				"sqlBuilder",
@@ -124,7 +116,11 @@ func itemsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetItemCountQuery takes a QueryFilter and a user ID and returns a SQL query (and the relevant arguments) for").Comment("// fetching the number of items belonging to a given user that meet a given query").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetItemCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Comment("buildGetItemCountQuery takes a QueryFilter and a user ID and returns a SQL query (and the relevant arguments) for"),
+		jen.Line(),
+		jen.Comment("fetching the number of items belonging to a given user that meet a given query"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetItemCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -175,7 +171,10 @@ func itemsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("allItemsCountQueryBuilder").Qual("sync", "Once").Var().ID("allItemsCountQuery").ID("string"),
+		jen.Var().Defs(
+			jen.ID("allItemsCountQueryBuilder").Qual("sync", "Once"),
+			jen.ID("allItemsCountQuery").ID("string"),
+		),
 		jen.Line(),
 	)
 

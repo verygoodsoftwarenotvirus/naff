@@ -9,7 +9,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 )
 
 func buildMockRowFromUser(user *models.User) *sqlmock.Rows {

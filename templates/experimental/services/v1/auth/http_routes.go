@@ -152,9 +152,7 @@ func httpRoutesDotGo() *jen.File {
 				).Call(jen.ID("req")),
 				jen.If(jen.ID("errRes").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("errRes"), jen.Lit("error encountered fetching login data from request")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusUnauthorized")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
 					jen.If(jen.ID("err").Op(":=").ID("s").Dot(
 						"encoderDecoder",
 					).Dot(
@@ -164,9 +162,7 @@ func httpRoutesDotGo() *jen.File {
 					),
 					jen.Return(),
 				).Else().If(jen.ID("loginData").Op("==").ID("nil")).Block(
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusUnauthorized")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
 					jen.Return(),
 				),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("loginData").Dot(
@@ -185,17 +181,13 @@ func httpRoutesDotGo() *jen.File {
 				).Call(jen.ID("ctx"), jen.Op("*").ID("loginData")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered validating login")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusUnauthorized")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
 					jen.Return(),
 				),
 				jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(jen.Lit("valid"), jen.ID("loginValid")),
 				jen.If(jen.Op("!").ID("loginValid")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("login was invalid")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusUnauthorized")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
 					jen.Return(),
 				),
 				jen.ID("logger").Dot("Debug").Call(jen.Lit("login was valid")),
@@ -206,9 +198,7 @@ func httpRoutesDotGo() *jen.File {
 				)),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error building cookie")),
-					jen.ID("res").Dot(
-						"WriteHeader",
-					).Call(jen.Qual("net/http", "StatusInternalServerError")),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.ID("response").Op(":=").Op("&").ID("models").Dot(
 						"ErrorResponse",
 					).Valuesln(
@@ -223,9 +213,7 @@ func httpRoutesDotGo() *jen.File {
 					jen.Return(),
 				),
 				jen.Qual("net/http", "SetCookie").Call(jen.ID("res"), jen.ID("cookie")),
-				jen.ID("res").Dot(
-					"WriteHeader",
-				).Call(jen.Qual("net/http", "StatusNoContent")),
+				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
 			),
 		),
 		jen.Line(),
@@ -258,9 +246,7 @@ func httpRoutesDotGo() *jen.File {
 						"WithError",
 					).Call(jen.ID("err")).Dot("Debug").Call(jen.Lit("logout was called, no cookie was found")),
 				),
-				jen.ID("res").Dot(
-					"WriteHeader",
-				).Call(jen.Qual("net/http", "StatusOK")),
+				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
 			),
 		),
 		jen.Line(),
@@ -287,9 +273,7 @@ func httpRoutesDotGo() *jen.File {
 				).Dot(
 					"CookieSecret",
 				))),
-				jen.ID("res").Dot(
-					"WriteHeader",
-				).Call(jen.Qual("net/http", "StatusCreated")),
+				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusCreated")),
 			),
 		),
 		jen.Line(),

@@ -16,8 +16,8 @@ func sqliteDotGo() *jen.File {
 			jen.ID("sqliteDriverName").Op("=").Lit("wrapped-sqlite-driver"),
 			jen.ID("CountQuery").Op("=").Lit("COUNT(id)"),
 			jen.ID("CurrentUnixTimeQuery").Op("=").Lit("(strftime('%s','now'))"),
-			jen.Line(),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -57,12 +57,7 @@ func sqliteDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideSqliteDB provides an instrumented sqlite db"),
 		jen.Line(),
-		jen.Func().ID("ProvideSqliteDB").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-		),
-			jen.ID("connectionDetails").ID("database").Dot(
-				"ConnectionDetails",
-			)).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
+		jen.Func().ID("ProvideSqliteDB").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").ID("database").Dot("ConnectionDetails")).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Lit("Establishing connection to sqlite")),
 			jen.Return().Qual("database/sql", "Open").Call(jen.ID("sqliteDriverName"), jen.ID("string").Call(jen.ID("connectionDetails"))),
 		),
@@ -72,13 +67,13 @@ func sqliteDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideSqlite provides a sqlite db controller"),
 		jen.Line(),
-		jen.Func().ID("ProvideSqlite").Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-		)).Params(jen.ID("database").Dot("Database")).Block(
+		jen.Func().ID("ProvideSqlite").Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.ID("database").Dot("Database")).Block(
 			jen.Return().Op("&").ID("Sqlite").Valuesln(
-				jen.ID("db").Op(":").ID("db"), jen.ID("debug").Op(":").ID("debug"), jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("loggerName")), jen.ID("sqlBuilder").Op(":").ID("squirrel").Dot(
-					"StatementBuilder",
-				)),
+				jen.ID("db").Op(":").ID("db"),
+				jen.ID("debug").Op(":").ID("debug"),
+				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("loggerName")),
+				jen.ID("sqlBuilder").Op(":").ID("squirrel").Dot("StatementBuilder"),
+			),
 		),
 		jen.Line(),
 	)
@@ -99,7 +94,11 @@ func sqliteDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 		jen.Line(),
-		jen.Func().Comment("// any log entries with the given name, and those alerts should be investigated").Comment("// with the utmost priority.").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("logQueryBuildingError").Params(jen.ID("err").ID("error")).Block(
+		jen.Comment("// any log entries with the given name, and those alerts should be investigated"),
+		jen.Line(),
+		jen.Comment("// with the utmost priority."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("logQueryBuildingError").Params(jen.ID("err").ID("error")).Block(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("WithName").Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
 			),
@@ -114,7 +113,11 @@ func sqliteDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 		jen.Line(),
-		jen.Func().Comment("// any log entries with the given name, and those alerts should be investigated").Comment("// with the utmost priority.").Params(jen.ID("s").Op("*").ID("Sqlite")).ID("logCreationTimeRetrievalError").Params(jen.ID("err").ID("error")).Block(
+		jen.Comment("any log entries with the given name, and those alerts should be investigated"),
+		jen.Line(),
+		jen.Comment("with the utmost priority."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("logCreationTimeRetrievalError").Params(jen.ID("err").ID("error")).Block(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("WithName").Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
 			),
@@ -131,9 +134,7 @@ func sqliteDotGo() *jen.File {
 			jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 				jen.Return().ID("err"),
 			),
-			jen.Return().ID("errors").Dot(
-				"Wrap",
-			).Call(jen.ID("err"), jen.ID("msg")),
+			jen.Return().ID("errors").Dot("Wrap").Call(jen.ID("err"), jen.ID("msg")),
 		),
 		jen.Line(),
 	)

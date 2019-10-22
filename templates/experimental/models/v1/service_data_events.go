@@ -12,12 +12,16 @@ func serviceDataEventsDotGo() *jen.File {
 
 	ret.Add(
 		jen.Type().ID("ServiceDataEvent").ID("string"),
-	jen.Line(),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Var().ID("Create").ID("ServiceDataEvent").Op("=").Lit("create").Var().ID("Update").ID("ServiceDataEvent").Op("=").Lit("update").Var().ID("Archive").ID("ServiceDataEvent").Op("=").Lit("delete"),
-	jen.Line(),
+		jen.Const().Defs(
+			jen.ID("Create").ID("ServiceDataEvent").Op("=").Lit("create"),
+			jen.ID("Update").ID("ServiceDataEvent").Op("=").Lit("update"),
+			jen.ID("Archive").ID("ServiceDataEvent").Op("=").Lit("delete"),
+		),
+		jen.Line(),
 	)
 	return ret
 }

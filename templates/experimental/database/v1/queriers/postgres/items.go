@@ -22,9 +22,11 @@ func itemsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// scanItem takes a database Scanner (i.e. *sql.Row) and scans").Comment("// the result into an Item struct").ID("scanItem").Params(jen.ID("scan").ID("database").Dot(
-			"Scanner",
-		)).Params(jen.Op("*").ID("models").Dot("Item"),
+		jen.Comment("// scanItem takes a database Scanner (i.e. *sql.Row) and scans"),
+		jen.Line(),
+		jen.Comment("// the result into an Item struct"),
+		jen.Line(),
+		jen.Func().ID("scanItem").Params(jen.ID("scan").ID("database").Dot("Scanner")).Params(jen.Op("*").ID("models").Dot("Item"),
 			jen.ID("error")).Block(
 			jen.ID("x").Op(":=").Op("&").ID("models").Dot("Item").Values(),
 			jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
@@ -124,7 +126,11 @@ func itemsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetItemCountQuery takes a QueryFilter and a user ID and returns a SQL query (and the relevant arguments) for").Comment("// fetching the number of items belonging to a given user that meet a given query").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetItemCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Comment("buildGetItemCountQuery takes a QueryFilter and a user ID and returns a SQL query (and the relevant arguments) for"),
+		jen.Line(),
+		jen.Comment("fetching the number of items belonging to a given user that meet a given query"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetItemCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -175,7 +181,10 @@ func itemsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("allItemsCountQueryBuilder").Qual("sync", "Once").Var().ID("allItemsCountQuery").ID("string"),
+		jen.Var().Defs(
+			jen.ID("allItemsCountQueryBuilder").Qual("sync", "Once"),
+			jen.ID("allItemsCountQuery").ID("string"),
+		),
 		jen.Line(),
 	)
 

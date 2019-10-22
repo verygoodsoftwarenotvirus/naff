@@ -11,7 +11,10 @@ func oauth2ClientsDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("scopesSeparator").Op("=").Lit(`,`).Var().ID("oauth2ClientsTableName").Op("=").Lit("oauth2_clients"),
+		jen.Const().Defs(
+			jen.ID("scopesSeparator").Op("=").Lit(`,`),
+			jen.ID("oauth2ClientsTableName").Op("=").Lit("oauth2_clients"),
+		),
 		jen.Line(),
 	)
 
@@ -22,33 +25,23 @@ func oauth2ClientsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// scanOAuth2Client takes a Scanner (i.e. *sql.Row) and scans its ressults into an OAuth2Client struct").ID("scanOAuth2Client").Params(jen.ID("scan").ID("database").Dot(
-			"Scanner",
-		)).Params(jen.Op("*").ID("models").Dot(
-			"OAuth2Client",
-		),
-			jen.ID("error")).Block(
-
-			jen.Var().ID("x").Op("=").Op("&").ID("models").Dot(
-				"OAuth2Client",
-			).Values().Var().ID("scopes").ID("string"),
-			jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
-				"Scan",
-			).Call(jen.Op("&").ID("x").Dot("ID"),
+		jen.Comment("// scanOAuth2Client takes a Scanner (i.e. *sql.Row) and scans its ressults into an OAuth2Client struct"),
+		jen.Line(),
+		jen.Func().ID("scanOAuth2Client").Params(jen.ID("scan").ID("database").Dot("Scanner")).Params(jen.Op("*").ID("models").Dot("OAuth2Client"), jen.ID("error")).Block(
+			jen.Var().Defs(
+				jen.ID("x").Op("=").Op("&").ID("models").Dot("OAuth2Client").Values(),
+				jen.ID("scopes").ID("string"),
+			),
+			jen.If(jen.ID("err").Op(":=").ID("scan").Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"),
 				jen.Op("&").ID("x").Dot("Name"),
-				jen.Op("&").ID("x").Dot(
-					"ClientID",
-				),
-				jen.Op("&").ID("scopes"), jen.Op("&").ID("x").Dot(
-					"RedirectURI",
-				),
-				jen.Op("&").ID("x").Dot(
-					"ClientSecret",
-				),
+				jen.Op("&").ID("x").Dot("ClientID"),
+				jen.Op("&").ID("scopes"), jen.Op("&").ID("x").Dot("RedirectURI"),
+				jen.Op("&").ID("x").Dot("ClientSecret"),
 				jen.Op("&").ID("x").Dot("CreatedOn"),
 				jen.Op("&").ID("x").Dot("UpdatedOn"),
 				jen.Op("&").ID("x").Dot("ArchivedOn"),
-				jen.Op("&").ID("x").Dot("BelongsTo")), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Op("&").ID("x").Dot("BelongsTo"),
+			), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
 			jen.If(jen.ID("scopes").Op(":=").Qual("strings", "Split").Call(jen.ID("scopes"), jen.ID("scopesSeparator")), jen.ID("len").Call(jen.ID("scopes")).Op(">=").Lit(1).Op("&&").ID("scopes").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
@@ -64,14 +57,7 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("scanOAuth2Clients takes sql rows and turns them into a slice of OAuth2Clients"),
 		jen.Line(),
-		jen.Func().ID("scanOAuth2Clients").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-		),
-			jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Op("*").ID("models").Dot(
-			"OAuth2Client",
-		),
-			jen.ID("error")).Block(
-
+		jen.Func().ID("scanOAuth2Clients").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Op("*").ID("models").Dot("OAuth2Client"), jen.ID("error")).Block(
 			jen.Var().ID("list").Index().Op("*").ID("models").Dot(
 				"OAuth2Client",
 			),
@@ -146,7 +132,10 @@ func oauth2ClientsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("getAllOAuth2ClientsQueryBuilder").Qual("sync", "Once").Var().ID("getAllOAuth2ClientsQuery").ID("string"),
+		jen.Var().Defs(
+			jen.ID("getAllOAuth2ClientsQueryBuilder").Qual("sync", "Once"),
+			jen.ID("getAllOAuth2ClientsQuery").ID("string"),
+		),
 		jen.Line(),
 	)
 
@@ -293,7 +282,11 @@ func oauth2ClientsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetOAuth2ClientCountQuery returns a SQL query (and arguments) that fetches a list of OAuth2 clients that meet certain filter").Comment("// restrictions (if relevant) and belong to a given user").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetOAuth2ClientCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Comment("buildGetOAuth2ClientCountQuery returns a SQL query (and arguments) that fetches a list of OAuth2 clients that meet certain filter"),
+		jen.Line(),
+		jen.Comment("restrictions (if relevant) and belong to a given user"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetOAuth2ClientCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -344,7 +337,10 @@ func oauth2ClientsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("getAllOAuth2ClientCountQueryBuilder").Qual("sync", "Once").Var().ID("getAllOAuth2ClientCountQuery").ID("string"),
+		jen.Var().Defs(
+			jen.ID("getAllOAuth2ClientCountQueryBuilder").Qual("sync", "Once"),
+			jen.ID("getAllOAuth2ClientCountQuery").ID("string"),
+		),
 		jen.Line(),
 	)
 
@@ -401,7 +397,11 @@ func oauth2ClientsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetOAuth2ClientsQuery returns a SQL query (and arguments) that will retrieve a list of OAuth2 clients that").Comment("// meet the given filter's criteria (if relevant) and belong to a given user.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetOAuth2ClientsQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Comment("buildGetOAuth2ClientsQuery returns a SQL query (and arguments) that will retrieve a list of OAuth2 clients that"),
+		jen.Line(),
+		jen.Comment("meet the given filter's criteria (if relevant) and belong to a given user."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetOAuth2ClientsQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -492,7 +492,9 @@ func oauth2ClientsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildCreateOAuth2ClientQuery returns a SQL query (and args) that will create the given OAuth2Client in the database").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildCreateOAuth2ClientQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
+		jen.Comment("buildCreateOAuth2ClientQuery returns a SQL query (and args) that will create the given OAuth2Client in the database"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildCreateOAuth2ClientQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
 			"OAuth2Client",
 		)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
@@ -575,7 +577,9 @@ func oauth2ClientsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildUpdateOAuth2ClientQuery returns a SQL query (and args) that will update a given OAuth2 client in the database").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildUpdateOAuth2ClientQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
+		jen.Comment("buildUpdateOAuth2ClientQuery returns a SQL query (and args) that will update a given OAuth2 client in the database"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildUpdateOAuth2ClientQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
 			"OAuth2Client",
 		)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
@@ -617,46 +621,26 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("UpdateOAuth2Client updates a OAuth2 client."),
 		jen.Line(),
-		jen.Func().Comment("// NOTE: this function expects the input's ID field to be valid and non-zero.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("UpdateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+		jen.Comment("// NOTE: this function expects the input's ID field to be valid and non-zero."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("UpdateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
 			"OAuth2Client",
 		)).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
-				"buildUpdateOAuth2ClientQuery",
-			).Call(jen.ID("input")),
-			jen.Return().ID("p").Dot("db").Dot(
-				"QueryRowContext",
-			).Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot(
-				"Scan",
-			).Call(jen.Op("&").ID("input").Dot("UpdatedOn")),
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildUpdateOAuth2ClientQuery").Call(jen.ID("input")),
+			jen.Return().ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildArchiveOAuth2ClientQuery returns a SQL query (and arguments) that will mark an OAuth2 client as archived.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildArchiveOAuth2ClientQuery").Params(jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Comment("buildArchiveOAuth2ClientQuery returns a SQL query (and arguments) that will mark an OAuth2 client as archived."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildArchiveOAuth2ClientQuery").Params(jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
-				"sqlBuilder",
-			).Dot(
-				"Update",
-			).Call(jen.ID("oauth2ClientsTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
-				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
-				jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
-				"Suffix",
-			).Call(jen.Lit("RETURNING archived_on")).Dot(
-				"ToSql",
-			).Call(),
-			jen.ID("p").Dot(
-				"logQueryBuildingError",
-			).Call(jen.ID("err")),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").Dot("Update").Call(jen.ID("oauth2ClientsTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
+				jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot("Suffix").Call(jen.Lit("RETURNING archived_on")).Dot("ToSql").Call(),
+			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
 		jen.Line(),

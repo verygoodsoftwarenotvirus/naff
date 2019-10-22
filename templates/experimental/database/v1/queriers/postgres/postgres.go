@@ -11,38 +11,44 @@ func postgresDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("loggerName").Op("=").Lit("postgres").Var().ID("postgresDriverName").Op("=").Lit("wrapped-postgres-driver").Var().ID("CountQuery").Op("=").Lit("COUNT(id)").Var().ID("CurrentUnixTimeQuery").Op("=").Lit("extract(epoch FROM NOW())"),
+		jen.Const().Defs(
+			jen.ID("loggerName").Op("=").Lit("postgres"),
+			jen.ID("postgresDriverName").Op("=").Lit("wrapped-postgres-driver"),
+			jen.ID("CountQuery").Op("=").Lit("COUNT(id)"),
+			jen.ID("CurrentUnixTimeQuery").Op("=").Lit("extract(epoch FROM NOW())"),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
-			jen.ID("driver").Op(":=").Qual("contrib.go.opencensus.io/integrations/ocsql",
-				"Wrap",
-			).Call(jen.Op("&").Qual("github.com/lib/pq", "Driver").Values(), jen.Qual("contrib.go.opencensus.io/integrations/ocsql",
-				"WithQuery",
-			).Call(jen.ID("true")), jen.Qual("contrib.go.opencensus.io/integrations/ocsql",
-				"WithAllowRoot",
-			).Call(jen.ID("false")), jen.Qual("contrib.go.opencensus.io/integrations/ocsql",
-				"WithRowsNext",
-			).Call(jen.ID("true")), jen.Qual("contrib.go.opencensus.io/integrations/ocsql",
-				"WithRowsClose",
-			).Call(jen.ID("true")), jen.Qual("contrib.go.opencensus.io/integrations/ocsql",
-				"WithQueryParams",
-			).Call(jen.ID("true"))),
+			jen.ID("driver").Op(":=").Qual("contrib.go.opencensus.io/integrations/ocsql", "Wrap").Callln(
+				jen.Op("&").Qual("github.com/lib/pq", "Driver").Values(),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQuery").Call(jen.ID("true")),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithAllowRoot").Call(jen.ID("false")),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithRowsNext").Call(jen.ID("true")),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithRowsClose").Call(jen.ID("true")),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQueryParams").Call(jen.ID("true")),
+			),
 			jen.Qual("database/sql", "Register").Call(jen.ID("postgresDriverName"), jen.ID("driver")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Type().ID("Postgres").Struct(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-		),
-			jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("sqlBuilder").ID("squirrel").Dot(
-				"StatementBuilderType",
+		jen.Type().Defs(
+			jen.ID("Postgres").Struct(
+				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+				jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("sqlBuilder").ID("squirrel").Dot("StatementBuilderType"),
+				jen.ID("migrateOnce").Qual("sync", "Once"), jen.ID("debug").ID("bool"),
 			),
-			jen.ID("migrateOnce").Qual("sync", "Once"), jen.ID("debug").ID("bool")).Type().ID("ConnectionDetails").ID("string").Type().ID("Querier").Interface(jen.ID("ExecContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.ID("error")), jen.ID("QueryContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Op("*").Qual("database/sql", "Rows"), jen.ID("error")), jen.ID("QueryRowContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Op("*").Qual("database/sql", "Row"))),
+			jen.ID("ConnectionDetails").ID("string"),
+			jen.ID("Querier").Interface(
+				jen.ID("ExecContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.ID("error")),
+				jen.ID("QueryContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Op("*").Qual("database/sql", "Rows"), jen.ID("error")),
+				jen.ID("QueryRowContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Op("*").Qual("database/sql", "Row")),
+			),
+		),
 		jen.Line(),
 	)
 
@@ -114,7 +120,11 @@ func postgresDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 		jen.Line(),
-		jen.Func().Comment("// any log entries with the given name, and those alerts should be investigated").Comment("// with the utmost priority.").Params(jen.ID("p").Op("*").ID("Postgres")).ID("logQueryBuildingError").Params(jen.ID("err").ID("error")).Block(
+		jen.Comment("// any log entries with the given name, and those alerts should be investigated"),
+		jen.Line(),
+		jen.Comment("// with the utmost priority."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("logQueryBuildingError").Params(jen.ID("err").ID("error")).Block(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("p").Dot("logger").Dot("WithName").Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
 			),

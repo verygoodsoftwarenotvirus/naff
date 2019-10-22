@@ -115,7 +115,11 @@ func mariadbDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 		jen.Line(),
-		jen.Func().Comment("// any log entries with the given name, and those alerts should be investigated").Comment("// with the utmost priority.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("logQueryBuildingError").Params(jen.ID("err").ID("error")).Block(
+		jen.Comment("// any log entries with the given name, and those alerts should be investigated"),
+		jen.Line(),
+		jen.Comment("// with the utmost priority."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("logQueryBuildingError").Params(jen.ID("err").ID("error")).Block(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("m").Dot("logger").Dot("WithName").Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
 			),
@@ -130,7 +134,11 @@ func mariadbDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 		jen.Line(),
-		jen.Func().Comment("// any log entries with the given name, and those alerts should be investigated").Comment("// with the utmost priority.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("logCreationTimeRetrievalError").Params(jen.ID("err").ID("error")).Block(
+		jen.Comment("// any log entries with the given name, and those alerts should be investigated"),
+		jen.Line(),
+		jen.Comment("// with the utmost priority."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("logCreationTimeRetrievalError").Params(jen.ID("err").ID("error")).Block(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("m").Dot("logger").Dot("WithName").Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
 			),

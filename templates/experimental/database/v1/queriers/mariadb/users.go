@@ -17,12 +17,22 @@ func usersDotGo() *jen.File {
 
 	ret.Add(
 		jen.Var().ID("usersTableColumns").Op("=").Index().ID("string").Valuesln(
-			jen.Lit("id"), jen.Lit("username"), jen.Lit("hashed_password"), jen.Lit("password_last_changed_on"), jen.Lit("two_factor_secret"), jen.Lit("is_admin"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on")),
+			jen.Lit("id"), jen.Lit("username"),
+			jen.Lit("hashed_password"),
+			jen.Lit("password_last_changed_on"),
+			jen.Lit("two_factor_secret"),
+			jen.Lit("is_admin"),
+			jen.Lit("created_on"),
+			jen.Lit("updated_on"),
+			jen.Lit("archived_on"),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().Comment("// scanUser provides a consistent way to scan something like a *sql.Row into a User struct").ID("scanUser").Params(jen.ID("scan").ID("database").Dot(
+		jen.Comment("scanUser provides a consistent way to scan something like a *sql.Row into a User struct"),
+		jen.Line(),
+		jen.Func().ID("scanUser").Params(jen.ID("scan").ID("database").Dot(
 			"Scanner",
 		)).Params(jen.Op("*").ID("models").Dot(
 			"User",
@@ -35,21 +45,11 @@ func usersDotGo() *jen.File {
 			jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
 				"Scan",
 			).Call(jen.Op("&").ID("x").Dot("ID"),
-				jen.Op("&").ID("x").Dot(
-					"Username",
-				),
-				jen.Op("&").ID("x").Dot(
-					"HashedPassword",
-				),
-				jen.Op("&").ID("x").Dot(
-					"PasswordLastChangedOn",
-				),
-				jen.Op("&").ID("x").Dot(
-					"TwoFactorSecret",
-				),
-				jen.Op("&").ID("x").Dot(
-					"IsAdmin",
-				),
+				jen.Op("&").ID("x").Dot("Username"),
+				jen.Op("&").ID("x").Dot("HashedPassword"),
+				jen.Op("&").ID("x").Dot("PasswordLastChangedOn"),
+				jen.Op("&").ID("x").Dot("TwoFactorSecret"),
+				jen.Op("&").ID("x").Dot("IsAdmin"),
 				jen.Op("&").ID("x").Dot("CreatedOn"),
 				jen.Op("&").ID("x").Dot("UpdatedOn"),
 				jen.Op("&").ID("x").Dot("ArchivedOn")), jen.ID("err").Op("!=").ID("nil")).Block(
@@ -99,7 +99,9 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetUserQuery returns a SQL query (and argument) for retrieving a user by their database ID").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetUserQuery").Params(jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Comment("buildGetUserQuery returns a SQL query (and argument) for retrieving a user by their database ID"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetUserQuery").Params(jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
@@ -147,7 +149,9 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetUserByUsernameQuery returns a SQL query (and argument) for retrieving a user by their username").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetUserByUsernameQuery").Params(jen.ID("username").ID("string")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Comment("buildGetUserByUsernameQuery returns a SQL query (and argument) for retrieving a user by their username"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetUserByUsernameQuery").Params(jen.ID("username").ID("string")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
@@ -198,7 +202,11 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetUserCountQuery returns a SQL query (and arguments) for retrieving the number of users who adhere").Comment("// to a given filter's criteria.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetUserCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Comment("buildGetUserCountQuery returns a SQL query (and arguments) for retrieving the number of users who adhere"),
+		jen.Line(),
+		jen.Comment("to a given filter's criteria."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetUserCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID("m").Dot(
@@ -247,7 +255,11 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildGetUserCountQuery returns a SQL query (and arguments) for retrieving a slice of users who adhere").Comment("// to a given filter's criteria.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetUsersQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Comment("buildGetUserCountQuery returns a SQL query (and arguments) for retrieving a slice of users who adhere"),
+		jen.Line(),
+		jen.Comment("to a given filter's criteria."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildGetUsersQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID("m").Dot(
@@ -324,7 +336,9 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildCreateUserQuery returns a SQL query (and arguments) that would create a given User").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildCreateUserQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
+		jen.Comment("buildCreateUserQuery returns a SQL query (and arguments) that would create a given User"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildCreateUserQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
 			"UserInput",
 		)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
@@ -360,7 +374,9 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildCreateUserQuery returns a SQL query (and arguments) that would create a given User").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildUserCreationTimeQuery").Params(jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Comment("buildCreateUserQuery returns a SQL query (and arguments) that would create a given User"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildUserCreationTimeQuery").Params(jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("m").Dot(
@@ -444,7 +460,9 @@ func usersDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Comment("// buildUpdateUserQuery returns a SQL query (and arguments) that would update the given user's row").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildUpdateUserQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
+		jen.Comment("buildUpdateUserQuery returns a SQL query (and arguments) that would update the given user's row"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("buildUpdateUserQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
 			"User",
 		)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 

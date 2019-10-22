@@ -149,7 +149,7 @@ func migrationsDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("migrate a MariaDB database"),
 		jen.Line(),
-		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Params()).Block(
+		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Func().Params()).Block(
 			jen.Return().Func().Params().Block(
 				jen.ID("driver").Op(":=").ID("darwin").Dot("NewGenericDriver").Call(jen.ID("db"), jen.ID("darwin").Dot("MySQLDialect").Values()),
 				jen.If(jen.ID("err").Op(":=").ID("darwin").Dot("New").Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot("Migrate").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
@@ -163,7 +163,9 @@ func migrationsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("Migrate migrates the database. It does so by invoking the migrateOnce function via sync.Once, so it should be"),
 		jen.Line(),
-		jen.Func().Comment("// safe (as in idempotent, though not recommended) to call this function multiple times.").Params(jen.ID("m").Op("*").ID("MariaDB")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
+		jen.Comment("// safe (as in idempotent, though not recommended) to call this function multiple times."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
 			jen.ID("m").Dot("logger").Dot("Info").Call(jen.Lit("migrating db")),
 			jen.If(jen.Op("!").ID("m").Dot("IsReady").Call(jen.ID("ctx"))).Block(
 				jen.Return().ID("errors").Dot("New").Call(jen.Lit("db is not ready yet")),

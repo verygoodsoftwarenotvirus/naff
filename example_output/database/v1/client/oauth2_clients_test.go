@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 )
 
 func TestClient_GetOAuth2Client(T *testing.T) {
