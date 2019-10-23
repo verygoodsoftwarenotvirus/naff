@@ -6,7 +6,14 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/newsman"
 )
 
-var Providers = wire.NewSet(ProvideAuthService, ProvideWebsocketAuthFunc, ProvideOAuth2ClientValidator)
+var (
+	// Providers is our collection of what we provide to other services
+	Providers = wire.NewSet(
+		ProvideAuthService,
+		ProvideWebsocketAuthFunc,
+		ProvideOAuth2ClientValidator,
+	)
+)
 
 // ProvideWebsocketAuthFunc provides a WebsocketAuthFunc
 func ProvideWebsocketAuthFunc(svc *Service) newsman.WebsocketAuthFunc {

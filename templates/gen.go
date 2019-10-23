@@ -68,20 +68,19 @@ func RenderProject(in *naffmodels.Project) error {
 		"frontendtests":    {renderFunc: frontendtests.RenderPackage, activated: false},
 		"webhooks":         {renderFunc: webhooks.RenderPackage, activated: false},
 		"oauth2clients":    {renderFunc: oauth2clients.RenderPackage, activated: false},
+		"frontend":         {renderFunc: frontend.RenderPackage, activated: false},
 		// to do
-		"frontend": {renderFunc: frontend.RenderPackage, activated: true},
-		"auth":     {renderFunc: auth.RenderPackage, activated: false},
-		"users":    {renderFunc: users.RenderPackage, activated: false},
-		// requires models
+		"auth":       {renderFunc: auth.RenderPackage, activated: true},
+		"users":      {renderFunc: users.RenderPackage, activated: false},
+		"dbclient":   {renderFunc: dbclient.RenderPackage, activated: false},
 		"httpserver": {renderFunc: httpserver.RenderPackage, activated: false},
 		"models":     {renderFunc: models.RenderPackage, activated: false},
 		"modelsmock": {renderFunc: modelsmock.RenderPackage, activated: false},
-		"dbclient":   {renderFunc: dbclient.RenderPackage, activated: false},
+		"randmodel":  {renderFunc: randmodel.RenderPackage, activated: false},
+		"items":      {renderFunc: items.RenderPackage, activated: false},
 		"mariaDB":    {renderFunc: mariaDB.RenderPackage, activated: false},
 		"postgresql": {renderFunc: postgresql.RenderPackage, activated: false},
 		"sqlite3":    {renderFunc: sqlite3.RenderPackage, activated: false},
-		"randmodel":  {renderFunc: randmodel.RenderPackage, activated: false},
-		"items":      {renderFunc: items.RenderPackage, activated: false},
 	}
 
 	if in != nil {

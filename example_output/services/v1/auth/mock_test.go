@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 )
 
 var _ OAuth2ClientValidator = (*mockOAuth2ClientValidator)(nil)

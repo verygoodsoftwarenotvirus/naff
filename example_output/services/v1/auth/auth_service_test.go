@@ -13,6 +13,7 @@ import (
 
 func buildTestService(t *testing.T) *Service {
 	t.Helper()
+
 	logger := noop.ProvideNoopLogger()
 	cfg := &config.ServerConfig{
 		Auth: config.AuthSettings{
@@ -26,6 +27,16 @@ func buildTestService(t *testing.T) *Service {
 		return 1
 	}
 	ed := encoding.ProvideResponseEncoder()
-	service := ProvideAuthService(logger, cfg, auth, userDB, oauth, userIDFetcher, ed)
+
+	service := ProvideAuthService(
+		logger,
+		cfg,
+		auth,
+		userDB,
+		oauth,
+		userIDFetcher,
+		ed,
+	)
+
 	return service
 }

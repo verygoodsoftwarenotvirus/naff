@@ -5,12 +5,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 )
 
-var serviceName = "frontend_service"
+const (
+	serviceName = "frontend_service"
+)
 
-type Service struct {
-	logger logging.Logger
-	config config.FrontendSettings
-}
+type (
+	// Service is responsible for serving HTML (and other static resources)
+	Service struct {
+		logger logging.Logger
+		config config.FrontendSettings
+	}
+)
 
 // ProvideFrontendService provides the frontend service to dependency injection
 func ProvideFrontendService(logger logging.Logger, cfg config.FrontendSettings) *Service {

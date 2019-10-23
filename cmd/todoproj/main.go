@@ -3,22 +3,32 @@ package main
 import (
 	"log"
 
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	project "gitlab.com/verygoodsoftwarenotvirus/naff/templates"
 )
 
 func main() {
 	todoProject := &models.Project{
-		Name: models.Name{},
+		Name: wordsmith.FromSingularPascalCase("Todo"),
 		DataTypes: []models.DataType{
 			{
-				Name: models.Name{
-					Singular:                "Item",
-					Plural:                  "Items",
-					RouteName:               "item",
-					PluralRouteName:         "items",
-					UnexportedVarName:       "item",
-					PluralUnexportedVarName: "items",
+				Name: wordsmith.FromSingularPascalCase("Item"),
+				Fields: []models.DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Details"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
 				},
 			},
 		},

@@ -49,6 +49,8 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/tebeka/selenium v0.9.9
 	gitlab.com/verygoodsoftwarenotvirus/logging v1.0.2
+	gitlab.com/verygoodsoftwarenotvirus/newsman v0.0.0-20190528023929-c49dc073f989
+	gitlab.com/verygoodsoftwarenotvirus/todo v0.0.0-20191014052256-b072a0a5a6f1
 	go.opencensus.io v0.22.0
 	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
