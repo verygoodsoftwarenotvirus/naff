@@ -20,7 +20,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				jen.Line(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.ID("expectedID").Op(":=").ID("uint64").Call(
@@ -112,7 +112,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
@@ -145,7 +145,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				jen.Line(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
@@ -213,7 +213,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
@@ -244,7 +244,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				"happy path",
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.Line(),
@@ -322,7 +322,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 					),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.Line(),
@@ -386,7 +386,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 					),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.Line(),
@@ -441,7 +441,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 					),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.ID("c").Dot("plainClient").Dot("Timeout").Op("=").Lit(500).Op("*").Qual("time", "Millisecond"),
@@ -495,7 +495,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 					),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.Line(),
@@ -524,7 +524,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				jen.Line(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.Line(),
@@ -558,7 +558,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 					jen.Lit(1),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
@@ -632,7 +632,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 				),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				).Dot("ArchiveOAuth2Client").Call(
 					jen.ID("ctx"),

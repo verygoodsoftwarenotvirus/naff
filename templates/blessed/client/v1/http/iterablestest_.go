@@ -1,30 +1,34 @@
 package client
 
 import (
+	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-const (
-	webhookRoute      = "/api/v1/webhooks/%d"
-	webhooksListRoute = "/api/v1/webhooks"
-)
-
-func webhooksTestDotGo() *jen.File {
+func iterablesTestDotGo(typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
+
+	prn := typ.Name.PluralRouteName()
+	tp := typ.Name.Plural()   // title plural
+	ts := typ.Name.Singular() // title singular
+
+	// routes
+	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
+	modelListRoute := fmt.Sprintf("/api/v1/%s", prn)
 
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Line(),
-		utils.OuterTestFunc("V1Client_BuildGetWebhookRequest").Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
-				jen.Line(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -35,7 +39,7 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(
 					jen.ID("actual"),
 					jen.ID("err"),
-				).Op(":=").ID("c").Dot("BuildGetWebhookRequest").Call(
+				).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
 					jen.ID("ctx"),
 					jen.ID("expectedID"),
 				),
@@ -63,18 +67,19 @@ func webhooksTestDotGo() *jen.File {
 				),
 			),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Line(),
-		utils.OuterTestFunc("V1Client_GetWebhook").Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, "Webhook").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("Name").Op(":").Lit("example"),
+					jen.ID("Details").Op(":").Lit("blah"),
 				),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -93,7 +98,7 @@ func webhooksTestDotGo() *jen.File {
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(webhookRoute),
+							jen.Lit(modelRoute),
 							jen.ID("expected").Dot("ID"),
 						),
 						jen.Lit("expected and actual path don't match"),
@@ -116,7 +121,7 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(
 					jen.ID("actual"),
 					jen.ID("err"),
-				).Op(":=").ID("c").Dot("GetWebhook").Call(
+				).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
 					jen.ID("ctx"),
 					jen.ID("expected").Dot("ID"),
 				),
@@ -130,11 +135,11 @@ func webhooksTestDotGo() *jen.File {
 					jen.ID("actual"), nil),
 			),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Line(),
-		utils.OuterTestFunc("V1Client_BuildGetWebhooksRequest").Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", tp)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -149,7 +154,7 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(
 					jen.ID("actual"),
 					jen.ID("err"),
-				).Op(":=").ID("c").Dot("BuildGetWebhooksRequest").Call(
+				).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
 					jen.ID("ctx"),
 					jen.ID("nil"),
 				),
@@ -167,20 +172,21 @@ func webhooksTestDotGo() *jen.File {
 				),
 			),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Line(),
-		utils.OuterTestFunc("V1Client_GetWebhooks").Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", tp)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, "WebhookList").Valuesln(
-					jen.ID("Webhooks").Op(":").Index().Qual(utils.ModelsPkg, "Webhook").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sList", ts)).Valuesln(
+					jen.ID(tp).Op(":").Index().Qual(utils.ModelsPkg, ts).Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").Op(":").Lit(1),
 							jen.ID("Name").Op(":").Lit("example"),
+							jen.ID("Details").Op(":").Lit("blah"),
 						),
 					),
 				),
@@ -189,7 +195,7 @@ func webhooksTestDotGo() *jen.File {
 					"ts",
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Lit(webhooksListRoute),
+						jen.Lit(modelListRoute),
 						jen.Lit("expected and actual path don't match"),
 					),
 					utils.AssertEqual(
@@ -210,7 +216,7 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(
 					jen.ID("actual"),
 					jen.ID("err"),
-				).Op(":=").ID("c").Dot("GetWebhooks").Call(
+				).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
 					jen.ID("ctx"),
 					jen.ID("nil"),
 				),
@@ -224,11 +230,11 @@ func webhooksTestDotGo() *jen.File {
 					jen.ID("actual"), nil),
 			),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Line(),
-		utils.OuterTestFunc("V1Client_BuildCreateWebhookRequest").Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildCreate%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -236,8 +242,9 @@ func webhooksTestDotGo() *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "WebhookCreationInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)).Valuesln(
 					jen.ID("Name").Op(":").Lit("expected name"),
+					jen.ID("Details").Op(":").Lit("expected details"),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
@@ -246,7 +253,7 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(
 					jen.ID("actual"),
 					jen.ID("err"),
-				).Op(":=").ID("c").Dot("BuildCreateWebhookRequest").Call(
+				).Op(":=").ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
 					jen.ID("ctx"),
 					jen.ID("exampleInput"),
 				),
@@ -264,28 +271,30 @@ func webhooksTestDotGo() *jen.File {
 				),
 			),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Line(),
-		utils.OuterTestFunc("V1Client_CreateWebhook").Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Create%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, "Webhook").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("Name").Op(":").Lit("example"),
+					jen.ID("Details").Op(":").Lit("blah"),
 				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "WebhookCreationInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
+					jen.ID("Details").Op(":").ID("expected").Dot("Details"),
 				),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Lit(webhooksListRoute),
+						jen.Lit(modelListRoute),
 						jen.Lit("expected and actual path don't match"),
 					),
 					utils.AssertEqual(
@@ -294,7 +303,7 @@ func webhooksTestDotGo() *jen.File {
 						nil,
 					),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(utils.ModelsPkg, "WebhookCreationInput"),
+					jen.Var().ID("x").Op("*").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)),
 					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(
 							jen.ID("req").Dot("Body"),
@@ -323,7 +332,7 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(
 					jen.ID("actual"),
 					jen.ID("err"),
-				).Op(":=").ID("c").Dot("CreateWebhook").Call(
+				).Op(":=").ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
 					jen.ID("ctx"),
 					jen.ID("exampleInput"),
 				),
@@ -337,18 +346,19 @@ func webhooksTestDotGo() *jen.File {
 					jen.ID("actual"), nil),
 			),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Line(),
-		utils.OuterTestFunc("V1Client_BuildUpdateWebhookRequest").Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildUpdate%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPut"),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "Webhook").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
 					jen.ID("Name").Op(":").Lit("changed name"),
+					jen.ID("Details").Op(":").Lit("changed details"),
 				),
 				jen.Line(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
@@ -359,7 +369,7 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(
 					jen.ID("actual"),
 					jen.ID("err"),
-				).Op(":=").ID("c").Dot("BuildUpdateWebhookRequest").Call(
+				).Op(":=").ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
 					jen.ID("ctx"),
 					jen.ID("exampleInput"),
 				),
@@ -377,18 +387,19 @@ func webhooksTestDotGo() *jen.File {
 				),
 			),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Line(),
-		utils.OuterTestFunc("V1Client_UpdateWebhook").Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Update%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, "Webhook").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("Name").Op(":").Lit("example"),
+					jen.ID("Details").Op(":").Lit("blah"),
 				),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -396,7 +407,7 @@ func webhooksTestDotGo() *jen.File {
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(webhookRoute),
+							jen.Lit(modelRoute),
 							jen.ID("expected").Dot("ID"),
 						),
 						jen.Lit("expected and actual path don't match"),
@@ -412,7 +423,7 @@ func webhooksTestDotGo() *jen.File {
 				jen.ID("err").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
-				).Dot("UpdateWebhook").Call(
+				).Dot(fmt.Sprintf("Update%s", ts)).Call(
 					jen.ID("ctx"),
 					jen.ID("expected"),
 				),
@@ -422,11 +433,11 @@ func webhooksTestDotGo() *jen.File {
 				),
 			),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Line(),
-		utils.OuterTestFunc("V1Client_BuildArchiveWebhookRequest").Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildArchive%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -444,7 +455,7 @@ func webhooksTestDotGo() *jen.File {
 				jen.List(
 					jen.ID("actual"),
 					jen.ID("err"),
-				).Op(":=").ID("c").Dot("BuildArchiveWebhookRequest").Call(
+				).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
 					jen.ID("ctx"),
 					jen.ID("expectedID"),
 				),
@@ -476,25 +487,23 @@ func webhooksTestDotGo() *jen.File {
 				),
 			),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Line(),
-		utils.OuterTestFunc("V1Client_ArchiveWebhook").Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Archive%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").ID("uint64").Call(
-					jen.Lit(1),
-				),
+				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(1)),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(webhookRoute),
+							jen.Lit(modelRoute),
 							jen.ID("expected"),
 						),
 						jen.Lit("expected and actual path don't match"),
@@ -510,7 +519,7 @@ func webhooksTestDotGo() *jen.File {
 				jen.ID("err").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
-				).Dot("ArchiveWebhook").Call(
+				).Dot(fmt.Sprintf("Archive%s", ts)).Call(
 					jen.ID("ctx"),
 					jen.ID("expected"),
 				),
@@ -520,6 +529,8 @@ func webhooksTestDotGo() *jen.File {
 				),
 			),
 		),
+		jen.Line(),
 	)
+
 	return ret
 }

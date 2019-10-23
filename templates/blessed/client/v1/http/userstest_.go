@@ -20,7 +20,7 @@ func usersTestDotGo() *jen.File {
 				jen.Line(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.ID("expectedID").Op(":=").ID("uint64").Call(
@@ -104,7 +104,7 @@ func usersTestDotGo() *jen.File {
 				),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
@@ -143,7 +143,7 @@ func usersTestDotGo() *jen.File {
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
@@ -202,7 +202,7 @@ func usersTestDotGo() *jen.File {
 				),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
@@ -236,7 +236,7 @@ func usersTestDotGo() *jen.File {
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "UserInput").Values(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
@@ -308,7 +308,7 @@ func usersTestDotGo() *jen.File {
 				),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
@@ -347,7 +347,7 @@ func usersTestDotGo() *jen.File {
 				jen.Line(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
@@ -414,7 +414,7 @@ func usersTestDotGo() *jen.File {
 				),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				).Dot("ArchiveUser").Call(
 					jen.ID("ctx"),
@@ -437,7 +437,7 @@ func usersTestDotGo() *jen.File {
 				"happy path",
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.Line(),
@@ -492,7 +492,7 @@ func usersTestDotGo() *jen.File {
 					utils.WriteHeader("StatusOK"),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.Line(),
@@ -533,7 +533,7 @@ func usersTestDotGo() *jen.File {
 					utils.WriteHeader("StatusOK"),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.ID("c").Dot("plainClient").Dot("Timeout").Op("=").Lit(500).Op("*").Qual("time", "Microsecond"),
@@ -571,7 +571,7 @@ func usersTestDotGo() *jen.File {
 					utils.WriteHeader("StatusOK"),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID(t),
+					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.Line(),

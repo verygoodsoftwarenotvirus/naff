@@ -4,6 +4,7 @@ COVERAGE_OUT      := coverage.out
 INSTALL_PATH      := ~/.bin
 EMBEDDED_PACKAGE  := embedded
 GO_FORMAT         := gofmt -s -w
+THIS_PKG          := gitlab.com/verygoodsoftwarenotvirus/naff
 
 VERSION := $(shell git rev-parse --short HEAD)
 
@@ -22,11 +23,6 @@ vendor: template-clean
 
 .PHONY: revendor
 revendor: vendor-clean vendor
-
-.PHONY: test
-test:
-	docker build --tag coverage-todo:latest --file dockerfiles/coverage.Dockerfile .
-	docker run --rm --volume `pwd`:`pwd` --workdir=`pwd` coverage-todo:latest
 
 .PHONY: run
 run:
@@ -49,6 +45,13 @@ template-dirs:
 
 fix-template-test-files:
 	find templates/ -name "*_test.go" -exec bash -c 'mv "$1" `echo "$1" | sed -r "s/_test\.go/test_\.go/g"` ' - '{}' \;
+
+.PHONY: test
+test: test-models
+
+.PHONY: test-models
+test-models:
+	go test -v $(THIS_PKG)/models
 
 .PHONY: $(EMBEDDED_PACKAGE)
 $(EMBEDDED_PACKAGE): templates

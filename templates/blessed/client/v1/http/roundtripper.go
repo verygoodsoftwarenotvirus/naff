@@ -41,7 +41,7 @@ func roundtripperDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("RoundTrip implements the http.RoundTripper interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(t).Op("*").ID("defaultRoundTripper")).ID("RoundTrip").Params(
+		jen.Func().Params(jen.ID("t").Op("*").ID("defaultRoundTripper")).ID("RoundTrip").Params(
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Response"),
@@ -51,7 +51,7 @@ func roundtripperDotGo() *jen.File {
 				jen.ID("userAgentHeader"),
 				jen.ID("userAgent"),
 			),
-			jen.Return().ID(t).Dot("baseTransport").Dot("RoundTrip").Call(
+			jen.Return().ID("t").Dot("baseTransport").Dot("RoundTrip").Call(
 				jen.ID("req"),
 			),
 		),

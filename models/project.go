@@ -9,33 +9,24 @@ import (
 	"path/filepath"
 	"strings"
 
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
 // DataType represents a data model
 type DataType struct {
-	Name   Name
+	Name   *wordsmith.SuperPalabra
 	Fields []DataField
 }
 
 // DataField represents a data model's field
 type DataField struct {
-	Name                  Name
+	Name                  *wordsmith.SuperPalabra
 	Type                  string
 	Pointer               bool
 	ValidForCreationInput bool
 	ValidForUpdateInput   bool
-}
-
-// Name is a handy struct for all the things we need from a data types name
-type Name struct {
-	Singular, // singular title cased
-	RouteName, // usually snaked case and singular
-	PluralRouteName, // usually snaked case and plural
-	UnexportedVarName, // singular camelCased
-	PluralUnexportedVarName, // plural camelCased
-	Plural, // plural title cased
-	_ string
 }
 
 type Project struct {
@@ -43,7 +34,7 @@ type Project struct {
 	outputPath              string
 	iterableServicesImports []string
 
-	Name      Name
+	Name      *wordsmith.SuperPalabra
 	DataTypes []DataType
 }
 
@@ -60,7 +51,7 @@ func (p *Project) ParseModels(outputPath string) error {
 			ast.Inspect(file, func(n ast.Node) bool {
 				if dec, ok := n.(*ast.TypeSpec); ok {
 					dt := DataType{
-						Name:   Name{Singular: dec.Name.Name},
+						Name:   wordsmith.FromSingularPascalCase(dec.Name.Name),
 						Fields: []DataField{},
 					}
 
@@ -71,7 +62,7 @@ func (p *Project) ParseModels(outputPath string) error {
 
 					for _, field := range dec.Type.(*ast.StructType).Fields.List {
 						df := DataField{
-							Name:                  Name{Singular: field.Names[0].Name},
+							Name:                  wordsmith.FromSingularPascalCase(field.Names[0].Name),
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						}
@@ -108,7 +99,7 @@ func (p *Project) ParseModels(outputPath string) error {
 							p.outputPath,
 							"services",
 							"v1",
-							strings.ToLower(dt.Name.Plural),
+							strings.ToLower(dt.Name.Plural()),
 						),
 					)
 				}
@@ -160,7 +151,7 @@ func CompleteSurvey() (*Project, error) {
 	os.RemoveAll(filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository))
 
 	return &Project{
-		Name:          Name{Singular: p.Name},
+		Name:          wordsmith.FromSingularPascalCase(p.Name),
 		outputPath:    p.OutputRepository,
 		sourcePackage: p.ModelsPackage,
 	}, nil
