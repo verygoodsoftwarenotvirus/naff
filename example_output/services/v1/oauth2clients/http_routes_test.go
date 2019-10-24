@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 	mockauth "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock"
 	mockencoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock"
 	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func Test_randString(T *testing.T) {

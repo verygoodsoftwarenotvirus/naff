@@ -7,7 +7,7 @@ import (
 
 	"github.com/pquerna/otp/totp"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	trace "go.opencensus.io/trace"
+	"go.opencensus.io/trace"
 	"golang.org/x/crypto/bcrypt"
 )
 

@@ -16,8 +16,8 @@ import (
 	"github.com/icrowley/fake"
 	"github.com/moul/http2curl"
 	"github.com/pquerna/otp/totp"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 	client "gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func init() {

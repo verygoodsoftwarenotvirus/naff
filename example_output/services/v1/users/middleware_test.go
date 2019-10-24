@@ -30,15 +30,20 @@ func TestService_UserInputMiddleware(T *testing.T) {
 		s := &Service{
 			logger: noop.ProvideNoopLogger(),
 		}
+
 		ed := &mockencoding.EncoderDecoder{}
 		ed.On("DecodeRequest", mock.Anything, mock.Anything).Return(nil)
 		s.encoderDecoder = ed
+
 		mh := &MockHTTPHandler{}
 		mh.On("ServeHTTP", mock.Anything, mock.Anything).Return()
+
 		req := buildRequest(t)
 		res := httptest.NewRecorder()
+
 		actual := s.UserInputMiddleware(mh)
 		actual.ServeHTTP(res, req)
+
 		assert.Equal(t, res.Code, http.StatusOK)
 	})
 
@@ -46,15 +51,20 @@ func TestService_UserInputMiddleware(T *testing.T) {
 		s := &Service{
 			logger: noop.ProvideNoopLogger(),
 		}
+
 		ed := &mockencoding.EncoderDecoder{}
 		ed.On("DecodeRequest", mock.Anything, mock.Anything).Return(errors.New("blah"))
 		s.encoderDecoder = ed
+
 		mh := &MockHTTPHandler{}
 		mh.On("ServeHTTP", mock.Anything, mock.Anything).Return()
+
 		req := buildRequest(t)
 		res := httptest.NewRecorder()
+
 		actual := s.UserInputMiddleware(mh)
 		actual.ServeHTTP(res, req)
+
 		assert.Equal(t, res.Code, http.StatusBadRequest)
 	})
 }
@@ -66,15 +76,20 @@ func TestService_PasswordUpdateInputMiddleware(T *testing.T) {
 		s := &Service{
 			logger: noop.ProvideNoopLogger(),
 		}
+
 		ed := &mockencoding.EncoderDecoder{}
 		ed.On("DecodeRequest", mock.Anything, mock.Anything).Return(nil)
 		s.encoderDecoder = ed
+
 		mh := &MockHTTPHandler{}
 		mh.On("ServeHTTP", mock.Anything, mock.Anything).Return()
+
 		req := buildRequest(t)
 		res := httptest.NewRecorder()
+
 		actual := s.PasswordUpdateInputMiddleware(mh)
 		actual.ServeHTTP(res, req)
+
 		assert.Equal(t, res.Code, http.StatusOK)
 	})
 
@@ -82,18 +97,24 @@ func TestService_PasswordUpdateInputMiddleware(T *testing.T) {
 		s := &Service{
 			logger: noop.ProvideNoopLogger(),
 		}
+
 		mockDB := database.BuildMockDatabase()
 		mockDB.UserDataManager.On("GetUserCount", mock.Anything, mock.Anything).Return(uint64(123), nil)
 		s.database = mockDB
+
 		ed := &mockencoding.EncoderDecoder{}
 		ed.On("DecodeRequest", mock.Anything, mock.Anything).Return(errors.New("blah"))
 		s.encoderDecoder = ed
+
 		mh := &MockHTTPHandler{}
 		mh.On("ServeHTTP", mock.Anything, mock.Anything).Return()
+
 		req := buildRequest(t)
 		res := httptest.NewRecorder()
+
 		actual := s.PasswordUpdateInputMiddleware(mh)
 		actual.ServeHTTP(res, req)
+
 		assert.Equal(t, res.Code, http.StatusBadRequest)
 	})
 }
@@ -105,15 +126,20 @@ func TestService_TOTPSecretRefreshInputMiddleware(T *testing.T) {
 		s := &Service{
 			logger: noop.ProvideNoopLogger(),
 		}
+
 		ed := &mockencoding.EncoderDecoder{}
 		ed.On("DecodeRequest", mock.Anything, mock.Anything).Return(nil)
 		s.encoderDecoder = ed
+
 		mh := &MockHTTPHandler{}
 		mh.On("ServeHTTP", mock.Anything, mock.Anything).Return()
+
 		req := buildRequest(t)
 		res := httptest.NewRecorder()
+
 		actual := s.TOTPSecretRefreshInputMiddleware(mh)
 		actual.ServeHTTP(res, req)
+
 		assert.Equal(t, res.Code, http.StatusOK)
 	})
 
@@ -121,15 +147,20 @@ func TestService_TOTPSecretRefreshInputMiddleware(T *testing.T) {
 		s := &Service{
 			logger: noop.ProvideNoopLogger(),
 		}
+
 		ed := &mockencoding.EncoderDecoder{}
 		ed.On("DecodeRequest", mock.Anything, mock.Anything).Return(errors.New("blah"))
 		s.encoderDecoder = ed
+
 		mh := &MockHTTPHandler{}
 		mh.On("ServeHTTP", mock.Anything, mock.Anything).Return()
+
 		req := buildRequest(t)
 		res := httptest.NewRecorder()
+
 		actual := s.TOTPSecretRefreshInputMiddleware(mh)
 		actual.ServeHTTP(res, req)
+
 		assert.Equal(t, res.Code, http.StatusBadRequest)
 	})
 }

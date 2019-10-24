@@ -10,9 +10,9 @@ import (
 	"contrib.go.opencensus.io/exporter/jaeger"
 	"contrib.go.opencensus.io/exporter/prometheus"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	metrics "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
 	"go.opencensus.io/stats/view"
-	trace "go.opencensus.io/trace"
+	"go.opencensus.io/trace"
 )
 
 const (

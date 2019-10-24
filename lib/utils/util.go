@@ -192,6 +192,7 @@ func RunGoimportsForFile(filename string) error {
 }
 
 func RenderFile(path string, file *jen.File) error {
+	// start := time.Now()
 	fp := BuildTemplatePath(path)
 	_ = os.Remove(fp)
 
@@ -208,6 +209,8 @@ func RenderFile(path string, file *jen.File) error {
 	if gie != nil {
 		return fmt.Errorf("error rendering file %q: %w", path, gie)
 	}
+
+	// log.Printf("took %s to render %q", time.Since(start), path)
 
 	return nil
 }

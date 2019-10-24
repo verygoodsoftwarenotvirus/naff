@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	stats "go.opencensus.io/stats"
+	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 )
 

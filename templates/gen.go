@@ -2,6 +2,7 @@ package project
 
 import (
 	"log"
+	"time"
 
 	naffmodels "gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
@@ -18,19 +19,16 @@ import (
 	encodingmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/metrics"
 	metricsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/metrics/mock"
+	server "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/server/v1"
+	auth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/auth"
+	frontend "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/frontend"
+	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/oauth2clients"
+	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/webhooks"
+	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/frontend"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil"
-	server "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/server/v1"
-	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/oauth2clients"
-	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/webhooks"
-	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/frontend"
-	testutilmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/testutil/mock"
+	testutilmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/mock"
 
 	// to do
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/auth"
-	frontend "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/frontend"
-	users "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/users"
-
-	// requires models
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/client"
 	mariaDB "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/mariadb"
 	postgresql "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/postgres"
@@ -39,6 +37,7 @@ import (
 	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/models/v1/mock"
 	httpserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/server/v1/http"
 	items "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/items"
+	users "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/users"
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/testutil/rand/model"
 )
 
@@ -69,15 +68,15 @@ func RenderProject(in *naffmodels.Project) error {
 		"webhooks":         {renderFunc: webhooks.RenderPackage, activated: false},
 		"oauth2clients":    {renderFunc: oauth2clients.RenderPackage, activated: false},
 		"frontend":         {renderFunc: frontend.RenderPackage, activated: false},
+		"auth":             {renderFunc: auth.RenderPackage, activated: false},
+		"users":            {renderFunc: users.RenderPackage, activated: false},
 		// to do
-		"auth":       {renderFunc: auth.RenderPackage, activated: true},
-		"users":      {renderFunc: users.RenderPackage, activated: false},
-		"dbclient":   {renderFunc: dbclient.RenderPackage, activated: false},
 		"httpserver": {renderFunc: httpserver.RenderPackage, activated: false},
 		"models":     {renderFunc: models.RenderPackage, activated: false},
 		"modelsmock": {renderFunc: modelsmock.RenderPackage, activated: false},
 		"randmodel":  {renderFunc: randmodel.RenderPackage, activated: false},
 		"items":      {renderFunc: items.RenderPackage, activated: false},
+		"dbclient":   {renderFunc: dbclient.RenderPackage, activated: false},
 		"mariaDB":    {renderFunc: mariaDB.RenderPackage, activated: false},
 		"postgresql": {renderFunc: postgresql.RenderPackage, activated: false},
 		"sqlite3":    {renderFunc: sqlite3.RenderPackage, activated: false},
@@ -86,10 +85,12 @@ func RenderProject(in *naffmodels.Project) error {
 	if in != nil {
 		for name, x := range packageRenderers {
 			if x.activated {
+				start := time.Now()
 				if err := x.renderFunc(in.DataTypes); err != nil {
-					log.Printf("error rendering %q", name)
+					log.Printf("error rendering %q after %s\n", name, time.Since(start))
 					return err
 				}
+				log.Printf("rendered %s after %s\n", name, time.Since(start))
 			}
 		}
 	}

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 const (
@@ -34,14 +34,14 @@ func (c *V1Client) GetItem(ctx context.Context, id uint64) (item *models.Item, e
 	return item, nil
 }
 
-// BuildGetItemsRequest builds an HTTP request for fetching items
+// BuildGetItemsRequest builds an HTTP request for fetching an item
 func (c *V1Client) BuildGetItemsRequest(ctx context.Context, filter *models.QueryFilter) (*http.Request, error) {
 	uri := c.BuildURL(filter.ToValues(), itemsBasePath)
 
 	return http.NewRequest(http.MethodGet, uri, nil)
 }
 
-// GetItems retrieves a list of items
+// GetItems retrieves a list of Items
 func (c *V1Client) GetItems(ctx context.Context, filter *models.QueryFilter) (items *models.ItemList, err error) {
 	req, err := c.BuildGetItemsRequest(ctx, filter)
 	if err != nil {

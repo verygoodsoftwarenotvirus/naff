@@ -33,6 +33,8 @@ func AddImports(file *jen.File) {
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock", "mockutil")
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/rand/model", "randmodel")
 
+	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
+
 	file.ImportName("golang.org/x/oauth2", "oauth2")
 	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "logging")
 	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop", "noop")
@@ -40,7 +42,10 @@ func AddImports(file *jen.File) {
 	file.ImportName("github.com/stretchr/testify/assert", "assert")
 	file.ImportName("github.com/stretchr/testify/require", "require")
 	file.ImportName("github.com/stretchr/testify/mock", "mock")
+
 	file.ImportName("go.opencensus.io/trace", "trace")
+	file.ImportName("go.opencensus.io/stats", "stats")
+	file.ImportName("go.opencensus.io/stats/view", "view")
 
 	file.ImportAlias("gopkg.in/oauth2.v3/models", "oauth2models")
 	file.ImportAlias("gopkg.in/oauth2.v3/errors", "oauth2errors")

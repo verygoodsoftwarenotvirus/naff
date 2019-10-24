@@ -29,7 +29,7 @@ func TestServerEncoderDecoder_EncodeResponse(T *testing.T) {
 		err := ed.EncodeResponse(res, ex)
 
 		assert.NoError(t, err)
-		assert.Equal(t, fmt.Sprintf(`{"name":%q}\n`, ex.Name), res.Body.String())
+		assert.Equal(t, res.Body.String(), fmt.Sprintf("{%q:%q}\n", "name", ex.Name))
 	})
 
 	T.Run("as XML", func(t *testing.T) {

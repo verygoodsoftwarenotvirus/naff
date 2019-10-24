@@ -8,10 +8,10 @@ import (
 	"contrib.go.opencensus.io/integrations/ocsql"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	client "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/mariadb"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/postgres"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/sqlite"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/mariadb"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/postgres"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/sqlite"
+	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
 )
 
 const (
@@ -38,7 +38,7 @@ func (cfg *ServerConfig) ProvideDatabase(ctx context.Context, logger logging.Log
 
 		pgdb := postgres.ProvidePostgres(debug, rawDB, logger)
 
-		return client.ProvideDatabaseClient(ctx, rawDB, pgdb, debug, logger)
+		return dbclient.ProvideDatabaseClient(ctx, rawDB, pgdb, debug, logger)
 	case mariaDBProviderKey:
 		rawDB, err := mariadb.ProvideMariaDBConnection(logger, connectionDetails)
 		if err != nil {
@@ -50,7 +50,7 @@ func (cfg *ServerConfig) ProvideDatabase(ctx context.Context, logger logging.Log
 
 		mdb := mariadb.ProvideMariaDB(debug, rawDB, logger)
 
-		return client.ProvideDatabaseClient(ctx, rawDB, mdb, debug, logger)
+		return dbclient.ProvideDatabaseClient(ctx, rawDB, mdb, debug, logger)
 	case sqliteProviderKey:
 		rawDB, err := sqlite.ProvideSqliteDB(logger, connectionDetails)
 		if err != nil {
@@ -62,7 +62,7 @@ func (cfg *ServerConfig) ProvideDatabase(ctx context.Context, logger logging.Log
 
 		sdb := sqlite.ProvideSqlite(debug, rawDB, logger)
 
-		return client.ProvideDatabaseClient(ctx, rawDB, sdb, debug, logger)
+		return dbclient.ProvideDatabaseClient(ctx, rawDB, sdb, debug, logger)
 	default:
 		return nil, errors.New("invalid database type selected")
 	}

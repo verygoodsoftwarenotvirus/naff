@@ -4,13 +4,18 @@ import (
 	"context"
 	"net/http"
 
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 	"go.opencensus.io/trace"
 )
 
-var (
-	UserCreationMiddlewareCtxKey      models.ContextKey = "user_creation_input"
-	PasswordChangeMiddlewareCtxKey    models.ContextKey = "user_password_change"
+const (
+	// UserCreationMiddlewareCtxKey is the context key for creation input
+	UserCreationMiddlewareCtxKey models.ContextKey = "user_creation_input"
+
+	// PasswordChangeMiddlewareCtxKey is the context key for password changes
+	PasswordChangeMiddlewareCtxKey models.ContextKey = "user_password_change"
+
+	// TOTPSecretRefreshMiddlewareCtxKey is the context key for TOTP token refreshes
 	TOTPSecretRefreshMiddlewareCtxKey models.ContextKey = "totp_refresh"
 )
 
@@ -20,11 +25,15 @@ func (s *Service) UserInputMiddleware(next http.Handler) http.Handler {
 		x := new(models.UserInput)
 		ctx, span := trace.StartSpan(req.Context(), "UserInputMiddleware")
 		defer span.End()
+
+		// decode the request
 		if err := s.encoderDecoder.DecodeRequest(req, x); err != nil {
 			s.logger.Error(err, "error encountered decoding request body")
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
+		// attach parsed value to request context
 		ctx = context.WithValue(ctx, UserCreationMiddlewareCtxKey, x)
 		next.ServeHTTP(res, req.WithContext(ctx))
 	})
@@ -36,11 +45,15 @@ func (s *Service) PasswordUpdateInputMiddleware(next http.Handler) http.Handler 
 		x := new(models.PasswordUpdateInput)
 		ctx, span := trace.StartSpan(req.Context(), "PasswordUpdateInputMiddleware")
 		defer span.End()
+
+		// decode the request
 		if err := s.encoderDecoder.DecodeRequest(req, x); err != nil {
 			s.logger.Error(err, "error encountered decoding request body")
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
+		// attach parsed value to request context
 		ctx = context.WithValue(ctx, PasswordChangeMiddlewareCtxKey, x)
 		next.ServeHTTP(res, req.WithContext(ctx))
 	})
@@ -52,11 +65,15 @@ func (s *Service) TOTPSecretRefreshInputMiddleware(next http.Handler) http.Handl
 		x := new(models.TOTPSecretRefreshInput)
 		ctx, span := trace.StartSpan(req.Context(), "TOTPSecretRefreshInputMiddleware")
 		defer span.End()
+
+		// decode the request
 		if err := s.encoderDecoder.DecodeRequest(req, x); err != nil {
 			s.logger.Error(err, "error encountered decoding request body")
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
+		// attach parsed value to request context
 		ctx = context.WithValue(ctx, TOTPSecretRefreshMiddlewareCtxKey, x)
 		next.ServeHTTP(res, req.WithContext(ctx))
 	})

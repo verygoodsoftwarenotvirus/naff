@@ -79,9 +79,6 @@ func runtimeDotGo() *jen.File {
 	ret := jen.NewFile("metrics")
 
 	utils.AddImports(ret)
-	ret.ImportName("go.opencensus.io/plugin/ochttp", "ochttp")
-	ret.ImportName("go.opencensus.io/stats", "stats")
-	ret.ImportName("go.opencensus.io/stats/view", "view")
 
 	ret.Comment("inspired by:")
 	ret.Comment("https://github.com/opencensus-integrations/caddy/blob/c8498719b7c1c2a3c707355be2395a35f03e434e/caddy/caddymain/exporters.go#L54-L110")
@@ -137,9 +134,7 @@ func runtimeDotGo() *jen.File {
 			jen.Go().Func().Params().Block(
 				jen.For().Block(
 					jen.Select().Block(
-						jen.Case(jen.Op("<-").ID("ticker").Dot(
-							"C",
-						)).Block(
+						jen.Case(jen.Op("<-").ID("ticker").Dot("C")).Block(
 							jen.ID("startTime").Op(":=").Qual("time", "Now").Call(),
 							jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 							jen.Line(),

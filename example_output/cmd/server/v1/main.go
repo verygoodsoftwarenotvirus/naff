@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
-	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
-	trace "go.opencensus.io/trace"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	"go.opencensus.io/trace"
 )
 
 func main() {

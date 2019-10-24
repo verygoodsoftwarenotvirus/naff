@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	log.Println("building example output...")
 	todoProject := &models.Project{
 		Name: wordsmith.FromSingularPascalCase("Todo"),
 		DataTypes: []models.DataType{

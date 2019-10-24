@@ -31,6 +31,7 @@ type (
 		IncrementBy(ctx context.Context, val uint64)
 		Decrement(ctx context.Context)
 	}
+
 	// UnitCounterProvider is a function that provides a UnitCounter and an error
 	UnitCounterProvider func(counterName CounterName, description string) (UnitCounter, error)
 )
