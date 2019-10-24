@@ -1,11 +1,9 @@
 GOPATH            := $(GOPATH)
-GO_PACKAGE        := gitlab.com/verygoodsoftwarenotvirus/naff
 COVERAGE_OUT      := coverage.out
 INSTALL_PATH      := ~/.bin
 EMBEDDED_PACKAGE  := embedded
 GO_FORMAT         := gofmt -s -w
 THIS_PKG          := gitlab.com/verygoodsoftwarenotvirus/naff
-
 VERSION := $(shell git rev-parse --short HEAD)
 
 ## Project prerequisites
@@ -26,10 +24,10 @@ revendor: vendor-clean vendor
 
 .PHONY: run
 run:
-	go run $(GO_PACKAGE)/cmd/cli generate
+	go run $(THIS_PKG)/cmd/cli generate
 
 naff_debug:
-	go build -o naff_debug $(GO_PACKAGE)/cmd/cli
+	go build -o naff_debug $(THIS_PKG)/cmd/cli
 
 .PHONY: template-clean
 template-clean:
@@ -47,11 +45,11 @@ fix-template-test-files:
 	find templates/ -name "*_test.go" -exec bash -c 'mv "$1" `echo "$1" | sed -r "s/_test\.go/test_\.go/g"` ' - '{}' \;
 
 .PHONY: test
-test: test-models
+test: test-wordsmith
 
-.PHONY: test-models
-test-models:
-	go test -v $(THIS_PKG)/models
+.PHONY: test-wordsmith
+test-wordsmith:
+	go test -v ./lib/wordsmith/
 
 .PHONY: $(EMBEDDED_PACKAGE)
 $(EMBEDDED_PACKAGE): templates
@@ -59,7 +57,7 @@ $(EMBEDDED_PACKAGE): templates
 
 .PHONY: install
 install: $(EMBEDDED_PACKAGE)
-	go build -o $(INSTALL_PATH)/naff -ldflags "-X main.Version=$(VERSION)" $(GO_PACKAGE)/cmd/cli
+	go build -o $(INSTALL_PATH)/naff -ldflags "-X main.Version=$(VERSION)" $(THIS_PKG)/cmd/cli
 
 .PHONY: example_output_subdirs
 example_output_subdirs:
@@ -71,7 +69,7 @@ example_output:
 
 .PHONY: install-tojen
 install-tojen:
-	go build -o $(INSTALL_PATH)/tojen -ldflags "-X main.Version=$(VERSION)" $(GO_PACKAGE)/forks/tojen
+	go build -o $(INSTALL_PATH)/tojen -ldflags "-X main.Version=$(VERSION)" $(THIS_PKG)/forks/tojen
 
 .PHONY: format
 format:
