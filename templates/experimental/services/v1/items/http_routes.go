@@ -3,10 +3,11 @@ package items
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func httpRoutesDotGo() *jen.File {
-	ret := jen.NewFile("items")
+func httpRoutesDotGo(typ models.DataType) *jen.File {
+	ret := jen.NewFile(typ.Name.PackageName())
 
 	utils.AddImports(ret)
 

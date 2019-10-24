@@ -22,6 +22,7 @@ func TestStr(T *testing.T) {
 			"PluralUnexportedVarName": {expected: "items", actual: s.PluralUnexportedVarName()},
 			"RouteName":               {expected: "item", actual: s.RouteName()},
 			"PluralRouteName":         {expected: "items", actual: s.PluralRouteName()},
+			"PackageName":             {expected: "items", actual: s.PackageName()},
 		}
 
 		for testName, zest := range expectationsMap {
@@ -41,6 +42,7 @@ func TestStr(T *testing.T) {
 			"PluralUnexportedVarName": {expected: "journalEntries", actual: s.PluralUnexportedVarName()},
 			"RouteName":               {expected: "journal_entry", actual: s.RouteName()},
 			"PluralRouteName":         {expected: "journal_entries", actual: s.PluralRouteName()},
+			"PackageName":             {expected: "journalentries", actual: s.PackageName()},
 		}
 
 		for testName, zest := range expectationsMap {

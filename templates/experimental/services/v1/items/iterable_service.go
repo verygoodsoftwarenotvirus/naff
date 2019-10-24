@@ -1,14 +1,21 @@
 package items
 
 import (
+	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func itemsServiceDotGo() *jen.File {
-	ret := jen.NewFile("items")
+func iterableServiceDotGo(typ models.DataType) *jen.File {
+	ret := jen.NewFile(typ.Name.PackageName())
 
 	utils.AddImports(ret)
+
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	srn := typ.Name.RouteName()
 
 	ret.Add(
 		jen.Const().Defs(
@@ -32,22 +39,21 @@ func itemsServiceDotGo() *jen.File {
 
 			jen.ID("Service").Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("itemCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounter"),
-				jen.ID("itemDatabase").ID("models").Dot("ItemDataManager"),
+				jen.ID(fmt.Sprintf("%sCounter", srn)).Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounter"),
+				jen.ID(fmt.Sprintf("%sDatabase", srn)).ID("models").Dot("ItemDataManager"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
-				jen.ID("itemIDFetcher").ID("ItemIDFetcher"),
+				jen.ID(fmt.Sprintf("%sIDFetcher", srn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
 				jen.ID("encoderDecoder").ID("encoding").Dot("EncoderDecoder"),
 				jen.ID("reporter").ID("newsman").Dot("Reporter"),
 			),
 			jen.ID("UserIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
-			jen.ID("ItemIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.ID(fmt.Sprintf("%sIDFetcher", sn)).Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 		),
-
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("ProvideItemsService builds a new ItemsService"),
+		jen.Comment(fmt.Sprintf("Provide%sService builds a new ItemsService", pn)),
 		jen.Line(),
 		jen.Func().ID("ProvideItemsService").Paramsln(
 			jen.ID("ctx").Qual("context", "Context"),
