@@ -6,7 +6,14 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 )
 
-var Providers = wire.NewSet(ProvideItemsService, ProvideItemDataManager, ProvideItemDataServer)
+var (
+	// Providers is our collection of what we provide to other services
+	Providers = wire.NewSet(
+		ProvideItemsService,
+		ProvideItemDataManager,
+		ProvideItemDataServer,
+	)
+)
 
 // ProvideItemDataManager turns a database into an ItemDataManager
 func ProvideItemDataManager(db database.Database) models.ItemDataManager {

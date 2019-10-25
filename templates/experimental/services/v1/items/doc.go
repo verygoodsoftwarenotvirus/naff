@@ -1,15 +1,19 @@
 package items
 
 import (
+	"fmt"
+	"strings"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func docDotGo(typ models.DataType) *jen.File {
-	ret := jen.NewFile(typ.Name.PackageName())
+	pn := typ.Name.PackageName()
+	cn := strings.ToLower(typ.Name.Plural())
+	ret := jen.NewFile(pn)
 
-	utils.AddImports(ret)
+	ret.PackageComment(fmt.Sprintf("Package %s provides a series of HTTP handlers for managing %s in a compatible database.\n", pn, cn))
 
 	return ret
 }

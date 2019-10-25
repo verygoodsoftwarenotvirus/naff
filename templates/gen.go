@@ -71,7 +71,7 @@ func RenderProject(in *naffmodels.Project) error {
 		"auth":             {renderFunc: auth.RenderPackage, activated: false},
 		"users":            {renderFunc: users.RenderPackage, activated: false},
 		// to do
-		"items":      {renderFunc: items.RenderPackage, activated: false},
+		"items":      {renderFunc: items.RenderPackage, activated: true},
 		"httpserver": {renderFunc: httpserver.RenderPackage, activated: false},
 		"models":     {renderFunc: models.RenderPackage, activated: false},
 		"modelsmock": {renderFunc: modelsmock.RenderPackage, activated: false},

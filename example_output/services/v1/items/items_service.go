@@ -13,17 +13,23 @@ import (
 )
 
 const (
-	CreateMiddlewareCtxKey models.ContextKey   = "item_create_input"
-	UpdateMiddlewareCtxKey models.ContextKey   = "item_update_input"
-	counterName            metrics.CounterName = "items"
-	counterDescription                         = "the number of items managed by the items service"
-	topicName              string              = "items"
-	serviceName            string              = "items_service"
+	// CreateMiddlewareCtxKey is a string alias we can use for referring to item input data in contexts
+	CreateMiddlewareCtxKey models.ContextKey = "item_create_input"
+	// UpdateMiddlewareCtxKey is a string alias we can use for referring to item update data in contexts
+	UpdateMiddlewareCtxKey models.ContextKey = "item_update_input"
+
+	counterName        metrics.CounterName = "items"
+	counterDescription                     = "the number of items managed by the items service"
+	topicName          string              = "items"
+	serviceName        string              = "items_service"
 )
 
-var _ models.ItemDataServer = (*Service)(nil)
+var (
+	_ models.ItemDataServer = (*Service)(nil)
+)
 
 type (
+	// Service handles to-do list items
 	Service struct {
 		logger         logging.Logger
 		itemCounter    metrics.UnitCounter
@@ -33,7 +39,11 @@ type (
 		encoderDecoder encoding.EncoderDecoder
 		reporter       newsman.Reporter
 	}
+
+	// UserIDFetcher is a function that fetches user IDs
 	UserIDFetcher func(*http.Request) uint64
+
+	// ItemIDFetcher is a function that fetches item IDs
 	ItemIDFetcher func(*http.Request) uint64
 )
 
@@ -52,6 +62,7 @@ func ProvideItemsService(
 	if err != nil {
 		return nil, fmt.Errorf("error initializing counter: %w", err)
 	}
+
 	svc := &Service{
 		logger:         logger.WithName(serviceName),
 		itemDatabase:   db,
@@ -61,10 +72,12 @@ func ProvideItemsService(
 		itemIDFetcher:  itemIDFetcher,
 		reporter:       reporter,
 	}
+
 	itemCount, err := svc.itemDatabase.GetAllItemsCount(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("setting current item count: %w", err)
 	}
 	svc.itemCounter.IncrementBy(ctx, itemCount)
+
 	return svc, nil
 }

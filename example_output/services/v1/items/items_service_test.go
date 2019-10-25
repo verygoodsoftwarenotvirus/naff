@@ -17,15 +17,11 @@ import (
 
 func buildTestService() *Service {
 	return &Service{
-		logger:       noop.ProvideNoopLogger(),
-		itemCounter:  &mockmetrics.UnitCounter{},
-		itemDatabase: &mockmodels.ItemDataManager{},
-		userIDFetcher: func(req *http.Request) uint64 {
-			return 0
-		},
-		itemIDFetcher: func(req *http.Request) uint64 {
-			return 0
-		},
+		logger:         noop.ProvideNoopLogger(),
+		itemCounter:    &mockmetrics.UnitCounter{},
+		itemDatabase:   &mockmodels.ItemDataManager{},
+		userIDFetcher:  func(req *http.Request) uint64 { return 0 },
+		itemIDFetcher:  func(req *http.Request) uint64 { return 0 },
 		encoderDecoder: &mockencoding.EncoderDecoder{},
 		reporter:       nil,
 	}
@@ -35,55 +31,91 @@ func TestProvideItemsService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		uc := &mockmetrics.UnitCounter{}
 		expectation := uint64(123)
-		var ucp metrics.UnitCounterProvider = func(counterName metrics.CounterName, description string) (metrics.UnitCounter, error) {
+		uc := &mockmetrics.UnitCounter{}
+		uc.On("IncrementBy", expectation).Return()
+
+		var ucp metrics.UnitCounterProvider = func(
+			counterName metrics.CounterName,
+			description string,
+		) (metrics.UnitCounter, error) {
 			return uc, nil
 		}
+
 		idm := &mockmodels.ItemDataManager{}
 		idm.On("GetAllItemsCount", mock.Anything).Return(expectation, nil)
-		uc.On("IncrementBy", expectation).Return()
-		s, err := ProvideItemsService(context.Background(), noop.ProvideNoopLogger(), idm, func(req *http.Request) uint64 {
-			return 0
-		}, func(req *http.Request) uint64 {
-			return 0
-		}, &mockencoding.EncoderDecoder{}, ucp, nil)
+
+		s, err := ProvideItemsService(
+			context.Background(),
+			noop.ProvideNoopLogger(),
+			idm,
+			func(req *http.Request) uint64 { return 0 },
+			func(req *http.Request) uint64 { return 0 },
+			&mockencoding.EncoderDecoder{},
+			ucp,
+			nil,
+		)
+
 		require.NotNil(t, s)
 		require.NoError(t, err)
 	})
 
 	T.Run("with error providing unit counter", func(t *testing.T) {
-		uc := &mockmetrics.UnitCounter{}
 		expectation := uint64(123)
-		var ucp metrics.UnitCounterProvider = func(counterName metrics.CounterName, description string) (metrics.UnitCounter, error) {
+		uc := &mockmetrics.UnitCounter{}
+		uc.On("IncrementBy", expectation).Return()
+
+		var ucp metrics.UnitCounterProvider = func(
+			counterName metrics.CounterName,
+			description string,
+		) (metrics.UnitCounter, error) {
 			return uc, errors.New("blah")
 		}
+
 		idm := &mockmodels.ItemDataManager{}
 		idm.On("GetAllItemsCount", mock.Anything).Return(expectation, nil)
-		uc.On("IncrementBy", expectation).Return()
-		s, err := ProvideItemsService(context.Background(), noop.ProvideNoopLogger(), idm, func(req *http.Request) uint64 {
-			return 0
-		}, func(req *http.Request) uint64 {
-			return 0
-		}, &mockencoding.EncoderDecoder{}, ucp, nil)
+
+		s, err := ProvideItemsService(
+			context.Background(),
+			noop.ProvideNoopLogger(),
+			idm,
+			func(req *http.Request) uint64 { return 0 },
+			func(req *http.Request) uint64 { return 0 },
+			&mockencoding.EncoderDecoder{},
+			ucp,
+			nil,
+		)
+
 		require.Nil(t, s)
 		require.Error(t, err)
 	})
 
 	T.Run("with error fetching item count", func(t *testing.T) {
-		uc := &mockmetrics.UnitCounter{}
 		expectation := uint64(123)
-		var ucp metrics.UnitCounterProvider = func(counterName metrics.CounterName, description string) (metrics.UnitCounter, error) {
+		uc := &mockmetrics.UnitCounter{}
+		uc.On("IncrementBy", expectation).Return()
+
+		var ucp metrics.UnitCounterProvider = func(
+			counterName metrics.CounterName,
+			description string,
+		) (metrics.UnitCounter, error) {
 			return uc, nil
 		}
+
 		idm := &mockmodels.ItemDataManager{}
 		idm.On("GetAllItemsCount", mock.Anything).Return(expectation, errors.New("blah"))
-		uc.On("IncrementBy", expectation).Return()
-		s, err := ProvideItemsService(context.Background(), noop.ProvideNoopLogger(), idm, func(req *http.Request) uint64 {
-			return 0
-		}, func(req *http.Request) uint64 {
-			return 0
-		}, &mockencoding.EncoderDecoder{}, ucp, nil)
+
+		s, err := ProvideItemsService(
+			context.Background(),
+			noop.ProvideNoopLogger(),
+			idm,
+			func(req *http.Request) uint64 { return 0 },
+			func(req *http.Request) uint64 { return 0 },
+			&mockencoding.EncoderDecoder{},
+			ucp,
+			nil,
+		)
+
 		require.Nil(t, s)
 		require.Error(t, err)
 	})
