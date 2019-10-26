@@ -2,13 +2,12 @@ package http
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
 func docDotGo() *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(ret)
+	ret.PackageComment("Package httpserver provides an HTTP server comprised of multiple HTTP services\n")
 
 	return ret
 }

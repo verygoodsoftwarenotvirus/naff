@@ -1,6 +1,8 @@
-package items
+package iterables
 
 import (
+	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -11,19 +13,22 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 
 	utils.AddImports(ret)
 
-	// pn := typ.Name.Plural()
 	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	scn := typ.Name.SingularCommonName()
+	pcn := typ.Name.PluralCommonName()
+	uvn := typ.Name.UnexportedVarName()
 
 	ret.Add(
-		jen.Func().ID("TestItemsService_List").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_List", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot("User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("ItemList").Valuesln(
-					jen.ID("Items").Op(":").Index().ID("models").Dot(sn).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(fmt.Sprintf("%sList", sn)).Valuesln(
+					jen.ID(pn).Op(":").Index().ID("models").Dot(sn).Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").Op(":").Lit(123),
 							jen.ID("Name").Op(":").Lit("name"),
@@ -35,13 +40,13 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItems"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("requestingUser").Dot("ID"),
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
@@ -69,12 +74,12 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItems"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.Op("*").ID("models").Dot("ItemList")).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.Op("*").ID("models").Dot(fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
@@ -94,7 +99,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching items from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s from database", pcn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot("User").Values(jen.ID("ID").Op(":").Lit(1)),
@@ -102,13 +107,13 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItems"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("requestingUser").Dot("ID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").ID("models").Dot("ItemList")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").ID("models").Dot(fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -133,21 +138,21 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot("User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("ItemList").Valuesln(
-					jen.ID("Items").Op(":").Index().ID("models").Dot(sn).Values(),
+				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(fmt.Sprintf("%sList", sn)).Valuesln(
+					jen.ID(pn).Op(":").Index().ID("models").Dot(sn).Values(),
 				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItems"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("requestingUser").Dot("ID"),
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -171,7 +176,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestItemsService_Create").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_Create", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -187,7 +192,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				),
-				jen.ID("s").Dot("itemCounter").Op("=").ID("mc"),
+				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
 				jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
@@ -197,10 +202,10 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("CreateItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -216,7 +221,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot("ItemCreationInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sCreationInput", sn).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
@@ -253,7 +258,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error creating item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Litf("with error creating %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot("User").Values(jen.ID("ID").Op(":").Lit(1)),
@@ -266,10 +271,10 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("CreateItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").ID("models").Dot(sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -285,7 +290,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot("ItemCreationInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sCreationInput", sn).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
@@ -306,7 +311,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
-				jen.ID("s").Dot("itemCounter").Op("=").ID("mc"),
+				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
 				jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
@@ -316,10 +321,10 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("CreateItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -335,7 +340,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot("ItemCreationInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sCreationInput", sn).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name")),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
@@ -348,7 +353,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestItemsService_Read").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_Read", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -364,17 +369,17 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItem"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
@@ -394,7 +399,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with no such item in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Litf("with no such %s in database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot("User").Values(jen.ID("ID").Op(":").Lit(1)),
@@ -405,16 +410,16 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").ID("models").Dot(sn)).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
@@ -430,7 +435,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching item from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s from database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot("User").Values(jen.ID("ID").Op(":").Lit(1)),
@@ -443,17 +448,17 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItem"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").ID("models").Dot(sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
@@ -482,15 +487,15 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -515,7 +520,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestItemsService_Update").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_Update", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -531,7 +536,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				),
-				jen.ID("s").Dot("itemCounter").Op("=").ID("mc"),
+				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
 				jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"),
@@ -543,17 +548,17 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("id").Dot("On").Call(jen.Lit("UpdateItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
@@ -568,7 +573,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot("ItemUpdateInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
@@ -595,7 +600,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows fetching item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Litf("with no rows fetching %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot("User").Values(jen.ID("ID").Op(":").Lit(1)),
@@ -608,16 +613,16 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").ID("models").Dot(sn)).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
@@ -628,7 +633,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot("ItemUpdateInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
@@ -638,7 +643,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot("User").Values(jen.ID("ID").Op(":").Lit(1)),
@@ -651,15 +656,15 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.Op("*").ID("models").Dot(sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
@@ -670,7 +675,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot("ItemUpdateInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
@@ -680,7 +685,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error updating item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Litf("with error updating %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot("User").Values(jen.ID("ID").Op(":").Lit(1)),
@@ -691,7 +696,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
-				jen.ID("s").Dot("itemCounter").Op("=").ID("mc"),
+				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
 				jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
@@ -701,17 +706,17 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("id").Dot("On").Call(jen.Lit("UpdateItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -727,7 +732,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot("ItemUpdateInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
@@ -748,7 +753,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
-				jen.ID("s").Dot("itemCounter").Op("=").ID("mc"),
+				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
 				jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
@@ -758,17 +763,17 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("GetItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("id").Dot("On").Call(jen.Lit("UpdateItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -784,7 +789,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot("ItemUpdateInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
@@ -798,7 +803,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestItemsService_Archive").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_Archive", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -816,25 +821,29 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement")).Dot("Return").Call(),
-				jen.ID("s").Dot("itemCounter").Op("=").ID("mc"),
+				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("ArchiveItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("nil")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+					jen.ID("requestingUser").Dot("ID"),
+				).Dot("Return").Call(jen.ID("nil")),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
-				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
+				jen.ID("ed").Dot("On").Call(
+					jen.Lit("EncodeResponse"),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
@@ -851,7 +860,7 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNoContent")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with no item in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Litf("with no %s in database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").ID("models").Dot("User").Values(jen.ID("ID").Op(":").Lit(1)),
@@ -864,15 +873,16 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("ArchiveItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Qual("database/sql", "ErrNoRows")),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+					jen.ID("requestingUser").Dot("ID"),
+				).Dot("Return").Call(jen.Qual("database/sql", "ErrNoRows")),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
@@ -901,15 +911,15 @@ func httpRoutesTestDotGo(typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("itemIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "ItemDataManager").Values(),
-				jen.ID("id").Dot("On").Call(jen.Lit("ArchiveItem"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("id").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("itemDatabase").Op("=").ID("id"),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(

@@ -85,7 +85,7 @@ func (s *Service) CreateHandler() http.HandlerFunc {
 		// create item in database
 		x, err := s.itemDatabase.CreateItem(ctx, input)
 		if err != nil {
-			s.logger.Error(err, "error creating item")
+			logger.Error(err, "error creating item")
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}

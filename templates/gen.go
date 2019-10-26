@@ -36,7 +36,7 @@ import (
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/models/v1"
 	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/models/v1/mock"
 	httpserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/server/v1/http"
-	items "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/items"
+	iterables "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/iterables"
 	users "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/users"
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/testutil/rand/model"
 )
@@ -70,16 +70,19 @@ func RenderProject(in *naffmodels.Project) error {
 		"frontend":         {renderFunc: frontend.RenderPackage, activated: false},
 		"auth":             {renderFunc: auth.RenderPackage, activated: false},
 		"users":            {renderFunc: users.RenderPackage, activated: false},
-		// to do
-		"items":      {renderFunc: items.RenderPackage, activated: true},
-		"httpserver": {renderFunc: httpserver.RenderPackage, activated: false},
-		"models":     {renderFunc: models.RenderPackage, activated: false},
+		"iterables":        {renderFunc: iterables.RenderPackage, activated: false},
+
+		// doing (two sides; one coin)
+		"httpserver": {renderFunc: httpserver.RenderPackage, activated: true},
+
+		// on deck
 		"modelsmock": {renderFunc: modelsmock.RenderPackage, activated: false},
-		"randmodel":  {renderFunc: randmodel.RenderPackage, activated: false},
+		"models":     {renderFunc: models.RenderPackage, activated: false},
 		"dbclient":   {renderFunc: dbclient.RenderPackage, activated: false},
-		"mariaDB":    {renderFunc: mariaDB.RenderPackage, activated: false},
 		"postgresql": {renderFunc: postgresql.RenderPackage, activated: false},
+		"mariaDB":    {renderFunc: mariaDB.RenderPackage, activated: false},
 		"sqlite3":    {renderFunc: sqlite3.RenderPackage, activated: false},
+		"randmodel":  {renderFunc: randmodel.RenderPackage, activated: false},
 	}
 
 	if in != nil {

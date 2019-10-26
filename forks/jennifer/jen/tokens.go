@@ -208,6 +208,66 @@ func (s *Statement) Dot(name string) *Statement {
 	return s
 }
 
+// Dotln renders a period followed by an identifier. Use for fields and selectors.
+func Dotln(name string) *Statement {
+	// notest
+	// don't think this can be used in valid code?
+	return newStatement().Dotln(name)
+}
+
+// Dotln renders a period followed by an identifier. Use for fields and selectors.
+func (g *Group) Dotln(name string) *Statement {
+	// notest
+	// don't think this can be used in valid code?
+	s := Dotln(name)
+	g.items = append(g.items, s)
+	return s
+}
+
+// Dotln renders a period followed by an identifier. Use for fields and selectors.
+func (s *Statement) Dotln(name string) *Statement {
+	d := token{
+		typ:     delimiterToken,
+		content: ".\n\t",
+	}
+	t := token{
+		typ:     identifierToken,
+		content: name,
+	}
+	*s = append(*s, d, t)
+	return s
+}
+
+// Dotf renders a period followed by an identifier. Use for fields and selectors.
+func Dotf(name string, args ...interface{}) *Statement {
+	// notest
+	// don't think this can be used in valid code?
+	return newStatement().Dotf(name, args...)
+}
+
+// Dotf renders a period followed by an identifier. Use for fields and selectors.
+func (g *Group) Dotf(name string, args ...interface{}) *Statement {
+	// notest
+	// don't think this can be used in valid code?
+	s := Dotf(name, args...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// Dotf renders a period followed by an identifier. Use for fields and selectors.
+func (s *Statement) Dotf(name string, args ...interface{}) *Statement {
+	d := token{
+		typ:     delimiterToken,
+		content: ".",
+	}
+	t := token{
+		typ:     identifierToken,
+		content: fmt.Sprintf(name, args...),
+	}
+	*s = append(*s, d, t)
+	return s
+}
+
 // ID renders an identifier.
 func ID(name string) *Statement {
 	return newStatement().ID(name)
@@ -225,6 +285,28 @@ func (s *Statement) ID(name string) *Statement {
 	t := token{
 		typ:     identifierToken,
 		content: name,
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// IDf renders an identifier.
+func IDf(name string, args ...interface{}) *Statement {
+	return newStatement().IDf(name, args...)
+}
+
+// IDf renders an identifier.
+func (g *Group) IDf(name string, args ...interface{}) *Statement {
+	s := IDf(name, args...)
+	g.items = append(g.items, s)
+	return s
+}
+
+//f ID renders an identifier.
+func (s *Statement) IDf(name string, args ...interface{}) *Statement {
+	t := token{
+		typ:     identifierToken,
+		content: fmt.Sprintf(name, args...),
 	}
 	*s = append(*s, t)
 	return s
@@ -266,7 +348,7 @@ func (g *Group) Qual(path, name string) *Statement {
 // [File.ImportName](#importname) or [File.ImportAlias](#importalias).
 func (s *Statement) Qual(path, name string) *Statement {
 	g := &Group{
-		close: "",
+		close: " ",
 		items: []Code{
 			token{
 				typ:     packageToken,
@@ -278,7 +360,7 @@ func (s *Statement) Qual(path, name string) *Statement {
 			},
 		},
 		name:      "qual",
-		open:      "",
+		open:      " ",
 		separator: ".",
 	}
 	*s = append(*s, g)
@@ -305,4 +387,11 @@ func (s *Statement) Line() *Statement {
 	}
 	*s = append(*s, t)
 	return s
+}
+
+func IsLine(t token) bool {
+	if x, ok := t.content.(string); ok {
+		return x == "\n" && t.typ == layoutToken
+	}
+	return false
 }

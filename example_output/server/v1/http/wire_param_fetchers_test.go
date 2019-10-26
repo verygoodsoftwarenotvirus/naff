@@ -8,11 +8,11 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/items"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/webhooks"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/items"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func TestProvideUserIDFetcher(T *testing.T) {
@@ -172,12 +172,8 @@ func Test_buildChiWebhookIDFetcher(T *testing.T) {
 		req := buildRequest(t)
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
 			URLParams: chi.RouteParams{
-				Keys: []string{
-					webhooks.URIParamKey,
-				},
-				Values: []string{
-					fmt.Sprintf("%d", expected),
-				},
+				Keys:   []string{webhooks.URIParamKey},
+				Values: []string{fmt.Sprintf("%d", expected)},
 			},
 		}))
 		actual := fn(req)
@@ -190,12 +186,8 @@ func Test_buildChiWebhookIDFetcher(T *testing.T) {
 		req := buildRequest(t)
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
 			URLParams: chi.RouteParams{
-				Keys: []string{
-					webhooks.URIParamKey,
-				},
-				Values: []string{
-					"expected",
-				},
+				Keys:   []string{webhooks.URIParamKey},
+				Values: []string{"expected"},
 			},
 		}))
 		actual := fn(req)
@@ -212,12 +204,8 @@ func Test_buildChiOAuth2ClientIDFetcher(T *testing.T) {
 		req := buildRequest(t)
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
 			URLParams: chi.RouteParams{
-				Keys: []string{
-					oauth2clients.URIParamKey,
-				},
-				Values: []string{
-					fmt.Sprintf("%d", expected),
-				},
+				Keys:   []string{oauth2clients.URIParamKey},
+				Values: []string{fmt.Sprintf("%d", expected)},
 			},
 		}))
 		actual := fn(req)
@@ -230,12 +218,8 @@ func Test_buildChiOAuth2ClientIDFetcher(T *testing.T) {
 		req := buildRequest(t)
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
 			URLParams: chi.RouteParams{
-				Keys: []string{
-					oauth2clients.URIParamKey,
-				},
-				Values: []string{
-					"expected",
-				},
+				Keys:   []string{oauth2clients.URIParamKey},
+				Values: []string{"expected"},
 			},
 		}))
 		actual := fn(req)

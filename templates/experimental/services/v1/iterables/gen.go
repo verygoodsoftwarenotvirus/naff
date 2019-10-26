@@ -1,4 +1,4 @@
-package items
+package iterables
 
 import (
 	"fmt"
@@ -19,8 +19,8 @@ func RenderPackage(types []models.DataType) error {
 			fmt.Sprintf("services/v1/%s/doc.go", pn):                 docDotGo(typ),
 			fmt.Sprintf("services/v1/%s/http_routes.go", pn):         httpRoutesDotGo(typ),
 			fmt.Sprintf("services/v1/%s/http_routes_test.go", pn):    httpRoutesTestDotGo(typ),
-			fmt.Sprintf("services/v1/%s/%s_service_test.go", pn, pn): iterableServiceTestDotGo(typ),
 			fmt.Sprintf("services/v1/%s/%s_service.go", pn, pn):      iterableServiceDotGo(typ),
+			fmt.Sprintf("services/v1/%s/%s_service_test.go", pn, pn): iterableServiceTestDotGo(typ),
 		} {
 			if err := utils.RenderFile(path, file); err != nil {
 				return err

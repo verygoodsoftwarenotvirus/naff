@@ -8,10 +8,11 @@ import (
 
 // RenderPackage renders the package
 func RenderPackage(types []models.DataType) error {
+
 	files := map[string]*jen.File{
 		"server/v1/http/doc.go":                      docDotGo(),
 		"server/v1/http/middleware_test.go":          middlewareTestDotGo(),
-		"server/v1/http/routes.go":                   routesDotGo(),
+		"server/v1/http/routes.go":                   routesDotGo(types),
 		"server/v1/http/server.go":                   serverDotGo(),
 		"server/v1/http/server_test.go":              serverTestDotGo(),
 		"server/v1/http/middleware.go":               middlewareDotGo(),

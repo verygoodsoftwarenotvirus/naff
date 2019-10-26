@@ -1,6 +1,7 @@
 package wordsmith
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/codemodus/kace"
@@ -48,6 +49,22 @@ func (s *SuperPalabra) PluralUnexportedVarName() string {
 
 func (s *SuperPalabra) PackageName() string {
 	return strings.ToLower(s.Plural())
+}
+
+func (s *SuperPalabra) SingularCommonName() string {
+	return strings.Join(strings.Split(s.RouteName(), "_"), " ")
+}
+
+func (s *SuperPalabra) PluralCommonName() string {
+	return strings.Join(strings.Split(s.PluralRouteName(), "_"), " ")
+}
+
+func (s *SuperPalabra) SingularCommonNameWithPrefix() string {
+	return fmt.Sprintf("%s %s", AOrAn(s.Singular()), s.SingularCommonName())
+}
+
+func (s *SuperPalabra) PluralCommonNameWithPrefix() string {
+	return fmt.Sprintf("%s %s", AOrAn(s.Singular()), s.PluralCommonName())
 }
 
 // AOrAn return "a" or "an" depending on the input

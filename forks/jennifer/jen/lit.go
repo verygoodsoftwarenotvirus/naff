@@ -1,5 +1,7 @@
 package jen
 
+import "fmt"
+
 // Lit renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
 // float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Passing any other type will panic.
@@ -20,6 +22,35 @@ func (g *Group) Lit(v interface{}) *Statement {
 // float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Passing any other type will panic.
 func (s *Statement) Lit(v interface{}) *Statement {
+	t := token{
+		typ:     literalToken,
+		content: v,
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Litf renders a literal. Litf supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func Litf(format string, args ...interface{}) *Statement {
+	return newStatement().Litf(format, args...)
+}
+
+// Litf renders a literal. Litf supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func (g *Group) Litf(format string, args ...interface{}) *Statement {
+	s := Litf(format, args...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// Litf renders a literal. Litf supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func (s *Statement) Litf(format string, args ...interface{}) *Statement {
+	v := fmt.Sprintf(format, args...)
 	t := token{
 		typ:     literalToken,
 		content: v,

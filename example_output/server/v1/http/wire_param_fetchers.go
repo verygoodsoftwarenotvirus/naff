@@ -7,12 +7,12 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/google/wire"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/auth"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/items"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/webhooks"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/items"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 var (
@@ -81,6 +81,8 @@ func buildChiUserIDFetcher(logger logging.Logger) users.UserIDFetcher {
 // chiItemIDFetcher fetches a ItemID from a request routed by chi.
 func buildChiItemIDFetcher(logger logging.Logger) func(req *http.Request) uint64 {
 	return func(req *http.Request) uint64 {
+		// we can generally disregard this error only because we should be able to validate
+		// that the string only contains numbers via chi's regex url param feature.
 		u, err := strconv.ParseUint(chi.URLParam(req, items.URIParamKey), 10, 64)
 		if err != nil {
 			logger.Error(err, "fetching ItemID from request")
@@ -92,6 +94,8 @@ func buildChiItemIDFetcher(logger logging.Logger) func(req *http.Request) uint64
 // chiWebhookIDFetcher fetches a WebhookID from a request routed by chi.
 func buildChiWebhookIDFetcher(logger logging.Logger) func(req *http.Request) uint64 {
 	return func(req *http.Request) uint64 {
+		// we can generally disregard this error only because we should be able to validate
+		// that the string only contains numbers via chi's regex url param feature.
 		u, err := strconv.ParseUint(chi.URLParam(req, webhooks.URIParamKey), 10, 64)
 		if err != nil {
 			logger.Error(err, "fetching WebhookID from request")
@@ -103,6 +107,8 @@ func buildChiWebhookIDFetcher(logger logging.Logger) func(req *http.Request) uin
 // chiOAuth2ClientIDFetcher fetches a OAuth2ClientID from a request routed by chi.
 func buildChiOAuth2ClientIDFetcher(logger logging.Logger) func(req *http.Request) uint64 {
 	return func(req *http.Request) uint64 {
+		// we can generally disregard this error only because we should be able to validate
+		// that the string only contains numbers via chi's regex url param feature.
 		u, err := strconv.ParseUint(chi.URLParam(req, oauth2clients.URIParamKey), 10, 64)
 		if err != nil {
 			logger.Error(err, "fetching OAuth2ClientID from request")

@@ -1,4 +1,4 @@
-package items
+package iterables
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
