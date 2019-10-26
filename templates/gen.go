@@ -71,18 +71,18 @@ func RenderProject(in *naffmodels.Project) error {
 		"auth":             {renderFunc: auth.RenderPackage, activated: false},
 		"users":            {renderFunc: users.RenderPackage, activated: false},
 		"iterables":        {renderFunc: iterables.RenderPackage, activated: false},
+		"httpserver":       {renderFunc: httpserver.RenderPackage, activated: false},
 
 		// doing (two sides; one coin)
-		"httpserver": {renderFunc: httpserver.RenderPackage, activated: true},
+		"modelsmock": {renderFunc: modelsmock.RenderPackage, activated: true},
 
 		// on deck
-		"modelsmock": {renderFunc: modelsmock.RenderPackage, activated: false},
 		"models":     {renderFunc: models.RenderPackage, activated: false},
+		"randmodel":  {renderFunc: randmodel.RenderPackage, activated: false},
 		"dbclient":   {renderFunc: dbclient.RenderPackage, activated: false},
 		"postgresql": {renderFunc: postgresql.RenderPackage, activated: false},
 		"mariaDB":    {renderFunc: mariaDB.RenderPackage, activated: false},
 		"sqlite3":    {renderFunc: sqlite3.RenderPackage, activated: false},
-		"randmodel":  {renderFunc: randmodel.RenderPackage, activated: false},
 	}
 
 	if in != nil {

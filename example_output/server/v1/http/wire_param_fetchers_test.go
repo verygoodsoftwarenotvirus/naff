@@ -75,9 +75,17 @@ func TestUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		req := buildRequest(t)
 		expected := uint64(123)
-		req = req.WithContext(context.WithValue(req.Context(), models.UserIDKey, expected))
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				models.UserIDKey,
+				expected,
+			),
+		)
+
 		actual := UserIDFetcher(req)
 		assert.Equal(t, expected, actual)
 	})
@@ -89,35 +97,44 @@ func Test_buildChiUserIDFetcher(T *testing.T) {
 	T.Run("happy path", func(t *testing.T) {
 		fn := buildChiUserIDFetcher(noop.ProvideNoopLogger())
 		expected := uint64(123)
+
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
-			URLParams: chi.RouteParams{
-				Keys: []string{
-					users.URIParamKey,
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{users.URIParamKey},
+						Values: []string{fmt.Sprintf("%d", expected)},
+					},
 				},
-				Values: []string{
-					fmt.Sprintf("%d", expected),
-				},
-			},
-		}))
+			),
+		)
+
 		actual := fn(req)
 		assert.Equal(t, expected, actual)
 	})
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
+		// NOTE: This will probably never happen in dev or production
 		fn := buildChiUserIDFetcher(noop.ProvideNoopLogger())
 		expected := uint64(0)
+
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
-			URLParams: chi.RouteParams{
-				Keys: []string{
-					users.URIParamKey,
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{users.URIParamKey},
+						Values: []string{"expected"},
+					},
 				},
-				Values: []string{
-					"expected",
-				},
-			},
-		}))
+			),
+		)
+
 		actual := fn(req)
 		assert.Equal(t, expected, actual)
 	})
@@ -129,35 +146,44 @@ func Test_buildChiItemIDFetcher(T *testing.T) {
 	T.Run("happy path", func(t *testing.T) {
 		fn := buildChiItemIDFetcher(noop.ProvideNoopLogger())
 		expected := uint64(123)
+
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
-			URLParams: chi.RouteParams{
-				Keys: []string{
-					items.URIParamKey,
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{items.URIParamKey},
+						Values: []string{fmt.Sprintf("%d", expected)},
+					},
 				},
-				Values: []string{
-					fmt.Sprintf("%d", expected),
-				},
-			},
-		}))
+			),
+		)
+
 		actual := fn(req)
 		assert.Equal(t, expected, actual)
 	})
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
+		// NOTE: This will probably never happen in dev or production
 		fn := buildChiItemIDFetcher(noop.ProvideNoopLogger())
 		expected := uint64(0)
+
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
-			URLParams: chi.RouteParams{
-				Keys: []string{
-					items.URIParamKey,
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{items.URIParamKey},
+						Values: []string{"expected"},
+					},
 				},
-				Values: []string{
-					"expected",
-				},
-			},
-		}))
+			),
+		)
+
 		actual := fn(req)
 		assert.Equal(t, expected, actual)
 	})
@@ -169,27 +195,44 @@ func Test_buildChiWebhookIDFetcher(T *testing.T) {
 	T.Run("happy path", func(t *testing.T) {
 		fn := buildChiWebhookIDFetcher(noop.ProvideNoopLogger())
 		expected := uint64(123)
+
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
-			URLParams: chi.RouteParams{
-				Keys:   []string{webhooks.URIParamKey},
-				Values: []string{fmt.Sprintf("%d", expected)},
-			},
-		}))
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{webhooks.URIParamKey},
+						Values: []string{fmt.Sprintf("%d", expected)},
+					},
+				},
+			),
+		)
+
 		actual := fn(req)
 		assert.Equal(t, expected, actual)
 	})
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
+		// NOTE: This will probably never happen in dev or production
 		fn := buildChiWebhookIDFetcher(noop.ProvideNoopLogger())
 		expected := uint64(0)
+
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
-			URLParams: chi.RouteParams{
-				Keys:   []string{webhooks.URIParamKey},
-				Values: []string{"expected"},
-			},
-		}))
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{webhooks.URIParamKey},
+						Values: []string{"expected"},
+					},
+				},
+			),
+		)
+
 		actual := fn(req)
 		assert.Equal(t, expected, actual)
 	})
@@ -201,27 +244,44 @@ func Test_buildChiOAuth2ClientIDFetcher(T *testing.T) {
 	T.Run("happy path", func(t *testing.T) {
 		fn := buildChiOAuth2ClientIDFetcher(noop.ProvideNoopLogger())
 		expected := uint64(123)
+
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
-			URLParams: chi.RouteParams{
-				Keys:   []string{oauth2clients.URIParamKey},
-				Values: []string{fmt.Sprintf("%d", expected)},
-			},
-		}))
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{oauth2clients.URIParamKey},
+						Values: []string{fmt.Sprintf("%d", expected)},
+					},
+				},
+			),
+		)
+
 		actual := fn(req)
 		assert.Equal(t, expected, actual)
 	})
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
+		// NOTE: This will probably never happen in dev or production
 		fn := buildChiOAuth2ClientIDFetcher(noop.ProvideNoopLogger())
 		expected := uint64(0)
+
 		req := buildRequest(t)
-		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, &chi.Context{
-			URLParams: chi.RouteParams{
-				Keys:   []string{oauth2clients.URIParamKey},
-				Values: []string{"expected"},
-			},
-		}))
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{oauth2clients.URIParamKey},
+						Values: []string{"expected"},
+					},
+				},
+			),
+		)
+
 		actual := fn(req)
 		assert.Equal(t, expected, actual)
 	})
