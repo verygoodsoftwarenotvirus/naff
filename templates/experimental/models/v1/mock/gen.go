@@ -1,6 +1,8 @@
 package mock
 
 import (
+	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -16,14 +18,13 @@ func RenderPackage(types []models.DataType) error {
 		"models/v1/mock/mock_user_data_manager.go":          mockUserDataManagerDotGo(),
 		"models/v1/mock/mock_webhook_data_manager.go":       mockWebhookDataManagerDotGo(),
 		"models/v1/mock/mock_webhook_data_server.go":        mockWebhookDataServerDotGo(),
-		"models/v1/mock/mock_item_data_manager.go":          mockItemDataManagerDotGo(),
-		"models/v1/mock/mock_item_data_server.go":           mockItemDataServerDotGo(),
 	}
 
-	//for _, typ := range types {
-	//	files[fmt.Sprintf("client/v1/http/%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
-	//	files[fmt.Sprintf("client/v1/http/%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
-	//}
+	for _, typ := range types {
+		rn := typ.Name.RouteName()
+		files[fmt.Sprintf("models/v1/mock/mock_%s_data_manager.go", rn)] = mockIterableDataManagerDotGo(typ)
+		files[fmt.Sprintf("models/v1/mock/mock_%s_data_server.go", rn)] = mockIterableDataServerDotGo(typ)
+	}
 
 	for path, file := range files {
 		if err := utils.RenderFile(path, file); err != nil {
