@@ -9,6 +9,7 @@ import (
 )
 
 type (
+	// WebhookDataManager describes a structure capable of storing webhooks
 	WebhookDataManager interface {
 		GetWebhook(ctx context.Context, webhookID, userID uint64) (*Webhook, error)
 		GetWebhookCount(ctx context.Context, filter *QueryFilter, userID uint64) (uint64, error)
@@ -20,52 +21,63 @@ type (
 		UpdateWebhook(ctx context.Context, updated *Webhook) error
 		ArchiveWebhook(ctx context.Context, webhookID, userID uint64) error
 	}
+
+	// WebhookDataServer describes a structure capable of serving traffic related to webhooks
 	WebhookDataServer interface {
 		CreationInputMiddleware(next http.Handler) http.Handler
 		UpdateInputMiddleware(next http.Handler) http.Handler
+
 		ListHandler() http.HandlerFunc
 		CreateHandler() http.HandlerFunc
 		ReadHandler() http.HandlerFunc
 		UpdateHandler() http.HandlerFunc
 		ArchiveHandler() http.HandlerFunc
 	}
+
+	// Webhook represents a webhook listener, an endpoint to send an HTTP request to upon an event
 	Webhook struct {
-		ID          uint64
-		Name        string
-		ContentType string
-		URL         string
-		Method      string
-		Events      []string
-		DataTypes   []string
-		Topics      []string
-		CreatedOn   uint64
-		UpdatedOn   *uint64
-		ArchivedOn  *uint64
-		BelongsTo   uint64
+		ID          uint64   `json:"id"`
+		Name        string   `json:"name"`
+		ContentType string   `json:"content_type"`
+		URL         string   `json:"url"`
+		Method      string   `json:"method"`
+		Events      []string `json:"events"`
+		DataTypes   []string `json:"data_types"`
+		Topics      []string `json:"topics"`
+		CreatedOn   uint64   `json:"created_on"`
+		UpdatedOn   *uint64  `json:"updated_on"`
+		ArchivedOn  *uint64  `json:"archived_on"`
+		BelongsTo   uint64   `json:"belongs_to"`
 	}
+
+	// WebhookCreationInput represents what a user could set as input for creating a webhook
 	WebhookCreationInput struct {
-		Name        string
-		ContentType string
-		URL         string
-		Method      string
-		Events      []string
-		DataTypes   []string
-		Topics      []string
-		BelongsTo   uint64
+		Name        string   `json:"name"`
+		ContentType string   `json:"content_type"`
+		URL         string   `json:"url"`
+		Method      string   `json:"method"`
+		Events      []string `json:"events"`
+		DataTypes   []string `json:"data_types"`
+		Topics      []string `json:"topics"`
+		BelongsTo   uint64   `json:"-"`
 	}
+
+	// WebhookUpdateInput represents what a user could set as input for updating a webhook
 	WebhookUpdateInput struct {
-		Name        string
-		ContentType string
-		URL         string
-		Method      string
-		Events      []string
-		DataTypes   []string
-		Topics      []string
-		BelongsTo   uint64
+		Name        string   `json:"name"`
+		ContentType string   `json:"content_type"`
+		URL         string   `json:"url"`
+		Method      string   `json:"method"`
+		Events      []string `json:"events"`
+		DataTypes   []string `json:"data_types"`
+		Topics      []string `json:"topics"`
+		BelongsTo   uint64   `json:"-"`
 	}
+
+	// WebhookList represents a list of webhooks
 	WebhookList struct {
 		Pagination
-		Webhooks []Webhook
+		Webhooks []Webhook `json:"webhooks"`
 	}
 )
 
@@ -83,6 +95,7 @@ func (w *Webhook) Update(input *WebhookUpdateInput) {
 	if input.Method != "" {
 		w.Method = input.Method
 	}
+
 	if input.Events != nil && len(input.Events) > 0 {
 		w.Events = input.Events
 	}
@@ -94,7 +107,7 @@ func (w *Webhook) Update(input *WebhookUpdateInput) {
 	}
 }
 
-func buildErrorLogFunc(w *Webhook, logger logging.Logger) error {
+func buildErrorLogFunc(w *Webhook, logger logging.Logger) func(error) {
 	return func(err error) {
 		logger.WithValues(map[string]interface{}{
 			"url":          w.URL,
@@ -106,13 +119,17 @@ func buildErrorLogFunc(w *Webhook, logger logging.Logger) error {
 
 // ToListener creates a newsman Listener from a Webhook
 func (w *Webhook) ToListener(logger logging.Logger) newsman.Listener {
-	return newsman.NewWebhookListener(buildErrorLogFunc(w, logger), &newsman.WebhookConfig{
-		Method:      w.Method,
-		URL:         w.URL,
-		ContentType: w.ContentType,
-	}, &newsman.ListenerConfig{
-		Events:    w.Events,
-		DataTypes: w.DataTypes,
-		Topics:    w.Topics,
-	})
+	return newsman.NewWebhookListener(
+		buildErrorLogFunc(w, logger),
+		&newsman.WebhookConfig{
+			Method:      w.Method,
+			URL:         w.URL,
+			ContentType: w.ContentType,
+		},
+		&newsman.ListenerConfig{
+			Events:    w.Events,
+			DataTypes: w.DataTypes,
+			Topics:    w.Topics,
+		},
+	)
 }

@@ -9,6 +9,7 @@ import (
 
 var _ models.ItemDataManager = (*ItemDataManager)(nil)
 
+// ItemDataManager is a mocked models.ItemDataManager for testing
 type ItemDataManager struct {
 	mock.Mock
 }
@@ -20,25 +21,25 @@ func (m *ItemDataManager) GetItem(ctx context.Context, itemID, userID uint64) (*
 }
 
 // GetItemCount is a mock function
-func (m *ItemDataManager) GetItem(ctx context.Context, filter *models.QueryFilter, userID uint64) (uint64, error) {
+func (m *ItemDataManager) GetItemCount(ctx context.Context, filter *models.QueryFilter, userID uint64) (uint64, error) {
 	args := m.Called(ctx, filter, userID)
 	return args.Get(0).(uint64), args.Error(1)
 }
 
 // GetAllItemsCount is a mock function
-func (m *ItemDataManager) GetAllItem(ctx context.Context) (uint64, error) {
+func (m *ItemDataManager) GetAllItemsCount(ctx context.Context) (uint64, error) {
 	args := m.Called(ctx)
 	return args.Get(0).(uint64), args.Error(1)
 }
 
 // GetItems is a mock function
-func (m *ItemDataManager) GetItem(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.ItemList, error) {
+func (m *ItemDataManager) GetItems(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.ItemList, error) {
 	args := m.Called(ctx, filter, userID)
 	return args.Get(0).(*models.ItemList), args.Error(1)
 }
 
 // GetAllItemsForUser is a mock function
-func (m *ItemDataManager) GetAllItem(ctx context.Context, userID uint64) ([]models.Item, error) {
+func (m *ItemDataManager) GetAllItemsForUser(ctx context.Context, userID uint64) ([]models.Item, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).([]models.Item), args.Error(1)
 }

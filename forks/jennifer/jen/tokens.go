@@ -178,6 +178,28 @@ func (s *Statement) Op(op string) *Statement {
 	return s
 }
 
+// Opln renders the provided operator / token.
+func Opln(op string) *Statement {
+	return newStatement().Opln(op)
+}
+
+// Opln renders the provided operator / token.
+func (g *Group) Opln(op string) *Statement {
+	s := Opln(op)
+	g.items = append(g.items, s)
+	return s
+}
+
+// Opln renders the provided operator / token.
+func (s *Statement) Opln(op string) *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: fmt.Sprintf("%s\n", op),
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // Dot renders a period followed by an identifier. Use for fields and selectors.
 func Dot(name string) *Statement {
 	// notest

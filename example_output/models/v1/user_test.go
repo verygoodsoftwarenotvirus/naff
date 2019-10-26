@@ -20,6 +20,7 @@ func TestUser_Update(T *testing.T) {
 			HashedPassword:  "updated_hashed_pass",
 			TwoFactorSecret: "new fancy secret",
 		}
+
 		actual.Update(&exampleInput)
 		assert.Equal(t, exampleInput, actual)
 	})

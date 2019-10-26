@@ -18,46 +18,30 @@ func TestWebhook_Update(T *testing.T) {
 			ContentType: "application/json",
 			URL:         "https://verygoodsoftwarenotvirus.ru",
 			Method:      http.MethodPost,
-			Events: []string{
-				"things",
-			},
-			DataTypes: []string{
-				"stuff",
-			},
-			Topics: []string{
-				"blah",
-			},
-		}
-		exampleInput := &WebhookUpdateInput{
-			Name:        "new name",
-			ContentType: "application/xml",
-			URL:         "https://blah.verygoodsoftwarenotvirus.ru",
-			Method:      http.MethodPatch,
-			Events: []string{
-				"more_things",
-			},
-			DataTypes: []string{
-				"new_stuff",
-			},
-			Topics: []string{
-				"blah-blah",
-			},
+			Events:      []string{"things"},
+			DataTypes:   []string{"stuff"},
+			Topics:      []string{"blah"},
 		}
 		expected := &Webhook{
 			Name:        "new name",
 			ContentType: "application/xml",
 			URL:         "https://blah.verygoodsoftwarenotvirus.ru",
 			Method:      http.MethodPatch,
-			Events: []string{
-				"more_things",
-			},
-			DataTypes: []string{
-				"new_stuff",
-			},
-			Topics: []string{
-				"blah-blah",
-			},
+			Events:      []string{"more_things"},
+			DataTypes:   []string{"new_stuff"},
+			Topics:      []string{"blah-blah"},
 		}
+
+		exampleInput := &WebhookUpdateInput{
+			Name:        "new name",
+			ContentType: "application/xml",
+			URL:         "https://blah.verygoodsoftwarenotvirus.ru",
+			Method:      http.MethodPatch,
+			Events:      []string{"more_things"},
+			DataTypes:   []string{"new_stuff"},
+			Topics:      []string{"blah-blah"},
+		}
+
 		actual.Update(exampleInput)
 		assert.Equal(t, expected, actual)
 	})

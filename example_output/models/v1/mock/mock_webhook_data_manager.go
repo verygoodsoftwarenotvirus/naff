@@ -9,6 +9,7 @@ import (
 
 var _ models.WebhookDataManager = (*WebhookDataManager)(nil)
 
+// WebhookDataManager is a mocked models.WebhookDataManager for testing
 type WebhookDataManager struct {
 	mock.Mock
 }

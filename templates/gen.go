@@ -12,6 +12,8 @@ import (
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/server/v1"
 	twofactorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/tools/two_factor"
 	database "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1"
+	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1"
+	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1/mock"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/auth"
 	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/auth/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/config"
@@ -34,8 +36,6 @@ import (
 	mariaDB "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/mariadb"
 	postgresql "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/postgres"
 	sqlite3 "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/sqlite"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/models/v1"
-	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/models/v1/mock"
 	iterables "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/iterables"
 	users "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/users"
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/testutil/rand/model"
@@ -72,13 +72,13 @@ func RenderProject(in *naffmodels.Project) error {
 		"users":            {renderFunc: users.RenderPackage, activated: false},
 		"iterables":        {renderFunc: iterables.RenderPackage, activated: false},
 		"httpserver":       {renderFunc: httpserver.RenderPackage, activated: false},
+		"modelsmock":       {renderFunc: modelsmock.RenderPackage, activated: false},
+		"models":           {renderFunc: models.RenderPackage, activated: false},
 
 		// doing (two sides; one coin)
-		"modelsmock": {renderFunc: modelsmock.RenderPackage, activated: true},
+		"randmodel": {renderFunc: randmodel.RenderPackage, activated: true},
 
 		// on deck
-		"models":     {renderFunc: models.RenderPackage, activated: false},
-		"randmodel":  {renderFunc: randmodel.RenderPackage, activated: false},
 		"dbclient":   {renderFunc: dbclient.RenderPackage, activated: false},
 		"postgresql": {renderFunc: postgresql.RenderPackage, activated: false},
 		"mariaDB":    {renderFunc: mariaDB.RenderPackage, activated: false},

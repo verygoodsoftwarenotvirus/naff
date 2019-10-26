@@ -9,6 +9,7 @@ import (
 
 var _ models.ItemDataServer = (*ItemDataServer)(nil)
 
+// ItemDataServer is a mocked models.ItemDataServer for testing
 type ItemDataServer struct {
 	mock.Mock
 }

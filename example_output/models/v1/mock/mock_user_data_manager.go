@@ -9,6 +9,7 @@ import (
 
 var _ models.UserDataManager = (*UserDataManager)(nil)
 
+// UserDataManager is a mocked models.UserDataManager for testing
 type UserDataManager struct {
 	mock.Mock
 }

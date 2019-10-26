@@ -251,7 +251,7 @@ func guessAlias(path string) string {
 		alias = alias[strings.LastIndex(alias, "/")+1:]
 	}
 
-	// alias should be lower case
+	// alias should be lower case1
 	alias = strings.ToLower(alias)
 
 	// alias should now only contain alphanumerics
