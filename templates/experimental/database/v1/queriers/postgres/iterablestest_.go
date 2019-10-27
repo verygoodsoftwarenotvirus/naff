@@ -225,22 +225,13 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.IDf("expected%s", sn).Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn).Valuesln(
-					jen.ID("Name").Op(":").Lit("name"),
-				),
 				jen.Line(),
 				jen.ID("expectedListQuery").Op(":=").Litf("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM %s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20", tn),
 				jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
+				jen.IDf("expected%s", sn).Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn).Valuesln(
+					jen.ID("Name").Op(":").Lit("name"),
+				),
 				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
-				jen.Line(),
-				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dot("WithArgs").Call(jen.ID("expectedUserID")).
-					Dot("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn))),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
-					Dot("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).
-					Dot("AddRow").Call(jen.ID("expectedCount"))),
-				jen.Line(),
 				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sList", sn)).Valuesln(
 					jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Pagination").Valuesln(
 						jen.ID("Page").Op(":").Lit(1),
@@ -251,6 +242,15 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 						jen.Op("*").IDf("expected%s", sn),
 					),
 				),
+				jen.Line(),
+				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+					Dot("WithArgs").Call(jen.ID("expectedUserID")).
+					Dot("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn))),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
+					Dot("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).
+					Dot("AddRow").Call(jen.ID("expectedCount"))),
+				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.Line(),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
