@@ -112,9 +112,7 @@ func usersDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("usersTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),
@@ -162,9 +160,7 @@ func usersDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("usersTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("username").Op(":").ID("username"))).Dot(
 				"ToSql",
 			).Call(),
@@ -217,9 +213,7 @@ func usersDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("usersTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
@@ -270,9 +264,7 @@ func usersDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("usersTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
@@ -360,9 +352,7 @@ func usersDotGo() *jen.File {
 				jen.ID("input").Dot(
 					"TwoFactorSecret",
 				),
-				jen.ID("false"), jen.ID("squirrel").Dot(
-					"Expr",
-				).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+				jen.ID("false"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"ToSql",
 			).Call(),
 			jen.ID("m").Dot(
@@ -387,9 +377,7 @@ func usersDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("usersTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),
@@ -477,13 +465,9 @@ func usersDotGo() *jen.File {
 				"HashedPassword",
 			)).Dot("Set").Call(jen.Lit("two_factor_secret"), jen.ID("input").Dot(
 				"TwoFactorSecret",
-			)).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+			)).Dot("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("input").Dot("ID"))).Dot(
 				"ToSql",
 			).Call(),
@@ -524,15 +508,9 @@ func usersDotGo() *jen.File {
 				"sqlBuilder",
 			).Dot(
 				"Update",
-			).Call(jen.ID("usersTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+			).Call(jen.ID("usersTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),

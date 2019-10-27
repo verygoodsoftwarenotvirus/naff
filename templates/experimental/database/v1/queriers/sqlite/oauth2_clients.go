@@ -135,9 +135,7 @@ func oauth2ClientsDotGo() *jen.File {
 					"From",
 				).Call(jen.ID("oauth2ClientsTableName")).Dot(
 					"Where",
-				).Call(jen.ID("squirrel").Dot(
-					"Eq",
-				).Valuesln(
+				).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 					jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 					"ToSql",
 				).Call(),
@@ -223,9 +221,7 @@ func oauth2ClientsDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("oauth2ClientsTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 				"ToSql",
 			).Call(),
@@ -279,9 +275,7 @@ func oauth2ClientsDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("oauth2ClientsTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
@@ -344,9 +338,7 @@ func oauth2ClientsDotGo() *jen.File {
 					"From",
 				).Call(jen.ID("oauth2ClientsTableName")).Dot(
 					"Where",
-				).Call(jen.ID("squirrel").Dot(
-					"Eq",
-				).Valuesln(
+				).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 					jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 					"ToSql",
 				).Call(),
@@ -394,9 +386,7 @@ func oauth2ClientsDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("oauth2ClientsTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("belongs_to").Op(":").ID("userID"), jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
@@ -527,9 +517,7 @@ func oauth2ClientsDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("oauth2ClientsTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("clientID"))).Dot(
 				"ToSql",
 			).Call(),
@@ -617,13 +605,9 @@ func oauth2ClientsDotGo() *jen.File {
 			),
 				jen.ID("scopesSeparator"))).Dot("Set").Call(jen.Lit("redirect_uri"), jen.ID("input").Dot(
 				"RedirectURI",
-			)).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+			)).Dot("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("input").Dot("ID"),
 				jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo"))).Dot(
 				"ToSql",
@@ -665,15 +649,9 @@ func oauth2ClientsDotGo() *jen.File {
 				"sqlBuilder",
 			).Dot(
 				"Update",
-			).Call(jen.ID("oauth2ClientsTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+			).Call(jen.ID("oauth2ClientsTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("clientID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),

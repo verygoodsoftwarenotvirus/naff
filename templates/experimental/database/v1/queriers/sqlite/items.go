@@ -85,9 +85,7 @@ func itemsDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("itemsTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("itemID"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),
@@ -132,9 +130,7 @@ func itemsDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("itemsTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("archived_on").Op(":").ID("nil"), jen.Lit("belongs_to").Op(":").ID("userID"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
@@ -197,9 +193,7 @@ func itemsDotGo() *jen.File {
 					"From",
 				).Call(jen.ID("itemsTableName")).Dot(
 					"Where",
-				).Call(jen.ID("squirrel").Dot(
-					"Eq",
-				).Valuesln(
+				).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 					jen.Lit("archived_on").Op(":").ID("nil"))).Dot(
 					"ToSql",
 				).Call(),
@@ -245,9 +239,7 @@ func itemsDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("itemsTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("archived_on").Op(":").ID("nil"), jen.Lit("belongs_to").Op(":").ID("userID"))),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
@@ -378,9 +370,7 @@ func itemsDotGo() *jen.File {
 				"From",
 			).Call(jen.ID("itemsTableName")).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("itemID"))).Dot(
 				"ToSql",
 			).Call(),
@@ -447,13 +437,9 @@ func itemsDotGo() *jen.File {
 				"Update",
 			).Call(jen.ID("itemsTableName")).Dot("Set").Call(jen.Lit("name"), jen.ID("input").Dot("Name")).Dot("Set").Call(jen.Lit("details"), jen.ID("input").Dot(
 				"Details",
-			)).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+			)).Dot("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("input").Dot("ID"),
 				jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo"))).Dot(
 				"ToSql",
@@ -491,15 +477,9 @@ func itemsDotGo() *jen.File {
 				"sqlBuilder",
 			).Dot(
 				"Update",
-			).Call(jen.ID("itemsTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot(
-				"Expr",
-			).Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
+			).Call(jen.ID("itemsTableName")).Dot("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).Dot(
 				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
+			).Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("itemID"), jen.Lit("archived_on").Op(":").ID("nil"), jen.Lit("belongs_to").Op(":").ID("userID"))).Dot(
 				"ToSql",
 			).Call(),

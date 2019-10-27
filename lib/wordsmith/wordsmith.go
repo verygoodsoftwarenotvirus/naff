@@ -55,6 +55,10 @@ func (s *SuperPalabra) SingularCommonName() string {
 	return strings.Join(strings.Split(s.RouteName(), "_"), " ")
 }
 
+func (s *SuperPalabra) ProperSingularCommonNameWithPrefix() string {
+	return fmt.Sprintf("%s %s", AOrAn(s.Singular()), strings.Title(strings.Join(strings.Split(s.RouteName(), "_"), " ")))
+}
+
 func (s *SuperPalabra) PluralCommonName() string {
 	return strings.Join(strings.Split(s.PluralRouteName(), "_"), " ")
 }
