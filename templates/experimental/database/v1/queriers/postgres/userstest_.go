@@ -213,7 +213,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectQuery",
 			).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).Dot(
 				"WillReturnRows",
-			).Call(jen.ID("sqlmock").Dot(
+			).Call(jen.Qual("github.com/DATA-DOG/go-sqlmock",
 				"NewRows",
 			).Call(jen.Index().ID("string").Valuesln(
 	jen.Lit("count"))).Dot(
@@ -497,7 +497,7 @@ func usersTestDotGo() *jen.File {
 				"ExpectQuery",
 			).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot(
 				"WillReturnRows",
-			).Call(jen.ID("sqlmock").Dot(
+			).Call(jen.Qual("github.com/DATA-DOG/go-sqlmock",
 				"NewRows",
 			).Call(jen.Index().ID("string").Valuesln(
 	jen.Lit("count"))).Dot(
@@ -825,7 +825,7 @@ func usersTestDotGo() *jen.File {
 				"WithArgs",
 			).Call(jen.ID("expected").Dot("ID")).Dot(
 				"WillReturnResult",
-			).Call(jen.ID("sqlmock").Dot(
+			).Call(jen.Qual("github.com/DATA-DOG/go-sqlmock",
 				"NewResult",
 			).Call(jen.Lit(1), jen.Lit(1))),
 			jen.ID("err").Op(":=").ID("p").Dot(

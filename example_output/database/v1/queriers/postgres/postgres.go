@@ -8,32 +8,40 @@ import (
 
 	"contrib.go.opencensus.io/integrations/ocsql"
 	"github.com/Masterminds/squirrel"
-	"github.com/lib/pq"
+	postgres "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 )
 
 const (
-	loggerName           = "postgres"
-	postgresDriverName   = "wrapped-postgres-driver"
-	CountQuery           = "COUNT(id)"
+	loggerName         = "postgres"
+	postgresDriverName = "wrapped-postgres-driver"
+
+	// CountQuery is a generic counter query used in a few query builders
+	CountQuery = "COUNT(id)"
+
+	// CurrentUnixTimeQuery is the query postgres uses to determine the current unix time
 	CurrentUnixTimeQuery = "extract(epoch FROM NOW())"
 )
 
 func init() {
+	// Explicitly wrap the Postgres driver with ocsql
 	driver := ocsql.Wrap(
-		&pq.Driver{},
+		&postgres.Driver{},
 		ocsql.WithQuery(true),
 		ocsql.WithAllowRoot(false),
 		ocsql.WithRowsNext(true),
 		ocsql.WithRowsClose(true),
 		ocsql.WithQueryParams(true),
 	)
+
+	// Register our ocsql wrapper as a db driver
 	sql.Register(postgresDriverName, driver)
 }
 
 type (
+	// Postgres is our main Postgres interaction db
 	Postgres struct {
 		logger      logging.Logger
 		db          *sql.DB
@@ -41,8 +49,12 @@ type (
 		migrateOnce sync.Once
 		debug       bool
 	}
+
+	// ConnectionDetails is a string alias for a Postgres url
 	ConnectionDetails string
-	Querier           interface {
+
+	// Querier is a subset interface for sql.{DB|Tx|Stmt} objects
+	Querier interface {
 		ExecContext(ctx context.Context, args ...interface{}) (sql.Result, error)
 		QueryContext(ctx context.Context, args ...interface{}) (*sql.Rows, error)
 		QueryRowContext(ctx context.Context, args ...interface{}) *sql.Row
@@ -68,15 +80,18 @@ func ProvidePostgres(debug bool, db *sql.DB, logger logging.Logger) database.Dat
 // IsReady reports whether or not the db is ready
 func (p *Postgres) IsReady(ctx context.Context) (ready bool) {
 	numberOfUnsuccessfulAttempts := 0
+
 	p.logger.WithValues(map[string]interface{}{
 		"interval":     time.Second,
 		"max_attempts": 50,
 	}).Debug("IsReady called")
+
 	for !ready {
 		err := p.db.Ping()
 		if err != nil {
 			p.logger.Debug("ping failed, waiting for db")
 			time.Sleep(time.Second)
+
 			numberOfUnsuccessfulAttempts++
 			if numberOfUnsuccessfulAttempts >= 50 {
 				return false

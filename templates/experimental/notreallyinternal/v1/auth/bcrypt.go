@@ -125,7 +125,7 @@ func bcryptDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("// PasswordMatches validates whether or not a bcrypt-hashed password matches a provided password"),
+		jen.Comment("PasswordMatches validates whether or not a bcrypt-hashed password matches a provided password"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("PasswordMatches").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("_").Index().ID("byte")).Params(jen.ID("bool")).Block(
 			jen.Return().ID("bcrypt").Dot("CompareHashAndPassword").Call(jen.Index().ID("byte").Call(jen.ID("hashedPassword")), jen.Index().ID("byte").Call(jen.ID("providedPassword"))).Op("==").ID("nil"),
@@ -134,7 +134,7 @@ func bcryptDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("// hashedPasswordIsTooWeak determines if a given hashed password was hashed with too weak a bcrypt cost"),
+		jen.Comment("hashedPasswordIsTooWeak determines if a given hashed password was hashed with too weak a bcrypt cost"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("hashedPasswordIsTooWeak").Params(jen.ID("hashedPassword").ID("string")).Params(jen.ID("bool")).Block(
 			jen.List(jen.ID("cost"), jen.ID("err")).Op(":=").ID("bcrypt").Dot("Cost").Call(jen.Index().ID("byte").Call(jen.ID("hashedPassword"))),
@@ -145,7 +145,7 @@ func bcryptDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("// PasswordIsAcceptable takes a password and returns whether or not it satisfies the authenticator"),
+		jen.Comment("PasswordIsAcceptable takes a password and returns whether or not it satisfies the authenticator"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("PasswordIsAcceptable").Params(jen.ID("pass").ID("string")).Params(jen.ID("bool")).Block(
 			jen.Return().ID("uint").Call(jen.ID("len").Call(jen.ID("pass"))).Op(">=").ID("b").Dot("minimumPasswordSize"),

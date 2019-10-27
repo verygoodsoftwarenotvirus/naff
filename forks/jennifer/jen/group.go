@@ -77,7 +77,10 @@ func (g *Group) render(f *File, w io.Writer, s *Statement) error {
 
 func (g *Group) renderItems(f *File, w io.Writer) (isNull bool, err error) {
 	first := true
-	for _, code := range g.items {
+
+	var pairedCallLineBegun bool
+
+	for i, code := range g.items {
 		if pt, ok := code.(token); ok && pt.typ == packageToken {
 			// Special case for package tokens in Qual groups - for dot-imports, the package token
 			// will be null, so will not render and will not be registered in the imports block.
@@ -96,10 +99,19 @@ func (g *Group) renderItems(f *File, w io.Writer) (isNull bool, err error) {
 			}
 		}
 		if !first && g.separator != "" {
-			// The separator token is added before each non-null item, but not before the first item.
-			if _, err := w.Write([]byte(g.separator)); err != nil {
-				return false, err
+			if !pairedCallLineBegun || (pairedCallLineBegun && i%2 == 0) {
+				// The separator token is added before each non-null item, but not before the first item.
+				if _, err := w.Write([]byte(g.separator)); err != nil {
+					return false, err
+				}
+			} else if pairedCallLineBegun {
+				if _, err := w.Write([]byte(", ")); err != nil {
+					return false, err
+				}
 			}
+		}
+		if g.name == "paired call line" {
+			pairedCallLineBegun = true
 		}
 		if g.multi {
 			// For multi-line blocks, we insert a new line before each non-null item.

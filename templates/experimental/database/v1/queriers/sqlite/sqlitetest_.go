@@ -11,7 +11,7 @@ func sqliteTestDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Sqlite"), jen.ID("sqlmock").Dot(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Sqlite"), jen.Qual("github.com/DATA-DOG/go-sqlmock",
 			"Sqlmock",
 		)).Block(
 			jen.List(jen.ID("db"), jen.ID("mock"), jen.ID("err")).Op(":=").ID("sqlmock").Dot("New").Call(),

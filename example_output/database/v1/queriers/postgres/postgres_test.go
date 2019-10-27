@@ -19,7 +19,20 @@ func buildTestService(t *testing.T) (*Postgres, sqlmock.Sqlmock) {
 	return p.(*Postgres), mock
 }
 
-var sqlMockReplacer = strings.NewReplacer("$", "\\$", "(", "\\(", ")", "\\)", "=", "\\=", "*", "\\*", ".", "\\.", "+", "\\+", "?", "\\?", ",", "\\,", "-", "\\-")
+var (
+	sqlMockReplacer = strings.NewReplacer(
+		"$", `\$`,
+		"(", `\(`,
+		")", `\)`,
+		"=", `\=`,
+		"*", `\*`,
+		".", `\.`,
+		"+", `\+`,
+		"?", `\?`,
+		",", `\,`,
+		"-", `\-`,
+	)
+)
 
 func formatQueryForSQLMock(query string) string {
 	return sqlMockReplacer.Replace(query)

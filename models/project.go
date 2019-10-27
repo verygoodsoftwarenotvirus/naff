@@ -25,6 +25,8 @@ type DataField struct {
 	Name                  *wordsmith.SuperPalabra
 	Type                  string
 	Pointer               bool
+	DefaultAllowed        bool
+	DefaultValue          string
 	ValidForCreationInput bool
 	ValidForUpdateInput   bool
 }

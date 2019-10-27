@@ -420,12 +420,12 @@ func (s *Statement) Call(params ...Code) *Statement {
 
 // Callln renders a comma separated list enclosed by parenthesis. Use for function calls.
 func Callln(params ...Code) *Statement {
-	return newStatement().Call(params...)
+	return newStatement().Callln(params...)
 }
 
 // Callln renders a comma separated list enclosed by parenthesis. Use for function calls.
 func (g *Group) Callln(params ...Code) *Statement {
-	s := Call(params...)
+	s := Callln(params...)
 	g.items = append(g.items, s)
 	return s
 }
@@ -437,6 +437,32 @@ func (s *Statement) Callln(params ...Code) *Statement {
 		items:     params,
 		multi:     false,
 		name:      "call",
+		open:      "(\n",
+		separator: ",\n",
+	}
+	*s = append(*s, g)
+	return s
+}
+
+// PairedCallln renders a comma separated list enclosed by parenthesis. Use for function calls.
+func PairedCallln(params ...Code) *Statement {
+	return newStatement().PairedCallln(params...)
+}
+
+// PairedCallln renders a comma separated list enclosed by parenthesis. Use for function calls.
+func (g *Group) PairedCallln(params ...Code) *Statement {
+	s := PairedCallln(params...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// PairedCallln renders a comma separated list enclosed by parenthesis. Use for function calls.
+func (s *Statement) PairedCallln(params ...Code) *Statement {
+	g := &Group{
+		close:     ",\n)",
+		items:     params,
+		multi:     false,
+		name:      "paired call line",
 		open:      "(\n",
 		separator: ",\n",
 	}

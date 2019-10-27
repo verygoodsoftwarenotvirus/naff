@@ -8,9 +8,9 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/lib/pq"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 var usersTableName = "users"

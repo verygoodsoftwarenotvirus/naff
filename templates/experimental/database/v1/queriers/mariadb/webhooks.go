@@ -39,9 +39,9 @@ func webhooksDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("// scanWebhook is a consistent way to turn a *sql.Row into a webhook struct"),
+		jen.Comment("scanWebhook is a consistent way to turn a *sql.Row into a webhook struct"),
 		jen.Line(),
-		jen.Func().ID("scanWebhook").Params(jen.ID("scan").ID("database").Dot("Scanner")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"), jen.ID("error")).Block(
+		jen.Func().ID("scanWebhook").Params(jen.ID("scan").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Scanner")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"), jen.ID("error")).Block(
 			jen.Var().Defs(
 				jen.ID("x").Op("=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook").Values(),
 				jen.List(jen.ID("eventsStr"), jen.ID("dataTypesStr"), jen.ID("topicsStr")).ID("string"),

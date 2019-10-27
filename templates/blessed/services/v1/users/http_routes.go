@@ -19,7 +19,7 @@ func httpRoutesDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("// this function tests that we have appropriate access to crypto/rand"),
+		jen.Comment("this function tests that we have appropriate access to crypto/rand"),
 		jen.Line(),
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),

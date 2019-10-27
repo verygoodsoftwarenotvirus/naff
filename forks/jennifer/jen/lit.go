@@ -2,6 +2,34 @@ package jen
 
 import "fmt"
 
+// RawString renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func RawString(v string) *Statement {
+	return newStatement().RawString(v)
+}
+
+// RawString renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func (g *Group) RawString(v string) *Statement {
+	s := RawString(v)
+	g.items = append(g.items, s)
+	return s
+}
+
+// RawString renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func (s *Statement) RawString(v string) *Statement {
+	t := token{
+		typ:     literalRawStringToken,
+		content: v,
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // Lit renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
 // float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Passing any other type will panic.

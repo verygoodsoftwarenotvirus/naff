@@ -11,50 +11,45 @@ func usersDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("usersTableName").Op("=").Lit("users"),
+		jen.Const().Defs(
+			jen.ID("usersTableName").Op("=").Lit("users"),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Var().ID("usersTableColumns").Op("=").Index().ID("string").Valuesln(
-			jen.Lit("id"), jen.Lit("username"), jen.Lit("hashed_password"), jen.Lit("password_last_changed_on"), jen.Lit("two_factor_secret"), jen.Lit("is_admin"), jen.Lit("created_on"), jen.Lit("updated_on"), jen.Lit("archived_on")),
+		jen.Var().Defs(
+			jen.ID("usersTableColumns").Op("=").Index().ID("string").Valuesln(
+				jen.Lit("id"),
+				jen.Lit("username"),
+				jen.Lit("hashed_password"),
+				jen.Lit("password_last_changed_on"),
+				jen.Lit("two_factor_secret"),
+				jen.Lit("is_admin"),
+				jen.Lit("created_on"),
+				jen.Lit("updated_on"),
+				jen.Lit("archived_on"),
+			),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Comment("scanUser provides a consistent way to scan something like a *sql.Row into a User struct"),
 		jen.Line(),
-		jen.Func().ID("scanUser").Params(jen.ID("scan").ID("database").Dot(
-			"Scanner",
-		)).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
-			"User",
-		),
-			jen.ID("error")).Block(
-
-			jen.Var().ID("x").Op("=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
-				"User",
-			).Values(),
-			jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
-				"Scan",
-			).Call(jen.Op("&").ID("x").Dot("ID"),
-				jen.Op("&").ID("x").Dot(
-					"Username",
-				),
-				jen.Op("&").ID("x").Dot(
-					"HashedPassword",
-				),
-				jen.Op("&").ID("x").Dot(
-					"PasswordLastChangedOn",
-				),
-				jen.Op("&").ID("x").Dot(
-					"TwoFactorSecret",
-				),
-				jen.Op("&").ID("x").Dot(
-					"IsAdmin",
-				),
+		jen.Func().ID("scanUser").Params(jen.ID("scan").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Scanner")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User"), jen.ID("error")).Block(
+			jen.Var().ID("x").Op("=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User").Values(),
+			jen.If(jen.ID("err").Op(":=").ID("scan").Dot("Scan").Callln(
+				jen.Op("&").ID("x").Dot("ID"),
+				jen.Op("&").ID("x").Dot("Username"),
+				jen.Op("&").ID("x").Dot("HashedPassword"),
+				jen.Op("&").ID("x").Dot("PasswordLastChangedOn"),
+				jen.Op("&").ID("x").Dot("TwoFactorSecret"),
+				jen.Op("&").ID("x").Dot("IsAdmin"),
 				jen.Op("&").ID("x").Dot("CreatedOn"),
 				jen.Op("&").ID("x").Dot("UpdatedOn"),
-				jen.Op("&").ID("x").Dot("ArchivedOn")), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Op("&").ID("x").Dot("ArchivedOn"),
+			), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
@@ -65,34 +60,19 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("scanUsers takes database rows and loads them into a slice of User structs"),
 		jen.Line(),
-		jen.Func().ID("scanUsers").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-		),
-			jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
-			"User",
-		),
-			jen.ID("error")).Block(
-
-			jen.Var().ID("list").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
-				"User",
-			),
-			jen.For(jen.ID("rows").Dot(
-				"Next",
-			).Call()).Block(
+		jen.Func().ID("scanUsers").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User"), jen.ID("error")).Block(
+			jen.Var().ID("list").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User"),
+			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
 				jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("scanUser").Call(jen.ID("rows")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning user result: %w"), jen.ID("err"))),
 				),
 				jen.ID("list").Op("=").ID("append").Call(jen.ID("list"), jen.Op("*").ID("user")),
 			),
-			jen.If(jen.ID("err").Op(":=").ID("rows").Dot(
-				"Err",
-			).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID("err").Op(":=").ID("rows").Dot("Err").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
-			jen.If(jen.ID("err").Op(":=").ID("rows").Dot(
-				"Close",
-			).Call(), jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID("err").Op(":=").ID("rows").Dot("Close").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("closing rows")),
 			),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
@@ -104,25 +84,13 @@ func usersDotGo() *jen.File {
 		jen.Comment("buildGetUserQuery returns a SQL query (and argument) for retrieving a user by their database ID"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetUserQuery").Params(jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-
 			jen.Var().ID("err").ID("error"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot(
-				"sqlBuilder",
-			).Dot(
-				"Select",
-			).Call(jen.ID("usersTableColumns").Op("...")).Dot(
-				"From",
-			).Call(jen.ID("usersTableName")).Dot(
-				"Where",
-			).Call(jen.ID("squirrel").Dot(
-				"Eq",
-			).Valuesln(
-				jen.Lit("id").Op(":").ID("userID"))).Dot(
-				"ToSql",
-			).Call(),
-			jen.ID("p").Dot(
-				"logQueryBuildingError",
-			).Call(jen.ID("err")),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+				Dotln("Select").Call(jen.ID("usersTableColumns").Op("...")).
+				Dotln("From").Call(jen.ID("usersTableName")).
+				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.Lit("id").Op(":").ID("userID"))).
+				Dotln("ToSql").Call(),
+			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
 		jen.Line(),
@@ -131,10 +99,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUser fetches a user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
-			"User",
-		),
-			jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User"), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot(
 				"buildGetUserQuery",
 			).Call(jen.ID("userID")),

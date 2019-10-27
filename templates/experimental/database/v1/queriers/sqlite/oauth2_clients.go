@@ -35,9 +35,9 @@ func oauth2ClientsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("// scanOAuth2Client takes a Scanner (i.e. *sql.Row) and scans its ressults into an OAuth2Client struct"),
+		jen.Comment("scanOAuth2Client takes a Scanner (i.e. *sql.Row) and scans its ressults into an OAuth2Client struct"),
 		jen.Line(),
-		jen.Func().ID("scanOAuth2Client").Params(jen.ID("scan").ID("database").Dot("Scanner")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client"), jen.ID("error")).Block(
+		jen.Func().ID("scanOAuth2Client").Params(jen.ID("scan").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Scanner")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client"), jen.ID("error")).Block(
 			jen.Var().Defs(
 				jen.ID("x").Op("=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Values(),
 				jen.ID("scopes").ID("string"),
@@ -639,7 +639,7 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("UpdateOAuth2Client updates a OAuth2 client."),
 		jen.Line(),
-		jen.Comment("// NOTE: this function expects the input's ID field to be valid and non-zero."),
+		jen.Comment("NOTE: this function expects the input's ID field to be valid and non-zero."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("UpdateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"OAuth2Client",

@@ -3,16 +3,17 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/GuiaBolso/darwin"
-	"github.com/pkg/errors"
 )
 
-var migrations = []darwin.Migration{
-	{
-		Version:     1,
-		Description: "create users table",
-		Script: `
+var (
+	migrations = []darwin.Migration{
+		{
+			Version:     1,
+			Description: "create users table",
+			Script: `
 			CREATE TABLE IF NOT EXISTS users (
 				"id" bigserial NOT NULL PRIMARY KEY,
 				"username" text NOT NULL,
@@ -25,11 +26,11 @@ var migrations = []darwin.Migration{
 				"archived_on" bigint DEFAULT NULL,
 				UNIQUE ("username")
 			);`,
-	},
-	{
-		Version:     2,
-		Description: "Add oauth2_clients table",
-		Script: `
+		},
+		{
+			Version:     2,
+			Description: "create oauth2_clients table",
+			Script: `
 			CREATE TABLE IF NOT EXISTS oauth2_clients (
 				"id" bigserial NOT NULL PRIMARY KEY,
 				"name" text DEFAULT '',
@@ -44,11 +45,11 @@ var migrations = []darwin.Migration{
 				"belongs_to" bigint NOT NULL,
 				FOREIGN KEY(belongs_to) REFERENCES users(id)
 			);`,
-	},
-	{
-		Version:     3,
-		Description: "create webhooks table",
-		Script: `
+		},
+		{
+			Version:     3,
+			Description: "create webhooks table",
+			Script: `
 			CREATE TABLE IF NOT EXISTS webhooks (
 				"id" bigserial NOT NULL PRIMARY KEY,
 				"name" text NOT NULL,
@@ -64,23 +65,24 @@ var migrations = []darwin.Migration{
 				"belongs_to" bigint NOT NULL,
 				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")
 			);`,
-	},
-	{
-		Version:     4,
-		Description: "create items table",
-		Script: `
+		},
+		{
+			Version:     4,
+			Description: "create items table",
+			Script: `
 			CREATE TABLE IF NOT EXISTS items (
 				"id" bigserial NOT NULL PRIMARY KEY,
-				"name" text NOT NULL,
-				"details" text NOT NULL DEFAULT '',
+				"name" CHARACTER VARYING NOT NULL,
+				"details" CHARACTER VARYING NOT NULL DEFAULT '',
 				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
 				"updated_on" bigint DEFAULT NULL,
 				"archived_on" bigint DEFAULT NULL,
 				"belongs_to" bigint NOT NULL,
 				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")
 			);`,
-	},
-}
+		},
+	}
+)
 
 // buildMigrationFunc returns a sync.Once compatible function closure that will
 // migrate a postgres database
@@ -100,6 +102,8 @@ func (p *Postgres) Migrate(ctx context.Context) error {
 	if !p.IsReady(ctx) {
 		return errors.New("db is not ready yet")
 	}
+
 	p.migrateOnce.Do(buildMigrationFunc(p.db))
+
 	return nil
 }

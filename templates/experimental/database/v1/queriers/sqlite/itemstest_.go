@@ -173,7 +173,7 @@ func itemsTestDotGo() *jen.File {
 					"WithArgs",
 				).Call(jen.ID("expectedUserID")).Dot(
 					"WillReturnRows",
-				).Call(jen.ID("sqlmock").Dot(
+				).Call(jen.Qual("github.com/DATA-DOG/go-sqlmock",
 					"NewRows",
 				).Call(jen.Index().ID("string").Valuesln(
 					jen.Lit("count"))).Dot(
@@ -222,7 +222,7 @@ func itemsTestDotGo() *jen.File {
 					"ExpectQuery",
 				).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot(
 					"WillReturnRows",
-				).Call(jen.ID("sqlmock").Dot(
+				).Call(jen.Qual("github.com/DATA-DOG/go-sqlmock",
 					"NewRows",
 				).Call(jen.Index().ID("string").Valuesln(
 					jen.Lit("count"))).Dot(
@@ -288,7 +288,7 @@ func itemsTestDotGo() *jen.File {
 					"ExpectQuery",
 				).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).Dot(
 					"WillReturnRows",
-				).Call(jen.ID("sqlmock").Dot(
+				).Call(jen.Qual("github.com/DATA-DOG/go-sqlmock",
 					"NewRows",
 				).Call(jen.Index().ID("string").Valuesln(
 					jen.Lit("count"))).Dot(
@@ -575,7 +575,7 @@ func itemsTestDotGo() *jen.File {
 					),
 					jen.ID("expected").Dot("BelongsTo")).Dot(
 					"WillReturnResult",
-				).Call(jen.ID("sqlmock").Dot(
+				).Call(jen.Qual("github.com/DATA-DOG/go-sqlmock",
 					"NewResult",
 				).Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))),
 				jen.ID("expectedTimeQuery").Op(":=").Lit("SELECT created_on FROM items WHERE id = ?"),
@@ -585,7 +585,7 @@ func itemsTestDotGo() *jen.File {
 					"WithArgs",
 				).Call(jen.ID("expected").Dot("ID")).Dot(
 					"WillReturnRows",
-				).Call(jen.ID("sqlmock").Dot(
+				).Call(jen.Qual("github.com/DATA-DOG/go-sqlmock",
 					"NewRows",
 				).Call(jen.Index().ID("string").Valuesln(
 					jen.Lit("created_on"))).Dot(
@@ -693,7 +693,7 @@ func itemsTestDotGo() *jen.File {
 					jen.ID("expected").Dot("BelongsTo"),
 					jen.ID("expected").Dot("ID")).Dot(
 					"WillReturnResult",
-				).Call(jen.ID("sqlmock").Dot(
+				).Call(jen.Qual("github.com/DATA-DOG/go-sqlmock",
 					"NewResult",
 				).Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))),
 				jen.ID("err").Op(":=").ID("s").Dot(
@@ -783,7 +783,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("expected").Dot("BelongsTo"),
 					jen.ID("expected").Dot("ID")).Dot(
 					"WillReturnResult",
-				).Call(jen.ID("sqlmock").Dot(
+				).Call(jen.Qual("github.com/DATA-DOG/go-sqlmock",
 					"NewResult",
 				).Call(jen.Lit(1), jen.Lit(1))),
 				jen.ID("err").Op(":=").ID("s").Dot(

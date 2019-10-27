@@ -27,6 +27,8 @@ func main() {
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
 						Pointer:               false,
+						DefaultAllowed:        true,
+						DefaultValue:          "''",
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},

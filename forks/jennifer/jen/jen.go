@@ -105,24 +105,10 @@ func (f *File) renderImports(source io.Writer) error {
 		filtered[path] = def
 	}
 
-	// if len(filtered) == 1 {
-	// 	for path, def := range filtered {
-	// 		if def.alias && path != "C" {
-	// 			// "C" package should be rendered without alias even when used as an anonymous import
-	// 			// (e.g. should never have an underscore).
-	// 			if _, err := fmt.Fprintf(source, "import %s %s\n\n", def.name, strconv.Quote(path)); err != nil {
-	// 				return err
-	// 			}
-	// 		} else {
-	// 			if _, err := fmt.Fprintf(source, "import %s\n\n", strconv.Quote(path)); err != nil {
-	// 				return err
-	// 			}
-	// 		}
-	// 	}
-	// } else if len(filtered) > 1 {
 	if _, err := fmt.Fprint(source, "import (\n"); err != nil {
 		return err
 	}
+
 	// We must sort the imports to ensure repeatable
 	// source.
 	paths := []string{}
@@ -148,7 +134,6 @@ func (f *File) renderImports(source io.Writer) error {
 	if _, err := fmt.Fprint(source, ")\n\n"); err != nil {
 		return err
 	}
-	// }
 
 	if separateCgo {
 		for _, c := range f.cgoPreamble {

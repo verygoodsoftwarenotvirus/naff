@@ -32,7 +32,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("scanUser provides a consistent way to scan something like a *sql.Row into a User struct"),
 		jen.Line(),
-		jen.Func().ID("scanUser").Params(jen.ID("scan").ID("database").Dot(
+		jen.Func().ID("scanUser").Params(jen.ID("scan").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1",
 			"Scanner",
 		)).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"User",

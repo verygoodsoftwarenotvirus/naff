@@ -22,11 +22,11 @@ func itemsDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("// scanItem takes a database Scanner (i.e. *sql.Row) and scans"),
+		jen.Comment("scanItem takes a database Scanner (i.e. *sql.Row) and scans"),
 		jen.Line(),
-		jen.Comment("// the result into an Item struct"),
+		jen.Comment("the result into an Item struct"),
 		jen.Line(),
-		jen.Func().ID("scanItem").Params(jen.ID("scan").ID("database").Dot(
+		jen.Func().ID("scanItem").Params(jen.ID("scan").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1",
 			"Scanner",
 		)).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item"),
 			jen.ID("error")).Block(

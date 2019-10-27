@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/lib/pq"
+	postgres "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func buildMockRowFromUser(user *models.User) *sqlmock.Rows {
@@ -338,8 +338,8 @@ func TestPostgres_CreateUser(T *testing.T) {
 		}
 		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES ($1,$2,$3,$4) RETURNING id, created_on"
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(expected.Username, expected.HashedPassword, expected.TwoFactorSecret, expected.IsAdmin).WillReturnError(&pq.Error{
-			Code: pq.ErrorCode("23505"),
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(expected.Username, expected.HashedPassword, expected.TwoFactorSecret, expected.IsAdmin).WillReturnError(&postgres.Error{
+			Code: postgres.ErrorCode("23505"),
 		})
 		actual, err := p.CreateUser(context.Background(), expectedInput)
 		assert.Error(t, err)

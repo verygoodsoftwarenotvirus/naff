@@ -84,9 +84,9 @@ func middlewareDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("determineScope determines the scope of a request by its URL"),
 		jen.Line(),
-		jen.Comment("// this may be more ideally embedded as a struct field and placed"),
+		jen.Comment("this may be more ideally embedded as a struct field and placed"),
 		jen.Line(),
-		jen.Comment("// in the HTTP server's package instead"),
+		jen.Comment("in the HTTP server's package instead"),
 		jen.Line(),
 		jen.Func().ID("determineScope").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("string")).Block(
 			jen.If(jen.Qual("strings", "HasPrefix").Call(jen.ID("req").Dot("URL").Dot("Path"),

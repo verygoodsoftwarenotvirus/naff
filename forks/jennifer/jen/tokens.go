@@ -10,17 +10,18 @@ import (
 type tokenType string
 
 const (
-	packageToken     tokenType = "package"
-	identifierToken  tokenType = "identifier"
-	qualifiedToken   tokenType = "qualified"
-	keywordToken     tokenType = "keyword"
-	operatorToken    tokenType = "operator"
-	delimiterToken   tokenType = "delimiter"
-	literalToken     tokenType = "literal"
-	literalRuneToken tokenType = "literal_rune"
-	literalByteToken tokenType = "literal_byte"
-	nullToken        tokenType = "null"
-	layoutToken      tokenType = "layout"
+	packageToken          tokenType = "package"
+	identifierToken       tokenType = "identifier"
+	qualifiedToken        tokenType = "qualified"
+	keywordToken          tokenType = "keyword"
+	operatorToken         tokenType = "operator"
+	delimiterToken        tokenType = "delimiter"
+	literalToken          tokenType = "literal"
+	literalRawStringToken tokenType = "literal_raw_string"
+	literalRuneToken      tokenType = "literal_rune"
+	literalByteToken      tokenType = "literal_byte"
+	nullToken             tokenType = "null"
+	layoutToken           tokenType = "layout"
 )
 
 type token struct {
@@ -69,6 +70,15 @@ func (t token) render(f *File, w io.Writer, s *Statement) error {
 			out = fmt.Sprintf("%T%#v", t.content, t.content)
 		default:
 			panic(fmt.Sprintf("unsupported type for literal: %T", t.content))
+		}
+		if _, err := w.Write([]byte(out)); err != nil {
+			return err
+		}
+	case literalRawStringToken:
+		var out string
+		switch t.content.(type) {
+		case string:
+			out = fmt.Sprintf("`%s`", t.content)
 		}
 		if _, err := w.Write([]byte(out)); err != nil {
 			return err

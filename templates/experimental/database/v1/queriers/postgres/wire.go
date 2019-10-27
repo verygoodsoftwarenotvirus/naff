@@ -11,10 +11,14 @@ func wireDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("Providers").Op("=").ID("wire").Dot(
-		"NewSet",
-	).Call(jen.ID("ProvidePostgresDB"), jen.ID("ProvidePostgres")),
-	jen.Line(),
+		jen.Var().Defs(
+			jen.Comment("Providers is what we provide for dependency injection"),
+			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Callln(
+				jen.ID("ProvidePostgresDB"),
+				jen.ID("ProvidePostgres"),
+			),
+		),
+		jen.Line(),
 	)
 	return ret
 }

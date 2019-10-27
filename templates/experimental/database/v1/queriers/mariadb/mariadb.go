@@ -57,7 +57,7 @@ func mariadbDotGo() *jen.File {
 		jen.Comment("ProvideMariaDBConnection provides an instrumented mariadb connection"),
 		jen.Line(),
 		jen.Func().ID("ProvideMariaDBConnection").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("connectionDetails").ID("database").Dot("ConnectionDetails")).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
+			jen.ID("connectionDetails").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "ConnectionDetails")).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Lit("Establishing connection to mariadb")),
 			jen.Return().Qual("database/sql", "Open").Call(jen.ID("mariaDBDriverName"), jen.ID("string").Call(jen.ID("connectionDetails"))),
 		),
@@ -67,7 +67,7 @@ func mariadbDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideMariaDB provides a mariadb controller"),
 		jen.Line(),
-		jen.Func().ID("ProvideMariaDB").Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.ID("database").Dot("Database")).Block(
+		jen.Func().ID("ProvideMariaDB").Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database")).Block(
 			jen.Return().Op("&").ID("MariaDB").Valuesln(
 				jen.ID("db").Op(":").ID("db"),
 				jen.ID("debug").Op(":").ID("debug"),
@@ -115,9 +115,9 @@ func mariadbDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 		jen.Line(),
-		jen.Comment("// any log entries with the given name, and those alerts should be investigated"),
+		jen.Comment("any log entries with the given name, and those alerts should be investigated"),
 		jen.Line(),
-		jen.Comment("// with the utmost priority."),
+		jen.Comment("with the utmost priority."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("logQueryBuildingError").Params(jen.ID("err").ID("error")).Block(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -134,9 +134,9 @@ func mariadbDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 		jen.Line(),
-		jen.Comment("// any log entries with the given name, and those alerts should be investigated"),
+		jen.Comment("any log entries with the given name, and those alerts should be investigated"),
 		jen.Line(),
-		jen.Comment("// with the utmost priority."),
+		jen.Comment("with the utmost priority."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MariaDB")).ID("logCreationTimeRetrievalError").Params(jen.ID("err").ID("error")).Block(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(

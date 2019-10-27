@@ -12,6 +12,7 @@ import (
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/server/v1"
 	twofactorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/tools/two_factor"
 	database "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1"
+	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1/client"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1"
 	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1/mock"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/auth"
@@ -35,7 +36,6 @@ import (
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/rand/model"
 
 	// to do
-	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/client"
 	mariaDB "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/mariadb"
 	postgresql "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/postgres"
 	sqlite3 "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/sqlite"
@@ -75,14 +75,14 @@ func RenderProject(in *naffmodels.Project) error {
 		"models":           {renderFunc: models.RenderPackage, activated: false},
 		"randmodel":        {renderFunc: randmodel.RenderPackage, activated: false},
 		"iterables":        {renderFunc: iterables.RenderPackage, activated: false},
+		"dbclient":         {renderFunc: dbclient.RenderPackage, activated: false},
 
 		// doing (two sides; one coin)
-		"dbclient": {renderFunc: dbclient.RenderPackage, activated: true},
+		"postgresql": {renderFunc: postgresql.RenderPackage, activated: true},
 
 		// on deck
-		"postgresql": {renderFunc: postgresql.RenderPackage, activated: false},
-		"mariaDB":    {renderFunc: mariaDB.RenderPackage, activated: false},
-		"sqlite3":    {renderFunc: sqlite3.RenderPackage, activated: false},
+		"mariaDB": {renderFunc: mariaDB.RenderPackage, activated: false},
+		"sqlite3": {renderFunc: sqlite3.RenderPackage, activated: false},
 	}
 
 	if in != nil {

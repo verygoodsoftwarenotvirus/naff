@@ -11,7 +11,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func buildMockRowFromWebhook(w *models.Webhook) *sqlmock.Rows {

@@ -57,7 +57,7 @@ func httpRoutesDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("randString produces a random string"),
 		jen.Line(),
-		jen.Comment("// https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
+		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
 		jen.Line(),
 		jen.Func().ID("randString").Params().Params(jen.ID("string")).Block(
 			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(32)),
