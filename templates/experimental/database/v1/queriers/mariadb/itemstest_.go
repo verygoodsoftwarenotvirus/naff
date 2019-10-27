@@ -11,7 +11,7 @@ func itemsTestDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Func().ID("buildMockRowFromItem").Params(jen.ID("item").Op("*").ID("models").Dot("Item")).Params(jen.Op("*").ID("sqlmock").Dot(
+		jen.Func().ID("buildMockRowFromItem").Params(jen.ID("item").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item")).Params(jen.Op("*").ID("sqlmock").Dot(
 			"Rows",
 		)).Block(
 			jen.ID("exampleRows").Op(":=").ID("sqlmock").Dot(
@@ -33,7 +33,7 @@ func itemsTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildErroneousMockRowFromItem").Params(jen.ID("item").Op("*").ID("models").Dot("Item")).Params(jen.Op("*").ID("sqlmock").Dot(
+		jen.Func().ID("buildErroneousMockRowFromItem").Params(jen.ID("item").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item")).Params(jen.Op("*").ID("sqlmock").Dot(
 			"Rows",
 		)).Block(
 			jen.ID("exampleRows").Op(":=").ID("sqlmock").Dot(
@@ -84,7 +84,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE belongs_to = ? AND id = ?"),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.List(jen.ID("m"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -108,7 +108,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE belongs_to = ? AND id = ?"),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details")),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.List(jen.ID("m"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -145,7 +145,7 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM items WHERE archived_on IS NULL AND belongs_to = ? LIMIT 20"),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("m").Dot(
 					"buildGetItemCountQuery",
-				).Call(jen.ID("models").Dot(
+				).Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"DefaultQueryFilter",
 				).Call(), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -181,7 +181,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("expectedCount"))),
 				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID("m").Dot(
 					"GetItemCount",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+				).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -252,7 +252,7 @@ func itemsTestDotGo() *jen.File {
 				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = ? LIMIT 20"),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("m").Dot(
 					"buildGetItemsQuery",
-				).Call(jen.ID("models").Dot(
+				).Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"DefaultQueryFilter",
 				).Call(), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -271,7 +271,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedItem1").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expectedItem1").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("Name").Op(":").Lit("name")),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = ? LIMIT 20"),
 				jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM items WHERE archived_on IS NULL"),
@@ -294,17 +294,17 @@ func itemsTestDotGo() *jen.File {
 					jen.Lit("count"))).Dot(
 					"AddRow",
 				).Call(jen.ID("expectedCount"))),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"ItemList",
 				).Valuesln(
-					jen.ID("Pagination").Op(":").ID("models").Dot(
+					jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 						"Pagination",
 					).Valuesln(
-						jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").Lit(20), jen.ID("TotalCount").Op(":").ID("expectedCount")), jen.ID("Items").Op(":").Index().ID("models").Dot("Item").Valuesln(
+						jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").Lit(20), jen.ID("TotalCount").Op(":").ID("expectedCount")), jen.ID("Items").Op(":").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 						jen.Op("*").ID("expectedItem1"))),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("m").Dot(
 					"GetItems",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+				).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -327,7 +327,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("m").Dot(
 					"GetItems",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+				).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -351,7 +351,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("m").Dot(
 					"GetItems",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+				).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -363,7 +363,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error scanning item"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedItem1").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expectedItem1").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("Name").Op(":").Lit("name")),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = ? LIMIT 20"),
 				jen.List(jen.ID("m"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -376,7 +376,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("buildErroneousMockRowFromItem").Call(jen.ID("expectedItem1"))),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("m").Dot(
 					"GetItems",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+				).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -388,7 +388,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying for count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedItem1").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expectedItem1").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("Name").Op(":").Lit("name")),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = ? LIMIT 20"),
 				jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM items WHERE archived_on IS NULL"),
@@ -407,7 +407,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("m").Dot(
 					"GetItems",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+				).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"DefaultQueryFilter",
 				).Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -426,7 +426,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedItem").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expectedItem").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("Name").Op(":").Lit("name")),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = ?"),
 				jen.List(jen.ID("m"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -437,7 +437,7 @@ func itemsTestDotGo() *jen.File {
 				).Call(jen.ID("expectedUserID")).Dot(
 					"WillReturnRows",
 				).Call(jen.ID("buildMockRowFromItem").Call(jen.ID("expectedItem"))),
-				jen.ID("expected").Op(":=").Index().ID("models").Dot("Item").Valuesln(
+				jen.ID("expected").Op(":=").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.Op("*").ID("expectedItem")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("m").Dot(
 					"GetAllItemsForUser",
@@ -494,7 +494,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedItem").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expectedItem").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("Name").Op(":").Lit("name")),
 				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = ?"),
 				jen.List(jen.ID("m"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -524,7 +524,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID("m"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details"), jen.ID("BelongsTo").Op(":").Lit(123)),
 				jen.ID("expectedArgCount").Op(":=").Lit(3),
 				jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO items (name,details,belongs_to,created_on) VALUES (?,?,?,UNIX_TIMESTAMP())"),
@@ -554,11 +554,11 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 						"Unix",
 					).Call())),
-				jen.ID("expectedInput").Op(":=").Op("&").ID("models").Dot(
+				jen.ID("expectedInput").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"ItemCreationInput",
 				).Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
@@ -603,11 +603,11 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("example").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("example").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 						"Unix",
 					).Call())),
-				jen.ID("expectedInput").Op(":=").Op("&").ID("models").Dot(
+				jen.ID("expectedInput").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"ItemCreationInput",
 				).Valuesln(
 					jen.ID("Name").Op(":").ID("example").Dot("Name"),
@@ -644,7 +644,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID("m"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("ID").Op(":").Lit(321), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details"), jen.ID("BelongsTo").Op(":").Lit(123)),
 				jen.ID("expectedArgCount").Op(":=").Lit(4),
 				jen.ID("expectedQuery").Op(":=").Lit("UPDATE items SET name = ?, details = ?, updated_on = UNIX_TIMESTAMP() WHERE belongs_to = ? AND id = ?"),
@@ -676,7 +676,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 						"Unix",
 					).Call())),
@@ -707,7 +707,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("example").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("example").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 						"Unix",
 					).Call())),
@@ -743,7 +743,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID("m"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("ID").Op(":").Lit(321), jen.ID("Name").Op(":").Lit("name"), jen.ID("Details").Op(":").Lit("details"), jen.ID("BelongsTo").Op(":").Lit(123)),
 				jen.ID("expectedArgCount").Op(":=").Lit(2),
 				jen.ID("expectedQuery").Op(":=").Lit("UPDATE items SET updated_on = UNIX_TIMESTAMP(), archived_on = UNIX_TIMESTAMP() WHERE archived_on IS NULL AND belongs_to = ? AND id = ?"),
@@ -770,7 +770,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 						"Unix",
 					).Call())),
@@ -798,7 +798,7 @@ func itemsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("example").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+				jen.ID("example").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 					jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 						"Unix",
 					).Call())),

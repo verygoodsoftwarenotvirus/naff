@@ -41,9 +41,9 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("// scanWebhook is a consistent way to turn a *sql.Row into a webhook struct"),
 		jen.Line(),
-		jen.Func().ID("scanWebhook").Params(jen.ID("scan").ID("database").Dot("Scanner")).Params(jen.Op("*").ID("models").Dot("Webhook"), jen.ID("error")).Block(
+		jen.Func().ID("scanWebhook").Params(jen.ID("scan").ID("database").Dot("Scanner")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"), jen.ID("error")).Block(
 			jen.Var().Defs(
-				jen.ID("x").Op("=").Op("&").ID("models").Dot("Webhook").Values(),
+				jen.ID("x").Op("=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook").Values(),
 				jen.List(jen.ID("eventsStr"), jen.ID("dataTypesStr"), jen.ID("topicsStr")).ID("string"),
 			),
 			jen.If(jen.ID("err").Op(":=").ID("scan").Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"),
@@ -78,10 +78,10 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("scanWebhooks provides a consistent way to turn sql rows into a slice of webhooks"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("scanWebhooks").Params(jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().ID("models").Dot("Webhook"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("scanWebhooks").Params(jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"),
 			jen.ID("error")).Block(
 
-			jen.Var().ID("list").Index().ID("models").Dot("Webhook"),
+			jen.Var().ID("list").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"),
 			jen.For(jen.ID("rows").Dot(
 				"Next",
 			).Call()).Block(
@@ -137,7 +137,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetWebhook fetches a webhook from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("models").Dot("Webhook"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetWebhookQuery",
@@ -159,7 +159,7 @@ func webhooksDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("meeting a given filter's criteria and belonging to a given user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetWebhookCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetWebhookCountQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -196,7 +196,7 @@ func webhooksDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("and belong to a particular user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetWebhookCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetWebhookCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetWebhookCountQuery",
@@ -310,7 +310,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetAllWebhooks fetches a list of all webhooks from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetAllWebhooks").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetAllWebhooks").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"WebhookList",
 		),
 			jen.ID("error")).Block(
@@ -337,10 +337,10 @@ func webhooksDotGo() *jen.File {
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching webhook count: %w"), jen.ID("err"))),
 			),
-			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"WebhookList",
 			).Valuesln(
-				jen.ID("Pagination").Op(":").ID("models").Dot(
+				jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"Pagination",
 				).Valuesln(
 					jen.ID("Page").Op(":").Lit(1), jen.ID("TotalCount").Op(":").ID("count")), jen.ID("Webhooks").Op(":").ID("list")),
@@ -352,7 +352,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetAllWebhooksForUser fetches a list of all webhooks from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetAllWebhooksForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().ID("models").Dot("Webhook"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetAllWebhooksForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetWebhooksQuery",
@@ -380,7 +380,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildGetWebhooksQuery returns a SQL query (and arguments) that would return a"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetWebhooksQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetWebhooksQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -415,8 +415,8 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetWebhooks fetches a list of webhooks from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetWebhooks").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
-			jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetWebhooks").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+			jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"WebhookList",
 		),
 			jen.ID("error")).Block(
@@ -444,10 +444,10 @@ func webhooksDotGo() *jen.File {
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching count: %w"), jen.ID("err"))),
 			),
-			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"WebhookList",
 			).Valuesln(
-				jen.ID("Pagination").Op(":").ID("models").Dot(
+				jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"Pagination",
 				).Valuesln(
 					jen.ID("Page").Op(":").ID("filter").Dot(
@@ -464,7 +464,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildWebhookCreationQuery returns a SQL query (and arguments) that would create a given webhook"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildWebhookCreationQuery").Params(jen.ID("x").Op("*").ID("models").Dot("Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildWebhookCreationQuery").Params(jen.ID("x").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("s").Dot(
@@ -534,11 +534,11 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("CreateWebhook creates a webhook in the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("CreateWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("CreateWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"WebhookCreationInput",
-		)).Params(jen.Op("*").ID("models").Dot("Webhook"),
+		)).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"),
 			jen.ID("error")).Block(
-			jen.ID("x").Op(":=").Op("&").ID("models").Dot("Webhook").Valuesln(
+			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook").Valuesln(
 				jen.ID("Name").Op(":").ID("input").Dot("Name"),
 				jen.ID("ContentType").Op(":").ID("input").Dot(
 					"ContentType",
@@ -591,7 +591,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildUpdateWebhookQuery takes a given webhook and returns a SQL query to update"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildUpdateWebhookQuery").Params(jen.ID("input").Op("*").ID("models").Dot("Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildUpdateWebhookQuery").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("s").Dot(
@@ -635,7 +635,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("UpdateWebhook updates a particular webhook. Note that UpdateWebhook expects the provided input to have a valid ID."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("UpdateWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot("Webhook")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("UpdateWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook")).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildUpdateWebhookQuery",
 			).Call(jen.ID("input")),

@@ -2,7 +2,7 @@ package randmodel
 
 import (
 	"github.com/icrowley/fake"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 // RandomWebhookInput creates a random WebhookCreationInput

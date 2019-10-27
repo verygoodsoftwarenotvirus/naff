@@ -28,9 +28,9 @@ func itemsDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("scanItem").Params(jen.ID("scan").ID("database").Dot(
 			"Scanner",
-		)).Params(jen.Op("*").ID("models").Dot("Item"),
+		)).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item"),
 			jen.ID("error")).Block(
-			jen.ID("x").Op(":=").Op("&").ID("models").Dot("Item").Values(),
+			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Values(),
 			jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
 				"Scan",
 			).Call(jen.Op("&").ID("x").Dot("ID"),
@@ -52,8 +52,8 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("scanItems takes a logger and some database rows and turns them into a slice of items"),
 		jen.Line(),
-		jen.Func().ID("scanItems").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().ID("models").Dot("Item"), jen.ID("error")).Block(
-			jen.Var().ID("list").Index().ID("models").Dot("Item"),
+		jen.Func().ID("scanItems").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item"), jen.ID("error")).Block(
+			jen.Var().ID("list").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item"),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
 				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("scanItem").Call(jen.ID("rows")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -102,7 +102,7 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetItem fetches an item from the sqlite database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("models").Dot("Item"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item"),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetItemQuery",
@@ -120,7 +120,7 @@ func itemsDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("fetching the number of items belonging to a given user that meet a given query"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetItemCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetItemCountQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -155,7 +155,7 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetItemCount will fetch the count of items from the database that meet a particular filter and belong to a particular user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetItemCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetItemCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetItemCountQuery",
@@ -233,7 +233,7 @@ func itemsDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("and returns both the query and the relevant args to pass to the query executor."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetItemsQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetItemsQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -268,8 +268,8 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetItems fetches a list of items from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter"),
-			jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+			jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"ItemList",
 		),
 			jen.ID("error")).Block(
@@ -293,10 +293,10 @@ func itemsDotGo() *jen.File {
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching item count: %w"), jen.ID("err"))),
 			),
-			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"ItemList",
 			).Valuesln(
-				jen.ID("Pagination").Op(":").ID("models").Dot(
+				jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"Pagination",
 				).Valuesln(
 					jen.ID("Page").Op(":").ID("filter").Dot(
@@ -314,7 +314,7 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetAllItemsForUser fetches every item belonging to a user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetAllItemsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().ID("models").Dot("Item"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetAllItemsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item"),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetItemsQuery",
@@ -338,7 +338,7 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildCreateItemQuery").Params(jen.ID("input").Op("*").ID("models").Dot("Item")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildCreateItemQuery").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("s").Dot(
@@ -395,11 +395,11 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("CreateItem creates an item in the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("CreateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("CreateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"ItemCreationInput",
-		)).Params(jen.Op("*").ID("models").Dot("Item"),
+		)).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item"),
 			jen.ID("error")).Block(
-			jen.ID("x").Op(":=").Op("&").ID("models").Dot("Item").Valuesln(
+			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item").Valuesln(
 				jen.ID("Name").Op(":").ID("input").Dot("Name"),
 				jen.ID("Details").Op(":").ID("input").Dot(
 					"Details",
@@ -438,7 +438,7 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildUpdateItemQuery takes an item and returns an update SQL query, with the relevant query parameters"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildUpdateItemQuery").Params(jen.ID("input").Op("*").ID("models").Dot("Item")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildUpdateItemQuery").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("s").Dot(
@@ -469,7 +469,7 @@ func itemsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("UpdateItem updates a particular item. Note that UpdateItem expects the provided input to have a valid ID."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("UpdateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot("Item")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("UpdateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Item")).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildUpdateItemQuery",
 			).Call(jen.ID("input")),

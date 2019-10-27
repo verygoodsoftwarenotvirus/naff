@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 	"go.opencensus.io/trace"
 )
 
@@ -28,18 +28,22 @@ func attachOAuth2ClientIDToSpan(span *trace.Span, clientID string) {
 func (c *Client) GetOAuth2Client(ctx context.Context, clientID, userID uint64) (*models.OAuth2Client, error) {
 	ctx, span := trace.StartSpan(ctx, "GetOAuth2Client")
 	defer span.End()
+
 	attachUserIDToSpan(span, userID)
 	attachOAuth2ClientDatabaseIDToSpan(span, clientID)
+
 	logger := c.logger.WithValues(map[string]interface{}{
 		"client_id": clientID,
 		"user_id":   userID,
 	})
 	logger.Debug("GetOAuth2Client called")
+
 	client, err := c.querier.GetOAuth2Client(ctx, clientID, userID)
 	if err != nil {
 		logger.Error(err, "error fetching oauth2 client from the querier")
 		return nil, err
 	}
+
 	return client, nil
 }
 
@@ -48,14 +52,17 @@ func (c *Client) GetOAuth2Client(ctx context.Context, clientID, userID uint64) (
 func (c *Client) GetOAuth2ClientByClientID(ctx context.Context, clientID string) (*models.OAuth2Client, error) {
 	ctx, span := trace.StartSpan(ctx, "GetOAuth2ClientByClientID")
 	defer span.End()
+
 	attachOAuth2ClientIDToSpan(span, clientID)
 	logger := c.logger.WithValue("oauth2client_client_id", clientID)
 	logger.Debug("GetOAuth2ClientByClientID called")
+
 	client, err := c.querier.GetOAuth2ClientByClientID(ctx, clientID)
 	if err != nil {
 		logger.Error(err, "error fetching oauth2 client from the querier")
 		return nil, err
 	}
+
 	return client, nil
 }
 
@@ -63,9 +70,12 @@ func (c *Client) GetOAuth2ClientByClientID(ctx context.Context, clientID string)
 func (c *Client) GetOAuth2ClientCount(ctx context.Context, filter *models.QueryFilter, userID uint64) (uint64, error) {
 	ctx, span := trace.StartSpan(ctx, "GetOAuth2ClientCount")
 	defer span.End()
+
 	attachUserIDToSpan(span, userID)
 	attachFilterToSpan(span, filter)
+
 	c.logger.WithValue("user_id", userID).Debug("GetOAuth2ClientCount called")
+
 	return c.querier.GetOAuth2ClientCount(ctx, filter, userID)
 }
 
@@ -73,7 +83,9 @@ func (c *Client) GetOAuth2ClientCount(ctx context.Context, filter *models.QueryF
 func (c *Client) GetAllOAuth2ClientCount(ctx context.Context) (uint64, error) {
 	ctx, span := trace.StartSpan(ctx, "GetAllOAuth2ClientCount")
 	defer span.End()
+
 	c.logger.Debug("GetAllOAuth2ClientCount called")
+
 	return c.querier.GetAllOAuth2ClientCount(ctx)
 }
 
@@ -81,8 +93,10 @@ func (c *Client) GetAllOAuth2ClientCount(ctx context.Context) (uint64, error) {
 func (c *Client) GetAllOAuth2ClientsForUser(ctx context.Context, userID uint64) ([]*models.OAuth2Client, error) {
 	ctx, span := trace.StartSpan(ctx, "GetAllOAuth2ClientsForUser")
 	defer span.End()
+
 	attachUserIDToSpan(span, userID)
 	c.logger.WithValue("user_id", userID).Debug("GetAllOAuth2ClientsForUser called")
+
 	return c.querier.GetAllOAuth2ClientsForUser(ctx, userID)
 }
 
@@ -90,7 +104,9 @@ func (c *Client) GetAllOAuth2ClientsForUser(ctx context.Context, userID uint64) 
 func (c *Client) GetAllOAuth2Clients(ctx context.Context) ([]*models.OAuth2Client, error) {
 	ctx, span := trace.StartSpan(ctx, "GetAllOAuth2Clients")
 	defer span.End()
+
 	c.logger.Debug("GetAllOAuth2Clients called")
+
 	return c.querier.GetAllOAuth2Clients(ctx)
 }
 
@@ -98,9 +114,12 @@ func (c *Client) GetAllOAuth2Clients(ctx context.Context) ([]*models.OAuth2Clien
 func (c *Client) GetOAuth2Clients(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.OAuth2ClientList, error) {
 	ctx, span := trace.StartSpan(ctx, "GetOAuth2Clients")
 	defer span.End()
+
 	attachUserIDToSpan(span, userID)
 	attachFilterToSpan(span, filter)
+
 	c.logger.WithValue("user_id", userID).Debug("GetOAuth2Clients called")
+
 	return c.querier.GetOAuth2Clients(ctx, filter, userID)
 }
 
@@ -108,16 +127,20 @@ func (c *Client) GetOAuth2Clients(ctx context.Context, filter *models.QueryFilte
 func (c *Client) CreateOAuth2Client(ctx context.Context, input *models.OAuth2ClientCreationInput) (*models.OAuth2Client, error) {
 	ctx, span := trace.StartSpan(ctx, "CreateOAuth2Client")
 	defer span.End()
+
 	logger := c.logger.WithValues(map[string]interface{}{
 		"client_id":  input.ClientID,
 		"belongs_to": input.BelongsTo,
 	})
+
 	client, err := c.querier.CreateOAuth2Client(ctx, input)
 	if err != nil {
 		logger.WithError(err).Debug("error writing oauth2 client to the querier")
 		return nil, err
 	}
+
 	logger.Debug("new oauth2 client created successfully")
+
 	return client, nil
 }
 
@@ -126,6 +149,7 @@ func (c *Client) CreateOAuth2Client(ctx context.Context, input *models.OAuth2Cli
 func (c *Client) UpdateOAuth2Client(ctx context.Context, updated *models.OAuth2Client) error {
 	ctx, span := trace.StartSpan(ctx, "UpdateOAuth2Client")
 	defer span.End()
+
 	return c.querier.UpdateOAuth2Client(ctx, updated)
 }
 
@@ -133,17 +157,21 @@ func (c *Client) UpdateOAuth2Client(ctx context.Context, updated *models.OAuth2C
 func (c *Client) ArchiveOAuth2Client(ctx context.Context, clientID, userID uint64) error {
 	ctx, span := trace.StartSpan(ctx, "ArchiveOAuth2Client")
 	defer span.End()
+
 	attachUserIDToSpan(span, userID)
 	attachOAuth2ClientDatabaseIDToSpan(span, clientID)
+
 	logger := c.logger.WithValues(map[string]interface{}{
 		"client_id":  clientID,
 		"belongs_to": userID,
 	})
+
 	err := c.querier.ArchiveOAuth2Client(ctx, clientID, userID)
 	if err != nil {
 		logger.WithError(err).Debug("error deleting oauth2 client to the querier")
 		return err
 	}
 	logger.Debug("removed oauth2 client successfully")
+
 	return nil
 }

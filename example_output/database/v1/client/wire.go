@@ -2,4 +2,9 @@ package dbclient
 
 import "github.com/google/wire"
 
-var Providers = wire.NewSet(ProvideDatabaseClient)
+var (
+	// Providers represents what we provide to dependency injectors
+	Providers = wire.NewSet(
+		ProvideDatabaseClient,
+	)
+)

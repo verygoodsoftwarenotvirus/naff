@@ -25,20 +25,20 @@ import (
 	httpserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/server/v1/http"
 	auth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/auth"
 	frontend "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/frontend"
+	iterables "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/iterables"
 	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/oauth2clients"
+	users "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/users"
 	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/webhooks"
 	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/frontend"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil"
 	testutilmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/mock"
+	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/rand/model"
 
 	// to do
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/client"
 	mariaDB "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/mariadb"
 	postgresql "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/postgres"
 	sqlite3 "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/sqlite"
-	iterables "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/iterables"
-	users "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/services/v1/users"
-	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/testutil/rand/model"
 )
 
 func RenderProject(in *naffmodels.Project) error {
@@ -70,16 +70,16 @@ func RenderProject(in *naffmodels.Project) error {
 		"frontend":         {renderFunc: frontend.RenderPackage, activated: false},
 		"auth":             {renderFunc: auth.RenderPackage, activated: false},
 		"users":            {renderFunc: users.RenderPackage, activated: false},
-		"iterables":        {renderFunc: iterables.RenderPackage, activated: false},
 		"httpserver":       {renderFunc: httpserver.RenderPackage, activated: false},
 		"modelsmock":       {renderFunc: modelsmock.RenderPackage, activated: false},
 		"models":           {renderFunc: models.RenderPackage, activated: false},
+		"randmodel":        {renderFunc: randmodel.RenderPackage, activated: false},
+		"iterables":        {renderFunc: iterables.RenderPackage, activated: false},
 
 		// doing (two sides; one coin)
-		"randmodel": {renderFunc: randmodel.RenderPackage, activated: true},
+		"dbclient": {renderFunc: dbclient.RenderPackage, activated: true},
 
 		// on deck
-		"dbclient":   {renderFunc: dbclient.RenderPackage, activated: false},
 		"postgresql": {renderFunc: postgresql.RenderPackage, activated: false},
 		"mariaDB":    {renderFunc: mariaDB.RenderPackage, activated: false},
 		"sqlite3":    {renderFunc: sqlite3.RenderPackage, activated: false},

@@ -5,7 +5,7 @@ import (
 
 	"github.com/icrowley/fake"
 	"github.com/pquerna/otp/totp"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func init() {
@@ -22,6 +22,8 @@ func mustBuildCode(totpSecret string) string {
 
 // RandomUserInput creates a random UserInput
 func RandomUserInput() *models.UserInput {
+	// I had difficulty ensuring these values were unique, even when fake.Seed was called. Could've been fake's fault,
+	// could've been docker's fault. In either case, it wasn't worth the time to investigate and determine the culprit.
 	username := fake.UserName() + fake.HexColor() + fake.Country()
 	x := &models.UserInput{
 		Username: username,

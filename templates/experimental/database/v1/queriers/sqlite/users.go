@@ -26,12 +26,12 @@ func usersDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("scanUser").Params(jen.ID("scan").ID("database").Dot(
 			"Scanner",
-		)).Params(jen.Op("*").ID("models").Dot(
+		)).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"User",
 		),
 			jen.ID("error")).Block(
 
-			jen.Var().ID("x").Op("=").Op("&").ID("models").Dot(
+			jen.Var().ID("x").Op("=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"User",
 			).Values(),
 			jen.If(jen.ID("err").Op(":=").ID("scan").Dot(
@@ -65,12 +65,12 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("scanUsers takes database rows and loads them into a slice of User structs"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("scanUsers").Params(jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("scanUsers").Params(jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"User",
 		),
 			jen.ID("error")).Block(
 
-			jen.Var().ID("list").Index().ID("models").Dot(
+			jen.Var().ID("list").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"User",
 			),
 			jen.For(jen.ID("rows").Dot(
@@ -128,7 +128,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUser fetches a user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"User",
 		),
 			jen.ID("error")).Block(
@@ -178,7 +178,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUserByUsername fetches a user by their username"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUserByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUserByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"User",
 		),
 			jen.ID("error")).Block(
@@ -205,7 +205,7 @@ func usersDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("to a given filter's criteria."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetUserCountQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetUserCountQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID("s").Dot(
@@ -239,7 +239,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUserCount fetches a count of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(
 				"buildGetUserCountQuery",
 			).Call(jen.ID("filter")),
@@ -258,7 +258,7 @@ func usersDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("to a given filter's criteria."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetUsersQuery").Params(jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildGetUsersQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID("s").Dot(
@@ -292,7 +292,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("models").Dot("QueryFilter")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"UserList",
 		),
 			jen.ID("error")).Block(
@@ -317,10 +317,10 @@ func usersDotGo() *jen.File {
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.ID("err"))),
 			),
-			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"UserList",
 			).Valuesln(
-				jen.ID("Pagination").Op(":").ID("models").Dot(
+				jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 					"Pagination",
 				).Valuesln(
 					jen.ID("Page").Op(":").ID("filter").Dot(
@@ -338,7 +338,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildCreateUserQuery returns a SQL query (and arguments) that would create a given User"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildCreateUserQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildCreateUserQuery").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"UserInput",
 		)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
@@ -402,13 +402,13 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("CreateUser creates a user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("CreateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("CreateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"UserInput",
-		)).Params(jen.Op("*").ID("models").Dot(
+		)).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"User",
 		),
 			jen.ID("error")).Block(
-			jen.ID("x").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"User",
 			).Valuesln(
 				jen.ID("Username").Op(":").ID("input").Dot(
@@ -449,7 +449,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildUpdateUserQuery returns a SQL query (and arguments) that would update the given user's row"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildUpdateUserQuery").Params(jen.ID("input").Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("buildUpdateUserQuery").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"User",
 		)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
@@ -489,7 +489,7 @@ func usersDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("anonymous structs or incomplete models at your peril."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("UpdateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Sqlite")).ID("UpdateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"User",
 		)).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot(

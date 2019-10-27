@@ -11,7 +11,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Func().ID("buildMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").ID("models").Dot(
+		jen.Func().ID("buildMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 		"OAuth2Client",
 	)).Params(jen.Op("*").ID("sqlmock").Dot(
 		"Rows",
@@ -44,7 +44,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildErroneousMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").ID("models").Dot(
+		jen.Func().ID("buildErroneousMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 		"OAuth2Client",
 	)).Params(jen.Op("*").ID("sqlmock").Dot(
 		"Rows",
@@ -105,7 +105,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -155,7 +155,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous row"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -205,7 +205,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Index().Op("*").ID("models").Dot(
+			jen.ID("expected").Op(":=").Index().Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.Valuesln(
@@ -268,7 +268,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Index().Op("*").ID("models").Dot(
+			jen.ID("expected").Op(":=").Index().Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.Valuesln(
@@ -301,11 +301,11 @@ func oauth2ClientsTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("exampleUser").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"User",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123)),
-			jen.ID("expected").Op(":=").Index().Op("*").ID("models").Dot(
+			jen.ID("expected").Op(":=").Index().Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.Valuesln(
@@ -330,7 +330,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 		)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("exampleUser").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"User",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123)),
@@ -352,7 +352,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 		)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("exampleUser").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"User",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123)),
@@ -375,11 +375,11 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("exampleUser").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("exampleUser").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"User",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -435,7 +435,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -465,7 +465,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -496,7 +496,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
@@ -537,7 +537,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"),
 			jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dot(
 				"buildGetOAuth2ClientCountQuery",
-			).Call(jen.ID("models").Dot(
+			).Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"DefaultQueryFilter",
 			).Call(), jen.ID("expectedUserID")),
 			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -573,7 +573,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.ID("expectedCount"))),
 			jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID("p").Dot(
 				"GetOAuth2ClientCount",
-			).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+			).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"DefaultQueryFilter",
 			).Call(), jen.ID("expectedUserID")),
 			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -644,7 +644,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"),
 			jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dot(
 				"buildGetOAuth2ClientsQuery",
-			).Call(jen.ID("models").Dot(
+			).Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"DefaultQueryFilter",
 			).Call(), jen.ID("expectedUserID")),
 			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -664,20 +664,20 @@ func oauth2ClientsTestDotGo() *jen.File {
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2ClientList",
 			).Valuesln(
-	jen.ID("Pagination").Op(":").ID("models").Dot(
+	jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"Pagination",
 			).Valuesln(
-	jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").Lit(20), jen.ID("TotalCount").Op(":").Lit(111)), jen.ID("Clients").Op(":").Index().ID("models").Dot(
+	jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").Lit(20), jen.ID("TotalCount").Op(":").Lit(111)), jen.ID("Clients").Op(":").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.Valuesln(
 	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 				"Unix",
 			).Call())))),
-			jen.ID("filter").Op(":=").ID("models").Dot(
+			jen.ID("filter").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"DefaultQueryFilter",
 			).Call(),
 			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
@@ -729,7 +729,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.Qual("database/sql", "ErrNoRows")),
 			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 				"GetOAuth2Clients",
-			).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+			).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"DefaultQueryFilter",
 			).Call(), jen.ID("expectedUserID")),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -750,7 +750,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 				"GetOAuth2Clients",
-			).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+			).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"DefaultQueryFilter",
 			).Call(), jen.ID("expectedUserID")),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -762,13 +762,13 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2ClientList",
 			).Valuesln(
-	jen.ID("Pagination").Op(":").ID("models").Dot(
+	jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"Pagination",
 			).Valuesln(
-	jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").Lit(20), jen.ID("TotalCount").Op(":").Lit(111)), jen.ID("Clients").Op(":").Index().ID("models").Dot(
+	jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").Lit(20), jen.ID("TotalCount").Op(":").Lit(111)), jen.ID("Clients").Op(":").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.Valuesln(
@@ -786,7 +786,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Index(jen.Lit(0)))),
 			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 				"GetOAuth2Clients",
-			).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+			).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"DefaultQueryFilter",
 			).Call(), jen.ID("expectedUserID")),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -798,13 +798,13 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2ClientList",
 			).Valuesln(
-	jen.ID("Pagination").Op(":").ID("models").Dot(
+	jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"Pagination",
 			).Valuesln(
-	jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").Lit(20), jen.ID("TotalCount").Op(":").Lit(0)), jen.ID("Clients").Op(":").Index().ID("models").Dot(
+	jen.ID("Page").Op(":").Lit(1), jen.ID("Limit").Op(":").Lit(20), jen.ID("TotalCount").Op(":").Lit(0)), jen.ID("Clients").Op(":").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.Valuesln(
@@ -834,7 +834,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			).Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dot(
 				"GetOAuth2Clients",
-			).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
+			).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"DefaultQueryFilter",
 			).Call(), jen.ID("expectedUserID")),
 			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -853,7 +853,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("exampleInput").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.ID("ClientID").Op(":").Lit("ClientID"), jen.ID("ClientSecret").Op(":").Lit("ClientSecret"), jen.ID("Scopes").Op(":").Index().ID("string").Valuesln(
@@ -897,13 +897,13 @@ func oauth2ClientsTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 				"Unix",
 			).Call())),
-			jen.ID("expectedInput").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expectedInput").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2ClientCreationInput",
 			).Valuesln(
 	jen.ID("Name").Op(":").ID("expected").Dot("Name"),
@@ -951,13 +951,13 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"), jen.ID("BelongsTo").Op(":").ID("expectedUserID"), jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot(
 				"Unix",
 			).Call())),
-			jen.ID("expectedInput").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expectedInput").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2ClientCreationInput",
 			).Valuesln(
 	jen.ID("Name").Op(":").ID("expected").Dot("Name"),
@@ -1003,7 +1003,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Valuesln(
 	jen.ID("ClientID").Op(":").Lit("ClientID"), jen.ID("ClientSecret").Op(":").Lit("ClientSecret"), jen.ID("Scopes").Op(":").Index().ID("string").Valuesln(
@@ -1047,7 +1047,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("UPDATE oauth2_clients SET client_id = $1, client_secret = $2, scopes = $3, redirect_uri = $4, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $5 AND id = $6 RETURNING updated_on"),
-			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("exampleInput").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Values(),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -1074,7 +1074,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expectedQuery").Op(":=").Lit("UPDATE oauth2_clients SET client_id = $1, client_secret = $2, scopes = $3, redirect_uri = $4, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $5 AND id = $6 RETURNING updated_on"),
-			jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
+			jen.ID("exampleInput").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 				"OAuth2Client",
 			).Values(),
 			jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),

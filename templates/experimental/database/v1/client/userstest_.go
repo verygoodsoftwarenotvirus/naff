@@ -16,23 +16,15 @@ func usersTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
-					"User",
-				).Values(),
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User").Values(),
+				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot(
-					"UserDataManager",
-				).Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock",
-					"Anything",
-				),
-					jen.ID("exampleID")).Dot(
-					"Return",
-				).Call(jen.ID("expected"), jen.ID("nil")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
-					"GetUser",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleID")),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
@@ -45,23 +37,15 @@ func usersTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUsername").Op(":=").Lit("username"),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
-					"User",
-				).Values(),
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User").Values(),
+				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot(
-					"UserDataManager",
-				).Dot("On").Call(jen.Lit("GetUserByUsername"), jen.Qual("github.com/stretchr/testify/mock",
-					"Anything",
-				),
-					jen.ID("exampleUsername")).Dot(
-					"Return",
-				).Call(jen.ID("expected"), jen.ID("nil")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
-					"GetUserByUsername",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUsername")),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUserByUsername"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleUsername")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUserByUsername").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUsername")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
@@ -74,43 +58,27 @@ func usersTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot(
-					"UserDataManager",
-				).Dot("On").Call(jen.Lit("GetUserCount"), jen.Qual("github.com/stretchr/testify/mock",
-					"Anything",
-				),
-					jen.ID("models").Dot(
-						"DefaultQueryFilter",
-					).Call()).Dot(
-					"Return",
-				).Call(jen.ID("expected"), jen.ID("nil")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
-					"GetUserCount",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
-					"DefaultQueryFilter",
-				).Call()),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUserCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call()).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUserCount").Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call()),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot(
-					"UserDataManager",
-				).Dot("On").Call(jen.Lit("GetUserCount"), jen.Qual("github.com/stretchr/testify/mock",
-					"Anything",
-				),
-					jen.Parens(jen.Op("*").ID("models").Dot("QueryFilter")).Call(jen.ID("nil"))).Dot(
-					"Return",
-				).Call(jen.ID("expected"), jen.ID("nil")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
-					"GetUserCount",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUserCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Parens(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter")).Call(jen.ID("nil"))).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUserCount").Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
@@ -122,48 +90,28 @@ func usersTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
-					"UserList",
-				).Values(),
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserList").Values(),
+				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot(
-					"UserDataManager",
-				).Dot("On").Call(jen.Lit("GetUsers"), jen.Qual("github.com/stretchr/testify/mock",
-					"Anything",
-				),
-					jen.ID("models").Dot(
-						"DefaultQueryFilter",
-					).Call()).Dot(
-					"Return",
-				).Call(jen.ID("expected"), jen.ID("nil")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
-					"GetUsers",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("models").Dot(
-					"DefaultQueryFilter",
-				).Call()),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUsers"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call()).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUsers").Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call()),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
-					"UserList",
-				).Values(),
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserList").Values(),
+				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot(
-					"UserDataManager",
-				).Dot("On").Call(jen.Lit("GetUsers"), jen.Qual("github.com/stretchr/testify/mock",
-					"Anything",
-				),
-					jen.Parens(jen.Op("*").ID("models").Dot("QueryFilter")).Call(jen.ID("nil"))).Dot(
-					"Return",
-				).Call(jen.ID("expected"), jen.ID("nil")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
-					"GetUsers",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUsers"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Parens(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter")).Call(jen.ID("nil"))).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUsers").Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
@@ -175,26 +123,16 @@ func usersTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
-					"UserInput",
-				).Values(),
-				jen.ID("expected").Op(":=").Op("&").ID("models").Dot(
-					"User",
-				).Values(),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserInput").Values(),
+				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User").Values(),
+				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot(
-					"UserDataManager",
-				).Dot("On").Call(jen.Lit("CreateUser"), jen.Qual("github.com/stretchr/testify/mock",
-					"Anything",
-				),
-					jen.ID("exampleInput")).Dot(
-					"Return",
-				).Call(jen.ID("expected"), jen.ID("nil")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(
-					"CreateUser",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("CreateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("CreateUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
@@ -206,24 +144,15 @@ func usersTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dot(
-					"User",
-				).Values(),
-
+				jen.ID("exampleInput").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User").Values(),
 				jen.Var().ID("expected").ID("error"),
+				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot(
-					"UserDataManager",
-				).Dot("On").Call(jen.Lit("UpdateUser"), jen.Qual("github.com/stretchr/testify/mock",
-					"Anything",
-				),
-					jen.ID("exampleInput")).Dot(
-					"Return",
-				).Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("err").Op(":=").ID("c").Dot(
-					"UpdateUser",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("UpdateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.Line(),
+				jen.ID("err").Op(":=").ID("c").Dot("UpdateUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
@@ -236,21 +165,14 @@ func usersTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleInput").Op(":=").ID("uint64").Call(jen.Lit(123)),
-
 				jen.Var().ID("expected").ID("error"),
+				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot(
-					"UserDataManager",
-				).Dot("On").Call(jen.Lit("ArchiveUser"), jen.Qual("github.com/stretchr/testify/mock",
-					"Anything",
-				),
-					jen.ID("exampleInput")).Dot(
-					"Return",
-				).Call(jen.ID("expected"), jen.ID("nil")),
-				jen.ID("err").Op(":=").ID("c").Dot(
-					"ArchiveUser",
-				).Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("ArchiveUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.Line(),
+				jen.ID("err").Op(":=").ID("c").Dot("ArchiveUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
 		),
