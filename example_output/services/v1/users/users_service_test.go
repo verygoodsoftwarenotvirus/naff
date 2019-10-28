@@ -6,18 +6,19 @@ import (
 	"net/http"
 	"testing"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+	mockauth "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock"
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	mockencoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
+	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 	"gitlab.com/verygoodsoftwarenotvirus/newsman"
-	mockauth "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock"
-	mockencoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
-	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock"
 )
 
 func buildTestService(t *testing.T) *Service {

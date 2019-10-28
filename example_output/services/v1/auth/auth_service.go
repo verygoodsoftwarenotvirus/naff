@@ -4,12 +4,13 @@ import (
 	"context"
 	"net/http"
 
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	encoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/gorilla/securecookie"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 )
 
 const (
@@ -68,5 +69,6 @@ func ProvideAuthService(
 			[]byte(cfg.Auth.CookieSecret),
 		),
 	}
+
 	return svc
 }

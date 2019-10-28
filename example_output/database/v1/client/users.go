@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"go.opencensus.io/trace"
 )
 

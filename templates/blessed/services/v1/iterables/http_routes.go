@@ -61,7 +61,7 @@ func httpRoutesDotGo(typ models.DataType) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("ensure query filter"),
-				jen.ID("qf").Op(":=").ID("models").Dot("ExtractQueryFilter").Call(jen.ID("req")),
+				jen.ID("qf").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","ExtractQueryFilter").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("determine user ID"),
 				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
@@ -72,8 +72,8 @@ func httpRoutesDotGo(typ models.DataType) *jen.File {
 				jen.List(jen.ID(puvn), jen.ID("err")).Op(":=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("Get%s", pn)).Call(jen.ID("ctx"), jen.ID("qf"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.Comment("in the event no rows exist return an empty list"),
-					jen.ID(puvn).Op("=").Op("&").ID("models").Dot(fmt.Sprintf("%sList", sn)).Valuesln(
-						jen.ID(pn).Op(":").Index().ID("models").Dot(sn).Values(),
+					jen.ID(puvn).Op("=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",fmt.Sprintf("%sList", sn)).Valuesln(
+						jen.ID(pn).Op(":").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",sn).Values(),
 					),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("error encountered fetching %s", pcn)),
@@ -104,7 +104,7 @@ func httpRoutesDotGo(typ models.DataType) *jen.File {
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("check request context for parsed input struct"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").ID("models").Dot(fmt.Sprintf("%sCreationInput", sn))),
+				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",fmt.Sprintf("%sCreationInput", sn))),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
@@ -187,7 +187,7 @@ func httpRoutesDotGo(typ models.DataType) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("check for parsed input attached to request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").ID("models").Dot("ItemUpdateInput")),
+				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","ItemUpdateInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
@@ -274,7 +274,7 @@ func httpRoutesDotGo(typ models.DataType) *jen.File {
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Decrement").Call(jen.ID("ctx")),
 				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
 					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Archive")),
-					jen.ID("Data").Op(":").Op("&").ID("models").Dot(sn).Values(jen.ID("ID").Op(":").ID(fmt.Sprintf("%sID", uvn))),
+					jen.ID("Data").Op(":").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",sn).Values(jen.ID("ID").Op(":").ID(fmt.Sprintf("%sID", uvn))),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName")),
 				)),
 				jen.Line(),

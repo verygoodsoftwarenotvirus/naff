@@ -3,8 +3,9 @@ package mock
 import (
 	"context"
 
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 )
 
 var _ models.WebhookDataManager = (*WebhookDataManager)(nil)

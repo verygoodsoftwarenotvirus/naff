@@ -8,7 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"go.opencensus.io/trace"
 )

@@ -15,8 +15,8 @@ func authServiceTestDotGo() *jen.File {
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("logger").Op(":=").ID("noop").Dot("ProvideNoopLogger").Call(),
-			jen.ID("cfg").Op(":=").Op("&").ID("config").Dot("ServerConfig").Valuesln(
-				jen.ID("Auth").Op(":").ID("config").Dot("AuthSettings").Valuesln(
+			jen.ID("cfg").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "ServerConfig").Valuesln(
+				jen.ID("Auth").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "AuthSettings").Valuesln(
 					jen.ID("CookieSecret").Op(":").Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),
 				),
 			),
@@ -26,9 +26,7 @@ func authServiceTestDotGo() *jen.File {
 			jen.ID("userIDFetcher").Op(":=").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Return().Lit(1),
 			),
-			jen.ID("ed").Op(":=").ID("encoding").Dot(
-				"ProvideResponseEncoder",
-			).Call(),
+			jen.ID("ed").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "ProvideResponseEncoder").Call(),
 			jen.Line(),
 			jen.ID("service").Op(":=").ID("ProvideAuthService").Callln(
 				jen.ID("logger"),

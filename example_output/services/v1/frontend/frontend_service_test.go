@@ -3,8 +3,9 @@ package frontend
 import (
 	"testing"
 
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 )
 
 func TestProvideFrontendService(T *testing.T) {

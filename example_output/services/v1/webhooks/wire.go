@@ -1,9 +1,10 @@
 package webhooks
 
 import (
-	"github.com/google/wire"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
+	"github.com/google/wire"
 )
 
 var (

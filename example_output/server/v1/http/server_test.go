@@ -4,6 +4,14 @@ import (
 	"context"
 	"testing"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	mockencoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock"
+	frontend "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/frontend"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	mockmodels "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
@@ -12,13 +20,6 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/webhooks"
 	"gitlab.com/verygoodsoftwarenotvirus/newsman"
-	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
-	mockencoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock"
-	frontend "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/frontend"
-	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
-	mockmodels "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock"
 )
 
 func buildTestServer() *Server {

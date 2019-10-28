@@ -700,7 +700,7 @@ func httpRoutesTestDotGo() *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("auth").Dot("ErrPasswordHashTooWeak")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "ErrPasswordHashTooWeak")),
 				jen.Line(),
 				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator")).Dot("On").Callln(
 					jen.Lit("HashPassword"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -739,7 +739,7 @@ func httpRoutesTestDotGo() *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("true"), jen.ID("auth").Dot("ErrPasswordHashTooWeak")),
+				).Dot("Return").Call(jen.ID("true"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "ErrPasswordHashTooWeak")),
 				jen.Line(),
 				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator")).Dot("On").Callln(
 					jen.Lit("HashPassword"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -773,7 +773,7 @@ func httpRoutesTestDotGo() *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("true"), jen.ID("auth").Dot("ErrPasswordHashTooWeak")),
+				).Dot("Return").Call(jen.ID("true"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "ErrPasswordHashTooWeak")),
 				jen.Line(),
 				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator")).Dot("On").Callln(
 					jen.Lit("HashPassword"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),

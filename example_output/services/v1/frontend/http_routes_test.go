@@ -6,10 +6,11 @@ import (
 	"os"
 	"testing"
 
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 )
 
 func buildRequest(t *testing.T) *http.Request {
@@ -98,7 +99,6 @@ func TestService_buildStaticFileServer(T *testing.T) {
 		require.NoError(t, err)
 
 		actual, err := s.buildStaticFileServer(cwd)
-
 		assert.NotNil(t, actual)
 		assert.NoError(t, err)
 	})

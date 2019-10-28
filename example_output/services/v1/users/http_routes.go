@@ -12,11 +12,12 @@ import (
 	"net/http"
 	"strconv"
 
+	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 	"gitlab.com/verygoodsoftwarenotvirus/newsman"
-	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
 	"go.opencensus.io/trace"
 )
 

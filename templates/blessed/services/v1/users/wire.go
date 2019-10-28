@@ -25,7 +25,7 @@ func wireDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideUserDataManager is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideUserDataManager").Params(jen.ID("db").ID("database").Dot("Database")).Params(jen.ID("models").Dot("UserDataManager")).Block(
+		jen.Func().ID("ProvideUserDataManager").Params(jen.ID("db").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserDataManager")).Block(
 			jen.Return().ID("db"),
 		),
 		jen.Line(),
@@ -34,7 +34,7 @@ func wireDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideUserDataServer is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideUserDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.ID("models").Dot("UserDataServer")).Block(
+		jen.Func().ID("ProvideUserDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserDataServer")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

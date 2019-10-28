@@ -8,14 +8,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	mockencoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock"
+	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	mockmodels "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 	mocknewsman "gitlab.com/verygoodsoftwarenotvirus/newsman/mock"
-	mockencoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock"
-	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock"
-	mockmodels "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock"
 )
 
 func TestItemsService_List(T *testing.T) {

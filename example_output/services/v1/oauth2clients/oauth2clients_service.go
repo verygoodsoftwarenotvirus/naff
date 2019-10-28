@@ -8,12 +8,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
+	encoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	"gopkg.in/oauth2.v3"
 	"gopkg.in/oauth2.v3/manage"
 	oauth2server "gopkg.in/oauth2.v3/server"

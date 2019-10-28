@@ -13,7 +13,7 @@ func usersServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("MiddlewareCtxKey is the context key we search for when interacting with user-related requests"),
-			jen.ID("MiddlewareCtxKey").ID("models").Dot("ContextKey").Op("=").Lit("user_input"),
+			jen.ID("MiddlewareCtxKey").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ContextKey").Op("=").Lit("user_input"),
 			jen.ID("counterName").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "CounterName").Op("=").Lit("users"),
 			jen.ID("topicName").Op("=").Lit("users"),
 			jen.ID("serviceName").Op("=").Lit("users_service"),
@@ -23,7 +23,7 @@ func usersServiceDotGo() *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").ID("models").Dot("UserDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
+			jen.ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
 		),
 		jen.Line(),
 	)
@@ -37,10 +37,10 @@ func usersServiceDotGo() *jen.File {
 			jen.Line(),
 			jen.Comment("Service handles our users"),
 			jen.ID("Service").Struct(
-				jen.ID("cookieSecret").Index().ID("byte"), jen.ID("database").ID("database").Dot("Database"),
-				jen.ID("authenticator").ID("auth").Dot("Authenticator"),
+				jen.ID("cookieSecret").Index().ID("byte"), jen.ID("database").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database"),
+				jen.ID("authenticator").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "Authenticator"),
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("encoderDecoder").ID("encoding").Dot("EncoderDecoder"),
+				jen.ID("encoderDecoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("userCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounter"),
 				jen.ID("reporter").ID("newsman").Dot("Reporter"),
 				jen.ID("userCreationEnabled").ID("bool"),
@@ -56,11 +56,11 @@ func usersServiceDotGo() *jen.File {
 		jen.Comment("ProvideUsersService builds a new UsersService"),
 		jen.Line(),
 		jen.Func().ID("ProvideUsersService").Paramsln(
-			jen.ID("ctx").Qual("context", "Context"), jen.ID("authSettings").ID("config").Dot("AuthSettings"),
+			jen.ID("ctx").Qual("context", "Context"), jen.ID("authSettings").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "AuthSettings"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("db").ID("database").Dot("Database"),
-			jen.ID("authenticator").ID("auth").Dot("Authenticator"),
-			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").ID("encoding").Dot("EncoderDecoder"),
+			jen.ID("db").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database"),
+			jen.ID("authenticator").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "Authenticator"),
+			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
 			jen.ID("counterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounterProvider"),
 			jen.ID("reporter").ID("newsman").Dot("Reporter"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(

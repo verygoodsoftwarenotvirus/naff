@@ -11,7 +11,7 @@ func mockWebhookDataServerDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("models").Dot("WebhookDataServer").Op("=").Parens(jen.Op("*").ID("WebhookDataServer")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","WebhookDataServer").Op("=").Parens(jen.Op("*").ID("WebhookDataServer")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 

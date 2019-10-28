@@ -191,6 +191,10 @@ func RunGoimportsForFile(filename string) error {
 	return exec.Command("/home/jeffrey/bin/goimports", "-w", filename).Run()
 }
 
+func RunGoFormatForFile(filename string) error {
+	return exec.Command("/usr/local/go/bin/gofmt", "-s", "-w", filename).Run()
+}
+
 func RenderFile(path string, file *jen.File) error {
 	// start := time.Now()
 	fp := BuildTemplatePath(path)
@@ -210,6 +214,13 @@ func RenderFile(path string, file *jen.File) error {
 		return fmt.Errorf("error rendering file %q: %w", path, gie)
 	}
 
+	if ferr := FindAndFixImportBlock(fp); ferr != nil {
+		return fmt.Errorf("error sorting imports for file %q: %w", path, ferr)
+	}
+
+	if gfe := RunGoFormatForFile(fp); gfe != nil {
+		return fmt.Errorf("error rendering file %q: %w", path, gfe)
+	}
 	// log.Printf("took %s to render %q", time.Since(start), path)
 
 	return nil

@@ -32,8 +32,8 @@ func (s *Service) buildStaticFileServer(fileDir string) (*afero.HttpFs, error) {
 			if file.IsDir() {
 				continue
 			}
-			fp := filepath.Join(fileDir, file.Name())
 
+			fp := filepath.Join(fileDir, file.Name())
 			f, err := afs.Create(fp)
 			if err != nil {
 				return nil, fmt.Errorf("creating static file in memory: %w", err)
@@ -67,7 +67,7 @@ var (
 	// 		eventsFrontendPathRegex = regexp.MustCompile(`/event/\d+`)
 
 	// itemsFrontendPathRegex matches URLs against our frontend router's specification for specific item routes
-	itemsFrontendPathRegex = regexp.MustCompile("/items/\\d+")
+	itemsFrontendPathRegex = regexp.MustCompile(`/items/\d+`)
 )
 
 // StaticDir builds a static directory handler

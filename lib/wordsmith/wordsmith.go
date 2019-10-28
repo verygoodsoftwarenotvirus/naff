@@ -35,6 +35,10 @@ func (s *SuperPalabra) RouteName() string {
 	return kace.Snake(s.meta)
 }
 
+func (s *SuperPalabra) KebabName() string {
+	return kace.Kebab(s.meta)
+}
+
 func (s *SuperPalabra) PluralRouteName() string {
 	return kace.Snake(s.pluralizer.Plural(s.meta))
 }
@@ -49,6 +53,10 @@ func (s *SuperPalabra) PluralUnexportedVarName() string {
 
 func (s *SuperPalabra) PackageName() string {
 	return strings.ToLower(s.Plural())
+}
+
+func (s *SuperPalabra) SingularPackageName() string {
+	return strings.ToLower(s.Singular())
 }
 
 func (s *SuperPalabra) SingularCommonName() string {

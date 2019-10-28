@@ -1,11 +1,13 @@
-package postgres
+package queriers
 
 import (
 	"fmt"
+	"strings"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
-	"strings"
 )
 
 func buildGeneralFields(varName string, typ models.DataType) []jen.Code {
@@ -74,8 +76,8 @@ func buildUpdateQueryParts(typ models.DataType) []string {
 	return out
 }
 
-func iterablesTestDotGo(typ models.DataType) *jen.File {
-	ret := jen.NewFile("postgres")
+func iterablesTestDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.File {
+	ret := jen.NewFile(dbvendor.SingularPackageName())
 
 	utils.AddImports(ret)
 
@@ -85,6 +87,8 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	puvn := n.PluralUnexportedVarName()
 	tn := n.PluralRouteName()
 	scn := n.SingularCommonName()
+	dbvsn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
 	fieldCols := buildNonStandardStringColumns(typ)
 	cols := buildStringColumns(typ)
@@ -120,7 +124,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_buildGet%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGet%sQuery", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -131,7 +135,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("expectedArgCount").Op(":=").Lit(2),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT %s FROM %s WHERE belongs_to = $1 AND id = $2", cols, tn),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sQuery", sn).Call(jen.IDf("example%sID", sn), jen.ID("exampleUserID")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("example%sID", sn), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot("Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
@@ -142,7 +146,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_Get%s", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Get%s", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -157,7 +161,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					Dot("WithArgs").Call(jen.ID("expectedUserID"), jen.ID("expected").Dot("ID")).
 					Dot("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("Get%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -173,7 +177,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Call(jen.ID("expectedUserID"), jen.ID("expected").Dot("ID")).Dot("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("Get%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
@@ -184,7 +188,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_buildGet%sCountQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGet%sCountQuery", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -194,7 +198,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("expectedArgCount").Op(":=").Lit(1),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20", tn),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sCountQuery", sn).Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sCountQuery", sn).Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot("Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
@@ -204,7 +208,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_Get%sCount", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Get%sCount", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -215,7 +219,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Call(jen.ID("expectedUserID")).Dot("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 				jen.Line(),
-				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID("p").Dotf("Get%sCount", sn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%sCount", sn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -225,14 +229,14 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_buildGetAll%sCountQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetAll%sCountQuery", dbvsn, pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
 				jen.Line(),
-				jen.ID("actualQuery").Op(":=").ID("p").Dotf("buildGetAll%sCountQuery", pn).Call(),
+				jen.ID("actualQuery").Op(":=").ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call(),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 			)),
 		),
@@ -240,7 +244,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_GetAll%sCount", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetAll%sCount", dbvsn, pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -250,7 +254,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 				jen.Line(),
-				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID("p").Dotf("GetAll%sCount", pn).Call(jen.Qual("context", "Background").Call()),
+				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("GetAll%sCount", pn).Call(jen.Qual("context", "Background").Call()),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -260,7 +264,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_buildGet%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGet%sQuery", dbvsn, pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -269,7 +273,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("expectedArgCount").Op(":=").Lit(1),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20", cols, tn),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sQuery", pn).Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
 				jen.Line(),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot("Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
@@ -280,7 +284,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_Get%s", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Get%s", dbvsn, pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -310,7 +314,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					Dot("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).
 					Dot("AddRow").Call(jen.ID("expectedCount"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.Line(),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
@@ -324,7 +328,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WithArgs").Call(jen.ID("expectedUserID")).Dot("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
@@ -338,7 +342,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WithArgs").Call(jen.ID("expectedUserID")).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -356,7 +360,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					Dot("WithArgs").Call(jen.ID("expectedUserID")).
 					Dot("WillReturnRows").Call(jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID("expected"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -374,7 +378,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WithArgs").Call(jen.ID("expectedUserID")).Dot("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected"))),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -384,7 +388,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_GetAll%sForUser", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetAll%sForUser", dbvsn, pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -400,7 +404,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					Dot("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn))),
 				jen.Line(),
 				jen.ID("expected").Op(":=").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn).Values(jen.Op("*").IDf("expected%s", sn)),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("GetAll%sForUser", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("GetAll%sForUser", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
 				jen.Line(),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
@@ -414,7 +418,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.List(jen.ID("p"), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WithArgs").Call(jen.ID("expectedUserID")).Dot("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("GetAll%sForUser", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("GetAll%sForUser", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
@@ -429,7 +433,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WithArgs").Call(jen.ID("expectedUserID")).
 					Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("GetAll%sForUser", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("GetAll%sForUser", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -446,7 +450,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WithArgs").Call(jen.ID("expectedUserID")).
 					Dot("WillReturnRows").Call(jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.IDf("example%s", sn))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("GetAll%sForUser", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("GetAll%sForUser", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -464,7 +468,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 		),
 		jen.ID("expectedArgCount").Op(":=").Lit(3),
 		jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO %s (%s,belongs_to) VALUES (%s) RETURNING id, created_on", tn, strings.ReplaceAll(fieldCols, " ", ""), insertPlaceholders),
-		jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dotf("buildCreate%sQuery", sn).Call(jen.ID("expected")),
+		jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildCreate%sQuery", sn).Call(jen.ID("expected")),
 		jen.Line(),
 		jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 		jen.ID("assert").Dot("Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
@@ -472,7 +476,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	createQueryTestBody = append(createQueryTestBody, creationEqualityExpectations...)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_buildCreate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildCreate%sQuery", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(createQueryTestBody...,
@@ -497,7 +501,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	nef := nonEssentialFields("expected", typ)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_Create%s", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Create%s", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -521,7 +525,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					nef...,
 				).Dot("WillReturnRows").Call(jen.ID("exampleRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("Create%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Create%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -544,7 +548,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					nef...,
 				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("p").Dotf("Create%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Create%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -564,7 +568,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 		),
 		jen.ID("expectedArgCount").Op(":=").Lit(4),
 		jen.ID("expectedQuery").Op(":=").Litf("UPDATE %s SET %s, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $%d AND id = $%d RETURNING updated_on", tn, updateColsStr, len(updateCols)+1, len(updateCols)+2),
-		jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dotf("buildUpdate%sQuery", sn).Call(jen.ID("expected")),
+		jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildUpdate%sQuery", sn).Call(jen.ID("expected")),
 		jen.Line(),
 		jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 		jen.ID("assert").Dot("Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
@@ -576,7 +580,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_buildUpdate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildUpdate%sQuery", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -602,7 +606,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	expectQueryArgs := buildExpectQueryArgs("expected", typ)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_Update%s", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Update%s", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -620,7 +624,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					expectQueryArgs...,
 				).Dot("WillReturnRows").Call(jen.ID("exampleRows")),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("p").Dotf("Update%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected")),
+				jen.ID("err").Op(":=").ID(dbfl).Dotf("Update%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -639,7 +643,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					expectQueryArgs...,
 				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("p").Dotf("Update%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected")),
+				jen.ID("err").Op(":=").ID(dbfl).Dotf("Update%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -648,7 +652,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_buildArchive%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildArchive%sQuery", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -660,7 +664,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				),
 				jen.ID("expectedArgCount").Op(":=").Lit(2),
 				jen.ID("expectedQuery").Op(":=").Litf("UPDATE %s SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on", tn),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID("p").Dotf("buildArchive%sQuery", sn).Call(jen.ID("expected").Dot("ID"), jen.ID("expected").Dot("BelongsTo")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildArchive%sQuery", sn).Call(jen.ID("expected").Dot("ID"), jen.ID("expected").Dot("BelongsTo")),
 				jen.Line(),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot("Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
@@ -672,7 +676,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestPostgres_Archive%s", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Archive%s", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -690,7 +694,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("expected").Dot("ID"),
 				).Dot("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1))),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("p").Dotf("Archive%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
+				jen.ID("err").Op(":=").ID(dbfl).Dotf("Archive%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -710,7 +714,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					jen.ID("example").Dot("ID"),
 				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("p").Dotf("Archive%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("example").Dot("ID"), jen.ID("expectedUserID")),
+				jen.ID("err").Op(":=").ID(dbfl).Dotf("Archive%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("example").Dot("ID"), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),

@@ -5,13 +5,14 @@ import (
 	"errors"
 	"fmt"
 
+	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
+
 	"contrib.go.opencensus.io/integrations/ocsql"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/mariadb"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/postgres"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/sqlite"
-	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
 )
 
 const (

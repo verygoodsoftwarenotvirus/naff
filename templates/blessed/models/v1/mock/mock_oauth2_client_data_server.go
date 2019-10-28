@@ -11,7 +11,7 @@ func mockOauth2ClientDataServerDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("models").Dot("OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("OAuth2ClientDataServer")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("OAuth2ClientDataServer")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 
@@ -85,10 +85,10 @@ func mockOauth2ClientDataServerDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ExtractOAuth2ClientFromRequest is the obligatory implementation for our interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("models").Dot("OAuth2Client"),
+		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","OAuth2Client"),
 			jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx"), jen.ID("req")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dot("OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	)

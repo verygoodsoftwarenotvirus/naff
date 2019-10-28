@@ -15,11 +15,24 @@ import (
 func buildTestService(t *testing.T) (*Sqlite, sqlmock.Sqlmock) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	s := ProvideSqlite(true, db, noop.ProvideNoopLogger())
-	return s.(*Sqlite), mock
+	p := ProvideSqlite(true, db, noop.ProvideNoopLogger())
+	return p.(*Sqlite), mock
 }
 
-var sqlMockReplacer = strings.NewReplacer("$", "\\$", "(", "\\(", ")", "\\)", "=", "\\=", "*", "\\*", ".", "\\.", "+", "\\+", "?", "\\?", ",", "\\,", "-", "\\-")
+var (
+	sqlMockReplacer = strings.NewReplacer(
+		"$", `\$`,
+		"(", `\(`,
+		")", `\)`,
+		"=", `\=`,
+		"*", `\*`,
+		".", `\.`,
+		"+", `\+`,
+		"?", `\?`,
+		",", `\,`,
+		"-", `\-`,
+	)
+)
 
 func formatQueryForSQLMock(query string) string {
 	return sqlMockReplacer.Replace(query)
@@ -37,16 +50,16 @@ func TestSqlite_IsReady(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		s, _ := buildTestService(t)
+		p, _ := buildTestService(t)
 		assert.True(t, s.IsReady(context.Background()))
 	})
 }
 
-func TestSqlite_logQueryBuildingError(T *testing.T) {
+func Test_logQueryBuildingError(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		s, _ := buildTestService(t)
+		p, _ := buildTestService(t)
 		s.logQueryBuildingError(errors.New(""))
 	})
 }

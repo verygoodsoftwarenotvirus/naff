@@ -86,6 +86,12 @@ func (f *File) PackageComment(comment string) {
 	f.comments = append(f.comments, comment)
 }
 
+// PackageCommentf adds a comment to the top of the file, above the package
+// keyword.
+func (f *File) PackageCommentf(comment string, args ...interface{}) {
+	f.comments = append(f.comments, fmt.Sprintf(comment, args...))
+}
+
 // CgoPreamble adds a cgo preamble comment that is rendered directly before the "C" pseudo-package
 // import.
 func (f *File) CgoPreamble(comment string) {

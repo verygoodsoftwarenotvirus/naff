@@ -3,8 +3,9 @@ package mock
 import (
 	"context"
 
-	"github.com/stretchr/testify/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
+
+	"github.com/stretchr/testify/mock"
 )
 
 var _ metrics.UnitCounter = (*UnitCounter)(nil)

@@ -8,15 +8,16 @@ import (
 	"os"
 	"time"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	encoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
+	frontend "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/frontend"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/go-chi/chi"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	"gitlab.com/verygoodsoftwarenotvirus/newsman"
-	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
-	frontend "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/frontend"
-	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 	"go.opencensus.io/plugin/ochttp"
 )
 

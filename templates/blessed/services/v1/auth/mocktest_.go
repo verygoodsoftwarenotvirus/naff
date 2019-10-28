@@ -23,7 +23,7 @@ func mockTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").Op("*").ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().Params(jen.ID("m").Op("*").ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 		"OAuth2Client",
 	),
 	jen.ID("error")).Block(
@@ -32,7 +32,7 @@ func mockTestDotGo() *jen.File {
 		).Call(jen.ID("req")),
 		jen.Return().List(jen.ID("args").Dot(
 			"Get",
-		).Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dot(
+		).Call(jen.Lit(0)).Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"OAuth2Client",
 		)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 	),

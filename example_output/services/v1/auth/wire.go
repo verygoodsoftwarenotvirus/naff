@@ -1,8 +1,9 @@
 package auth
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients"
+
 	"github.com/google/wire"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
 	"gitlab.com/verygoodsoftwarenotvirus/newsman"
 )
 

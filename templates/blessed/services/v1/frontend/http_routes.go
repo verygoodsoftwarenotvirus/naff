@@ -36,8 +36,8 @@ func httpRoutesDotGo() *jen.File {
 				jen.If(jen.ID("file").Dot("IsDir").Call()).Block(
 					jen.Continue(),
 				),
-				jen.ID("fp").Op(":=").Qual("path/filepath", "Join").Call(jen.ID("fileDir"), jen.ID("file").Dot("Name").Call()),
 				jen.Line(),
+				jen.ID("fp").Op(":=").Qual("path/filepath", "Join").Call(jen.ID("fileDir"), jen.ID("file").Dot("Name").Call()),
 				jen.List(jen.ID("f"), jen.ID("err")).Op(":=").ID("afs").Dot("Create").Call(jen.ID("fp")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("creating static file in memory: %w"), jen.ID("err"))),
@@ -74,7 +74,7 @@ func httpRoutesDotGo() *jen.File {
 			jen.Comment("		eventsFrontendPathRegex = regexp.MustCompile(`/event/\\d+`)"),
 			jen.Line(),
 			jen.Comment("itemsFrontendPathRegex matches URLs against our frontend router's specification for specific item routes"),
-			jen.ID("itemsFrontendPathRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.Lit(`/items/\d+`)),
+			jen.ID("itemsFrontendPathRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.RawString(`/items/\d+`)),
 		),
 		jen.Line(),
 	)

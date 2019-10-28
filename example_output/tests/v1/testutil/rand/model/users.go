@@ -3,9 +3,10 @@ package randmodel
 import (
 	"time"
 
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/icrowley/fake"
 	"github.com/pquerna/otp/totp"
-	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func init() {

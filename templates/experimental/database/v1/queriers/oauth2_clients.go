@@ -1,14 +1,19 @@
-package postgres
+package queriers
 
 import (
+	"strings"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
-func oauth2ClientsDotGo() *jen.File {
-	ret := jen.NewFile("postgres")
+func oauth2ClientsDotGo(vendor *wordsmith.SuperPalabra) *jen.File {
+	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)
+	sn := vendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	ret.Add(
 		jen.Const().Defs(
@@ -99,11 +104,11 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildGetOAuth2ClientByClientIDQuery builds a SQL query for fetching an OAuth2 client by its ClientID"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetOAuth2ClientByClientIDQuery").Params(jen.ID("clientID").ID("string")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetOAuth2ClientByClientIDQuery").Params(jen.ID("clientID").ID("string")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.Comment("This query is more or less the same as the normal OAuth2 client retrieval query, only that it doesn't"),
 			jen.Comment("care about ownership. It does still care about archived status"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Op("...")).
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
@@ -111,7 +116,7 @@ func oauth2ClientsDotGo() *jen.File {
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)).Dot("ToSql").Call(),
 			jen.Line(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -121,10 +126,10 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2ClientByClientID gets an OAuth2 client"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetOAuth2ClientByClientID").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("string")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2ClientByClientID").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("string")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client"),
 			jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildGetOAuth2ClientByClientIDQuery").Call(jen.ID("clientID")),
-			jen.ID("row").Op(":=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientByClientIDQuery").Call(jen.ID("clientID")),
+			jen.ID("row").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("scanOAuth2Client").Call(jen.ID("row")),
 		),
 		jen.Line(),
@@ -141,18 +146,18 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildGetAllOAuth2ClientsQuery builds a SQL query"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetAllOAuth2ClientsQuery").Params().Params(jen.ID("query").ID("string")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetAllOAuth2ClientsQuery").Params().Params(jen.ID("query").ID("string")).Block(
 			jen.ID("getAllOAuth2ClientsQueryBuilder").Dot(
 				"Do",
 			).Call(jen.Func().Params().Block(
 				jen.Var().ID("err").ID("error"),
-				jen.List(jen.ID("getAllOAuth2ClientsQuery"), jen.ID("_"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+				jen.List(jen.ID("getAllOAuth2ClientsQuery"), jen.ID("_"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 					Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Op("...")).
 					Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.Lit("archived_on").Op(":").ID("nil"))).
 					Dotln("ToSql").Call(),
 				jen.Line(),
-				jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			)),
 			jen.Line(),
 			jen.Return().ID("getAllOAuth2ClientsQuery"),
@@ -163,11 +168,11 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetAllOAuth2Clients gets a list of OAuth2 clients regardless of ownership"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Index().Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Index().Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"OAuth2Client",
 		),
 			jen.ID("error")).Block(
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("p").Dot("buildGetAllOAuth2ClientsQuery").Call()),
+			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID(dbfl).Dot("buildGetAllOAuth2ClientsQuery").Call()),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.Return().List(jen.ID("nil"), jen.ID("err")),
@@ -175,7 +180,7 @@ func oauth2ClientsDotGo() *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying database for oauth2 clients: %w"), jen.ID("err"))),
 			),
 			jen.Line(),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID("p").Dot("logger"), jen.ID("rows")),
+			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching list of OAuth2Clients: %w"), jen.ID("err"))),
 			),
@@ -188,10 +193,10 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetAllOAuth2ClientsForUser gets a list of OAuth2 clients belonging to a given user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllOAuth2ClientsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client"), jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildGetOAuth2ClientsQuery").Call(jen.ID("nil"), jen.ID("userID")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllOAuth2ClientsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client"), jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientsQuery").Call(jen.ID("nil"), jen.ID("userID")),
 			jen.Line(),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.Return().List(jen.ID("nil"), jen.ID("err")),
@@ -199,7 +204,7 @@ func oauth2ClientsDotGo() *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying database for oauth2 clients: %w"), jen.ID("err"))),
 			),
 			jen.Line(),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID("p").Dot("logger"), jen.ID("rows")),
+			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching list of OAuth2Clients: %w"), jen.ID("err"))),
 			),
@@ -212,9 +217,9 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildGetOAuth2ClientQuery returns a SQL query which requests a given OAuth2 client by its database ID"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetOAuth2ClientQuery").Params(jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetOAuth2ClientQuery").Params(jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Op("...")).
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
@@ -223,7 +228,7 @@ func oauth2ClientsDotGo() *jen.File {
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)).Dot("ToSql").Call(),
 			jen.Line(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -233,9 +238,9 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2Client retrieves an OAuth2 client from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client"), jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildGetOAuth2ClientQuery").Call(jen.ID("clientID"), jen.ID("userID")),
-			jen.ID("row").Op(":=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client"), jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientQuery").Call(jen.ID("clientID"), jen.ID("userID")),
+			jen.ID("row").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Line(),
 			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("scanOAuth2Client").Call(jen.ID("row")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -255,10 +260,10 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("restrictions (if relevant) and belong to a given user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetOAuth2ClientCountQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetOAuth2ClientCountQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
-			jen.ID("builder").Op(":=").ID("p").Dot("sqlBuilder").
+			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("CountQuery")).
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
@@ -273,7 +278,7 @@ func oauth2ClientsDotGo() *jen.File {
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("builder").Dot("ToSql").Call(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -283,10 +288,10 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2ClientCount will get the count of OAuth2 clients that match the given filter and belong to the user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildGetOAuth2ClientCountQuery").Call(jen.ID("filter"), jen.ID("userID")),
-			jen.ID("err").Op("=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("count")),
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientCountQuery").Call(jen.ID("filter"), jen.ID("userID")),
+			jen.ID("err").Op("=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("count")),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -305,16 +310,16 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("in the database, regardless of ownership."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetAllOAuth2ClientCountQuery").Params().Params(jen.ID("string")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetAllOAuth2ClientCountQuery").Params().Params(jen.ID("string")).Block(
 			jen.ID("getAllOAuth2ClientCountQueryBuilder").Dot("Do").Call(jen.Func().Params().Block(
 				jen.Var().ID("err").ID("error"),
-				jen.List(jen.ID("getAllOAuth2ClientCountQuery"), jen.ID("_"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+				jen.List(jen.ID("getAllOAuth2ClientCountQuery"), jen.ID("_"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 					Dotln("Select").Call(jen.ID("CountQuery")).
 					Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.Lit("archived_on").Op(":").ID("nil"))).
 					Dotln("ToSql").Call(),
 				jen.Line(),
-				jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			)),
 			jen.Line(),
 			jen.Return().ID("getAllOAuth2ClientCountQuery"),
@@ -325,9 +330,9 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetAllOAuth2ClientCount will get the count of OAuth2 clients that match the current filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 			jen.Var().ID("count").ID("uint64"),
-			jen.ID("err").Op(":=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("p").Dot("buildGetAllOAuth2ClientCountQuery").Call()).Dot("Scan").Call(jen.Op("&").ID("count")),
+			jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID(dbfl).Dot("buildGetAllOAuth2ClientCountQuery").Call()).Dot("Scan").Call(jen.Op("&").ID("count")),
 			jen.Return().List(jen.ID("count"), jen.ID("err")),
 		),
 		jen.Line(),
@@ -338,9 +343,9 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("meet the given filter's criteria (if relevant) and belong to a given user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetOAuth2ClientsQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetOAuth2ClientsQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
-			jen.ID("builder").Op(":=").ID("p").Dot("sqlBuilder").
+			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Op("...")).
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
@@ -353,7 +358,7 @@ func oauth2ClientsDotGo() *jen.File {
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("builder").Dot("ToSql").Call(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -363,9 +368,9 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientList"), jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildGetOAuth2ClientsQuery").Call(jen.ID("filter"), jen.ID("userID")),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientList"), jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientsQuery").Call(jen.ID("filter"), jen.ID("userID")),
+			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Line(),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
@@ -374,7 +379,7 @@ func oauth2ClientsDotGo() *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for oauth2 clients: %w"), jen.ID("err"))),
 			),
 			jen.Line(),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID("p").Dot("logger"), jen.ID("rows")),
+			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID("scanOAuth2Clients").Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.ID("err"))),
 			),
@@ -386,7 +391,7 @@ func oauth2ClientsDotGo() *jen.File {
 				jen.ID("clients").Index(jen.ID("i")).Op("=").Op("*").ID("t"),
 			),
 			jen.Line(),
-			jen.List(jen.ID("totalCount"), jen.ID("err")).Op(":=").ID("p").Dot("GetOAuth2ClientCount").Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
+			jen.List(jen.ID("totalCount"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2ClientCount").Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 client count: %w"), jen.ID("err"))),
 			),
@@ -408,9 +413,9 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildCreateOAuth2ClientQuery returns a SQL query (and args) that will create the given OAuth2Client in the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildCreateOAuth2ClientQuery").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildCreateOAuth2ClientQuery").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Insert").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Columns").Callln(
 				jen.Lit("name"),
@@ -431,7 +436,7 @@ func oauth2ClientsDotGo() *jen.File {
 				Dotln("Suffix").Call(jen.Lit("RETURNING id, created_on")).
 				Dotln("ToSql").Call(),
 			jen.Line(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -441,7 +446,7 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("CreateOAuth2Client creates an OAuth2 client"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("CreateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientCreationInput")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("CreateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientCreationInput")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client"), jen.ID("error")).Block(
 			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
 				jen.ID("Name").Op(":").ID("input").Dot("Name"),
 				jen.ID("ClientID").Op(":").ID("input").Dot("ClientID"),
@@ -449,9 +454,9 @@ func oauth2ClientsDotGo() *jen.File {
 				jen.ID("RedirectURI").Op(":").ID("input").Dot("RedirectURI"),
 				jen.ID("Scopes").Op(":").ID("input").Dot("Scopes"),
 				jen.ID("BelongsTo").Op(":").ID("input").Dot("BelongsTo")),
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildCreateOAuth2ClientQuery").Call(jen.ID("x")),
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildCreateOAuth2ClientQuery").Call(jen.ID("x")),
 			jen.Line(),
-			jen.ID("err").Op(":=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")),
+			jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing client creation query: %w"), jen.ID("err"))),
 			),
@@ -464,9 +469,9 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildUpdateOAuth2ClientQuery returns a SQL query (and args) that will update a given OAuth2 client in the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildUpdateOAuth2ClientQuery").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildUpdateOAuth2ClientQuery").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Update").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Set").Call(jen.Lit("client_id"), jen.ID("input").Dot("ClientID")).
 				Dotln("Set").Call(jen.Lit("client_secret"), jen.ID("input").Dot("ClientSecret")).
@@ -480,7 +485,7 @@ func oauth2ClientsDotGo() *jen.File {
 				Dotln("Suffix").Call(jen.Lit("RETURNING updated_on")).
 				Dotln("ToSql").Call(),
 			jen.Line(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -492,9 +497,9 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("NOTE: this function expects the input's ID field to be valid and non-zero."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("UpdateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildUpdateOAuth2ClientQuery").Call(jen.ID("input")),
-			jen.Return().ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("UpdateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Params(jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateOAuth2ClientQuery").Call(jen.ID("input")),
+			jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")),
 		),
 		jen.Line(),
 	)
@@ -502,9 +507,9 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildArchiveOAuth2ClientQuery returns a SQL query (and arguments) that will mark an OAuth2 client as archived."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildArchiveOAuth2ClientQuery").Params(jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildArchiveOAuth2ClientQuery").Params(jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Update").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
 				Dotln("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
@@ -515,7 +520,7 @@ func oauth2ClientsDotGo() *jen.File {
 				Dotln("Suffix").Call(jen.Lit("RETURNING archived_on")).
 				Dotln("ToSql").Call(),
 			jen.Line(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -525,9 +530,9 @@ func oauth2ClientsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("ArchiveOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildArchiveOAuth2ClientQuery").Call(jen.ID("clientID"), jen.ID("userID")),
-			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("ArchiveOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildArchiveOAuth2ClientQuery").Call(jen.ID("clientID"), jen.ID("userID")),
+			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("err"),
 		),
 		jen.Line(),

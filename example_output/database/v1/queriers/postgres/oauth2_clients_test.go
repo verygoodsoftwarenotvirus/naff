@@ -8,9 +8,10 @@ import (
 	"testing"
 	"time"
 
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func buildMockRowFromOAuth2Client(c *models.OAuth2Client) *sqlmock.Rows {

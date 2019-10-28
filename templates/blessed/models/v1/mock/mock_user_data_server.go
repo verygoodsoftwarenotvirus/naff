@@ -11,7 +11,7 @@ func mockUserDataServerDotGo() *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("models").Dot("UserDataServer").Op("=").Parens(jen.Op("*").ID("UserDataServer")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","UserDataServer").Op("=").Parens(jen.Op("*").ID("UserDataServer")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 

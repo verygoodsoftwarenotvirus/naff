@@ -6,10 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	mockencoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	mockencoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock"
 )
 
 var _ http.Handler = (*mockHTTPHandler)(nil)

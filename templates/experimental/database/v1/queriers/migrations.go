@@ -1,4 +1,4 @@
-package postgres
+package queriers
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
@@ -31,29 +32,6 @@ func typeToPostgresType(t string) string {
 
 	return t
 }
-
-// func typeToSqliteType(t string) string {
-// 	typeMap := map[string]string{
-// 		"[]string": "CHARACTER VARYING",
-// 		"string":   "CHARACTER VARYING",
-// 		"*string":  "CHARACTER VARYING",
-// 		"uint64":   "INTEGER",
-// 		"*uint64":  "INTEGER",
-// 		"bool":     "BOOLEAN",
-// 		"*bool":    "BOOLEAN",
-// 		"int":      "INTEGER",
-// 		"*int":     "INTEGER",
-// 		"uint":     "INTEGER",
-// 		"*uint":    "INTEGER",
-// 		"float64":  "REAL",
-// 	}
-
-// 	if x, ok := typeMap[t]; ok {
-// 		return x
-// 	}
-
-// 	return t
-// }
 
 // func typeToMariaDBType(t string) string {
 // 	typeMap := map[string]string{
@@ -174,7 +152,7 @@ func makeMigrations(types []models.DataType) []jen.Code {
 		pcn := typ.Name.PluralCommonName()
 
 		scriptParts := []string{
-			"\n			CREATE TABLE IF NOT EXISTS items (",
+			fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
 			`				"id" bigserial NOT NULL PRIMARY KEY,`,
 		}
 
@@ -222,10 +200,13 @@ func makeMigrations(types []models.DataType) []jen.Code {
 	return out
 }
 
-func migrationsDotGo(types []models.DataType) *jen.File {
-	ret := jen.NewFile("postgres")
+func migrationsDotGo(vendor *wordsmith.SuperPalabra, types []models.DataType) *jen.File {
+	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)
+	dbvsn := vendor.Singular()
+	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
+	dbcn := vendor.SingularCommonName()
 
 	ret.Add(
 		jen.Var().Defs(
@@ -236,11 +217,11 @@ func migrationsDotGo(types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("buildMigrationFunc returns a sync.Once compatible function closure that will"),
 		jen.Line(),
-		jen.Comment("migrate a postgres database"),
+		jen.Commentf("migrate a %s database", dbcn),
 		jen.Line(),
 		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Func().Params()).Block(
 			jen.Return().Func().Params().Block(
-				jen.ID("driver").Op(":=").Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(jen.ID("db"), jen.Qual("github.com/GuiaBolso/darwin", "PostgresDialect").Values()),
+				jen.ID("driver").Op(":=").Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(jen.ID("db"), jen.Qual("github.com/GuiaBolso/darwin", fmt.Sprintf("%sDialect", dbvsn)).Values()),
 				jen.If(jen.ID("err").Op(":=").Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot("Migrate").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("panic").Call(jen.ID("err")),
 				),
@@ -254,17 +235,18 @@ func migrationsDotGo(types []models.DataType) *jen.File {
 		jen.Line(),
 		jen.Comment("safe (as in idempotent, though not recommended) to call this function multiple times."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
-			jen.ID("p").Dot("logger").Dot("Info").Call(jen.Lit("migrating db")),
-			jen.If(jen.Op("!").ID("p").Dot("IsReady").Call(jen.ID("ctx"))).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
+			jen.ID(dbfl).Dot("logger").Dot("Info").Call(jen.Lit("migrating db")),
+			jen.If(jen.Op("!").ID(dbfl).Dot("IsReady").Call(jen.ID("ctx"))).Block(
 				jen.Return().ID("errors").Dot("New").Call(jen.Lit("db is not ready yet")),
 			),
 			jen.Line(),
-			jen.ID("p").Dot("migrateOnce").Dot("Do").Call(jen.ID("buildMigrationFunc").Call(jen.ID("p").Dot("db"))),
+			jen.ID(dbfl).Dot("migrateOnce").Dot("Do").Call(jen.ID("buildMigrationFunc").Call(jen.ID(dbfl).Dot("db"))),
 			jen.Line(),
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

@@ -5,13 +5,10 @@ package main
 import (
 	"context"
 
-	"github.com/google/wire"
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/newsman"
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	encoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
 	server "gitlab.com/verygoodsoftwarenotvirus/todo/server/v1"
 	httpserver "gitlab.com/verygoodsoftwarenotvirus/todo/server/v1/http"
@@ -21,6 +18,10 @@ import (
 	oauth2clientsservice "gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients"
 	usersservice "gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/users"
 	webhooksservice "gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/webhooks"
+
+	"github.com/google/wire"
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/newsman"
 )
 
 // ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day

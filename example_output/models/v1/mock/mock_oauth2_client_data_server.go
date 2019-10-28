@@ -4,8 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 )
 
 var _ models.OAuth2ClientDataServer = (*OAuth2ClientDataServer)(nil)

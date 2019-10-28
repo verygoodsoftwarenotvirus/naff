@@ -75,9 +75,7 @@ func httpRoutesTestDotGo() *jen.File {
 				jen.ID("req").Dot("URL").Dot("Path").Op("=").Lit("/items/9"),
 				jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot(
-					"Code",
-				)),
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
 			)),
 		),
 		jen.Line(),
@@ -100,7 +98,7 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
-					jen.ID("config").Op(":").ID("config").Dot("FrontendSettings").Valuesln(
+					jen.ID("config").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "FrontendSettings").Valuesln(
 						jen.ID("CacheStaticFiles").Op(":").ID("true"),
 					),
 				),
@@ -108,7 +106,6 @@ func httpRoutesTestDotGo() *jen.File {
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("s").Dot("buildStaticFileServer").Call(jen.ID("cwd")),
-				jen.Line(),
 				jen.ID("assert").Dot("NotNil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			)),

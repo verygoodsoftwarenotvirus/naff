@@ -7,11 +7,12 @@ import (
 	"testing"
 	"time"
 
+	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	postgres "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
-	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
-	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func buildMockRowFromUser(user *models.User) *sqlmock.Rows {

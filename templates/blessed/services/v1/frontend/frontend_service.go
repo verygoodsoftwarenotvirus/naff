@@ -22,7 +22,7 @@ func frontendServiceDotGo() *jen.File {
 			jen.Comment("Service is responsible for serving HTML (and other static resources)"),
 			jen.ID("Service").Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("config").ID("config").Dot("FrontendSettings"),
+				jen.ID("config").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "FrontendSettings"),
 			),
 		),
 		jen.Line(),
@@ -31,14 +31,11 @@ func frontendServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection"),
 		jen.Line(),
-		jen.Func().ID("ProvideFrontendService").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-		),
-			jen.ID("cfg").ID("config").Dot(
-				"FrontendSettings",
-			)).Params(jen.Op("*").ID("Service")).Block(
+		jen.Func().ID("ProvideFrontendService").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("cfg").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "FrontendSettings")).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(
-				jen.ID("config").Op(":").ID("cfg"), jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("serviceName"))),
+				jen.ID("config").Op(":").ID("cfg"),
+				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
+			),
 			jen.Return().ID("svc"),
 		),
 		jen.Line(),

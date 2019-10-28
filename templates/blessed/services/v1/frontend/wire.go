@@ -13,7 +13,9 @@ func wireDotGo() *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is our collection of what we provide to other services"),
-			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Call(jen.ID("ProvideFrontendService")),
+			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Callln(
+				jen.ID("ProvideFrontendService"),
+			),
 		),
 		jen.Line(),
 	)

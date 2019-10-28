@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func TestClient_GetUser(T *testing.T) {

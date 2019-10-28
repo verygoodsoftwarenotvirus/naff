@@ -5,37 +5,58 @@ import (
 	"database/sql"
 	"fmt"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/Masterminds/squirrel"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	"github.com/lib/pq"
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 )
 
-var usersTableName = "users"
+const (
+	usersTableName = "users"
+)
 
-var usersTableColumns = []string{
-	"id",
-	"username",
-	"hashed_password",
-	"password_last_changed_on",
-	"two_factor_secret",
-	"is_admin",
-	"created_on",
-	"updated_on",
-	"archived_on",
-}
+var (
+	usersTableColumns = []string{
+		"id",
+		"username",
+		"hashed_password",
+		"password_last_changed_on",
+		"two_factor_secret",
+		"is_admin",
+		"created_on",
+		"updated_on",
+		"archived_on",
+	}
+)
 
 // scanUser provides a consistent way to scan something like a *sql.Row into a User struct
 func scanUser(scan database.Scanner) (*models.User, error) {
 	var x = &models.User{}
-	if err := scan.Scan(&x.ID, &x.Username, &x.HashedPassword, &x.PasswordLastChangedOn, &x.TwoFactorSecret, &x.IsAdmin, &x.CreatedOn, &x.UpdatedOn, &x.ArchivedOn); err != nil {
+
+	if err := scan.Scan(
+		&x.ID,
+		&x.Username,
+		&x.HashedPassword,
+		&x.PasswordLastChangedOn,
+		&x.TwoFactorSecret,
+		&x.IsAdmin,
+		&x.CreatedOn,
+		&x.UpdatedOn,
+		&x.ArchivedOn,
+	); err != nil {
 		return nil, err
 	}
+
 	return x, nil
 }
 
 // scanUsers takes database rows and loads them into a slice of User structs
-func (s *Sqlite) scanUsers(rows *sql.Rows) ([]models.User, error) {
+func scanUsers(logger logging.Logger, rows *sql.Rows) ([]models.User, error) {
 	var list []models.User
+
 	for rows.Next() {
 		user, err := scanUser(rows)
 		if err != nil {
@@ -43,20 +64,29 @@ func (s *Sqlite) scanUsers(rows *sql.Rows) ([]models.User, error) {
 		}
 		list = append(list, *user)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-	s.logQueryBuildingError(rows.Close())
+
+	if err := rows.Close(); err != nil {
+		logger.Error(err, "closing rows")
+	}
+
 	return list, nil
 }
 
 // buildGetUserQuery returns a SQL query (and argument) for retrieving a user by their database ID
 func (s *Sqlite) buildGetUserQuery(userID uint64) (query string, args []interface{}) {
 	var err error
-	query, args, err = s.sqlBuilder.Select(usersTableColumns...).From(usersTableName).Where(squirrel.Eq{
-		"id": userID,
-	}).ToSql()
+	query, args, err = s.sqlBuilder.
+		Select(usersTableColumns...).
+		From(usersTableName).
+		Where(squirrel.Eq{"id": userID}).
+		ToSql()
+
 	s.logQueryBuildingError(err)
+
 	return query, args
 }
 
@@ -65,19 +95,25 @@ func (s *Sqlite) GetUser(ctx context.Context, userID uint64) (*models.User, erro
 	query, args := s.buildGetUserQuery(userID)
 	row := s.db.QueryRowContext(ctx, query, args...)
 	u, err := scanUser(row)
+
 	if err != nil {
 		return nil, buildError(err, "fetching user from database")
 	}
+
 	return u, err
 }
 
 // buildGetUserByUsernameQuery returns a SQL query (and argument) for retrieving a user by their username
 func (s *Sqlite) buildGetUserByUsernameQuery(username string) (query string, args []interface{}) {
 	var err error
-	query, args, err = s.sqlBuilder.Select(usersTableColumns...).From(usersTableName).Where(squirrel.Eq{
-		"username": username,
-	}).ToSql()
+	query, args, err = s.sqlBuilder.
+		Select(usersTableColumns...).
+		From(usersTableName).
+		Where(squirrel.Eq{"username": username}).
+		ToSql()
+
 	s.logQueryBuildingError(err)
+
 	return query, args
 }
 
@@ -86,12 +122,14 @@ func (s *Sqlite) GetUserByUsername(ctx context.Context, username string) (*model
 	query, args := s.buildGetUserByUsernameQuery(username)
 	row := s.db.QueryRowContext(ctx, query, args...)
 	u, err := scanUser(row)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, err
 		}
 		return nil, fmt.Errorf("fetching user from database: %w", err)
 	}
+
 	return u, nil
 }
 
@@ -99,14 +137,18 @@ func (s *Sqlite) GetUserByUsername(ctx context.Context, username string) (*model
 // to a given filter's criteria.
 func (s *Sqlite) buildGetUserCountQuery(filter *models.QueryFilter) (query string, args []interface{}) {
 	var err error
-	builder := s.sqlBuilder.Select(CountQuery).From(usersTableName).Where(squirrel.Eq{
-		"archived_on": nil,
-	})
+	builder := s.sqlBuilder.
+		Select(CountQuery).
+		From(usersTableName).
+		Where(squirrel.Eq{"archived_on": nil})
+
 	if filter != nil {
 		builder = filter.ApplyToQueryBuilder(builder)
 	}
 	query, args, err = builder.ToSql()
+
 	s.logQueryBuildingError(err)
+
 	return query, args
 }
 
@@ -121,12 +163,15 @@ func (s *Sqlite) GetUserCount(ctx context.Context, filter *models.QueryFilter) (
 // to a given filter's criteria.
 func (s *Sqlite) buildGetUsersQuery(filter *models.QueryFilter) (query string, args []interface{}) {
 	var err error
-	builder := s.sqlBuilder.Select(usersTableColumns...).From(usersTableName).Where(squirrel.Eq{
-		"archived_on": nil,
-	})
+	builder := s.sqlBuilder.
+		Select(usersTableColumns...).
+		From(usersTableName).
+		Where(squirrel.Eq{"archived_on": nil})
+
 	if filter != nil {
 		builder = filter.ApplyToQueryBuilder(builder)
 	}
+
 	query, args, err = builder.ToSql()
 	s.logQueryBuildingError(err)
 	return query, args
@@ -135,18 +180,22 @@ func (s *Sqlite) buildGetUsersQuery(filter *models.QueryFilter) (query string, a
 // GetUsers fetches a list of users from the database that meet a particular filter
 func (s *Sqlite) GetUsers(ctx context.Context, filter *models.QueryFilter) (*models.UserList, error) {
 	query, args := s.buildGetUsersQuery(filter)
+
 	rows, err := s.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, buildError(err, "querying for user")
 	}
-	userList, err := s.scanUsers(rows)
+
+	userList, err := scanUsers(s.logger, rows)
 	if err != nil {
 		return nil, fmt.Errorf("loading response from database: %w", err)
 	}
+
 	count, err := s.GetUserCount(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("fetching user count: %w", err)
 	}
+
 	x := &models.UserList{
 		Pagination: models.Pagination{
 			Page:       filter.Page,
@@ -155,24 +204,37 @@ func (s *Sqlite) GetUsers(ctx context.Context, filter *models.QueryFilter) (*mod
 		},
 		Users: userList,
 	}
+
 	return x, nil
 }
 
 // buildCreateUserQuery returns a SQL query (and arguments) that would create a given User
 func (s *Sqlite) buildCreateUserQuery(input *models.UserInput) (query string, args []interface{}) {
 	var err error
-	query, args, err = s.sqlBuilder.Insert(usersTableName).Columns("username", "hashed_password", "two_factor_secret", "is_admin").Values(input.Username, input.Password, input.TwoFactorSecret, false).ToSql()
-	s.logQueryBuildingError(err)
-	return query, args
-}
+	query, args, err = s.sqlBuilder.
+		Insert(usersTableName).
+		Columns(
+			"username",
+			"hashed_password",
+			"two_factor_secret",
+			"is_admin",
+		).
+		Values(
+			input.Username,
+			input.Password,
+			input.TwoFactorSecret,
+			false,
+		).
+		Suffix("RETURNING id, created_on").
+		ToSql()
 
-// buildCreateUserQuery returns a SQL query (and arguments) that would create a given User
-func (s *Sqlite) buildUserCreationTimeQuery(userID uint64) (query string, args []interface{}) {
-	var err error
-	query, args, err = s.sqlBuilder.Select("created_on").From(usersTableName).Where(squirrel.Eq{
-		"id": userID,
-	}).ToSql()
+	// NOTE: we always default is_admin to false, on the assumption that
+	// admins have DB access and will change that value via SQL query.
+	// There should also be no way to update a user via this structure
+	// such that they would have admin privileges
+
 	s.logQueryBuildingError(err)
+
 	return query, args
 }
 
@@ -183,25 +245,38 @@ func (s *Sqlite) CreateUser(ctx context.Context, input *models.UserInput) (*mode
 		TwoFactorSecret: input.TwoFactorSecret,
 	}
 	query, args := s.buildCreateUserQuery(input)
-	res, err := s.db.ExecContext(ctx, query, args...)
+
+	// create the user
+	err := s.db.QueryRowContext(ctx, query, args...).Scan(&x.ID, &x.CreatedOn)
 	if err != nil {
-		return nil, fmt.Errorf("error executing user creation query: %w", err)
+		switch e := err.(type) {
+		case *pq.Error:
+			if e.Code == pq.ErrorCode("23505") {
+				return nil, dbclient.ErrUserExists
+			}
+		default:
+			return nil, fmt.Errorf("error executing user creation query: %w", err)
+		}
 	}
-	if id, idErr := res.LastInsertId(); idErr == nil {
-		x.ID = uint64(id)
-		query, args := s.buildUserCreationTimeQuery(x.ID)
-		s.logCreationTimeRetrievalError(s.db.QueryRowContext(ctx, query, args...).Scan(&x.CreatedOn))
-	}
+
 	return x, nil
 }
 
 // buildUpdateUserQuery returns a SQL query (and arguments) that would update the given user's row
 func (s *Sqlite) buildUpdateUserQuery(input *models.User) (query string, args []interface{}) {
 	var err error
-	query, args, err = s.sqlBuilder.Update(usersTableName).Set("username", input.Username).Set("hashed_password", input.HashedPassword).Set("two_factor_secret", input.TwoFactorSecret).Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).Where(squirrel.Eq{
-		"id": input.ID,
-	}).ToSql()
+	query, args, err = s.sqlBuilder.
+		Update(usersTableName).
+		Set("username", input.Username).
+		Set("hashed_password", input.HashedPassword).
+		Set("two_factor_secret", input.TwoFactorSecret).
+		Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).
+		Where(squirrel.Eq{"id": input.ID}).
+		Suffix("RETURNING updated_on").
+		ToSql()
+
 	s.logQueryBuildingError(err)
+
 	return query, args
 }
 
@@ -210,16 +285,21 @@ func (s *Sqlite) buildUpdateUserQuery(input *models.User) (query string, args []
 // anonymous structs or incomplete models at your peril.
 func (s *Sqlite) UpdateUser(ctx context.Context, input *models.User) error {
 	query, args := s.buildUpdateUserQuery(input)
-	_, err := s.db.ExecContext(ctx, query, args...)
-	return err
+	return s.db.QueryRowContext(ctx, query, args...).Scan(&input.UpdatedOn)
 }
 
 func (s *Sqlite) buildArchiveUserQuery(userID uint64) (query string, args []interface{}) {
 	var err error
-	query, args, err = s.sqlBuilder.Update(usersTableName).Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).Set("archived_on", squirrel.Expr(CurrentUnixTimeQuery)).Where(squirrel.Eq{
-		"id": userID,
-	}).ToSql()
+	query, args, err = s.sqlBuilder.
+		Update(usersTableName).
+		Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).
+		Set("archived_on", squirrel.Expr(CurrentUnixTimeQuery)).
+		Where(squirrel.Eq{"id": userID}).
+		Suffix("RETURNING archived_on").
+		ToSql()
+
 	s.logQueryBuildingError(err)
+
 	return query, args
 }
 

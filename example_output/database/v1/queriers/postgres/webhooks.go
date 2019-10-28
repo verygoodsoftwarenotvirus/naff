@@ -7,10 +7,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Masterminds/squirrel"
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
+	"github.com/Masterminds/squirrel"
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 )
 
 const (

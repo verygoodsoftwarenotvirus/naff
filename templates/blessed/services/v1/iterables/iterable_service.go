@@ -25,9 +25,9 @@ func iterableServiceDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment(fmt.Sprintf("CreateMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts", cn)),
-			jen.ID("CreateMiddlewareCtxKey").ID("models").Dot("ContextKey").Op("=").Lit(fmt.Sprintf("%s_create_input", srn)),
+			jen.ID("CreateMiddlewareCtxKey").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ContextKey").Op("=").Lit(fmt.Sprintf("%s_create_input", srn)),
 			jen.Comment(fmt.Sprintf("UpdateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts", cn)),
-			jen.ID("UpdateMiddlewareCtxKey").ID("models").Dot("ContextKey").Op("=").Lit(fmt.Sprintf("%s_update_input", srn)),
+			jen.ID("UpdateMiddlewareCtxKey").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ContextKey").Op("=").Lit(fmt.Sprintf("%s_update_input", srn)),
 			jen.Line(),
 			jen.ID("counterName").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "CounterName").Op("=").Lit(puvn),
 			jen.ID("counterDescription").Op("=").Lit(fmt.Sprintf("the number of %s managed by the %s service", puvn, puvn)),
@@ -39,7 +39,7 @@ func iterableServiceDotGo(typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").ID("models").Dot(fmt.Sprintf("%sDataServer", sn)).Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
+			jen.ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sDataServer", sn)).Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
 		),
 		jen.Line(),
 	)
@@ -50,10 +50,10 @@ func iterableServiceDotGo(typ models.DataType) *jen.File {
 			jen.ID("Service").Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 				jen.ID(fmt.Sprintf("%sCounter", srn)).Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounter"),
-				jen.ID(fmt.Sprintf("%sDatabase", srn)).ID("models").Dot(fmt.Sprintf("%sDataManager", sn)),
+				jen.ID(fmt.Sprintf("%sDatabase", srn)).Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sDataManager", sn)),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID(fmt.Sprintf("%sIDFetcher", srn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
-				jen.ID("encoderDecoder").ID("encoding").Dot("EncoderDecoder"),
+				jen.ID("encoderDecoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
 				jen.ID("reporter").ID("newsman").Dot("Reporter"),
 			),
 			jen.Line(),
@@ -72,10 +72,10 @@ func iterableServiceDotGo(typ models.DataType) *jen.File {
 		jen.Func().ID(fmt.Sprintf("Provide%sService", pn)).Paramsln(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("db").ID("models").Dot(fmt.Sprintf("%sDataManager", sn)),
+			jen.ID("db").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sDataManager", sn)),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 			jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
-			jen.ID("encoder").ID("encoding").Dot("EncoderDecoder"),
+			jen.ID("encoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
 			jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounterProvider"),
 			jen.ID("reporter").ID("newsman").Dot("Reporter"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(

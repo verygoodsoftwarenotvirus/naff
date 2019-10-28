@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Masterminds/squirrel"
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
+	"github.com/Masterminds/squirrel"
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 )
 
 const (
@@ -234,8 +235,7 @@ func (p *Postgres) buildCreateItemQuery(input *models.Item) (query string, args 
 			input.Details,
 			input.BelongsTo,
 		).
-		Suffix("RETURNING id, created_on").
-		ToSql()
+		Suffix("RETURNING id, created_on").ToSql()
 
 	p.logQueryBuildingError(err)
 
@@ -311,5 +311,6 @@ func (p *Postgres) buildArchiveItemQuery(itemID, userID uint64) (query string, a
 func (p *Postgres) ArchiveItem(ctx context.Context, itemID, userID uint64) error {
 	query, args := p.buildArchiveItemQuery(itemID, userID)
 	_, err := p.db.ExecContext(ctx, query, args...)
+
 	return err
 }

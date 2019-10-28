@@ -4,30 +4,45 @@ import (
 	"context"
 	"database/sql"
 	"sync"
+	"time"
+
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 
 	"contrib.go.opencensus.io/integrations/ocsql"
 	"github.com/Masterminds/squirrel"
-	"github.com/mattn/go-sqlite3"
+	postgres "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 )
 
 const (
-	loggerName           = "sqlite"
-	sqliteDriverName     = "wrapped-sqlite-driver"
-	CountQuery           = "COUNT(id)"
-	CurrentUnixTimeQuery = "(strftime('%s','now'))"
+	loggerName       = "sqlite"
+	sqliteDriverName = "wrapped-sqlite-driver"
+
+	// CountQuery is a generic counter query used in a few query builders
+	CountQuery = "COUNT(id)"
+
+	// CurrentUnixTimeQuery is the query sqlite uses to determine the current unix time
+	CurrentUnixTimeQuery = "extract(epoch FROM NOW())"
 )
 
 func init() {
-	driver := ocsql.Wrap(&sqlite3.SQLiteDriver{}, ocsql.WithQuery(true), ocsql.WithAllowRoot(false), ocsql.WithRowsNext(true), ocsql.WithRowsClose(true), ocsql.WithQueryParams(true))
+	// Explicitly wrap the Sqlite driver with ocsql
+	driver := ocsql.Wrap(
+		&postgres.Driver{},
+		ocsql.WithQuery(true),
+		ocsql.WithAllowRoot(false),
+		ocsql.WithRowsNext(true),
+		ocsql.WithRowsClose(true),
+		ocsql.WithQueryParams(true),
+	)
+
+	// Register our ocsql wrapper as a db driver
 	sql.Register(sqliteDriverName, driver)
 }
 
-var _ database.Database = (*Sqlite)(nil)
-
 type (
+	// Sqlite is our main Sqlite interaction db
 	Sqlite struct {
 		logger      logging.Logger
 		db          *sql.DB
@@ -35,8 +50,12 @@ type (
 		migrateOnce sync.Once
 		debug       bool
 	}
+
+	// ConnectionDetails is a string alias for a Sqlite url
 	ConnectionDetails string
-	Querier           interface {
+
+	// Querier is a subset interface for sql.{DB|Tx|Stmt} objects
+	Querier interface {
 		ExecContext(ctx context.Context, args ...interface{}) (sql.Result, error)
 		QueryContext(ctx context.Context, args ...interface{}) (*sql.Rows, error)
 		QueryRowContext(ctx context.Context, args ...interface{}) *sql.Row
@@ -61,10 +80,32 @@ func ProvideSqlite(debug bool, db *sql.DB, logger logging.Logger) database.Datab
 
 // IsReady reports whether or not the db is ready
 func (s *Sqlite) IsReady(ctx context.Context) (ready bool) {
-	return true
+	numberOfUnsuccessfulAttempts := 0
+
+	s.logger.WithValues(map[string]interface{}{
+		"interval":     time.Second,
+		"max_attempts": 50,
+	}).Debug("IsReady called")
+
+	for !ready {
+		err := s.db.Ping()
+		if err != nil {
+			s.logger.Debug("ping failed, waiting for db")
+			time.Sleep(time.Second)
+
+			numberOfUnsuccessfulAttempts++
+			if numberOfUnsuccessfulAttempts >= 50 {
+				return false
+			}
+		} else {
+			ready = true
+			return ready
+		}
+	}
+	return false
 }
 
-// s.logQueryBuildingError logs errors that may occur during query construction.
+// logQueryBuildingError logs errors that may occur during query construction.
 // Such errors should be few and far between, as the generally only occur with
 // type discrepancies or other misuses of SQL. An alert should be set up for
 // any log entries with the given name, and those alerts should be investigated
@@ -72,17 +113,6 @@ func (s *Sqlite) IsReady(ctx context.Context) (ready bool) {
 func (s *Sqlite) logQueryBuildingError(err error) {
 	if err != nil {
 		s.logger.WithName("QUERY_ERROR").Error(err, "building query")
-	}
-}
-
-// logCreationTimeRetrievalError logs errors that may occur during creation time retrieval
-// Such errors should be few and far between, as the generally only occur with
-// type discrepancies or other misuses of SQL. An alert should be set up for
-// any log entries with the given name, and those alerts should be investigated
-// with the utmost priority.
-func (s *Sqlite) logCreationTimeRetrievalError(err error) {
-	if err != nil {
-		s.logger.WithName("CREATION_TIME_RETRIEVAL").Error(err, "building query")
 	}
 }
 

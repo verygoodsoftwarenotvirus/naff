@@ -24,7 +24,7 @@ func wireDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideOAuth2ClientDataServer is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.ID("models").Dot("OAuth2ClientDataServer")).Block(
+		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","OAuth2ClientDataServer")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

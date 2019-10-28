@@ -13,11 +13,12 @@ import (
 	"strings"
 	"time"
 
+	client "gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/icrowley/fake"
 	"github.com/moul/http2curl"
 	"github.com/pquerna/otp/totp"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	client "gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http"
 )
 
 func init() {

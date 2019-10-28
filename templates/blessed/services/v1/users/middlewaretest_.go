@@ -130,7 +130,7 @@ func middlewareTestDotGo() *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),

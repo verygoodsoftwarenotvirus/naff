@@ -1,9 +1,12 @@
-package postgres
+package queriers
 
 import (
 	"fmt"
+	"strings"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
@@ -40,15 +43,17 @@ func buildScanFields(typ models.DataType) []jen.Code {
 	return scanFields
 }
 
-func iterablesDotGo(typ models.DataType) *jen.File {
-	ret := jen.NewFile("postgres")
+func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.File {
+	ret := jen.NewFile(dbvendor.SingularPackageName())
 
 	utils.AddImports(ret)
+	dbvsn := dbvendor.Singular()
 
 	n := typ.Name
 	sn := n.Singular()
 	pn := n.Plural()
 	scn := n.SingularCommonName()
+	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 	pcn := n.PluralCommonName()
 	uvn := n.UnexportedVarName()
 	puvn := n.PluralUnexportedVarName()
@@ -119,9 +124,9 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("buildGet%sQuery constructs a SQL query for fetching %s with a given ID belong to a user with a given ID.", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildGet%sQuery", sn).Params(jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildGet%sQuery", sn).Params(jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
 				Dotln("From").Call(jen.IDf("%sTableName", puvn)).
 				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
@@ -129,7 +134,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 				jen.Lit("belongs_to").Op(":").ID("userID"),
 			)).Dot("ToSql").Call(),
 			jen.Line(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -137,14 +142,14 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Commentf("Get%s fetches %s from the postgres database", sn, scnwp),
+		jen.Commentf("Get%s fetches %s from the %s database", sn, scnwp, dbvendor.SingularPackageName()),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Get%s", sn).Params(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Get%s", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64"),
 		).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sQuery", sn).Call(jen.IDf("%sID", uvn), jen.ID("userID")),
-			jen.ID("row").Op(":=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("%sID", uvn), jen.ID("userID")),
+			jen.ID("row").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().IDf("scan%s", sn).Call(jen.ID("row")),
 		),
 		jen.Line(),
@@ -155,10 +160,10 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Commentf("fetching the number of %s belonging to a given user that meet a given query", pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildGet%sCountQuery", sn).Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildGet%sCountQuery", sn).Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
-			jen.ID("builder").Op(":=").ID("p").Dot("sqlBuilder").
+			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("CountQuery")).
 				Dotln("From").Call(jen.IDf("%sTableName", puvn)).
 				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
@@ -171,7 +176,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("builder").Dot("ToSql").Call(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -181,13 +186,13 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("Get%sCount will fetch the count of %s from the database that meet a particular filter and belong to a particular user.", sn, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Get%sCount", sn).Params(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Get%sCount", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64"),
 		).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sCountQuery", sn).Call(jen.ID("filter"), jen.ID("userID")),
-			jen.ID("err").Op("=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("count")),
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sCountQuery", sn).Call(jen.ID("filter"), jen.ID("userID")),
+			jen.ID("err").Op("=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("count")),
 			jen.Return().List(jen.ID("count"), jen.ID("err")),
 		),
 		jen.Line(),
@@ -206,15 +211,15 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Comment("This query only gets generated once, and is otherwise returned from cache."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildGetAll%sCountQuery", pn).Params().Params(jen.ID("string")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildGetAll%sCountQuery", pn).Params().Params(jen.ID("string")).Block(
 			jen.IDf("all%sCountQueryBuilder", pn).Dot("Do").Call(jen.Func().Params().Block(
 				jen.Var().ID("err").ID("error"),
-				jen.List(jen.IDf("all%sCountQuery", pn), jen.ID("_"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+				jen.List(jen.IDf("all%sCountQuery", pn), jen.ID("_"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 					Dotln("Select").Call(jen.ID("CountQuery")).
 					Dotln("From").Call(jen.IDf("%sTableName", puvn)).
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.Lit("archived_on").Op(":").ID("nil"))).
 					Dotln("ToSql").Call(),
-				jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			)),
 			jen.Line(),
 			jen.Return().IDf("all%sCountQuery", pn),
@@ -225,8 +230,8 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("GetAll%sCount will fetch the count of %s from the database", pn, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("GetAll%sCount", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
-			jen.ID("err").Op("=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("p").Dotf("buildGetAll%sCountQuery", pn).Call()).Dot("Scan").Call(jen.Op("&").ID("count")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("GetAll%sCount", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
+			jen.ID("err").Op("=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call()).Dot("Scan").Call(jen.Op("&").ID("count")),
 			jen.Return().List(jen.ID("count"), jen.ID("err")),
 		),
 		jen.Line(),
@@ -237,11 +242,11 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Commentf("and returns both the query and the relevant args to pass to the query executor."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildGet%sQuery", pn).Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildGet%sQuery", pn).Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
-			jen.ID("builder").Op(":=").ID("p").Dot("sqlBuilder").
+			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
 				Dotln("From").Call(jen.IDf("%sTableName", puvn)).
 				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
@@ -254,7 +259,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("builder").Dot("ToSql").Call(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -264,24 +269,24 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("Get%s fetches a list of %s from the database that meet a particular filter", pn, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Get%s", pn).Params(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Get%s", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
 			jen.ID("userID").ID("uint64"),
 		).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sQuery", pn).Call(jen.ID("filter"), jen.ID("userID")),
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.ID("filter"), jen.ID("userID")),
 			jen.Line(),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("buildError").Call(jen.ID("err"), jen.Litf("querying database for %s", pcn))),
 			),
 			jen.Line(),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").IDf("scan%s", pn).Call(jen.ID("p").Dot("logger"), jen.ID("rows")),
+			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").IDf("scan%s", pn).Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.ID("err"))),
 			),
 			jen.Line(),
-			jen.List(jen.ID("count"), jen.ID("err")).Op(":=").ID("p").Dotf("Get%sCount", sn).Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
+			jen.List(jen.ID("count"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%sCount", sn).Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("fetching %s count: ", scn)+"%w"), jen.ID("err"))),
 			),
@@ -303,18 +308,18 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("GetAll%sForUser fetches every %s belonging to a user", pn, scn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("GetAll%sForUser", pn).Params(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("GetAll%sForUser", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("userID").ID("uint64"),
 		).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sQuery", pn).Call(jen.ID("nil"), jen.ID("userID")),
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.ID("nil"), jen.ID("userID")),
 			jen.Line(),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("buildError").Call(jen.ID("err"), jen.Litf("fetching %s for user", pcn))),
 			),
 			jen.Line(),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").IDf("scan%s", pn).Call(jen.ID("p").Dot("logger"), jen.ID("rows")),
+			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").IDf("scan%s", pn).Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("parsing database results: %w"), jen.ID("err"))),
 			),
@@ -323,6 +328,8 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		),
 		jen.Line(),
 	)
+
+	////////////
 
 	var (
 		creationColumns []jen.Code
@@ -337,24 +344,63 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	creationColumns = append(creationColumns, jen.Lit("belongs_to"))
 	valuesColumns = append(valuesColumns, jen.ID("input").Dot("BelongsTo"))
 
+	qb := jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+		Dotln("Insert").Call(jen.IDf("%sTableName", puvn)).
+		Dotln("Columns").Callln(creationColumns...).
+		Dotln("Values").Callln(valuesColumns...)
+
+	switch strings.ToLower(dbvsn) {
+	case "postgres":
+		qb.Dotln("Suffix").Call(jen.Lit("RETURNING id, created_on"))
+	case sqlite:
+		//
+	default:
+		panic(fmt.Sprintf("wTf: %q", dbvsn))
+	}
+
+	qb.Dot("ToSql").Call()
+
+	createQueryFuncBody := []jen.Code{
+		jen.Var().ID("err").ID("error"),
+		qb,
+		jen.Line(),
+		jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+		jen.Line(),
+		jen.Return().List(jen.ID("query"), jen.ID("args")),
+	}
+
 	ret.Add(
 		jen.Commentf("buildCreate%sQuery takes %s and returns a creation query for that %s and the relevant arguments.", sn, scnwp, scn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildCreate%sQuery", sn).Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-			jen.Var().ID("err").ID("error"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
-				Dotln("Insert").Call(jen.IDf("%sTableName", puvn)).
-				Dotln("Columns").Callln(creationColumns...).
-				Dotln("Values").Callln(valuesColumns...).
-				Dotln("Suffix").Call(jen.Lit("RETURNING id, created_on")).
-				Dotln("ToSql").Call(),
-			jen.Line(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
-			jen.Line(),
-			jen.Return().List(jen.ID("query"), jen.ID("args")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildCreate%sQuery", sn).Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+			createQueryFuncBody...,
 		),
 		jen.Line(),
 	)
+
+	////////////
+
+	if strings.ToLower(dbvsn) == "sqlite" {
+		ret.Add(
+			jen.Commentf("build%sCreationTimeQuery takes %s and returns a creation query for that %s and the relevant arguments", sn, scnwp, scn),
+			jen.Line(),
+			jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("build%sCreationTimeQuery", sn).Params(jen.IDf("%sID", uvn).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+				jen.Var().ID("err").ID("error"),
+				jen.Line(),
+				jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+					Dotln("Select").Call(jen.Lit("created_on")).
+					Dotln("From").Call(jen.IDf("%sTableName", puvn)).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.Lit("id").Op(":").IDf("%sID", uvn))).
+					Dotln("ToSql").Call(),
+				jen.Line(),
+				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+				jen.Line(),
+				jen.Return().List(jen.ID("query"), jen.ID("args")),
+			),
+		)
+	}
+
+	////////////
 
 	var (
 		createInitColumns []jen.Code
@@ -366,30 +412,66 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	}
 	createInitColumns = append(createInitColumns, jen.ID("BelongsTo").Op(":").ID("input").Dot("BelongsTo"))
 
-	ret.Add(
-		jen.Commentf("Create%s creates %s in the database", sn, scnwp),
+	baseCreateFuncBody := []jen.Code{
+		jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn).Valuesln(createInitColumns...),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sCreationInput", sn))).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn),
-			jen.ID("error")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn).Valuesln(
-				createInitColumns...,
-			),
-			jen.Line(),
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildCreate%sQuery", sn).Call(jen.ID("x")),
-			jen.Line(),
-			jen.Commentf("create the %s", scn),
-			jen.ID("err").Op(":=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("error executing %s creation query: ", scn)+"%w"), jen.ID("err"))),
-			),
-			jen.Line(),
-			jen.Return().List(jen.ID("x"), jen.ID("nil")),
+		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildCreate%sQuery", sn).Call(jen.ID("x")),
+		jen.Line(),
+		jen.Commentf("create the %s", scn),
+	}
+
+	switch strings.ToLower(dbvsn) {
+	case "postgres":
+		baseCreateFuncBody = append(baseCreateFuncBody,
+			jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")),
+		)
+	case "sqlite":
+		baseCreateFuncBody = append(baseCreateFuncBody,
+			jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+		)
+	default:
+		panic("wrong db")
+	}
+
+	baseCreateFuncBody = append(baseCreateFuncBody,
+		jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("error executing %s creation query: ", scn)+"%w"), jen.ID("err"))),
 		),
 		jen.Line(),
 	)
 
+	if strings.ToLower(strings.TrimSpace(dbvsn)) == "sqlite" {
+		baseCreateFuncBody = append(baseCreateFuncBody,
+			jen.Comment("fetch the last inserted ID"),
+			jen.List(jen.ID("id"), jen.ID("idErr")).Op(":=").ID("res").Dot("LastInsertId").Call(),
+			jen.If(jen.ID("idErr")).Op("==").ID("nil").Block(
+				jen.ID("x").Dot("ID").Op("=").ID("uint64").Call(jen.ID("id")),
+				jen.Line(),
+				jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("build%sCreationTimeQuery", sn).Call(jen.ID("x").Dot("ID")),
+				jen.ID("s").Dot("logCreationTimeRetrievalError").Call(
+					jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("CreatedOn")),
+				),
+			),
+		)
+	}
+	baseCreateFuncBody = append(baseCreateFuncBody, jen.Line(), jen.Return().List(jen.ID("x"), jen.ID("nil")))
+
+	ret.Add(
+		jen.Commentf("Create%s creates %s in the database", sn, scnwp),
+		jen.Line(),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Create%s", sn).Params(
+			jen.ID("ctx").Qual("context", "Context"),
+			jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sCreationInput", sn)),
+		).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
+			baseCreateFuncBody...,
+		),
+		jen.Line(),
+	)
+
+	////////////
+
 	buildQueryFunc := func(typ models.DataType) jen.Code {
-		x := jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
+		x := jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 			Dotln("Update").Call(jen.IDf("%sTableName", puvn))
 
 		for _, field := range typ.Fields {
@@ -401,66 +483,109 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 			Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
 			jen.Lit("id").Op(":").ID("input").Dot("ID"),
 			jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo"),
-		)).Dotln("Suffix").Call(jen.Lit("RETURNING updated_on")).Dotln("ToSql").Call()
+		))
 
+		if strings.ToLower(dbvsn) == "postgres" {
+			x.Dotln("Suffix").Call(jen.Lit("RETURNING updated_on"))
+		}
+
+		x.Dotln("ToSql").Call()
 		return x
 	}
+
+	////////////
 
 	ret.Add(
 		jen.Commentf("buildUpdate%sQuery takes %s and returns an update SQL query, with the relevant query parameters", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildUpdate%sQuery", sn).Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildUpdate%sQuery", sn).Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			buildQueryFunc(typ),
 			jen.Line(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
 		jen.Line(),
 	)
 
+	////////////
+
 	ret.Add(
-		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the provided input to have a valid ID.", sn, scn, sn),
-		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildUpdate%sQuery", sn).Call(jen.ID("input")),
-			jen.Return().ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")),
-		),
-		jen.Line(),
+		func() []jen.Code {
+
+			var finalStatement jen.Code
+			switch strings.ToLower(dbvsn) {
+			case "postgres":
+				finalStatement = jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn"))
+			case "sqlite":
+				_g := &jen.Group{}
+				_g.Add(
+					jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+					jen.Line(),
+					jen.Return(jen.ID("err")),
+				)
+				finalStatement = _g
+			default:
+				panic("WETHASDHFUIP")
+			}
+
+			return []jen.Code{
+				jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the provided input to have a valid ID.", sn, scn, sn),
+				jen.Line(),
+				jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("error")).Block(
+					jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildUpdate%sQuery", sn).Call(jen.ID("input")),
+					finalStatement,
+				),
+				jen.Line(),
+			}
+		}()...,
 	)
+
+	////////////
+
+	_qs := jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+		Dotln("Update").Call(jen.IDf("%sTableName", puvn)).
+		Dotln("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
+		Dotln("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
+		Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
+		jen.Lit("id").Op(":").IDf("%sID", uvn),
+		jen.Lit("archived_on").Op(":").ID("nil"),
+		jen.Lit("belongs_to").Op(":").ID("userID"),
+	))
+
+	if strings.ToLower(dbvsn) == "postgres" {
+		_qs.Dotln("Suffix").Call(jen.Lit("RETURNING archived_on"))
+	}
+	_qs.Dotln("ToSql").Call()
+
+	archiveFuncBody := []jen.Code{
+		jen.Var().ID("err").ID("error"),
+		_qs,
+		jen.Line(),
+		jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+		jen.Line(),
+		jen.Return().List(jen.ID("query"), jen.ID("args")),
+	}
 
 	ret.Add(
 		jen.Commentf("buildArchive%sQuery returns a SQL query which marks a given %s belonging to a given user as archived.", sn, scn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildArchive%sQuery", sn).Params(jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
-
-			jen.Var().ID("err").ID("error"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
-				Dotln("Update").Call(jen.IDf("%sTableName", puvn)).
-				Dotln("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
-				Dotln("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
-				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
-				jen.Lit("id").Op(":").IDf("%sID", uvn),
-				jen.Lit("archived_on").Op(":").ID("nil"),
-				jen.Lit("belongs_to").Op(":").ID("userID"),
-			)).
-				Dotln("Suffix").Call(jen.Lit("RETURNING archived_on")).
-				Dotln("ToSql").Call(),
-			jen.Line(),
-			jen.ID("p").Dot("logQueryBuildingError").Call(jen.ID("err")),
-			jen.Line(),
-			jen.Return().List(jen.ID("query"), jen.ID("args")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildArchive%sQuery", sn).Params(jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+			archiveFuncBody...,
 		),
 		jen.Line(),
 	)
 
+	////////////
+
 	ret.Add(
 		jen.Commentf("Archive%s marks %s as archived in the database", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Archive%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildArchive%sQuery", sn).Call(jen.IDf("%sID", uvn), jen.ID("userID")),
-			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Archive%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildArchive%sQuery", sn).Call(jen.IDf("%sID", uvn), jen.ID("userID")),
+			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.Line(),
 			jen.Return().ID("err"),
 		),
 		jen.Line(),

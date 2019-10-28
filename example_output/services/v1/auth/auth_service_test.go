@@ -4,11 +4,12 @@ import (
 	"net/http"
 	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	mockauth "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock"
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	encoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
 	mockmodels "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock"
+
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 )
 
 func buildTestService(t *testing.T) *Service {

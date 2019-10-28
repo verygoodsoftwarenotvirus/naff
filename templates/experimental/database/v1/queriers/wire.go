@@ -1,21 +1,23 @@
-package postgres
+package queriers
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
-func wireDotGo() *jen.File {
-	ret := jen.NewFile("postgres")
+func wireDotGo(vendor *wordsmith.SuperPalabra) *jen.File {
+	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)
+	sn := vendor.Singular()
 
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is what we provide for dependency injection"),
 			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Callln(
-				jen.ID("ProvidePostgresDB"),
-				jen.ID("ProvidePostgres"),
+				jen.IDf("Provide%sDB", sn),
+				jen.IDf("Provide%s", sn),
 			),
 		),
 		jen.Line(),

@@ -1,23 +1,28 @@
-package postgres
+package queriers
 
 import (
+	"strings"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
-func postgresTestDotGo() *jen.File {
-	ret := jen.NewFile("postgres")
+func databaseTestDotGo(vendor *wordsmith.SuperPalabra) *jen.File {
+	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)
+	sn := vendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	ret.Add(
-		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Postgres"), jen.Qual("github.com/DATA-DOG/go-sqlmock",
+		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID(sn), jen.Qual("github.com/DATA-DOG/go-sqlmock",
 			"Sqlmock",
 		)).Block(
 			jen.List(jen.ID("db"), jen.ID("mock"), jen.ID("err")).Op(":=").ID("sqlmock").Dot("New").Call(),
 			jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("p").Op(":=").ID("ProvidePostgres").Call(jen.ID("true"), jen.ID("db"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
-			jen.Return().List(jen.ID("p").Assert(jen.Op("*").ID("Postgres")), jen.ID("mock")),
+			jen.ID("p").Op(":=").IDf("Provide%s", sn).Call(jen.ID("true"), jen.ID("db"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+			jen.Return().List(jen.ID("p").Assert(jen.Op("*").ID(sn)), jen.ID("mock")),
 		),
 		jen.Line(),
 	)
@@ -48,7 +53,7 @@ func postgresTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvidePostgres").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("TestProvide%s", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -59,12 +64,12 @@ func postgresTestDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestPostgres_IsReady").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_IsReady", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("assert").Dot("True").Call(jen.ID("t"), jen.ID("p").Dot("IsReady").Call(jen.Qual("context", "Background").Call())),
+				jen.ID("assert").Dot("True").Call(jen.ID("t"), jen.ID(dbfl).Dot("IsReady").Call(jen.Qual("context", "Background").Call())),
 			)),
 		),
 		jen.Line(),
@@ -76,7 +81,7 @@ func postgresTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID("p"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("p").Dot("logQueryBuildingError").Call(jen.Qual("errors", "New").Call(jen.Lit(""))),
+				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Qual("errors", "New").Call(jen.Lit(""))),
 			)),
 		),
 		jen.Line(),

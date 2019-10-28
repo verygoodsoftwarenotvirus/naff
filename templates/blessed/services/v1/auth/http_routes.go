@@ -44,7 +44,7 @@ func httpRoutesDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("DecodeCookieFromRequest takes a request object and fetches the cookie data if it is present"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("DecodeCookieFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("ca").Op("*").ID("models").Dot("CookieAuth"), jen.ID("err").ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("DecodeCookieFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("ca").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "CookieAuth"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("DecodeCookieFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -95,7 +95,7 @@ func httpRoutesDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("FetchUserFromRequest takes a request object and fetches the cookie, and then the user for that cookie"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("FetchUserFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("models").Dot("User"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("FetchUserFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("FetchUserFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -161,7 +161,7 @@ func httpRoutesDotGo() *jen.File {
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error building cookie")),
 					jen.Line(),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
-					jen.ID("response").Op(":=").Op("&").ID("models").Dot("ErrorResponse").Valuesln(
+					jen.ID("response").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ErrorResponse").Valuesln(
 						jen.ID("Code").Op(":").Qual("net/http", "StatusInternalServerError"),
 						jen.ID("Message").Op(":").Lit("error encountered building cookie"),
 					),
@@ -222,7 +222,7 @@ func httpRoutesDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("loginData").Struct(jen.ID("loginInput").Op("*").ID("models").Dot("UserLoginInput"), jen.ID("user").Op("*").ID("models").Dot("User")),
+		jen.Type().ID("loginData").Struct(jen.ID("loginInput").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserLoginInput"), jen.ID("user").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User")),
 		jen.Line(),
 	)
 
@@ -231,14 +231,14 @@ func httpRoutesDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("returns a helper struct with the relevant login information"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("fetchLoginDataFromRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("loginData"), jen.Op("*").ID("models").Dot("ErrorResponse")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("fetchLoginDataFromRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("loginData"), jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ErrorResponse")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("fetchLoginDataFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.List(jen.ID("loginInput"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UserLoginInputMiddlewareCtxKey")).Assert(jen.Op("*").ID("models").Dot("UserLoginInput")),
+			jen.List(jen.ID("loginInput"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UserLoginInputMiddlewareCtxKey")).Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserLoginInput")),
 			jen.If(jen.Op("!").ID("ok")).Block(
 				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no UserLoginInput found for /login request")),
-				jen.Return().List(jen.ID("nil"), jen.Op("&").ID("models").Dot("ErrorResponse").Valuesln(
+				jen.Return().List(jen.ID("nil"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ErrorResponse").Valuesln(
 					jen.ID("Code").Op(":").Qual("net/http", "StatusUnauthorized")),
 				),
 			),
@@ -252,10 +252,10 @@ func httpRoutesDotGo() *jen.File {
 			jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("s").Dot("userDB").Dot("GetUserByUsername").Call(jen.ID("ctx"), jen.ID("username")),
 			jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("no matching user")),
-				jen.Return().List(jen.ID("nil"), jen.Op("&").ID("models").Dot("ErrorResponse").Values(jen.ID("Code").Op(":").Qual("net/http", "StatusBadRequest"))),
+				jen.Return().List(jen.ID("nil"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ErrorResponse").Values(jen.ID("Code").Op(":").Qual("net/http", "StatusBadRequest"))),
 			).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching user")),
-				jen.Return().List(jen.ID("nil"), jen.Op("&").ID("models").Dot("ErrorResponse").Values(jen.ID("Code").Op(":").Qual("net/http", "StatusInternalServerError"))),
+				jen.Return().List(jen.ID("nil"), jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ErrorResponse").Values(jen.ID("Code").Op(":").Qual("net/http", "StatusInternalServerError"))),
 			),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("user").Dot("ID")),
 			jen.Line(),
@@ -294,7 +294,7 @@ func httpRoutesDotGo() *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("if the login is otherwise valid, but the password is too weak, try to rehash it."),
-			jen.If(jen.ID("err").Op("==").ID("auth").Dot("ErrPasswordHashTooWeak").Op("&&").ID("loginValid")).Block(
+			jen.If(jen.ID("err").Op("==").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "ErrPasswordHashTooWeak").Op("&&").ID("loginValid")).Block(
 				jen.ID("logger").Dot("Debug").Call(jen.Lit("hashed password was deemed to weak, updating its hash")),
 				jen.Line(),
 				jen.Comment("re-hash the password"),
@@ -308,7 +308,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.If(jen.ID("updateErr").Op(":=").ID("s").Dot("userDB").Dot("UpdateUser").Call(jen.ID("ctx"), jen.ID("user")), jen.ID("updateErr").Op("!=").ID("nil")).Block(
 					jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("saving updated password hash: %w"), jen.ID("updateErr"))),
 				),
-			).Else().If(jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").ID("auth").Dot("ErrPasswordHashTooWeak")).Block(
+			).Else().If(jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "ErrPasswordHashTooWeak")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("issue validating login")),
 				jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("validating login: %w"), jen.ID("err"))),
 			),
@@ -321,13 +321,13 @@ func httpRoutesDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildAuthCookie returns an authentication cookie for a given user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildAuthCookie").Params(jen.ID("user").Op("*").ID("models").Dot("User")).Params(jen.Op("*").Qual("net/http", "Cookie"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildAuthCookie").Params(jen.ID("user").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User")).Params(jen.Op("*").Qual("net/http", "Cookie"), jen.ID("error")).Block(
 			jen.Comment("NOTE: code here is duplicated into the unit tests for"),
 			jen.Comment("DecodeCookieFromRequest any changes made here might need"),
 			jen.Comment("to be reflected there"),
 			jen.List(jen.ID("encoded"), jen.ID("err")).Op(":=").ID("s").Dot("cookieManager").Dot("Encode").Callln(
 				jen.ID("CookieName"),
-				jen.ID("models").Dot("CookieAuth").Valuesln(
+				jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "CookieAuth").Valuesln(
 					jen.ID("UserID").Op(":").ID("user").Dot("ID"),
 					jen.ID("Admin").Op(":").ID("user").Dot("IsAdmin"),
 					jen.ID("Username").Op(":").ID("user").Dot("Username"),

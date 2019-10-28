@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/newsman"
+	encoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/newsman"
 )
 
 const (

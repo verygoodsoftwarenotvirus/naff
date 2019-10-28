@@ -90,7 +90,7 @@ func testutilDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("CreateObligatoryUser creates a user for the sake of having an OAuth2 client"),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").ID("string"), jen.ID("debug").ID("bool")).Params(jen.Op("*").ID("models").Dot(
+		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").ID("string"), jen.ID("debug").ID("bool")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"User",
 		), jen.ID("error")).Block(
 			jen.List(jen.ID("tu"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("address")),
@@ -106,7 +106,7 @@ func testutilDotGo() *jen.File {
 			jen.Comment("I had difficulty ensuring these values were unique, even when fake.Seed was called. Could've been fake's fault,"),
 			jen.Comment("could've been docker's fault. In either case, it wasn't worth the time to investigate and determine the culprit"),
 			jen.ID("username").Op(":=").ID("fake").Dot("UserName").Call().Op("+").ID("fake").Dot("HexColor").Call().Op("+").ID("fake").Dot("Country").Call(),
-			jen.ID("in").Op(":=").Op("&").ID("models").Dot("UserInput").Valuesln(
+			jen.ID("in").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","UserInput").Valuesln(
 				jen.ID("Username").Op(":").ID("username"),
 				jen.ID("Password").Op(":").ID("fake").Dot("Password").Call(jen.Lit(64), jen.Lit(128), jen.ID("true"), jen.ID("true"), jen.ID("true")),
 			),
@@ -118,7 +118,7 @@ func testutilDotGo() *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.ID("errors").Dot("New").Call(jen.Lit("something happened"))),
 			),
 			jen.Line(),
-			jen.ID("u").Op(":=").Op("&").ID("models").Dot("User").Valuesln(jen.ID("ID").Op(":").ID("ucr").Dot("ID"),
+			jen.ID("u").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","User").Valuesln(jen.ID("ID").Op(":").ID("ucr").Dot("ID"),
 				jen.ID("Username").Op(":").ID("ucr").Dot("Username"),
 				jen.ID("HashedPassword").Op(":").ID("in").Dot("Password"),
 				jen.ID("TwoFactorSecret").Op(":").ID("ucr").Dot("TwoFactorSecret"),
@@ -151,7 +151,7 @@ func testutilDotGo() *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").ID("models").Dot(
+		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
 			"User",
 		)).Params(jen.Op("*").Qual("net/http", "Cookie"), jen.ID("error")).Block(
 			jen.ID("uri").Op(":=").ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("users"), jen.Lit("login")),
@@ -202,7 +202,7 @@ func testutilDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests"),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").ID("models").Dot("User")).Params(jen.Op("*").ID("models").Dot("OAuth2Client"), jen.ID("error")).Block(
+		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","User")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","OAuth2Client"), jen.ID("error")).Block(
 			jen.ID("firstOAuth2ClientURI").Op(":=").ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("oauth2"), jen.Lit("client")),
 			jen.Line(),
 			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Callln(
@@ -245,7 +245,7 @@ cookie problems!
 	`), jen.ID("cookie").Op("==").ID("nil"), jen.ID("err")),
 			),
 			jen.ID("req").Dot("AddCookie").Call(jen.ID("cookie")),
-			jen.Var().ID("o").ID("models").Dot("OAuth2Client"),
+			jen.Var().ID("o").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","OAuth2Client"),
 			jen.Line(),
 			jen.Var().ID("command").Qual("fmt", "Stringer"),
 			jen.If(jen.List(jen.ID("command"), jen.ID("err")).Op("=").ID("http2curl").Dot("GetCurlCommand").Call(jen.ID("req")), jen.ID("err").Op("==").ID("nil")).Block(

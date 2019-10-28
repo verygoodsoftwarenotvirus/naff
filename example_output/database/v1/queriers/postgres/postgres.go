@@ -6,12 +6,13 @@ import (
 	"sync"
 	"time"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+
 	"contrib.go.opencensus.io/integrations/ocsql"
 	"github.com/Masterminds/squirrel"
 	postgres "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 )
 
 const (

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
@@ -12,8 +15,6 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/webhooks"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
 )
 
 const (

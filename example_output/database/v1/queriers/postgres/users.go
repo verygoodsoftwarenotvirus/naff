@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/lib/pq"
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
 	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/lib/pq"
+	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 )
 
 const (

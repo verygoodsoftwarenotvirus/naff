@@ -34,7 +34,7 @@ func wireDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideOAuth2ClientValidator converts an oauth2clients.Service to an OAuth2ClientValidator"),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").Op("*").ID("oauth2clients").Dot("Service")).Params(jen.ID("OAuth2ClientValidator")).Block(
+		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients", "Service")).Params(jen.ID("OAuth2ClientValidator")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

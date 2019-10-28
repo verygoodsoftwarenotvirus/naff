@@ -6,8 +6,9 @@ import (
 	"log"
 	"os"
 
+	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
 	"go.opencensus.io/trace"
 )
 

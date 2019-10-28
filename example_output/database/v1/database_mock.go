@@ -3,8 +3,9 @@ package database
 import (
 	"context"
 
-	"github.com/stretchr/testify/mock"
 	mockmodels "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock"
+
+	"github.com/stretchr/testify/mock"
 )
 
 var _ Database = (*MockDatabase)(nil)

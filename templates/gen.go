@@ -36,12 +36,12 @@ import (
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/rand/model"
 
 	// to do
-	mariaDB "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/mariadb"
-	postgresql "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/postgres"
-	sqlite3 "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers/sqlite"
+	queriers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers"
 )
 
 func RenderProject(in *naffmodels.Project) error {
+	allActive := true
+
 	type x struct {
 		renderFunc func([]naffmodels.DataType) error
 		activated  bool
@@ -49,40 +49,41 @@ func RenderProject(in *naffmodels.Project) error {
 
 	packageRenderers := map[string]x{
 		// completed
-		"httpclient":       {renderFunc: httpclient.RenderPackage, activated: false},
-		"configgen":        {renderFunc: configgen.RenderPackage, activated: false},
-		"servercmd":        {renderFunc: servercmd.RenderPackage, activated: false},
-		"twofactorcmd":     {renderFunc: twofactorcmd.RenderPackage, activated: false},
-		"database":         {renderFunc: database.RenderPackage, activated: false},
-		"internalauth":     {renderFunc: internalauth.RenderPackage, activated: false},
-		"internalauthmock": {renderFunc: internalauthmock.RenderPackage, activated: false},
-		"config":           {renderFunc: config.RenderPackage, activated: false},
-		"encoding":         {renderFunc: encoding.RenderPackage, activated: false},
-		"encodingmock":     {renderFunc: encodingmock.RenderPackage, activated: false},
-		"metrics":          {renderFunc: metrics.RenderPackage, activated: false},
-		"metricsmock":      {renderFunc: metricsmock.RenderPackage, activated: false},
-		"server":           {renderFunc: server.RenderPackage, activated: false},
-		"testutil":         {renderFunc: testutil.RenderPackage, activated: false},
-		"testutilmock":     {renderFunc: testutilmock.RenderPackage, activated: false},
-		"frontendtests":    {renderFunc: frontendtests.RenderPackage, activated: false},
-		"webhooks":         {renderFunc: webhooks.RenderPackage, activated: false},
-		"oauth2clients":    {renderFunc: oauth2clients.RenderPackage, activated: false},
-		"frontend":         {renderFunc: frontend.RenderPackage, activated: false},
-		"auth":             {renderFunc: auth.RenderPackage, activated: false},
-		"users":            {renderFunc: users.RenderPackage, activated: false},
-		"httpserver":       {renderFunc: httpserver.RenderPackage, activated: false},
-		"modelsmock":       {renderFunc: modelsmock.RenderPackage, activated: false},
-		"models":           {renderFunc: models.RenderPackage, activated: false},
-		"randmodel":        {renderFunc: randmodel.RenderPackage, activated: false},
-		"iterables":        {renderFunc: iterables.RenderPackage, activated: false},
-		"dbclient":         {renderFunc: dbclient.RenderPackage, activated: false},
+		"httpclient":       {renderFunc: httpclient.RenderPackage, activated: allActive},
+		"configgen":        {renderFunc: configgen.RenderPackage, activated: allActive},
+		"servercmd":        {renderFunc: servercmd.RenderPackage, activated: allActive},
+		"twofactorcmd":     {renderFunc: twofactorcmd.RenderPackage, activated: allActive},
+		"database":         {renderFunc: database.RenderPackage, activated: allActive},
+		"internalauth":     {renderFunc: internalauth.RenderPackage, activated: allActive},
+		"internalauthmock": {renderFunc: internalauthmock.RenderPackage, activated: allActive},
+		"config":           {renderFunc: config.RenderPackage, activated: allActive},
+		"encoding":         {renderFunc: encoding.RenderPackage, activated: allActive},
+		"encodingmock":     {renderFunc: encodingmock.RenderPackage, activated: allActive},
+		"metrics":          {renderFunc: metrics.RenderPackage, activated: allActive},
+		"metricsmock":      {renderFunc: metricsmock.RenderPackage, activated: allActive},
+		"server":           {renderFunc: server.RenderPackage, activated: allActive},
+		"testutil":         {renderFunc: testutil.RenderPackage, activated: allActive},
+		"testutilmock":     {renderFunc: testutilmock.RenderPackage, activated: allActive},
+		"frontendtests":    {renderFunc: frontendtests.RenderPackage, activated: allActive},
+		"webhooks":         {renderFunc: webhooks.RenderPackage, activated: allActive},
+		"oauth2clients":    {renderFunc: oauth2clients.RenderPackage, activated: allActive},
+		"frontend":         {renderFunc: frontend.RenderPackage, activated: allActive},
+		"auth":             {renderFunc: auth.RenderPackage, activated: allActive},
+		"users":            {renderFunc: users.RenderPackage, activated: allActive},
+		"httpserver":       {renderFunc: httpserver.RenderPackage, activated: allActive},
+		"modelsmock":       {renderFunc: modelsmock.RenderPackage, activated: allActive},
+		"models":           {renderFunc: models.RenderPackage, activated: allActive},
+		"randmodel":        {renderFunc: randmodel.RenderPackage, activated: allActive},
+		"iterables":        {renderFunc: iterables.RenderPackage, activated: allActive},
+		"dbclient":         {renderFunc: dbclient.RenderPackage, activated: allActive},
 
 		// doing (two sides; one coin)
-		"postgresql": {renderFunc: postgresql.RenderPackage, activated: true},
+		"queriers": {renderFunc: queriers.RenderPackage, activated: true},
+		// "postgresql": {renderFunc: postgresql.RenderPackage, activated: true},
+		// "sqlite3":    {renderFunc: sqlite3.RenderPackage, activated: false},
 
 		// on deck
-		"mariaDB": {renderFunc: mariaDB.RenderPackage, activated: false},
-		"sqlite3": {renderFunc: sqlite3.RenderPackage, activated: false},
+		// "mariaDB": {renderFunc: mariaDB.RenderPackage, activated: false},
 	}
 
 	if in != nil {

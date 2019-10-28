@@ -9,9 +9,10 @@ import (
 	"testing"
 	"time"
 
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func buildMockRowFromWebhook(w *models.Webhook) *sqlmock.Rows {
