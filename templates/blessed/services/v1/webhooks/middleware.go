@@ -1,11 +1,13 @@
 package webhooks
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func middlewareDotGo() *jen.File {
+func middlewareDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("webhooks")
 
 	utils.AddImports(ret)
@@ -15,7 +17,7 @@ func middlewareDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.ID("x").Op(":=").ID("new").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","WebhookCreationInput")),
+				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput")),
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreationInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
@@ -39,7 +41,7 @@ func middlewareDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.ID("x").Op(":=").ID("new").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","WebhookUpdateInput")),
+				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookUpdateInput")),
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),

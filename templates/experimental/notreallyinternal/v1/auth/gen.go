@@ -7,7 +7,7 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(types []models.DataType) error {
+func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
 		"internal/v1/auth/authenticator.go":      authenticatorDotGo(),
 		"internal/v1/auth/authenticator_test.go": authenticatorTestDotGo(),
@@ -22,7 +22,7 @@ func RenderPackage(types []models.DataType) error {
 	//}
 
 	for path, file := range files {
-		if err := utils.RenderFile(path, file); err != nil {
+		if err := utils.RenderFile(pkgRoot, path, file); err != nil {
 			return err
 		}
 	}

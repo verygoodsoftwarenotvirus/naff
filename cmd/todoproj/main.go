@@ -11,7 +11,8 @@ import (
 func main() {
 	log.Println("building example output...")
 	todoProject := &models.Project{
-		Name: wordsmith.FromSingularPascalCase("Todo"),
+		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/todo",
+		Name:       wordsmith.FromSingularPascalCase("Todo"),
 		DataTypes: []models.DataType{
 			{
 				Name: wordsmith.FromSingularPascalCase("Item"),

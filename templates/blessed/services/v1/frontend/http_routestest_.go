@@ -1,11 +1,13 @@
 package frontend
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func httpRoutesTestDotGo() *jen.File {
+func httpRoutesTestDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("frontend")
 
 	utils.AddImports(ret)
@@ -98,7 +100,7 @@ func httpRoutesTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
-					jen.ID("config").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "FrontendSettings").Valuesln(
+					jen.ID("config").Op(":").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "FrontendSettings").Valuesln(
 						jen.ID("CacheStaticFiles").Op(":").ID("true"),
 					),
 				),

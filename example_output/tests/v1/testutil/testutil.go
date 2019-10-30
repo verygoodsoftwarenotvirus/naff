@@ -111,8 +111,9 @@ func CreateObligatoryUser(address string, debug bool) (*models.User, error) {
 	}
 
 	u := &models.User{
-		ID:                    ucr.ID,
-		Username:              ucr.Username,
+		ID:       ucr.ID,
+		Username: ucr.Username,
+		// this is a dirty trick to reuse most of this model,
 		HashedPassword:        in.Password,
 		TwoFactorSecret:       ucr.TwoFactorSecret,
 		PasswordLastChangedOn: ucr.PasswordLastChangedOn,

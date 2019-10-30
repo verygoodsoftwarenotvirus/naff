@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/mariadb"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/postgres"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/sqlite"
 
 	"contrib.go.opencensus.io/integrations/ocsql"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/mariadb"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/postgres"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/sqlite"
 )
 
 const (
@@ -45,7 +45,6 @@ func (cfg *ServerConfig) ProvideDatabase(ctx context.Context, logger logging.Log
 		if err != nil {
 			return nil, fmt.Errorf("establish mariadb database connection: %w", err)
 		}
-
 		ocsql.RegisterAllViews()
 		ocsql.RecordStats(rawDB, cfg.Metrics.DBMetricsCollectionInterval)
 
@@ -57,7 +56,6 @@ func (cfg *ServerConfig) ProvideDatabase(ctx context.Context, logger logging.Log
 		if err != nil {
 			return nil, fmt.Errorf("establish sqlite database connection: %w", err)
 		}
-
 		ocsql.RegisterAllViews()
 		ocsql.RecordStats(rawDB, cfg.Metrics.DBMetricsCollectionInterval)
 

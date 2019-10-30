@@ -1,18 +1,20 @@
 package client
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func usersDotGo() *jen.File {
+func usersDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("dbclient")
 
 	utils.AddImports(ret)
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserDataManager").Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
+			jen.ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataManager").Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
 			jen.Line(),
 			jen.Comment("ErrUserExists is a sentinel error for returning when a username is taken"),
 			jen.ID("ErrUserExists").Op("=").Qual("errors", "New").Call(jen.Lit("error: username already exists")),
@@ -32,7 +34,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUser fetches a user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"),
 			"User",
 		),
 			jen.ID("error")).Block(
@@ -50,7 +52,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUserByUsername fetches a user by their username"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUserByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUserByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "User"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetUserByUsername")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -65,7 +67,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUserCount fetches a count of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetUserCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -80,7 +82,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserList"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserList"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetUsers")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -95,7 +97,7 @@ func usersDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("CreateUser creates a user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("CreateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserInput")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("CreateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "User"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("CreateUser")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -112,7 +114,7 @@ func usersDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("NOTE: this function uses the ID provided in the input to make its query."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("UpdateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("UpdateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "User")).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("UpdateUser")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),

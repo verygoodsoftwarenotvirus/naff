@@ -9,11 +9,11 @@ import (
 	"time"
 
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
-	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
-	encoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
-	frontend "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/frontend"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
 	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/auth"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/frontend"
 
 	"github.com/go-chi/chi"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"

@@ -1,11 +1,13 @@
 package oauth2clients
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func implementationTestDotGo() *jen.File {
+func implementationTestDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("oauth2clients")
 
 	utils.AddImports(ret)
@@ -51,7 +53,7 @@ func implementationTestDotGo() *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").Lit("blah"),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("Scopes").Op(":").Qual("strings", "Split").Call(jen.ID("expected"), jen.Lit(",")),
 				),
 				jen.Line(),
@@ -59,7 +61,7 @@ func implementationTestDotGo() *jen.File {
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.Line(),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
-					jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientKey"), jen.ID("exampleClient")),
+					jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientKey"), jen.ID("exampleClient")),
 				),
 				jen.ID("req").Dot("URL").Dot("Path").Op("=").Qual("fmt", "Sprintf").Call(jen.Lit("%s/blah"), jen.ID("apiURLPrefix")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("s").Dot("AuthorizeScopeHandler").Call(jen.ID("res"), jen.ID("req")),
@@ -72,11 +74,11 @@ func implementationTestDotGo() *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request but with client ID attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").Lit("blah"),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("blargh"), jen.ID("Scopes").Op(":").Qual("strings", "Split").Call(jen.ID("expected"), jen.Lit(",")),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -101,16 +103,16 @@ func implementationTestDotGo() *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request and now rows found fetching client info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").Lit("blah,flarg"),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("blargh"), jen.ID("Scopes").Op(":").Qual("strings", "Split").Call(jen.ID("expected"), jen.Lit(",")),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleClient").Dot("ClientID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -128,16 +130,16 @@ func implementationTestDotGo() *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request and error fetching client info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").Lit("blah,flarg"),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("blargh"), jen.ID("Scopes").Op(":").Qual("strings", "Split").Call(jen.ID("expected"), jen.Lit(",")),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleClient").Dot("ClientID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -165,11 +167,11 @@ func implementationTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid scope & client ID but no client"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("blargh"), jen.ID("Scopes").Op(":").Index().ID("string").Values(),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -199,13 +201,13 @@ func implementationTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Values(jen.ID("BelongsTo").Op(":").Lit(1)),
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Values(jen.ID("BelongsTo").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("BelongsTo")),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
-					jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientKey"), jen.ID("exampleClient")),
+					jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientKey"), jen.ID("exampleClient")),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("s").Dot("UserAuthorizationHandler").Call(jen.ID("res"), jen.ID("req")),
@@ -215,13 +217,13 @@ func implementationTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleUser").Dot("ID")),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
-					jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserKey"), jen.ID("exampleUser")),
+					jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserKey"), jen.ID("exampleUser")),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("s").Dot("UserAuthorizationHandler").Call(jen.ID("res"), jen.ID("req")),
@@ -251,14 +253,14 @@ func implementationTestDotGo() *jen.File {
 				jen.ID("expected").Op(":=").ID("true"),
 				jen.Line(),
 				jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot("AuthorizationCode"),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("ClientID").Op(":").Lit("blah"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(),
 				),
 				jen.ID("stringID").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("stringID"),
 				).Dot("Return").Call(jen.ID("exampleClient"), jen.ID("nil")),
@@ -283,17 +285,17 @@ func implementationTestDotGo() *jen.File {
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").ID("false"),
 				jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot("AuthorizationCode"),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ID").Op(":").Lit(1), jen.ID("ClientID").Op(":").Lit("blah"), jen.ID("Scopes").Op(":").Index().ID("string").Values(),
 				),
 				jen.ID("stringID").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("stringID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("s").Dot("ClientAuthorizedHandler").Call(jen.ID("stringID"), jen.ID("exampleGrant")),
@@ -306,14 +308,14 @@ func implementationTestDotGo() *jen.File {
 				jen.ID("expected").Op(":=").ID("false"),
 				jen.Line(),
 				jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot("Implicit"),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("ClientID").Op(":").Lit("blah"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(),
 				),
 				jen.ID("stringID").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -338,14 +340,14 @@ func implementationTestDotGo() *jen.File {
 				jen.ID("expected").Op(":=").ID("true"),
 				jen.Line(),
 				jen.ID("exampleScope").Op(":=").Lit("halb"),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("ClientID").Op(":").Lit("blah"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.ID("exampleScope")),
 				),
 				jen.ID("stringID").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -363,19 +365,19 @@ func implementationTestDotGo() *jen.File {
 				jen.ID("expected").Op(":=").ID("false"),
 				jen.Line(),
 				jen.ID("exampleScope").Op(":=").Lit("halb"),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("ClientID").Op(":").Lit("blah"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.ID("exampleScope")),
 				),
 				jen.ID("stringID").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("stringID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("s").Dot("ClientScopeHandler").Call(jen.ID("stringID"), jen.ID("exampleScope")),
@@ -388,14 +390,14 @@ func implementationTestDotGo() *jen.File {
 				jen.ID("expected").Op(":=").ID("false"),
 				jen.Line(),
 				jen.ID("exampleScope").Op(":=").Lit("halb"),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("ClientID").Op(":").Lit("blah"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(),
 				),
 				jen.ID("stringID").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),

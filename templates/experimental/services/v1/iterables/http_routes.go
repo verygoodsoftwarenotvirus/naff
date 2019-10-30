@@ -124,7 +124,7 @@ func httpRoutesDotGo(typ models.DataType) *jen.File {
 				jen.Comment("notify relevant parties"),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Increment").Call(jen.ID("ctx")),
 				jen.ID(fmt.Sprintf("attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID("x").Dot("ID")),
-				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
+				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("Data").Op(":").ID("x"),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName")),
 					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Create")),
@@ -226,7 +226,7 @@ func httpRoutesDotGo(typ models.DataType) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("notify relevant parties"),
-				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
+				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("Data").Op(":").ID("x"),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName")),
 					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Update")),
@@ -272,7 +272,7 @@ func httpRoutesDotGo(typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.Comment("notify relevant parties"),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Decrement").Call(jen.ID("ctx")),
-				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
+				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Archive")),
 					jen.ID("Data").Op(":").Op("&").ID("models").Dot(sn).Values(jen.ID("ID").Op(":").ID(fmt.Sprintf("%sID", uvn))),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName")),

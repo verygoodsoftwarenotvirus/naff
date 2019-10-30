@@ -15,9 +15,9 @@ const (
 )
 
 // DatabasePackage renders the package
-func RenderPackage(types []models.DataType) error {
+func RenderPackage(pkgRoot string, types []models.DataType) error {
 	for _, vendor := range []string{postgres, sqlite} {
-		if err := renderDatabasePackage(vendor, types); err != nil {
+		if err := renderDatabasePackage(pkgRoot, vendor, types); err != nil {
 			return err
 		}
 	}
@@ -25,7 +25,7 @@ func RenderPackage(types []models.DataType) error {
 }
 
 // renderDatabasePackage renders the package
-func renderDatabasePackage(vendor string, types []models.DataType) error {
+func renderDatabasePackage(pkgRoot, vendor string, types []models.DataType) error {
 	var (
 		dbDesc     string
 		vendorWord *wordsmith.SuperPalabra
@@ -62,7 +62,7 @@ func renderDatabasePackage(vendor string, types []models.DataType) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderFile(path, file); err != nil {
+		if err := utils.RenderFile(pkgRoot, path, file); err != nil {
 			return err
 		}
 	}

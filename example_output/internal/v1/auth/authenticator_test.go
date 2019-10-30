@@ -3,7 +3,7 @@ package auth_test
 import (
 	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
 )
 
 func TestProvideBcryptHashCost(T *testing.T) {

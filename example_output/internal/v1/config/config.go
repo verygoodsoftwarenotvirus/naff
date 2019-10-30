@@ -7,11 +7,12 @@ import (
 	"io/ioutil"
 	"time"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+
 	"github.com/spf13/viper"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 )
 
-var (
+const (
 	defaultStartupDeadline                   = time.Minute
 	defaultCookieLifetime                    = 24 * time.Hour
 	defaultMetricsCollectionInterval         = 2 * time.Second
@@ -50,7 +51,7 @@ type (
 		StaticFilesDirectory string `json:"static_files_directory" mapstructure:"static_files_directory" toml:"static_files_directory,omitempty"`
 		// Debug determines if debug logging or other development conditions are active
 		Debug bool `json:"debug" mapstructure:"debug" toml:"debug,omitempty"`
-		// CacheStaticFiles indicates whether or not to load the static files directory into memory via afero's MemMapFs.
+		// CacheStaticFiles indicates whether or not to load the static files directory into memory via afero's MemMapFs
 		CacheStaticFiles bool `json:"cache_static_files" mapstructure:"cache_static_files" toml:"cache_static_files,omitempty"`
 	}
 
@@ -114,7 +115,7 @@ func (cfg *ServerConfig) EncodeToFile(path string, marshaler MarshalFunc) error 
 		return err
 	}
 
-	return ioutil.WriteFile(path, byteSlice, 644)
+	return ioutil.WriteFile(path, byteSlice, 0644)
 }
 
 // BuildConfig is a constructor function that initializes a viper config.

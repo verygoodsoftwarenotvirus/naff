@@ -16,8 +16,8 @@ func AddImports(file *jen.File) {
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "database")
 	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "auth")
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "mockauth")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "config")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "encoding")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "config")
+	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "encoding")
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "mockencoding")
 	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "metrics")
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "mockmetrics")
@@ -159,7 +159,7 @@ func (l importList) Swap(i, j int) {
 	l[i], l[j] = l[j], l[i]
 }
 
-func (l importList) toSet() *importSet {
+func (l importList) toSet(pkgRoot string) *importSet {
 	is := &importSet{
 		stdlibImports:   []mport{},
 		localLibImports: []mport{},
@@ -169,7 +169,7 @@ func (l importList) toSet() *importSet {
 	for _, imp := range l {
 		if importIsStdLib(imp.path) {
 			is.stdlibImports = append(is.stdlibImports, imp)
-		} else if strings.HasPrefix(imp.path, "gitlab.com/verygoodsoftwarenotvirus/todo") {
+		} else if strings.HasPrefix(imp.path, pkgRoot) {
 			is.localLibImports = append(is.localLibImports, imp)
 		} else {
 			is.externalImports = append(is.externalImports, imp)
@@ -179,7 +179,7 @@ func (l importList) toSet() *importSet {
 	return is
 }
 
-func FindAndFixImportBlock(filepath string) error {
+func FindAndFixImportBlock(pkgRoot, filepath string) error {
 	var allImports importList
 
 	fileBytes, err := ioutil.ReadFile(filepath)
@@ -219,7 +219,7 @@ func FindAndFixImportBlock(filepath string) error {
 		}
 	}
 
-	is := allImports.toSet().render()
+	is := allImports.toSet(pkgRoot).render()
 	head := string(bytes.Join(allLines[:startLine], []byte("\n")))
 	newImportBlock := strings.Join(strings.Split(is, "\n"), "\n")
 	tail := string(bytes.Join(allLines[endLine+1:], []byte("\n")))

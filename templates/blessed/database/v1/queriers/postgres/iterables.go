@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"fmt"
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -40,7 +42,7 @@ func buildScanFields(typ models.DataType) []jen.Code {
 	return scanFields
 }
 
-func iterablesDotGo(typ models.DataType) *jen.File {
+func iterablesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret := jen.NewFile("postgres")
 
 	utils.AddImports(ret)
@@ -77,8 +79,8 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct", sn, pcsnwp),
 		jen.Line(),
-		jen.Func().IDf("scan%s", sn).Params(jen.ID("scan").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Scanner")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn).Values(),
+		jen.Func().IDf("scan%s", sn).Params(jen.ID("scan").Qual(filepath.Join(pkgRoot, "database/v1"), "Scanner")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn), jen.ID("error")).Block(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Values(),
 			jen.Line(),
 			jen.If(jen.ID("err").Op(":=").ID("scan").Dot("Scan").Callln(scanFields...), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
@@ -92,8 +94,8 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("scan%s takes a logger and some database rows and turns them into a slice of %s", pn, pcn),
 		jen.Line(),
-		jen.Func().IDf("scan%s", pn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
-			jen.Var().ID("list").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn),
+		jen.Func().IDf("scan%s", pn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn), jen.ID("error")).Block(
+			jen.Var().ID("list").Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
 				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").IDf("scan%s", sn).Call(jen.ID("rows")),
@@ -142,7 +144,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Get%s", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64"),
-		).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
+		).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sQuery", sn).Call(jen.IDf("%sID", uvn), jen.ID("userID")),
 			jen.ID("row").Op(":=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().IDf("scan%s", sn).Call(jen.ID("row")),
@@ -155,7 +157,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Commentf("fetching the number of %s belonging to a given user that meet a given query", pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildGet%sCountQuery", sn).Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildGet%sCountQuery", sn).Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID("p").Dot("sqlBuilder").
@@ -183,7 +185,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Get%sCount", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64"),
 		).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sCountQuery", sn).Call(jen.ID("filter"), jen.ID("userID")),
@@ -237,7 +239,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Commentf("and returns both the query and the relevant args to pass to the query executor."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildGet%sQuery", pn).Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildGet%sQuery", pn).Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
@@ -266,9 +268,9 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Get%s", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64"),
-		).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
+		).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sQuery", pn).Call(jen.ID("filter"), jen.ID("userID")),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
@@ -286,8 +288,8 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("fetching %s count: ", scn)+"%w"), jen.ID("err"))),
 			),
 			jen.Line(),
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sList", sn)).Valuesln(
-				jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Pagination").Valuesln(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
+				jen.ID("Pagination").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "Pagination").Valuesln(
 					jen.ID("Page").Op(":").ID("filter").Dot("Page"),
 					jen.ID("Limit").Op(":").ID("filter").Dot("Limit"),
 					jen.ID("TotalCount").Op(":").ID("count"),
@@ -306,7 +308,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("GetAll%sForUser", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("userID").ID("uint64"),
-		).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
+		).Params(jen.Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildGet%sQuery", pn).Call(jen.ID("nil"), jen.ID("userID")),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
@@ -324,6 +326,8 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
+	////////////
+
 	var (
 		creationColumns []jen.Code
 		valuesColumns   []jen.Code
@@ -340,7 +344,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("buildCreate%sQuery takes %s and returns a creation query for that %s and the relevant arguments.", sn, scnwp, scn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildCreate%sQuery", sn).Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildCreate%sQuery", sn).Params(jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
 				Dotln("Insert").Call(jen.IDf("%sTableName", puvn)).
@@ -356,6 +360,8 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
+	////////////
+
 	var (
 		createInitColumns []jen.Code
 	)
@@ -369,9 +375,9 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("Create%s creates %s in the database", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sCreationInput", sn))).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn))).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn),
 			jen.ID("error")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn).Valuesln(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 				createInitColumns...,
 			),
 			jen.Line(),
@@ -409,7 +415,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("buildUpdate%sQuery takes %s and returns an update SQL query, with the relevant query parameters", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildUpdate%sQuery", sn).Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("buildUpdate%sQuery", sn).Params(jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			buildQueryFunc(typ),
 			jen.Line(),
@@ -423,7 +429,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the provided input to have a valid ID.", sn, scn, sn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dotf("buildUpdate%sQuery", sn).Call(jen.ID("input")),
 			jen.Return().ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")),
 		),

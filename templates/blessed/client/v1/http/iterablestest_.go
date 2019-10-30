@@ -2,12 +2,14 @@ package client
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesTestDotGo(typ models.DataType) *jen.File {
+func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
 	prn := typ.Name.PluralRouteName()
@@ -29,20 +31,9 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.ID("expectedID").Op(":=").ID("uint64").Call(
-					jen.Lit(1),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
-					jen.ID("ctx"),
-					jen.ID("expectedID"),
-				),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.ID("expectedID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(jen.ID("ctx"), jen.ID("expectedID")),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
@@ -103,36 +94,16 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 						),
 						jen.Lit("expected and actual path don't match"),
 					),
-					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
-						jen.Qual("net/http", "MethodGet"),
-						nil,
-					),
-					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
-						nil,
-					),
+					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
+					utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")), nil),
 				),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
-					jen.ID("ctx"),
-					jen.ID("expected").Dot("ID"),
-				),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(jen.ID("ctx"), jen.ID("expected").Dot("ID")),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
-				utils.AssertEqual(jen.ID("expected"),
-					jen.ID("actual"), nil),
+				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 		),
 		jen.Line(),
@@ -147,23 +118,11 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
-					jen.ID("ctx"),
-					jen.ID("nil"),
-				),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(jen.ID("ctx"), jen.ID("nil")),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
+				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
 				utils.AssertEqual(
 					jen.ID("actual").Dot("Method"),
 					jen.ID("expectedMethod"),
@@ -185,8 +144,6 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					jen.ID(tp).Op(":").Index().Qual(utils.ModelsPkg, ts).Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").Op(":").Lit(1),
-							jen.ID("Name").Op(":").Lit("example"),
-							jen.ID("Details").Op(":").Lit("blah"),
 						),
 					),
 				),
@@ -243,6 +200,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)).Valuesln(
+					// ITERATEME
 					jen.ID("Name").Op(":").Lit("expected name"),
 					jen.ID("Details").Op(":").Lit("expected details"),
 				),
@@ -282,68 +240,34 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				"happy path",
 				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
+					// ITERATEME
 					jen.ID("Name").Op(":").Lit("example"),
 					jen.ID("Details").Op(":").Lit("blah"),
 				),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)).Valuesln(
+					// ITERATEME
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 					jen.ID("Details").Op(":").ID("expected").Dot("Details"),
 				),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
-					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Lit(modelListRoute),
-						jen.Lit("expected and actual path don't match"),
-					),
-					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
-						jen.Qual("net/http", "MethodPost"),
-						nil,
-					),
+					utils.AssertEqual(jen.ID("req").Dot("URL").Dot("Path"), jen.Lit(modelListRoute), jen.Lit("expected and actual path don't match")),
+					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 					jen.Line(),
 					jen.Var().ID("x").Op("*").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)),
-					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewDecoder").Call(
-							jen.ID("req").Dot("Body"),
-						).Dot("Decode").Call(
-							jen.Op("&").ID("x"),
-						),
-						nil,
-					),
-					utils.AssertEqual(
-						jen.ID("exampleInput"),
-						jen.ID("x"),
-						nil,
-					),
+					utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.Op("&").ID("x")), nil),
+					utils.AssertEqual(jen.ID("exampleInput"), jen.ID("x"), nil),
 					jen.Line(),
-					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
-						nil,
-					),
-					utils.WriteHeader("StatusOK"),
+					utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")), nil),
 				),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
-					jen.ID("ctx"),
-					jen.ID("exampleInput"),
-				),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(jen.ID("ctx"), jen.ID("exampleInput")),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
-				utils.AssertEqual(jen.ID("expected"),
-					jen.ID("actual"), nil),
+				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 		),
 		jen.Line(),
@@ -353,32 +277,19 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildUpdate%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				utils.ExpectMethod("expectedMethod", "MethodPut"),
+			utils.BuildSubTest("happy path", utils.ExpectMethod("expectedMethod", "MethodPut"),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
+					// ITERATEME
 					jen.ID("Name").Op(":").Lit("changed name"),
 					jen.ID("Details").Op(":").Lit("changed details"),
 				),
 				jen.Line(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
-					jen.ID("ctx"),
-					jen.ID("exampleInput"),
-				),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(jen.ID("ctx"), jen.ID("exampleInput")),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
+				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
 				utils.AssertEqual(
 					jen.ID("actual").Dot("Method"),
 					jen.ID("expectedMethod"),
@@ -394,10 +305,10 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Update%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
+			utils.BuildSubTest("happy path",
 				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
+					// ITERATEME
 					jen.ID("Name").Op(":").Lit("example"),
 					jen.ID("Details").Op(":").Lit("blah"),
 				),
@@ -406,31 +317,18 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					"ts",
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(modelRoute),
-							jen.ID("expected").Dot("ID"),
-						),
+						jen.Qual("fmt", "Sprintf").Call(jen.Lit(modelRoute), jen.ID("expected").Dot("ID")),
 						jen.Lit("expected and actual path don't match"),
 					),
-					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
-						jen.Qual("net/http", "MethodPut"),
+					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
+					utils.AssertNoError(
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Item").Values()),
 						nil,
 					),
-					utils.WriteHeader("StatusOK"),
 				),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				).Dot(fmt.Sprintf("Update%s", ts)).Call(
-					jen.ID("ctx"),
-					jen.ID("expected"),
-				),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
+				jen.ID("err").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Update%s", ts)).Call(jen.ID("ctx"), jen.ID("expected")),
+				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
 			),
 		),
 		jen.Line(),
@@ -448,23 +346,11 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 				jen.ID("expectedID").Op(":=").ID("uint64").Call(
 					jen.Lit(1),
 				),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
-					jen.ID("ctx"),
-					jen.ID("expectedID"),
-				),
+				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(jen.ID("ctx"), jen.ID("expectedID")),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.RequireNotNil(
-					jen.ID("actual").Dot("URL"),
-					nil,
-				),
+				utils.RequireNotNil(jen.ID("actual").Dot("URL"), nil),
 				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
@@ -475,10 +361,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					),
 					nil,
 				),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
+				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
 				utils.AssertEqual(
 					jen.ID("actual").Dot("Method"),
 					jen.ID("expectedMethod"),
@@ -502,10 +385,7 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					"ts",
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(modelRoute),
-							jen.ID("expected"),
-						),
+						jen.Qual("fmt", "Sprintf").Call(jen.Lit(modelRoute), jen.ID("expected")),
 						jen.Lit("expected and actual path don't match"),
 					),
 					utils.AssertEqual(
@@ -516,17 +396,8 @@ func iterablesTestDotGo(typ models.DataType) *jen.File {
 					utils.WriteHeader("StatusOK"),
 				),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				).Dot(fmt.Sprintf("Archive%s", ts)).Call(
-					jen.ID("ctx"),
-					jen.ID("expected"),
-				),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
+				jen.ID("err").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Archive%s", ts)).Call(jen.ID("ctx"), jen.ID("expected")),
+				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
 			),
 		),
 		jen.Line(),

@@ -74,3 +74,7 @@ install-tojen:
 .PHONY: format
 format:
 	for file in `find $(PWD) -name '*.go'`; do $(GO_FORMAT) $$file; done
+
+.PHONY: compare
+compare:
+	meld example_output ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &

@@ -1,11 +1,13 @@
-package http
+package httpserver
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func serverDotGo() *jen.File {
+func serverDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("httpserver")
 
 	utils.AddImports(ret)
@@ -24,20 +26,20 @@ func serverDotGo() *jen.File {
 				jen.ID("DebugMode").ID("bool"),
 				jen.Line(),
 				jen.Comment("Services"),
-				jen.ID("authService").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "Service"),
-				jen.ID("frontendService").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/frontend", "Service"),
-				jen.ID("usersService").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserDataServer"),
-				jen.ID("oauth2ClientsService").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientDataServer"),
-				jen.ID("webhooksService").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookDataServer"),
-				jen.ID("itemsService").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ItemDataServer"),
+				jen.ID("authService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/auth"), "Service"),
+				jen.ID("frontendService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/frontend"), "Service"),
+				jen.ID("usersService").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataServer"),
+				jen.ID("oauth2ClientsService").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer"),
+				jen.ID("webhooksService").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataServer"),
+				jen.ID("itemsService").Qual(filepath.Join(pkgRoot, "models/v1"), "ItemDataServer"),
 				jen.Line(),
 				jen.Comment("infra things"),
-				jen.ID("db").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database"),
-				jen.ID("config").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "ServerConfig"),
+				jen.ID("db").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
+				jen.ID("config").Op("*").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ServerConfig"),
 				jen.ID("router").Op("*").Qual("github.com/go-chi/chi", "Mux"),
 				jen.ID("httpServer").Op("*").Qual("net/http", "Server"),
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("encoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
+				jen.ID("encoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
 				jen.ID("newsManager").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 			),
 		),
@@ -49,16 +51,16 @@ func serverDotGo() *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideServer").Paramsln(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("cfg").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "ServerConfig"),
-			jen.ID("authService").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "Service"),
-			jen.ID("frontendService").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/frontend", "Service"),
-			jen.ID("itemsService").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ItemDataServer"),
-			jen.ID("usersService").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserDataServer"),
-			jen.ID("oauth2Service").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientDataServer"),
-			jen.ID("webhooksService").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookDataServer"),
-			jen.ID("db").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database"),
+			jen.ID("cfg").Op("*").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ServerConfig"),
+			jen.ID("authService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/auth"), "Service"),
+			jen.ID("frontendService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/frontend"), "Service"),
+			jen.ID("itemsService").Qual(filepath.Join(pkgRoot, "models/v1"), "ItemDataServer"),
+			jen.ID("usersService").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataServer"),
+			jen.ID("oauth2Service").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer"),
+			jen.ID("webhooksService").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataServer"),
+			jen.ID("db").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("encoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
+			jen.ID("encoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
 			jen.ID("newsManager").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
 			jen.If(jen.ID("len").Call(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).Op("<").Lit(32)).Block(
@@ -85,12 +87,12 @@ func serverDotGo() *jen.File {
 				jen.ID("oauth2ClientsService").Op(":").ID("oauth2Service"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "ErrInvalidTracingProvider")).Block(
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ErrInvalidTracingProvider")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
 			jen.Line(),
 			jen.List(jen.ID("ih"), jen.ID("err")).Op(":=").ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID("logger")),
-			jen.If(jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "ErrInvalidMetricsProvider")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ErrInvalidMetricsProvider")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
 			jen.If(jen.ID("ih").Op("!=").ID("nil")).Block(

@@ -1,4 +1,4 @@
-package http
+package httpserver
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -12,7 +12,7 @@ func middlewareDotGo() *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("idReplacementRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.Lit(`[^(v|oauth)]\d+`)),
+			jen.ID("idReplacementRegex").Op("=").Qual("regexp", "MustCompile").Call(jen.RawString(`[^(v|oauth)]\\d+`)),
 		),
 		jen.Line(),
 	)

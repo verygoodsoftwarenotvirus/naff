@@ -1,11 +1,13 @@
 package auth
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func wireDotGo() *jen.File {
+func wireDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("auth")
 
 	utils.AddImports(ret)
@@ -25,7 +27,7 @@ func wireDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideWebsocketAuthFunc provides a WebsocketAuthFunc"),
 		jen.Line(),
-		jen.Func().ID("ProvideWebsocketAuthFunc").Params(jen.ID("svc").Op("*").ID("Service")).Params(jen.ID("newsman").Dot("WebsocketAuthFunc")).Block(
+		jen.Func().ID("ProvideWebsocketAuthFunc").Params(jen.ID("svc").Op("*").ID("Service")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebsocketAuthFunc")).Block(
 			jen.Return().ID("svc").Dot("WebsocketAuthFunction"),
 		),
 		jen.Line(),
@@ -34,7 +36,7 @@ func wireDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideOAuth2ClientValidator converts an oauth2clients.Service to an OAuth2ClientValidator"),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients", "Service")).Params(jen.ID("OAuth2ClientValidator")).Block(
+		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/oauth2clients"), "Service")).Params(jen.ID("OAuth2ClientValidator")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

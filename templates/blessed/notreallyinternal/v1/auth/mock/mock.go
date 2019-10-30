@@ -1,17 +1,19 @@
 package mock
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func mockDotGo() *jen.File {
+func mockDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("mock")
 
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("auth").Dot("Authenticator").Op("=").Parens(jen.Op("*").ID("Authenticator")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "Authenticator").Op("=").Parens(jen.Op("*").ID("Authenticator")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 

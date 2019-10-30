@@ -1,11 +1,13 @@
 package v1
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func mainDotGo() *jen.File {
+func mainDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("main")
 
 	utils.AddImports(ret)
@@ -152,7 +154,7 @@ func mainDotGo() *jen.File {
 	ret.Add(
 		jen.Func().ID("buildIntegrationTestForDBImplementation").Params(jen.List(jen.ID("dbprov"), jen.ID("dbDeet")).ID("string")).Params(jen.ID("configFunc")).Block(
 			jen.Return().Func().Params(jen.ID("filepath").ID("string")).Params(jen.ID("error")).Block(
-				jen.ID("cfg").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "BuildConfig").Call(),
+				jen.ID("cfg").Op(":=").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "BuildConfig").Call(),
 				jen.Line(),
 				jen.ID("cfg").Dot("Set").Call(jen.ID("metaDebug"), jen.ID("false")),
 				jen.ID("cfg").Dot("Set").Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),

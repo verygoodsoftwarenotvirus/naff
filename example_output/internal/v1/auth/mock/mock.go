@@ -3,8 +3,9 @@ package mock
 import (
 	"context"
 
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
+
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
 )
 
 var _ auth.Authenticator = (*Authenticator)(nil)

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	encoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
 	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 

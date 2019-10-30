@@ -7,15 +7,15 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(types []models.DataType) error {
+func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
 		"tests/v1/frontend/main_test.go": mainTestDotGo(),
 		"tests/v1/frontend/doc.go":       docDotGo(),
-		"tests/v1/frontend/init.go":      initDotGo(),
+		"tests/v1/frontend/init.go":      initDotGo(pkgRoot),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderFile(path, file); err != nil {
+		if err := utils.RenderFile(pkgRoot, path, file); err != nil {
 			return err
 		}
 	}

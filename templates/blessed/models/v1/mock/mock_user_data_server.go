@@ -1,17 +1,19 @@
 package mock
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func mockUserDataServerDotGo() *jen.File {
+func mockUserDataServerDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("mock")
 
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","UserDataServer").Op("=").Parens(jen.Op("*").ID("UserDataServer")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataServer").Op("=").Parens(jen.Op("*").ID("UserDataServer")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 

@@ -7,7 +7,7 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(types []models.DataType) error {
+func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
 		"database/v1/queriers/mariadb/mariadb.go":             mariadbDotGo(),
 		"database/v1/queriers/mariadb/oauth2_clients_test.go": oauth2ClientsTestDotGo(),
@@ -30,7 +30,7 @@ func RenderPackage(types []models.DataType) error {
 	//}
 
 	for path, file := range files {
-		if err := utils.RenderFile(path, file); err != nil {
+		if err := utils.RenderFile(pkgRoot, path, file); err != nil {
 			return err
 		}
 	}

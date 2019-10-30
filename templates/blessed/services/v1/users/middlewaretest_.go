@@ -1,11 +1,13 @@
 package users
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func middlewareTestDotGo() *jen.File {
+func middlewareTestDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("users")
 
 	utils.AddImports(ret)
@@ -36,7 +38,7 @@ func middlewareTestDotGo() *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -65,7 +67,7 @@ func middlewareTestDotGo() *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -101,7 +103,7 @@ func middlewareTestDotGo() *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -130,7 +132,7 @@ func middlewareTestDotGo() *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -138,7 +140,7 @@ func middlewareTestDotGo() *jen.File {
 				).Dot("Return").Call(jen.ID("uint64").Call(jen.Lit(123)), jen.ID("nil")),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -174,7 +176,7 @@ func middlewareTestDotGo() *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -203,7 +205,7 @@ func middlewareTestDotGo() *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),

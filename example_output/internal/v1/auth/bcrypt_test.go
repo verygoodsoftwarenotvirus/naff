@@ -5,10 +5,11 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
+
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
 )
 
 const (

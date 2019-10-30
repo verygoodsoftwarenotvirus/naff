@@ -1,10 +1,10 @@
 package server
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
 	httpserver "gitlab.com/verygoodsoftwarenotvirus/todo/server/v1/http"
 
 	"github.com/google/wire"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 )
 
 type (

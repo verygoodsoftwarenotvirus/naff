@@ -10,7 +10,7 @@ import (
 
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
-	encoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
 	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 

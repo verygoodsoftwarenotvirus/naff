@@ -357,8 +357,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 	default:
 		panic(fmt.Sprintf("wTf: %q", dbvsn))
 	}
-
-	qb.Dot("ToSql").Call()
+	qb.Dotln("ToSql").Call()
 
 	createQueryFuncBody := []jen.Code{
 		jen.Var().ID("err").ID("error"),
@@ -585,7 +584,6 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Archive%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildArchive%sQuery", sn).Call(jen.IDf("%sID", uvn), jen.ID("userID")),
 			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
-			jen.Line(),
 			jen.Return().ID("err"),
 		),
 		jen.Line(),

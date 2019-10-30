@@ -91,9 +91,7 @@ func TestV1Client_GetItems(T *testing.T) {
 		expected := &models.ItemList{
 			Items: []models.Item{
 				{
-					ID:      1,
-					Name:    "example",
-					Details: "blah",
+					ID: 1,
 				},
 			},
 		}
@@ -164,7 +162,6 @@ func TestV1Client_CreateItem(T *testing.T) {
 					assert.Equal(t, exampleInput, x)
 
 					require.NoError(t, json.NewEncoder(res).Encode(expected))
-					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)
@@ -215,7 +212,7 @@ func TestV1Client_UpdateItem(T *testing.T) {
 				func(res http.ResponseWriter, req *http.Request) {
 					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/items/%d", expected.ID), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodPut)
-					res.WriteHeader(http.StatusOK)
+					assert.NoError(t, json.NewEncoder(res).Encode(&models.Item{}))
 				},
 			),
 		)

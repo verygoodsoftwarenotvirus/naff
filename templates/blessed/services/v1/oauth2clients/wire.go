@@ -1,11 +1,13 @@
 package oauth2clients
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func wireDotGo() *jen.File {
+func wireDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("oauth2clients")
 
 	utils.AddImports(ret)
@@ -24,7 +26,7 @@ func wireDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideOAuth2ClientDataServer is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","OAuth2ClientDataServer")).Block(
+		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

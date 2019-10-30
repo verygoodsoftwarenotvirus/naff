@@ -5,9 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil"
+
 	"github.com/icrowley/fake"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/tests/v1/testutil"
 )
 
 var urlToUse string

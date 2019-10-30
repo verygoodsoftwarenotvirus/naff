@@ -1,11 +1,13 @@
 package postgres
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func postgresDotGo() *jen.File {
+func postgresDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("postgres")
 
 	utils.AddImports(ret)
@@ -67,7 +69,7 @@ func postgresDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvidePostgresDB provides an instrumented postgres db"),
 		jen.Line(),
-		jen.Func().ID("ProvidePostgresDB").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "ConnectionDetails")).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
+		jen.Func().ID("ProvidePostgresDB").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(filepath.Join(pkgRoot, "database/v1"), "ConnectionDetails")).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Lit("Establishing connection to postgres")),
 			jen.Return().Qual("database/sql", "Open").Call(jen.ID("postgresDriverName"), jen.ID("string").Call(jen.ID("connectionDetails"))),
 		),
@@ -77,7 +79,7 @@ func postgresDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvidePostgres provides a postgres db controller"),
 		jen.Line(),
-		jen.Func().ID("ProvidePostgres").Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database")).Block(
+		jen.Func().ID("ProvidePostgres").Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkgRoot, "database/v1"), "Database")).Block(
 			jen.Return().Op("&").ID("Postgres").Valuesln(
 				jen.ID("db").Op(":").ID("db"),
 				jen.ID("debug").Op(":").ID("debug"),

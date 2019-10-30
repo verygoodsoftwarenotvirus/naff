@@ -1,11 +1,13 @@
 package config
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func metricsDotGo() *jen.File {
+func metricsDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("config")
 
 	utils.AddImports(ret)
@@ -53,11 +55,11 @@ func metricsDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "InstrumentationHandler"), jen.ID("error")).Block(
-			jen.If(jen.ID("err").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "RegisterDefaultViews").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
+		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "InstrumentationHandler"), jen.ID("error")).Block(
+			jen.If(jen.ID("err").Op(":=").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "RegisterDefaultViews").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("registering default metric views: %w"), jen.ID("err"))),
 			),
-			jen.ID("_").Op("=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "RecordRuntimeStats").Call(jen.Qual("time", "Duration").Callln(
+			jen.ID("_").Op("=").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "RecordRuntimeStats").Call(jen.Qual("time", "Duration").Callln(
 				jen.Qual("math", "Max").Callln(
 					jen.ID("float64").Call(jen.ID("MinimumRuntimeCollectionInterval")),
 					jen.ID("float64").Call(jen.ID("cfg").Dot("Metrics").Dot("RuntimeMetricsCollectionInterval")),
@@ -106,9 +108,7 @@ func metricsDotGo() *jen.File {
 					jen.If(jen.ID("ah").Op("!=").Lit("").Op("&&").ID("ap").Op("!=").Lit("").Op("&&").ID("sn").Op("!=").Lit("")).Block(
 						jen.List(jen.ID("je"), jen.ID("err")).Op(":=").ID("jaeger").Dot("NewExporter").Call(jen.ID("jaeger").Dot("Options").Valuesln(
 							jen.ID("AgentEndpoint").Op(":").Qual("fmt", "Sprintf").Call(jen.Lit("%s:%s"), jen.ID("ah"), jen.ID("ap")),
-							jen.ID("Process").Op(":").ID("jaeger").Dot("Process").Valuesln(
-								jen.ID("ServiceName").Op(":").ID("sn"),
-							),
+							jen.ID("Process").Op(":").ID("jaeger").Dot("Process").Values(jen.ID("ServiceName").Op(":").ID("sn")),
 						)),
 						jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 							jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("failed to create Jaeger exporter: %w"), jen.ID("err")),

@@ -221,7 +221,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.Comment("notify the relevant parties"),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("user").Dot("ID")),
 				jen.ID("s").Dot("userCounter").Dot("Increment").Call(jen.ID("ctx")),
-				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
+				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot("Create")),
 					jen.ID("Data").Op(":").ID("ucr"),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName")),
@@ -480,7 +480,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.Line(),
 				jen.Comment("inform the relatives"),
 				jen.ID("s").Dot("userCounter").Dot("Decrement").Call(jen.ID("ctx")),
-				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
+				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot("Archive")),
 					jen.ID("Data").Op(":").ID("models").Dot("User").Values(jen.ID("ID").Op(":").ID("userID")),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName")),

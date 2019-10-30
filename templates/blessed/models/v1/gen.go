@@ -13,7 +13,7 @@ func jsonTag(val string) map[string]string {
 }
 
 // RenderPackage renders the package
-func RenderPackage(types []models.DataType) error {
+func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
 		"models/v1/webhook.go":             webhookDotGo(),
 		"models/v1/oauth2_client.go":       oauth2ClientDotGo(),
@@ -36,7 +36,7 @@ func RenderPackage(types []models.DataType) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderFile(path, file); err != nil {
+		if err := utils.RenderFile(pkgRoot, path, file); err != nil {
 			return err
 		}
 	}

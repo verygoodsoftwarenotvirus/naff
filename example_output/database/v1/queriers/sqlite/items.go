@@ -234,7 +234,8 @@ func (s *Sqlite) buildCreateItemQuery(input *models.Item) (query string, args []
 			input.Name,
 			input.Details,
 			input.BelongsTo,
-		).ToSql()
+		).
+		ToSql()
 
 	s.logQueryBuildingError(err)
 
@@ -333,6 +334,5 @@ func (s *Sqlite) buildArchiveItemQuery(itemID, userID uint64) (query string, arg
 func (s *Sqlite) ArchiveItem(ctx context.Context, itemID, userID uint64) error {
 	query, args := s.buildArchiveItemQuery(itemID, userID)
 	_, err := s.db.ExecContext(ctx, query, args...)
-
 	return err
 }

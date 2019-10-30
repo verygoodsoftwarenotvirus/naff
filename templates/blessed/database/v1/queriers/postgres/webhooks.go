@@ -1,11 +1,13 @@
 package postgres
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func webhooksDotGo() *jen.File {
+func webhooksDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("postgres")
 
 	utils.AddImports(ret)
@@ -44,9 +46,9 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("scanWebhook is a consistent way to turn a *sql.Row into a webhook struct"),
 		jen.Line(),
-		jen.Func().ID("scanWebhook").Params(jen.ID("scan").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Scanner")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"), jen.ID("error")).Block(
+		jen.Func().ID("scanWebhook").Params(jen.ID("scan").Qual(filepath.Join(pkgRoot, "database/v1"), "Scanner")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"), jen.ID("error")).Block(
 			jen.Var().Defs(
-				jen.ID("x").Op("=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook").Values(),
+				jen.ID("x").Op("=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Values(),
 				jen.Listln(
 					jen.ID("eventsStr"),
 					jen.ID("dataTypesStr"),
@@ -89,8 +91,8 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("scanWebhooks provides a consistent way to turn sql rows into a slice of webhooks"),
 		jen.Line(),
-		jen.Func().ID("scanWebhooks").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"), jen.ID("error")).Block(
-			jen.Var().ID("list").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"),
+		jen.Func().ID("scanWebhooks").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"), jen.ID("error")).Block(
+			jen.Var().ID("list").Index().Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
 				jen.List(jen.ID("webhook"), jen.ID("err")).Op(":=").ID("scanWebhook").Call(jen.ID("rows")),
@@ -134,7 +136,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetWebhook fetches a webhook from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildGetWebhookQuery").Call(jen.ID("webhookID"), jen.ID("userID")),
 			jen.ID("row").Op(":=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
@@ -154,7 +156,7 @@ func webhooksDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("meeting a given filter's criteria and belonging to a given user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetWebhookCountQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetWebhookCountQuery").Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID("p").Dot("sqlBuilder").
@@ -182,7 +184,7 @@ func webhooksDotGo() *jen.File {
 		jen.Line(),
 		jen.Comment("and belong to a particular user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetWebhookCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetWebhookCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildGetWebhookCountQuery").Call(jen.ID("filter"), jen.ID("userID")),
 			jen.ID("err").Op("=").ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("count")),
@@ -260,7 +262,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetAllWebhooks fetches a list of all webhooks from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllWebhooks").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookList"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllWebhooks").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookList"), jen.ID("error")).Block(
 			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("p").Dot("buildGetAllWebhooksQuery").Call()),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
@@ -279,8 +281,8 @@ func webhooksDotGo() *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching webhook count: %w"), jen.ID("err"))),
 			),
 			jen.Line(),
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookList").Valuesln(
-				jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Pagination").Valuesln(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookList").Valuesln(
+				jen.ID("Pagination").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "Pagination").Valuesln(
 					jen.ID("Page").Op(":").Lit(1),
 					jen.ID("TotalCount").Op(":").ID("count"),
 				),
@@ -295,7 +297,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetAllWebhooksForUser fetches a list of all webhooks from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllWebhooksForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetAllWebhooksForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildGetWebhooksQuery").Call(jen.ID("nil"), jen.ID("userID")),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
@@ -319,7 +321,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildGetWebhooksQuery returns a SQL query (and arguments) that would return a"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetWebhooksQuery").Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildGetWebhooksQuery").Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID("p").Dot("sqlBuilder").
@@ -345,7 +347,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("GetWebhooks fetches a list of webhooks from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetWebhooks").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookList"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("GetWebhooks").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookList"), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildGetWebhooksQuery").Call(jen.ID("filter"), jen.ID("userID")),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("p").Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
@@ -366,8 +368,8 @@ func webhooksDotGo() *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching count: %w"), jen.ID("err"))),
 			),
 			jen.Line(),
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookList").Valuesln(
-				jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Pagination").Valuesln(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookList").Valuesln(
+				jen.ID("Pagination").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "Pagination").Valuesln(
 					jen.ID("Page").Op(":").ID("filter").Dot("Page"),
 					jen.ID("TotalCount").Op(":").ID("count"),
 					jen.ID("Limit").Op(":").ID("filter").Dot("Limit"),
@@ -383,7 +385,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildWebhookCreationQuery returns a SQL query (and arguments) that would create a given webhook"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildWebhookCreationQuery").Params(jen.ID("x").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildWebhookCreationQuery").Params(jen.ID("x").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
@@ -421,11 +423,11 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("CreateWebhook creates a webhook in the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("CreateWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("CreateWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"),
 			"WebhookCreationInput",
-		)).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook"),
+		)).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"),
 			jen.ID("error")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook").Valuesln(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
 				jen.ID("Name").Op(":").ID("input").Dot("Name"),
 				jen.ID("ContentType").Op(":").ID("input").Dot("ContentType"),
 				jen.ID("URL").Op(":").ID("input").Dot("URL"),
@@ -449,7 +451,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("buildUpdateWebhookQuery takes a given webhook and returns a SQL query to update"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildUpdateWebhookQuery").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("buildUpdateWebhookQuery").Params(jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("p").Dot("sqlBuilder").
 				Dotln("Update").Call(jen.ID("webhooksTableName")).
@@ -477,7 +479,7 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("UpdateWebhook updates a particular webhook. Note that UpdateWebhook expects the provided input to have a valid ID."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("UpdateWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Webhook")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("p").Op("*").ID("Postgres")).ID("UpdateWebhook").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook")).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("p").Dot("buildUpdateWebhookQuery").Call(jen.ID("input")),
 			jen.Return().ID("p").Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")),
 		),

@@ -304,7 +304,6 @@ func usersTestDotGo() *jen.File {
 						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
 						nil,
 					),
-					utils.WriteHeader("StatusOK"),
 				),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -410,7 +409,6 @@ func usersTestDotGo() *jen.File {
 						jen.Qual("net/http", "MethodDelete"),
 						nil,
 					),
-					utils.WriteHeader("StatusOK"),
 				),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("buildTestClient").Call(
@@ -489,7 +487,6 @@ func usersTestDotGo() *jen.File {
 							jen.ID("Name").Op(":").Lit("hi"),
 						),
 					),
-					utils.WriteHeader("StatusOK"),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
@@ -526,11 +523,9 @@ func usersTestDotGo() *jen.File {
 						jen.Qual("net/http", "MethodPost"),
 						nil,
 					),
-					jen.Line(),
 					jen.Qual("time", "Sleep").Call(
 						jen.Lit(10).Op("*").Qual("time", "Hour"),
 					),
-					utils.WriteHeader("StatusOK"),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
@@ -568,7 +563,6 @@ func usersTestDotGo() *jen.File {
 						jen.Qual("net/http", "MethodPost"),
 						nil,
 					),
-					utils.WriteHeader("StatusOK"),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),

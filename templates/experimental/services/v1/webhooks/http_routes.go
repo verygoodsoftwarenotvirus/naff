@@ -152,7 +152,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.Comment("notify the relevant parties"),
 				jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("wh").Dot("ID")),
 				jen.ID("s").Dot("webhookCounter").Dot("Increment").Call(jen.ID("ctx")),
-				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
+				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot("Create")),
 					jen.ID("Data").Op(":").ID("wh"),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName"))),
@@ -263,7 +263,7 @@ func httpRoutesDotGo() *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("notify the relevant parties"),
-				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
+				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot("Update")),
 					jen.ID("Data").Op(":").ID("wh"),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName"))),
@@ -313,7 +313,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.Line(),
 				jen.Comment("let the interested parties know"),
 				jen.ID("s").Dot("webhookCounter").Dot("Decrement").Call(jen.ID("ctx")),
-				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
+				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("EventType").Op(":").ID("string").Call(jen.ID("models").Dot("Archive")),
 					jen.ID("Data").Op(":").ID("models").Dot("Webhook").Values(jen.ID("ID").Op(":").ID("webhookID")),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName"))),

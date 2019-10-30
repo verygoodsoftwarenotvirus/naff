@@ -96,9 +96,7 @@ func (cfg *ServerConfig) ProvideTracing(logger logging.Logger) error {
 		if ah != "" && ap != "" && sn != "" {
 			je, err := jaeger.NewExporter(jaeger.Options{
 				AgentEndpoint: fmt.Sprintf("%s:%s", ah, ap),
-				Process: jaeger.Process{
-					ServiceName: sn,
-				},
+				Process:       jaeger.Process{ServiceName: sn},
 			})
 			if err != nil {
 				return fmt.Errorf("failed to create Jaeger exporter: %w", err)

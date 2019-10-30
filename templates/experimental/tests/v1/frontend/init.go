@@ -1,11 +1,13 @@
 package frontend
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func initDotGo() *jen.File {
+func initDotGo(rootPkg string) *jen.File {
 	ret := jen.NewFile("frontend")
 
 	utils.AddImports(ret)
@@ -24,11 +26,11 @@ func initDotGo() *jen.File {
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
-			jen.ID("urlToUse").Op("=").ID("testutil").Dot("DetermineServiceURL").Call(),
+			jen.ID("urlToUse").Op("=").Qual(filepath.Join(rootPkg, "tests/v1/testutil"), "DetermineServiceURL").Call(),
 			jen.Line(),
 			jen.ID("logger").Op(":=").ID("zerolog").Dot("NewZeroLogger").Call(),
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
-			jen.ID("testutil").Dot("EnsureServerIsUp").Call(jen.ID("urlToUse")),
+			jen.Qual(filepath.Join(rootPkg, "tests/v1/testutil"), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
 			jen.Line(),
 			jen.ID("fake").Dot("Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.Line(),

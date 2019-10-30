@@ -1,11 +1,13 @@
 package oauth2clients
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func middlewareTestDotGo() *jen.File {
+func middlewareTestDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("oauth2clients")
 
 	utils.AddImports(ret)
@@ -34,7 +36,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Callln(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -51,7 +53,7 @@ func middlewareTestDotGo() *jen.File {
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 				jen.Line(),
-				jen.ID("expected").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientCreationInput").Valuesln(
+				jen.ID("expected").Op(":=").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
 					jen.ID("RedirectURI").Op(":").Lit("https://blah.com"),
 				),
 				jen.List(jen.ID("bs"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("expected")),
@@ -65,7 +67,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Callln(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
@@ -96,7 +98,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("THIS IS A FAKE CLIENT ID"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("things")),
 				),
@@ -108,7 +110,7 @@ func middlewareTestDotGo() *jen.File {
 				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.ID("nil")),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("mh"),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -143,7 +145,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("THIS IS A FAKE CLIENT ID"),
 				),
 				jen.Line(),
@@ -154,12 +156,12 @@ func middlewareTestDotGo() *jen.File {
 				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.ID("nil")),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("mh"),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ClientID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -171,7 +173,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid scope"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("THIS IS A FAKE CLIENT ID"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("things")),
 				),
@@ -183,7 +185,7 @@ func middlewareTestDotGo() *jen.File {
 				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.ID("nil")),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("mh"),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -210,7 +212,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("THIS IS A FAKE CLIENT ID"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("things")),
 				),
@@ -222,7 +224,7 @@ func middlewareTestDotGo() *jen.File {
 				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.ID("nil")),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("mh"),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -292,12 +294,12 @@ func middlewareTestDotGo() *jen.File {
 				jen.ID("q").Dot("Set").Call(jen.ID("oauth2ClientIDURIParamKey"), jen.ID("expected")),
 				jen.ID("req").Dot("URL").Dot("RawQuery").Op("=").ID("q").Dot("Encode").Call(),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected"),
-				).Dot("Return").Call(jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Values(), jen.ID("nil")),
+				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Values(), jen.ID("nil")),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2ClientInfoMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
@@ -320,12 +322,12 @@ func middlewareTestDotGo() *jen.File {
 				jen.ID("q").Dot("Set").Call(jen.ID("oauth2ClientIDURIParamKey"), jen.ID("expected")),
 				jen.ID("req").Dot("URL").Dot("RawQuery").Op("=").ID("q").Dot("Encode").Call(),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2ClientInfoMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
@@ -341,14 +343,14 @@ func middlewareTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("THIS IS A FAKE CLIENT ID"),
 				),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.Qual("context", "Background").Call(),
-						jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientKey"),
+						jen.Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientKey"),
 						jen.ID("expected"),
 					),
 				),
@@ -371,7 +373,7 @@ func middlewareTestDotGo() *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2Client").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("THIS IS A FAKE CLIENT ID"),
 				),
 				jen.Line(),

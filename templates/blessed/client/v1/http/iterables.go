@@ -59,51 +59,28 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment(fmt.Sprintf("Get%s retrieves %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("Get%s", ts)).Params(
-			utils.CtxParam(),
-			jen.ID("id").ID("uint64"),
-		).Params(
+		newClientMethod(fmt.Sprintf("Get%s", ts)).Params(utils.CtxParam(), jen.ID("id").ID("uint64")).Params(
 			jen.ID(vn).Op("*").Qual(utils.ModelsPkg, ts),
 			jen.ID("err").ID("error"),
 		).Block(
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
-				jen.ID("ctx"),
-				jen.ID("id"),
-			),
+			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(jen.ID("ctx"), jen.ID("id")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"),
-					jen.Qual("fmt", "Errorf").Call(
-						jen.Lit("building request: %w"),
-						jen.ID("err"),
-					)),
-			),
-			jen.Line(),
-			jen.If(jen.ID("retrieveErr").Op(":=").ID("c").Dot("retrieve").Call(
-				jen.ID("ctx"),
-				jen.ID("req"),
-				jen.Op("&").ID(vn),
-			),
-				jen.ID("retrieveErr").Op("!=").ID("nil"),
-			).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.ID("retrieveErr"),
+					jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.ID("err")),
 				),
 			),
 			jen.Line(),
-			jen.Return().List(
-				jen.ID(vn),
-				jen.ID("nil"),
+			jen.If(jen.ID("retrieveErr").Op(":=").ID("c").Dot("retrieve").Call(jen.ID("ctx"), jen.ID("req"), jen.Op("&").ID(vn)), jen.ID("retrieveErr").Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.ID("retrieveErr")),
 			),
+			jen.Line(),
+			jen.Return().List(jen.ID(vn), jen.ID("nil")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching %s", tp, commonNameWithPrefix)),
+		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching %s", tp, typ.Name.PluralCommonName())),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildGet%sRequest", tp)).Params(
 			utils.CtxParam(),
@@ -127,7 +104,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(fmt.Sprintf("Get%s retrieves a list of %s", tp, typ.Name.Plural())),
+		jen.Comment(fmt.Sprintf("Get%s retrieves a list of %s", tp, typ.Name.PluralCommonName())),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Get%s", tp)).Params(
 			utils.CtxParam(),
@@ -153,22 +130,13 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 			),
 			jen.Line(),
 			jen.If(
-				jen.ID("retrieveErr").Op(":=").ID("c").Dot("retrieve").Call(
-					jen.ID("ctx"),
-					jen.ID("req"),
-					jen.Op("&").ID(pvn),
-				),
+				jen.ID("retrieveErr").Op(":=").ID("c").Dot("retrieve").Call(jen.ID("ctx"), jen.ID("req"), jen.Op("&").ID(pvn)),
 				jen.ID("retrieveErr").Op("!=").ID("nil"),
 			).Block(
-				jen.Return().List(jen.ID("nil"),
-					jen.ID("retrieveErr"),
-				),
+				jen.Return().List(jen.ID("nil"), jen.ID("retrieveErr")),
 			),
 			jen.Line(),
-			jen.Return().List(
-				jen.ID(pvn),
-				jen.ID("nil"),
-			),
+			jen.Return().List(jen.ID(pvn), jen.ID("nil")),
 		),
 		jen.Line(),
 	)

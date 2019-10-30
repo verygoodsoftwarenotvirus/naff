@@ -1,11 +1,13 @@
 package oauth2clients
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func httpRoutesDotGo() *jen.File {
+func httpRoutesDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("oauth2clients")
 
 	utils.AddImports(ret)
@@ -16,7 +18,7 @@ func httpRoutesDotGo() *jen.File {
 			jen.ID("URIParamKey").Op("=").Lit("oauth2ClientID"),
 			jen.Line(),
 			jen.ID("oauth2ClientIDURIParamKey").Op("=").Lit("client_id"),
-			jen.ID("clientIDKey").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","ContextKey").Op("=").Lit("client_id"),
+			jen.ID("clientIDKey").Qual(filepath.Join(pkgRoot, "models/v1"), "ContextKey").Op("=").Lit("client_id"),
 		),
 		jen.Line(),
 	)
@@ -75,7 +77,7 @@ func httpRoutesDotGo() *jen.File {
 		jen.Comment("fetchUserID grabs a userID out of the request context"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("fetchUserID").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-			jen.If(jen.List(jen.ID("id"), jen.ID("ok")).Op(":=").ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","UserIDKey")).Assert(jen.ID("uint64")), jen.ID("ok")).Block(
+			jen.If(jen.List(jen.ID("id"), jen.ID("ok")).Op(":=").ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserIDKey")).Assert(jen.ID("uint64")), jen.ID("ok")).Block(
 				jen.Return().ID("id"),
 			),
 			jen.Return().Lit(0),
@@ -92,7 +94,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("extract filter"),
-				jen.ID("qf").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","ExtractQueryFilter").Call(jen.ID("req")),
+				jen.ID("qf").Op(":=").Qual(filepath.Join(pkgRoot, "models/v1"), "ExtractQueryFilter").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("determine user"),
 				jen.ID("userID").Op(":=").ID("s").Dot("fetchUserID").Call(jen.ID("req")),
@@ -103,8 +105,8 @@ func httpRoutesDotGo() *jen.File {
 				jen.List(jen.ID("oauth2Clients"), jen.ID("err")).Op(":=").ID("s").Dot("database").Dot("GetOAuth2Clients").Call(jen.ID("ctx"), jen.ID("qf"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.Comment("just return an empty list if there are no results"),
-					jen.ID("oauth2Clients").Op("=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","OAuth2ClientList").Valuesln(
-						jen.ID("Clients").Op(":").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","OAuth2Client").Values(),
+					jen.ID("oauth2Clients").Op("=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientList").Valuesln(
+						jen.ID("Clients").Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Values(),
 					),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encountered error getting list of oauth2 clients from database")),
@@ -130,7 +132,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("fetch creation input from request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreationMiddlewareCtxKey")).Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","OAuth2ClientCreationInput")),
+				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreationMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
@@ -214,7 +216,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.Line(),
 				jen.Comment("keep the aforementioned in mind"),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-	jen.Lit("oauth2_client_id").Op(":").ID("oauth2ClientID"), jen.Lit("user_id").Op(":").ID("userID"))),
+					jen.Lit("oauth2_client_id").Op(":").ID("oauth2ClientID"), jen.Lit("user_id").Op(":").ID("userID"))),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.ID("attachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("oauth2ClientID")),
 				jen.Line(),
@@ -252,7 +254,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.ID("oauth2ClientID").Op(":=").ID("s").Dot("urlClientIDExtractor").Call(jen.ID("req")),
 				jen.Line(),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-	jen.Lit("oauth2_client_id").Op(":").ID("oauth2ClientID"), jen.Lit("user_id").Op(":").ID("userID"))),
+					jen.Lit("oauth2_client_id").Op(":").ID("oauth2ClientID"), jen.Lit("user_id").Op(":").ID("userID"))),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.ID("attachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("oauth2ClientID")),
 				jen.Line(),

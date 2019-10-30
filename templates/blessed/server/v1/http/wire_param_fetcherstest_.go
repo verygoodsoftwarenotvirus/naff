@@ -1,12 +1,14 @@
-package http
+package httpserver
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireParamFetchersTestDotGo(types []models.DataType) *jen.File {
+func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("httpserver")
 
 	utils.AddImports(ret)
@@ -110,7 +112,7 @@ func wireParamFetchersTestDotGo(types []models.DataType) *jen.File {
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(),
-						jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserIDKey"),
+						jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserIDKey"),
 						jen.ID("expected"),
 					),
 				),

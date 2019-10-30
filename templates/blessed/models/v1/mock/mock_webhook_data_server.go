@@ -1,17 +1,19 @@
 package mock
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func mockWebhookDataServerDotGo() *jen.File {
+func mockWebhookDataServerDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("mock")
 
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","WebhookDataServer").Op("=").Parens(jen.Op("*").ID("WebhookDataServer")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataServer").Op("=").Parens(jen.Op("*").ID("WebhookDataServer")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 

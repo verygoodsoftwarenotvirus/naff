@@ -8,7 +8,7 @@ import (
 
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 	mockauth "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock"
-	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
 	mockencoding "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
 	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock"
@@ -100,6 +100,7 @@ func TestProvideUsersService(T *testing.T) {
 		) (metrics.UnitCounter, error) {
 			return uc, nil
 		}
+
 		service, err := ProvideUsersService(
 			context.Background(),
 			config.AuthSettings{},

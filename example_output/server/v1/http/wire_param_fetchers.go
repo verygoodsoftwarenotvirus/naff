@@ -4,16 +4,16 @@ import (
 	"net/http"
 	"strconv"
 
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth"
 	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/auth"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/items"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/users"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/webhooks"
 
 	"github.com/go-chi/chi"
 	"github.com/google/wire"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/items"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/webhooks"
 )
 
 var (

@@ -166,9 +166,12 @@ func databaseDotGo(vendor *wordsmith.SuperPalabra) *jen.File {
 			jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 				jen.Return().ID("err"),
 			),
-			jen.Return().ID("errors").Dot(
-				"Wrap",
-			).Call(jen.ID("err"), jen.ID("msg")),
+			jen.Line(),
+			jen.If(jen.Op("!").Qual("strings", "Contains").Call(jen.ID("msg"), jen.RawString(`%w`))).Block(
+				jen.ID("msg").Op("+=").Lit(": %w"),
+			),
+			jen.Line(),
+			jen.Return().Qual("fmt", "Errorf").Call(jen.ID("msg"), jen.ID("err")),
 		),
 		jen.Line(),
 	)

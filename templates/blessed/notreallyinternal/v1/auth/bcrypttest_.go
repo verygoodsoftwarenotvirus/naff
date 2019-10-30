@@ -1,11 +1,13 @@
 package auth
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func bcryptTestDotGo() *jen.File {
+func bcryptTestDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("auth_test")
 
 	utils.AddImports(ret)
@@ -23,7 +25,7 @@ func bcryptTestDotGo() *jen.File {
 		jen.Func().ID("TestBcrypt_HashPassword").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Op(":=").ID("auth").Dot("ProvideBcryptAuthenticator").Call(jen.ID("auth").Dot("DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+			jen.ID("x").Op(":=").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -41,7 +43,7 @@ func bcryptTestDotGo() *jen.File {
 		jen.Func().ID("TestBcrypt_PasswordMatches").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Op(":=").ID("auth").Dot("ProvideBcryptAuthenticator").Call(jen.ID("auth").Dot("DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+			jen.ID("x").Op(":=").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("normal usage"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -66,7 +68,7 @@ func bcryptTestDotGo() *jen.File {
 		jen.Func().ID("TestBcrypt_PasswordIsAcceptable").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Op(":=").ID("auth").Dot("ProvideBcryptAuthenticator").Call(jen.ID("auth").Dot("DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+			jen.ID("x").Op(":=").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -82,7 +84,7 @@ func bcryptTestDotGo() *jen.File {
 		jen.Func().ID("TestBcrypt_ValidateLogin").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Op(":=").ID("auth").Dot("ProvideBcryptAuthenticator").Call(jen.ID("auth").Dot("DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+			jen.ID("x").Op(":=").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -169,8 +171,8 @@ func bcryptTestDotGo() *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("auth").Dot("ProvideBcryptAuthenticator").Call(
-					jen.ID("auth").Dot("DefaultBcryptHashCost"),
+				jen.Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(
+					jen.Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "DefaultBcryptHashCost"),
 					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 			)),

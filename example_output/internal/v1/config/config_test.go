@@ -6,9 +6,10 @@ import (
 	"os"
 	"testing"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 )
 
 func Test_randString(t *testing.T) {

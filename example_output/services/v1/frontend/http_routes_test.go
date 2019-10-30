@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

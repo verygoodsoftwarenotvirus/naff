@@ -195,7 +195,7 @@ func RunGoFormatForFile(filename string) error {
 	return exec.Command("/usr/local/go/bin/gofmt", "-s", "-w", filename).Run()
 }
 
-func RenderFile(path string, file *jen.File) error {
+func RenderFile(pkgRoot, path string, file *jen.File) error {
 	// start := time.Now()
 	fp := BuildTemplatePath(path)
 	_ = os.Remove(fp)
@@ -214,7 +214,7 @@ func RenderFile(path string, file *jen.File) error {
 		return fmt.Errorf("error rendering file %q: %w", path, gie)
 	}
 
-	if ferr := FindAndFixImportBlock(fp); ferr != nil {
+	if ferr := FindAndFixImportBlock(pkgRoot, fp); ferr != nil {
 		return fmt.Errorf("error sorting imports for file %q: %w", path, ferr)
 	}
 

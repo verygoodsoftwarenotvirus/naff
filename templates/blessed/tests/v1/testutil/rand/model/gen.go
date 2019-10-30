@@ -9,20 +9,20 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(types []models.DataType) error {
+func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
 		"tests/v1/testutil/rand/model/doc.go":           docDotGo(),
-		"tests/v1/testutil/rand/model/oauth2clients.go": oauth2ClientsDotGo(),
-		"tests/v1/testutil/rand/model/users.go":         usersDotGo(),
-		"tests/v1/testutil/rand/model/webhooks.go":      webhooksDotGo(),
+		"tests/v1/testutil/rand/model/oauth2clients.go": oauth2ClientsDotGo(pkgRoot),
+		"tests/v1/testutil/rand/model/users.go":         usersDotGo(pkgRoot),
+		"tests/v1/testutil/rand/model/webhooks.go":      webhooksDotGo(pkgRoot),
 	}
 
 	for _, typ := range types {
-		files[fmt.Sprintf("tests/v1/testutil/rand/model/%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(typ)
+		files[fmt.Sprintf("tests/v1/testutil/rand/model/%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(pkgRoot, typ)
 	}
 
 	for path, file := range files {
-		if err := utils.RenderFile(path, file); err != nil {
+		if err := utils.RenderFile(pkgRoot, path, file); err != nil {
 			return err
 		}
 	}

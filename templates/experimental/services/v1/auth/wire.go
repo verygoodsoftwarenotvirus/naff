@@ -25,7 +25,7 @@ func wireDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideWebsocketAuthFunc provides a WebsocketAuthFunc"),
 		jen.Line(),
-		jen.Func().ID("ProvideWebsocketAuthFunc").Params(jen.ID("svc").Op("*").ID("Service")).Params(jen.ID("newsman").Dot("WebsocketAuthFunc")).Block(
+		jen.Func().ID("ProvideWebsocketAuthFunc").Params(jen.ID("svc").Op("*").ID("Service")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebsocketAuthFunc")).Block(
 			jen.Return().ID("svc").Dot("WebsocketAuthFunction"),
 		),
 		jen.Line(),

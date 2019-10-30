@@ -18,6 +18,8 @@ func wireDotGo() *jen.File {
 	ret.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients", "oauth2clientsservice")
 	ret.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/users", "usersservice")
 	ret.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/webhooks", "webhooksservice")
+	ret.ImportAlias(internalAuthImp, "auth")
+	ret.ImportAlias(internalMetricsImp, "metrics")
 
 	ret.Add(
 		jen.Comment("ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day"),

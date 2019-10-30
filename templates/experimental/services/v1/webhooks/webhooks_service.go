@@ -34,9 +34,9 @@ func webhooksServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Type().Defs(
 			jen.ID("eventManager").Interface(
-				jen.ID("newsman").Dot("Reporter"),
+				jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 				jen.Line(),
-				jen.ID("TuneIn").Params(jen.ID("newsman").Dot("Listener")),
+				jen.ID("TuneIn").Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")),
 			),
 			jen.Line(),
 			jen.Comment("Service handles TODO ListHandler webhooks"),
@@ -71,7 +71,7 @@ func webhooksServiceDotGo() *jen.File {
 			jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
 			jen.ID("encoder").ID("encoding").Dot("EncoderDecoder"),
 			jen.ID("webhookCounterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounterProvider"),
-			jen.ID("em").Op("*").ID("newsman").Dot("Newsman"),
+			jen.ID("em").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("webhookCounter"), jen.ID("err")).Op(":=").ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.Lit("the number of webhooks managed by the webhooks service")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(

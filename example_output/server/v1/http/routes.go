@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"net/http"
 
-	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
 	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/items"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/users"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/webhooks"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/heptiolabs/healthcheck"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/items"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/webhooks"
 )
 
 const (

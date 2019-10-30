@@ -1,11 +1,13 @@
 package client
 
 import (
+	"path/filepath"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func helpersTestDotGo() *jen.File {
+func helpersTestDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("client")
 
 	utils.AddImports(ret)
@@ -316,7 +318,7 @@ func helpersTestDotGo() *jen.File {
 					jen.Lit("blah"),
 				),
 				jen.Line(),
-				jen.ID("rc").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock", "NewMockReadCloser").Call(),
+				jen.ID("rc").Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil/mock"), "NewMockReadCloser").Call(),
 				jen.ID("rc").Dot("On").Call(
 					jen.Lit("Read"),
 					jen.Qual(utils.MockPkg, "Anything"),

@@ -1,11 +1,13 @@
 package model
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func webhooksDotGo() *jen.File {
+func webhooksDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("randmodel")
 
 	utils.AddImports(ret)
@@ -13,8 +15,8 @@ func webhooksDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("RandomWebhookInput creates a random WebhookCreationInput"),
 		jen.Line(),
-		jen.Func().ID("RandomWebhookInput").Params().Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookCreationInput")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookCreationInput").Valuesln(
+		jen.Func().ID("RandomWebhookInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput")).Block(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
 				jen.ID("Name").Op(":").ID("fake").Dot("Word").Call(),
 				jen.ID("URL").Op(":").ID("fake").Dot("DomainName").Call(),
 				jen.ID("ContentType").Op(":").Lit("application/json"),

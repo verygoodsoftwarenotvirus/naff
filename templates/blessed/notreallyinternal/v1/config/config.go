@@ -1,17 +1,19 @@
 package config
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func configDotGo() *jen.File {
+func configDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("config")
 
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().Defs(
+		jen.Const().Defs(
 			jen.ID("defaultStartupDeadline").Op("=").Qual("time", "Minute"),
 			jen.ID("defaultCookieLifetime").Op("=").Lit(24).Op("*").Qual("time", "Hour"),
 			jen.ID("defaultMetricsCollectionInterval").Op("=").Lit(2).Op("*").Qual("time", "Second"),
@@ -80,7 +82,7 @@ func configDotGo() *jen.File {
 					"json":         "debug",
 					"toml":         "debug,omitempty",
 				}),
-				jen.Comment("CacheStaticFiles indicates whether or not to load the static files directory into memory via afero's MemMapFs."),
+				jen.Comment("CacheStaticFiles indicates whether or not to load the static files directory into memory via afero's MemMapFs"),
 				jen.ID("CacheStaticFiles").ID("bool").Tag(map[string]string{
 					"mapstructure": "cache_static_files",
 					"json":         "cache_static_files",
@@ -143,7 +145,7 @@ func configDotGo() *jen.File {
 					"toml":         "provider,omitempty",
 				}),
 				jen.Comment("ConnectionDetails indicates how our database driver should connect to the instance"),
-				jen.ID("ConnectionDetails").ID("database").Dot("ConnectionDetails").Tag(map[string]string{
+				jen.ID("ConnectionDetails").Qual(filepath.Join(pkgRoot, "database/v1"), "ConnectionDetails").Tag(map[string]string{
 					"mapstructure": "connection_details",
 					"json":         "connection_details",
 					"toml":         "connection_details,omitempty",
@@ -228,7 +230,7 @@ func configDotGo() *jen.File {
 				jen.Return().ID("err"),
 			),
 			jen.Line(),
-			jen.Return().Qual("io/ioutil", "WriteFile").Call(jen.ID("path"), jen.ID("byteSlice"), jen.Lit(644)),
+			jen.Return().Qual("io/ioutil", "WriteFile").Call(jen.ID("path"), jen.ID("byteSlice"), jen.Op("0644")),
 		),
 		jen.Line(),
 	)

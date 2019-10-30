@@ -33,7 +33,7 @@ type DataField struct {
 
 type Project struct {
 	sourcePackage           string
-	outputPath              string
+	OutputPath              string
 	iterableServicesImports []string
 
 	Name      *wordsmith.SuperPalabra
@@ -98,7 +98,7 @@ func (p *Project) ParseModels(outputPath string) error {
 					p.iterableServicesImports = append(
 						p.iterableServicesImports,
 						filepath.Join(
-							p.outputPath,
+							p.OutputPath,
 							"services",
 							"v1",
 							strings.ToLower(dt.Name.Plural()),
@@ -154,7 +154,7 @@ func CompleteSurvey() (*Project, error) {
 
 	return &Project{
 		Name:          wordsmith.FromSingularPascalCase(p.Name),
-		outputPath:    p.OutputRepository,
+		OutputPath:    p.OutputRepository,
 		sourcePackage: p.ModelsPackage,
 	}, nil
 }

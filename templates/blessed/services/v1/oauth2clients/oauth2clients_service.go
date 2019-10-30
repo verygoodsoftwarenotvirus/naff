@@ -1,11 +1,13 @@
 package oauth2clients
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func oauth2ClientsServiceDotGo() *jen.File {
+func oauth2ClientsServiceDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("oauth2clients")
 
 	utils.AddImports(ret)
@@ -23,9 +25,9 @@ func oauth2ClientsServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("CreationMiddlewareCtxKey is a string alias for referring to OAuth2 client creation data"),
-			jen.ID("CreationMiddlewareCtxKey").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ContextKey").Op("=").Lit("create_oauth2_client"),
+			jen.ID("CreationMiddlewareCtxKey").Qual(filepath.Join(pkgRoot, "models/v1"), "ContextKey").Op("=").Lit("create_oauth2_client"),
 			jen.Line(),
-			jen.ID("counterName").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "CounterName").Op("=").Lit("oauth2_clients"),
+			jen.ID("counterName").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "CounterName").Op("=").Lit("oauth2_clients"),
 			jen.ID("counterDescription").ID("string").Op("=").Lit("number of oauth2 clients managed by the oauth2 client service"),
 			jen.ID("serviceName").ID("string").Op("=").Lit("oauth2_clients_service"),
 		),
@@ -34,7 +36,7 @@ func oauth2ClientsServiceDotGo() *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
+			jen.ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
 			jen.ID("_").ID("oauth2").Dot("ClientStore").Op("=").Parens(jen.Op("*").ID("clientStore")).Call(jen.ID("nil")),
 		),
 		jen.Line(),
@@ -62,26 +64,26 @@ func oauth2ClientsServiceDotGo() *jen.File {
 			jen.Comment("Service manages our OAuth2 clients via HTTP"),
 			jen.ID("Service").Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("database").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database"),
-				jen.ID("authenticator").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "Authenticator"),
-				jen.ID("encoderDecoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
+				jen.ID("database").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
+				jen.ID("authenticator").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "Authenticator"),
+				jen.ID("encoderDecoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
 				jen.ID("urlClientIDExtractor").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 				jen.Line(),
 				jen.ID("tokenStore").ID("oauth2").Dot("TokenStore"),
 				jen.ID("oauth2Handler").ID("oauth2Handler"),
-				jen.ID("oauth2ClientCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounter"),
+				jen.ID("oauth2ClientCounter").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "UnitCounter"),
 			),
 
 			jen.Line(),
 			jen.ID("clientStore").Struct(
-				jen.ID("database").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database"),
+				jen.ID("database").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
 			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database")).Params(jen.Op("*").ID("clientStore")).Block(
+		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(filepath.Join(pkgRoot, "database/v1"), "Database")).Params(jen.Op("*").ID("clientStore")).Block(
 			jen.ID("cs").Op(":=").Op("&").ID("clientStore").Valuesln(
 				jen.ID("database").Op(":").ID("db")),
 			jen.Return().ID("cs"),
@@ -112,10 +114,10 @@ func oauth2ClientsServiceDotGo() *jen.File {
 		jen.Func().ID("ProvideOAuth2ClientsService").Paramsln(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("db").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database"),
-			jen.ID("authenticator").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "Authenticator"),
-			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
-			jen.ID("counterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounterProvider"),
+			jen.ID("db").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
+			jen.ID("authenticator").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "Authenticator"),
+			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
+			jen.ID("counterProvider").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "UnitCounterProvider"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("counter"), jen.ID("err")).Op(":=").ID("counterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(

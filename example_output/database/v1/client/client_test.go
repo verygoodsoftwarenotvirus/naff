@@ -5,10 +5,11 @@ import (
 	"errors"
 	"testing"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 )
 
 func buildTestClient() (*Client, *database.MockDatabase) {

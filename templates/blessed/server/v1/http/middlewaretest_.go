@@ -1,4 +1,4 @@
-package http
+package httpserver
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"

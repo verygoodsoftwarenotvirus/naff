@@ -7,7 +7,7 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(types []models.DataType) error {
+func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
 		"database/v1/database.go":      databaseDotGo(),
 		"database/v1/database_mock.go": databaseMockDotGo(),
@@ -15,7 +15,7 @@ func RenderPackage(types []models.DataType) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderFile(path, file); err != nil {
+		if err := utils.RenderFile(pkgRoot, path, file); err != nil {
 			return err
 		}
 	}

@@ -39,7 +39,7 @@ func usersServiceTestDotGo() *jen.File {
 				jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "Authenticator").Values(),
 				jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 				jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "EncoderDecoder").Values(),
-				jen.ID("ucp"), jen.ID("newsman").Dot("NewNewsman").Call(jen.ID("nil"), jen.ID("nil")),
+				jen.ID("ucp"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.ID("nil"), jen.ID("nil")),
 			),
 			jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.Line(),

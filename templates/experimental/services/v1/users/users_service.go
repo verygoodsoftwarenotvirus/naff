@@ -42,7 +42,7 @@ func usersServiceDotGo() *jen.File {
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 				jen.ID("encoderDecoder").ID("encoding").Dot("EncoderDecoder"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("userCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounter"),
-				jen.ID("reporter").ID("newsman").Dot("Reporter"),
+				jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 				jen.ID("userCreationEnabled").ID("bool"),
 			),
 			jen.Line(),
@@ -62,7 +62,7 @@ func usersServiceDotGo() *jen.File {
 			jen.ID("authenticator").ID("auth").Dot("Authenticator"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").ID("encoding").Dot("EncoderDecoder"),
 			jen.ID("counterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounterProvider"),
-			jen.ID("reporter").ID("newsman").Dot("Reporter"),
+			jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.If(jen.ID("userIDFetcher").Op("==").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("userIDFetcher must be provided"))),

@@ -1,16 +1,17 @@
 package client
 
 import (
+	"path/filepath"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func helpersDotGo() *jen.File {
+func helpersDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("client")
 
 	utils.AddImports(ret)
 
-	ret.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "models")
 	ret.Add(jen.Line())
 
 	ret.Add(utils.Comments("argIsNotPointer checks an argument and returns whether or not it is a pointer")...)
@@ -107,7 +108,7 @@ func helpersDotGo() *jen.File {
 			),
 			jen.Line(),
 			jen.If(jen.ID("res").Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(
-				jen.ID("apiErr").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ErrorResponse").Values(),
+				jen.ID("apiErr").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "ErrorResponse").Values(),
 				jen.If(jen.ID("err").Op("=").Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),
 					jen.Op("&").ID("apiErr"),

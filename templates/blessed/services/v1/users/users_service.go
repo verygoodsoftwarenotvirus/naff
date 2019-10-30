@@ -1,11 +1,13 @@
 package users
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func usersServiceDotGo() *jen.File {
+func usersServiceDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("users")
 
 	utils.AddImports(ret)
@@ -13,8 +15,8 @@ func usersServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("MiddlewareCtxKey is the context key we search for when interacting with user-related requests"),
-			jen.ID("MiddlewareCtxKey").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ContextKey").Op("=").Lit("user_input"),
-			jen.ID("counterName").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "CounterName").Op("=").Lit("users"),
+			jen.ID("MiddlewareCtxKey").Qual(filepath.Join(pkgRoot, "models/v1"), "ContextKey").Op("=").Lit("user_input"),
+			jen.ID("counterName").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "CounterName").Op("=").Lit("users"),
 			jen.ID("topicName").Op("=").Lit("users"),
 			jen.ID("serviceName").Op("=").Lit("users_service"),
 		),
@@ -23,7 +25,7 @@ func usersServiceDotGo() *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "UserDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
+			jen.ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
 		),
 		jen.Line(),
 	)
@@ -37,12 +39,12 @@ func usersServiceDotGo() *jen.File {
 			jen.Line(),
 			jen.Comment("Service handles our users"),
 			jen.ID("Service").Struct(
-				jen.ID("cookieSecret").Index().ID("byte"), jen.ID("database").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database"),
-				jen.ID("authenticator").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "Authenticator"),
+				jen.ID("cookieSecret").Index().ID("byte"), jen.ID("database").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
+				jen.ID("authenticator").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "Authenticator"),
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("encoderDecoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
-				jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("userCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounter"),
-				jen.ID("reporter").ID("newsman").Dot("Reporter"),
+				jen.ID("encoderDecoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
+				jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("userCounter").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "UnitCounter"),
+				jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 				jen.ID("userCreationEnabled").ID("bool"),
 			),
 			jen.Line(),
@@ -56,13 +58,13 @@ func usersServiceDotGo() *jen.File {
 		jen.Comment("ProvideUsersService builds a new UsersService"),
 		jen.Line(),
 		jen.Func().ID("ProvideUsersService").Paramsln(
-			jen.ID("ctx").Qual("context", "Context"), jen.ID("authSettings").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "AuthSettings"),
+			jen.ID("ctx").Qual("context", "Context"), jen.ID("authSettings").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "AuthSettings"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("db").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Database"),
-			jen.ID("authenticator").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "Authenticator"),
-			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
-			jen.ID("counterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounterProvider"),
-			jen.ID("reporter").ID("newsman").Dot("Reporter"),
+			jen.ID("db").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
+			jen.ID("authenticator").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "Authenticator"),
+			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
+			jen.ID("counterProvider").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "UnitCounterProvider"),
+			jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.If(jen.ID("userIDFetcher").Op("==").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("userIDFetcher must be provided"))),

@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -9,7 +10,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesDotGo(typ models.DataType) *jen.File {
+func iterablesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret := jen.NewFile("randmodel")
 
 	utils.AddImports(ret)
@@ -17,8 +18,8 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("RandomItemCreationInput creates a random ItemInput"),
 		jen.Line(),
-		jen.Func().ID("RandomItemCreationInput").Params().Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ItemCreationInput")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ItemCreationInput").Valuesln(buildFakeCalls(typ.Fields)...),
+		jen.Func().ID("RandomItemCreationInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "ItemCreationInput")).Block(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "ItemCreationInput").Valuesln(buildFakeCalls(typ.Fields)...),
 			jen.Line(),
 			jen.Return().ID("x"),
 		),

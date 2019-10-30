@@ -31,19 +31,21 @@ import (
 	users "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/users"
 	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/webhooks"
 	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/frontend"
+	integrationtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/integration"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil"
 	testutilmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/mock"
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/rand/model"
 
 	// to do
 	queriers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers"
+	loadtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/load"
 )
 
 func RenderProject(in *naffmodels.Project) error {
-	allActive := true
+	allActive := false
 
 	type x struct {
-		renderFunc func([]naffmodels.DataType) error
+		renderFunc func(string, []naffmodels.DataType) error
 		activated  bool
 	}
 
@@ -76,9 +78,11 @@ func RenderProject(in *naffmodels.Project) error {
 		"randmodel":        {renderFunc: randmodel.RenderPackage, activated: allActive},
 		"iterables":        {renderFunc: iterables.RenderPackage, activated: allActive},
 		"dbclient":         {renderFunc: dbclient.RenderPackage, activated: allActive},
+		"integrationtests": {renderFunc: integrationtests.RenderPackage, activated: allActive},
 
 		// doing (two sides; one coin)
-		"queriers": {renderFunc: queriers.RenderPackage, activated: true},
+		"loadtests": {renderFunc: loadtests.RenderPackage, activated: true},
+		"queriers":  {renderFunc: queriers.RenderPackage, activated: false},
 		// "postgresql": {renderFunc: postgresql.RenderPackage, activated: true},
 		// "sqlite3":    {renderFunc: sqlite3.RenderPackage, activated: false},
 
@@ -90,7 +94,7 @@ func RenderProject(in *naffmodels.Project) error {
 		for name, x := range packageRenderers {
 			if x.activated {
 				start := time.Now()
-				if err := x.renderFunc(in.DataTypes); err != nil {
+				if err := x.renderFunc(in.OutputPath, in.DataTypes); err != nil {
 					log.Printf("error rendering %q after %s\n", name, time.Since(start))
 					return err
 				}

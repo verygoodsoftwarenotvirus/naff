@@ -1,6 +1,8 @@
 package client
 
 import (
+	"path/filepath"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
@@ -10,7 +12,7 @@ const (
 	webhooksListRoute = "/api/v1/webhooks"
 )
 
-func webhooksTestDotGo() *jen.File {
+func webhooksTestDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("client")
 
 	utils.AddImports(ret)
@@ -313,7 +315,6 @@ func webhooksTestDotGo() *jen.File {
 						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
 						nil,
 					),
-					utils.WriteHeader("StatusOK"),
 				),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -406,7 +407,9 @@ func webhooksTestDotGo() *jen.File {
 						jen.Qual("net/http", "MethodPut"),
 						nil,
 					),
-					utils.WriteHeader("StatusOK"),
+					utils.AssertNoError(
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Values()),
+						nil),
 				),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("buildTestClient").Call(
@@ -504,7 +507,6 @@ func webhooksTestDotGo() *jen.File {
 						jen.Qual("net/http", "MethodDelete"),
 						nil,
 					),
-					utils.WriteHeader("StatusOK"),
 				),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID("buildTestClient").Call(

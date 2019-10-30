@@ -146,7 +146,6 @@ func TestV1Client_CreateUser(T *testing.T) {
 					assert.Equal(t, exampleInput, x)
 
 					require.NoError(t, json.NewEncoder(res).Encode(expected))
-					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)
@@ -192,7 +191,6 @@ func TestV1Client_ArchiveUser(T *testing.T) {
 				func(res http.ResponseWriter, req *http.Request) {
 					assert.Equal(t, req.URL.Path, fmt.Sprintf("/users/%d", expected), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodDelete)
-					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)
@@ -228,7 +226,6 @@ func TestV1Client_Login(T *testing.T) {
 					assert.Equal(t, req.Method, http.MethodPost)
 
 					http.SetCookie(res, &http.Cookie{Name: "hi"})
-					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)
@@ -246,9 +243,7 @@ func TestV1Client_Login(T *testing.T) {
 				func(res http.ResponseWriter, req *http.Request) {
 					assert.Equal(t, req.URL.Path, "/users/login", "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodPost)
-
 					time.Sleep(10 * time.Hour)
-					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)
@@ -267,7 +262,6 @@ func TestV1Client_Login(T *testing.T) {
 				func(res http.ResponseWriter, req *http.Request) {
 					assert.Equal(t, req.URL.Path, "/users/login", "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodPost)
-					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)

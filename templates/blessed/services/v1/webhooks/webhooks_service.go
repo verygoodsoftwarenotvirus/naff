@@ -1,11 +1,13 @@
 package webhooks
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func webhooksServiceDotGo() *jen.File {
+func webhooksServiceDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("webhooks")
 
 	utils.AddImports(ret)
@@ -13,11 +15,11 @@ func webhooksServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("CreateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts"),
-			jen.ID("CreateMiddlewareCtxKey").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ContextKey").Op("=").Lit("webhook_create_input"),
+			jen.ID("CreateMiddlewareCtxKey").Qual(filepath.Join(pkgRoot, "models/v1"), "ContextKey").Op("=").Lit("webhook_create_input"),
 			jen.Comment("UpdateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts"),
-			jen.ID("UpdateMiddlewareCtxKey").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "ContextKey").Op("=").Lit("webhook_update_input"),
+			jen.ID("UpdateMiddlewareCtxKey").Qual(filepath.Join(pkgRoot, "models/v1"), "ContextKey").Op("=").Lit("webhook_update_input"),
 			jen.Line(),
-			jen.ID("counterName").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "CounterName").Op("=").Lit("webhooks"),
+			jen.ID("counterName").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "CounterName").Op("=").Lit("webhooks"),
 			jen.ID("topicName").ID("string").Op("=").Lit("webhooks"),
 			jen.ID("serviceName").ID("string").Op("=").Lit("webhooks_service"),
 		),
@@ -26,7 +28,7 @@ func webhooksServiceDotGo() *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
+			jen.ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
 		),
 		jen.Line(),
 	)
@@ -34,19 +36,19 @@ func webhooksServiceDotGo() *jen.File {
 	ret.Add(
 		jen.Type().Defs(
 			jen.ID("eventManager").Interface(
-				jen.ID("newsman").Dot("Reporter"),
+				jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 				jen.Line(),
-				jen.ID("TuneIn").Params(jen.ID("newsman").Dot("Listener")),
+				jen.ID("TuneIn").Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")),
 			),
 			jen.Line(),
 			jen.Comment("Service handles TODO ListHandler webhooks"),
 			jen.ID("Service").Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("webhookCounter").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounter"),
-				jen.ID("webhookDatabase").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookDataManager"),
+				jen.ID("webhookCounter").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "UnitCounter"),
+				jen.ID("webhookDatabase").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataManager"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
-				jen.ID("encoderDecoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
+				jen.ID("encoderDecoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
 				jen.ID("eventManager").ID("eventManager"),
 			),
 			jen.Line(),
@@ -66,12 +68,12 @@ func webhooksServiceDotGo() *jen.File {
 		jen.Func().ID("ProvideWebhooksService").Paramsln(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("webhookDatabase").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "WebhookDataManager"),
+			jen.ID("webhookDatabase").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataManager"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 			jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
-			jen.ID("encoder").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "EncoderDecoder"),
-			jen.ID("webhookCounterProvider").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounterProvider"),
-			jen.ID("em").Op("*").ID("newsman").Dot("Newsman"),
+			jen.ID("encoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
+			jen.ID("webhookCounterProvider").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "UnitCounterProvider"),
+			jen.ID("em").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("webhookCounter"), jen.ID("err")).Op(":=").ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.Lit("the number of webhooks managed by the webhooks service")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(

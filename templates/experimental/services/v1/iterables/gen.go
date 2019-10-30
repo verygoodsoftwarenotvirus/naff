@@ -9,7 +9,7 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(types []models.DataType) error {
+func RenderPackage(pkgRoot string, types []models.DataType) error {
 	for _, typ := range types {
 		pn := typ.Name.PluralRouteName()
 		for path, file := range map[string]*jen.File{
@@ -22,7 +22,7 @@ func RenderPackage(types []models.DataType) error {
 			fmt.Sprintf("services/v1/%s/%s_service.go", pn, pn):      iterableServiceDotGo(typ),
 			fmt.Sprintf("services/v1/%s/%s_service_test.go", pn, pn): iterableServiceTestDotGo(typ),
 		} {
-			if err := utils.RenderFile(path, file); err != nil {
+			if err := utils.RenderFile(pkgRoot, path, file); err != nil {
 				return err
 			}
 		}

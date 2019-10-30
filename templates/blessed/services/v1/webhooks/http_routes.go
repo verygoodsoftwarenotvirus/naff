@@ -1,11 +1,13 @@
 package webhooks
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func httpRoutesDotGo() *jen.File {
+func httpRoutesDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("webhooks")
 
 	utils.AddImports(ret)
@@ -53,7 +55,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("figure out how specific we need to be"),
-				jen.ID("qf").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","ExtractQueryFilter").Call(jen.ID("req")),
+				jen.ID("qf").Op(":=").Qual(filepath.Join(pkgRoot, "models/v1"), "ExtractQueryFilter").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("figure out who this is all for"),
 				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
@@ -63,8 +65,8 @@ func httpRoutesDotGo() *jen.File {
 				jen.Comment("find the webhooks"),
 				jen.List(jen.ID("webhooks"), jen.ID("err")).Op(":=").ID("s").Dot("webhookDatabase").Dot("GetWebhooks").Call(jen.ID("ctx"), jen.ID("qf"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("webhooks").Op("=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","WebhookList").Valuesln(
-						jen.ID("Webhooks").Op(":").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","Webhook").Values()),
+					jen.ID("webhooks").Op("=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookList").Valuesln(
+						jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Values()),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered fetching webhooks")),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
@@ -83,7 +85,7 @@ func httpRoutesDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("validateWebhook does some validation on a WebhookCreationInput and returns an error if anything runs foul"),
 		jen.Line(),
-		jen.Func().ID("validateWebhook").Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1",
+		jen.Func().ID("validateWebhook").Params(jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"),
 			"WebhookCreationInput",
 		)).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("input").Dot("URL")),
@@ -130,7 +132,7 @@ func httpRoutesDotGo() *jen.File {
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("try to pluck the parsed input from the request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","WebhookCreationInput")),
+				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
@@ -156,8 +158,8 @@ func httpRoutesDotGo() *jen.File {
 				jen.Comment("notify the relevant parties"),
 				jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("wh").Dot("ID")),
 				jen.ID("s").Dot("webhookCounter").Dot("Increment").Call(jen.ID("ctx")),
-				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
-					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","Create")),
+				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
+					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "Create")),
 					jen.ID("Data").Op(":").ID("wh"),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName"))),
 				),
@@ -237,7 +239,7 @@ func httpRoutesDotGo() *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("fetch parsed creation input from request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","WebhookUpdateInput")),
+				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookUpdateInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
@@ -267,8 +269,8 @@ func httpRoutesDotGo() *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("notify the relevant parties"),
-				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
-					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","Update")),
+				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
+					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "Update")),
 					jen.ID("Data").Op(":").ID("wh"),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName"))),
 				),
@@ -317,9 +319,9 @@ func httpRoutesDotGo() *jen.File {
 				jen.Line(),
 				jen.Comment("let the interested parties know"),
 				jen.ID("s").Dot("webhookCounter").Dot("Decrement").Call(jen.ID("ctx")),
-				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.ID("newsman").Dot("Event").Valuesln(
-					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","Archive")),
-					jen.ID("Data").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1","Webhook").Values(jen.ID("ID").Op(":").ID("webhookID")),
+				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
+					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "Archive")),
+					jen.ID("Data").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Values(jen.ID("ID").Op(":").ID("webhookID")),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName"))),
 				),
 				jen.Line(),

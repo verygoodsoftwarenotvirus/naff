@@ -54,7 +54,7 @@ func iterableServiceDotGo(typ models.DataType) *jen.File {
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID(fmt.Sprintf("%sIDFetcher", srn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
 				jen.ID("encoderDecoder").ID("encoding").Dot("EncoderDecoder"),
-				jen.ID("reporter").ID("newsman").Dot("Reporter"),
+				jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
@@ -77,7 +77,7 @@ func iterableServiceDotGo(typ models.DataType) *jen.File {
 			jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
 			jen.ID("encoder").ID("encoding").Dot("EncoderDecoder"),
 			jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounterProvider"),
-			jen.ID("reporter").ID("newsman").Dot("Reporter"),
+			jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID(fmt.Sprintf("%sCounter", uvn)), jen.ID("err")).Op(":=").ID(fmt.Sprintf("%sCounterProvider", uvn)).Call(jen.ID("counterName"), jen.ID("counterDescription")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(

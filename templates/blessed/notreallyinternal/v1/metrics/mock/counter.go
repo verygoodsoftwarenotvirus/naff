@@ -1,17 +1,19 @@
 package mock
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func counterDotGo() *jen.File {
+func counterDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("mock")
 
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "UnitCounter").Op("=").Parens(jen.Op("*").ID("UnitCounter")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "UnitCounter").Op("=").Parens(jen.Op("*").ID("UnitCounter")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 

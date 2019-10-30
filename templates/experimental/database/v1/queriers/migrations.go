@@ -2,6 +2,7 @@ package queriers
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -33,6 +34,30 @@ func typeToPostgresType(t string) string {
 	return t
 }
 
+func typeToSqliteType(t string) string {
+	typeMap := map[string]string{
+		"[]string": "CHARACTER VARYING",
+		"string":   "CHARACTER VARYING",
+		"*string":  "CHARACTER VARYING",
+		"uint64":   "INTEGER",
+		"*uint64":  "INTEGER",
+		"bool":     "BOOLEAN",
+		"*bool":    "BOOLEAN",
+		"int":      "INTEGER",
+		"*int":     "INTEGER",
+		"uint":     "INTEGER",
+		"*uint":    "INTEGER",
+		"float64":  "REAL",
+	}
+
+	if x, ok := typeMap[t]; ok {
+		return x
+	}
+
+	log.Println("typeToSqliteType called for type: ", t)
+	return t
+}
+
 // func typeToMariaDBType(t string) string {
 // 	typeMap := map[string]string{
 // 		"[]string": "LONGTEXT",
@@ -53,7 +78,6 @@ func typeToPostgresType(t string) string {
 // 		return x
 // 	}
 
-// 	log.Println("typeToMariaDBType called for type: ", t)
 // 	return t
 // }
 
@@ -85,17 +109,24 @@ func typeToPostgresType(t string) string {
 // 	return t
 // }
 
-func makeMigrations(types []models.DataType) []jen.Code {
-	var out []jen.Code
+type migration struct {
+	description, script string
+}
 
-	type migration struct {
-		description, script string
-	}
+func makeMigrations(dbVendor *wordsmith.SuperPalabra, types []models.DataType) []jen.Code {
+	var (
+		out        []jen.Code
+		migrations []migration
+	)
 
-	migrations := []migration{
-		{
-			description: "create users table",
-			script: `
+	dbrn := strings.ToLower(dbVendor.RouteName())
+
+	switch dbrn {
+	case "postgres":
+		migrations = []migration{
+			{
+				description: "create users table",
+				script: `
 			CREATE TABLE IF NOT EXISTS users (
 				"id" bigserial NOT NULL PRIMARY KEY,
 				"username" text NOT NULL,
@@ -108,10 +139,10 @@ func makeMigrations(types []models.DataType) []jen.Code {
 				"archived_on" bigint DEFAULT NULL,
 				UNIQUE ("username")
 			);`,
-		},
-		{
-			description: "create oauth2_clients table",
-			script: `
+			},
+			{
+				description: "create oauth2_clients table",
+				script: `
 			CREATE TABLE IF NOT EXISTS oauth2_clients (
 				"id" bigserial NOT NULL PRIMARY KEY,
 				"name" text DEFAULT '',
@@ -126,10 +157,10 @@ func makeMigrations(types []models.DataType) []jen.Code {
 				"belongs_to" bigint NOT NULL,
 				FOREIGN KEY(belongs_to) REFERENCES users(id)
 			);`,
-		},
-		{
-			description: "create webhooks table",
-			script: `
+			},
+			{
+				description: "create webhooks table",
+				script: `
 			CREATE TABLE IF NOT EXISTS webhooks (
 				"id" bigserial NOT NULL PRIMARY KEY,
 				"name" text NOT NULL,
@@ -145,48 +176,146 @@ func makeMigrations(types []models.DataType) []jen.Code {
 				"belongs_to" bigint NOT NULL,
 				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")
 			);`,
-		},
-	}
-
-	for _, typ := range types {
-		pcn := typ.Name.PluralCommonName()
-
-		scriptParts := []string{
-			fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
-			`				"id" bigserial NOT NULL PRIMARY KEY,`,
-		}
-
-		for _, field := range typ.Fields {
-			rn := field.Name.RouteName()
-
-			query := fmt.Sprintf("				%q %s", rn, typeToPostgresType(field.Type))
-
-			if !field.Pointer {
-				query += ` NOT NULL`
-			}
-
-			if field.DefaultAllowed {
-				query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
-			}
-
-			scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
-		}
-
-		scriptParts = append(scriptParts,
-			`				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),`,
-			`				"updated_on" bigint DEFAULT NULL,`,
-			`				"archived_on" bigint DEFAULT NULL,`,
-			`				"belongs_to" bigint NOT NULL,`,
-			`				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")`,
-			`			);`,
-		)
-
-		migrations = append(migrations,
-			migration{
-				description: fmt.Sprintf("create %s table", pcn),
-				script:      strings.Join(scriptParts, "\n"),
 			},
-		)
+		}
+
+		for _, typ := range types {
+			pcn := typ.Name.PluralCommonName()
+
+			scriptParts := []string{
+				fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
+				`				"id" bigserial NOT NULL PRIMARY KEY,`,
+			}
+
+			for _, field := range typ.Fields {
+				rn := field.Name.RouteName()
+
+				query := fmt.Sprintf("				%q %s", rn, typeToPostgresType(field.Type))
+
+				if !field.Pointer {
+					query += ` NOT NULL`
+				}
+
+				if field.DefaultAllowed {
+					query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+				}
+
+				scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
+			}
+
+			scriptParts = append(scriptParts,
+				`				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),`,
+				`				"updated_on" bigint DEFAULT NULL,`,
+				`				"archived_on" bigint DEFAULT NULL,`,
+				`				"belongs_to" bigint NOT NULL,`,
+				`				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")`,
+				`			);`,
+			)
+
+			migrations = append(migrations,
+				migration{
+					description: fmt.Sprintf("create %s table", pcn),
+					script:      strings.Join(scriptParts, "\n"),
+				},
+			)
+		}
+	case "sqlite":
+		migrations = []migration{
+			{
+				description: "create users table",
+				script: `
+		CREATE TABLE IF NOT EXISTS users (
+			"id" bigserial NOT NULL PRIMARY KEY,
+			"username" text NOT NULL,
+			"hashed_password" text NOT NULL,
+			"password_last_changed_on" integer,
+			"two_factor_secret" text NOT NULL,
+			"is_admin" boolean NOT NULL DEFAULT 'false',
+			"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
+			"updated_on" bigint DEFAULT NULL,
+			"archived_on" bigint DEFAULT NULL,
+			UNIQUE ("username")
+		);`,
+			},
+			{
+				description: "create oauth2_clients table",
+				script: `
+		CREATE TABLE IF NOT EXISTS oauth2_clients (
+			"id" bigserial NOT NULL PRIMARY KEY,
+			"name" text DEFAULT '',
+			"client_id" text NOT NULL,
+			"client_secret" text NOT NULL,
+			"redirect_uri" text DEFAULT '',
+			"scopes" text NOT NULL,
+			"implicit_allowed" boolean NOT NULL DEFAULT 'false',
+			"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
+			"updated_on" bigint DEFAULT NULL,
+			"archived_on" bigint DEFAULT NULL,
+			"belongs_to" bigint NOT NULL,
+			FOREIGN KEY(belongs_to) REFERENCES users(id)
+		);`,
+			},
+			{
+				description: "create webhooks table",
+				script: `
+		CREATE TABLE IF NOT EXISTS webhooks (
+			"id" bigserial NOT NULL PRIMARY KEY,
+			"name" text NOT NULL,
+			"content_type" text NOT NULL,
+			"url" text NOT NULL,
+			"method" text NOT NULL,
+			"events" text NOT NULL,
+			"data_types" text NOT NULL,
+			"topics" text NOT NULL,
+			"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
+			"updated_on" bigint DEFAULT NULL,
+			"archived_on" bigint DEFAULT NULL,
+			"belongs_to" bigint NOT NULL,
+			FOREIGN KEY ("belongs_to") REFERENCES "users"("id")
+		);`,
+			},
+		}
+
+		for _, typ := range types {
+			pcn := typ.Name.PluralCommonName()
+
+			scriptParts := []string{
+				fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
+				`				"id" bigserial NOT NULL PRIMARY KEY,`,
+			}
+
+			for _, field := range typ.Fields {
+				rn := field.Name.RouteName()
+
+				query := fmt.Sprintf("				%q %s", rn, typeToSqliteType(field.Type))
+
+				if !field.Pointer {
+					query += ` NOT NULL`
+				}
+
+				if field.DefaultAllowed {
+					query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+				}
+
+				scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
+			}
+
+			scriptParts = append(scriptParts,
+				`				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),`,
+				`				"updated_on" bigint DEFAULT NULL,`,
+				`				"archived_on" bigint DEFAULT NULL,`,
+				`				"belongs_to" bigint NOT NULL,`,
+				`				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")`,
+				`			);`,
+			)
+
+			migrations = append(migrations,
+				migration{
+					description: fmt.Sprintf("create %s table", pcn),
+					script:      strings.Join(scriptParts, "\n"),
+				},
+			)
+		}
 	}
 
 	for i, script := range migrations {
@@ -210,7 +339,7 @@ func migrationsDotGo(vendor *wordsmith.SuperPalabra, types []models.DataType) *j
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("migrations").Op("=").Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(makeMigrations(types)...),
+			jen.ID("migrations").Op("=").Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(makeMigrations(vendor, types)...),
 		),
 	)
 
@@ -233,7 +362,7 @@ func migrationsDotGo(vendor *wordsmith.SuperPalabra, types []models.DataType) *j
 	ret.Add(
 		jen.Comment("Migrate migrates the database. It does so by invoking the migrateOnce function via sync.Once, so it should be"),
 		jen.Line(),
-		jen.Comment("safe (as in idempotent, though not recommended) to call this function multiple times."),
+		jen.Comment("safe (as in idempotent, though not necessarily recommended) to call this function multiple times."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
 			jen.ID(dbfl).Dot("logger").Dot("Info").Call(jen.Lit("migrating db")),

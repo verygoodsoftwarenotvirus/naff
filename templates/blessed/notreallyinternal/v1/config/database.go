@@ -1,11 +1,13 @@
 package config
 
 import (
+	"path/filepath"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 )
 
-func databaseDotGo() *jen.File {
+func databaseDotGo(pkgRoot string) *jen.File {
 	ret := jen.NewFile("config")
 
 	utils.AddImports(ret)
@@ -22,7 +24,7 @@ func databaseDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ProvideDatabase provides a database implementation dependent on the configuration"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideDatabase").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.ID("database").Dot("Database"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideDatabase").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkgRoot, "database/v1"), "Database"), jen.ID("error")).Block(
 			jen.Var().Defs(
 				jen.ID("debug").Op("=").ID("cfg").Dot("Database").Dot("Debug").Op("||").ID("cfg").Dot("Meta").Dot("Debug"),
 				jen.ID("connectionDetails").Op("=").ID("cfg").Dot("Database").Dot("ConnectionDetails"),
@@ -37,33 +39,31 @@ func databaseDotGo() *jen.File {
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RegisterAllViews").Call(),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RecordStats").Call(jen.ID("rawDB"), jen.ID("cfg").Dot("Metrics").Dot("DBMetricsCollectionInterval")),
 					jen.Line(),
-					jen.ID("pgdb").Op(":=").ID("postgres").Dot("ProvidePostgres").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
+					jen.ID("pgdb").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1/queriers/postgres"), "ProvidePostgres").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
 					jen.Line(),
-					jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client", "ProvideDatabaseClient").Call(jen.ID("ctx"), jen.ID("rawDB"), jen.ID("pgdb"), jen.ID("debug"), jen.ID("logger"))),
+					jen.Return().Qual(filepath.Join(pkgRoot, "database/v1/client"), "ProvideDatabaseClient").Call(jen.ID("ctx"), jen.ID("rawDB"), jen.ID("pgdb"), jen.ID("debug"), jen.ID("logger"))),
 				jen.Case(jen.ID("mariaDBProviderKey")).Block(
 					jen.List(jen.ID("rawDB"), jen.ID("err")).Op(":=").ID("mariadb").Dot("ProvideMariaDBConnection").Call(jen.ID("logger"), jen.ID("connectionDetails")),
 					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("establish mariadb database connection: %w"), jen.ID("err"))),
 					),
-					jen.Line(),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RegisterAllViews").Call(),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RecordStats").Call(jen.ID("rawDB"), jen.ID("cfg").Dot("Metrics").Dot("DBMetricsCollectionInterval")),
 					jen.Line(),
-					jen.ID("mdb").Op(":=").ID("mariadb").Dot("ProvideMariaDB").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
+					jen.ID("mdb").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1/queriers/mariadb"), "ProvideMariaDB").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
 					jen.Line(),
-					jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client", "ProvideDatabaseClient").Call(jen.ID("ctx"), jen.ID("rawDB"), jen.ID("mdb"), jen.ID("debug"), jen.ID("logger"))),
+					jen.Return().Qual(filepath.Join(pkgRoot, "database/v1/client"), "ProvideDatabaseClient").Call(jen.ID("ctx"), jen.ID("rawDB"), jen.ID("mdb"), jen.ID("debug"), jen.ID("logger"))),
 				jen.Case(jen.ID("sqliteProviderKey")).Block(
 					jen.List(jen.ID("rawDB"), jen.ID("err")).Op(":=").ID("sqlite").Dot("ProvideSqliteDB").Call(jen.ID("logger"), jen.ID("connectionDetails")),
 					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("establish sqlite database connection: %w"), jen.ID("err"))),
 					),
-					jen.Line(),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RegisterAllViews").Call(),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RecordStats").Call(jen.ID("rawDB"), jen.ID("cfg").Dot("Metrics").Dot("DBMetricsCollectionInterval")),
 					jen.Line(),
-					jen.ID("sdb").Op(":=").ID("sqlite").Dot("ProvideSqlite").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
+					jen.ID("sdb").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1/queriers/sqlite"), "ProvideSqlite").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
 					jen.Line(),
-					jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client", "ProvideDatabaseClient").Call(jen.ID("ctx"), jen.ID("rawDB"), jen.ID("sdb"), jen.ID("debug"), jen.ID("logger"))),
+					jen.Return().Qual(filepath.Join(pkgRoot, "database/v1/client"), "ProvideDatabaseClient").Call(jen.ID("ctx"), jen.ID("rawDB"), jen.ID("sdb"), jen.ID("debug"), jen.ID("logger"))),
 				jen.Default().Block(jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("invalid database type selected")))),
 			),
 		),

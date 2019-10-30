@@ -3,7 +3,7 @@ package frontend
 import (
 	"testing"
 
-	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
 
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 )

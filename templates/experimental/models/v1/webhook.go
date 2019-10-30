@@ -132,15 +132,15 @@ func webhookDotGo() *jen.File {
 	ret.Add(
 		jen.Comment("ToListener creates a newsman Listener from a Webhook"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("w").Op("*").ID("Webhook")).ID("ToListener").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.ID("newsman").Dot("Listener")).Block(
-			jen.Return().ID("newsman").Dot("NewWebhookListener").Callln(
+		jen.Func().Params(jen.ID("w").Op("*").ID("Webhook")).ID("ToListener").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Block(
+			jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewWebhookListener").Callln(
 				jen.ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID("logger")),
-				jen.Op("&").ID("newsman").Dot("WebhookConfig").Valuesln(
+				jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebhookConfig").Valuesln(
 					jen.ID("Method").Op(":").ID("w").Dot("Method"),
 					jen.ID("URL").Op(":").ID("w").Dot("URL"),
 					jen.ID("ContentType").Op(":").ID("w").Dot("ContentType"),
 				),
-				jen.Op("&").ID("newsman").Dot("ListenerConfig").Valuesln(
+				jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "ListenerConfig").Valuesln(
 					jen.ID("Events").Op(":").ID("w").Dot("Events"),
 					jen.ID("DataTypes").Op(":").ID("w").Dot("DataTypes"),
 					jen.ID("Topics").Op(":").ID("w").Dot("Topics"),

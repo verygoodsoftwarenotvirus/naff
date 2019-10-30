@@ -3,8 +3,9 @@ package mock
 import (
 	"net/http"
 
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding"
+
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 )
 
 var _ encoding.EncoderDecoder = (*EncoderDecoder)(nil)

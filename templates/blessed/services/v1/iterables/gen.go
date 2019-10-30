@@ -9,20 +9,20 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(types []models.DataType) error {
+func RenderPackage(pkgRoot string, types []models.DataType) error {
 	for _, typ := range types {
 		pn := typ.Name.PluralRouteName()
 		for path, file := range map[string]*jen.File{
-			fmt.Sprintf("services/v1/%s/middleware.go", pn):          middlewareDotGo(typ),
-			fmt.Sprintf("services/v1/%s/middleware_test.go", pn):     middlewareTestDotGo(typ),
-			fmt.Sprintf("services/v1/%s/wire.go", pn):                wireDotGo(typ),
+			fmt.Sprintf("services/v1/%s/middleware.go", pn):          middlewareDotGo(pkgRoot, typ),
+			fmt.Sprintf("services/v1/%s/middleware_test.go", pn):     middlewareTestDotGo(pkgRoot, typ),
+			fmt.Sprintf("services/v1/%s/wire.go", pn):                wireDotGo(pkgRoot, typ),
 			fmt.Sprintf("services/v1/%s/doc.go", pn):                 docDotGo(typ),
-			fmt.Sprintf("services/v1/%s/http_routes.go", pn):         httpRoutesDotGo(typ),
-			fmt.Sprintf("services/v1/%s/http_routes_test.go", pn):    httpRoutesTestDotGo(typ),
-			fmt.Sprintf("services/v1/%s/%s_service.go", pn, pn):      iterableServiceDotGo(typ),
-			fmt.Sprintf("services/v1/%s/%s_service_test.go", pn, pn): iterableServiceTestDotGo(typ),
+			fmt.Sprintf("services/v1/%s/http_routes.go", pn):         httpRoutesDotGo(pkgRoot, typ),
+			fmt.Sprintf("services/v1/%s/http_routes_test.go", pn):    httpRoutesTestDotGo(pkgRoot, typ),
+			fmt.Sprintf("services/v1/%s/%s_service.go", pn, pn):      iterableServiceDotGo(pkgRoot, typ),
+			fmt.Sprintf("services/v1/%s/%s_service_test.go", pn, pn): iterableServiceTestDotGo(pkgRoot, typ),
 		} {
-			if err := utils.RenderFile(path, file); err != nil {
+			if err := utils.RenderFile(pkgRoot, path, file); err != nil {
 				return err
 			}
 		}

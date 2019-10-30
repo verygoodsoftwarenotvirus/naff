@@ -159,7 +159,6 @@ func TestV1Client_CreateWebhook(T *testing.T) {
 					assert.Equal(t, exampleInput, x)
 
 					require.NoError(t, json.NewEncoder(res).Encode(expected))
-					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)
@@ -208,7 +207,7 @@ func TestV1Client_UpdateWebhook(T *testing.T) {
 				func(res http.ResponseWriter, req *http.Request) {
 					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/webhooks/%d", expected.ID), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodPut)
-					res.WriteHeader(http.StatusOK)
+					assert.NoError(t, json.NewEncoder(res).Encode(&models.Webhook{}))
 				},
 			),
 		)
@@ -250,7 +249,6 @@ func TestV1Client_ArchiveWebhook(T *testing.T) {
 				func(res http.ResponseWriter, req *http.Request) {
 					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/webhooks/%d", expected), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodDelete)
-					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)

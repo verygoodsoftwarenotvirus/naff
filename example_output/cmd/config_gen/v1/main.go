@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	config "gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config"
 )
 
 const (

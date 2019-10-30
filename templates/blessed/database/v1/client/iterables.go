@@ -2,13 +2,14 @@ package client
 
 import (
 	"fmt"
+	"path/filepath"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesDotGo(typ models.DataType) *jen.File {
+func iterablesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret := jen.NewFile("dbclient")
 
 	utils.AddImports(ret)
@@ -23,7 +24,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	pcn := n.PluralCommonName()
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sDataManager", sn)).Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sDataManager", sn)).Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 
@@ -41,7 +42,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("Get%s fetches %s from the database", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Get%s", sn)),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -62,7 +63,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("Get%sCount fetches the count of %s from the database that meet a particular filter", sn, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%sCount", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%sCount", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Get%sCount", sn)),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -96,9 +97,9 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%s", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64"),
-		).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
+		).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Get%s", pn)),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -117,7 +118,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("GetAll%sForUser fetches a list of %s from the database that meet a particular filter", pn, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("GetAll%sForUser", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("GetAll%sForUser", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("GetAll%sForUser", pn)),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -135,7 +136,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("Create%s creates %s in the database", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sCreationInput", sn))).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn))).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Create%s", sn)),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -152,7 +153,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Comment("provided input to have a valid ID."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Update%s", sn)),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
