@@ -62,6 +62,7 @@ func AddImports(file *jen.File) {
 	file.ImportAlias("gopkg.in/oauth2.v3/store", "oauth2store")
 
 	file.ImportAlias("github.com/lib/pq", "postgres")
+	file.ImportAlias("github.com/mattn/go-sqlite3", "sqlite")
 
 	file.ImportNames(map[string]string{
 		"context":           "context",
@@ -93,7 +94,6 @@ func AddImports(file *jen.File) {
 		"github.com/gorilla/securecookie":              "securecookie",
 		"github.com/heptiolabs/healthcheck":            "healthcheck",
 		"github.com/icrowley/fake":                     "fake",
-		"github.com/mattn/go-sqlite3":                  "sqlite3",
 		"github.com/moul/http2curl":                    "http2curl",
 		"github.com/pquerna/otp":                       "otp",
 		"github.com/spf13/afero":                       "afero",

@@ -303,9 +303,8 @@ func TestPostgres_GetAllWebhooks(T *testing.T) {
 			buildMockRowFromWebhook(&expected.Webhooks[0]),
 			buildMockRowFromWebhook(&expected.Webhooks[0]),
 		)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).WillReturnRows(
-			sqlmock.NewRows([]string{"count"}).AddRow(expectedCount),
-		)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
 
 		actual, err := p.GetAllWebhooks(context.Background())
 		assert.NoError(t, err)

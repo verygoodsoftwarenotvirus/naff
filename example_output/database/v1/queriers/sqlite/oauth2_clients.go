@@ -11,7 +11,6 @@ import (
 	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 
 	"github.com/Masterminds/squirrel"
-	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 )
 
 const (
@@ -64,7 +63,7 @@ func scanOAuth2Client(scan database.Scanner) (*models.OAuth2Client, error) {
 }
 
 // scanOAuth2Clients takes sql rows and turns them into a slice of OAuth2Clients
-func scanOAuth2Clients(logger logging.Logger, rows *sql.Rows) ([]*models.OAuth2Client, error) {
+func (s *Sqlite) scanOAuth2Clients(rows *sql.Rows) ([]*models.OAuth2Client, error) {
 	var list []*models.OAuth2Client
 
 	for rows.Next() {
@@ -79,7 +78,7 @@ func scanOAuth2Clients(logger logging.Logger, rows *sql.Rows) ([]*models.OAuth2C
 	}
 
 	if err := rows.Close(); err != nil {
-		logger.Error(err, "closing rows")
+		s.logger.Error(err, "closing rows")
 	}
 
 	return list, nil
@@ -141,7 +140,7 @@ func (s *Sqlite) GetAllOAuth2Clients(ctx context.Context) ([]*models.OAuth2Clien
 		return nil, fmt.Errorf("querying database for oauth2 clients: %w", err)
 	}
 
-	list, err := scanOAuth2Clients(s.logger, rows)
+	list, err := s.scanOAuth2Clients(rows)
 	if err != nil {
 		return nil, fmt.Errorf("fetching list of OAuth2Clients: %w", err)
 	}
@@ -161,7 +160,7 @@ func (s *Sqlite) GetAllOAuth2ClientsForUser(ctx context.Context, userID uint64) 
 		return nil, fmt.Errorf("querying database for oauth2 clients: %w", err)
 	}
 
-	list, err := scanOAuth2Clients(s.logger, rows)
+	list, err := s.scanOAuth2Clients(rows)
 	if err != nil {
 		return nil, fmt.Errorf("fetching list of OAuth2Clients: %w", err)
 	}
@@ -294,7 +293,7 @@ func (s *Sqlite) GetOAuth2Clients(ctx context.Context, filter *models.QueryFilte
 		return nil, fmt.Errorf("querying for oauth2 clients: %w", err)
 	}
 
-	list, err := scanOAuth2Clients(s.logger, rows)
+	list, err := s.scanOAuth2Clients(rows)
 	if err != nil {
 		return nil, fmt.Errorf("scanning response from database: %w", err)
 	}
@@ -344,7 +343,21 @@ func (s *Sqlite) buildCreateOAuth2ClientQuery(input *models.OAuth2Client) (query
 			input.RedirectURI,
 			input.BelongsTo,
 		).
-		Suffix("RETURNING id, created_on").
+		ToSql()
+
+	s.logQueryBuildingError(err)
+
+	return query, args
+}
+
+// buildOAuth2ClientCreationTimeQuery takes an item and returns a creation query for that item and the relevant arguments.
+func (s *Sqlite) buildOAuth2ClientCreationTimeQuery(clientID uint64) (query string, args []interface{}) {
+	var err error
+
+	query, args, err = s.sqlBuilder.
+		Select("created_on").
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{"id": clientID}).
 		ToSql()
 
 	s.logQueryBuildingError(err)
@@ -364,9 +377,17 @@ func (s *Sqlite) CreateOAuth2Client(ctx context.Context, input *models.OAuth2Cli
 	}
 	query, args := s.buildCreateOAuth2ClientQuery(x)
 
-	err := s.db.QueryRowContext(ctx, query, args...).Scan(&x.ID, &x.CreatedOn)
+	res, err := s.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error executing client creation query: %w", err)
+	}
+
+	// fetch the last inserted ID
+	if id, idErr := res.LastInsertId(); idErr == nil {
+		x.ID = uint64(id)
+
+		query, args = s.buildOAuth2ClientCreationTimeQuery(x.ID)
+		s.logCreationTimeRetrievalError(s.db.QueryRowContext(ctx, query, args...).Scan(&x.CreatedOn))
 	}
 
 	return x, nil
@@ -386,7 +407,6 @@ func (s *Sqlite) buildUpdateOAuth2ClientQuery(input *models.OAuth2Client) (query
 			"id":         input.ID,
 			"belongs_to": input.BelongsTo,
 		}).
-		Suffix("RETURNING updated_on").
 		ToSql()
 
 	s.logQueryBuildingError(err)
@@ -398,7 +418,8 @@ func (s *Sqlite) buildUpdateOAuth2ClientQuery(input *models.OAuth2Client) (query
 // NOTE: this function expects the input's ID field to be valid and non-zero.
 func (s *Sqlite) UpdateOAuth2Client(ctx context.Context, input *models.OAuth2Client) error {
 	query, args := s.buildUpdateOAuth2ClientQuery(input)
-	return s.db.QueryRowContext(ctx, query, args...).Scan(&input.UpdatedOn)
+	_, err := s.db.ExecContext(ctx, query, args...)
+	return err
 }
 
 // buildArchiveOAuth2ClientQuery returns a SQL query (and arguments) that will mark an OAuth2 client as archived.
@@ -412,7 +433,6 @@ func (s *Sqlite) buildArchiveOAuth2ClientQuery(clientID, userID uint64) (query s
 			"id":         clientID,
 			"belongs_to": userID,
 		}).
-		Suffix("RETURNING archived_on").
 		ToSql()
 
 	s.logQueryBuildingError(err)

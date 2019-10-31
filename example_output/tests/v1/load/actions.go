@@ -11,11 +11,17 @@ import (
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/rand/model"
 )
 
-var ErrUnavailableYet = errors.New("can't do this yet")
+var (
+	// ErrUnavailableYet is a sentinel error value
+	ErrUnavailableYet = errors.New("can't do this yet")
+)
 
 type (
+	// actionFunc represents a thing you can do
 	actionFunc func() (*http.Request, error)
-	Action     struct {
+
+	// Action is a wrapper struct around some important values
+	Action struct {
 		Action actionFunc
 		Weight int
 		Name   string
@@ -40,26 +46,33 @@ func RandomAction(c *client.V1Client) *Action {
 			Weight: 100,
 		},
 	}
+
 	for k, v := range buildItemActions(c) {
 		allActions[k] = v
 	}
+
 	for k, v := range buildWebhookActions(c) {
 		allActions[k] = v
 	}
+
 	for k, v := range buildOAuth2ClientActions(c) {
 		allActions[k] = v
 	}
+
 	totalWeight := 0
 	for _, rb := range allActions {
 		totalWeight += rb.Weight
 	}
+
 	rand.Seed(time.Now().UnixNano())
 	r := rand.Intn(totalWeight)
+
 	for _, rb := range allActions {
 		r -= rb.Weight
 		if r <= 0 {
 			return rb
 		}
 	}
+
 	return nil
 }

@@ -6,9 +6,8 @@ import (
 	"net/http"
 
 	client "gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/rand/model"
-
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 )
 
 // fetchRandomItem retrieves a random item from the list of available items
@@ -17,6 +16,7 @@ func fetchRandomItem(c *client.V1Client) *models.Item {
 	if err != nil || itemsRes == nil || len(itemsRes.Items) == 0 {
 		return nil
 	}
+
 	randIndex := rand.Intn(len(itemsRes.Items))
 	return &itemsRes.Items[randIndex]
 }

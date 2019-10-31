@@ -9,11 +9,11 @@ import (
 	"time"
 
 	client "gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil"
 
 	"github.com/icrowley/fake"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/tests/v1/testutil"
 )
 
 var (
@@ -25,17 +25,22 @@ var (
 func init() {
 	urlToUse = testutil.DetermineServiceURL()
 	logger := zerolog.NewZeroLogger()
+
 	logger.WithValue("url", urlToUse).Info("checking server")
 	testutil.EnsureServerIsUp(urlToUse)
+
 	fake.Seed(time.Now().UnixNano())
+
 	u, err := testutil.CreateObligatoryUser(urlToUse, debug)
 	if err != nil {
 		logger.Fatal(err)
 	}
+
 	oa2Client, err = testutil.CreateObligatoryClient(urlToUse, u)
 	if err != nil {
 		logger.Fatal(err)
 	}
+
 	fiftySpaces := strings.Repeat("\n", 50)
 	fmt.Printf("%s\tRunning tests%s", fiftySpaces, fiftySpaces)
 }
@@ -45,6 +50,7 @@ func buildHTTPClient() *http.Client {
 		Transport: http.DefaultTransport,
 		Timeout:   5 * time.Second,
 	}
+
 	return httpc
 }
 
@@ -53,6 +59,7 @@ func initializeClient(oa2Client *models.OAuth2Client) *client.V1Client {
 	if err != nil {
 		panic(err)
 	}
+
 	c, err := client.NewClient(
 		context.Background(),
 		oa2Client.ClientID,

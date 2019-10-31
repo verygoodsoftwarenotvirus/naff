@@ -25,17 +25,22 @@ func initDotGo(rootPkg string) *jen.File {
 		jen.Func().ID("init").Params().Block(
 			jen.ID("urlToUse").Op("=").Qual(filepath.Join(rootPkg, "tests/v1/testutil"), "DetermineServiceURL").Call(),
 			jen.ID("logger").Op(":=").ID("zerolog").Dot("NewZeroLogger").Call(),
+			jen.Line(),
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
 			jen.Qual(filepath.Join(rootPkg, "tests/v1/testutil"), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
+			jen.Line(),
 			jen.ID("fake").Dot("Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
+			jen.Line(),
 			jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "tests/v1/testutil"), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
+			jen.Line(),
 			jen.List(jen.ID("oa2Client"), jen.ID("err")).Op("=").Qual(filepath.Join(rootPkg, "tests/v1/testutil"), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("u")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
+			jen.Line(),
 			jen.ID("fiftySpaces").Op(":=").Qual("strings", "Repeat").Call(jen.Lit("\n"), jen.Lit(50)),
 			jen.Qual("fmt", "Printf").Call(jen.Lit("%s\tRunning tests%s"), jen.ID("fiftySpaces"), jen.ID("fiftySpaces")),
 		),
@@ -48,6 +53,7 @@ func initDotGo(rootPkg string) *jen.File {
 				jen.ID("Transport").Op(":").Qual("net/http", "DefaultTransport"),
 				jen.ID("Timeout").Op(":").Lit(5).Op("*").Qual("time", "Second"),
 			),
+			jen.Line(),
 			jen.Return().ID("httpc"),
 		),
 		jen.Line(),
@@ -59,6 +65,7 @@ func initDotGo(rootPkg string) *jen.File {
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
+			jen.Line(),
 			jen.List(jen.ID("c"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "client/v1/http"), "NewClient").Callln(
 				jen.Qual("context", "Background").Call(),
 				jen.ID("oa2Client").Dot("ClientID"),

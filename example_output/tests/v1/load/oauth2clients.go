@@ -6,9 +6,8 @@ import (
 	"net/http"
 
 	client "gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/rand/model"
-
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 )
 
 // fetchRandomOAuth2Client retrieves a random client from the list of available clients
@@ -17,6 +16,7 @@ func fetchRandomOAuth2Client(c *client.V1Client) *models.OAuth2Client {
 	if err != nil || clientsRes == nil || len(clientsRes.Clients) <= 1 {
 		return nil
 	}
+
 	var selectedClient *models.OAuth2Client
 	for selectedClient == nil {
 		ri := rand.Intn(len(clientsRes.Clients))
@@ -25,6 +25,7 @@ func fetchRandomOAuth2Client(c *client.V1Client) *models.OAuth2Client {
 			selectedClient = c
 		}
 	}
+
 	return selectedClient
 }
 
@@ -38,11 +39,21 @@ func buildOAuth2ClientActions(c *client.V1Client) map[string]*Action {
 				if err != nil {
 					return c.BuildHealthCheckRequest()
 				}
+
 				cookie, err := c.Login(context.Background(), u.Username, ui.Password, u.TwoFactorSecret)
 				if err != nil {
 					return c.BuildHealthCheckRequest()
 				}
-				req, err := c.BuildCreateOAuth2ClientRequest(context.Background(), cookie, randmodel.RandomOAuth2ClientInput(u.Username, ui.Password, u.TwoFactorSecret))
+
+				req, err := c.BuildCreateOAuth2ClientRequest(
+					context.Background(),
+					cookie,
+					randmodel.RandomOAuth2ClientInput(
+						u.Username,
+						ui.Password,
+						u.TwoFactorSecret,
+					),
+				)
 				return req, err
 			},
 			Weight: 100,

@@ -79,10 +79,10 @@ func RenderProject(in *naffmodels.Project) error {
 		"iterables":        {renderFunc: iterables.RenderPackage, activated: allActive},
 		"dbclient":         {renderFunc: dbclient.RenderPackage, activated: allActive},
 		"integrationtests": {renderFunc: integrationtests.RenderPackage, activated: allActive},
+		"loadtests":        {renderFunc: loadtests.RenderPackage, activated: allActive},
 
 		// doing (two sides; one coin)
-		"loadtests": {renderFunc: loadtests.RenderPackage, activated: true},
-		"queriers":  {renderFunc: queriers.RenderPackage, activated: false},
+		"queriers": {renderFunc: queriers.RenderPackage, activated: true},
 		// "postgresql": {renderFunc: postgresql.RenderPackage, activated: true},
 		// "sqlite3":    {renderFunc: sqlite3.RenderPackage, activated: false},
 

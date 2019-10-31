@@ -42,6 +42,8 @@ func init() {
 	sql.Register(postgresDriverName, driver)
 }
 
+var _ database.Database = (*Postgres)(nil)
+
 type (
 	// Postgres is our main Postgres interaction db
 	Postgres struct {

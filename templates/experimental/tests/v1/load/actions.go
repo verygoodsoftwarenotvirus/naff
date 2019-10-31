@@ -13,13 +13,19 @@ func actionsDotGo(rootPkg string) *jen.File {
 	utils.AddImports(ret)
 
 	ret.Add(
-		jen.Var().ID("ErrUnavailableYet").Op("=").Qual("errors", "New").Call(jen.Lit("can't do this yet")),
+		jen.Var().Defs(
+			jen.Comment("ErrUnavailableYet is a sentinel error value"),
+			jen.ID("ErrUnavailableYet").Op("=").Qual("errors", "New").Call(jen.Lit("can't do this yet")),
+		),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Type().Defs(
+			jen.Comment("actionFunc represents a thing you can do"),
 			jen.ID("actionFunc").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")),
+			jen.Line(),
+			jen.Comment("Action is a wrapper struct around some important values"),
 			jen.ID("Action").Struct(
 				jen.ID("Action").ID("actionFunc"),
 				jen.ID("Weight").ID("int"),
@@ -49,27 +55,34 @@ func actionsDotGo(rootPkg string) *jen.File {
 					jen.ID("Weight").Op(":").Lit(100),
 				),
 			),
+			jen.Line(),
 			jen.For(jen.List(jen.ID("k"), jen.ID("v")).Op(":=").Range().ID("buildItemActions").Call(jen.ID("c"))).Block(
 				jen.ID("allActions").Index(jen.ID("k")).Op("=").ID("v"),
 			),
+			jen.Line(),
 			jen.For(jen.List(jen.ID("k"), jen.ID("v")).Op(":=").Range().ID("buildWebhookActions").Call(jen.ID("c"))).Block(
 				jen.ID("allActions").Index(jen.ID("k")).Op("=").ID("v"),
 			),
+			jen.Line(),
 			jen.For(jen.List(jen.ID("k"), jen.ID("v")).Op(":=").Range().ID("buildOAuth2ClientActions").Call(jen.ID("c"))).Block(
 				jen.ID("allActions").Index(jen.ID("k")).Op("=").ID("v"),
 			),
+			jen.Line(),
 			jen.ID("totalWeight").Op(":=").Lit(0),
 			jen.For(jen.List(jen.ID("_"), jen.ID("rb")).Op(":=").Range().ID("allActions")).Block(
 				jen.ID("totalWeight").Op("+=").ID("rb").Dot("Weight"),
 			),
+			jen.Line(),
 			jen.Qual("math/rand", "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.ID("r").Op(":=").Qual("math/rand", "Intn").Call(jen.ID("totalWeight")),
+			jen.Line(),
 			jen.For(jen.List(jen.ID("_"), jen.ID("rb")).Op(":=").Range().ID("allActions")).Block(
 				jen.ID("r").Op("-=").ID("rb").Dot("Weight"),
 				jen.If(jen.ID("r").Op("<=").Lit(0)).Block(
 					jen.Return().ID("rb"),
 				),
 			),
+			jen.Line(),
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),

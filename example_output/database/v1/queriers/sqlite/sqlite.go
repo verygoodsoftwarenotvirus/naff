@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
 
 	"contrib.go.opencensus.io/integrations/ocsql"
 	"github.com/Masterminds/squirrel"
-	postgres "github.com/lib/pq"
+	sqlite "github.com/mattn/go-sqlite3"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 )
 
@@ -24,13 +23,13 @@ const (
 	CountQuery = "COUNT(id)"
 
 	// CurrentUnixTimeQuery is the query sqlite uses to determine the current unix time
-	CurrentUnixTimeQuery = "extract(epoch FROM NOW())"
+	CurrentUnixTimeQuery = "(strftime('%s','now'))"
 )
 
 func init() {
 	// Explicitly wrap the Sqlite driver with ocsql
 	driver := ocsql.Wrap(
-		&postgres.Driver{},
+		&sqlite.SQLiteDriver{},
 		ocsql.WithQuery(true),
 		ocsql.WithAllowRoot(false),
 		ocsql.WithRowsNext(true),
@@ -41,6 +40,8 @@ func init() {
 	// Register our ocsql wrapper as a db driver
 	sql.Register(sqliteDriverName, driver)
 }
+
+var _ database.Database = (*Sqlite)(nil)
 
 type (
 	// Sqlite is our main Sqlite interaction db
@@ -81,29 +82,7 @@ func ProvideSqlite(debug bool, db *sql.DB, logger logging.Logger) database.Datab
 
 // IsReady reports whether or not the db is ready
 func (s *Sqlite) IsReady(ctx context.Context) (ready bool) {
-	numberOfUnsuccessfulAttempts := 0
-
-	s.logger.WithValues(map[string]interface{}{
-		"interval":     time.Second,
-		"max_attempts": 50,
-	}).Debug("IsReady called")
-
-	for !ready {
-		err := s.db.Ping()
-		if err != nil {
-			s.logger.Debug("ping failed, waiting for db")
-			time.Sleep(time.Second)
-
-			numberOfUnsuccessfulAttempts++
-			if numberOfUnsuccessfulAttempts >= 50 {
-				return false
-			}
-		} else {
-			ready = true
-			return ready
-		}
-	}
-	return false
+	return true
 }
 
 // logQueryBuildingError logs errors that may occur during query construction.
@@ -114,6 +93,17 @@ func (s *Sqlite) IsReady(ctx context.Context) (ready bool) {
 func (s *Sqlite) logQueryBuildingError(err error) {
 	if err != nil {
 		s.logger.WithName("QUERY_ERROR").Error(err, "building query")
+	}
+}
+
+// logCreationTimeRetrievalError logs errors that may occur during creation time retrieval.
+// Such errors should be few and far between, as the generally only occur with
+// type discrepancies or other misuses of SQL. An alert should be set up for
+// any log entries with the given name, and those alerts should be investigated
+// with the utmost priority.
+func (s *Sqlite) logCreationTimeRetrievalError(err error) {
+	if err != nil {
+		s.logger.WithName("CREATION_TIME_RETRIEVAL").Error(err, "retrieving creation time")
 	}
 }
 

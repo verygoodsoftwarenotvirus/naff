@@ -51,8 +51,8 @@ func TestPostgres_buildGetItemQuery(T *testing.T) {
 
 		expectedArgCount := 2
 		expectedQuery := "SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE belongs_to = $1 AND id = $2"
-
 		actualQuery, args := p.buildGetItemQuery(exampleItemID, exampleUserID)
+
 		assert.Equal(t, expectedQuery, actualQuery)
 		assert.Len(t, args, expectedArgCount)
 		assert.Equal(t, exampleUserID, args[0].(uint64))
@@ -71,11 +71,14 @@ func TestPostgres_GetItem(T *testing.T) {
 		expectedUserID := uint64(321)
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(expectedUserID, expected.ID).WillReturnRows(buildMockRowFromItem(expected))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(expectedUserID, expected.ID).
+			WillReturnRows(buildMockRowFromItem(expected))
 
 		actual, err := p.GetItem(context.Background(), expected.ID, expectedUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -87,12 +90,15 @@ func TestPostgres_GetItem(T *testing.T) {
 		expectedUserID := uint64(321)
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(expectedUserID, expected.ID).WillReturnError(sql.ErrNoRows)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(expectedUserID, expected.ID).
+			WillReturnError(sql.ErrNoRows)
 
 		actual, err := p.GetItem(context.Background(), expected.ID, expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 		assert.Equal(t, sql.ErrNoRows, err)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 }
@@ -123,11 +129,14 @@ func TestPostgres_GetItemCount(T *testing.T) {
 		expectedCount := uint64(666)
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(expectedUserID).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(expectedUserID).
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
 
 		actualCount, err := p.GetItemCount(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.NoError(t, err)
 		assert.Equal(t, expectedCount, actualCount)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 }
@@ -152,11 +161,13 @@ func TestPostgres_GetAllItemsCount(T *testing.T) {
 		expectedCount := uint64(666)
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
 
 		actualCount, err := p.GetAllItemsCount(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, expectedCount, actualCount)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 }
@@ -201,13 +212,17 @@ func TestPostgres_GetItems(T *testing.T) {
 		}
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).WithArgs(expectedUserID).WillReturnRows(buildMockRowFromItem(expectedItem))
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
+			WithArgs(expectedUserID).
+			WillReturnRows(buildMockRowFromItem(expectedItem))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
 
 		actual, err := p.GetItems(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -216,12 +231,15 @@ func TestPostgres_GetItems(T *testing.T) {
 		expectedListQuery := "SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).WithArgs(expectedUserID).WillReturnError(sql.ErrNoRows)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
+			WithArgs(expectedUserID).
+			WillReturnError(sql.ErrNoRows)
 
 		actual, err := p.GetItems(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 		assert.Equal(t, sql.ErrNoRows, err)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -230,11 +248,14 @@ func TestPostgres_GetItems(T *testing.T) {
 		expectedListQuery := "SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).WithArgs(expectedUserID).WillReturnError(errors.New("blah"))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
+			WithArgs(expectedUserID).
+			WillReturnError(errors.New("blah"))
 
 		actual, err := p.GetItems(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -246,11 +267,14 @@ func TestPostgres_GetItems(T *testing.T) {
 		expectedListQuery := "SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).WithArgs(expectedUserID).WillReturnRows(buildErroneousMockRowFromItem(expected))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
+			WithArgs(expectedUserID).
+			WillReturnRows(buildErroneousMockRowFromItem(expected))
 
 		actual, err := p.GetItems(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -263,12 +287,16 @@ func TestPostgres_GetItems(T *testing.T) {
 		expectedCountQuery := "SELECT COUNT(id) FROM items WHERE archived_on IS NULL"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).WithArgs(expectedUserID).WillReturnRows(buildMockRowFromItem(expected))
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).WillReturnError(errors.New("blah"))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
+			WithArgs(expectedUserID).
+			WillReturnRows(buildMockRowFromItem(expected))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnError(errors.New("blah"))
 
 		actual, err := p.GetItems(context.Background(), models.DefaultQueryFilter(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 }
@@ -284,13 +312,16 @@ func TestPostgres_GetAllItemsForUser(T *testing.T) {
 		expectedListQuery := "SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).WithArgs(expectedUserID).WillReturnRows(buildMockRowFromItem(expectedItem))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
+			WithArgs(expectedUserID).
+			WillReturnRows(buildMockRowFromItem(expectedItem))
 
 		expected := []models.Item{*expectedItem}
 		actual, err := p.GetAllItemsForUser(context.Background(), expectedUserID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -299,12 +330,15 @@ func TestPostgres_GetAllItemsForUser(T *testing.T) {
 		expectedListQuery := "SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).WithArgs(expectedUserID).WillReturnError(sql.ErrNoRows)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
+			WithArgs(expectedUserID).
+			WillReturnError(sql.ErrNoRows)
 
 		actual, err := p.GetAllItemsForUser(context.Background(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 		assert.Equal(t, sql.ErrNoRows, err)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -313,11 +347,14 @@ func TestPostgres_GetAllItemsForUser(T *testing.T) {
 		expectedListQuery := "SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).WithArgs(expectedUserID).WillReturnError(errors.New("blah"))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
+			WithArgs(expectedUserID).
+			WillReturnError(errors.New("blah"))
 
 		actual, err := p.GetAllItemsForUser(context.Background(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -329,11 +366,14 @@ func TestPostgres_GetAllItemsForUser(T *testing.T) {
 		expectedListQuery := "SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).WithArgs(expectedUserID).WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedListQuery)).
+			WithArgs(expectedUserID).
+			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
 
 		actual, err := p.GetAllItemsForUser(context.Background(), expectedUserID)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 }
@@ -378,15 +418,17 @@ func TestPostgres_CreateItem(T *testing.T) {
 		expectedQuery := "INSERT INTO items (name,details,belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
-			expected.Name,
-			expected.Details,
-			expected.BelongsTo,
-		).WillReturnRows(exampleRows)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				expected.Name,
+				expected.Details,
+				expected.BelongsTo,
+			).WillReturnRows(exampleRows)
 
 		actual, err := p.CreateItem(context.Background(), expectedInput)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -405,15 +447,17 @@ func TestPostgres_CreateItem(T *testing.T) {
 		expectedQuery := "INSERT INTO items (name,details,belongs_to) VALUES ($1,$2,$3) RETURNING id, created_on"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
-			expected.Name,
-			expected.Details,
-			expected.BelongsTo,
-		).WillReturnError(errors.New("blah"))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				expected.Name,
+				expected.Details,
+				expected.BelongsTo,
+			).WillReturnError(errors.New("blah"))
 
 		actual, err := p.CreateItem(context.Background(), expectedInput)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 }
@@ -454,15 +498,17 @@ func TestPostgres_UpdateItem(T *testing.T) {
 		expectedQuery := "UPDATE items SET name = $1, details = $2, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $3 AND id = $4 RETURNING updated_on"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
-			expected.Name,
-			expected.Details,
-			expected.BelongsTo,
-			expected.ID,
-		).WillReturnRows(exampleRows)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				expected.Name,
+				expected.Details,
+				expected.BelongsTo,
+				expected.ID,
+			).WillReturnRows(exampleRows)
 
 		err := p.UpdateItem(context.Background(), expected)
 		assert.NoError(t, err)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -476,15 +522,17 @@ func TestPostgres_UpdateItem(T *testing.T) {
 		expectedQuery := "UPDATE items SET name = $1, details = $2, updated_on = extract(epoch FROM NOW()) WHERE belongs_to = $3 AND id = $4 RETURNING updated_on"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
-			expected.Name,
-			expected.Details,
-			expected.BelongsTo,
-			expected.ID,
-		).WillReturnError(errors.New("blah"))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				expected.Name,
+				expected.Details,
+				expected.BelongsTo,
+				expected.ID,
+			).WillReturnError(errors.New("blah"))
 
 		err := p.UpdateItem(context.Background(), expected)
 		assert.Error(t, err)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 }
@@ -522,13 +570,15 @@ func TestPostgres_ArchiveItem(T *testing.T) {
 		expectedQuery := "UPDATE items SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
-			expected.BelongsTo,
-			expected.ID,
-		).WillReturnResult(sqlmock.NewResult(1, 1))
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				expected.BelongsTo,
+				expected.ID,
+			).WillReturnResult(sqlmock.NewResult(1, 1))
 
 		err := p.ArchiveItem(context.Background(), expected.ID, expectedUserID)
 		assert.NoError(t, err)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
@@ -542,13 +592,15 @@ func TestPostgres_ArchiveItem(T *testing.T) {
 		expectedQuery := "UPDATE items SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to = $1 AND id = $2 RETURNING archived_on"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
-			example.BelongsTo,
-			example.ID,
-		).WillReturnError(errors.New("blah"))
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				example.BelongsTo,
+				example.ID,
+			).WillReturnError(errors.New("blah"))
 
 		err := p.ArchiveItem(context.Background(), example.ID, expectedUserID)
 		assert.Error(t, err)
+
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 }

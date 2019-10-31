@@ -224,56 +224,67 @@ func makeMigrations(dbVendor *wordsmith.SuperPalabra, types []models.DataType) [
 			{
 				description: "create users table",
 				script: `
-		CREATE TABLE IF NOT EXISTS users (
-			"id" bigserial NOT NULL PRIMARY KEY,
-			"username" text NOT NULL,
-			"hashed_password" text NOT NULL,
-			"password_last_changed_on" integer,
-			"two_factor_secret" text NOT NULL,
-			"is_admin" boolean NOT NULL DEFAULT 'false',
-			"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
-			"updated_on" bigint DEFAULT NULL,
-			"archived_on" bigint DEFAULT NULL,
-			UNIQUE ("username")
-		);`,
+			CREATE TABLE IF NOT EXISTS users (
+				"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+				"username" TEXT NOT NULL,
+				"hashed_password" TEXT NOT NULL,
+				"password_last_changed_on" INTEGER,
+				"two_factor_secret" TEXT NOT NULL,
+				"is_admin" BOOLEAN NOT NULL DEFAULT 'false',
+				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+				"updated_on" INTEGER,
+				"archived_on" INTEGER DEFAULT NULL,
+				CONSTRAINT username_unique UNIQUE (username)
+			);`,
 			},
 			{
 				description: "create oauth2_clients table",
 				script: `
-		CREATE TABLE IF NOT EXISTS oauth2_clients (
-			"id" bigserial NOT NULL PRIMARY KEY,
-			"name" text DEFAULT '',
-			"client_id" text NOT NULL,
-			"client_secret" text NOT NULL,
-			"redirect_uri" text DEFAULT '',
-			"scopes" text NOT NULL,
-			"implicit_allowed" boolean NOT NULL DEFAULT 'false',
-			"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
-			"updated_on" bigint DEFAULT NULL,
-			"archived_on" bigint DEFAULT NULL,
-			"belongs_to" bigint NOT NULL,
-			FOREIGN KEY(belongs_to) REFERENCES users(id)
-		);`,
+			CREATE TABLE IF NOT EXISTS oauth2_clients (
+				"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+				"name" TEXT DEFAULT '',
+				"client_id" TEXT NOT NULL,
+				"client_secret" TEXT NOT NULL,
+				"redirect_uri" TEXT DEFAULT '',
+				"scopes" TEXT NOT NULL,
+				"implicit_allowed" BOOLEAN NOT NULL DEFAULT 'false',
+				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+				"updated_on" INTEGER,
+				"archived_on" INTEGER DEFAULT NULL,
+				"belongs_to" INTEGER NOT NULL,
+				FOREIGN KEY(belongs_to) REFERENCES users(id)
+			);`,
 			},
 			{
 				description: "create webhooks table",
 				script: `
-		CREATE TABLE IF NOT EXISTS webhooks (
-			"id" bigserial NOT NULL PRIMARY KEY,
-			"name" text NOT NULL,
-			"content_type" text NOT NULL,
-			"url" text NOT NULL,
-			"method" text NOT NULL,
-			"events" text NOT NULL,
-			"data_types" text NOT NULL,
-			"topics" text NOT NULL,
-			"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
-			"updated_on" bigint DEFAULT NULL,
-			"archived_on" bigint DEFAULT NULL,
-			"belongs_to" bigint NOT NULL,
-			FOREIGN KEY ("belongs_to") REFERENCES "users"("id")
-		);`,
+			CREATE TABLE IF NOT EXISTS webhooks (
+				"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+				"name" text NOT NULL,
+				"content_type" text NOT NULL,
+				"url" text NOT NULL,
+				"method" text NOT NULL,
+				"events" text NOT NULL,
+				"data_types" text NOT NULL,
+				"topics" text NOT NULL,
+				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+				"updated_on" INTEGER,
+				"archived_on" INTEGER DEFAULT NULL,
+				"belongs_to" INTEGER NOT NULL,
+				FOREIGN KEY(belongs_to) REFERENCES users(id)
+			);`,
 			},
+		}
+
+		var (
+			idType     string
+			idAddendum string
+		)
+		if dbrn == "postgres" {
+			idType = "bigserial"
+		} else if dbrn == "sqlite" {
+			idType = "INTEGER"
+			idAddendum = " AUTOINCREMENT"
 		}
 
 		for _, typ := range types {
@@ -281,7 +292,7 @@ func makeMigrations(dbVendor *wordsmith.SuperPalabra, types []models.DataType) [
 
 			scriptParts := []string{
 				fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
-				`				"id" bigserial NOT NULL PRIMARY KEY,`,
+				fmt.Sprintf(`				"id" %s NOT NULL PRIMARY KEY%s,`, idType, idAddendum),
 			}
 
 			for _, field := range typ.Fields {
@@ -300,14 +311,25 @@ func makeMigrations(dbVendor *wordsmith.SuperPalabra, types []models.DataType) [
 				scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
 			}
 
-			scriptParts = append(scriptParts,
-				`				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),`,
-				`				"updated_on" bigint DEFAULT NULL,`,
-				`				"archived_on" bigint DEFAULT NULL,`,
-				`				"belongs_to" bigint NOT NULL,`,
-				`				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")`,
-				`			);`,
-			)
+			if dbrn == "postgres" {
+				scriptParts = append(scriptParts,
+					`				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),`,
+					`				"updated_on" bigint DEFAULT NULL,`,
+					`				"archived_on" bigint DEFAULT NULL,`,
+					`				"belongs_to" bigint NOT NULL,`,
+					`				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")`,
+					`			);`,
+				)
+			} else if dbrn == "sqlite" {
+				scriptParts = append(scriptParts,
+					`				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),`,
+					`				"updated_on" INTEGER DEFAULT NULL,`,
+					`				"archived_on" INTEGER DEFAULT NULL,`,
+					`				"belongs_to" INTEGER NOT NULL,`,
+					`				FOREIGN KEY(belongs_to) REFERENCES users(id)`,
+					`			);`,
+				)
+			}
 
 			migrations = append(migrations,
 				migration{

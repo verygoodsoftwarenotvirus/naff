@@ -15,8 +15,8 @@ import (
 func buildTestService(t *testing.T) (*Sqlite, sqlmock.Sqlmock) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	p := ProvideSqlite(true, db, noop.ProvideNoopLogger())
-	return p.(*Sqlite), mock
+	s := ProvideSqlite(true, db, noop.ProvideNoopLogger())
+	return s.(*Sqlite), mock
 }
 
 var (
@@ -50,16 +50,16 @@ func TestSqlite_IsReady(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		p, _ := buildTestService(t)
+		s, _ := buildTestService(t)
 		assert.True(t, s.IsReady(context.Background()))
 	})
 }
 
-func Test_logQueryBuildingError(T *testing.T) {
+func TestSqlite_logQueryBuildingError(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		p, _ := buildTestService(t)
+		s, _ := buildTestService(t)
 		s.logQueryBuildingError(errors.New(""))
 	})
 }

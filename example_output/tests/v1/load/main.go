@@ -13,6 +13,7 @@ import (
 	"github.com/emicklei/hazana"
 )
 
+// ServiceAttacker implements hazana's Attacker interface
 type ServiceAttacker struct {
 	todoClient *client.V1Client
 }
@@ -24,6 +25,8 @@ func (a *ServiceAttacker) Setup(c hazana.Config) error {
 
 // Do implement's hazana's Attacker interface
 func (a *ServiceAttacker) Do(ctx context.Context) hazana.DoResult {
+	// Do performs one request and is executed in a separate goroutine.
+	// The context is used to cancel the request on timeout.
 	act := RandomAction(a.todoClient)
 	req, err := act.Action()
 	if err != nil || req == nil {
@@ -37,6 +40,7 @@ func (a *ServiceAttacker) Do(ctx context.Context) hazana.DoResult {
 		log.Printf("something has gone awry: %v\n", err)
 		return hazana.DoResult{Error: err}
 	}
+
 	var (
 		sc int
 		bo int64
@@ -50,11 +54,13 @@ func (a *ServiceAttacker) Do(ctx context.Context) hazana.DoResult {
 		rdr := ioutil.NopCloser(bytes.NewBuffer(bi))
 		req.Body = rdr
 	}
+
 	res, err := a.todoClient.AuthenticatedClient().Do(req)
 	if res != nil {
 		sc = res.StatusCode
 		bo = res.ContentLength
 	}
+
 	dr := hazana.DoResult{
 		RequestLabel: act.Name,
 		Error:        err,
@@ -65,18 +71,19 @@ func (a *ServiceAttacker) Do(ctx context.Context) hazana.DoResult {
 	return dr
 }
 
-// Teardown implement's hazana's Attacker interface
+// Teardown implements hazana's Attacker interface
 func (a *ServiceAttacker) Teardown() error {
 	return nil
 }
 
-// Clone implement's hazana's Attacker interface
+// Clone implements hazana's Attacker interface
 func (a *ServiceAttacker) Clone() hazana.Attack {
 	return a
 }
 
 func main() {
 	todoClient := initializeClient(oa2Client)
+
 	var runTime = 10 * time.Minute
 	if rt := os.Getenv("LOADTEST_RUN_TIME"); rt != "" {
 		_rt, err := time.ParseDuration(rt)
@@ -85,6 +92,7 @@ func main() {
 		}
 		runTime = _rt
 	}
+
 	attacker := &ServiceAttacker{todoClient: todoClient}
 	cfg := hazana.Config{
 		RPS:           50,
@@ -94,7 +102,12 @@ func main() {
 		Verbose:       true,
 		DoTimeoutSec:  10,
 	}
+
 	r := hazana.Run(attacker, cfg)
+
+	// inspect the report and compute whether the test has failed
+	// e.g by looking at the success percentage and mean response time of each metric.
 	r.Failed = false
+
 	hazana.PrintReport(r)
 }

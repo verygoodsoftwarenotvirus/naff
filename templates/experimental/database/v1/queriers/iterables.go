@@ -2,6 +2,7 @@ package queriers
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -43,7 +44,7 @@ func buildScanFields(typ models.DataType) []jen.Code {
 	return scanFields
 }
 
-func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.File {
+func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
 	utils.AddImports(ret)
@@ -82,8 +83,8 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 	ret.Add(
 		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct", sn, pcsnwp),
 		jen.Line(),
-		jen.Func().IDf("scan%s", sn).Params(jen.ID("scan").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "Scanner")).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn).Values(),
+		jen.Func().IDf("scan%s", sn).Params(jen.ID("scan").Qual(filepath.Join(pkgRoot, "database/v1"), "Scanner")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn), jen.ID("error")).Block(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Values(),
 			jen.Line(),
 			jen.If(jen.ID("err").Op(":=").ID("scan").Dot("Scan").Callln(scanFields...), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
@@ -97,8 +98,8 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 	ret.Add(
 		jen.Commentf("scan%s takes a logger and some database rows and turns them into a slice of %s", pn, pcn),
 		jen.Line(),
-		jen.Func().IDf("scan%s", pn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
-			jen.Var().ID("list").Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn),
+		jen.Func().IDf("scan%s", pn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").Op("*").Qual("database/sql", "Rows")).Params(jen.Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn), jen.ID("error")).Block(
+			jen.Var().ID("list").Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
 				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").IDf("scan%s", sn).Call(jen.ID("rows")),
@@ -129,7 +130,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
 				Dotln("From").Call(jen.IDf("%sTableName", puvn)).
-				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
+				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").IDf("%sID", uvn),
 				jen.Lit("belongs_to").Op(":").ID("userID"),
 			)).Dot("ToSql").Call(),
@@ -147,7 +148,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Get%s", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64"),
-		).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
+		).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("%sID", uvn), jen.ID("userID")),
 			jen.ID("row").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().IDf("scan%s", sn).Call(jen.ID("row")),
@@ -160,13 +161,13 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 		jen.Line(),
 		jen.Commentf("fetching the number of %s belonging to a given user that meet a given query", pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildGet%sCountQuery", sn).Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildGet%sCountQuery", sn).Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("CountQuery")).
 				Dotln("From").Call(jen.IDf("%sTableName", puvn)).
-				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
+				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("archived_on").Op(":").ID("nil"),
 				jen.Lit("belongs_to").Op(":").ID("userID"),
 			)),
@@ -188,7 +189,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Get%sCount", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64"),
 		).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sCountQuery", sn).Call(jen.ID("filter"), jen.ID("userID")),
@@ -217,7 +218,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 				jen.List(jen.IDf("all%sCountQuery", pn), jen.ID("_"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 					Dotln("Select").Call(jen.ID("CountQuery")).
 					Dotln("From").Call(jen.IDf("%sTableName", puvn)).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.Lit("archived_on").Op(":").ID("nil"))).
+					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("archived_on").Op(":").ID("nil"))).
 					Dotln("ToSql").Call(),
 				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
 			)),
@@ -242,14 +243,14 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 		jen.Line(),
 		jen.Commentf("and returns both the query and the relevant args to pass to the query executor."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildGet%sQuery", pn).Params(jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildGet%sQuery", pn).Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
 				Dotln("From").Call(jen.IDf("%sTableName", puvn)).
-				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
+				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("archived_on").Op(":").ID("nil"),
 				jen.Lit("belongs_to").Op(":").ID("userID"),
 			)),
@@ -271,9 +272,9 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Get%s", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("filter").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64"),
-		).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
+		).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.ID("filter"), jen.ID("userID")),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
@@ -291,8 +292,8 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("fetching %s count: ", scn)+"%w"), jen.ID("err"))),
 			),
 			jen.Line(),
-			jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sList", sn)).Valuesln(
-				jen.ID("Pagination").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "Pagination").Valuesln(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
+				jen.ID("Pagination").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "Pagination").Valuesln(
 					jen.ID("Page").Op(":").ID("filter").Dot("Page"),
 					jen.ID("Limit").Op(":").ID("filter").Dot("Limit"),
 					jen.ID("TotalCount").Op(":").ID("count"),
@@ -311,7 +312,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("GetAll%sForUser", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("userID").ID("uint64"),
-		).Params(jen.Index().Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
+		).Params(jen.Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.ID("nil"), jen.ID("userID")),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
@@ -371,7 +372,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 	ret.Add(
 		jen.Commentf("buildCreate%sQuery takes %s and returns a creation query for that %s and the relevant arguments.", sn, scnwp, scn),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildCreate%sQuery", sn).Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildCreate%sQuery", sn).Params(jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			createQueryFuncBody...,
 		),
 		jen.Line(),
@@ -389,7 +390,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 				jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 					Dotln("Select").Call(jen.Lit("created_on")).
 					Dotln("From").Call(jen.IDf("%sTableName", puvn)).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.Lit("id").Op(":").IDf("%sID", uvn))).
+					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("id").Op(":").IDf("%sID", uvn))).
 					Dotln("ToSql").Call(),
 				jen.Line(),
 				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
@@ -412,7 +413,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 	createInitColumns = append(createInitColumns, jen.ID("BelongsTo").Op(":").ID("input").Dot("BelongsTo"))
 
 	baseCreateFuncBody := []jen.Code{
-		jen.ID("x").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn).Valuesln(createInitColumns...),
+		jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(createInitColumns...),
 		jen.Line(),
 		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildCreate%sQuery", sn).Call(jen.ID("x")),
 		jen.Line(),
@@ -460,8 +461,8 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Create%s", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", fmt.Sprintf("%sCreationInput", sn)),
-		).Params(jen.Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn), jen.ID("error")).Block(
+			jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn)),
+		).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn), jen.ID("error")).Block(
 			baseCreateFuncBody...,
 		),
 		jen.Line(),
@@ -478,8 +479,8 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 				x.Dotln("Set").Call(jen.Lit(field.Name.RouteName()), jen.ID("input").Dot(field.Name.Singular()))
 			}
 		}
-		x.Dotln("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
-			Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
+		x.Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
+			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 			jen.Lit("id").Op(":").ID("input").Dot("ID"),
 			jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo"),
 		))
@@ -497,7 +498,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 	ret.Add(
 		jen.Commentf("buildUpdate%sQuery takes %s and returns an update SQL query, with the relevant query parameters", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildUpdate%sQuery", sn).Params(jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("buildUpdate%sQuery", sn).Params(jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			buildQueryFunc(typ),
 			jen.Line(),
@@ -532,7 +533,7 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 			return []jen.Code{
 				jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the provided input to have a valid ID.", sn, scn, sn),
 				jen.Line(),
-				jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", sn)).Params(jen.ID("error")).Block(
+				jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Params(jen.ID("error")).Block(
 					jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildUpdate%sQuery", sn).Call(jen.ID("input")),
 					finalStatement,
 				),
@@ -545,9 +546,9 @@ func iterablesDotGo(dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.
 
 	_qs := jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 		Dotln("Update").Call(jen.IDf("%sTableName", puvn)).
-		Dotln("Set").Call(jen.Lit("updated_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
-		Dotln("Set").Call(jen.Lit("archived_on"), jen.ID("squirrel").Dot("Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
-		Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
+		Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
+		Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
+		Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 		jen.Lit("id").Op(":").IDf("%sID", uvn),
 		jen.Lit("archived_on").Op(":").ID("nil"),
 		jen.Lit("belongs_to").Op(":").ID("userID"),
