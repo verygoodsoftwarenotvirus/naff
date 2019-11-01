@@ -349,6 +349,10 @@ func iterablesDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.
 
 	creationColumns = append(creationColumns, jen.Lit("belongs_to"))
 	valuesColumns = append(valuesColumns, jen.ID("input").Dot("BelongsTo"))
+	if isMariaDB {
+		creationColumns = append(creationColumns, jen.Lit("created_on"))
+		valuesColumns = append(valuesColumns, jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery")))
+	}
 
 	qb := jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
 		Dotln("Insert").Call(jen.IDf("%sTableName", puvn)).
