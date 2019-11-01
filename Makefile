@@ -38,7 +38,7 @@ templates: template-clean
 	go run cmd/tools/template_builder/main.go
 
 template-dirs:
-	for dir in `find ../todo -type d -not -path "*\.git*" -not -path "*node_modules*" -not -path "*vendor*" | sed -r 's/\.\.\/todo\/?/templates\/experimental\//g'`; do mkdir -p $$dir; done
+	@# for dir in `find ../todo -type d -not -path "*\.git*" -not -path "*node_modules*" -not -path "*vendor*" | sed -r 's/\.\.\/todo\/?/templates\/experimental\//g'`; do mkdir -p $$dir; done
 	for dir in `find ../todo -type d -not -path "*\.git*" -not -path "*node_modules*" -not -path "*vendor*" | sed -r 's/\.\.\/todo\/?/templates\/blessed\//g'`; do mkdir -p $$dir; done
 
 fix-template-test-files:

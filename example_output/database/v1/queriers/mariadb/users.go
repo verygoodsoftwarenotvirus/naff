@@ -216,12 +216,14 @@ func (m *MariaDB) buildCreateUserQuery(input *models.UserInput) (query string, a
 			"hashed_password",
 			"two_factor_secret",
 			"is_admin",
+			"created_on",
 		).
 		Values(
 			input.Username,
 			input.Password,
 			input.TwoFactorSecret,
 			false,
+			squirrel.Expr(CurrentUnixTimeQuery),
 		).
 		ToSql()
 

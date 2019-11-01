@@ -630,7 +630,7 @@ func TestMariaDB_buildWebhookCreationQuery(T *testing.T) {
 			BelongsTo:   1,
 		}
 		expectedArgCount := 8
-		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (?,?,?,?,?,?,?,?)"
+		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to,created_on) VALUES (?,?,?,?,?,?,?,?,UNIX_TIMESTAMP())"
 
 		actualQuery, args := m.buildWebhookCreationQuery(exampleInput)
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -654,7 +654,7 @@ func TestMariaDB_CreateWebhook(T *testing.T) {
 			BelongsTo: expected.BelongsTo,
 		}
 		exampleRows := sqlmock.NewResult(int64(expected.ID), 1)
-		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (?,?,?,?,?,?,?,?)"
+		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to,created_on) VALUES (?,?,?,?,?,?,?,?,UNIX_TIMESTAMP())"
 
 		m, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
@@ -691,7 +691,7 @@ func TestMariaDB_CreateWebhook(T *testing.T) {
 			Name:      expected.Name,
 			BelongsTo: expected.BelongsTo,
 		}
-		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (?,?,?,?,?,?,?,?)"
+		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to,created_on) VALUES (?,?,?,?,?,?,?,?,UNIX_TIMESTAMP())"
 
 		m, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(

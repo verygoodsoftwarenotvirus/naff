@@ -2,6 +2,7 @@ package project
 
 import (
 	"log"
+	"sync"
 	"time"
 
 	naffmodels "gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -13,15 +14,16 @@ import (
 	twofactorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/tools/two_factor"
 	database "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1"
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1/client"
+	queriers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1/queriers"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1"
 	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1/mock"
-	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/auth"
-	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/auth/mock"
-	config "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/config"
-	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/encoding"
-	encodingmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/encoding/mock"
-	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/metrics"
-	metricsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/notreallyinternal/v1/metrics/mock"
+	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/auth"
+	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/auth/mock"
+	config "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/config"
+	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/encoding"
+	encodingmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/encoding/mock"
+	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/metrics"
+	metricsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/metrics/mock"
 	server "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/server/v1"
 	httpserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/server/v1/http"
 	auth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/auth"
@@ -32,24 +34,21 @@ import (
 	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/webhooks"
 	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/frontend"
 	integrationtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/integration"
+	loadtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/load"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil"
 	testutilmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/mock"
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/rand/model"
-
-	// to do
-	queriers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/database/v1/queriers"
-	loadtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/tests/v1/load"
 )
 
+type renderHelper struct {
+	renderFunc func(string, []naffmodels.DataType) error
+	activated  bool
+}
+
 func RenderProject(in *naffmodels.Project) error {
-	allActive := false
+	allActive := true
 
-	type x struct {
-		renderFunc func(string, []naffmodels.DataType) error
-		activated  bool
-	}
-
-	packageRenderers := map[string]x{
+	packageRenderers := map[string]renderHelper{
 		// completed
 		"httpclient":       {renderFunc: httpclient.RenderPackage, activated: allActive},
 		"configgen":        {renderFunc: configgen.RenderPackage, activated: allActive},
@@ -80,28 +79,28 @@ func RenderProject(in *naffmodels.Project) error {
 		"dbclient":         {renderFunc: dbclient.RenderPackage, activated: allActive},
 		"integrationtests": {renderFunc: integrationtests.RenderPackage, activated: allActive},
 		"loadtests":        {renderFunc: loadtests.RenderPackage, activated: allActive},
-
-		// doing (two sides; one coin)
-		"queriers": {renderFunc: queriers.RenderPackage, activated: true},
-		// "postgresql": {renderFunc: postgresql.RenderPackage, activated: true},
-		// "sqlite3":    {renderFunc: sqlite3.RenderPackage, activated: false},
-
-		// on deck
-		// "mariaDB": {renderFunc: mariaDB.RenderPackage, activated: false},
+		"queriers":         {renderFunc: queriers.RenderPackage, activated: allActive},
 	}
+
+	var wg sync.WaitGroup
 
 	if in != nil {
 		for name, x := range packageRenderers {
 			if x.activated {
-				start := time.Now()
-				if err := x.renderFunc(in.OutputPath, in.DataTypes); err != nil {
-					log.Printf("error rendering %q after %s\n", name, time.Since(start))
-					return err
-				}
-				log.Printf("rendered %s after %s\n", name, time.Since(start))
+				wg.Add(1)
+				go func(taskName string, renderer renderHelper) {
+					start := time.Now()
+					if err := renderer.renderFunc(in.OutputPath, in.DataTypes); err != nil {
+						log.Printf("error rendering %q after %s\n", taskName, time.Since(start))
+					}
+					log.Printf("rendered %s after %s\n", taskName, time.Since(start))
+					wg.Done()
+				}(name, x)
 			}
 		}
 	}
+
+	wg.Wait()
 
 	return nil
 }

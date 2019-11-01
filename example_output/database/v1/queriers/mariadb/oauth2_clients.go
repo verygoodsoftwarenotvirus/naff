@@ -33,7 +33,7 @@ var (
 	}
 )
 
-// scanOAuth2Client takes a Scanner (i.e. *sql.Row) and scans its ressults into an OAuth2Client struct
+// scanOAuth2Client takes a Scanner (i.e. *sql.Row) and scans its results into an OAuth2Client struct
 func scanOAuth2Client(scan database.Scanner) (*models.OAuth2Client, error) {
 	var (
 		x      = &models.OAuth2Client{}
@@ -334,6 +334,7 @@ func (m *MariaDB) buildCreateOAuth2ClientQuery(input *models.OAuth2Client) (quer
 			"scopes",
 			"redirect_uri",
 			"belongs_to",
+			"created_on",
 		).
 		Values(
 			input.Name,
@@ -342,6 +343,7 @@ func (m *MariaDB) buildCreateOAuth2ClientQuery(input *models.OAuth2Client) (quer
 			strings.Join(input.Scopes, scopesSeparator),
 			input.RedirectURI,
 			input.BelongsTo,
+			squirrel.Expr(CurrentUnixTimeQuery),
 		).
 		ToSql()
 

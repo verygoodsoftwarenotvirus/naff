@@ -326,6 +326,7 @@ func (m *MariaDB) buildWebhookCreationQuery(x *models.Webhook) (query string, ar
 			"data_types",
 			"topics",
 			"belongs_to",
+			"created_on",
 		).
 		Values(
 			x.Name,
@@ -336,6 +337,7 @@ func (m *MariaDB) buildWebhookCreationQuery(x *models.Webhook) (query string, ar
 			strings.Join(x.DataTypes, typesSeparator),
 			strings.Join(x.Topics, topicsSeparator),
 			x.BelongsTo,
+			squirrel.Expr(CurrentUnixTimeQuery),
 		).
 		ToSql()
 

@@ -639,7 +639,7 @@ func TestMariaDB_buildCreateOAuth2ClientQuery(T *testing.T) {
 			BelongsTo:    123,
 		}
 		expectedArgCount := 6
-		expectedQuery := "INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to) VALUES (?,?,?,?,?,?)"
+		expectedQuery := "INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to,created_on) VALUES (?,?,?,?,?,?,UNIX_TIMESTAMP())"
 
 		actualQuery, args := m.buildCreateOAuth2ClientQuery(exampleInput)
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -669,7 +669,7 @@ func TestMariaDB_CreateOAuth2Client(T *testing.T) {
 			BelongsTo: expected.BelongsTo,
 		}
 		exampleRows := sqlmock.NewResult(int64(expected.ID), 1)
-		expectedQuery := "INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to) VALUES (?,?,?,?,?,?)"
+		expectedQuery := "INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to,created_on) VALUES (?,?,?,?,?,?,UNIX_TIMESTAMP())"
 
 		m, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
@@ -705,7 +705,7 @@ func TestMariaDB_CreateOAuth2Client(T *testing.T) {
 			Name:      expected.Name,
 			BelongsTo: expected.BelongsTo,
 		}
-		expectedQuery := "INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to) VALUES (?,?,?,?,?,?)"
+		expectedQuery := "INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to,created_on) VALUES (?,?,?,?,?,?,UNIX_TIMESTAMP())"
 
 		m, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(

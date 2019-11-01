@@ -388,7 +388,7 @@ func TestMariaDB_buildCreateItemQuery(T *testing.T) {
 			BelongsTo: 123,
 		}
 		expectedArgCount := 3
-		expectedQuery := "INSERT INTO items (name,details,belongs_to) VALUES (?,?,?)"
+		expectedQuery := "INSERT INTO items (name,details,belongs_to,created_on) VALUES (?,?,?,UNIX_TIMESTAMP())"
 		actualQuery, args := m.buildCreateItemQuery(expected)
 
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -417,7 +417,7 @@ func TestMariaDB_CreateItem(T *testing.T) {
 
 		m, mockDB := buildTestService(t)
 
-		expectedCreationQuery := "INSERT INTO items (name,details,belongs_to) VALUES (?,?,?)"
+		expectedCreationQuery := "INSERT INTO items (name,details,belongs_to,created_on) VALUES (?,?,?,UNIX_TIMESTAMP())"
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedCreationQuery)).
 			WithArgs(
 				expected.Name,
@@ -449,7 +449,7 @@ func TestMariaDB_CreateItem(T *testing.T) {
 			Details:   expected.Details,
 			BelongsTo: expected.BelongsTo,
 		}
-		expectedQuery := "INSERT INTO items (name,details,belongs_to) VALUES (?,?,?)"
+		expectedQuery := "INSERT INTO items (name,details,belongs_to,created_on) VALUES (?,?,?,UNIX_TIMESTAMP())"
 
 		m, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).

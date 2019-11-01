@@ -380,7 +380,7 @@ func TestMariaDB_buildCreateUserQuery(T *testing.T) {
 			TwoFactorSecret: "two factor secret",
 		}
 		expectedArgCount := 4
-		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (?,?,?,?)"
+		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin,created_on) VALUES (?,?,?,?,UNIX_TIMESTAMP())"
 
 		actualQuery, args := m.buildCreateUserQuery(exampleUser)
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -401,7 +401,7 @@ func TestMariaDB_CreateUser(T *testing.T) {
 			Username: expected.Username,
 		}
 		exampleRows := sqlmock.NewResult(int64(expected.ID), 1)
-		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (?,?,?,?)"
+		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin,created_on) VALUES (?,?,?,?,UNIX_TIMESTAMP())"
 
 		m, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
@@ -431,7 +431,7 @@ func TestMariaDB_CreateUser(T *testing.T) {
 		expectedInput := &models.UserInput{
 			Username: expected.Username,
 		}
-		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (?,?,?,?)"
+		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin,created_on) VALUES (?,?,?,?,UNIX_TIMESTAMP())"
 
 		m, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(

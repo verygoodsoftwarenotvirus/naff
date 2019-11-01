@@ -229,11 +229,13 @@ func (m *MariaDB) buildCreateItemQuery(input *models.Item) (query string, args [
 			"name",
 			"details",
 			"belongs_to",
+			"created_on",
 		).
 		Values(
 			input.Name,
 			input.Details,
 			input.BelongsTo,
+			squirrel.Expr(CurrentUnixTimeQuery),
 		).
 		ToSql()
 

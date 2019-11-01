@@ -41,14 +41,14 @@ func (cfg *ServerConfig) ProvideDatabase(ctx context.Context, logger logging.Log
 
 		return dbclient.ProvideDatabaseClient(ctx, rawDB, pgdb, debug, logger)
 	case mariaDBProviderKey:
-		rawDB, err := mariadb.ProvideMariaDBConnection(logger, connectionDetails)
+		rawDB, err := mariadb.ProvideMariaDB(logger, connectionDetails)
 		if err != nil {
 			return nil, fmt.Errorf("establish mariadb database connection: %w", err)
 		}
 		ocsql.RegisterAllViews()
 		ocsql.RecordStats(rawDB, cfg.Metrics.DBMetricsCollectionInterval)
 
-		mdb := mariadb.ProvideMariaDB(debug, rawDB, logger)
+		mdb := mariadb.ProvideMariaDBDatabase(debug, rawDB, logger)
 
 		return dbclient.ProvideDatabaseClient(ctx, rawDB, mdb, debug, logger)
 	case sqliteProviderKey:
