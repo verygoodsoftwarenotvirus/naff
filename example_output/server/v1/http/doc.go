@@ -1,4 +1,4 @@
 /*
-package httpserver provides an HTTP server comprised of multiple HTTP services
+Package httpserver provides an HTTP server comprised of multiple HTTP services
 */
 package httpserver

@@ -20,7 +20,7 @@ func RenderPackage(pkgRoot string, types []models.DataType) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderFile(pkgRoot, path, file); err != nil {
+		if err := utils.RenderGoFile(pkgRoot, path, file); err != nil {
 			return err
 		}
 	}

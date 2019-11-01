@@ -64,7 +64,7 @@ func renderDatabasePackage(pkgRoot, vendor string, types []models.DataType) erro
 	}
 
 	for path, file := range files {
-		if err := utils.RenderFile(pkgRoot, path, file); err != nil {
+		if err := utils.RenderGoFile(pkgRoot, path, file); err != nil {
 			return err
 		}
 	}

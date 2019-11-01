@@ -106,6 +106,8 @@ func databaseDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
 	)
 	if !isMariaDB {
 		dbTrail = "DB"
+	} else {
+		dbTrail = "Connection"
 	}
 
 	ret.Add(
@@ -119,18 +121,15 @@ func databaseDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
 	)
 
 	////////////
-	var provideTrail string
 	dbTrail = ""
 	if !isMariaDB {
 		dbTrail = " db"
-	} else {
-		provideTrail = "Database"
 	}
 
 	ret.Add(
 		jen.Commentf("Provide%s provides a %s%s controller", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s%s", sn, provideTrail).Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkgRoot, "database/v1"), "Database")).Block(
+		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkgRoot, "database/v1"), "Database")).Block(
 			jen.Return().Op("&").IDf(sn).Valuesln(
 				jen.ID("db").Op(":").ID("db"),
 				jen.ID("debug").Op(":").ID("debug"),

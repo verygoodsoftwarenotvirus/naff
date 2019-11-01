@@ -195,7 +195,7 @@ func RunGoFormatForFile(filename string) error {
 	return exec.Command("/usr/local/go/bin/gofmt", "-s", "-w", filename).Run()
 }
 
-func RenderFile(pkgRoot, path string, file *jen.File) error {
+func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 	// start := time.Now()
 	fp := BuildTemplatePath(path)
 	_ = os.Remove(fp)

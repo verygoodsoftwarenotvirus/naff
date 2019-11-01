@@ -14,13 +14,12 @@ func wireDotGo(vendor wordsmith.SuperPalabra) *jen.File {
 
 	isMariaDB := vendor.RouteName() == "mariadb" || vendor.RouteName() == "maria_db"
 	var (
-		dbTrail      string
-		provideTrail string
+		dbTrail string
 	)
 	if !isMariaDB {
 		dbTrail = "DB"
 	} else {
-		provideTrail = "Database"
+		dbTrail = "Connection"
 	}
 
 	ret.Add(
@@ -28,7 +27,7 @@ func wireDotGo(vendor wordsmith.SuperPalabra) *jen.File {
 			jen.Comment("Providers is what we provide for dependency injection"),
 			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Callln(
 				jen.IDf("Provide%s%s", sn, dbTrail),
-				jen.IDf("Provide%s%s", sn, provideTrail),
+				jen.IDf("Provide%s", sn),
 			),
 		),
 		jen.Line(),

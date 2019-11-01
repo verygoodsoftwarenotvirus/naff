@@ -12,11 +12,10 @@ import (
 	configgen "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/config_gen/v1"
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/server/v1"
 	twofactorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/tools/two_factor"
+	composefiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/composefiles"
 	database "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1"
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1/client"
 	queriers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1/queriers"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1"
-	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1/mock"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/auth"
 	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/auth/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/config"
@@ -24,6 +23,8 @@ import (
 	encodingmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/metrics"
 	metricsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/metrics/mock"
+	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1"
+	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1/mock"
 	server "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/server/v1"
 	httpserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/server/v1/http"
 	auth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/services/v1/auth"
@@ -98,6 +99,15 @@ func RenderProject(in *naffmodels.Project) error {
 				}(name, x)
 			}
 		}
+		wg.Add(1)
+		go func() {
+			start := time.Now()
+			if err := composefiles.RenderPackage(in.OutputPath, in.Name, in.DataTypes); err != nil {
+				log.Printf("error rendering composefiles after %s\n", time.Since(start))
+			}
+			log.Printf("rendered composefiles after %s\n", time.Since(start))
+			wg.Done()
+		}()
 	}
 
 	wg.Wait()

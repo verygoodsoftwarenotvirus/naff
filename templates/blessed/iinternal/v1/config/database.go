@@ -43,14 +43,14 @@ func databaseDotGo(pkgRoot string) *jen.File {
 					jen.Line(),
 					jen.Return().Qual(filepath.Join(pkgRoot, "database/v1/client"), "ProvideDatabaseClient").Call(jen.ID("ctx"), jen.ID("rawDB"), jen.ID("pgdb"), jen.ID("debug"), jen.ID("logger"))),
 				jen.Case(jen.ID("mariaDBProviderKey")).Block(
-					jen.List(jen.ID("rawDB"), jen.ID("err")).Op(":=").ID("mariadb").Dot("ProvideMariaDB").Call(jen.ID("logger"), jen.ID("connectionDetails")),
+					jen.List(jen.ID("rawDB"), jen.ID("err")).Op(":=").ID("mariadb").Dot("ProvideMariaDBConnection").Call(jen.ID("logger"), jen.ID("connectionDetails")),
 					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("establish mariadb database connection: %w"), jen.ID("err"))),
 					),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RegisterAllViews").Call(),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RecordStats").Call(jen.ID("rawDB"), jen.ID("cfg").Dot("Metrics").Dot("DBMetricsCollectionInterval")),
 					jen.Line(),
-					jen.ID("mdb").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1/queriers/mariadb"), "ProvideMariaDBDatabase").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
+					jen.ID("mdb").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1/queriers/mariadb"), "ProvideMariaDB").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
 					jen.Line(),
 					jen.Return().Qual(filepath.Join(pkgRoot, "database/v1/client"), "ProvideDatabaseClient").Call(jen.ID("ctx"), jen.ID("rawDB"), jen.ID("mdb"), jen.ID("debug"), jen.ID("logger"))),
 				jen.Case(jen.ID("sqliteProviderKey")).Block(
