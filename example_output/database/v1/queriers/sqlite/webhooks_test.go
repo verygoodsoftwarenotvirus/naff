@@ -632,7 +632,7 @@ func TestSqlite_buildWebhookCreationQuery(T *testing.T) {
 			BelongsTo:   1,
 		}
 		expectedArgCount := 8
-		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (?,?,?,?,?,?,?,?) RETURNING id, created_on"
+		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (?,?,?,?,?,?,?,?)"
 
 		actualQuery, args := s.buildWebhookCreationQuery(exampleInput)
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -655,11 +655,11 @@ func TestSqlite_CreateWebhook(T *testing.T) {
 			Name:      expected.Name,
 			BelongsTo: expected.BelongsTo,
 		}
-		exampleRows := sqlmock.NewRows([]string{"id", "created_on"}).AddRow(expected.ID, uint64(time.Now().Unix()))
-		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (?,?,?,?,?,?,?,?) RETURNING id, created_on"
+		exampleRows := sqlmock.NewResult(int64(expected.ID), 1)
+		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (?,?,?,?,?,?,?,?)"
 
 		s, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
 			expected.Name,
 			expected.ContentType,
 			expected.URL,
@@ -668,7 +668,11 @@ func TestSqlite_CreateWebhook(T *testing.T) {
 			strings.Join(expected.DataTypes, typesSeparator),
 			strings.Join(expected.Topics, topicsSeparator),
 			expected.BelongsTo,
-		).WillReturnRows(exampleRows)
+		).WillReturnResult(exampleRows)
+
+		expectedTimeQuery := "SELECT created_on FROM webhooks WHERE id = ?"
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedTimeQuery)).
+			WillReturnRows(sqlmock.NewRows([]string{"created_on"}).AddRow(expected.CreatedOn))
 
 		actual, err := s.CreateWebhook(context.Background(), expectedInput)
 		assert.NoError(t, err)
@@ -689,10 +693,10 @@ func TestSqlite_CreateWebhook(T *testing.T) {
 			Name:      expected.Name,
 			BelongsTo: expected.BelongsTo,
 		}
-		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (?,?,?,?,?,?,?,?) RETURNING id, created_on"
+		expectedQuery := "INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (?,?,?,?,?,?,?,?)"
 
 		s, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
 			expected.Name,
 			expected.ContentType,
 			expected.URL,
@@ -727,7 +731,7 @@ func TestSqlite_buildUpdateWebhookQuery(T *testing.T) {
 			BelongsTo:   1,
 		}
 		expectedArgCount := 9
-		expectedQuery := "UPDATE webhooks SET name = ?, content_type = ?, url = ?, method = ?, events = ?, data_types = ?, topics = ?, updated_on = (strftime('%s','now')) WHERE belongs_to = ? AND id = ? RETURNING updated_on"
+		expectedQuery := "UPDATE webhooks SET name = ?, content_type = ?, url = ?, method = ?, events = ?, data_types = ?, topics = ?, updated_on = (strftime('%s','now')) WHERE belongs_to = ? AND id = ?"
 
 		actualQuery, args := s.buildUpdateWebhookQuery(exampleInput)
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -750,10 +754,10 @@ func TestSqlite_UpdateWebhook(T *testing.T) {
 			Topics:      []string{},
 			BelongsTo:   1,
 		}
-		exampleRows := sqlmock.NewRows([]string{"updated_on"}).AddRow(uint64(time.Now().Unix()))
-		expectedQuery := "UPDATE webhooks SET name = ?, content_type = ?, url = ?, method = ?, events = ?, data_types = ?, topics = ?, updated_on = (strftime('%s','now')) WHERE belongs_to = ? AND id = ? RETURNING updated_on"
+		exampleRows := sqlmock.NewResult(int64(expected.ID), 1)
+		expectedQuery := "UPDATE webhooks SET name = ?, content_type = ?, url = ?, method = ?, events = ?, data_types = ?, topics = ?, updated_on = (strftime('%s','now')) WHERE belongs_to = ? AND id = ?"
 
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
 			expected.Name,
 			expected.ContentType,
 			expected.URL,
@@ -763,7 +767,7 @@ func TestSqlite_UpdateWebhook(T *testing.T) {
 			strings.Join(expected.Topics, topicsSeparator),
 			expected.BelongsTo,
 			expected.ID,
-		).WillReturnRows(exampleRows)
+		).WillReturnResult(exampleRows)
 
 		err := s.UpdateWebhook(context.Background(), expected)
 		assert.NoError(t, err)
@@ -783,9 +787,9 @@ func TestSqlite_UpdateWebhook(T *testing.T) {
 			Topics:      []string{},
 			BelongsTo:   1,
 		}
-		expectedQuery := "UPDATE webhooks SET name = ?, content_type = ?, url = ?, method = ?, events = ?, data_types = ?, topics = ?, updated_on = (strftime('%s','now')) WHERE belongs_to = ? AND id = ? RETURNING updated_on"
+		expectedQuery := "UPDATE webhooks SET name = ?, content_type = ?, url = ?, method = ?, events = ?, data_types = ?, topics = ?, updated_on = (strftime('%s','now')) WHERE belongs_to = ? AND id = ?"
 
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
 			expected.Name,
 			expected.ContentType,
 			expected.URL,
@@ -812,7 +816,7 @@ func TestSqlite_buildArchiveWebhookQuery(T *testing.T) {
 		exampleWebhookID := uint64(123)
 		exampleUserID := uint64(321)
 		expectedArgCount := 2
-		expectedQuery := "UPDATE webhooks SET updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE archived_on IS NULL AND belongs_to = ? AND id = ? RETURNING archived_on"
+		expectedQuery := "UPDATE webhooks SET updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE archived_on IS NULL AND belongs_to = ? AND id = ?"
 
 		actualQuery, args := s.buildArchiveWebhookQuery(exampleWebhookID, exampleUserID)
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -832,7 +836,7 @@ func TestSqlite_ArchiveWebhook(T *testing.T) {
 			BelongsTo: 321,
 			CreatedOn: uint64(time.Now().Unix()),
 		}
-		expectedQuery := "UPDATE webhooks SET updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE archived_on IS NULL AND belongs_to = ? AND id = ? RETURNING archived_on"
+		expectedQuery := "UPDATE webhooks SET updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE archived_on IS NULL AND belongs_to = ? AND id = ?"
 
 		s, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(

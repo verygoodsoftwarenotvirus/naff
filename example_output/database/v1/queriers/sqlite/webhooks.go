@@ -337,7 +337,20 @@ func (s *Sqlite) buildWebhookCreationQuery(x *models.Webhook) (query string, arg
 			strings.Join(x.Topics, topicsSeparator),
 			x.BelongsTo,
 		).
-		Suffix("RETURNING id, created_on").
+		ToSql()
+
+	s.logQueryBuildingError(err)
+
+	return query, args
+}
+
+// buildWebhookCreationTimeQuery returns a SQL query (and arguments) that fetches the DB creation time for a given row
+func (s *Sqlite) buildWebhookCreationTimeQuery(webhookID uint64) (query string, args []interface{}) {
+	var err error
+	query, args, err = s.sqlBuilder.
+		Select("created_on").
+		From(webhooksTableName).
+		Where(squirrel.Eq{"id": webhookID}).
 		ToSql()
 
 	s.logQueryBuildingError(err)
@@ -359,8 +372,16 @@ func (s *Sqlite) CreateWebhook(ctx context.Context, input *models.WebhookCreatio
 	}
 
 	query, args := s.buildWebhookCreationQuery(x)
-	if err := s.db.QueryRowContext(ctx, query, args...).Scan(&x.ID, &x.CreatedOn); err != nil {
+	res, err := s.db.ExecContext(ctx, query, args...)
+	if err != nil {
 		return nil, fmt.Errorf("error executing webhook creation query: %w", err)
+	}
+
+	if id, idErr := res.LastInsertId(); idErr == nil {
+		x.ID = uint64(id)
+
+		query, args = s.buildWebhookCreationTimeQuery(x.ID)
+		s.logCreationTimeRetrievalError(s.db.QueryRowContext(ctx, query, args...).Scan(&x.CreatedOn))
 	}
 
 	return x, nil
@@ -382,7 +403,7 @@ func (s *Sqlite) buildUpdateWebhookQuery(input *models.Webhook) (query string, a
 		Where(squirrel.Eq{
 			"id":         input.ID,
 			"belongs_to": input.BelongsTo,
-		}).Suffix("RETURNING updated_on").
+		}).
 		ToSql()
 
 	s.logQueryBuildingError(err)
@@ -393,7 +414,8 @@ func (s *Sqlite) buildUpdateWebhookQuery(input *models.Webhook) (query string, a
 // UpdateWebhook updates a particular webhook. Note that UpdateWebhook expects the provided input to have a valid ID.
 func (s *Sqlite) UpdateWebhook(ctx context.Context, input *models.Webhook) error {
 	query, args := s.buildUpdateWebhookQuery(input)
-	return s.db.QueryRowContext(ctx, query, args...).Scan(&input.UpdatedOn)
+	_, err := s.db.ExecContext(ctx, query, args...)
+	return err
 }
 
 // buildArchiveWebhookQuery returns a SQL query (and arguments) that will mark a webhook as archived.
@@ -407,7 +429,7 @@ func (s *Sqlite) buildArchiveWebhookQuery(webhookID, userID uint64) (query strin
 			"id":          webhookID,
 			"belongs_to":  userID,
 			"archived_on": nil,
-		}).Suffix("RETURNING archived_on").
+		}).
 		ToSql()
 
 	s.logQueryBuildingError(err)

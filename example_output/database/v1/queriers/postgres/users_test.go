@@ -234,7 +234,8 @@ func TestPostgres_GetUsers(T *testing.T) {
 			buildMockRowFromUser(&expected.Users[0]),
 			buildMockRowFromUser(&expected.Users[0]),
 		)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).WillReturnError(errors.New("blah"))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnError(errors.New("blah"))
 
 		actual, err := p.GetUsers(context.Background(), models.DefaultQueryFilter())
 		assert.Error(t, err)

@@ -249,7 +249,8 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 					jen.ID("buildMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0))),
 					jen.ID("buildMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0))),
 				),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
+					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetUsers").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -400,6 +401,13 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 		jen.Line(),
 	)
 
+	////////////
+
+	var queryTail string
+	if dbrn == "postgres" {
+		queryTail = " RETURNING id, created_on"
+	}
+
 	ret.Add(
 		jen.Func().IDf("Test%s_buildCreateUserQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -412,7 +420,13 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 					jen.ID("TwoFactorSecret").Op(":").Lit("two factor secret"),
 				),
 				jen.ID("expectedArgCount").Op(":=").Lit(4),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (%s,%s,%s,%s) RETURNING id, created_on", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1), getIncIndex(dbrn, 2), getIncIndex(dbrn, 3)),
+				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (%s,%s,%s,%s)%s",
+					getIncIndex(dbrn, 0),
+					getIncIndex(dbrn, 1),
+					getIncIndex(dbrn, 2),
+					getIncIndex(dbrn, 3),
+					queryTail,
+				),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildCreateUserQuery").Call(jen.ID("exampleUser")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -421,6 +435,13 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 		),
 		jen.Line(),
 	)
+	queryTail = ""
+
+	////////////
+
+	if dbrn == "postgres" {
+		queryTail = " RETURNING id, created_on"
+	}
 
 	var specialSnowflakePGTest jen.Code
 	if dbrn == "postgres" {
@@ -433,7 +454,13 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Valuesln(
 				jen.ID("Username").Op(":").ID("expected").Dot("Username"),
 			),
-			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (%s,%s,%s,%s) RETURNING id, created_on", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1), getIncIndex(dbrn, 2), getIncIndex(dbrn, 3)),
+			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (%s,%s,%s,%s)%s",
+				getIncIndex(dbrn, 0),
+				getIncIndex(dbrn, 1),
+				getIncIndex(dbrn, 2),
+				getIncIndex(dbrn, 3),
+				queryTail,
+			),
 			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
@@ -455,36 +482,89 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 	} else {
 		specialSnowflakePGTest = jen.Null()
 	}
+	queryTail = ""
+
+	////////////
+
+	if dbrn == "postgres" {
+		queryTail = " RETURNING id, created_on"
+	}
+
+	buildCreateUserHappyPathBody := func() []jen.Code {
+		out := []jen.Code{
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Valuesln(
+				jen.ID("ID").Op(":").Lit(123),
+				jen.ID("Username").Op(":").Lit("username"),
+				jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
+			),
+			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Valuesln(
+				jen.ID("Username").Op(":").ID("expected").Dot("Username"),
+			),
+		}
+
+		var expectMethodName, returnMethodName string
+		if dbrn == "postgres" {
+			expectMethodName = "ExpectQuery"
+			returnMethodName = "WillReturnRows"
+			out = append(out, jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call())))
+		} else if dbrn == "sqlite" {
+			expectMethodName = "ExpectExec"
+			returnMethodName = "WillReturnResult"
+			out = append(out, jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1)))
+		}
+
+		out = append(out,
+			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (%s,%s,%s,%s)%s",
+				getIncIndex(dbrn, 0),
+				getIncIndex(dbrn, 1),
+				getIncIndex(dbrn, 2),
+				getIncIndex(dbrn, 3),
+				queryTail,
+			),
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("mockDB").Dot(expectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+				jen.ID("expected").Dot("Username"),
+				jen.ID("expected").Dot("HashedPassword"),
+				jen.ID("expected").Dot("TwoFactorSecret"),
+				jen.ID("expected").Dot("IsAdmin")).
+				Dot(returnMethodName).Call(jen.ID("exampleRows")),
+			jen.Line(),
+		)
+
+		if dbrn == "sqlite" {
+			out = append(out,
+				jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM users WHERE id = %s", getIncIndex(dbrn, 0)),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
+					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("CreatedOn"))),
+			)
+		}
+
+		out = append(out,
+			jen.Line(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("CreateUser").Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
+			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.Line(),
+			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
+
+		return out
+	}
+
+	var badPathExpectFuncName string
+	if dbrn == "postgres" {
+		badPathExpectFuncName = "ExpectQuery"
+	} else if dbrn == "sqlite" {
+		badPathExpectFuncName = "ExpectExec"
+	}
 
 	ret.Add(
 		jen.Func().IDf("Test%s_CreateUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Username").Op(":").Lit("username"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-				),
-				jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Valuesln(
-					jen.ID("Username").Op(":").ID("expected").Dot("Username"),
-				),
-				jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call())),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (%s,%s,%s,%s) RETURNING id, created_on", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1), getIncIndex(dbrn, 2), getIncIndex(dbrn, 3)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-					jen.ID("expected").Dot("Username"),
-					jen.ID("expected").Dot("HashedPassword"),
-					jen.ID("expected").Dot("TwoFactorSecret"),
-					jen.ID("expected").Dot("IsAdmin")).
-					Dot("WillReturnRows").Call(jen.ID("exampleRows")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("CreateUser").Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
-				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+				buildCreateUserHappyPathBody()...,
 			)),
 			jen.Line(),
 			specialSnowflakePGTest,
@@ -498,10 +578,15 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 				jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Valuesln(
 					jen.ID("Username").Op(":").ID("expected").Dot("Username"),
 				),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (%s,%s,%s,%s) RETURNING id, created_on", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1), getIncIndex(dbrn, 2), getIncIndex(dbrn, 3)),
+				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (%s,%s,%s,%s)%s",
+					getIncIndex(dbrn, 0),
+					getIncIndex(dbrn, 1),
+					getIncIndex(dbrn, 2),
+					getIncIndex(dbrn, 3),
+					queryTail),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+				jen.ID("mockDB").Dot(badPathExpectFuncName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 					jen.ID("expected").Dot("Username"),
 					jen.ID("expected").Dot("HashedPassword"),
 					jen.ID("expected").Dot("TwoFactorSecret"),
@@ -517,6 +602,13 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 		),
 		jen.Line(),
 	)
+	queryTail = ""
+
+	////////////
+
+	if dbrn == "postgres" {
+		queryTail = " RETURNING updated_on"
+	}
 
 	ret.Add(
 		jen.Func().IDf("Test%s_buildUpdateUserQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -530,7 +622,14 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 					jen.ID("HashedPassword").Op(":").Lit("hashed password"), jen.ID("TwoFactorSecret").Op(":").Lit("two factor secret"),
 				),
 				jen.ID("expectedArgCount").Op(":=").Lit(4),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET username = %s, hashed_password = %s, two_factor_secret = %s, updated_on = %s WHERE id = %s RETURNING updated_on", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1), getIncIndex(dbrn, 2), getTimeQuery(dbrn), getIncIndex(dbrn, 3)),
+				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET username = %s, hashed_password = %s, two_factor_secret = %s, updated_on = %s WHERE id = %s%s",
+					getIncIndex(dbrn, 0),
+					getIncIndex(dbrn, 1),
+					getIncIndex(dbrn, 2),
+					getTimeQuery(dbrn),
+					getIncIndex(dbrn, 3),
+					queryTail,
+				),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("exampleUser")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -539,6 +638,28 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 		),
 		jen.Line(),
 	)
+	queryTail = ""
+
+	////////////
+
+	var updateUserExpectMethod, updateUserReturnMethod string
+	if dbrn == "postgres" {
+		queryTail = " RETURNING updated_on"
+		updateUserExpectMethod = "ExpectQuery"
+		updateUserReturnMethod = "WillReturnRows"
+	} else if dbrn == "sqlite" {
+		updateUserExpectMethod = "ExpectExec"
+		updateUserReturnMethod = "WillReturnResult"
+	}
+
+	buildUpdateUserExampleRows := func() jen.Code {
+		if dbrn == "postgres" {
+			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
+		} else if dbrn == "sqlite" {
+			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
+		}
+		return jen.Null()
+	}
 
 	ret.Add(
 		jen.Func().IDf("Test%s_UpdateUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -550,16 +671,23 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 					jen.ID("Username").Op(":").Lit("username"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
-				jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call())),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET username = %s, hashed_password = %s, two_factor_secret = %s, updated_on = %s WHERE id = %s RETURNING updated_on", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1), getIncIndex(dbrn, 2), getTimeQuery(dbrn), getIncIndex(dbrn, 3)),
+				buildUpdateUserExampleRows(),
+				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET username = %s, hashed_password = %s, two_factor_secret = %s, updated_on = %s WHERE id = %s%s",
+					getIncIndex(dbrn, 0),
+					getIncIndex(dbrn, 1),
+					getIncIndex(dbrn, 2),
+					getTimeQuery(dbrn),
+					getIncIndex(dbrn, 3),
+					queryTail,
+				),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+				jen.ID("mockDB").Dot(updateUserExpectMethod).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 					jen.ID("expected").Dot("Username"),
 					jen.ID("expected").Dot("HashedPassword"),
 					jen.ID("expected").Dot("TwoFactorSecret"),
 					jen.ID("expected").Dot("ID"),
-				).Dot("WillReturnRows").Call(jen.ID("exampleRows")),
+				).Dot(updateUserReturnMethod).Call(jen.ID("exampleRows")),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID(dbfl).Dot("UpdateUser").Call(jen.Qual("context", "Background").Call(), jen.ID("expected")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -569,6 +697,13 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 		),
 		jen.Line(),
 	)
+	queryTail = ""
+
+	////////////
+
+	if dbrn == "postgres" {
+		queryTail = " RETURNING archived_on"
+	}
 
 	ret.Add(
 		jen.Func().IDf("Test%s_buildArchiveUserQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -578,7 +713,12 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expectedArgCount").Op(":=").Lit(1),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE id = %s RETURNING archived_on", getIncIndex(dbrn, 0)),
+				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET updated_on = %s, archived_on = %s WHERE id = %s%s",
+					getTimeQuery(dbrn),
+					getTimeQuery(dbrn),
+					getIncIndex(dbrn, 0),
+					queryTail,
+				),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildArchiveUserQuery").Call(jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -599,7 +739,12 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 					jen.ID("Username").Op(":").Lit("username"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE id = %s RETURNING archived_on", getIncIndex(dbrn, 0)),
+				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET updated_on = %s, archived_on = %s WHERE id = %s%s",
+					getTimeQuery(dbrn),
+					getTimeQuery(dbrn),
+					getIncIndex(dbrn, 0),
+					queryTail,
+				),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).

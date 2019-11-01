@@ -6,11 +6,9 @@ import (
 	"fmt"
 
 	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
-	dbclient "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client"
 	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/lib/pq"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 )
 
@@ -225,13 +223,25 @@ func (s *Sqlite) buildCreateUserQuery(input *models.UserInput) (query string, ar
 			input.TwoFactorSecret,
 			false,
 		).
-		Suffix("RETURNING id, created_on").
 		ToSql()
 
 	// NOTE: we always default is_admin to false, on the assumption that
 	// admins have DB access and will change that value via SQL query.
 	// There should also be no way to update a user via this structure
 	// such that they would have admin privileges
+
+	s.logQueryBuildingError(err)
+
+	return query, args
+}
+
+// buildUserCreationTimeQuery returns a SQL query (and arguments) that would create a given User
+func (s *Sqlite) buildUserCreationTimeQuery(userID uint64) (query string, args []interface{}) {
+	var err error
+	query, args, err = s.sqlBuilder.Select("created_on").
+		From(usersTableName).
+		Where(squirrel.Eq{"id": userID}).
+		ToSql()
 
 	s.logQueryBuildingError(err)
 
@@ -247,16 +257,17 @@ func (s *Sqlite) CreateUser(ctx context.Context, input *models.UserInput) (*mode
 	query, args := s.buildCreateUserQuery(input)
 
 	// create the user
-	err := s.db.QueryRowContext(ctx, query, args...).Scan(&x.ID, &x.CreatedOn)
+	res, err := s.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		switch e := err.(type) {
-		case *pq.Error:
-			if e.Code == pq.ErrorCode("23505") {
-				return nil, dbclient.ErrUserExists
-			}
-		default:
-			return nil, fmt.Errorf("error executing user creation query: %w", err)
-		}
+		return nil, fmt.Errorf("error executing user creation query: %w", err)
+	}
+
+	// fetch the last inserted ID
+	if id, idErr := res.LastInsertId(); idErr == nil {
+		x.ID = uint64(id)
+
+		query, args := s.buildUserCreationTimeQuery(x.ID)
+		s.logCreationTimeRetrievalError(s.db.QueryRowContext(ctx, query, args...).Scan(&x.CreatedOn))
 	}
 
 	return x, nil
@@ -272,7 +283,6 @@ func (s *Sqlite) buildUpdateUserQuery(input *models.User) (query string, args []
 		Set("two_factor_secret", input.TwoFactorSecret).
 		Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).
 		Where(squirrel.Eq{"id": input.ID}).
-		Suffix("RETURNING updated_on").
 		ToSql()
 
 	s.logQueryBuildingError(err)
@@ -285,7 +295,8 @@ func (s *Sqlite) buildUpdateUserQuery(input *models.User) (query string, args []
 // anonymous structs or incomplete models at your peril.
 func (s *Sqlite) UpdateUser(ctx context.Context, input *models.User) error {
 	query, args := s.buildUpdateUserQuery(input)
-	return s.db.QueryRowContext(ctx, query, args...).Scan(&input.UpdatedOn)
+	_, err := s.db.ExecContext(ctx, query, args...)
+	return err
 }
 
 func (s *Sqlite) buildArchiveUserQuery(userID uint64) (query string, args []interface{}) {
@@ -295,7 +306,6 @@ func (s *Sqlite) buildArchiveUserQuery(userID uint64) (query string, args []inte
 		Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).
 		Set("archived_on", squirrel.Expr(CurrentUnixTimeQuery)).
 		Where(squirrel.Eq{"id": userID}).
-		Suffix("RETURNING archived_on").
 		ToSql()
 
 	s.logQueryBuildingError(err)

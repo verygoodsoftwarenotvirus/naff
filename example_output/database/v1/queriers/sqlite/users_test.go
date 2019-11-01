@@ -232,7 +232,8 @@ func TestSqlite_GetUsers(T *testing.T) {
 			buildMockRowFromUser(&expected.Users[0]),
 			buildMockRowFromUser(&expected.Users[0]),
 		)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).WillReturnError(errors.New("blah"))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnError(errors.New("blah"))
 
 		actual, err := s.GetUsers(context.Background(), models.DefaultQueryFilter())
 		assert.Error(t, err)
@@ -380,7 +381,7 @@ func TestSqlite_buildCreateUserQuery(T *testing.T) {
 			TwoFactorSecret: "two factor secret",
 		}
 		expectedArgCount := 4
-		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (?,?,?,?) RETURNING id, created_on"
+		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (?,?,?,?)"
 
 		actualQuery, args := s.buildCreateUserQuery(exampleUser)
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -400,16 +401,20 @@ func TestSqlite_CreateUser(T *testing.T) {
 		expectedInput := &models.UserInput{
 			Username: expected.Username,
 		}
-		exampleRows := sqlmock.NewRows([]string{"id", "created_on"}).AddRow(expected.ID, uint64(time.Now().Unix()))
-		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (?,?,?,?) RETURNING id, created_on"
+		exampleRows := sqlmock.NewResult(int64(expected.ID), 1)
+		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (?,?,?,?)"
 
 		s, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
 			expected.Username,
 			expected.HashedPassword,
 			expected.TwoFactorSecret,
 			expected.IsAdmin,
-		).WillReturnRows(exampleRows)
+		).WillReturnResult(exampleRows)
+
+		expectedTimeQuery := "SELECT created_on FROM users WHERE id = ?"
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedTimeQuery)).
+			WillReturnRows(sqlmock.NewRows([]string{"created_on"}).AddRow(expected.CreatedOn))
 
 		actual, err := s.CreateUser(context.Background(), expectedInput)
 		assert.NoError(t, err)
@@ -427,10 +432,10 @@ func TestSqlite_CreateUser(T *testing.T) {
 		expectedInput := &models.UserInput{
 			Username: expected.Username,
 		}
-		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (?,?,?,?) RETURNING id, created_on"
+		expectedQuery := "INSERT INTO users (username,hashed_password,two_factor_secret,is_admin) VALUES (?,?,?,?)"
 
 		s, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
 			expected.Username,
 			expected.HashedPassword,
 			expected.TwoFactorSecret,
@@ -457,7 +462,7 @@ func TestSqlite_buildUpdateUserQuery(T *testing.T) {
 			TwoFactorSecret: "two factor secret",
 		}
 		expectedArgCount := 4
-		expectedQuery := "UPDATE users SET username = ?, hashed_password = ?, two_factor_secret = ?, updated_on = (strftime('%s','now')) WHERE id = ? RETURNING updated_on"
+		expectedQuery := "UPDATE users SET username = ?, hashed_password = ?, two_factor_secret = ?, updated_on = (strftime('%s','now')) WHERE id = ?"
 
 		actualQuery, args := s.buildUpdateUserQuery(exampleUser)
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -474,16 +479,16 @@ func TestSqlite_UpdateUser(T *testing.T) {
 			Username:  "username",
 			CreatedOn: uint64(time.Now().Unix()),
 		}
-		exampleRows := sqlmock.NewRows([]string{"updated_on"}).AddRow(uint64(time.Now().Unix()))
-		expectedQuery := "UPDATE users SET username = ?, hashed_password = ?, two_factor_secret = ?, updated_on = (strftime('%s','now')) WHERE id = ? RETURNING updated_on"
+		exampleRows := sqlmock.NewResult(int64(expected.ID), 1)
+		expectedQuery := "UPDATE users SET username = ?, hashed_password = ?, two_factor_secret = ?, updated_on = (strftime('%s','now')) WHERE id = ?"
 
 		s, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WithArgs(
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).WithArgs(
 			expected.Username,
 			expected.HashedPassword,
 			expected.TwoFactorSecret,
 			expected.ID,
-		).WillReturnRows(exampleRows)
+		).WillReturnResult(exampleRows)
 
 		err := s.UpdateUser(context.Background(), expected)
 		assert.NoError(t, err)
@@ -499,7 +504,7 @@ func TestSqlite_buildArchiveUserQuery(T *testing.T) {
 		s, _ := buildTestService(t)
 		exampleUserID := uint64(321)
 		expectedArgCount := 1
-		expectedQuery := "UPDATE users SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE id = ? RETURNING archived_on"
+		expectedQuery := "UPDATE users SET updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE id = ?"
 
 		actualQuery, args := s.buildArchiveUserQuery(exampleUserID)
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -517,7 +522,7 @@ func TestSqlite_ArchiveUser(T *testing.T) {
 			Username:  "username",
 			CreatedOn: uint64(time.Now().Unix()),
 		}
-		expectedQuery := "UPDATE users SET updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE id = ? RETURNING archived_on"
+		expectedQuery := "UPDATE users SET updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE id = ?"
 
 		s, mockDB := buildTestService(t)
 		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).

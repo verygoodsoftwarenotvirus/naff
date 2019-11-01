@@ -247,8 +247,7 @@ func (p *Postgres) CreateUser(ctx context.Context, input *models.UserInput) (*mo
 	query, args := p.buildCreateUserQuery(input)
 
 	// create the user
-	err := p.db.QueryRowContext(ctx, query, args...).Scan(&x.ID, &x.CreatedOn)
-	if err != nil {
+	if err := p.db.QueryRowContext(ctx, query, args...).Scan(&x.ID, &x.CreatedOn); err != nil {
 		switch e := err.(type) {
 		case *pq.Error:
 			if e.Code == pq.ErrorCode("23505") {

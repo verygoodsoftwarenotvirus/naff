@@ -17,6 +17,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 	dbrn := vendor.RouteName()
 
+	/////////////
+
 	ret.Add(
 		jen.Func().ID("buildMockRowFromWebhook").Params(jen.ID("w").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook")).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("webhooksTableColumns")).Dot("AddRow").Callln(
@@ -38,6 +40,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+
+	/////////////
 
 	ret.Add(
 		jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook")).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
@@ -61,6 +65,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 	)
 
+	/////////////
+
 	ret.Add(
 		jen.Func().IDf("Test%s_buildGetWebhookQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -82,6 +88,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+
+	/////////////
 
 	ret.Add(
 		jen.Func().IDf("Test%s_GetWebhook", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -180,6 +188,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 	)
 
+	/////////////
+
 	ret.Add(
 		jen.Func().IDf("Test%s_buildGetWebhookCountQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -198,6 +208,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+
+	/////////////
 
 	ret.Add(
 		jen.Func().IDf("Test%s_GetWebhookCount", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -239,6 +251,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 	)
 
+	/////////////
+
 	ret.Add(
 		jen.Func().IDf("Test%s_buildGetAllWebhooksCountQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -253,6 +267,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+
+	/////////////
 
 	ret.Add(
 		jen.Func().IDf("Test%s_GetAllWebhooksCount", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -290,6 +306,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 	)
 
+	/////////////
+
 	ret.Add(
 		jen.Func().IDf("Test%s_buildGetAllWebhooksQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -304,6 +322,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+
+	/////////////
 
 	ret.Add(
 		jen.Func().IDf("Test%s_GetAllWebhooks", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -420,6 +440,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 	)
 
+	/////////////
+
 	ret.Add(
 		jen.Func().IDf("Test%s_GetAllWebhooksForUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -503,6 +525,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 	)
 
+	/////////////
+
 	ret.Add(
 		jen.Func().IDf("Test%s_buildGetWebhooksQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -522,6 +546,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+
+	/////////////
 
 	ret.Add(
 		jen.Func().IDf("Test%s_GetWebhooks", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -652,6 +678,13 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 	)
 
+	/////////////
+
+	var queryTail string
+	if dbrn == "postgres" {
+		queryTail = " RETURNING id, created_on"
+	}
+
 	ret.Add(
 		jen.Func().IDf("Test%s_buildWebhookCreationQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -669,7 +702,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 					jen.ID("BelongsTo").Op(":").Lit(1),
 				),
 				jen.ID("expectedArgCount").Op(":=").Lit(8),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id, created_on",
+				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)%s",
 					getIncIndex(dbrn, 0),
 					getIncIndex(dbrn, 1),
 					getIncIndex(dbrn, 2),
@@ -678,6 +711,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 					getIncIndex(dbrn, 5),
 					getIncIndex(dbrn, 6),
 					getIncIndex(dbrn, 7),
+					queryTail,
 				),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildWebhookCreationQuery").Call(jen.ID("exampleInput")),
@@ -687,52 +721,95 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+	queryTail = ""
+
+	/////////////
+
+	if dbrn == "postgres" {
+		queryTail = " RETURNING id, created_on"
+	}
+
+	var createWebhookExpectFunc, createWebhookReturnFunc string
+
+	buildCreateWebhookExampleRows := func() jen.Code {
+		if dbrn == "postgres" {
+			createWebhookExpectFunc = "ExpectQuery"
+			createWebhookReturnFunc = "WillReturnRows"
+			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
+		} else if dbrn == "sqlite" {
+			createWebhookExpectFunc = "ExpectExec"
+			createWebhookReturnFunc = "WillReturnResult"
+			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
+		}
+		return jen.Null()
+	}
+
+	buildCreateWebhookHappyPathBody := func() []jen.Code {
+		out := []jen.Code{
+			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
+				jen.ID("ID").Op(":").Lit(123),
+				jen.ID("Name").Op(":").Lit("name"),
+				jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
+				jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
+			),
+			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
+				jen.ID("Name").Op(":").ID("expected").Dot("Name"),
+				jen.ID("BelongsTo").Op(":").ID("expected").Dot("BelongsTo"),
+			),
+			buildCreateWebhookExampleRows(),
+			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)%s",
+				getIncIndex(dbrn, 0),
+				getIncIndex(dbrn, 1),
+				getIncIndex(dbrn, 2),
+				getIncIndex(dbrn, 3),
+				getIncIndex(dbrn, 4),
+				getIncIndex(dbrn, 5),
+				getIncIndex(dbrn, 6),
+				getIncIndex(dbrn, 7),
+				queryTail,
+			),
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("mockDB").Dot(createWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+				jen.ID("expected").Dot("Name"),
+				jen.ID("expected").Dot("ContentType"),
+				jen.ID("expected").Dot("URL"),
+				jen.ID("expected").Dot("Method"),
+				jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Events"), jen.ID("eventsSeparator")),
+				jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("DataTypes"), jen.ID("typesSeparator")),
+				jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Topics"), jen.ID("topicsSeparator")),
+				jen.ID("expected").Dot("BelongsTo"),
+			).Dot(createWebhookReturnFunc).Call(jen.ID("exampleRows")),
+			jen.Line(),
+		}
+
+		if dbrn == "sqlite" {
+			out = append(out,
+				jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM webhooks WHERE id = %s", getIncIndex(dbrn, 0)),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
+					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("CreatedOn"))),
+				jen.Line(),
+			)
+		}
+
+		out = append(out,
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("CreateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
+			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.Line(),
+			jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
+
+		return out
+	}
 
 	ret.Add(
 		jen.Func().IDf("Test%s_CreateWebhook", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-				),
-				jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-					jen.ID("BelongsTo").Op(":").ID("expected").Dot("BelongsTo"),
-				),
-				jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call())),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id, created_on",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					getIncIndex(dbrn, 6),
-					getIncIndex(dbrn, 7),
-				),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-					jen.ID("expected").Dot("Name"),
-					jen.ID("expected").Dot("ContentType"),
-					jen.ID("expected").Dot("URL"),
-					jen.ID("expected").Dot("Method"),
-					jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Events"), jen.ID("eventsSeparator")),
-					jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("DataTypes"), jen.ID("typesSeparator")),
-					jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Topics"), jen.ID("topicsSeparator")),
-					jen.ID("expected").Dot("BelongsTo"),
-				).Dot("WillReturnRows").Call(jen.ID("exampleRows")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("CreateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
-				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+				buildCreateWebhookHappyPathBody()...,
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error interacting with database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -746,7 +823,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 				jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 					jen.ID("BelongsTo").Op(":").ID("expected").Dot("BelongsTo")),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id, created_on",
+				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)%s",
 					getIncIndex(dbrn, 0),
 					getIncIndex(dbrn, 1),
 					getIncIndex(dbrn, 2),
@@ -755,10 +832,11 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 					getIncIndex(dbrn, 5),
 					getIncIndex(dbrn, 6),
 					getIncIndex(dbrn, 7),
+					queryTail,
 				),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+				jen.ID("mockDB").Dot(createWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 					jen.ID("expected").Dot("Name"),
 					jen.ID("expected").Dot("ContentType"),
 					jen.ID("expected").Dot("URL"),
@@ -778,6 +856,13 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+	queryTail = ""
+
+	/////////////
+
+	if dbrn == "postgres" {
+		queryTail = " RETURNING updated_on"
+	}
 
 	ret.Add(
 		jen.Func().IDf("Test%s_buildUpdateWebhookQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -796,7 +881,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 					jen.ID("BelongsTo").Op(":").Lit(1),
 				),
 				jen.ID("expectedArgCount").Op(":=").Lit(9),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET name = %s, content_type = %s, url = %s, method = %s, events = %s, data_types = %s, topics = %s, updated_on = %s WHERE belongs_to = %s AND id = %s RETURNING updated_on",
+				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET name = %s, content_type = %s, url = %s, method = %s, events = %s, data_types = %s, topics = %s, updated_on = %s WHERE belongs_to = %s AND id = %s%s",
 					getIncIndex(dbrn, 0),
 					getIncIndex(dbrn, 1),
 					getIncIndex(dbrn, 2),
@@ -807,6 +892,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 					getTimeQuery(dbrn),
 					getIncIndex(dbrn, 7),
 					getIncIndex(dbrn, 8),
+					queryTail,
 				),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateWebhookQuery").Call(jen.ID("exampleInput")),
@@ -816,6 +902,28 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+	queryTail = ""
+
+	/////////////
+
+	if dbrn == "postgres" {
+		queryTail = " RETURNING updated_on"
+	}
+
+	var updateWebhookExpectFunc, updateWebhookReturnFunc string
+
+	buildUpdateWebhookExampleRows := func() jen.Code {
+		if dbrn == "postgres" {
+			updateWebhookExpectFunc = "ExpectQuery"
+			updateWebhookReturnFunc = "WillReturnRows"
+			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
+		} else if dbrn == "sqlite" {
+			updateWebhookExpectFunc = "ExpectExec"
+			updateWebhookReturnFunc = "WillReturnResult"
+			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
+		}
+		return jen.Null()
+	}
 
 	ret.Add(
 		jen.Func().IDf("Test%s_UpdateWebhook", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -833,8 +941,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 					jen.ID("Topics").Op(":").Index().ID("string").Values(),
 					jen.ID("BelongsTo").Op(":").Lit(1),
 				),
-				jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call())),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET name = %s, content_type = %s, url = %s, method = %s, events = %s, data_types = %s, topics = %s, updated_on = %s WHERE belongs_to = %s AND id = %s RETURNING updated_on",
+				buildUpdateWebhookExampleRows(),
+				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET name = %s, content_type = %s, url = %s, method = %s, events = %s, data_types = %s, topics = %s, updated_on = %s WHERE belongs_to = %s AND id = %s%s",
 					getIncIndex(dbrn, 0),
 					getIncIndex(dbrn, 1),
 					getIncIndex(dbrn, 2),
@@ -845,9 +953,10 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 					getTimeQuery(dbrn),
 					getIncIndex(dbrn, 7),
 					getIncIndex(dbrn, 8),
+					queryTail,
 				),
 				jen.Line(),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+				jen.ID("mockDB").Dot(updateWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 					jen.ID("expected").Dot("Name"),
 					jen.ID("expected").Dot("ContentType"),
 					jen.ID("expected").Dot("URL"),
@@ -857,7 +966,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 						jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Topics"),
 						jen.ID("topicsSeparator")), jen.ID("expected").Dot("BelongsTo"),
 					jen.ID("expected").Dot("ID"),
-				).Dot("WillReturnRows").Call(jen.ID("exampleRows")),
+				).Dot(updateWebhookReturnFunc).Call(jen.ID("exampleRows")),
 				jen.Line(),
 				jen.ID("err").Op(":=").ID(dbfl).Dot("UpdateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expected")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -869,7 +978,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
 					jen.ID("Name").Op(":").Lit("name"), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"), jen.ID("Events").Op(":").Index().ID("string").Values(), jen.ID("DataTypes").Op(":").Index().ID("string").Values(), jen.ID("Topics").Op(":").Index().ID("string").Values(), jen.ID("BelongsTo").Op(":").Lit(1)),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET name = %s, content_type = %s, url = %s, method = %s, events = %s, data_types = %s, topics = %s, updated_on = %s WHERE belongs_to = %s AND id = %s RETURNING updated_on",
+				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET name = %s, content_type = %s, url = %s, method = %s, events = %s, data_types = %s, topics = %s, updated_on = %s WHERE belongs_to = %s AND id = %s%s",
 					getIncIndex(dbrn, 0),
 					getIncIndex(dbrn, 1),
 					getIncIndex(dbrn, 2),
@@ -880,9 +989,10 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 					getTimeQuery(dbrn),
 					getIncIndex(dbrn, 7),
 					getIncIndex(dbrn, 8),
+					queryTail,
 				),
 				jen.Line(),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+				jen.ID("mockDB").Dot(updateWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 					jen.ID("expected").Dot("Name"),
 					jen.ID("expected").Dot("ContentType"),
 					jen.ID("expected").Dot("URL"),
@@ -902,6 +1012,13 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+	queryTail = ""
+
+	/////////////
+
+	if dbrn == "postgres" {
+		queryTail = " RETURNING archived_on"
+	}
 
 	ret.Add(
 		jen.Func().IDf("Test%s_buildArchiveWebhookQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -912,7 +1029,13 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 				jen.ID("exampleWebhookID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expectedArgCount").Op(":=").Lit(2),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to = %s AND id = %s RETURNING archived_on", getTimeQuery(dbrn), getTimeQuery(dbrn), getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
+				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to = %s AND id = %s%s",
+					getTimeQuery(dbrn),
+					getTimeQuery(dbrn),
+					getIncIndex(dbrn, 0),
+					getIncIndex(dbrn, 1),
+					queryTail,
+				),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildArchiveWebhookQuery").Call(jen.ID("exampleWebhookID"), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -923,6 +1046,13 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 		),
 		jen.Line(),
 	)
+	queryTail = ""
+
+	/////////////
+
+	if dbrn == "postgres" {
+		queryTail = " RETURNING archived_on"
+	}
 
 	ret.Add(
 		jen.Func().IDf("Test%s_ArchiveWebhook", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -935,7 +1065,13 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 					jen.ID("BelongsTo").Op(":").Lit(321),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to = %s AND id = %s RETURNING archived_on", getTimeQuery(dbrn), getTimeQuery(dbrn), getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
+				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to = %s AND id = %s%s",
+					getTimeQuery(dbrn),
+					getTimeQuery(dbrn),
+					getIncIndex(dbrn, 0),
+					getIncIndex(dbrn, 1),
+					queryTail,
+				),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(

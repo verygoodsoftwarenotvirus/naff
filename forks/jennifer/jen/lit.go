@@ -30,6 +30,34 @@ func (s *Statement) RawString(v string) *Statement {
 	return s
 }
 
+// RawStringf renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func RawStringf(msg string, args ...interface{}) *Statement {
+	return newStatement().RawStringf(msg, args...)
+}
+
+// RawStringf renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func (g *Group) RawStringf(msg string, args ...interface{}) *Statement {
+	s := RawStringf(msg, args...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// RawStringf renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func (s *Statement) RawStringf(msg string, args ...interface{}) *Statement {
+	t := token{
+		typ:     literalRawStringToken,
+		content: fmt.Sprintf(msg, args...),
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // Lit renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
 // float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Passing any other type will panic.
