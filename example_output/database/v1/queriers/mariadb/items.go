@@ -6,37 +6,52 @@ import (
 	"fmt"
 	"sync"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+	models "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
+
 	"github.com/Masterminds/squirrel"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
 )
 
-var itemsTableName = "items"
+const (
+	itemsTableName = "items"
+)
 
-var itemsTableColumns = []string{
-	"id",
-	"name",
-	"details",
-	"created_on",
-	"updated_on",
-	"archived_on",
-	"belongs_to",
-}
+var (
+	itemsTableColumns = []string{
+		"id",
+		"name",
+		"details",
+		"created_on",
+		"updated_on",
+		"archived_on",
+		"belongs_to",
+	}
+)
 
-// scanItem takes a database Scanner (i.e. *sql.Row) and scans
-// the result into an Item struct
+// scanItem takes a database Scanner (i.e. *sql.Row) and scans the result into an Item struct
 func scanItem(scan database.Scanner) (*models.Item, error) {
 	x := &models.Item{}
-	if err := scan.Scan(&x.ID, &x.Name, &x.Details, &x.CreatedOn, &x.UpdatedOn, &x.ArchivedOn, &x.BelongsTo); err != nil {
+
+	if err := scan.Scan(
+		&x.ID,
+		&x.Name,
+		&x.Details,
+		&x.CreatedOn,
+		&x.UpdatedOn,
+		&x.ArchivedOn,
+		&x.BelongsTo,
+	); err != nil {
 		return nil, err
 	}
+
 	return x, nil
 }
 
 // scanItems takes a logger and some database rows and turns them into a slice of items
 func scanItems(logger logging.Logger, rows *sql.Rows) ([]models.Item, error) {
 	var list []models.Item
+
 	for rows.Next() {
 		x, err := scanItem(rows)
 		if err != nil {
@@ -44,27 +59,35 @@ func scanItems(logger logging.Logger, rows *sql.Rows) ([]models.Item, error) {
 		}
 		list = append(list, *x)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
 	if closeErr := rows.Close(); closeErr != nil {
 		logger.Error(closeErr, "closing database rows")
 	}
+
 	return list, nil
 }
 
 // buildGetItemQuery constructs a SQL query for fetching an item with a given ID belong to a user with a given ID.
 func (m *MariaDB) buildGetItemQuery(itemID, userID uint64) (query string, args []interface{}) {
 	var err error
-	query, args, err = m.sqlBuilder.Select(itemsTableColumns...).From(itemsTableName).Where(squirrel.Eq{
-		"id":         itemID,
-		"belongs_to": userID,
-	}).ToSql()
+	query, args, err = m.sqlBuilder.
+		Select(itemsTableColumns...).
+		From(itemsTableName).
+		Where(squirrel.Eq{
+			"id":         itemID,
+			"belongs_to": userID,
+		}).ToSql()
+
 	m.logQueryBuildingError(err)
+
 	return query, args
 }
 
-// GetItem fetches an item from the database
+// GetItem fetches an item from the mariadb database
 func (m *MariaDB) GetItem(ctx context.Context, itemID, userID uint64) (*models.Item, error) {
 	query, args := m.buildGetItemQuery(itemID, userID)
 	row := m.db.QueryRowContext(ctx, query, args...)
@@ -75,15 +98,21 @@ func (m *MariaDB) GetItem(ctx context.Context, itemID, userID uint64) (*models.I
 // fetching the number of items belonging to a given user that meet a given query
 func (m *MariaDB) buildGetItemCountQuery(filter *models.QueryFilter, userID uint64) (query string, args []interface{}) {
 	var err error
-	builder := m.sqlBuilder.Select(CountQuery).From(itemsTableName).Where(squirrel.Eq{
-		"archived_on": nil,
-		"belongs_to":  userID,
-	})
+	builder := m.sqlBuilder.
+		Select(CountQuery).
+		From(itemsTableName).
+		Where(squirrel.Eq{
+			"archived_on": nil,
+			"belongs_to":  userID,
+		})
+
 	if filter != nil {
 		builder = filter.ApplyToQueryBuilder(builder)
 	}
+
 	query, args, err = builder.ToSql()
 	m.logQueryBuildingError(err)
+
 	return query, args
 }
 
@@ -104,11 +133,14 @@ var (
 func (m *MariaDB) buildGetAllItemsCountQuery() string {
 	allItemsCountQueryBuilder.Do(func() {
 		var err error
-		allItemsCountQuery, _, err = m.sqlBuilder.Select(CountQuery).From(itemsTableName).Where(squirrel.Eq{
-			"archived_on": nil,
-		}).ToSql()
+		allItemsCountQuery, _, err = m.sqlBuilder.
+			Select(CountQuery).
+			From(itemsTableName).
+			Where(squirrel.Eq{"archived_on": nil}).
+			ToSql()
 		m.logQueryBuildingError(err)
 	})
+
 	return allItemsCountQuery
 }
 
@@ -122,33 +154,43 @@ func (m *MariaDB) GetAllItemsCount(ctx context.Context) (count uint64, err error
 // and returns both the query and the relevant args to pass to the query executor.
 func (m *MariaDB) buildGetItemsQuery(filter *models.QueryFilter, userID uint64) (query string, args []interface{}) {
 	var err error
-	builder := m.sqlBuilder.Select(itemsTableColumns...).From(itemsTableName).Where(squirrel.Eq{
-		"archived_on": nil,
-		"belongs_to":  userID,
-	})
+	builder := m.sqlBuilder.
+		Select(itemsTableColumns...).
+		From(itemsTableName).
+		Where(squirrel.Eq{
+			"archived_on": nil,
+			"belongs_to":  userID,
+		})
+
 	if filter != nil {
 		builder = filter.ApplyToQueryBuilder(builder)
 	}
+
 	query, args, err = builder.ToSql()
 	m.logQueryBuildingError(err)
+
 	return query, args
 }
 
 // GetItems fetches a list of items from the database that meet a particular filter
 func (m *MariaDB) GetItems(ctx context.Context, filter *models.QueryFilter, userID uint64) (*models.ItemList, error) {
 	query, args := m.buildGetItemsQuery(filter, userID)
+
 	rows, err := m.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, buildError(err, "querying database for items")
 	}
+
 	list, err := scanItems(m.logger, rows)
 	if err != nil {
 		return nil, fmt.Errorf("scanning response from database: %w", err)
 	}
+
 	count, err := m.GetItemCount(ctx, filter, userID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching item count: %w", err)
 	}
+
 	x := &models.ItemList{
 		Pagination: models.Pagination{
 			Page:       filter.Page,
@@ -157,38 +199,61 @@ func (m *MariaDB) GetItems(ctx context.Context, filter *models.QueryFilter, user
 		},
 		Items: list,
 	}
+
 	return x, nil
 }
 
 // GetAllItemsForUser fetches every item belonging to a user
 func (m *MariaDB) GetAllItemsForUser(ctx context.Context, userID uint64) ([]models.Item, error) {
 	query, args := m.buildGetItemsQuery(nil, userID)
+
 	rows, err := m.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, buildError(err, "fetching items for user")
 	}
+
 	list, err := scanItems(m.logger, rows)
 	if err != nil {
 		return nil, fmt.Errorf("parsing database results: %w", err)
 	}
+
 	return list, nil
 }
 
 // buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments.
 func (m *MariaDB) buildCreateItemQuery(input *models.Item) (query string, args []interface{}) {
 	var err error
-	query, args, err = m.sqlBuilder.Insert(itemsTableName).Columns("name", "details", "belongs_to", "created_on").Values(input.Name, input.Details, input.BelongsTo, squirrel.Expr(CurrentUnixTimeQuery)).ToSql()
+	query, args, err = m.sqlBuilder.
+		Insert(itemsTableName).
+		Columns(
+			"name",
+			"details",
+			"belongs_to",
+		).
+		Values(
+			input.Name,
+			input.Details,
+			input.BelongsTo,
+		).
+		ToSql()
+
 	m.logQueryBuildingError(err)
+
 	return query, args
 }
 
-// buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments.
+// buildItemCreationTimeQuery takes an item and returns a creation query for that item and the relevant arguments
 func (m *MariaDB) buildItemCreationTimeQuery(itemID uint64) (query string, args []interface{}) {
 	var err error
-	query, args, err = m.sqlBuilder.Select("created_on").From(itemsTableName).Where(squirrel.Eq{
-		"id": itemID,
-	}).ToSql()
+
+	query, args, err = m.sqlBuilder.
+		Select("created_on").
+		From(itemsTableName).
+		Where(squirrel.Eq{"id": itemID}).
+		ToSql()
+
 	m.logQueryBuildingError(err)
+
 	return query, args
 }
 
@@ -199,28 +264,43 @@ func (m *MariaDB) CreateItem(ctx context.Context, input *models.ItemCreationInpu
 		Details:   input.Details,
 		BelongsTo: input.BelongsTo,
 	}
+
 	query, args := m.buildCreateItemQuery(x)
+
+	// create the item
 	res, err := m.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error executing item creation query: %w", err)
 	}
+
+	// fetch the last inserted ID
 	id, idErr := res.LastInsertId()
 	if idErr == nil {
 		x.ID = uint64(id)
+
 		query, args := m.buildItemCreationTimeQuery(x.ID)
 		m.logCreationTimeRetrievalError(m.db.QueryRowContext(ctx, query, args...).Scan(&x.CreatedOn))
 	}
+
 	return x, nil
 }
 
 // buildUpdateItemQuery takes an item and returns an update SQL query, with the relevant query parameters
 func (m *MariaDB) buildUpdateItemQuery(input *models.Item) (query string, args []interface{}) {
 	var err error
-	query, args, err = m.sqlBuilder.Update(itemsTableName).Set("name", input.Name).Set("details", input.Details).Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).Where(squirrel.Eq{
-		"id":         input.ID,
-		"belongs_to": input.BelongsTo,
-	}).ToSql()
+	query, args, err = m.sqlBuilder.
+		Update(itemsTableName).
+		Set("name", input.Name).
+		Set("details", input.Details).
+		Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).
+		Where(squirrel.Eq{
+			"id":         input.ID,
+			"belongs_to": input.BelongsTo,
+		}).
+		ToSql()
+
 	m.logQueryBuildingError(err)
+
 	return query, args
 }
 
@@ -234,12 +314,19 @@ func (m *MariaDB) UpdateItem(ctx context.Context, input *models.Item) error {
 // buildArchiveItemQuery returns a SQL query which marks a given item belonging to a given user as archived.
 func (m *MariaDB) buildArchiveItemQuery(itemID, userID uint64) (query string, args []interface{}) {
 	var err error
-	query, args, err = m.sqlBuilder.Update(itemsTableName).Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).Set("archived_on", squirrel.Expr(CurrentUnixTimeQuery)).Where(squirrel.Eq{
-		"id":          itemID,
-		"archived_on": nil,
-		"belongs_to":  userID,
-	}).ToSql()
+	query, args, err = m.sqlBuilder.
+		Update(itemsTableName).
+		Set("updated_on", squirrel.Expr(CurrentUnixTimeQuery)).
+		Set("archived_on", squirrel.Expr(CurrentUnixTimeQuery)).
+		Where(squirrel.Eq{
+			"id":          itemID,
+			"archived_on": nil,
+			"belongs_to":  userID,
+		}).
+		ToSql()
+
 	m.logQueryBuildingError(err)
+
 	return query, args
 }
 

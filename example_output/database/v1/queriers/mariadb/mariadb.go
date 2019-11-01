@@ -3,53 +3,76 @@ package mariadb
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strings"
 	"sync"
 	"time"
 
+	database "gitlab.com/verygoodsoftwarenotvirus/todo/database/v1"
+
 	"contrib.go.opencensus.io/integrations/ocsql"
 	"github.com/Masterminds/squirrel"
-	mysql "github.com/go-sql-driver/mysql"
-	"github.com/pkg/errors"
+	"github.com/go-sql-driver/mysql"
 	"gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 )
 
 const (
-	loggerName           = "mariadb"
-	mariaDBDriverName    = "wrapped-mariadb-driver"
-	CountQuery           = "COUNT(id)"
+	loggerName        = "mariadb"
+	mariaDBDriverName = "wrapped-mariadb-driver"
+
+	// CountQuery is a generic counter query used in a few query builders
+	CountQuery = "COUNT(id)"
+
+	// CurrentUnixTimeQuery is the query maria DB uses to determine the current unix time
 	CurrentUnixTimeQuery = "UNIX_TIMESTAMP()"
 )
 
 func init() {
-	driver := ocsql.Wrap(&mysql.MySQLDriver{}, ocsql.WithQuery(true), ocsql.WithAllowRoot(false), ocsql.WithRowsNext(true), ocsql.WithRowsClose(true), ocsql.WithQueryParams(true))
+	// Explicitly wrap the MariaDB driver with ocsql
+	driver := ocsql.Wrap(
+		&mysql.MySQLDriver{},
+		ocsql.WithQuery(true),
+		ocsql.WithAllowRoot(false),
+		ocsql.WithRowsNext(true),
+		ocsql.WithRowsClose(true),
+		ocsql.WithQueryParams(true),
+	)
+
+	// Register our ocsql wrapper as a db driver
 	sql.Register(mariaDBDriverName, driver)
 }
 
+var _ database.Database = (*MariaDB)(nil)
+
 type (
+	// MariaDB is our main MariaDB interaction db
 	MariaDB struct {
-		logger            logging.Logger
-		db                *sql.DB
-		sqlBuilder        squirrel.StatementBuilderType
-		migrateOnce       sync.Once
-		debug             bool
-		ConnectionDetails string
-		Querier           interface {
-			ExecContext(ctx context.Context, args ...interface{}) (sql.Result, error)
-			QueryContext(ctx context.Context, args ...interface{}) (*sql.Rows, error)
-			QueryRowContext(ctx context.Context, args ...interface{}) *sql.Row
-		}
+		logger      logging.Logger
+		db          *sql.DB
+		sqlBuilder  squirrel.StatementBuilderType
+		migrateOnce sync.Once
+		debug       bool
+	}
+
+	// ConnectionDetails is a string alias for a MariaDB url
+	ConnectionDetails string
+
+	// Querier is a subset interface for sql.{DB|Tx|Stmt} objects
+	Querier interface {
+		ExecContext(ctx context.Context, args ...interface{}) (sql.Result, error)
+		QueryContext(ctx context.Context, args ...interface{}) (*sql.Rows, error)
+		QueryRowContext(ctx context.Context, args ...interface{}) *sql.Row
 	}
 )
 
-// ProvideMariaDBConnection provides an instrumented mariadb connection
-func ProvideMariaDBConnection(logger logging.Logger, connectionDetails database.ConnectionDetails) (*sql.DB, error) {
-	logger.WithValue("connection_details", connectionDetails).Debug("Establishing connection to mariadb")
+// ProvideMariaDB provides an instrumented maria DB db
+func ProvideMariaDB(logger logging.Logger, connectionDetails database.ConnectionDetails) (*sql.DB, error) {
+	logger.WithValue("connection_details", connectionDetails).Debug("Establishing connection to maria DB")
 	return sql.Open(mariaDBDriverName, string(connectionDetails))
 }
 
-// ProvideMariaDB provides a mariadb controller
-func ProvideMariaDB(debug bool, db *sql.DB, logger logging.Logger) database.Database {
+// ProvideMariaDB provides a maria DB controller
+func ProvideMariaDBDatabase(debug bool, db *sql.DB, logger logging.Logger) database.Database {
 	return &MariaDB{
 		db:         db,
 		debug:      debug,
@@ -61,19 +84,20 @@ func ProvideMariaDB(debug bool, db *sql.DB, logger logging.Logger) database.Data
 // IsReady reports whether or not the db is ready
 func (m *MariaDB) IsReady(ctx context.Context) (ready bool) {
 	numberOfUnsuccessfulAttempts := 0
-	waitInterval := time.Second
-	maxAttempts := 100
+
 	m.logger.WithValues(map[string]interface{}{
-		"wait_interval": waitInterval,
-		"max_attempts":  maxAttempts,
+		"interval":     time.Second,
+		"max_attempts": 50,
 	}).Debug("IsReady called")
+
 	for !ready {
 		err := m.db.Ping()
 		if err != nil {
 			m.logger.Debug("ping failed, waiting for db")
-			time.Sleep(waitInterval)
+			time.Sleep(time.Second)
+
 			numberOfUnsuccessfulAttempts++
-			if numberOfUnsuccessfulAttempts >= maxAttempts {
+			if numberOfUnsuccessfulAttempts >= 50 {
 				return false
 			}
 		} else {
@@ -102,7 +126,7 @@ func (m *MariaDB) logQueryBuildingError(err error) {
 // with the utmost priority.
 func (m *MariaDB) logCreationTimeRetrievalError(err error) {
 	if err != nil {
-		m.logger.WithName("CREATION_TIME_RETRIEVAL").Error(err, "building query")
+		m.logger.WithName("CREATION_TIME_RETRIEVAL").Error(err, "retrieving creation time")
 	}
 }
 
@@ -112,5 +136,10 @@ func buildError(err error, msg string) error {
 	if err == sql.ErrNoRows {
 		return err
 	}
-	return errors.Wrap(err, msg)
+
+	if !strings.Contains(msg, `%w`) {
+		msg += ": %w"
+	}
+
+	return fmt.Errorf(msg, err)
 }

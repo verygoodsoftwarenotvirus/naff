@@ -299,9 +299,8 @@ func TestPostgres_GetAllOAuth2ClientsForUser(T *testing.T) {
 		expectedQuery := "SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WillReturnRows(
-			buildErroneousMockRowFromOAuth2Client(expected),
-		)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(buildErroneousMockRowFromOAuth2Client(expected))
 
 		actual, err := p.GetAllOAuth2ClientsForUser(context.Background(), exampleUser.ID)
 		assert.Error(t, err)
@@ -459,9 +458,8 @@ func TestPostgres_GetAllOAuth2ClientCount(T *testing.T) {
 		expectedCount := uint64(666)
 
 		p, mockDB := buildTestService(t)
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).WillReturnRows(
-			sqlmock.NewRows([]string{"count"}).AddRow(expectedCount),
-		)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
 
 		actualCount, err := p.GetAllOAuth2ClientCount(context.Background())
 		assert.NoError(t, err)

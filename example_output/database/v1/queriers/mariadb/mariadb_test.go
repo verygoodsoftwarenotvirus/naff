@@ -15,17 +15,30 @@ import (
 func buildTestService(t *testing.T) (*MariaDB, sqlmock.Sqlmock) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	p := ProvideMariaDB(true, db, noop.ProvideNoopLogger())
-	return p.(*MariaDB), mock
+	m := ProvideMariaDBDatabase(true, db, noop.ProvideNoopLogger())
+	return m.(*MariaDB), mock
 }
 
-var sqlMockReplacer = strings.NewReplacer("$", "\\$", "(", "\\(", ")", "\\)", "=", "\\=", "*", "\\*", ".", "\\.", "+", "\\+", "?", "\\?", ",", "\\,", "-", "\\-")
+var (
+	sqlMockReplacer = strings.NewReplacer(
+		"$", `\$`,
+		"(", `\(`,
+		")", `\)`,
+		"=", `\=`,
+		"*", `\*`,
+		".", `\.`,
+		"+", `\+`,
+		"?", `\?`,
+		",", `\,`,
+		"-", `\-`,
+	)
+)
 
 func formatQueryForSQLMock(query string) string {
 	return sqlMockReplacer.Replace(query)
 }
 
-func TestProvidePostgres(T *testing.T) {
+func TestProvideMariaDB(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
@@ -42,7 +55,7 @@ func TestMariaDB_IsReady(T *testing.T) {
 	})
 }
 
-func Test_logQueryBuildingError(T *testing.T) {
+func TestMariaDB_logQueryBuildingError(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {

@@ -9,13 +9,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
-func oauth2ClientsTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
+func oauth2ClientsTestDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)
 	sn := vendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 	dbrn := vendor.RouteName()
+
+	isPostgres := dbrn == "postgres"
+	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	ret.Add(
 		jen.Func().ID("buildMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
@@ -320,9 +324,8 @@ func oauth2ClientsTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen
 				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID("expected")),
-				),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID("expected"))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUser").Dot("ID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -498,9 +501,8 @@ func oauth2ClientsTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen
 				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
-					jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount")),
-				),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 				jen.Line(),
 				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2ClientCount").Call(jen.Qual("context", "Background").Call()),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -675,7 +677,7 @@ func oauth2ClientsTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen
 	)
 
 	var queryTail string
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING id, created_on"
 	}
 
@@ -724,12 +726,12 @@ func oauth2ClientsTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen
 		createOAuth2ClientExampleRows jen.Code
 		sqliteTimeCreationAddendum    jen.Code
 	)
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING id, created_on"
 		happyPathExpectMethodName = "ExpectQuery"
 		happyPathReturnMethodName = "WillReturnRows"
 		createOAuth2ClientExampleRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
-	} else if dbrn == "sqlite" {
+	} else if isSqlite || isMariaDB {
 		happyPathExpectMethodName = "ExpectExec"
 		happyPathReturnMethodName = "WillReturnResult"
 		createOAuth2ClientExampleRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
@@ -831,7 +833,7 @@ func oauth2ClientsTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen
 	)
 
 	queryTail = ""
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING updated_on"
 	}
 
@@ -879,13 +881,13 @@ func oauth2ClientsTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen
 		mockDBExpect        jen.Code
 		errFuncExpectMethod string
 	)
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING updated_on"
 		mockDBExpect = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
 			jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 		)
 		errFuncExpectMethod = "ExpectQuery"
-	} else if dbrn == "sqlite" {
+	} else if isSqlite || isMariaDB {
 		mockDBExpect = jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 			Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1)))
 		errFuncExpectMethod = "ExpectExec"
@@ -944,7 +946,7 @@ func oauth2ClientsTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen
 	)
 
 	queryTail = ""
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING archived_on"
 	}
 

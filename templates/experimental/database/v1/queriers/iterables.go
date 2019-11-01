@@ -44,7 +44,7 @@ func buildScanFields(typ models.DataType) []jen.Code {
 	return scanFields
 }
 
-func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.File {
+func iterablesDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
 	utils.AddImports(ret)
@@ -54,6 +54,7 @@ func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models
 	sn := n.Singular()
 	pn := n.Plural()
 	scn := n.SingularCommonName()
+	dbrn := dbvendor.RouteName()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 	pcn := n.PluralCommonName()
 	uvn := n.UnexportedVarName()
@@ -61,6 +62,10 @@ func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models
 	scnwp := n.SingularCommonNameWithPrefix()
 	pcsnwp := n.ProperSingularCommonNameWithPrefix()
 	prn := n.PluralRouteName()
+
+	isPostgres := dbrn == "postgres"
+	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	ret.Add(
 		jen.Const().Defs(
@@ -350,14 +355,10 @@ func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models
 		Dotln("Columns").Callln(creationColumns...).
 		Dotln("Values").Callln(valuesColumns...)
 
-	switch strings.ToLower(dbvsn) {
-	case "postgres":
+	if isPostgres {
 		qb.Dotln("Suffix").Call(jen.Lit("RETURNING id, created_on"))
-	case sqlite:
-		//
-	default:
-		panic(fmt.Sprintf("wTf: %q", dbvsn))
 	}
+
 	qb.Dotln("ToSql").Call()
 
 	createQueryFuncBody := []jen.Code{
@@ -380,7 +381,7 @@ func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models
 
 	////////////
 
-	if strings.ToLower(dbvsn) == "sqlite" {
+	if isSqlite || isMariaDB {
 		ret.Add(
 			jen.Commentf("build%sCreationTimeQuery takes %s and returns a creation query for that %s and the relevant arguments", sn, scnwp, scn),
 			jen.Line(),
@@ -420,17 +421,16 @@ func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models
 		jen.Commentf("create the %s", scn),
 	}
 
-	switch strings.ToLower(dbvsn) {
-	case "postgres":
+	if isPostgres {
 		baseCreateFuncBody = append(baseCreateFuncBody,
 			jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")),
 		)
-	case "sqlite":
+	} else if isSqlite || isMariaDB {
 		baseCreateFuncBody = append(baseCreateFuncBody,
 			jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 		)
-	default:
-		panic("wrong db")
+	} else {
+		println("dbrn is weeird", dbrn)
 	}
 
 	baseCreateFuncBody = append(baseCreateFuncBody,
@@ -440,7 +440,7 @@ func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models
 		jen.Line(),
 	)
 
-	if strings.ToLower(strings.TrimSpace(dbvsn)) == "sqlite" {
+	if isSqlite || isMariaDB {
 		baseCreateFuncBody = append(baseCreateFuncBody,
 			jen.Comment("fetch the last inserted ID"),
 			jen.List(jen.ID("id"), jen.ID("idErr")).Op(":=").ID("res").Dot("LastInsertId").Call(),
@@ -448,7 +448,7 @@ func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models
 				jen.ID("x").Dot("ID").Op("=").ID("uint64").Call(jen.ID("id")),
 				jen.Line(),
 				jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("build%sCreationTimeQuery", sn).Call(jen.ID("x").Dot("ID")),
-				jen.ID("s").Dot("logCreationTimeRetrievalError").Call(
+				jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(
 					jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("CreatedOn")),
 				),
 			),
@@ -515,10 +515,9 @@ func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models
 		func() []jen.Code {
 
 			var finalStatement jen.Code
-			switch strings.ToLower(dbvsn) {
-			case "postgres":
+			if isPostgres {
 				finalStatement = jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn"))
-			case "sqlite":
+			} else if isSqlite || isMariaDB {
 				_g := &jen.Group{}
 				_g.Add(
 					jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
@@ -526,8 +525,6 @@ func iterablesDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models
 					jen.Return(jen.ID("err")),
 				)
 				finalStatement = _g
-			default:
-				panic("WETHASDHFUIP")
 			}
 
 			return []jen.Code{

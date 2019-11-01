@@ -9,13 +9,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
-func oauth2ClientsDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
+func oauth2ClientsDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)
 	sn := vendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 	dbrn := vendor.RouteName()
+
+	isPostgres := dbrn == "postgres"
+	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	ret.Add(
 		jen.Const().Defs(
@@ -469,7 +473,7 @@ func oauth2ClientsDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.Fil
 			jen.ID("input").Dot("RedirectURI"),
 			jen.ID("input").Dot("BelongsTo"),
 		)
-		if dbrn == "postgres" {
+		if isPostgres {
 			q.Dotln("Suffix").Call(jen.Lit("RETURNING id, created_on"))
 		}
 		q.Dotln("ToSql").Call()
@@ -493,7 +497,7 @@ func oauth2ClientsDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.Fil
 
 	////////////
 
-	if dbrn == "sqlite" {
+	if isSqlite || isMariaDB {
 		ret.Add(
 			jen.Comment("buildOAuth2ClientCreationTimeQuery takes an item and returns a creation query for that item and the relevant arguments."),
 			jen.Line(),
@@ -529,16 +533,16 @@ func oauth2ClientsDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.Fil
 			jen.Line(),
 		}
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			out = append(out,
 				jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing client creation query: %w"), jen.ID("err"))),
 				),
 			)
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			out = append(out,
-				jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID("s").Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+				jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing client creation query: %w"), jen.ID("err"))),
 				),
@@ -582,7 +586,7 @@ func oauth2ClientsDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.Fil
 			jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo"),
 		))
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			q.Dotln("Suffix").Call(jen.Lit("RETURNING updated_on"))
 		}
 		q.Dotln("ToSql").Call()
@@ -613,11 +617,11 @@ func oauth2ClientsDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.Fil
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateOAuth2ClientQuery").Call(jen.ID("input")),
 		}
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			out = append(out, jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")))
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			out = append(out,
-				jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("s").Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+				jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 				jen.Return().ID("err"),
 			)
 		}
@@ -648,7 +652,7 @@ func oauth2ClientsDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.Fil
 			jen.Lit("belongs_to").Op(":").ID("userID"),
 		))
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			q.Dotln("Suffix").Call(jen.Lit("RETURNING archived_on"))
 		}
 		q.Dotln("ToSql").Call()

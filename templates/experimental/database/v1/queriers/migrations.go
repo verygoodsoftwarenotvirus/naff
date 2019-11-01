@@ -113,7 +113,7 @@ type migration struct {
 	description, script string
 }
 
-func makeMigrations(dbVendor *wordsmith.SuperPalabra, types []models.DataType) []jen.Code {
+func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []jen.Code {
 	var (
 		out        []jen.Code
 		migrations []migration
@@ -276,16 +276,8 @@ func makeMigrations(dbVendor *wordsmith.SuperPalabra, types []models.DataType) [
 			},
 		}
 
-		var (
-			idType     string
-			idAddendum string
-		)
-		if dbrn == "postgres" {
-			idType = "bigserial"
-		} else if dbrn == "sqlite" {
-			idType = "INTEGER"
-			idAddendum = " AUTOINCREMENT"
-		}
+		idType := "INTEGER"
+		idAddendum := " AUTOINCREMENT"
 
 		for _, typ := range types {
 			pcn := typ.Name.PluralCommonName()
@@ -311,25 +303,114 @@ func makeMigrations(dbVendor *wordsmith.SuperPalabra, types []models.DataType) [
 				scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
 			}
 
-			if dbrn == "postgres" {
-				scriptParts = append(scriptParts,
-					`				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),`,
-					`				"updated_on" bigint DEFAULT NULL,`,
-					`				"archived_on" bigint DEFAULT NULL,`,
-					`				"belongs_to" bigint NOT NULL,`,
-					`				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")`,
-					`			);`,
-				)
-			} else if dbrn == "sqlite" {
-				scriptParts = append(scriptParts,
-					`				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),`,
-					`				"updated_on" INTEGER DEFAULT NULL,`,
-					`				"archived_on" INTEGER DEFAULT NULL,`,
-					`				"belongs_to" INTEGER NOT NULL,`,
-					`				FOREIGN KEY(belongs_to) REFERENCES users(id)`,
-					`			);`,
-				)
+			scriptParts = append(scriptParts,
+				`				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),`,
+				`				"updated_on" INTEGER DEFAULT NULL,`,
+				`				"archived_on" INTEGER DEFAULT NULL,`,
+				`				"belongs_to" INTEGER NOT NULL,`,
+				`				FOREIGN KEY(belongs_to) REFERENCES users(id)`,
+				`			);`,
+			)
+
+			migrations = append(migrations,
+				migration{
+					description: fmt.Sprintf("create %s table", pcn),
+					script:      strings.Join(scriptParts, "\n"),
+				},
+			)
+		}
+	case "mariadb", "maria_db":
+		migrations = []migration{
+			{
+				description: "create users table",
+				script: `
+				CREATE TABLE IF NOT EXISTS users (
+					"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+					"username" TEXT NOT NULL,
+					"hashed_password" TEXT NOT NULL,
+					"password_last_changed_on" INTEGER,
+					"two_factor_secret" TEXT NOT NULL,
+					"is_admin" BOOLEAN NOT NULL DEFAULT 'false',
+					"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+					"updated_on" INTEGER,
+					"archived_on" INTEGER DEFAULT NULL,
+					CONSTRAINT username_unique UNIQUE (username)
+				);`,
+			},
+			{
+				description: "create oauth2_clients table",
+				script: `
+				CREATE TABLE IF NOT EXISTS oauth2_clients (
+					"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+					"name" TEXT DEFAULT '',
+					"client_id" TEXT NOT NULL,
+					"client_secret" TEXT NOT NULL,
+					"redirect_uri" TEXT DEFAULT '',
+					"scopes" TEXT NOT NULL,
+					"implicit_allowed" BOOLEAN NOT NULL DEFAULT 'false',
+					"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+					"updated_on" INTEGER,
+					"archived_on" INTEGER DEFAULT NULL,
+					"belongs_to" INTEGER NOT NULL,
+					FOREIGN KEY(belongs_to) REFERENCES users(id)
+				);`,
+			},
+			{
+				description: "create webhooks table",
+				script: `
+				CREATE TABLE IF NOT EXISTS webhooks (
+					"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+					"name" text NOT NULL,
+					"content_type" text NOT NULL,
+					"url" text NOT NULL,
+					"method" text NOT NULL,
+					"events" text NOT NULL,
+					"data_types" text NOT NULL,
+					"topics" text NOT NULL,
+					"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+					"updated_on" INTEGER,
+					"archived_on" INTEGER DEFAULT NULL,
+					"belongs_to" INTEGER NOT NULL,
+					FOREIGN KEY(belongs_to) REFERENCES users(id)
+				);`,
+			},
+		}
+
+		idType := "INTEGER"
+		idAddendum := " AUTOINCREMENT"
+
+		for _, typ := range types {
+			pcn := typ.Name.PluralCommonName()
+
+			scriptParts := []string{
+				fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
+				fmt.Sprintf(`				"id" %s NOT NULL PRIMARY KEY%s,`, idType, idAddendum),
 			}
+
+			for _, field := range typ.Fields {
+				rn := field.Name.RouteName()
+
+				query := fmt.Sprintf("				%q %s", rn, typeToSqliteType(field.Type))
+
+				if !field.Pointer {
+					query += ` NOT NULL`
+				}
+
+				if field.DefaultAllowed {
+					query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+				}
+
+				scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
+			}
+
+			scriptParts = append(scriptParts,
+				`				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),`,
+				`				"updated_on" INTEGER DEFAULT NULL,`,
+				`				"archived_on" INTEGER DEFAULT NULL,`,
+				`				"belongs_to" INTEGER NOT NULL,`,
+				`				FOREIGN KEY(belongs_to) REFERENCES users(id)`,
+				`			);`,
+			)
 
 			migrations = append(migrations,
 				migration{
@@ -351,7 +432,7 @@ func makeMigrations(dbVendor *wordsmith.SuperPalabra, types []models.DataType) [
 	return out
 }
 
-func migrationsDotGo(vendor *wordsmith.SuperPalabra, types []models.DataType) *jen.File {
+func migrationsDotGo(vendor wordsmith.SuperPalabra, types []models.DataType) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)

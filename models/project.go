@@ -16,13 +16,13 @@ import (
 
 // DataType represents a data model
 type DataType struct {
-	Name   *wordsmith.SuperPalabra
+	Name   wordsmith.SuperPalabra
 	Fields []DataField
 }
 
 // DataField represents a data model's field
 type DataField struct {
-	Name                  *wordsmith.SuperPalabra
+	Name                  wordsmith.SuperPalabra
 	Type                  string
 	Pointer               bool
 	DefaultAllowed        bool
@@ -35,8 +35,9 @@ type Project struct {
 	sourcePackage           string
 	OutputPath              string
 	iterableServicesImports []string
+	EnableWebhooks          bool
 
-	Name      *wordsmith.SuperPalabra
+	Name      wordsmith.SuperPalabra
 	DataTypes []DataType
 }
 

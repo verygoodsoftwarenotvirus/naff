@@ -9,7 +9,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
-func databaseDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
+func databaseDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.RouteName())
 
 	utils.AddImports(ret)
@@ -23,15 +23,14 @@ func databaseDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 
 	isPostgres := dbrn == "postgres"
 	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	var squirrelInitConfig jen.Code
-	switch vendor.RouteName() {
-	case "postgres":
+
+	if dbrn == "postgres" {
 		squirrelInitConfig = jen.ID("sqlBuilder").Op(":").Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", "Dollar"))
-	case "sqlite":
+	} else if dbrn == "sqlite" || dbrn == "mariadb" {
 		squirrelInitConfig = jen.ID("sqlBuilder").Op(":").Qual("github.com/Masterminds/squirrel", "StatementBuilder")
-	default:
-		panic("WTF")
 	}
 
 	ret.Add(
@@ -55,6 +54,8 @@ func databaseDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 		driverInit = jen.Op("&").Qual("github.com/lib/pq", "Driver").Values()
 	} else if isSqlite {
 		driverInit = jen.Op("&").Qual("github.com/mattn/go-sqlite3", "SQLiteDriver").Values()
+	} else if isMariaDB {
+		driverInit = jen.Op("&").Qual("github.com/go-sql-driver/mysql", "MySQLDriver").Values()
 	}
 
 	ret.Add(
@@ -99,20 +100,37 @@ func databaseDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 		jen.Line(),
 	)
 
+	////////////
+	var (
+		dbTrail string
+	)
+	if !isMariaDB {
+		dbTrail = "DB"
+	}
+
 	ret.Add(
-		jen.Commentf("Provide%sDB provides an instrumented %s db", sn, cn),
+		jen.Commentf("Provide%s%s provides an instrumented %s db", sn, dbTrail, cn),
 		jen.Line(),
-		jen.Func().IDf("Provide%sDB", sn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(filepath.Join(pkgRoot, "database/v1"), "ConnectionDetails")).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
+		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(filepath.Join(pkgRoot, "database/v1"), "ConnectionDetails")).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
 			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.ID("string").Call(jen.ID("connectionDetails"))),
 		),
 		jen.Line(),
 	)
 
+	////////////
+	var provideTrail string
+	dbTrail = ""
+	if !isMariaDB {
+		dbTrail = " db"
+	} else {
+		provideTrail = "Database"
+	}
+
 	ret.Add(
-		jen.Commentf("Provide%s provides a %s db controller", sn, cn),
+		jen.Commentf("Provide%s provides a %s%s controller", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkgRoot, "database/v1"), "Database")).Block(
+		jen.Func().IDf("Provide%s%s", sn, provideTrail).Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkgRoot, "database/v1"), "Database")).Block(
 			jen.Return().Op("&").IDf(sn).Valuesln(
 				jen.ID("db").Op(":").ID("db"),
 				jen.ID("debug").Op(":").ID("debug"),
@@ -152,9 +170,34 @@ func databaseDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 				),
 				jen.Return().ID("false"),
 			}
-		} else { // MARIADBME
-			return nil
+		} else if isMariaDB {
+			return []jen.Code{
+				jen.ID("numberOfUnsuccessfulAttempts").Op(":=").Lit(0),
+				jen.Line(),
+				jen.ID(dbfl).Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+					jen.Lit("interval").Op(":").Qual("time", "Second"),
+					jen.Lit("max_attempts").Op(":").Lit(50)),
+				).Dot("Debug").Call(jen.Lit("IsReady called")),
+				jen.Line(),
+				jen.For(jen.Op("!").ID("ready")).Block(
+					jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("Ping").Call(),
+					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+						jen.ID(dbfl).Dot("logger").Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
+						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
+						jen.Line(),
+						jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
+						jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
+							jen.Return().ID("false"),
+						),
+					).Else().Block(
+						jen.ID("ready").Op("=").ID("true"),
+						jen.Return().ID("ready"),
+					),
+				),
+				jen.Return().ID("false"),
+			}
 		}
+		return nil
 	}
 
 	ret.Add(
@@ -185,7 +228,7 @@ func databaseDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 		jen.Line(),
 	)
 
-	if isSqlite {
+	if isSqlite || isMariaDB {
 		ret.Add(
 			jen.Comment("logCreationTimeRetrievalError logs errors that may occur during creation time retrieval."),
 			jen.Line(),

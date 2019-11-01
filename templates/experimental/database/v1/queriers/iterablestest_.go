@@ -14,6 +14,7 @@ import (
 const (
 	postgresCurrentUnixTimeQuery = "extract(epoch FROM NOW())"
 	sqliteCurrentUnixTimeQuery   = "(strftime('%s','now'))"
+	mariaDBUnixTimeQuery         = "UNIX_TIMESTAMP()"
 )
 
 func buildGeneralFields(varName string, typ models.DataType) []jen.Code {
@@ -83,28 +84,36 @@ func buildUpdateQueryParts(dbrn string, typ models.DataType) []string {
 }
 
 func getIncIndex(dbrn string, index uint) string {
-	switch dbrn {
-	case "postgres":
+	isPostgres := dbrn == "postgres"
+	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
+
+	if isPostgres {
 		return fmt.Sprintf("$%d", index+1)
-	case "sqlite":
+	} else if isSqlite || isMariaDB {
 		return "?"
-	default:
-		panic("aaaaaaaaa")
 	}
+	return ""
 }
 
 func getTimeQuery(dbrn string) string {
-	switch dbrn {
-	case "postgres":
+	isPostgres := dbrn == "postgres"
+	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
+
+	if isPostgres {
 		return postgresCurrentUnixTimeQuery
-	case "sqlite":
-		return sqliteCurrentUnixTimeQuery
-	default:
-		panic("aaaaaaaaa")
 	}
+	if isSqlite {
+		return sqliteCurrentUnixTimeQuery
+	}
+	if isMariaDB {
+		return mariaDBUnixTimeQuery
+	}
+	return ""
 }
 
-func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ models.DataType) *jen.File {
+func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
 	utils.AddImports(ret)
@@ -121,6 +130,10 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 
 	fieldCols := buildNonStandardStringColumns(typ)
 	cols := buildStringColumns(typ)
+
+	isPostgres := dbrn == "postgres"
+	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	var ips []string
 	for i := range typ.Fields {
@@ -396,7 +409,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error scanning %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").ID("uint64").Call(jen.Lit(321)),
+					jen.ID("ID").Op(":").Lit(321),
 				),
 				jen.ID("expectedListQuery").Op(":=").Litf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", cols, tn, getIncIndex(dbrn, 0)),
 				jen.Line(),
@@ -520,7 +533,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 	////////////
 
 	var queryTail string
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING id, created_on"
 	}
 
@@ -577,7 +590,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 			),
 		}
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			out = append(out,
 				jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(
 					jen.ID("expected").Dot("ID"),
@@ -592,14 +605,14 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 		)
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			out = append(out,
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Callln(
 					nef...,
 				).Dot("WillReturnRows").Call(jen.ID("exampleRows")),
 			)
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			out = append(out,
 				jen.Line(),
 				jen.ID("expectedCreationQuery").Op(":=").Litf("INSERT INTO %s (%s,belongs_to) VALUES (%s)", tn, strings.ReplaceAll(fieldCols, " ", ""), insertPlaceholders),
@@ -630,9 +643,9 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 
 	buildTestCreateDbErrorBody := func() []jen.Code {
 		var expectFuncName string
-		if dbrn == "postgres" {
+		if isPostgres {
 			expectFuncName = "ExpectQuery"
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			expectFuncName = "ExpectExec"
 		}
 
@@ -683,7 +696,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 	updateColsStr := strings.Join(updateCols, ", ")
 
 	queryTail = ""
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING updated_on"
 	}
 
@@ -738,10 +751,10 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 
 	var exRows jen.Code
 	queryTail = ""
-	if dbrn == "postgres" {
+	if isPostgres {
 		exRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 		queryTail = " RETURNING updated_on"
-	} else if dbrn == "sqlite" {
+	} else if isSqlite || isMariaDB {
 		exRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
 	}
 
@@ -750,10 +763,10 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 			expectFuncName,
 			returnFuncName string
 		)
-		if dbrn == "postgres" {
+		if isPostgres {
 			expectFuncName = "ExpectQuery"
 			returnFuncName = "WillReturnRows"
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			expectFuncName = "ExpectExec"
 			returnFuncName = "WillReturnResult"
 		}
@@ -795,9 +808,9 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 		var (
 			expectFuncName string
 		)
-		if dbrn == "postgres" {
+		if isPostgres {
 			expectFuncName = "ExpectQuery"
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			expectFuncName = "ExpectExec"
 		}
 
@@ -837,7 +850,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 	////////////
 
 	queryTail = ""
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING archived_on"
 	}
 
@@ -867,7 +880,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor *wordsmith.SuperPalabra, typ mo
 	////////////
 
 	queryTail = ""
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING archived_on"
 	}
 

@@ -2,4 +2,10 @@ package mariadb
 
 import "github.com/google/wire"
 
-var Providers = wire.NewSet(ProvideMariaDBConnection, ProvideMariaDB)
+var (
+	// Providers is what we provide for dependency injection
+	Providers = wire.NewSet(
+		ProvideMariaDB,
+		ProvideMariaDBDatabase,
+	)
+)

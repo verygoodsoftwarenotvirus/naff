@@ -63,6 +63,7 @@ func AddImports(file *jen.File) {
 
 	file.ImportAlias("github.com/lib/pq", "postgres")
 	file.ImportAlias("github.com/mattn/go-sqlite3", "sqlite")
+	file.ImportName("github.com/go-sql-driver/mysql", "mysql")
 
 	file.ImportNames(map[string]string{
 		"context":           "context",

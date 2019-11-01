@@ -8,9 +8,9 @@ import (
 	pluralize "github.com/gertd/go-pluralize"
 )
 
-func FromSingularPascalCase(input string) *SuperPalabra {
+func FromSingularPascalCase(input string) SuperPalabra {
 	if len(input) > 0 {
-		return &SuperPalabra{
+		return &SuperWord{
 			meta:       kace.Pascal(input),
 			pluralizer: pluralize.NewClient(),
 		}
@@ -18,64 +18,81 @@ func FromSingularPascalCase(input string) *SuperPalabra {
 	return nil
 }
 
-type SuperPalabra struct {
+type SuperPalabra interface {
+	Singular() string
+	Plural() string
+	RouteName() string
+	KebabName() string
+	PluralRouteName() string
+	UnexportedVarName() string
+	PluralUnexportedVarName() string
+	PackageName() string
+	SingularPackageName() string
+	SingularCommonName() string
+	ProperSingularCommonNameWithPrefix() string
+	PluralCommonName() string
+	SingularCommonNameWithPrefix() string
+	PluralCommonNameWithPrefix() string
+}
+
+type SuperWord struct {
 	meta       string
 	pluralizer *pluralize.Client
 }
 
-func (s *SuperPalabra) Singular() string {
+func (s *SuperWord) Singular() string {
 	return kace.Pascal(s.meta)
 }
 
-func (s *SuperPalabra) Plural() string {
+func (s *SuperWord) Plural() string {
 	return s.pluralizer.Plural(s.meta)
 }
 
-func (s *SuperPalabra) RouteName() string {
+func (s *SuperWord) RouteName() string {
 	return kace.Snake(s.meta)
 }
 
-func (s *SuperPalabra) KebabName() string {
+func (s *SuperWord) KebabName() string {
 	return kace.Kebab(s.meta)
 }
 
-func (s *SuperPalabra) PluralRouteName() string {
+func (s *SuperWord) PluralRouteName() string {
 	return kace.Snake(s.pluralizer.Plural(s.meta))
 }
 
-func (s *SuperPalabra) UnexportedVarName() string {
+func (s *SuperWord) UnexportedVarName() string {
 	return kace.Camel(s.meta)
 }
 
-func (s *SuperPalabra) PluralUnexportedVarName() string {
+func (s *SuperWord) PluralUnexportedVarName() string {
 	return kace.Camel(s.pluralizer.Plural(s.meta))
 }
 
-func (s *SuperPalabra) PackageName() string {
+func (s *SuperWord) PackageName() string {
 	return strings.ToLower(s.Plural())
 }
 
-func (s *SuperPalabra) SingularPackageName() string {
+func (s *SuperWord) SingularPackageName() string {
 	return strings.ToLower(s.Singular())
 }
 
-func (s *SuperPalabra) SingularCommonName() string {
+func (s *SuperWord) SingularCommonName() string {
 	return strings.Join(strings.Split(s.RouteName(), "_"), " ")
 }
 
-func (s *SuperPalabra) ProperSingularCommonNameWithPrefix() string {
+func (s *SuperWord) ProperSingularCommonNameWithPrefix() string {
 	return fmt.Sprintf("%s %s", AOrAn(s.Singular()), strings.Title(strings.Join(strings.Split(s.RouteName(), "_"), " ")))
 }
 
-func (s *SuperPalabra) PluralCommonName() string {
+func (s *SuperWord) PluralCommonName() string {
 	return strings.Join(strings.Split(s.PluralRouteName(), "_"), " ")
 }
 
-func (s *SuperPalabra) SingularCommonNameWithPrefix() string {
+func (s *SuperWord) SingularCommonNameWithPrefix() string {
 	return fmt.Sprintf("%s %s", AOrAn(s.Singular()), s.SingularCommonName())
 }
 
-func (s *SuperPalabra) PluralCommonNameWithPrefix() string {
+func (s *SuperWord) PluralCommonNameWithPrefix() string {
 	return fmt.Sprintf("%s %s", AOrAn(s.Singular()), s.PluralCommonName())
 }
 

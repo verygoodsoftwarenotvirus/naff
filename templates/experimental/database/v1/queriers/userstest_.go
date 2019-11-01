@@ -9,13 +9,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
-func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
+func usersTestDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)
 	sn := vendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 	dbrn := vendor.RouteName()
+
+	isPostgres := dbrn == "postgres"
+	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	ret.Add(
 		jen.Func().ID("buildMockRowFromUser").Params(jen.ID("user").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "User")).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
@@ -165,8 +169,8 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 					jen.ID("buildMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0))),
 					jen.ID("buildMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0))),
 				),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).Dot("WillReturnRows").Callln(
-					jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
+					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetUsers").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -404,7 +408,7 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 	////////////
 
 	var queryTail string
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING id, created_on"
 	}
 
@@ -439,12 +443,12 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 
 	////////////
 
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING id, created_on"
 	}
 
 	var specialSnowflakePGTest jen.Code
-	if dbrn == "postgres" {
+	if isPostgres {
 		specialSnowflakePGTest = jen.ID("T").Dot("Run").Call(jen.Litf("with %s row exists error", vendor.SingularCommonName()), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Valuesln(
 				jen.ID("ID").Op(":").Lit(123),
@@ -486,7 +490,7 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 
 	////////////
 
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING id, created_on"
 	}
 
@@ -503,11 +507,11 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 		}
 
 		var expectMethodName, returnMethodName string
-		if dbrn == "postgres" {
+		if isPostgres {
 			expectMethodName = "ExpectQuery"
 			returnMethodName = "WillReturnRows"
 			out = append(out, jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call())))
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			expectMethodName = "ExpectExec"
 			returnMethodName = "WillReturnResult"
 			out = append(out, jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1)))
@@ -532,7 +536,7 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 			jen.Line(),
 		)
 
-		if dbrn == "sqlite" {
+		if isSqlite || isMariaDB {
 			out = append(out,
 				jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM users WHERE id = %s", getIncIndex(dbrn, 0)),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
@@ -553,9 +557,9 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 	}
 
 	var badPathExpectFuncName string
-	if dbrn == "postgres" {
+	if isPostgres {
 		badPathExpectFuncName = "ExpectQuery"
-	} else if dbrn == "sqlite" {
+	} else if isSqlite || isMariaDB {
 		badPathExpectFuncName = "ExpectExec"
 	}
 
@@ -606,7 +610,7 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 
 	////////////
 
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING updated_on"
 	}
 
@@ -643,19 +647,19 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 	////////////
 
 	var updateUserExpectMethod, updateUserReturnMethod string
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING updated_on"
 		updateUserExpectMethod = "ExpectQuery"
 		updateUserReturnMethod = "WillReturnRows"
-	} else if dbrn == "sqlite" {
+	} else if isSqlite || isMariaDB {
 		updateUserExpectMethod = "ExpectExec"
 		updateUserReturnMethod = "WillReturnResult"
 	}
 
 	buildUpdateUserExampleRows := func() jen.Code {
-		if dbrn == "postgres" {
+		if isPostgres {
 			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
 		}
 		return jen.Null()
@@ -701,7 +705,7 @@ func usersTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 
 	////////////
 
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING archived_on"
 	}
 

@@ -262,7 +262,7 @@ func TestPostgres_GetItems(T *testing.T) {
 	T.Run("with error scanning item", func(t *testing.T) {
 		expectedUserID := uint64(123)
 		expected := &models.Item{
-			ID: uint64(321),
+			ID: 321,
 		}
 		expectedListQuery := "SELECT id, name, details, created_on, updated_on, archived_on, belongs_to FROM items WHERE archived_on IS NULL AND belongs_to = $1 LIMIT 20"
 

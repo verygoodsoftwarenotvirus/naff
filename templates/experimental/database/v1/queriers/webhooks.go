@@ -9,13 +9,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
-func webhooksDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
+func webhooksDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)
 	sn := vendor.Singular()
 	dbrn := vendor.RouteName()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	isPostgres := dbrn == "postgres"
+	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	ret.Add(
 		jen.Const().Defs(
@@ -428,7 +432,7 @@ func webhooksDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 			jen.ID("x").Dot("BelongsTo"),
 		)
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			q.Dotln("Suffix").Call(jen.Lit("RETURNING id, created_on"))
 		}
 		q.Dotln("ToSql").Call()
@@ -452,7 +456,7 @@ func webhooksDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 
 	////////////
 
-	if dbrn == "sqlite" {
+	if isSqlite || isMariaDB {
 		ret.Add(
 			jen.Comment("buildWebhookCreationTimeQuery returns a SQL query (and arguments) that fetches the DB creation time for a given row"),
 			jen.Line(),
@@ -490,13 +494,13 @@ func webhooksDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildWebhookCreationQuery").Call(jen.ID("x")),
 		}
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			out = append(out,
 				jen.If(jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing webhook creation query: %w"), jen.ID("err"))),
 				),
 			)
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			out = append(out,
 				jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
@@ -547,7 +551,7 @@ func webhooksDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 			jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo")),
 		)
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			q.Dot("Suffix").Call(jen.Lit("RETURNING updated_on"))
 		}
 
@@ -572,12 +576,12 @@ func webhooksDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 	////////////
 
 	buildUpdateWebhookBody := func() []jen.Code {
-		if dbrn == "postgres" {
+		if isPostgres {
 			return []jen.Code{
 				jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateWebhookQuery").Call(jen.ID("input")),
 				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")),
 			}
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			return []jen.Code{
 				jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateWebhookQuery").Call(jen.ID("input")),
 				jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
@@ -608,7 +612,7 @@ func webhooksDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 			jen.Lit("archived_on").Op(":").ID("nil"),
 		))
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			q.Dot("Suffix").Call(jen.Lit("RETURNING archived_on"))
 		}
 

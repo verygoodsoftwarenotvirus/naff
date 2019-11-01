@@ -9,13 +9,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
-func usersDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
+func usersDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)
 	sn := vendor.Singular()
 	dbrn := vendor.RouteName()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	isPostgres := dbrn == "postgres"
+	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	ret.Add(
 		jen.Const().Defs(
@@ -293,7 +297,7 @@ func usersDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 			jen.ID("false"),
 		)
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			q.Dotln("Suffix").Call(jen.Lit("RETURNING id, created_on"))
 		}
 
@@ -323,7 +327,7 @@ func usersDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 
 	////////////
 
-	if dbrn == "sqlite" {
+	if isSqlite || isMariaDB {
 		ret.Add(
 			jen.Comment("buildUserCreationTimeQuery returns a SQL query (and arguments) that would create a given User"),
 			jen.Line(),
@@ -345,7 +349,7 @@ func usersDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 	////////////
 
 	buildCreateUserQueryBlock := func() []jen.Code {
-		if dbrn == "postgres" {
+		if isPostgres {
 			out := []jen.Code{
 				jen.If(jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")).Op(";").ID("err").Op("!=").ID("nil")).Block(
 					jen.Switch(jen.ID("e").Op(":=").ID("err").Assert(jen.Type())).Block(
@@ -361,9 +365,9 @@ func usersDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 				),
 			}
 			return out
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			out := []jen.Code{
-				jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID("s").Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+				jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing user creation query: %w"), jen.ID("err"))),
 				),
@@ -372,7 +376,7 @@ func usersDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 				jen.If(jen.List(jen.ID("id"), jen.ID("idErr")).Op(":=").ID("res").Dot("LastInsertId").Call().Op(";").ID("idErr").Op("==").ID("nil")).Block(
 					jen.ID("x").Dot("ID").Op("=").ID("uint64").Call(jen.ID("id")),
 					jen.Line(),
-					jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("s").Dot("buildUserCreationTimeQuery").Call(jen.ID("x").Dot("ID")),
+					jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUserCreationTimeQuery").Call(jen.ID("x").Dot("ID")),
 					jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("CreatedOn"))),
 				),
 			}
@@ -422,7 +426,7 @@ func usersDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 			Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("id").Op(":").ID("input").Dot("ID")))
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			q.Dotln("Suffix").Call(jen.Lit("RETURNING updated_on"))
 		}
 
@@ -447,12 +451,12 @@ func usersDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 	////////////
 
 	buildUpdateUserBody := func() []jen.Code {
-		if dbrn == "postgres" {
+		if isPostgres {
 			return []jen.Code{
 				jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("input")),
 				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")),
 			}
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			return []jen.Code{
 				jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("input")),
 				jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
@@ -485,7 +489,7 @@ func usersDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
 			Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("id").Op(":").ID("userID")))
 
-		if dbrn == "postgres" {
+		if isPostgres {
 			q.Dotln("Suffix").Call(jen.Lit("RETURNING archived_on"))
 		}
 

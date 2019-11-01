@@ -9,13 +9,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
-func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File {
+func webhooksTestDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
 	utils.AddImports(ret)
 	sn := vendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 	dbrn := vendor.RouteName()
+
+	isPostgres := dbrn == "postgres"
+	isSqlite := dbrn == "sqlite"
+	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	/////////////
 
@@ -578,9 +582,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
 					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
 				),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).Dot("WillReturnRows").Callln(
-					jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount")),
-				),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
+					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhooks").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -629,9 +632,8 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 				),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID("expected")),
-				),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID("expected"))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhooks").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
@@ -681,7 +683,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 	/////////////
 
 	var queryTail string
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING id, created_on"
 	}
 
@@ -725,18 +727,18 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 
 	/////////////
 
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING id, created_on"
 	}
 
 	var createWebhookExpectFunc, createWebhookReturnFunc string
 
 	buildCreateWebhookExampleRows := func() jen.Code {
-		if dbrn == "postgres" {
+		if isPostgres {
 			createWebhookExpectFunc = "ExpectQuery"
 			createWebhookReturnFunc = "WillReturnRows"
 			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			createWebhookExpectFunc = "ExpectExec"
 			createWebhookReturnFunc = "WillReturnResult"
 			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
@@ -784,7 +786,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 			jen.Line(),
 		}
 
-		if dbrn == "sqlite" {
+		if isSqlite || isMariaDB {
 			out = append(out,
 				jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM webhooks WHERE id = %s", getIncIndex(dbrn, 0)),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
@@ -860,7 +862,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 
 	/////////////
 
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING updated_on"
 	}
 
@@ -906,18 +908,18 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 
 	/////////////
 
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING updated_on"
 	}
 
 	var updateWebhookExpectFunc, updateWebhookReturnFunc string
 
 	buildUpdateWebhookExampleRows := func() jen.Code {
-		if dbrn == "postgres" {
+		if isPostgres {
 			updateWebhookExpectFunc = "ExpectQuery"
 			updateWebhookReturnFunc = "WillReturnRows"
 			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
-		} else if dbrn == "sqlite" {
+		} else if isSqlite || isMariaDB {
 			updateWebhookExpectFunc = "ExpectExec"
 			updateWebhookReturnFunc = "WillReturnResult"
 			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
@@ -1016,7 +1018,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 
 	/////////////
 
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING archived_on"
 	}
 
@@ -1050,7 +1052,7 @@ func webhooksTestDotGo(pkgRoot string, vendor *wordsmith.SuperPalabra) *jen.File
 
 	/////////////
 
-	if dbrn == "postgres" {
+	if isPostgres {
 		queryTail = " RETURNING archived_on"
 	}
 
