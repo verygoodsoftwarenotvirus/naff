@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
@@ -12,15 +13,19 @@ import (
 
 // RenderPackage renders the package
 func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
-	composeFiles := map[string]func(wordsmith.SuperPalabra, []models.DataType) []byte{
+	files := map[string]func(wordsmith.SuperPalabra, []models.DataType) []byte{
 		"deploy/prometheus/local/config.yaml":                    prometheusLocalConfigDotYAML,
 		"deploy/grafana/dashboards/dashboard.json":               dashboardDotJSON,
 		"deploy/grafana/local/provisioning/dashboards/all.yaml":  grafanaLocalProvisioningDashboardsAllDotYAML,
 		"deploy/grafana/local/provisioning/datasources/all.yaml": grafanLocalProvisioningDataSourcesAllDotYAML,
 	}
 
-	for filename, file := range composeFiles {
+	for filename, file := range files {
 		fname := utils.BuildTemplatePath(filename)
+
+		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
+			log.Printf("error making directory: %v\n", mkdirErr)
+		}
 
 		f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {

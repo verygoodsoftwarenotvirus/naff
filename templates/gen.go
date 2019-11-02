@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	naffmodels "gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
 	// completed
@@ -18,6 +19,8 @@ import (
 	queriers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1/queriers"
 	deploy "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/deploy"
 	dockerfiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/dockerfiles"
+	frontendmisc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/frontend/v1"
+	frontendsrc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/frontend/v1/src"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/auth"
 	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/auth/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/config"
@@ -46,6 +49,11 @@ import (
 
 type renderHelper struct {
 	renderFunc func(string, []naffmodels.DataType) error
+	activated  bool
+}
+
+type otherRenderHelper struct {
+	renderFunc func(string, wordsmith.SuperPalabra, []naffmodels.DataType) error
 	activated  bool
 }
 
@@ -86,6 +94,15 @@ func RenderProject(in *naffmodels.Project) error {
 		"queriers":         {renderFunc: queriers.RenderPackage, activated: allActive},
 	}
 
+	specialSnowflakes := map[string]otherRenderHelper{
+		"composefiles":  {renderFunc: composefiles.RenderPackage, activated: allActive},
+		"deployfiles":   {renderFunc: deploy.RenderPackage, activated: allActive},
+		"dockerfiles":   {renderFunc: dockerfiles.RenderPackage, activated: allActive},
+		"miscellaneous": {renderFunc: misc.RenderPackage, activated: allActive},
+		"frontendmisc":  {renderFunc: frontendmisc.RenderPackage, activated: allActive},
+		"frontendsrc":   {renderFunc: frontendsrc.RenderPackage, activated: allActive},
+	}
+
 	var wg sync.WaitGroup
 
 	if in != nil {
@@ -102,46 +119,18 @@ func RenderProject(in *naffmodels.Project) error {
 				}(name, x)
 			}
 		}
-		if allActive {
-			wg.Add(1)
-			go func() {
-				start := time.Now()
-				if err := composefiles.RenderPackage(in.OutputPath, in.Name, in.DataTypes); err != nil {
-					log.Printf("error rendering composefiles after %s\n", time.Since(start))
-				}
-				log.Printf("rendered composefiles after %s\n", time.Since(start))
-				wg.Done()
-			}()
-			/////////////////////
-			wg.Add(1)
-			go func() {
-				start := time.Now()
-				if err := deploy.RenderPackage(in.OutputPath, in.Name, in.DataTypes); err != nil {
-					log.Printf("error rendering deployfiles after %s\n", time.Since(start))
-				}
-				log.Printf("rendered deployfiles after %s\n", time.Since(start))
-				wg.Done()
-			}()
-			/////////////////////
-			wg.Add(1)
-			go func() {
-				start := time.Now()
-				if err := dockerfiles.RenderPackage(in.OutputPath, in.Name, in.DataTypes); err != nil {
-					log.Printf("error rendering dockerfiles after %s\n", time.Since(start))
-				}
-				log.Printf("rendered dockerfiles after %s\n", time.Since(start))
-				wg.Done()
-			}()
-			/////////////////////
-			wg.Add(1)
-			go func() {
-				start := time.Now()
-				if err := misc.RenderPackage(in.OutputPath, in.Name, in.DataTypes); err != nil {
-					log.Printf("error rendering miscellaneous after %s\n", time.Since(start))
-				}
-				log.Printf("rendered miscellaneous after %s\n", time.Since(start))
-				wg.Done()
-			}()
+		for name, x := range specialSnowflakes {
+			if x.activated {
+				wg.Add(1)
+				go func(taskName string, packageName wordsmith.SuperPalabra, renderer otherRenderHelper) {
+					start := time.Now()
+					if err := renderer.renderFunc(in.OutputPath, packageName, in.DataTypes); err != nil {
+						log.Printf("error rendering %q after %s\n", taskName, time.Since(start))
+					}
+					log.Printf("rendered %s after %s\n", taskName, time.Since(start))
+					wg.Done()
+				}(name, in.Name, x)
+			}
 		}
 	}
 

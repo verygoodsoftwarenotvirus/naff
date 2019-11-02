@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -198,7 +199,11 @@ func RunGoFormatForFile(filename string) error {
 func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 	// start := time.Now()
 	fp := BuildTemplatePath(path)
+
 	_ = os.Remove(fp)
+	if mkdirErr := os.MkdirAll(filepath.Dir(fp), os.ModePerm); mkdirErr != nil {
+		log.Printf("error making directory: %v\n", mkdirErr)
+	}
 
 	var b bytes.Buffer
 	if err := file.Render(&b); err != nil {

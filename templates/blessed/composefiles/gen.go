@@ -3,8 +3,9 @@ package composefiles
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
@@ -51,7 +52,7 @@ func GetDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 
 // RenderPackage renders the package
 func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
-	composeFiles := map[string]models.DockerComposeFile{
+	files := map[string]models.DockerComposeFile{
 		"compose-files/development.json":          developmentDotJSON(projectName),
 		"compose-files/frontend-tests.json":       frontendTestsDotJSON(projectName),
 		"compose-files/integration-coverage.json": integrationCoverageDotJSON(projectName),
@@ -59,16 +60,27 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 	}
 
 	for _, db := range []string{"postgres", "sqlite", "mariadb"} {
-		composeFiles[fmt.Sprintf("compose-files/integration-tests-%s.json", db)] = integrationTestsDotJSON(projectName, GetDatabasePalabra(db))
-		composeFiles[fmt.Sprintf("compose-files/load-tests-%s.json", db)] = loadTestsDotJSON(projectName, GetDatabasePalabra(db))
+		files[fmt.Sprintf("compose-files/integration-tests-%s.json", db)] = integrationTestsDotJSON(projectName, GetDatabasePalabra(db))
+		files[fmt.Sprintf("compose-files/load-tests-%s.json", db)] = loadTestsDotJSON(projectName, GetDatabasePalabra(db))
 	}
 
-	for filename, file := range composeFiles {
-		fn := utils.BuildTemplatePath(filename)
+	for filename, file := range files {
+		fname := utils.BuildTemplatePath(filename)
 
-		f, _ := json.MarshalIndent(file, "", "  ")
-		if err := ioutil.WriteFile(fn, f, 0644); err != nil {
-			log.Printf("error rendering %q: %v\n", filename, err)
+		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
+			log.Printf("error making directory: %v\n", mkdirErr)
+		}
+
+		f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			log.Printf("error opening file: %v", err)
+			return err
+		}
+
+		bytes, _ := json.MarshalIndent(file, "", "  ")
+		if _, err := f.Write(bytes); err != nil {
+			log.Printf("error writing to file: %v", err)
+			return err
 		}
 	}
 
