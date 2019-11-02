@@ -16,6 +16,7 @@ import (
 	database "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1"
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1/client"
 	queriers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1/queriers"
+	dockerfiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/dockerfiles"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/auth"
 	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/auth/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/config"
@@ -23,6 +24,7 @@ import (
 	encodingmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/metrics"
 	metricsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/metrics/mock"
+	misc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/misc"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1"
 	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1/mock"
 	server "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/server/v1"
@@ -107,6 +109,26 @@ func RenderProject(in *naffmodels.Project) error {
 					log.Printf("error rendering composefiles after %s\n", time.Since(start))
 				}
 				log.Printf("rendered composefiles after %s\n", time.Since(start))
+				wg.Done()
+			}()
+			/////////////////////
+			wg.Add(1)
+			go func() {
+				start := time.Now()
+				if err := dockerfiles.RenderPackage(in.OutputPath, in.Name, in.DataTypes); err != nil {
+					log.Printf("error rendering dockerfiles after %s\n", time.Since(start))
+				}
+				log.Printf("rendered dockerfiles after %s\n", time.Since(start))
+				wg.Done()
+			}()
+			/////////////////////
+			wg.Add(1)
+			go func() {
+				start := time.Now()
+				if err := misc.RenderPackage(in.OutputPath, in.Name, in.DataTypes); err != nil {
+					log.Printf("error rendering miscellaneous after %s\n", time.Since(start))
+				}
+				log.Printf("rendered miscellaneous after %s\n", time.Since(start))
 				wg.Done()
 			}()
 		}
