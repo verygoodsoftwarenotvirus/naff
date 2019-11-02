@@ -13,8 +13,8 @@ import (
 // RenderPackage renders the package
 func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
 	composeFiles := map[string]func(string) []byte{
-		"deploy/prometheus/local/config.yaml":                    prometheusLocalConfigDotYAML,
-		"deploy/grafana/dashboards/dashboard.json":               dashboardDotJSON,
+		"deploy/prometheus/local/config.yaml": prometheusLocalConfigDotYAML,
+		// "deploy/grafana/dashboards/dashboard.json":               dashboardDotJSON,
 		"deploy/grafana/local/provisioning/dashboards/all.yaml":  grafanaLocalProvisioningDashboardsAllDotYAML,
 		"deploy/grafana/local/provisioning/datasources/all.yaml": grafanLocalProvisioningDataSourcesAllDotYAML,
 	}
