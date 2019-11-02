@@ -16,6 +16,7 @@ import (
 	database "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1"
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1/client"
 	queriers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1/queriers"
+	deploy "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/deploy"
 	dockerfiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/dockerfiles"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/auth"
 	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/auth/mock"
@@ -109,6 +110,16 @@ func RenderProject(in *naffmodels.Project) error {
 					log.Printf("error rendering composefiles after %s\n", time.Since(start))
 				}
 				log.Printf("rendered composefiles after %s\n", time.Since(start))
+				wg.Done()
+			}()
+			/////////////////////
+			wg.Add(1)
+			go func() {
+				start := time.Now()
+				if err := deploy.RenderPackage(in.OutputPath, in.Name, in.DataTypes); err != nil {
+					log.Printf("error rendering deployfiles after %s\n", time.Since(start))
+				}
+				log.Printf("rendered deployfiles after %s\n", time.Since(start))
 				wg.Done()
 			}()
 			/////////////////////
