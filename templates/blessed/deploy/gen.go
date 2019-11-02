@@ -12,9 +12,9 @@ import (
 
 // RenderPackage renders the package
 func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
-	composeFiles := map[string]func(string) []byte{
-		"deploy/prometheus/local/config.yaml": prometheusLocalConfigDotYAML,
-		// "deploy/grafana/dashboards/dashboard.json":               dashboardDotJSON,
+	composeFiles := map[string]func(wordsmith.SuperPalabra, []models.DataType) []byte{
+		"deploy/prometheus/local/config.yaml":                    prometheusLocalConfigDotYAML,
+		"deploy/grafana/dashboards/dashboard.json":               dashboardDotJSON,
 		"deploy/grafana/local/provisioning/dashboards/all.yaml":  grafanaLocalProvisioningDashboardsAllDotYAML,
 		"deploy/grafana/local/provisioning/datasources/all.yaml": grafanLocalProvisioningDataSourcesAllDotYAML,
 	}
@@ -28,7 +28,7 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 			return err
 		}
 
-		bytes := file(projectName.KebabName())
+		bytes := file(projectName, types)
 		if _, err := f.Write(bytes); err != nil {
 			log.Printf("error writing to file: %v", err)
 			return err
@@ -38,7 +38,9 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 	return nil
 }
 
-func prometheusLocalConfigDotYAML(serviceName string) []byte {
+func prometheusLocalConfigDotYAML(service wordsmith.SuperPalabra, _ []models.DataType) []byte {
+	serviceName := service.KebabName()
+
 	return []byte(fmt.Sprintf(`# my global config
 global:
   scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
@@ -73,7 +75,7 @@ scrape_configs:
 `, serviceName, serviceName))
 }
 
-func grafanaLocalProvisioningDashboardsAllDotYAML(_ string) []byte {
+func grafanaLocalProvisioningDashboardsAllDotYAML(_ wordsmith.SuperPalabra, _ []models.DataType) []byte {
 	return []byte(`- name: 'default' # name of this dashboard configuration (not dashboard itself)
   org_id: 1 # id of the org to hold the dashboard
   folder: '' # name of the folder to put the dashboard (http://docs.grafana.org/v5.0/reference/dashboard_folders/)
@@ -83,7 +85,7 @@ func grafanaLocalProvisioningDashboardsAllDotYAML(_ string) []byte {
 `)
 }
 
-func grafanLocalProvisioningDataSourcesAllDotYAML(_ string) []byte {
+func grafanLocalProvisioningDataSourcesAllDotYAML(_ wordsmith.SuperPalabra, _ []models.DataType) []byte {
 	return []byte(`apiVersion: 1
 
 # Gracias a https://ops.tips/blog/initialize-grafana-with-preconfigured-dashboards/#configuring-grafana
