@@ -25,6 +25,34 @@ func RenderPackage(pkgRoot string, types []models.DataType) error {
 	return nil
 }
 
+func GetDatabasePalabra(vendor string) wordsmith.SuperPalabra {
+	switch vendor {
+	case postgres:
+		return wordsmith.FromSingularPascalCase("Postgres")
+	case sqlite:
+		return wordsmith.FromSingularPascalCase("Sqlite")
+	case mariadb:
+		return &wordsmith.ManualWord{
+			SingularStr:                           "MariaDB",
+			PluralStr:                             "MariaDBs",
+			RouteNameStr:                          "mariadb",
+			KebabNameStr:                          "mariadb",
+			PluralRouteNameStr:                    "mariadbs",
+			UnexportedVarNameStr:                  "mariaDB",
+			PluralUnexportedVarNameStr:            "mariaDBs",
+			PackageNameStr:                        "mariadbs",
+			SingularPackageNameStr:                "mariadb",
+			SingularCommonNameStr:                 "maria DB",
+			ProperSingularCommonNameWithPrefixStr: "a Maria DB",
+			PluralCommonNameStr:                   "maria DBs",
+			SingularCommonNameWithPrefixStr:       "maria DB",
+			PluralCommonNameWithPrefixStr:         "maria DBs",
+		}
+	default:
+		panic(fmt.Sprintf("unknown vendor: %q", vendor))
+	}
+}
+
 // renderDatabasePackage renders the package
 func renderDatabasePackage(pkgRoot, vendor string, types []models.DataType) error {
 	var (

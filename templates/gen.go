@@ -99,15 +99,17 @@ func RenderProject(in *naffmodels.Project) error {
 				}(name, x)
 			}
 		}
-		wg.Add(1)
-		go func() {
-			start := time.Now()
-			if err := composefiles.RenderPackage(in.OutputPath, in.Name, in.DataTypes); err != nil {
-				log.Printf("error rendering composefiles after %s\n", time.Since(start))
-			}
-			log.Printf("rendered composefiles after %s\n", time.Since(start))
-			wg.Done()
-		}()
+		if allActive {
+			wg.Add(1)
+			go func() {
+				start := time.Now()
+				if err := composefiles.RenderPackage(in.OutputPath, in.Name, in.DataTypes); err != nil {
+					log.Printf("error rendering composefiles after %s\n", time.Since(start))
+				}
+				log.Printf("rendered composefiles after %s\n", time.Since(start))
+				wg.Done()
+			}()
+		}
 	}
 
 	wg.Wait()
