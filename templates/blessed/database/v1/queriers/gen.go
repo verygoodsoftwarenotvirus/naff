@@ -73,17 +73,17 @@ func renderDatabasePackage(pkgRoot, vendor string, types []models.DataType) erro
 	pn := vendorWord.SingularPackageName()
 
 	files := map[string]*jen.File{
-		fmt.Sprintf("database/v1/queriers/%s/oauth2_clients.go", vendor):      oauth2ClientsDotGo(pkgRoot, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/%s.go", pn, pn):                  databaseDotGo(pkgRoot, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/webhooks.go", vendor):            webhooksDotGo(pkgRoot, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/wire.go", vendor):                wireDotGo(vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/oauth2_clients.go", vendor):      oauth2ClientsDotGo(pkgRoot, types, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/%s.go", pn, pn):                  databaseDotGo(pkgRoot, types, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/webhooks.go", vendor):            webhooksDotGo(pkgRoot, types, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/wire.go", vendor):                wireDotGo(pkgRoot, types, vendorWord),
 		fmt.Sprintf("database/v1/queriers/%s/doc.go", vendor):                 docDotGo(pn, dbDesc),
-		fmt.Sprintf("database/v1/queriers/%s/%s_test.go", pn, pn):             databaseTestDotGo(vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/users.go", vendor):               usersDotGo(pkgRoot, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/users_test.go", vendor):          usersTestDotGo(pkgRoot, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/webhooks_test.go", vendor):       webhooksTestDotGo(pkgRoot, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/migrations.go", vendor):          migrationsDotGo(vendorWord, types),
-		fmt.Sprintf("database/v1/queriers/%s/oauth2_clients_test.go", vendor): oauth2ClientsTestDotGo(pkgRoot, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/%s_test.go", pn, pn):             databaseTestDotGo(pkgRoot, types, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/users.go", vendor):               usersDotGo(pkgRoot, types, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/users_test.go", vendor):          usersTestDotGo(pkgRoot, types, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/webhooks_test.go", vendor):       webhooksTestDotGo(pkgRoot, types, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/migrations.go", vendor):          migrationsDotGo(pkgRoot, vendorWord, types),
+		fmt.Sprintf("database/v1/queriers/%s/oauth2_clients_test.go", vendor): oauth2ClientsTestDotGo(pkgRoot, types, vendorWord),
 	}
 
 	for _, typ := range types {

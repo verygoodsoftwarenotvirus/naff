@@ -9,7 +9,7 @@ import (
 // RenderPackage renders the package
 func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
-		"internal/v1/metrics/mock/counter.go": counterDotGo(pkgRoot),
+		"internal/v1/metrics/mock/counter.go": counterDotGo(pkgRoot, types),
 		"internal/v1/metrics/mock/doc.go":     docDotGo(),
 	}
 

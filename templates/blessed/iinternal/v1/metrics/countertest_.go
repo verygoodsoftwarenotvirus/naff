@@ -3,12 +3,13 @@ package metrics
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func counterTestDotGo() *jen.File {
+func counterTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Func().ID("Test_opencensusCounter_Increment").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(

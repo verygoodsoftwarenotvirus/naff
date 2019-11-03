@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func authTestDotGo(rootPkg string) *jen.File {
+func authTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("integration")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Func().ID("loginUser").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpSecret")).ID("string")).Params(jen.Op("*").Qual("net/http", "Cookie")).Block(
@@ -61,7 +62,7 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 				jen.Line(),
 				jen.Comment("create a user"),
-				jen.ID("ui").Op(":=").Qual(filepath.Join(rootPkg, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
+				jen.ID("ui").Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("todoClient").Dot("BuildCreateUserRequest").Call(jen.ID("tctx"), jen.ID("ui")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("req"), jen.ID("err")),
 				jen.Line(),
@@ -69,13 +70,13 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.ID("err")),
 				jen.Line(),
 				jen.Comment("load user response"),
-				jen.ID("ucr").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserCreationResponse").Values(),
+				jen.ID("ucr").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserCreationResponse").Values(),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr"))),
 				jen.Line(),
 				jen.Comment("create login request"),
 				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
-				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("ucr").Dot("Username"),
 					jen.ID("Password").Op(":").ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").Op(":").ID("token"),
@@ -103,19 +104,19 @@ func authTestDotGo(rootPkg string) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to logout"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 				jen.Line(),
-				jen.ID("ui").Op(":=").Qual(filepath.Join(rootPkg, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
+				jen.ID("ui").Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("todoClient").Dot("BuildCreateUserRequest").Call(jen.ID("tctx"), jen.ID("ui")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("req"), jen.ID("err")),
 				jen.Line(),
 				jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID("todoClient").Dot("PlainClient").Call().Dot("Do").Call(jen.ID("req")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.ID("err")),
 				jen.Line(),
-				jen.ID("ucr").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserCreationResponse").Values(),
+				jen.ID("ucr").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserCreationResponse").Values(),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr"))),
 				jen.Line(),
 				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
-				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("ucr").Dot("Username"),
 					jen.ID("Password").Op(":").ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").Op(":").ID("token"),
@@ -174,7 +175,7 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 				jen.Line(),
 				jen.Comment("create a user"),
-				jen.ID("ui").Op(":=").Qual(filepath.Join(rootPkg, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
+				jen.ID("ui").Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("todoClient").Dot("BuildCreateUserRequest").Call(jen.ID("tctx"), jen.ID("ui")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("req"), jen.ID("err")),
 				jen.Line(),
@@ -182,7 +183,7 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.ID("err")),
 				jen.Line(),
 				jen.Comment("load user response"),
-				jen.ID("ucr").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserCreationResponse").Values(),
+				jen.ID("ucr").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserCreationResponse").Values(),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr"))),
 				jen.Line(),
 				jen.Comment("create login request"),
@@ -194,7 +195,7 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.Comment("create login request"),
 				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
-				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("ucr").Dot("Username"),
 					jen.ID("Password").Op(":").ID("badPassword"),
 					jen.ID("TOTPToken").Op(":").ID("token"),
@@ -217,14 +218,14 @@ func authTestDotGo(rootPkg string) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to login as someone that doesn't exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("ui").Op(":=").Qual(filepath.Join(rootPkg, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
+				jen.ID("ui").Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID("randString").Call(),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("s"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
-				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("ui").Dot("Username"),
 					jen.ID("Password").Op(":").ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").Op(":").ID("token")),
@@ -270,7 +271,7 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.Comment("create password update request"),
 				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
-				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "PasswordUpdateInput").Valuesln(
+				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "PasswordUpdateInput").Valuesln(
 					jen.ID("CurrentPassword").Op(":").ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").Op(":").ID("token"),
 					jen.ID("NewPassword").Op(":").ID("backwardsPass"),
@@ -309,7 +310,7 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.Comment("create login request"),
 				jen.List(jen.ID("newToken"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("newToken"), jen.ID("err")),
-				jen.List(jen.ID("l"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserLoginInput").Valuesln(
+				jen.List(jen.ID("l"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("user").Dot("Username"),
 					jen.ID("Password").Op(":").ID("backwardsPass"),
 					jen.ID("TOTPToken").Op(":").ID("newToken")),
@@ -342,7 +343,7 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.Comment("create TOTP secret update request"),
 				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
-				jen.ID("ir").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "TOTPSecretRefreshInput").Valuesln(
+				jen.ID("ir").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "TOTPSecretRefreshInput").Valuesln(
 					jen.ID("CurrentPassword").Op(":").ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").Op(":").ID("token"),
 				),
@@ -364,7 +365,7 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusAccepted"), jen.ID("res").Dot("StatusCode")),
 				jen.Line(),
 				jen.Comment("load user response"),
-				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "TOTPSecretRefreshResponse").Values(),
+				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "TOTPSecretRefreshResponse").Values(),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("r"))),
 				jen.ID("require").Dot("NotEqual").Call(jen.ID("t"), jen.ID("user").Dot("TwoFactorSecret"), jen.ID("r").Dot("TwoFactorSecret")),
 				jen.Line(),
@@ -385,7 +386,7 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.Comment("create login request"),
 				jen.List(jen.ID("newToken"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("r").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("newToken"), jen.ID("err")),
-				jen.List(jen.ID("l"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserLoginInput").Valuesln(
+				jen.List(jen.ID("l"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("user").Dot("Username"),
 					jen.ID("Password").Op(":").ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").Op(":").ID("newToken")),
@@ -428,13 +429,13 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 				jen.Line(),
 				jen.Comment("create user and oauth2 client A"),
-				jen.List(jen.ID("userA"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "tests/v1/testutil"), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
+				jen.List(jen.ID("userA"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil"), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.List(jen.ID("ca"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "tests/v1/testutil"), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userA")),
+				jen.List(jen.ID("ca"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil"), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userA")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.List(jen.ID("clientA"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "client/v1/http"), "NewClient").Callln(
+				jen.List(jen.ID("clientA"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkgRoot, "client/v1/http"), "NewClient").Callln(
 					jen.ID("tctx"),
 					jen.ID("ca").Dot("ClientID"),
 					jen.ID("ca").Dot("ClientSecret"),
@@ -445,13 +446,13 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.ID("err")),
 				jen.Line(),
 				jen.Comment("create user and oauth2 client B"),
-				jen.List(jen.ID("userB"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "tests/v1/testutil"), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
+				jen.List(jen.ID("userB"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil"), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.List(jen.ID("cb"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "tests/v1/testutil"), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userB")),
+				jen.List(jen.ID("cb"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil"), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userB")),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.List(jen.ID("clientB"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "client/v1/http"), "NewClient").Callln(
+				jen.List(jen.ID("clientB"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkgRoot, "client/v1/http"), "NewClient").Callln(
 					jen.ID("tctx"),
 					jen.ID("cb").Dot("ClientID"),
 					jen.ID("cb").Dot("ClientSecret"),
@@ -462,14 +463,14 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.ID("err")),
 				jen.Line(),
 				jen.Comment("create webhook for user A"),
-				jen.List(jen.ID("webhookA"), jen.ID("err")).Op(":=").ID("clientA").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "WebhookCreationInput").Valuesln(
+				jen.List(jen.ID("webhookA"), jen.ID("err")).Op(":=").ID("clientA").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
 					jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"),
 					jen.ID("Name").Op(":").Lit("A"),
 				)),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("webhookA"), jen.ID("err")),
 				jen.Line(),
 				jen.Comment("create webhook for user B"),
-				jen.List(jen.ID("webhookB"), jen.ID("err")).Op(":=").ID("clientB").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "WebhookCreationInput").Valuesln(
+				jen.List(jen.ID("webhookB"), jen.ID("err")).Op(":=").ID("clientB").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
 					jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"),
 					jen.ID("Name").Op(":").Lit("B"),
 				)),
@@ -501,7 +502,7 @@ func authTestDotGo(rootPkg string) *jen.File {
 				jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateOAuth2Client").Call(jen.ID("tctx"), jen.ID("cookie"), jen.ID("input")),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.ID("err")),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "client/v1/http"), "NewClient").Callln(
+				jen.List(jen.ID("c"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkgRoot, "client/v1/http"), "NewClient").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.ID("premade").Dot("ClientID"),
 					jen.ID("premade").Dot("ClientSecret"),

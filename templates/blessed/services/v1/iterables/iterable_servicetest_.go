@@ -12,7 +12,7 @@ import (
 func iterableServiceTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
 
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()

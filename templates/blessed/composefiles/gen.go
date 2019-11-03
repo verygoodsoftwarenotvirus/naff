@@ -65,7 +65,7 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 	}
 
 	for filename, file := range files {
-		fname := utils.BuildTemplatePath(filename)
+		fname := utils.BuildTemplatePath(pkgRoot, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)
@@ -211,9 +211,6 @@ func integrationTestsDotJSON(projectName, dbName wordsmith.SuperPalabra) models.
 					"DOCKER":                 "true",
 					"CONFIGURATION_FILEPATH": fmt.Sprintf("config_files/integration-tests-%s.toml", dbName.KebabName()),
 				},
-				Links: []string{
-					"database",
-				},
 				Ports: []string{
 					"80:8888",
 				},
@@ -233,6 +230,9 @@ func integrationTestsDotJSON(projectName, dbName wordsmith.SuperPalabra) models.
 			Ports:   []string{"2345:5432"},
 			Logging: nullLogger,
 		}
+		if x, ok := dcf.Services[serviceName]; ok {
+			x.Links = []string{"database"}
+		}
 	case "mariadb", "maria_db":
 		dcf.Services["database"] = models.DockerComposeService{
 			Image: "mariadb:latest",
@@ -245,6 +245,9 @@ func integrationTestsDotJSON(projectName, dbName wordsmith.SuperPalabra) models.
 			},
 			Ports:   []string{"3306:3306"},
 			Logging: nullLogger,
+		}
+		if x, ok := dcf.Services[serviceName]; ok {
+			x.Links = []string{"database"}
 		}
 	}
 

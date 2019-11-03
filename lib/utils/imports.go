@@ -5,42 +5,50 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func AddImports(file *jen.File) {
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/client/v1/http", "client")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1", "database")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth", "auth")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/auth/mock", "mockauth")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/config", "config")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding", "encoding")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/encoding/mock", "mockencoding")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics", "metrics")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/internal/v1/metrics/mock", "mockmetrics")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/client", "dbclient")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/mariadb", "mariadb")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/postgres", "postgres")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/database/v1/queriers/sqlite", "sqlite")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1", "models")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/models/v1/mock", "mockmodels")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/server/v1", "server")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/server/v1/http", "httpserver")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/auth", "auth")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/frontend", "frontend")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/items", "items")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients", "oauth2clients")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/users", "users")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/webhooks", "webhooks")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/frontend", "frontend")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/integration", "integration")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/load", "load")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil", "testutil")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/mock", "mockutil")
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/tests/v1/testutil/rand/model", "randmodel")
+func AddImports(pkgRoot string, types []models.DataType, file *jen.File) {
+	file.ImportAlias(filepath.Join(pkgRoot, "client/v1/http"), "client")
+	file.ImportAlias(filepath.Join(pkgRoot, "database/v1"), "database")
+	file.ImportName(filepath.Join(pkgRoot, "internal/v1/auth"), "auth")
+	file.ImportAlias(filepath.Join(pkgRoot, "internal/v1/auth/mock"), "mockauth")
+	file.ImportName(filepath.Join(pkgRoot, "internal/v1/config"), "config")
+	file.ImportName(filepath.Join(pkgRoot, "internal/v1/encoding"), "encoding")
+	file.ImportAlias(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "mockencoding")
+	file.ImportName(filepath.Join(pkgRoot, "internal/v1/metrics"), "metrics")
+	file.ImportAlias(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "mockmetrics")
+	file.ImportAlias(filepath.Join(pkgRoot, "database/v1/client"), "dbclient")
+	file.ImportName(filepath.Join(pkgRoot, "database/v1/queriers/mariadb"), "mariadb")
+	file.ImportName(filepath.Join(pkgRoot, "database/v1/queriers/postgres"), "postgres")
+	file.ImportName(filepath.Join(pkgRoot, "database/v1/queriers/sqlite"), "sqlite")
+	file.ImportAlias(filepath.Join(pkgRoot, "models/v1"), "models")
+	file.ImportAlias(filepath.Join(pkgRoot, "models/v1/mock"), "mockmodels")
+	file.ImportAlias(filepath.Join(pkgRoot, "server/v1"), "server")
+	file.ImportAlias(filepath.Join(pkgRoot, "server/v1/http"), "httpserver")
+	file.ImportName(filepath.Join(pkgRoot, "services/v1/auth"), "auth")
+	file.ImportName(filepath.Join(pkgRoot, "services/v1/frontend"), "frontend")
+
+	for _, typ := range types {
+		prn := typ.Name.PluralRouteName()
+		ip := filepath.Join(pkgRoot, "services/v1", prn)
+		file.ImportName(ip, prn)
+	}
+
+	file.ImportName(filepath.Join(pkgRoot, "services/v1/oauth2clients"), "oauth2clients")
+	file.ImportName(filepath.Join(pkgRoot, "services/v1/users"), "users")
+	file.ImportName(filepath.Join(pkgRoot, "services/v1/webhooks"), "webhooks")
+	file.ImportName(filepath.Join(pkgRoot, "tests/v1/frontend"), "frontend")
+	file.ImportName(filepath.Join(pkgRoot, "tests/v1/integration"), "integration")
+	file.ImportName(filepath.Join(pkgRoot, "tests/v1/load"), "load")
+	file.ImportName(filepath.Join(pkgRoot, "tests/v1/testutil"), "testutil")
+	file.ImportAlias(filepath.Join(pkgRoot, "tests/v1/testutil/mock"), "mockutil")
+	file.ImportAlias(filepath.Join(pkgRoot, "tests/v1/testutil/rand/model"), "randmodel")
 
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
 

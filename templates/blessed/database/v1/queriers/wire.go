@@ -4,12 +4,13 @@ import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(vendor wordsmith.SuperPalabra) *jen.File {
+func wireDotGo(pkgRoot string, types []models.DataType, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 	sn := vendor.Singular()
 
 	isMariaDB := vendor.RouteName() == "mariadb" || vendor.RouteName() == "maria_db"

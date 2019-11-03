@@ -132,16 +132,14 @@ func CompleteSurvey() (*Project, error) {
 			Name: "outputRepository",
 			Prompt: &survey.Input{
 				Message: "output repository path:",
-				Default: "gitlab.com/verygoodsoftwarenotvirus/whatever",
-				Help:    `the package path that the generated project will live in`,
+				Help:    `the package path that the generated project will live in (i.e. gitlab.com/verygoodsoftwarenotvirus/whatever)`,
 			},
 		},
 		{
 			Name: "modelsPackage",
 			Prompt: &survey.Input{
 				Message: "models package:",
-				Default: "gitlab.com/verygoodsoftwarenotvirus/naff/example_models/todo",
-				Help:    `the input package that defines the base set of models`,
+				Help:    `the input package that defines the base set of models (i.e. gitlab.com/verygoodsoftwarenotvirus/naff/example_models/todo)`,
 			},
 		},
 	}

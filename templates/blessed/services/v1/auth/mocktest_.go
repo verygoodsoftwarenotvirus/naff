@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockTestDotGo(pkgRoot string) *jen.File {
+func mockTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Var().ID("_").ID("OAuth2ClientValidator").Op("=").Parens(jen.Op("*").ID("mockOAuth2ClientValidator")).Call(jen.ID("nil")),

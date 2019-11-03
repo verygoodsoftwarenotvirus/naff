@@ -3,12 +3,13 @@ package mock
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func readerDotGo() *jen.File {
+func readerDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Var().ID("_").Qual("io", "ReadCloser").Op("=").Parens(jen.Op("*").ID("ReadCloser")).Call(jen.ID("nil")),

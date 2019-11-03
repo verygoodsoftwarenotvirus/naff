@@ -15,6 +15,7 @@ import (
 func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
 	files := map[string]func() []byte{
 		"frontend/v1/src/main.js":                     mainDotJS,
+		"frontend/v1/public/index.html":               mainDotJS,
 		"frontend/v1/src/App.svelte":                  appDotSvelte,
 		"frontend/v1/src/pages/Register.svelte":       registerDotSvelte,
 		"frontend/v1/src/pages/Login.svelte":          loginDotSvelte,
@@ -30,7 +31,7 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 	}
 
 	for filename, file := range files {
-		fname := utils.BuildTemplatePath(filename)
+		fname := utils.BuildTemplatePath(pkgRoot, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)
@@ -66,6 +67,29 @@ export default app;
 `)
 }
 
+func indexDotHTML() []byte {
+	f := []byte(`<!doctype html>
+<html>
+<head>
+	<meta charset='utf8'>
+	<meta name='viewport' content='width=device-width'>
+
+	<title>App</title>
+
+	<link rel='icon' type='image/png' href='favicon.ico'>
+	<link rel='stylesheet' href='/global.css'>
+	<link rel='stylesheet' href='/bundle.css'>
+</head>
+
+<body>
+	<script src='/bundle.js'></script>
+</body>
+</html>
+  `)
+
+	return f
+}
+
 func appDotSvelte() []byte {
 	return []byte(`<script>
   import { Router, Link, Route } from "svelte-routing";
@@ -76,10 +100,10 @@ func appDotSvelte() []byte {
   import Register from "./pages/Register.svelte";
   import ChangePassword from "./pages/ChangePassword.svelte";
 
-  <!-- // Items routes                                       -->
-  <!-- import ReadItem from "./pages/items/Read.svelte";     -->
-  <!-- import CreateItem from "./pages/items/Create.svelte"; -->
-  <!-- import Items from "./pages/items/List.svelte";        -->
+  /* // Items routes                                       */
+  /* import ReadItem from "./pages/items/Read.svelte";     */
+  /* import CreateItem from "./pages/items/Create.svelte"; */
+  /* import Items from "./pages/items/List.svelte";        */
 
   export let url = "";
 </script>

@@ -5,12 +5,13 @@ import (
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func helpersTestDotGo(pkgRoot string) *jen.File {
+func helpersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Type().ID("testingType").Struct(
@@ -244,7 +245,7 @@ func helpersTestDotGo(pkgRoot string) *jen.File {
 							jen.Func().Params().Params(
 								jen.ID("string"),
 							).Block(
-								jen.ID("er").Op(":=").Op("&").Qual(utils.ModelsPkg, "ErrorResponse").Values(),
+								jen.ID("er").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "ErrorResponse").Values(),
 								jen.List(
 									jen.ID("bs"),
 									jen.ID("err"),

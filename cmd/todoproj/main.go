@@ -11,21 +11,21 @@ import (
 func main() {
 	log.Println("building example output...")
 	todoProject := &models.Project{
-		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/todo",
+		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/todopartdeux",
 		Name:       wordsmith.FromSingularPascalCase("Todo"),
 		DataTypes: []models.DataType{
 			{
 				Name: wordsmith.FromSingularPascalCase("Item"),
 				Fields: []models.DataField{
 					{
-						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Name:                  wordsmith.FromSingularPascalCase("Eman"),
 						Type:                  "string",
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
 					{
-						Name:                  wordsmith.FromSingularPascalCase("Details"),
+						Name:                  wordsmith.FromSingularPascalCase("Info"),
 						Type:                  "string",
 						Pointer:               false,
 						DefaultAllowed:        true,

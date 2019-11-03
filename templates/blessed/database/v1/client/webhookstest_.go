@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func webhooksTestDotGo(pkgRoot string) *jen.File {
+func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Func().ID("TestClient_GetWebhook").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(

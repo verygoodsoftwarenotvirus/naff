@@ -11,7 +11,7 @@ require (
 	github.com/GuiaBolso/darwin v0.0.0-20170210191649-86919dfcf808
 	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
-	github.com/Masterminds/sprig v2.20.0+incompatible
+	github.com/Masterminds/sprig v2.20.0+incompatible // indirect
 	github.com/Masterminds/squirrel v1.1.0
 	github.com/aloder/tojen v0.0.0-20190316230437-fb189648ba82 // indirect
 	github.com/blang/vfs v1.0.0 // indirect
@@ -21,6 +21,7 @@ require (
 	github.com/corpix/uarand v0.1.1 // indirect
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/dave/jennifer v1.3.0
+	github.com/emicklei/hazana v1.6.1
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-chi/cors v1.0.0

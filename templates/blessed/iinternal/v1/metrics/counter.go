@@ -3,15 +3,13 @@ package metrics
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func counterDotGo() *jen.File {
+func counterDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(ret)
-	ret.ImportName("go.opencensus.io/plugin/ochttp", "ochttp")
-	ret.ImportName("go.opencensus.io/stats", "stats")
-	ret.ImportName("go.opencensus.io/stats/view", "view")
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Comment("Counter counts things"),

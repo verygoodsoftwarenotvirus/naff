@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockUserDataManagerDotGo(pkgRoot string) *jen.File {
+func mockUserDataManagerDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataManager").Op("=").Parens(jen.Op("*").ID("UserDataManager")).Call(jen.ID("nil")),

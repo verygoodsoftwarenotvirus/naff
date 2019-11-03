@@ -9,7 +9,7 @@ import (
 // RenderPackage renders the package
 func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
-		"cmd/tools/two_factor/main.go": mainDotGo(),
+		"cmd/tools/two_factor/main.go": mainDotGo(pkgRoot, types),
 	}
 
 	for path, file := range files {
@@ -21,10 +21,10 @@ func RenderPackage(pkgRoot string, types []models.DataType) error {
 	return nil
 }
 
-func mainDotGo() *jen.File {
+func mainDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.PackageComment(`Command two_factor is a CLI that takes in a secret as a positional argument
 and draws the TOTP code for that secret in big ASCII numbers. This command is

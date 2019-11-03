@@ -7,12 +7,13 @@ import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientsDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
+func oauth2ClientsDotGo(pkgRoot string, types []models.DataType, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 	sn := vendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 	dbrn := vendor.RouteName()
@@ -508,7 +509,7 @@ func oauth2ClientsDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File
 
 	if isSqlite || isMariaDB {
 		ret.Add(
-			jen.Comment("buildOAuth2ClientCreationTimeQuery takes an item and returns a creation query for that item and the relevant arguments."),
+			jen.Comment("buildOAuth2ClientCreationTimeQuery takes an oauth2 client ID and returns a creation query for that oauth2 client and the relevant arguments."),
 			jen.Line(),
 			jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildOAuth2ClientCreationTimeQuery").Params(jen.ID("clientID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 				jen.Var().ID("err").ID("error"),

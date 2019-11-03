@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func configTestDotGo(pkgRoot string) *jen.File {
+func configTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("config")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Func().ID("Test_randString").Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(

@@ -1,17 +1,19 @@
 package v1
 
 import (
+	"fmt"
 	"path/filepath"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func serverDotGo(pkgRoot string) *jen.File {
+func serverDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("server")
 
-	httpPackage := "gitlab.com/verygoodsoftwarenotvirus/todo/server/v1/http"
-	utils.AddImports(ret)
+	httpPackage := fmt.Sprintf("%s/server/v1/http", pkgRoot)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Type().Defs(

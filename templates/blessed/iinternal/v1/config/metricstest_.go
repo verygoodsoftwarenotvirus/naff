@@ -3,12 +3,13 @@ package config
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func metricsTestDotGo() *jen.File {
+func metricsTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("config")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(

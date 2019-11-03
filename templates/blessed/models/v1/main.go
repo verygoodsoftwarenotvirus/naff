@@ -3,12 +3,13 @@ package v1
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mainDotGo() *jen.File {
+func mainDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Const().Defs(

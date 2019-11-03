@@ -228,6 +228,10 @@ func (f *File) register(path string) string {
 		unique = f.PackagePrefix + "_" + unique
 	}
 
+	if strings.Contains(path, "%s") {
+		println()
+	}
+
 	// Register the eventual name
 	f.imports[path] = importdef{name: unique, alias: alias}
 

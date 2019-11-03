@@ -1,14 +1,17 @@
 package client
 
 import (
+	"path/filepath"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientsTestDotGo() *jen.File {
+func oauth2ClientsTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		utils.OuterTestFunc("V1Client_BuildGetOAuth2ClientRequest").Block(
@@ -67,7 +70,7 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, "OAuth2Client").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("ClientID").Op(":").Lit("example"),
 					jen.ID("ClientSecret").Op(":").Lit("blah"),
@@ -178,8 +181,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, "OAuth2ClientList").Valuesln(
-					jen.ID("Clients").Op(":").Index().Qual(utils.ModelsPkg, "OAuth2Client").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientList").Valuesln(
+					jen.ID("Clients").Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").Op(":").Lit(1),
 							jen.ID("ClientID").Op(":").Lit("example"),
@@ -248,8 +251,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 					jen.ID("ts"),
 				),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").Op(":").Qual(utils.ModelsPkg, "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 						jen.ID("Username").Op(":").Lit("username"),
 						jen.ID("Password").Op(":").Lit("password"),
 						jen.ID("TOTPToken").Op(":").Lit("123456"),
@@ -285,15 +288,15 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").Op(":").Qual(utils.ModelsPkg, "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 						jen.ID("Username").Op(":").Lit("username"),
 						jen.ID("Password").Op(":").Lit("password"),
 						jen.ID("TOTPToken").Op(":").Lit("123456"),
 					),
 				),
 				jen.Line(),
-				jen.ID("exampleOutput").Op(":=").Op("&").Qual(utils.ModelsPkg, "OAuth2Client").Valuesln(
+				jen.ID("exampleOutput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("EXAMPLECLIENTID"),
 					jen.ID("ClientSecret").Op(":").Lit("EXAMPLECLIENTSECRET"),
 				),
@@ -346,8 +349,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with invalid body",
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").Op(":").Qual(utils.ModelsPkg, "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 						jen.ID("Username").Op(":").Lit("username"),
 						jen.ID("Password").Op(":").Lit("password"),
 						jen.ID("TOTPToken").Op(":").Lit("123456"),
@@ -410,8 +413,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with timeout",
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").Op(":").Qual(utils.ModelsPkg, "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 						jen.ID("Username").Op(":").Lit("username"),
 						jen.ID("Password").Op(":").Lit("password"),
 						jen.ID("TOTPToken").Op(":").Lit("123456"),
@@ -466,8 +469,8 @@ func oauth2ClientsTestDotGo() *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with 404",
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").Op(":").Qual(utils.ModelsPkg, "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 						jen.ID("Username").Op(":").Lit("username"),
 						jen.ID("Password").Op(":").Lit("password"),
 						jen.ID("TOTPToken").Op(":").Lit("123456"),

@@ -116,7 +116,7 @@ func getTimeQuery(dbrn string) string {
 func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
 
 	n := typ.Name
 	sn := n.Singular()

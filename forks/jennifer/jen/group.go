@@ -85,6 +85,9 @@ func (g *Group) renderItems(f *File, w io.Writer) (isNull bool, err error) {
 			// Special case for package tokens in Qual groups - for dot-imports, the package token
 			// will be null, so will not render and will not be registered in the imports block.
 			// This ensures all packageTokens that are rendered are registered.
+			if s, ok := pt.content.(string); ok && s == "gitlab.com/verygoodsoftwarenotvirus/todopartdeux/services/v1/%s/items" {
+				println()
+			}
 			f.register(pt.content.(string))
 		}
 		if code == nil || code.isNull(f) {

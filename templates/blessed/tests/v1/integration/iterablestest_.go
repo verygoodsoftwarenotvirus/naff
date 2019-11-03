@@ -9,10 +9,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesTestDotGo(rootPkg string, typ models.DataType) *jen.File {
+func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret := jen.NewFile("integration")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
 
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -20,7 +20,7 @@ func iterablesTestDotGo(rootPkg string, typ models.DataType) *jen.File {
 	pcn := typ.Name.PluralCommonName()
 
 	ret.Add(
-		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(rootPkg, "models/v1"), sn)).Block(
+		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
@@ -32,10 +32,10 @@ func iterablesTestDotGo(rootPkg string, typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(rootPkg, "models/v1"), sn)).Block(
+		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 				jen.ID("Name").Op(":").ID("fake").Dot("Word").Call(),
 				jen.ID("Details").Op(":").ID("fake").Dot("Sentence").Call(),
 			),
@@ -57,13 +57,13 @@ func iterablesTestDotGo(rootPkg string, typ models.DataType) *jen.File {
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
 					jen.Commentf("Create %s", scn),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), sn).Valuesln(
+					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 						jen.ID("Name").Op(":").Lit("name"),
 						jen.ID("Details").Op(":").Lit("details"),
 					),
 					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(
 						jen.ID("ctx"),
-						jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+						jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 							jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 							jen.ID("Details").Op(":").ID("expected").Dot("Details"),
 						),
@@ -91,7 +91,7 @@ func iterablesTestDotGo(rootPkg string, typ models.DataType) *jen.File {
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
 					jen.Commentf("Create %s", pcn),
-					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(rootPkg, "models/v1"), sn),
+					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn),
 					jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.ID("expected").Op("=").ID("append").Call(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
 					),
@@ -131,11 +131,11 @@ func iterablesTestDotGo(rootPkg string, typ models.DataType) *jen.File {
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
 					jen.Commentf("Create %s", scn),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), sn).Valuesln(
+					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 						jen.ID("Name").Op(":").Lit("name"),
 						jen.ID("Details").Op(":").Lit("details"),
 					),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(jen.ID("ctx"), jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(jen.ID("ctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 						jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 						jen.ID("Details").Op(":").ID("expected").Dot("Details")),
 					),
@@ -160,7 +160,7 @@ func iterablesTestDotGo(rootPkg string, typ models.DataType) *jen.File {
 					jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
-					jen.ID("err").Op(":=").ID("todoClient").Dotf("Update%s", sn).Call(jen.ID("ctx"), jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), sn).Values(jen.ID("ID").Op(":").ID("nonexistentID"))),
+					jen.ID("err").Op(":=").ID("todoClient").Dotf("Update%s", sn).Call(jen.ID("ctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Values(jen.ID("ID").Op(":").ID("nonexistentID"))),
 					jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				)),
 				jen.Line(),
@@ -170,11 +170,11 @@ func iterablesTestDotGo(rootPkg string, typ models.DataType) *jen.File {
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
 					jen.Commentf("Create %s", scn),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), sn).Valuesln(
+					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 						jen.ID("Name").Op(":").Lit("new name"),
 						jen.ID("Details").Op(":").Lit("new details"),
 					),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 						jen.ID("Name").Op(":").Lit("old name"),
 						jen.ID("Details").Op(":").Lit("old details"),
 					)),
@@ -205,12 +205,12 @@ func iterablesTestDotGo(rootPkg string, typ models.DataType) *jen.File {
 					jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
-					jen.Comment("CreateHandler item"),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), sn).Valuesln(
+					jen.Commentf("Create  %s", scn),
+					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 						jen.ID("Name").Op(":").Lit("name"),
 						jen.ID("Details").Op(":").Lit("details"),
 					),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(jen.ID("ctx"), jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(jen.ID("ctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 						jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 						jen.ID("Details").Op(":").ID("expected").Dot("Details")),
 					),

@@ -10,7 +10,7 @@ import (
 func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
 		"tests/v1/testutil/doc.go":      docDotGo(),
-		"tests/v1/testutil/testutil.go": testutilDotGo(pkgRoot),
+		"tests/v1/testutil/testutil.go": testutilDotGo(pkgRoot, types),
 	}
 
 	for path, file := range files {

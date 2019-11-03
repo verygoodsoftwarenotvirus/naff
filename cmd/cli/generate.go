@@ -18,11 +18,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/spf13/cobra"
-)
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	project "gitlab.com/verygoodsoftwarenotvirus/naff/templates"
 
-const (
-	defaultFileExtension = ".tmpl"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -30,7 +29,7 @@ var (
 
 	// generateCmd represents the generate command
 	generateCmd = &cobra.Command{
-		Use:   "generate",
+		Use:   "gen",
 		Short: "executes the templates to generate boilerplate",
 		Long: `This command will prompt the user for a few things:
 	1. The name of the project
@@ -40,25 +39,20 @@ var (
 Input models are probably not necessary, but they may as well be, if you try to use this tool without any, you're going to have a bad time.
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			//p := &Project{
-			//	Name:             "slef",
-			//	OutputRepository: "gitlab.com/verygoodsoftwarenotvirus/slef",
-			//	ModelsPackage:    "gitlab.com/verygoodsoftwarenotvirus/naffmodels/slef",
-			//}
-			p, err := fillSurvey()
+			p, err := models.CompleteSurvey()
 			if err != nil {
 				return err
 			}
 
-			if strings.TrimSpace(p.OutputRepository) == "gitlab.com/verygoodsoftwarenotvirus/naff" {
+			if strings.HasPrefix(strings.TrimSpace(p.OutputPath), "gitlab.com/verygoodsoftwarenotvirus/naff") {
 				return errors.New("you want me to erase myself?")
 			}
-			p.parseModels()
 
-			if err := p.EnsureOutputDir(); err != nil {
+			if err := p.ParseModels(p.OutputPath); err != nil {
 				return err
 			}
-			if err := p.RenderDirectory(); err != nil {
+
+			if err := project.RenderProject(p); err != nil {
 				return err
 			}
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 )
@@ -12,10 +13,10 @@ func newClientMethod(name string) *jen.Statement {
 	return jen.Func().Params(jen.ID("c").Op("*").ID(v1)).ID(name)
 }
 
-func mainDotGo() *jen.File {
+func mainDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 	ret.Add(jen.Line())
 
 	// consts

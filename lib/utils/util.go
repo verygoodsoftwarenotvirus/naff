@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 const (
@@ -129,8 +130,8 @@ func buildDoubleValueTestifyFunc(pkg, method string) func(expected, actual, mess
 	}
 }
 
-func BuildTemplatePath(tail string) string {
-	return filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/naff/example_output", tail)
+func BuildTemplatePath(pkgRoot, tail string) string {
+	return filepath.Join(os.Getenv("GOPATH"), "src", pkgRoot, tail)
 }
 
 func BuildSubTest(name string, testInstructions ...jen.Code) jen.Code {
@@ -185,7 +186,6 @@ const (
 	AssertPkg      = "github.com/stretchr/testify/assert"
 	MustAssertPkg  = "github.com/stretchr/testify/require"
 	MockPkg        = "github.com/stretchr/testify/mock"
-	ModelsPkg      = "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
 )
 
 func RunGoimportsForFile(filename string) error {
@@ -198,7 +198,7 @@ func RunGoFormatForFile(filename string) error {
 
 func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 	// start := time.Now()
-	fp := BuildTemplatePath(path)
+	fp := BuildTemplatePath(pkgRoot, path)
 
 	_ = os.Remove(fp)
 	if mkdirErr := os.MkdirAll(filepath.Dir(fp), os.ModePerm); mkdirErr != nil {
@@ -229,4 +229,66 @@ func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 	// log.Printf("took %s to render %q", time.Since(start), path)
 
 	return nil
+}
+
+func ExampleValueForField(field models.DataField) jen.Code {
+	switch field.Type {
+	case "string":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit("example"))
+		}
+		return jen.Lit("example")
+	case "float32":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1.23))
+		}
+		return jen.Lit(1.23)
+	case "float64":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1.23))
+		}
+		return jen.Lit(1.23)
+	case "uint8":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+		}
+		return jen.Lit(1)
+	case "uint16":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+		}
+		return jen.Lit(1)
+	case "uint32":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+		}
+		return jen.Lit(1)
+	case "uint64":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+		}
+		return jen.Lit(1)
+	case "int8":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+		}
+		return jen.Lit(1)
+	case "int16":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+		}
+		return jen.Lit(1)
+	case "int32":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+		}
+		return jen.Lit(1)
+	case "int64":
+		if field.Pointer {
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+		}
+		return jen.Lit(1)
+	default:
+		return nil
+	}
 }

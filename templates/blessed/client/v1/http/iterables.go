@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -10,7 +11,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesDotGo(typ models.DataType) *jen.File {
+func iterablesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
 	ts := typ.Name.Singular()
@@ -23,7 +24,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
 	basePath := fmt.Sprintf("%sBasePath", pvn)
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
 	ret.Add(jen.Const().Defs(
 		jen.ID(basePath).Op("=").Lit(prn)),
 	)
@@ -60,7 +61,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Comment(fmt.Sprintf("Get%s retrieves %s", ts, commonNameWithPrefix)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Get%s", ts)).Params(utils.CtxParam(), jen.ID("id").ID("uint64")).Params(
-			jen.ID(vn).Op("*").Qual(utils.ModelsPkg, ts),
+			jen.ID(vn).Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), ts),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(jen.ID("ctx"), jen.ID("id")),
@@ -84,7 +85,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildGet%sRequest", tp)).Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -108,9 +109,9 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Get%s", tp)).Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 		).Params(
-			jen.ID(pvn).Op("*").Qual(utils.ModelsPkg, fmt.Sprintf("%sList", ts)),
+			jen.ID(pvn).Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", ts)),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -146,7 +147,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildCreate%sRequest", ts)).Params(
 			utils.CtxParam(),
-			jen.ID("body").Op("*").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)),
+			jen.ID("body").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", ts)),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -170,9 +171,9 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Create%s", ts)).Params(
 			utils.CtxParam(),
-			jen.ID("input").Op("*").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)),
+			jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", ts)),
 		).Params(
-			jen.ID(vn).Op("*").Qual(utils.ModelsPkg, ts),
+			jen.ID(vn).Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), ts),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -209,7 +210,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildUpdate%sRequest", ts)).Params(
 			utils.CtxParam(),
-			jen.ID("updated").Op("*").Qual(utils.ModelsPkg, ts),
+			jen.ID("updated").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), ts),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -235,7 +236,7 @@ func iterablesDotGo(typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment(fmt.Sprintf("Update%s updates %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("Update%s", ts)).Params(utils.CtxParam(), jen.ID("updated").Op("*").Qual(utils.ModelsPkg, ts)).Params(jen.ID("error")).Block(
+		newClientMethod(fmt.Sprintf("Update%s", ts)).Params(utils.CtxParam(), jen.ID("updated").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), ts)).Params(jen.ID("error")).Block(
 			jen.List(
 				jen.ID("req"),
 				jen.ID("err"),

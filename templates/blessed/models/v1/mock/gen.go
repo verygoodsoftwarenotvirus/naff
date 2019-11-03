@@ -12,12 +12,12 @@ import (
 func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
 		"models/v1/mock/doc.go":                             docDotGo(),
-		"models/v1/mock/mock_user_data_server.go":           mockUserDataServerDotGo(pkgRoot),
-		"models/v1/mock/mock_oauth2_client_data_manager.go": mockOauth2ClientDataManagerDotGo(pkgRoot),
-		"models/v1/mock/mock_oauth2_client_data_server.go":  mockOauth2ClientDataServerDotGo(pkgRoot),
-		"models/v1/mock/mock_user_data_manager.go":          mockUserDataManagerDotGo(pkgRoot),
-		"models/v1/mock/mock_webhook_data_manager.go":       mockWebhookDataManagerDotGo(pkgRoot),
-		"models/v1/mock/mock_webhook_data_server.go":        mockWebhookDataServerDotGo(pkgRoot),
+		"models/v1/mock/mock_user_data_server.go":           mockUserDataServerDotGo(pkgRoot, types),
+		"models/v1/mock/mock_oauth2_client_data_manager.go": mockOauth2ClientDataManagerDotGo(pkgRoot, types),
+		"models/v1/mock/mock_oauth2_client_data_server.go":  mockOauth2ClientDataServerDotGo(pkgRoot, types),
+		"models/v1/mock/mock_user_data_manager.go":          mockUserDataManagerDotGo(pkgRoot, types),
+		"models/v1/mock/mock_webhook_data_manager.go":       mockWebhookDataManagerDotGo(pkgRoot, types),
+		"models/v1/mock/mock_webhook_data_server.go":        mockWebhookDataServerDotGo(pkgRoot, types),
 	}
 
 	for _, typ := range types {

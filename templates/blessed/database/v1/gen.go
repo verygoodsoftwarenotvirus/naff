@@ -9,8 +9,8 @@ import (
 // RenderPackage renders the package
 func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
-		"database/v1/database.go":      databaseDotGo(),
-		"database/v1/database_mock.go": databaseMockDotGo(),
+		"database/v1/database.go":      databaseDotGo(pkgRoot, types),
+		"database/v1/database_mock.go": databaseMockDotGo(pkgRoot, types),
 		"database/v1/doc.go":           docDotGo(),
 	}
 

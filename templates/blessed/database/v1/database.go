@@ -1,16 +1,19 @@
 package v1
 
 import (
+	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-const modelsImp = "gitlab.com/verygoodsoftwarenotvirus/todo/models/v1"
-
-func databaseDotGo() *jen.File {
+func databaseDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("database")
 
-	utils.AddImports(ret)
+	modelsImp := fmt.Sprintf("%s/models/v1", pkgRoot)
+
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Var().Defs(
@@ -20,6 +23,28 @@ func databaseDotGo() *jen.File {
 		),
 		jen.Line(),
 	)
+
+	buildInterfaceLines := func() []jen.Code {
+		lines := []jen.Code{
+			jen.ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")),
+			jen.ID("IsReady").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("ready").ID("bool")),
+			jen.Line(),
+		}
+
+		for _, typ := range types {
+			lines = append(lines,
+				jen.Qual(modelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())),
+			)
+		}
+
+		lines = append(lines,
+			jen.Qual(modelsImp, "UserDataManager"),
+			jen.Qual(modelsImp, "OAuth2ClientDataManager"),
+			jen.Qual(modelsImp, "WebhookDataManager"),
+		)
+
+		return lines
+	}
 
 	ret.Add(
 		jen.Type().Defs(
@@ -40,13 +65,7 @@ func databaseDotGo() *jen.File {
 			jen.Line(),
 			jen.Comment("Database describes anything that stores data for our services"),
 			jen.ID("Database").Interface(
-				jen.ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")),
-				jen.ID("IsReady").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("ready").ID("bool")),
-				jen.Line(),
-				jen.Qual(modelsImp, "ItemDataManager"),
-				jen.Qual(modelsImp, "UserDataManager"),
-				jen.Qual(modelsImp, "OAuth2ClientDataManager"),
-				jen.Qual(modelsImp, "WebhookDataManager"),
+				buildInterfaceLines()...,
 			),
 		),
 		jen.Line(),

@@ -11,11 +11,11 @@ import (
 // RenderPackage renders the package
 func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
-		"tests/v1/load/actions.go":       actionsDotGo(pkgRoot),
-		"tests/v1/load/init.go":          initDotGo(pkgRoot),
-		"tests/v1/load/main.go":          mainDotGo(pkgRoot),
-		"tests/v1/load/oauth2clients.go": oauth2ClientsDotGo(pkgRoot),
-		"tests/v1/load/webhooks.go":      webhooksDotGo(pkgRoot),
+		"tests/v1/load/actions.go":       actionsDotGo(pkgRoot, types),
+		"tests/v1/load/init.go":          initDotGo(pkgRoot, types),
+		"tests/v1/load/main.go":          mainDotGo(pkgRoot, types),
+		"tests/v1/load/oauth2clients.go": oauth2ClientsDotGo(pkgRoot, types),
+		"tests/v1/load/webhooks.go":      webhooksDotGo(pkgRoot, types),
 	}
 
 	for _, typ := range types {

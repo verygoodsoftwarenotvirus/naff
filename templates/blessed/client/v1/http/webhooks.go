@@ -1,14 +1,17 @@
 package client
 
 import (
+	"path/filepath"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func webhooksDotGo() *jen.File {
+func webhooksDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 	ret.Add(jen.Const().Defs(
 		jen.ID("webhooksBasePath").Op("=").Lit("webhooks"),
 	))
@@ -47,7 +50,7 @@ func webhooksDotGo() *jen.File {
 			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.ID("webhook").Op("*").Qual(utils.ModelsPkg, "Webhook"),
+			jen.ID("webhook").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -83,7 +86,7 @@ func webhooksDotGo() *jen.File {
 		jen.Line(),
 		newClientMethod("BuildGetWebhooksRequest").Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -106,9 +109,9 @@ func webhooksDotGo() *jen.File {
 		jen.Line(),
 		newClientMethod("GetWebhooks").Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 		).Params(
-			jen.ID("webhooks").Op("*").Qual(utils.ModelsPkg, "WebhookList"),
+			jen.ID("webhooks").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookList"),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -145,7 +148,7 @@ func webhooksDotGo() *jen.File {
 		jen.Line(),
 		newClientMethod("BuildCreateWebhookRequest").Params(
 			utils.CtxParam(),
-			jen.ID("body").Op("*").Qual(utils.ModelsPkg, "WebhookCreationInput"),
+			jen.ID("body").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -168,9 +171,9 @@ func webhooksDotGo() *jen.File {
 		jen.Line(),
 		newClientMethod("CreateWebhook").Params(
 			utils.CtxParam(),
-			jen.ID("input").Op("*").Qual(utils.ModelsPkg, "WebhookCreationInput"),
+			jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput"),
 		).Params(
-			jen.ID("webhook").Op("*").Qual(utils.ModelsPkg, "Webhook"),
+			jen.ID("webhook").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -207,7 +210,7 @@ func webhooksDotGo() *jen.File {
 		jen.Line(),
 		newClientMethod("BuildUpdateWebhookRequest").Params(
 			utils.CtxParam(),
-			jen.ID("updated").Op("*").Qual(utils.ModelsPkg, "Webhook"),
+			jen.ID("updated").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -234,7 +237,7 @@ func webhooksDotGo() *jen.File {
 		jen.Line(),
 		newClientMethod("UpdateWebhook").Params(
 			utils.CtxParam(),
-			jen.ID("updated").Op("*").Qual(utils.ModelsPkg, "Webhook"),
+			jen.ID("updated").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"),
 		).Params(
 			jen.ID("error"),
 		).Block(

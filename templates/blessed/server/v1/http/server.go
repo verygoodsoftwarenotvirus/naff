@@ -1,16 +1,18 @@
 package httpserver
 
 import (
+	"fmt"
 	"path/filepath"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func serverDotGo(pkgRoot string) *jen.File {
+func serverDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -19,42 +21,65 @@ func serverDotGo(pkgRoot string) *jen.File {
 		jen.Line(),
 	)
 
+	makeServerStructDeclLines := func() []jen.Code {
+
+		lines := []jen.Code{
+			jen.ID("DebugMode").ID("bool"),
+			jen.Line(),
+			jen.Comment("Services"),
+			jen.ID("authService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/auth"), "Service"),
+			jen.ID("frontendService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/frontend"), "Service"),
+			jen.ID("usersService").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataServer"),
+			jen.ID("oauth2ClientsService").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer"),
+			jen.ID("webhooksService").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataServer"),
+		}
+
+		for _, typ := range types {
+			tsn := typ.Name.Singular()
+			tpuvn := typ.Name.PluralUnexportedVarName()
+			lines = append(lines,
+				jen.IDf("%sService", tpuvn).Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sDataServer", tsn)))
+		}
+
+		lines = append(lines,
+
+			jen.Line(),
+			jen.Comment("infra things"),
+			jen.ID("db").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
+			jen.ID("config").Op("*").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ServerConfig"),
+			jen.ID("router").Op("*").Qual("github.com/go-chi/chi", "Mux"),
+			jen.ID("httpServer").Op("*").Qual("net/http", "Server"),
+			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+			jen.ID("encoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
+			jen.ID("newsManager").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
+		)
+
+		return lines
+	}
+
 	ret.Add(
 		jen.Type().Defs(
 			jen.Comment("Server is our API httpServer"),
 			jen.ID("Server").Struct(
-				jen.ID("DebugMode").ID("bool"),
-				jen.Line(),
-				jen.Comment("Services"),
-				jen.ID("authService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/auth"), "Service"),
-				jen.ID("frontendService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/frontend"), "Service"),
-				jen.ID("usersService").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataServer"),
-				jen.ID("oauth2ClientsService").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer"),
-				jen.ID("webhooksService").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataServer"),
-				jen.ID("itemsService").Qual(filepath.Join(pkgRoot, "models/v1"), "ItemDataServer"),
-				jen.Line(),
-				jen.Comment("infra things"),
-				jen.ID("db").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
-				jen.ID("config").Op("*").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ServerConfig"),
-				jen.ID("router").Op("*").Qual("github.com/go-chi/chi", "Mux"),
-				jen.ID("httpServer").Op("*").Qual("net/http", "Server"),
-				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("encoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
-				jen.ID("newsManager").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
+				makeServerStructDeclLines()...,
 			),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Comment("ProvideServer builds a new Server instance"),
-		jen.Line(),
-		jen.Func().ID("ProvideServer").Paramsln(
+	buildProvideServerParams := func() []jen.Code {
+		lines := []jen.Code{
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("cfg").Op("*").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ServerConfig"),
 			jen.ID("authService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/auth"), "Service"),
 			jen.ID("frontendService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/frontend"), "Service"),
-			jen.ID("itemsService").Qual(filepath.Join(pkgRoot, "models/v1"), "ItemDataServer"),
+		}
+
+		for _, typ := range types {
+			lines = append(lines, jen.IDf("%sService", typ.Name.PluralUnexportedVarName()).Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sDataServer", typ.Name.Singular())))
+		}
+
+		lines = append(lines,
 			jen.ID("usersService").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataServer"),
 			jen.ID("oauth2Service").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer"),
 			jen.ID("webhooksService").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataServer"),
@@ -62,6 +87,43 @@ func serverDotGo(pkgRoot string) *jen.File {
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 			jen.ID("encoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
 			jen.ID("newsManager").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
+		)
+
+		return lines
+	}
+
+	buildServerDecLines := func() []jen.Code {
+		lines := []jen.Code{
+			jen.ID("DebugMode").Op(":").ID("cfg").Dot("Server").Dot("Debug"),
+			jen.Comment("infra things"),
+			jen.ID("db").Op(":").ID("db"),
+			jen.ID("config").Op(":").ID("cfg"),
+			jen.ID("encoder").Op(":").ID("encoder"),
+			jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(),
+			jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.Lit("api_server")),
+			jen.ID("newsManager").Op(":").ID("newsManager"),
+			jen.Comment("services"),
+			jen.ID("webhooksService").Op(":").ID("webhooksService"),
+			jen.ID("frontendService").Op(":").ID("frontendService"),
+			jen.ID("usersService").Op(":").ID("usersService"),
+			jen.ID("authService").Op(":").ID("authService"),
+		}
+
+		for _, typ := range types {
+			tpuvn := typ.Name.PluralUnexportedVarName()
+			lines = append(lines, jen.IDf("%sService", tpuvn).Op(":").IDf("%sService", tpuvn))
+		}
+
+		lines = append(lines, jen.ID("oauth2ClientsService").Op(":").ID("oauth2Service"))
+
+		return lines
+	}
+
+	ret.Add(
+		jen.Comment("ProvideServer builds a new Server instance"),
+		jen.Line(),
+		jen.Func().ID("ProvideServer").Paramsln(
+			buildProvideServerParams()...,
 		).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
 			jen.If(jen.ID("len").Call(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).Op("<").Lit(32)).Block(
 				jen.ID("err").Op(":=").ID("errors").Dot("New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
@@ -70,21 +132,7 @@ func serverDotGo(pkgRoot string) *jen.File {
 			),
 			jen.Line(),
 			jen.ID("srv").Op(":=").Op("&").ID("Server").Valuesln(
-				jen.ID("DebugMode").Op(":").ID("cfg").Dot("Server").Dot("Debug"),
-				jen.Comment("infra things"),
-				jen.ID("db").Op(":").ID("db"),
-				jen.ID("config").Op(":").ID("cfg"),
-				jen.ID("encoder").Op(":").ID("encoder"),
-				jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(),
-				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.Lit("api_server")),
-				jen.ID("newsManager").Op(":").ID("newsManager"),
-				jen.Comment("services"),
-				jen.ID("webhooksService").Op(":").ID("webhooksService"),
-				jen.ID("frontendService").Op(":").ID("frontendService"),
-				jen.ID("usersService").Op(":").ID("usersService"),
-				jen.ID("authService").Op(":").ID("authService"),
-				jen.ID("itemsService").Op(":").ID("itemsService"),
-				jen.ID("oauth2ClientsService").Op(":").ID("oauth2Service"),
+				buildServerDecLines()...,
 			),
 			jen.Line(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ErrInvalidTracingProvider")).Block(

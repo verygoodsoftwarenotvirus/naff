@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientsDotGo(pkgRoot string) *jen.File {
+func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "models/v1"),

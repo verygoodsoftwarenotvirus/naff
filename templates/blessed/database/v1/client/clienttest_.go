@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func clientTestDotGo(pkgRoot string) *jen.File {
+func clientTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Func().ID("buildTestClient").Params().Params(jen.Op("*").ID("Client"), jen.Op("*").Qual(filepath.Join(pkgRoot, "database/v1"), "MockDatabase")).Block(

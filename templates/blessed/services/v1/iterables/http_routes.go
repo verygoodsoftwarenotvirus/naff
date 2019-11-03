@@ -25,7 +25,7 @@ func httpRoutesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 
 	xID := fmt.Sprintf("%sID", uvn)
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -188,7 +188,7 @@ func httpRoutesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("check for parsed input attached to request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "ItemUpdateInput")),
+				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sUpdateInput", sn))),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
@@ -206,7 +206,7 @@ func httpRoutesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Line(),
 				jen.Commentf("fetch %s from database", scn),
-				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot("GetItem").Call(jen.ID("ctx"), jen.ID(xID), jen.ID("userID")),
+				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Get%s", sn).Call(jen.ID("ctx"), jen.ID(xID), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
 					jen.Return(),
@@ -220,7 +220,7 @@ func httpRoutesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("x").Dot("Update").Call(jen.ID("input")),
 				jen.Line(),
 				jen.Commentf("update %s in database", scn),
-				jen.If(jen.ID("err").Op("=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot("UpdateItem").Call(jen.ID("ctx"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.If(jen.ID("err").Op("=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Update%s", sn).Call(jen.ID("ctx"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("error encountered updating %s", scn)),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
@@ -254,14 +254,14 @@ func httpRoutesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
 				jen.ID(xID).Op(":=").ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-					jen.Lit("item_id").Op(":").ID(fmt.Sprintf("%sID", uvn)),
+					jen.Litf("%s_id", rn).Op(":").ID(fmt.Sprintf("%sID", uvn)),
 					jen.Lit("user_id").Op(":").ID("userID"),
 				)),
 				jen.ID(fmt.Sprintf("attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Line(),
 				jen.Commentf("archive the %s in the database", scn),
-				jen.ID("err").Op(":=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot("ArchiveItem").Call(jen.ID("ctx"), jen.ID(xID), jen.ID("userID")),
+				jen.ID("err").Op(":=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Archive%s", sn).Call(jen.ID("ctx"), jen.ID(xID), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
 					jen.Return(),

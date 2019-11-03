@@ -5,6 +5,7 @@ import (
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 const (
@@ -12,10 +13,10 @@ const (
 	webhooksListRoute = "/api/v1/webhooks"
 )
 
-func webhooksTestDotGo(pkgRoot string) *jen.File {
+func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Line(),
@@ -74,7 +75,7 @@ func webhooksTestDotGo(pkgRoot string) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, "Webhook").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("Name").Op(":").Lit("example"),
 				),
@@ -178,8 +179,8 @@ func webhooksTestDotGo(pkgRoot string) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, "WebhookList").Valuesln(
-					jen.ID("Webhooks").Op(":").Index().Qual(utils.ModelsPkg, "Webhook").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookList").Valuesln(
+					jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").Op(":").Lit(1),
 							jen.ID("Name").Op(":").Lit("example"),
@@ -238,7 +239,7 @@ func webhooksTestDotGo(pkgRoot string) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "WebhookCreationInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
 					jen.ID("Name").Op(":").Lit("expected name"),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -275,11 +276,11 @@ func webhooksTestDotGo(pkgRoot string) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, "Webhook").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("Name").Op(":").Lit("example"),
 				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "WebhookCreationInput").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 				),
 				jen.Line(),
@@ -296,7 +297,7 @@ func webhooksTestDotGo(pkgRoot string) *jen.File {
 						nil,
 					),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(utils.ModelsPkg, "WebhookCreationInput"),
+					jen.Var().ID("x").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput"),
 					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(
 							jen.ID("req").Dot("Body"),
@@ -348,7 +349,7 @@ func webhooksTestDotGo(pkgRoot string) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPut"),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, "Webhook").Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
 					jen.ID("Name").Op(":").Lit("changed name"),
 				),
 				jen.Line(),
@@ -387,7 +388,7 @@ func webhooksTestDotGo(pkgRoot string) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, "Webhook").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("Name").Op(":").Lit("example"),
 				),

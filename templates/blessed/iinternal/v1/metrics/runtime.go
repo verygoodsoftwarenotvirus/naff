@@ -5,6 +5,7 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func float64Metric(varName, measurementName, measurementDescription string, count bool) jen.Code {
@@ -75,10 +76,10 @@ func statsDotInt64(varName, name, description string) jen.Code {
 	)
 }
 
-func runtimeDotGo() *jen.File {
+func runtimeDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Comment("inspired by:")
 	ret.Comment("https://github.com/opencensus-integrations/caddy/blob/c8498719b7c1c2a3c707355be2395a35f03e434e/caddy/caddymain/exporters.go#L54-L110")

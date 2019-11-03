@@ -10,8 +10,8 @@ import (
 func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
 		"internal/v1/encoding/doc.go":           docDotGo(),
-		"internal/v1/encoding/encoding.go":      encodingDotGo(),
-		"internal/v1/encoding/encoding_test.go": encodingTestDotGo(),
+		"internal/v1/encoding/encoding.go":      encodingDotGo(pkgRoot, types),
+		"internal/v1/encoding/encoding_test.go": encodingTestDotGo(pkgRoot, types),
 	}
 
 	for path, file := range files {

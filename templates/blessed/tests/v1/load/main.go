@@ -5,18 +5,19 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mainDotGo(rootPkg string) *jen.File {
+func mainDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Comment("ServiceAttacker implements hazana's Attacker interface"),
 		jen.Line(),
 		jen.Type().ID("ServiceAttacker").Struct(
-			jen.ID("todoClient").Op("*").Qual(filepath.Join(rootPkg, "client/v1/http"), "V1Client"),
+			jen.ID("todoClient").Op("*").Qual(filepath.Join(pkgRoot, "client/v1/http"), "V1Client"),
 		),
 		jen.Line(),
 	)

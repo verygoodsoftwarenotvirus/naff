@@ -9,13 +9,13 @@ import (
 // RenderPackage renders the package
 func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
-		"internal/v1/config/wire.go":         wireDotGo(),
-		"internal/v1/config/config.go":       configDotGo(pkgRoot),
-		"internal/v1/config/config_test.go":  configTestDotGo(pkgRoot),
-		"internal/v1/config/database.go":     databaseDotGo(pkgRoot),
+		"internal/v1/config/wire.go":         wireDotGo(pkgRoot, types),
+		"internal/v1/config/config.go":       configDotGo(pkgRoot, types),
+		"internal/v1/config/config_test.go":  configTestDotGo(pkgRoot, types),
+		"internal/v1/config/database.go":     databaseDotGo(pkgRoot, types),
 		"internal/v1/config/doc.go":          docDotGo(),
-		"internal/v1/config/metrics.go":      metricsDotGo(pkgRoot),
-		"internal/v1/config/metrics_test.go": metricsTestDotGo(),
+		"internal/v1/config/metrics.go":      metricsDotGo(pkgRoot, types),
+		"internal/v1/config/metrics_test.go": metricsTestDotGo(pkgRoot, types),
 	}
 
 	for path, file := range files {

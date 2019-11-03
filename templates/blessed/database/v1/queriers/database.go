@@ -7,12 +7,13 @@ import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func databaseDotGo(pkgRoot string, vendor wordsmith.SuperPalabra) *jen.File {
+func databaseDotGo(pkgRoot string, types []models.DataType, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.RouteName())
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	uvn := vendor.UnexportedVarName()
 	cn := vendor.SingularCommonName()

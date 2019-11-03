@@ -484,10 +484,10 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 	return out
 }
 
-func migrationsDotGo(vendor wordsmith.SuperPalabra, types []models.DataType) *jen.File {
+func migrationsDotGo(pkgRoot string, vendor wordsmith.SuperPalabra, types []models.DataType) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 	dbvsn := vendor.Singular()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 	dbcn := vendor.SingularCommonName()

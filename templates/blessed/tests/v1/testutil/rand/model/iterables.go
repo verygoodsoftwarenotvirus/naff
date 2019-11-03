@@ -13,13 +13,14 @@ import (
 func iterablesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret := jen.NewFile("randmodel")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
+	sn := typ.Name.Singular()
 
 	ret.Add(
-		jen.Comment("RandomItemCreationInput creates a random ItemInput"),
+		jen.Commentf("Random%sCreationInput creates a random %sInput", sn, sn),
 		jen.Line(),
-		jen.Func().ID("RandomItemCreationInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "ItemCreationInput")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "ItemCreationInput").Valuesln(buildFakeCalls(typ.Fields)...),
+		jen.Func().IDf("Random%sCreationInput", sn).Params().Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn))).Block(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(buildFakeCalls(typ.Fields)...),
 			jen.Line(),
 			jen.Return().ID("x"),
 		),

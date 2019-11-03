@@ -1,14 +1,18 @@
 package v1
 
 import (
+	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mainDotGo() *jen.File {
+func mainDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(ret)
+	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", pkgRoot)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Func().ID("main").Params().Block(

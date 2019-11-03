@@ -26,7 +26,7 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 	files[".golangci.yml"] = golancCILintDotYAML(pkgRoot)
 
 	for filename, file := range files {
-		fname := utils.BuildTemplatePath(filename)
+		fname := utils.BuildTemplatePath(pkgRoot, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)
@@ -217,7 +217,8 @@ vendor-clean:
 
 .PHONY: vendor
 vendor:
-	GO111MODULE=on go mod vendor
+	if [ ! -f go.mod ]; then go mod init; fi
+	go mod vendor
 
 .PHONY: revendor
 revendor: vendor-clean vendor

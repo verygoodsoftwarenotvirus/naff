@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func encodingDotGo(pkgRoot string) *jen.File {
+func encodingDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder").Op("=").Parens(jen.Op("*").ID("EncoderDecoder")).Call(jen.ID("nil")),

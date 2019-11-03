@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2TestDotGo(rootPkg string) *jen.File {
+func oauth2TestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("integration")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Func().ID("mustBuildCode").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("totpSecret").ID("string")).Params(jen.ID("string")).Block(
@@ -23,11 +24,11 @@ func oauth2TestDotGo(rootPkg string) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyOAuth2ClientInput").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "OAuth2ClientCreationInput")).Block(
+		jen.Func().ID("buildDummyOAuth2ClientInput").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
-				jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(rootPkg, "models/v1"), "UserLoginInput").Valuesln(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
+				jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("username"),
 					jen.ID("Password").Op(":").ID("password"),
 					jen.ID("TOTPToken").Op(":").ID("mustBuildCode").Call(jen.ID("t"), jen.ID("totpToken")),
@@ -42,8 +43,8 @@ func oauth2TestDotGo(rootPkg string) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("convertInputToClient").Params(jen.ID("input").Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "OAuth2ClientCreationInput")).Params(jen.Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "OAuth2Client")).Block(
-			jen.Return().Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "OAuth2Client").Valuesln(
+		jen.Func().ID("convertInputToClient").Params(jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")).Block(
+			jen.Return().Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Valuesln(
 				jen.ID("ClientID").Op(":").ID("input").Dot("ClientID"),
 				jen.ID("ClientSecret").Op(":").ID("input").Dot("ClientSecret"),
 				jen.ID("RedirectURI").Op(":").ID("input").Dot("RedirectURI"),
@@ -54,7 +55,7 @@ func oauth2TestDotGo(rootPkg string) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("checkOAuth2ClientEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "OAuth2Client")).Block(
+		jen.Func().ID("checkOAuth2ClientEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
@@ -85,7 +86,7 @@ func oauth2TestDotGo(rootPkg string) *jen.File {
 			jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("cookie"), jen.ID("input")),
 			jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.ID("err")),
 			jen.Line(),
-			jen.List(jen.ID("testClient"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "client/v1/http"), "NewClient").Callln(
+			jen.List(jen.ID("testClient"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkgRoot, "client/v1/http"), "NewClient").Callln(
 				jen.Qual("context", "Background").Call(),
 				jen.ID("premade").Dot("ClientID"),
 				jen.ID("premade").Dot("ClientSecret"),
@@ -178,7 +179,7 @@ func oauth2TestDotGo(rootPkg string) *jen.File {
 					jen.ID("err").Op("=").ID("testClient").Dot("ArchiveOAuth2Client").Call(jen.ID("tctx"), jen.ID("premade").Dot("ID")),
 					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 					jen.Line(),
-					jen.List(jen.ID("c2"), jen.ID("err")).Op(":=").Qual(filepath.Join(rootPkg, "client/v1/http"), "NewClient").Callln(
+					jen.List(jen.ID("c2"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkgRoot, "client/v1/http"), "NewClient").Callln(
 						jen.Qual("context", "Background").Call(),
 						jen.ID("premade").Dot("ClientID"),
 						jen.ID("premade").Dot("ClientSecret"),
@@ -200,7 +201,7 @@ func oauth2TestDotGo(rootPkg string) *jen.File {
 					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 					jen.Line(),
 					jen.Comment("Create oauth2Clients"),
-					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "OAuth2Client"),
+					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client"),
 					jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.ID("input").Op(":=").ID("buildDummyOAuth2ClientInput").Call(
 							jen.ID("t"),

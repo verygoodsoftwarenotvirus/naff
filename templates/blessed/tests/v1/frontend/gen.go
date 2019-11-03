@@ -9,9 +9,9 @@ import (
 // RenderPackage renders the package
 func RenderPackage(pkgRoot string, types []models.DataType) error {
 	files := map[string]*jen.File{
-		"tests/v1/frontend/main_test.go": mainTestDotGo(),
+		"tests/v1/frontend/main_test.go": mainTestDotGo(pkgRoot, types),
 		"tests/v1/frontend/doc.go":       docDotGo(),
-		"tests/v1/frontend/init.go":      initDotGo(pkgRoot),
+		"tests/v1/frontend/init.go":      initDotGo(pkgRoot, types),
 	}
 
 	for path, file := range files {

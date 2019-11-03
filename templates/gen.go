@@ -1,6 +1,7 @@
 package project
 
 import (
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -114,7 +115,7 @@ func RenderProject(in *naffmodels.Project) error {
 					if err := renderer.renderFunc(in.OutputPath, in.DataTypes); err != nil {
 						log.Printf("error rendering %q after %s\n", taskName, time.Since(start))
 					}
-					log.Printf("rendered %s after %s\n", taskName, time.Since(start))
+					fmt.Printf("rendered %s after %s\n", taskName, time.Since(start))
 					wg.Done()
 				}(name, x)
 			}
@@ -127,7 +128,7 @@ func RenderProject(in *naffmodels.Project) error {
 					if err := renderer.renderFunc(in.OutputPath, packageName, in.DataTypes); err != nil {
 						log.Printf("error rendering %q after %s\n", taskName, time.Since(start))
 					}
-					log.Printf("rendered %s after %s\n", taskName, time.Since(start))
+					fmt.Printf("rendered %s after %s\n", taskName, time.Since(start))
 					wg.Done()
 				}(name, in.Name, x)
 			}

@@ -20,7 +20,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
 	modelListRoute := fmt.Sprintf("/api/v1/%s", prn)
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
 
 	ret.Add(
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", ts)).Block(
@@ -67,7 +67,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("Name").Op(":").Lit("example"),
 					jen.ID("Details").Op(":").Lit("blah"),
@@ -140,8 +140,8 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sList", ts)).Valuesln(
-					jen.ID(tp).Op(":").Index().Qual(utils.ModelsPkg, ts).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", ts)).Valuesln(
+					jen.ID(tp).Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").Op(":").Lit(1),
 						),
@@ -190,6 +190,18 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
+	creationFields := func() []jen.Code {
+		lines := []jen.Code{
+			jen.ID("ID").Op(":").Lit(1),
+		}
+
+		for _, field := range typ.Fields {
+			lines = append(lines, jen.ID(field.Name.Singular()).Op(":").Add(utils.ExampleValueForField(field)))
+		}
+		return lines
+	}
+	cfs := creationFields()
+
 	ret.Add(
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildCreate%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
@@ -199,10 +211,8 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)).Valuesln(
-					// ITERATEME
-					jen.ID("Name").Op(":").Lit("expected name"),
-					jen.ID("Details").Op(":").Lit("expected details"),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
+					cfs[1:]...,
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
@@ -238,16 +248,11 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
-					// ITERATEME
-					jen.ID("Name").Op(":").Lit("example"),
-					jen.ID("Details").Op(":").Lit("blah"),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
+					cfs...,
 				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)).Valuesln(
-					// ITERATEME
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-					jen.ID("Details").Op(":").ID("expected").Dot("Details"),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
+					cfs[1:]...,
 				),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -255,7 +260,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					utils.AssertEqual(jen.ID("req").Dot("URL").Dot("Path"), jen.Lit(modelListRoute), jen.Lit("expected and actual path don't match")),
 					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(utils.ModelsPkg, fmt.Sprintf("%sCreationInput", ts)),
+					jen.Var().ID("x").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", ts)),
 					utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.Op("&").ID("x")), nil),
 					utils.AssertEqual(jen.ID("exampleInput"), jen.ID("x"), nil),
 					jen.Line(),
@@ -278,10 +283,8 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", utils.ExpectMethod("expectedMethod", "MethodPut"),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
-					// ITERATEME
-					jen.ID("Name").Op(":").Lit("changed name"),
-					jen.ID("Details").Op(":").Lit("changed details"),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
+					jen.ID("ID").Op(":").Lit(1),
 				),
 				jen.Line(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
@@ -306,11 +309,8 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(utils.ModelsPkg, ts).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
-					// ITERATEME
-					jen.ID("Name").Op(":").Lit("example"),
-					jen.ID("Details").Op(":").Lit("blah"),
 				),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -322,7 +322,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					),
 					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
 					utils.AssertNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Item").Values()),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Values()),
 						nil,
 					),
 				),

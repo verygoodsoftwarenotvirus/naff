@@ -47,7 +47,7 @@ func buildScanFields(typ models.DataType) []jen.Code {
 func iterablesDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
 	dbvsn := dbvendor.Singular()
 
 	n := typ.Name

@@ -11,7 +11,7 @@ import (
 func routesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	// pn := typ.Name.Plural()
 
@@ -139,7 +139,7 @@ func routesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.ID("true"))).Dot("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual("github.com/go-chi/chi", "Router")).Block(
-				buildIterableAPIRoutes(pkgRoot, ret, types),
+				buildIterableAPIRoutes(pkgRoot, types),
 				jen.Line(),
 				buildWebhookAPIRoutes(pkgRoot),
 				jen.Line(),
@@ -153,14 +153,12 @@ func routesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	return ret
 }
 
-func buildIterableAPIRoutes(pkgRoot string, ret *jen.File, types []models.DataType) jen.Code {
+func buildIterableAPIRoutes(pkgRoot string, types []models.DataType) jen.Code {
 
 	g := &jen.Group{}
 
 	for _, typ := range types {
 		n := typ.Name
-
-		ret.ImportName(filepath.Join(pkgRoot, "services/v1", n.PluralRouteName()), n.PackageName())
 
 		g.Add(
 			jen.Comment(n.Plural()),

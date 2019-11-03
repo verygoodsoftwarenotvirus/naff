@@ -12,7 +12,7 @@ import (
 func iterablesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
 
 	n := typ.Name
 	sn := n.Singular()

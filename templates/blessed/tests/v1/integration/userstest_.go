@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func usersTestDotGo(rootPkg string) *jen.File {
+func usersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("integration")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
@@ -40,11 +41,11 @@ func usersTestDotGo(rootPkg string) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "UserInput")).Block(
+		jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("fake").Dot("Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
-			jen.ID("userInput").Op(":=").Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserInput").Valuesln(
+			jen.ID("userInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Valuesln(
 				jen.ID("Username").Op(":").ID("fake").Dot("UserName").Call(),
 				jen.ID("Password").Op(":").ID("fake").Dot("Password").Call(jen.Lit(8), jen.Lit(64), jen.ID("true"), jen.ID("true"), jen.ID("true")),
 			),
@@ -55,7 +56,7 @@ func usersTestDotGo(rootPkg string) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyUser").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "UserCreationResponse"), jen.Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "UserInput"), jen.Op("*").Qual("net/http", "Cookie")).Block(
+		jen.Func().ID("buildDummyUser").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserCreationResponse"), jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput"), jen.Op("*").Qual("net/http", "Cookie")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 			jen.Line(),
@@ -84,7 +85,7 @@ func usersTestDotGo(rootPkg string) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("expected").Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "UserInput"), jen.ID("actual").Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "UserCreationResponse")).Block(
+		jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("expected").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput"), jen.ID("actual").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserCreationResponse")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
@@ -102,7 +103,7 @@ func usersTestDotGo(rootPkg string) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("checkUserEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("expected").Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "UserInput"), jen.ID("actual").Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "User")).Block(
+		jen.Func().ID("checkUserEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("expected").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput"), jen.ID("actual").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "User")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
@@ -128,7 +129,7 @@ func usersTestDotGo(rootPkg string) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("expected").Op(":=").ID("buildDummyUserInput").Call(jen.ID("t")),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserInput").Valuesln(
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Valuesln(
 						jen.ID("Username").Op(":").ID("expected").Dot("Username"),
 						jen.ID("Password").Op(":").ID("expected").Dot("Password"))),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
@@ -156,7 +157,7 @@ func usersTestDotGo(rootPkg string) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("expected").Op(":=").ID("buildDummyUserInput").Call(jen.ID("t")),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(rootPkg, "models/v1"), "UserInput").Valuesln(
+					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Valuesln(
 						jen.ID("Username").Op(":").ID("expected").Dot("Username"),
 						jen.ID("Password").Op(":").ID("expected").Dot("Password"))),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
@@ -203,7 +204,7 @@ func usersTestDotGo(rootPkg string) *jen.File {
 					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 					jen.Line(),
 					jen.Comment("Create users"),
-					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(rootPkg, "models/v1"), "UserCreationResponse"),
+					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserCreationResponse"),
 					jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.List(jen.ID("user"), jen.ID("_"), jen.ID("c")).Op(":=").ID("buildDummyUser").Call(jen.ID("t")),
 						jen.ID("assert").Dot("NotNil").Call(jen.ID("t"), jen.ID("c")),

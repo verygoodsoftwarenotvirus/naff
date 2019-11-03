@@ -24,7 +24,7 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 	}
 
 	for filename, file := range files {
-		fname := utils.BuildTemplatePath(filename)
+		fname := utils.BuildTemplatePath(pkgRoot, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)

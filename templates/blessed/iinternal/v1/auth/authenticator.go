@@ -3,12 +3,13 @@ package auth
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func authenticatorDotGo() *jen.File {
+func authenticatorDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(jen.Null(),
 

@@ -1,25 +1,36 @@
 package v1
 
 import (
+	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo() *jen.File {
+const ()
+
+func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("main")
 	ret.HeaderComment("+build wireinject")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
-	ret.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/server/v1/http", "httpserver")
-	ret.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/auth", "authservice")
-	ret.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/frontend", "frontendservice")
-	ret.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/items", "itemsservice")
-	ret.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/oauth2clients", "oauth2clientsservice")
-	ret.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/users", "usersservice")
-	ret.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/todo/services/v1/webhooks", "webhooksservice")
-	ret.ImportAlias(internalAuthImp, "auth")
-	ret.ImportAlias(internalMetricsImp, "metrics")
+	newsmanImp := "gitlab.com/verygoodsoftwarenotvirus/newsman"
+	loggingImp := "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
+
+	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", pkgRoot)
+	internalMetricsImp := fmt.Sprintf("%s/internal/v1/metrics", pkgRoot)
+	internalEncodingImp := fmt.Sprintf("%s/internal/v1/encoding", pkgRoot)
+	databaseClientImp := fmt.Sprintf("%s/database/v1", pkgRoot)
+	internalAuthImp := fmt.Sprintf("%s/internal/v1/auth", pkgRoot)
+	authServiceImp := fmt.Sprintf("%s/services/v1/auth", pkgRoot)
+	usersServiceImp := fmt.Sprintf("%s/services/v1/users", pkgRoot)
+	frontendServiceImp := fmt.Sprintf("%s/services/v1/frontend", pkgRoot)
+	webhooksServiceImp := fmt.Sprintf("%s/services/v1/webhooks", pkgRoot)
+	oauth2ClientsServiceImp := fmt.Sprintf("%s/services/v1/oauth2clients", pkgRoot)
+	httpServerImp := fmt.Sprintf("%s/server/v1/http", pkgRoot)
+	serverImp := fmt.Sprintf("%s/server/v1", pkgRoot)
 
 	ret.Add(
 		jen.Comment("ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day"),
@@ -30,6 +41,39 @@ func wireDotGo() *jen.File {
 		jen.Line(),
 	)
 
+	buildWireBuildCallArgs := func() []jen.Code {
+		args := []jen.Code{
+			jen.Qual(internalConfigImp, "Providers"),
+			jen.Qual(internalAuthImp, "Providers"),
+			jen.Comment("server things"),
+			jen.Qual(serverImp, "Providers"),
+			jen.Qual(internalEncodingImp, "Providers"),
+			jen.Qual(httpServerImp, "Providers"),
+			jen.Comment("metrics"),
+			jen.Qual(internalMetricsImp, "Providers"),
+			jen.Comment("external libs"),
+			jen.Qual(newsmanImp, "NewNewsman"),
+			jen.ID("ProvideReporter"),
+			jen.Comment("services"),
+			jen.Qual(authServiceImp, "Providers"),
+			jen.Qual(usersServiceImp, "Providers"),
+		}
+
+		for _, typ := range types {
+			args = append(args,
+				jen.Qual(fmt.Sprintf("%s/services/v1/%s", pkgRoot, typ.Name.PluralRouteName()), "Providers"),
+			)
+		}
+
+		args = append(args,
+			jen.Qual(frontendServiceImp, "Providers"),
+			jen.Qual(webhooksServiceImp, "Providers"),
+			jen.Qual(oauth2ClientsServiceImp, "Providers"),
+		)
+
+		return args
+	}
+
 	ret.Add(
 		jen.Comment("BuildServer builds a server"),
 		jen.Line(),
@@ -39,27 +83,8 @@ func wireDotGo() *jen.File {
 			jen.ID("logger").Qual(loggingImp, "Logger"),
 			jen.ID("database").Qual(databaseClientImp, "Database")).
 			Params(jen.Op("*").Qual(serverImp, "Server"), jen.ID("error")).Block(
-			jen.ID("wire").Dot(
-				"Build",
-			).Callln(
-				jen.Qual(internalConfigImp, "Providers"),
-				jen.Qual(internalAuthImp, "Providers"),
-				jen.Comment("server things"),
-				jen.Qual(serverImp, "Providers"),
-				jen.Qual(internalEncodingImp, "Providers"),
-				jen.Qual(httpServerImp, "Providers"),
-				jen.Comment("metrics"),
-				jen.Qual(internalMetricsImp, "Providers"),
-				jen.Comment("external libs"),
-				jen.Qual(newsmanImp, "NewNewsman"),
-				jen.ID("ProvideReporter"),
-				jen.Comment("services"),
-				jen.Qual(authServiceImp, "Providers"),
-				jen.Qual(usersServiceImp, "Providers"),
-				jen.Qual(itemsServiceImp, "Providers"),
-				jen.Qual(frontendServiceImp, "Providers"),
-				jen.Qual(webhooksServiceImp, "Providers"),
-				jen.Qual(oauth2ClientsServiceImp, "Providers"),
+			jen.ID("wire").Dot("Build").Callln(
+				buildWireBuildCallArgs()...,
 			),
 			jen.Return().List(jen.ID("nil"), jen.ID("nil")),
 		),

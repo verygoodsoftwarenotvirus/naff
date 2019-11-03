@@ -1,14 +1,17 @@
 package client
 
 import (
+	"path/filepath"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientsDotGo() *jen.File {
+func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(jen.Null())
 	ret.Add(jen.Const().Defs(
@@ -49,7 +52,7 @@ func oauth2ClientsDotGo() *jen.File {
 			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.ID("oauth2Client").Op("*").Qual(utils.ModelsPkg, "OAuth2Client"),
+			jen.ID("oauth2Client").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client"),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -87,7 +90,7 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		newClientMethod("BuildGetOAuth2ClientsRequest").Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -111,9 +114,9 @@ func oauth2ClientsDotGo() *jen.File {
 		jen.Line(),
 		newClientMethod("GetOAuth2Clients").Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(utils.ModelsPkg, "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
 		).Params(
-			jen.Op("*").Qual(utils.ModelsPkg, "OAuth2ClientList"),
+			jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientList"),
 			jen.ID("error"),
 		).Block(
 			jen.List(
@@ -133,7 +136,7 @@ func oauth2ClientsDotGo() *jen.File {
 				),
 			),
 			jen.Line(),
-			jen.Var().ID("oauth2Clients").Op("*").Qual(utils.ModelsPkg, "OAuth2ClientList"),
+			jen.Var().ID("oauth2Clients").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientList"),
 			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
@@ -153,7 +156,7 @@ func oauth2ClientsDotGo() *jen.File {
 		newClientMethod("BuildCreateOAuth2ClientRequest").Paramsln(
 			utils.CtxParam(),
 			jen.ID("cookie").Op("*").Qual("net/http", "Cookie"),
-			jen.ID("body").Op("*").Qual(utils.ModelsPkg, "OAuth2ClientCreationInput"),
+			jen.ID("body").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput"),
 		).Params(jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error")).Block(
 			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
@@ -196,12 +199,12 @@ func oauth2ClientsDotGo() *jen.File {
 		newClientMethod("CreateOAuth2Client").Paramsln(
 			utils.CtxParam(),
 			jen.ID("cookie").Op("*").Qual("net/http", "Cookie"),
-			jen.ID("input").Op("*").Qual(utils.ModelsPkg, "OAuth2ClientCreationInput"),
+			jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput"),
 		).Params(
-			jen.Op("*").Qual(utils.ModelsPkg, "OAuth2Client"),
+			jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client"),
 			jen.ID("error"),
 		).Block(
-			jen.Var().ID("oauth2Client").Op("*").Qual(utils.ModelsPkg, "OAuth2Client"),
+			jen.Var().ID("oauth2Client").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client"),
 			jen.If(jen.ID("cookie").Op("==").ID("nil")).Block(
 				jen.Return().List(
 					jen.ID("nil"),

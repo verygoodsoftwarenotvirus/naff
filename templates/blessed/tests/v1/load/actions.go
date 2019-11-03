@@ -5,12 +5,13 @@ import (
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func actionsDotGo(rootPkg string) *jen.File {
+func actionsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(ret)
+	utils.AddImports(pkgRoot, types, ret)
 
 	ret.Add(
 		jen.Var().Defs(
@@ -35,10 +36,8 @@ func actionsDotGo(rootPkg string) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Comment("RandomAction takes a client and returns a closure which is an action"),
-		jen.Line(),
-		jen.Func().ID("RandomAction").Params(jen.ID("c").Op("*").Qual(filepath.Join(rootPkg, "client/v1/http"), "V1Client")).Params(jen.Op("*").ID("Action")).Block(
+	buildRandomActionLines := func() []jen.Code {
+		lines := []jen.Code{
 			jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 			jen.ID("allActions").Op(":=").Map(jen.ID("string")).Op("*").ID("Action").Valuesln(
 				jen.Lit("GetHealthCheck").Op(":").Valuesln(
@@ -49,17 +48,25 @@ func actionsDotGo(rootPkg string) *jen.File {
 				jen.Lit("CreateUser").Op(":").Valuesln(
 					jen.ID("Name").Op(":").Lit("CreateUser"),
 					jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.ID("ui").Op(":=").Qual(filepath.Join(rootPkg, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
+						jen.ID("ui").Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
 						jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(jen.ID("ctx"), jen.ID("ui")),
 					),
 					jen.ID("Weight").Op(":").Lit(100),
 				),
 			),
 			jen.Line(),
-			jen.For(jen.List(jen.ID("k"), jen.ID("v")).Op(":=").Range().ID("buildItemActions").Call(jen.ID("c"))).Block(
-				jen.ID("allActions").Index(jen.ID("k")).Op("=").ID("v"),
-			),
-			jen.Line(),
+		}
+
+		for _, typ := range types {
+			lines = append(lines,
+				jen.For(jen.List(jen.ID("k"), jen.ID("v")).Op(":=").Range().IDf("build%sActions", typ.Name.Singular()).Call(jen.ID("c"))).Block(
+					jen.ID("allActions").Index(jen.ID("k")).Op("=").ID("v"),
+				),
+				jen.Line(),
+			)
+		}
+
+		lines = append(lines,
 			jen.For(jen.List(jen.ID("k"), jen.ID("v")).Op(":=").Range().ID("buildWebhookActions").Call(jen.ID("c"))).Block(
 				jen.ID("allActions").Index(jen.ID("k")).Op("=").ID("v"),
 			),
@@ -84,6 +91,16 @@ func actionsDotGo(rootPkg string) *jen.File {
 			),
 			jen.Line(),
 			jen.Return().ID("nil"),
+		)
+
+		return lines
+	}
+
+	ret.Add(
+		jen.Comment("RandomAction takes a client and returns a closure which is an action"),
+		jen.Line(),
+		jen.Func().ID("RandomAction").Params(jen.ID("c").Op("*").Qual(filepath.Join(pkgRoot, "client/v1/http"), "V1Client")).Params(jen.Op("*").ID("Action")).Block(
+			buildRandomActionLines()...,
 		),
 		jen.Line(),
 	)
