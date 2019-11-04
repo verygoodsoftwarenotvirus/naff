@@ -35,6 +35,22 @@ func iterablesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
+	buildRandomLines := func() []jen.Code {
+		var lines []jen.Code
+
+		for _, field := range typ.Fields {
+			fsn := field.Name.Singular()
+			lines = append(lines, jen.IDf("random%s", sn).Dot(fsn).Op("=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
+		}
+
+		lines = append(lines,
+			jen.Return().ID("c").Dotf("BuildUpdate%sRequest", sn).Call(jen.Qual("context", "Background").Call(), jen.IDf("random%s", sn)),
+		)
+
+		return lines
+
+	}
+
 	ret.Add(
 		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").Op("*").Qual(filepath.Join(pkgRoot, "client/v1/http"), "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
 			jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(
@@ -56,8 +72,7 @@ func iterablesDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.ID("Weight").Op(":").Lit(100)), jen.Litf("Update%s", sn).Op(":").Valuesln(
 					jen.ID("Name").Op(":").Litf("Update%s", sn), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
 						jen.If(jen.IDf("random%s", sn).Op(":=").IDf("fetchRandom%s", sn).Call(jen.ID("c")), jen.IDf("random%s", sn).Op("!=").ID("nil")).Block(
-							jen.IDf("random%s", sn).Dot("Name").Op("=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot("Name"),
-							jen.Return().ID("c").Dotf("BuildUpdate%sRequest", sn).Call(jen.Qual("context", "Background").Call(), jen.IDf("random%s", sn)),
+							buildRandomLines()...,
 						),
 						jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
 					),

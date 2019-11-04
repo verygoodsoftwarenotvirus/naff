@@ -69,8 +69,6 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				"happy path",
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
-					jen.ID("Name").Op(":").Lit("example"),
-					jen.ID("Details").Op(":").Lit("blah"),
 				),
 				jen.Line(),
 				utils.BuildTestServer(

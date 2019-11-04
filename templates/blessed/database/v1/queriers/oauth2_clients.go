@@ -509,7 +509,9 @@ func oauth2ClientsDotGo(pkgRoot string, types []models.DataType, vendor wordsmit
 
 	if isSqlite || isMariaDB {
 		ret.Add(
-			jen.Comment("buildOAuth2ClientCreationTimeQuery takes an oauth2 client ID and returns a creation query for that oauth2 client and the relevant arguments."),
+			jen.Comment("buildOAuth2ClientCreationTimeQuery takes an oauth2 client ID and returns a creation query"),
+			jen.Line(),
+			jen.Comment("for that oauth2 client and the relevant arguments."),
 			jen.Line(),
 			jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildOAuth2ClientCreationTimeQuery").Params(jen.ID("clientID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 				jen.Var().ID("err").ID("error"),

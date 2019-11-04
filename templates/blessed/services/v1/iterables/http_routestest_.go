@@ -20,6 +20,32 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	pcn := typ.Name.PluralCommonName()
 	uvn := typ.Name.UnexportedVarName()
 
+	buildCreationInputFromExpectedLines := func() []jen.Code {
+		lines := []jen.Code{}
+
+		for _, field := range typ.Fields {
+			if field.ValidForCreationInput {
+				sn := field.Name.Singular()
+				lines = append(lines, jen.ID(sn).Op(":").ID("expected").Dot(sn))
+			}
+		}
+
+		return lines
+	}
+
+	buildUpdateInputFromExpectedLines := func() []jen.Code {
+		lines := []jen.Code{}
+
+		for _, field := range typ.Fields {
+			if field.ValidForUpdateInput {
+				sn := field.Name.Singular()
+				lines = append(lines, jen.ID(sn).Op(":").ID("expected").Dot(sn))
+			}
+		}
+
+		return lines
+	}
+
 	ret.Add(
 		jen.Func().ID(fmt.Sprintf("Test%sService_List", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -32,7 +58,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").Op(":").Lit(123),
-							jen.ID("Name").Op(":").Lit("name"),
 						),
 					),
 				),
@@ -186,7 +211,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
@@ -223,7 +247,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sCreationInput", sn).Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
+					buildCreationInputFromExpectedLines()...,
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
@@ -265,7 +289,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -292,7 +315,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sCreationInput", sn).Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
+					buildCreationInputFromExpectedLines()...,
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
@@ -307,7 +330,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
@@ -342,7 +364,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sCreationInput", sn).Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name")),
+					buildCreationInputFromExpectedLines()...,
+				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
@@ -363,7 +386,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -405,7 +427,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name")),
+					jen.ID("ID").Op(":").Lit(123),
+				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
@@ -442,7 +465,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -481,7 +503,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -530,7 +551,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
@@ -575,7 +595,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
+					buildUpdateInputFromExpectedLines()...,
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
@@ -607,7 +627,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -635,7 +654,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
+					buildUpdateInputFromExpectedLines()...,
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
@@ -650,7 +669,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -677,7 +695,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
+					buildUpdateInputFromExpectedLines()...,
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
@@ -692,7 +710,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
@@ -734,7 +751,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
+					buildUpdateInputFromExpectedLines()...,
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
@@ -749,7 +766,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
@@ -791,7 +807,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
+					buildUpdateInputFromExpectedLines()...,
 				),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
@@ -813,7 +829,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
@@ -867,7 +882,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -905,7 +919,6 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(

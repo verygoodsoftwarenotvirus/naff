@@ -114,13 +114,29 @@ func iterableDotGo(pkgRoot string, typ models.DataType) *jen.File {
 		jen.Func().Params(jen.ID("x").Op("*").ID(sn)).ID("Update").Params(jen.ID("input").Op("*").IDf("%sUpdateInput", sn)).Block(buildUpdateFunctionLogic(typ.Fields)...),
 		jen.Line(),
 	)
+
+	buildToUpdateInput := func() jen.Code {
+		lines := []jen.Code{}
+
+		for _, typ := range typ.Fields {
+			if typ.ValidForUpdateInput {
+				fsn := typ.Name.Singular()
+				lines = append(lines, jen.ID(fsn).Op(":").ID("x").Dot(fsn))
+			}
+		}
+
+		return jen.Return(jen.Op("&").IDf("%sUpdateInput", sn).Valuesln(lines...))
+	}
+
+	ret.Add(
+		jen.Commentf("ToInput creates a %sUpdateInput struct fro %s", sn, cnwp),
+		jen.Line(),
+		jen.Func().Params(jen.ID("x").Op("*").ID(sn)).ID("ToInput").Params().Params(jen.Op("*").IDf("%sUpdateInput", sn)).Block(buildToUpdateInput()),
+		jen.Line(),
+	)
+
 	return ret
 }
-
-// var zeroValMap = map[string]interface{}{
-// 	"string": "",
-// 	"uint64": 0,
-// }
 
 func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 	var out []jen.Code

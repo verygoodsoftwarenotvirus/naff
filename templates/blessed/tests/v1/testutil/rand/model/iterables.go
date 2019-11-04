@@ -39,7 +39,7 @@ func buildFakeCalls(fields []models.DataField) []jen.Code {
 		case "string":
 			out = append(
 				out,
-				jen.ID(sn).Op(":").Qual("github.com/icrowley/fake", "Word").Call(),
+				jen.ID(sn).Op(":").Qual(utils.FakeLibrary, "Word").Call(),
 			)
 		case "float32", "float64", "int", "int32", "int64", "uint32", "uint64":
 			numberMethods := map[string]string{

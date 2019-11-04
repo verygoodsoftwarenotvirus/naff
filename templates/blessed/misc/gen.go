@@ -309,9 +309,15 @@ lintegration-tests: integration-tests lint
 integration-tests: integration-tests-postgres
 `)
 
+	var (
+		integrationTestTargets []string
+		integrationTests       []string
+	)
+
 	for _, db := range []string{"postgres", "sqlite", "mariadb"} {
 
-		f += fmt.Sprintf(`
+		integrationTestTargets = append(integrationTestTargets, fmt.Sprintf("integration-tests-%s", db))
+		integrationTests = append(integrationTests, fmt.Sprintf(`
 .PHONY: integration-tests-%s
 integration-tests-%s:
 	docker-compose --file compose-files/integration-tests-%s.json up \
@@ -321,8 +327,15 @@ integration-tests-%s:
 	--renew-anon-volumes \
 	--always-recreate-deps \
 	--abort-on-container-exit
-`, db, db, db)
+`, db, db, db))
 	}
+
+	f += fmt.Sprintf(`
+.PHONY: integration-tests
+integration-tests: %s
+`, strings.Join(integrationTestTargets, " "))
+
+	f += strings.Join(integrationTests, "")
 
 	f += `
 .PHONY: integration-coverage

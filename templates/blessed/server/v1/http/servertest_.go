@@ -31,10 +31,10 @@ func serverTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.ID("authService").Op(":").Op("&").Qual(filepath.Join(pkgRoot, "services/v1/auth"), "Service").Values(),
 		}
 		for _, typ := range types {
-			tuvn := typ.Name.UnexportedVarName()
+			tpuvn := typ.Name.PluralUnexportedVarName()
 			tsn := typ.Name.Singular()
 			lines = append(lines,
-				jen.IDf("%sService", tuvn).Op(":").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataServer", tsn)).Values(),
+				jen.IDf("%sService", tpuvn).Op(":").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataServer", tsn)).Values(),
 			)
 		}
 

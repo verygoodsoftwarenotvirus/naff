@@ -37,7 +37,7 @@ func AddImports(pkgRoot string, types []models.DataType, file *jen.File) {
 	for _, typ := range types {
 		prn := typ.Name.PluralRouteName()
 		ip := filepath.Join(pkgRoot, "services/v1", prn)
-		file.ImportName(ip, prn)
+		file.ImportName(ip, typ.Name.PackageName())
 	}
 
 	file.ImportName(filepath.Join(pkgRoot, "services/v1/oauth2clients"), "oauth2clients")
@@ -73,6 +73,8 @@ func AddImports(pkgRoot string, types []models.DataType, file *jen.File) {
 	file.ImportAlias("github.com/mattn/go-sqlite3", "sqlite")
 	file.ImportName("github.com/go-sql-driver/mysql", "mysql")
 
+	file.ImportAlias("github.com/brianvoe/gofakeit", "fake")
+
 	file.ImportNames(map[string]string{
 		"context":           "context",
 		"fmt":               "fmt",
@@ -102,7 +104,6 @@ func AddImports(pkgRoot string, types []models.DataType, file *jen.File) {
 		"github.com/google/wire":                       "wire",
 		"github.com/gorilla/securecookie":              "securecookie",
 		"github.com/heptiolabs/healthcheck":            "healthcheck",
-		"github.com/icrowley/fake":                     "fake",
 		"github.com/moul/http2curl":                    "http2curl",
 		"github.com/pquerna/otp":                       "otp",
 		"github.com/spf13/afero":                       "afero",

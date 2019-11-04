@@ -30,8 +30,8 @@ func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput")).Block(
 			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
-				jen.ID("Name").Op(":").ID("fake").Dot("Word").Call(),
-				jen.ID("URL").Op(":").ID("fake").Dot("DomainName").Call(),
+				jen.ID("Name").Op(":").Qual(utils.FakeLibrary, "Word").Call(),
+				jen.ID("URL").Op(":").Qual(utils.FakeLibrary, "DomainName").Call(),
 				jen.ID("ContentType").Op(":").Lit("application/json"),
 				jen.ID("Method").Op(":").Qual("net/http", "MethodPost"),
 			),

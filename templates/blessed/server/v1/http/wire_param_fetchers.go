@@ -143,13 +143,13 @@ func wireParamFetchersDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		prn := n.PluralRouteName()
 
 		ret.Add(
-			jen.Commentf("chi%sIDFetcher fetches a %sID from a request routed by chi.", sn, sn),
+			jen.Commentf("buildChi%sIDFetcher builds a function that fetches a %sID from a request routed by chi.", sn, sn),
 			jen.Line(),
 			jen.Func().IDf("buildChi%sIDFetcher", sn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64"))).Block(
 				jen.Return().Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Comment("we can generally disregard this error only because we should be able to validate"),
 					jen.Comment("that the string only contains numbers via chi's regex url param feature."),
-					jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkgRoot, fmt.Sprintf("services/v1/%s", prn)), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+					jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkgRoot, "services/v1", prn), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 						jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("fetching %sID from request", sn)),
 					),

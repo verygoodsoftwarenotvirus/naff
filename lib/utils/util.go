@@ -250,45 +250,132 @@ func ExampleValueForField(field models.DataField) jen.Code {
 		return jen.Lit(1.23)
 	case "uint8":
 		if field.Pointer {
-			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit("1"))
 		}
-		return jen.Lit(1)
+		return jen.Lit("1")
 	case "uint16":
 		if field.Pointer {
-			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit("1"))
 		}
-		return jen.Lit(1)
+		return jen.Lit("1")
 	case "uint32":
 		if field.Pointer {
-			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit("1"))
 		}
-		return jen.Lit(1)
+		return jen.Lit("1")
 	case "uint64":
 		if field.Pointer {
-			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit("1"))
 		}
-		return jen.Lit(1)
+		return jen.Lit("1")
 	case "int8":
 		if field.Pointer {
-			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit("1"))
 		}
-		return jen.Lit(1)
+		return jen.Lit("1")
 	case "int16":
 		if field.Pointer {
-			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit("1"))
 		}
-		return jen.Lit(1)
+		return jen.Lit("1")
 	case "int32":
 		if field.Pointer {
-			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit("1"))
 		}
-		return jen.Lit(1)
+		return jen.Lit("1")
 	case "int64":
 		if field.Pointer {
-			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(1))
+			jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit("1"))
 		}
-		return jen.Lit(1)
+		return jen.Lit("1")
 	default:
 		return nil
+	}
+}
+
+const FakeLibrary = "github.com/brianvoe/gofakeit"
+
+func FakeCallForField(field models.DataField) jen.Code {
+	switch field.Type {
+	case "string":
+		x := jen.Qual(FakeLibrary, "Word").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "float32":
+		x := jen.Qual(FakeLibrary, "Float32").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "float64":
+		x := jen.Qual(FakeLibrary, "Float64").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "uint8":
+		x := jen.Qual(FakeLibrary, "Uint8").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "uint16":
+		x := jen.Qual(FakeLibrary, "Uint16").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "uint32":
+		x := jen.Qual(FakeLibrary, "Uint32").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "uint64":
+		x := jen.Qual(FakeLibrary, "Uint64").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "uint":
+		x := jen.Qual(FakeLibrary, "Uint64").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "int8":
+		x := jen.Qual(FakeLibrary, "Int8").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "int16":
+		x := jen.Qual(FakeLibrary, "Int16").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "int32":
+		x := jen.Qual(FakeLibrary, "Int32").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "int64":
+		x := jen.Qual(FakeLibrary, "Int64").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	case "int":
+		x := jen.Qual(FakeLibrary, "Int").Call()
+		if field.Pointer {
+			return jen.Func().Params(jen.ID("x").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
+		}
+		return x
+	default:
+		return jen.Null()
 	}
 }

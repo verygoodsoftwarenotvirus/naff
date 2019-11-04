@@ -15,7 +15,7 @@ import (
 func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
 	files := map[string]func() []byte{
 		"frontend/v1/src/main.js":                     mainDotJS,
-		"frontend/v1/public/index.html":               mainDotJS,
+		"frontend/v1/public/index.html":               indexDotHTML,
 		"frontend/v1/src/App.svelte":                  appDotSvelte,
 		"frontend/v1/src/pages/Register.svelte":       registerDotSvelte,
 		"frontend/v1/src/pages/Login.svelte":          loginDotSvelte,
@@ -85,7 +85,7 @@ func indexDotHTML() []byte {
 	<script src='/bundle.js'></script>
 </body>
 </html>
-  `)
+`)
 
 	return f
 }

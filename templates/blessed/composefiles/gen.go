@@ -346,6 +346,7 @@ func frontendTestsDotJSON(projectName wordsmith.SuperPalabra) models.DockerCompo
 					{
 						Source: "/dev/shm",
 						Target: "/dev/shm",
+						Type:   "bind",
 					},
 				},
 			},
@@ -361,6 +362,7 @@ func frontendTestsDotJSON(projectName wordsmith.SuperPalabra) models.DockerCompo
 					{
 						Source: "/dev/shm",
 						Target: "/dev/shm",
+						Type:   "bind",
 					},
 				},
 			},

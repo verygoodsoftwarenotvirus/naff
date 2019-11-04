@@ -12,21 +12,39 @@ func iterableTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
 	sn := typ.Name.Singular()
 
+	buildUpdateInputColumns := func() (updateCols []jen.Code, assertCalls []jen.Code) {
+		for _, field := range typ.Fields {
+			sn := field.Name.Singular()
+			updateCols = append(updateCols, jen.ID(sn).Op(":").Add(utils.ExampleValueForField(field)))
+			assertCalls = append(assertCalls, jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(sn), jen.ID("i").Dot(sn)))
+		}
+
+		return
+	}
+
+	updateCols, assertCalls := buildUpdateInputColumns()
+
+	buildHappyPathBlock := func() []jen.Code {
+		lines := []jen.Code{
+
+			jen.ID("i").Op(":=").Op("&").ID(sn).Values(),
+			jen.Line(),
+			jen.ID("expected").Op(":=").Op("&").IDf("%sUpdateInput", sn).Valuesln(
+				updateCols...,
+			),
+			jen.Line(),
+			jen.ID("i").Dot("Update").Call(jen.ID("expected")),
+		}
+		lines = append(lines, assertCalls...)
+		return lines
+	}
+
 	ret.Add(
 		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("i").Op(":=").Op("&").ID(sn).Values(),
-				jen.Line(),
-				jen.ID("expected").Op(":=").Op("&").IDf("%sUpdateInput", sn).Valuesln(
-					jen.ID("Name").Op(":").Lit("expected name"),
-					jen.ID("Details").Op(":").Lit("expected details"),
-				),
-				jen.Line(),
-				jen.ID("i").Dot("Update").Call(jen.ID("expected")),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Name"), jen.ID("i").Dot("Name")),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Details"), jen.ID("i").Dot("Details")),
+				buildHappyPathBlock()...,
 			)),
 		),
 		jen.Line(),

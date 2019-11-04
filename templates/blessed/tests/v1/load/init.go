@@ -30,7 +30,7 @@ func initDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
 			jen.Qual(filepath.Join(pkgRoot, "tests/v1/testutil"), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
 			jen.Line(),
-			jen.ID("fake").Dot("Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
+			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.Line(),
 			jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil"), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(

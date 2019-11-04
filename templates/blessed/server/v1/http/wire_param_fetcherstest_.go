@@ -31,9 +31,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("_").Op("=").IDf("Provide%sIDFetcher", n.Singular()).Call(jen.ID("noop").Dot(
-						"ProvideNoopLogger",
-					).Call()),
+					jen.ID("_").Op("=").IDf("Provide%sIDFetcher", n.Singular()).Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
 				)),
 			),
 			jen.Line(),
@@ -45,9 +43,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideUsernameFetcher").Call(jen.ID("noop").Dot(
-					"ProvideNoopLogger",
-				).Call()),
+				jen.ID("_").Op("=").ID("ProvideUsernameFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
 			)),
 		),
 		jen.Line(),
@@ -80,9 +76,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideWebhookIDFetcher").Call(jen.ID("noop").Dot(
-					"ProvideNoopLogger",
-				).Call()),
+				jen.ID("_").Op("=").ID("ProvideWebhookIDFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
 			)),
 		),
 		jen.Line(),
@@ -93,9 +87,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideOAuth2ServiceClientIDFetcher").Call(jen.ID("noop").Dot(
-					"ProvideNoopLogger",
-				).Call()),
+				jen.ID("_").Op("=").ID("ProvideOAuth2ServiceClientIDFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
 			)),
 		),
 		jen.Line(),
@@ -139,7 +131,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.ID("users").Dot("URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/users"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
@@ -162,7 +154,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.ID("users").Dot("URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/users"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
 							),
 						),
@@ -193,7 +185,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 							jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 							jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 								jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-									jen.ID("Keys").Op(":").Index().ID("string").Values(jen.ID(n.PackageName()).Dot("URIParamKey")),
+									jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1", n.PackageName()), "URIParamKey")),
 									jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 								),
 							),
@@ -215,7 +207,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 							jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 							jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 								jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-									jen.ID("Keys").Op(":").Index().ID("string").Values(jen.ID(n.PackageName()).Dot("URIParamKey")),
+									jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1", n.PackageName()), "URIParamKey")),
 									jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
 								),
 							),
@@ -245,7 +237,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.ID("webhooks").Dot("URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/webhooks"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
@@ -268,7 +260,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.ID("webhooks").Dot("URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/webhooks"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
 							),
 						),
@@ -296,7 +288,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.ID("oauth2clients").Dot("URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/oauth2clients"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
@@ -319,7 +311,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.ID("oauth2clients").Dot("URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/oauth2clients"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
 							),
 						),

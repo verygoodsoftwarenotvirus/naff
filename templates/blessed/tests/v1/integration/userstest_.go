@@ -44,10 +44,10 @@ func usersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("fake").Dot("Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
+			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.ID("userInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Valuesln(
-				jen.ID("Username").Op(":").ID("fake").Dot("UserName").Call(),
-				jen.ID("Password").Op(":").ID("fake").Dot("Password").Call(jen.Lit(8), jen.Lit(64), jen.ID("true"), jen.ID("true"), jen.ID("true")),
+				jen.ID("Username").Op(":").Qual(utils.FakeLibrary, "Username").Call(),
+				jen.ID("Password").Op(":").Qual(utils.FakeLibrary, "Password").Call(jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.Lit(64)),
 			),
 			jen.Line(),
 			jen.Return().ID("userInput"),

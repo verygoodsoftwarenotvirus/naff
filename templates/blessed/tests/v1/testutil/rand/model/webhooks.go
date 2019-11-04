@@ -18,8 +18,8 @@ func webhooksDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Line(),
 		jen.Func().ID("RandomWebhookInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput")).Block(
 			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
-				jen.ID("Name").Op(":").ID("fake").Dot("Word").Call(),
-				jen.ID("URL").Op(":").ID("fake").Dot("DomainName").Call(),
+				jen.ID("Name").Op(":").Qual(utils.FakeLibrary, "Word").Call(),
+				jen.ID("URL").Op(":").Qual(utils.FakeLibrary, "DomainName").Call(),
 				jen.ID("ContentType").Op(":").Lit("application/json"),
 				jen.ID("Method").Op(":").Lit("POST"),
 			),

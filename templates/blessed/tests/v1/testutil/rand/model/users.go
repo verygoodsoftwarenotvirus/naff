@@ -15,7 +15,7 @@ func usersDotGo(pkgRoot string, types []models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
-			jen.ID("fake").Dot("Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
+			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 		),
 		jen.Line(),
 	)
@@ -37,10 +37,10 @@ func usersDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Func().ID("RandomUserInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput")).Block(
 			jen.Comment("I had difficulty ensuring these values were unique, even when fake.Seed was called. Could've been fake's fault,"),
 			jen.Comment("could've been docker's fault. In either case, it wasn't worth the time to investigate and determine the culprit."),
-			jen.ID("username").Op(":=").ID("fake").Dot("UserName").Call().Op("+").ID("fake").Dot("HexColor").Call().Op("+").ID("fake").Dot("Country").Call(),
+			jen.ID("username").Op(":=").Qual(utils.FakeLibrary, "Username").Call().Op("+").Qual(utils.FakeLibrary, "HexColor").Call().Op("+").Qual(utils.FakeLibrary, "Country").Call(),
 			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Valuesln(
 				jen.ID("Username").Op(":").ID("username"),
-				jen.ID("Password").Op(":").ID("fake").Dot("Password").Call(jen.Lit(64), jen.Lit(128), jen.ID("true"), jen.ID("true"), jen.ID("true")),
+				jen.ID("Password").Op(":").Qual(utils.FakeLibrary, "Password").Call(jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.Lit(64)),
 			),
 			jen.Return().ID("x"),
 		),

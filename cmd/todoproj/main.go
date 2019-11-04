@@ -12,10 +12,10 @@ func main() {
 	log.Println("building example output...")
 	todoProject := &models.Project{
 		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/todopartdeux",
-		Name:       wordsmith.FromSingularPascalCase("Todo"),
+		Name:       wordsmith.FromSingularPascalCase("Task"),
 		DataTypes: []models.DataType{
 			{
-				Name: wordsmith.FromSingularPascalCase("Item"),
+				Name: wordsmith.FromSingularPascalCase("Entry"),
 				Fields: []models.DataField{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Eman"),
@@ -25,7 +25,7 @@ func main() {
 						ValidForUpdateInput:   true,
 					},
 					{
-						Name:                  wordsmith.FromSingularPascalCase("Info"),
+						Name:                  wordsmith.FromSingularPascalCase("Deets"),
 						Type:                  "string",
 						Pointer:               false,
 						DefaultAllowed:        true,

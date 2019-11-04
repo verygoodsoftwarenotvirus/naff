@@ -65,7 +65,6 @@ func httpRoutesTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
 			)),
-			jen.Line(),
 		),
 		jen.Line(),
 	)
