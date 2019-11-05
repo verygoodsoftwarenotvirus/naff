@@ -24,7 +24,12 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 
 		for _, field := range typ.Fields {
 			sn := field.Name.Singular()
-			lines = append(lines, jen.ID(sn).Op(":").Add(utils.FakeCallForField(field)))
+			if field.Pointer {
+				lines = append(lines, jen.ID(sn).Op(":").Add(utils.FakeCallForField(field)))
+
+			} else {
+				lines = append(lines, jen.ID(sn).Op(":").Add(utils.FakeCallForField(field)))
+			}
 		}
 
 		return lines

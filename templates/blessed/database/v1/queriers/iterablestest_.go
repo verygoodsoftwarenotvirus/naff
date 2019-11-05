@@ -546,13 +546,15 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 		createdOnValueAdd = ",UNIX_TIMESTAMP()"
 	}
 
+	thisFuncExpectedArgCount := len(ips) - 1
+
 	creationEqualityExpectations := buildCreationEqualityExpectations("expected", typ)
 	createQueryTestBody := []jen.Code{
 		jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 		jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 			jen.ID("ID").Op(":").Lit(321), jen.ID("BelongsTo").Op(":").Lit(123),
 		),
-		jen.ID("expectedArgCount").Op(":=").Lit(3),
+		jen.ID("expectedArgCount").Op(":=").Lit(1 + thisFuncExpectedArgCount),
 		jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO %s (%s,belongs_to%s) VALUES (%s%s)%s",
 			tn,
 			strings.ReplaceAll(fieldCols, " ", ""),
@@ -747,7 +749,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 			jen.ID("ID").Op(":").Lit(321),
 			jen.ID("BelongsTo").Op(":").Lit(123),
 		),
-		jen.ID("expectedArgCount").Op(":=").Lit(4),
+		jen.ID("expectedArgCount").Op(":=").Lit(len(updateCols) + 2), // +2 because of ID and BelongsTo
 		jen.ID("expectedQuery").Op(":=").Litf(
 			"UPDATE %s SET %s, updated_on = %s WHERE belongs_to = %s AND id = %s%s",
 			tn,
@@ -982,9 +984,15 @@ func buildCreationEqualityExpectations(varName string, typ models.DataType) []je
 	var out []jen.Code
 
 	for i, field := range typ.Fields {
-		out = append(out,
-			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID(varName).Dot(field.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID(field.Type))),
-		)
+		if field.Pointer {
+			out = append(out,
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID(varName).Dot(field.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.Op("*").ID(field.Type))),
+			)
+		} else {
+			out = append(out,
+				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID(varName).Dot(field.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID(field.Type))),
+			)
+		}
 	}
 	out = append(out,
 		jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot("BelongsTo"), jen.ID("args").Index(jen.Lit(len(out))).Assert(jen.ID("uint64"))),

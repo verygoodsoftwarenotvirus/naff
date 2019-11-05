@@ -113,7 +113,7 @@ func RenderProject(in *naffmodels.Project) error {
 				go func(taskName string, renderer renderHelper) {
 					start := time.Now()
 					if err := renderer.renderFunc(in.OutputPath, in.DataTypes); err != nil {
-						log.Printf("error rendering %q after %s\n", taskName, time.Since(start))
+						log.Printf("error rendering %q after %s: %v\n", taskName, time.Since(start), err)
 					}
 					fmt.Printf("rendered %s after %s\n", taskName, time.Since(start))
 					wg.Done()

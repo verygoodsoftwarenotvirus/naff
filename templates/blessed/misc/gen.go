@@ -818,7 +818,7 @@ linters:
     - goconst # Finds repeated strings that could be replaced by a constant
     - gocyclo # Computes and checks the cyclomatic complexity of functions
     - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
-    - maligned # Tool to detect Go structs that would take less memory if their fields were sorted
+    # - maligned # Tool to detect Go structs that would take less memory if their fields were sorted
     - depguard # Go linter that checks if package imports are in a list of acceptable packages
     - misspell # Finds commonly misspelled English words in comments
     - lll # Reports long lines

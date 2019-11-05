@@ -36,26 +36,48 @@ func buildFakeCalls(fields []models.DataField) []jen.Code {
 		sn := field.Name.Singular()
 		typ := strings.ToLower(field.Type)
 		switch typ {
-		case "string":
-			out = append(
-				out,
-				jen.ID(sn).Op(":").Qual(utils.FakeLibrary, "Word").Call(),
-			)
-		case "float32", "float64", "int", "int32", "int64", "uint32", "uint64":
-			numberMethods := map[string]string{
-				"float32": "Float32",
-				"float64": "Float64",
-				"int":     "Int",
-				"int32":   "Int31",
-				"int64":   "Int63",
-				"uint32":  "Uint32",
-				"uint64":  "Uint64",
+		case "bool",
+			"float32",
+			"float64",
+			"uint",
+			"uint8",
+			"uint16",
+			"uint32",
+			"uint64",
+			"int",
+			"int8",
+			"int16",
+			"int32",
+			"int64",
+			"string":
+			numberMethods := map[string]jen.Code{
+				"string":  jen.Qual(utils.FakeLibrary, "Word").Call(),
+				"bool":    jen.Qual(utils.FakeLibrary, "Bool").Call(),
+				"float32": jen.Qual(utils.FakeLibrary, "Float32").Call(),
+				"float64": jen.Qual(utils.FakeLibrary, "Float64").Call(),
+				"uint":    jen.ID("uint").Call(jen.Qual(utils.FakeLibrary, "Uint32").Call()),
+				"uint8":   jen.Qual(utils.FakeLibrary, "Uint8").Call(),
+				"uint16":  jen.Qual(utils.FakeLibrary, "Uint16").Call(),
+				"uint32":  jen.Qual(utils.FakeLibrary, "Uint32").Call(),
+				"uint64":  jen.Qual(utils.FakeLibrary, "Uint64").Call(),
+				"int":     jen.ID("int").Call(jen.Qual(utils.FakeLibrary, "Int32").Call()),
+				"int8":    jen.Qual(utils.FakeLibrary, "Int8").Call(),
+				"int16":   jen.Qual(utils.FakeLibrary, "Int16").Call(),
+				"int32":   jen.Qual(utils.FakeLibrary, "Int32").Call(),
+				"int64":   jen.Qual(utils.FakeLibrary, "Int64").Call(),
 			}
 
-			out = append(
-				out,
-				jen.ID(sn).Op(":").Qual("math/rand", numberMethods[typ]).Call(),
-			)
+			if field.Pointer {
+				out = append(
+					out,
+					jen.ID(sn).Op(":").Func().Params(jen.ID("x").ID(field.Type)).Params(jen.Op("*").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(numberMethods[typ]),
+				)
+			} else {
+				out = append(
+					out,
+					jen.ID(sn).Op(":").Add(numberMethods[typ]),
+				)
+			}
 		default:
 			panic(fmt.Sprintf("unaccounted for type!: %q", strings.ToLower(field.Type)))
 		}

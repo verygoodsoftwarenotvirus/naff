@@ -13,7 +13,11 @@ func buildBaseModelStructFields(fields []models.DataField) []jen.Code {
 	out := []jen.Code{jen.ID("ID").ID("uint64").Tag(jsonTag("id"))}
 
 	for _, field := range fields {
-		out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+		if field.Pointer {
+			out = append(out, jen.ID(field.Name.Singular()).Op("*").ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+		} else {
+			out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+		}
 	}
 
 	out = append(out,
@@ -31,7 +35,11 @@ func buildUpdateModelStructFields(fields []models.DataField) []jen.Code {
 
 	for _, field := range fields {
 		if field.ValidForUpdateInput {
-			out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+			if field.Pointer {
+				out = append(out, jen.ID(field.Name.Singular()).Op("*").ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+			} else {
+				out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+			}
 		}
 	}
 
@@ -44,7 +52,11 @@ func buildCreateModelStructFields(fields []models.DataField) []jen.Code {
 
 	for _, field := range fields {
 		if field.ValidForCreationInput {
-			out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+			if field.Pointer {
+				out = append(out, jen.ID(field.Name.Singular()).Op("*").ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+			} else {
+				out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+			}
 		}
 	}
 
@@ -129,7 +141,7 @@ func iterableDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	}
 
 	ret.Add(
-		jen.Commentf("ToInput creates a %sUpdateInput struct fro %s", sn, cnwp),
+		jen.Commentf("ToInput creates a %sUpdateInput struct for %s", sn, cnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("x").Op("*").ID(sn)).ID("ToInput").Params().Params(jen.Op("*").IDf("%sUpdateInput", sn)).Block(buildToUpdateInput()),
 		jen.Line(),
@@ -145,19 +157,49 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 		fsn := field.Name.Singular()
 		switch strings.ToLower(field.Type) {
 		case "string":
-			out = append(
-				out,
-				jen.If(jen.ID("input").Dot(fsn).Op("!=").Lit("").Op("||").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Block(
-					jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
-				),
-			)
-		case "uint64":
-			out = append(
-				out,
-				jen.If(jen.ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Block(
-					jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
-				),
-			)
+			if field.Pointer {
+				out = append(
+					out,
+					jen.If(jen.ID("input").Dot(fsn).Op("!=").ID("nil").Op("&&").Op("*").ID("input").Dot(fsn).Op("!=").Lit("").Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Block(
+						jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+					),
+				)
+			} else {
+				out = append(
+					out,
+					jen.If(jen.ID("input").Dot(fsn).Op("!=").Lit("").Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Block(
+						jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+					),
+				)
+			}
+		case "bool",
+			"float32",
+			"float64",
+			"uint",
+			"uint8",
+			"uint16",
+			"uint32",
+			"uint64",
+			"int",
+			"int8",
+			"int16",
+			"int32",
+			"int64":
+			if field.Pointer {
+				out = append(
+					out,
+					jen.If(jen.ID("input").Dot(fsn).Op("!=").ID("nil").Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Block(
+						jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+					),
+				)
+			} else {
+				out = append(
+					out,
+					jen.If(jen.ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Block(
+						jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+					),
+				)
+			}
 		default:
 			panic(fmt.Sprintf("unaccounted for type!: %q", strings.ToLower(field.Type)))
 		}

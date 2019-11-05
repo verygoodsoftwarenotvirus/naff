@@ -2,7 +2,6 @@ package queriers
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -16,22 +15,36 @@ func typeToPostgresType(t string) string {
 		"[]string": "CHARACTER VARYING",
 		"string":   "CHARACTER VARYING",
 		"*string":  "CHARACTER VARYING",
-		"uint64":   "BIGINT",
-		"*uint64":  "BIGINT",
 		"bool":     "BOOLEAN",
 		"*bool":    "BOOLEAN",
 		"int":      "INTEGER",
 		"*int":     "INTEGER",
+		"int8":     "INTEGER",
+		"*int8":    "INTEGER",
+		"int16":    "INTEGER",
+		"*int16":   "INTEGER",
+		"int32":    "INTEGER",
+		"*int32":   "INTEGER",
+		"int64":    "INTEGER",
+		"*int64":   "INTEGER",
 		"uint":     "INTEGER",
 		"*uint":    "INTEGER",
+		"uint8":    "INTEGER",
+		"*uint8":   "INTEGER",
+		"uint16":   "INTEGER",
+		"*uint16":  "INTEGER",
+		"uint32":   "BIGINT",
+		"*uint32":  "BIGINT",
+		"uint64":   "BIGINT",
+		"*uint64":  "BIGINT",
 		"float64":  "NUMERIC",
 	}
 
 	if x, ok := typeMap[t]; ok {
 		return x
+	} else {
+		panic(fmt.Sprintf("unknown type!: %q", t))
 	}
-
-	return t
 }
 
 func typeToSqliteType(t string) string {
@@ -39,23 +52,36 @@ func typeToSqliteType(t string) string {
 		"[]string": "CHARACTER VARYING",
 		"string":   "CHARACTER VARYING",
 		"*string":  "CHARACTER VARYING",
-		"uint64":   "INTEGER",
-		"*uint64":  "INTEGER",
 		"bool":     "BOOLEAN",
 		"*bool":    "BOOLEAN",
 		"int":      "INTEGER",
 		"*int":     "INTEGER",
+		"int8":     "INTEGER",
+		"*int8":    "INTEGER",
+		"int16":    "INTEGER",
+		"*int16":   "INTEGER",
+		"int32":    "INTEGER",
+		"*int32":   "INTEGER",
+		"int64":    "INTEGER",
+		"*int64":   "INTEGER",
 		"uint":     "INTEGER",
 		"*uint":    "INTEGER",
+		"uint8":    "INTEGER",
+		"*uint8":   "INTEGER",
+		"uint16":   "INTEGER",
+		"*uint16":  "INTEGER",
+		"uint32":   "INTEGER",
+		"*uint32":  "INTEGER",
+		"uint64":   "INTEGER",
+		"*uint64":  "INTEGER",
 		"float64":  "REAL",
 	}
 
 	if x, ok := typeMap[t]; ok {
 		return x
+	} else {
+		panic(fmt.Sprintf("unknown type!: %q", t))
 	}
-
-	log.Println("typeToSqliteType called for type: ", t)
-	return t
 }
 
 func typeToMariaDBType(t string) string {
@@ -63,51 +89,37 @@ func typeToMariaDBType(t string) string {
 		"[]string": "LONGTEXT",
 		"string":   "LONGTEXT",
 		"*string":  "LONGTEXT",
-		"uint64":   "INTEGER UNSIGNED",
-		"*uint64":  "INTEGER UNSIGNED",
 		"bool":     "BOOLEAN",
 		"*bool":    "BOOLEAN",
 		"int":      "INTEGER",
 		"*int":     "INTEGER",
+		"int8":     "INTEGER",
+		"*int8":    "INTEGER",
+		"int16":    "INTEGER",
+		"*int16":   "INTEGER",
+		"int32":    "INTEGER",
+		"*int32":   "INTEGER",
+		"int64":    "INTEGER",
+		"*int64":   "INTEGER",
 		"uint":     "INTEGER UNSIGNED",
 		"*uint":    "INTEGER UNSIGNED",
+		"uint8":    "INTEGER UNSIGNED",
+		"*uint8":   "INTEGER UNSIGNED",
+		"uint16":   "INTEGER UNSIGNED",
+		"*uint16":  "INTEGER UNSIGNED",
+		"uint32":   "INTEGER UNSIGNED",
+		"*uint32":  "INTEGER UNSIGNED",
+		"uint64":   "INTEGER UNSIGNED",
+		"*uint64":  "INTEGER UNSIGNED",
 		"float64":  "REAL",
 	}
 
-	if x, ok := typeMap[t]; ok {
+	if x, ok := typeMap[strings.TrimSpace(t)]; ok {
 		return x
+	} else {
+		panic(fmt.Sprintf("unknown type!: %q", t))
 	}
-
-	return t
 }
-
-// func typeExample(t string, pointer bool) interface{} {
-// 	typeMap := map[string]interface{}{
-// 		"[]string": `[]string{"example"}`,
-// 		"string":   `"example"`,
-// 		"*string":  `func(s string) *string { return &s }("example")`,
-// 		"uint64":   "uint64(123)",
-// 		"*uint64":  "func(u uint64) *uint64 { return &u }(123)",
-// 		"bool":     false,
-// 		"*bool":    "func(b bool) *bool { return &b }(false)",
-// 		"int":      "int(456)",
-// 		"*int":     "func(i int) *int { return &i }(123)",
-// 		"uint":     "uint(456)",
-// 		"*uint":    "func(i uint) *uint { return &i }(123)",
-// 		"float64":  "float64(12.34)",
-// 	}
-
-// 	tn := t
-// 	if pointer {
-// 		tn = fmt.Sprintf("*%s", tn)
-// 	}
-
-// 	if x, ok := typeMap[tn]; ok {
-// 		return x
-// 	}
-
-// 	return t
-// }
 
 type migration struct {
 	description string
