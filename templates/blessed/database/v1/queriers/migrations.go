@@ -37,7 +37,10 @@ func typeToPostgresType(t string) string {
 		"*uint32":  "BIGINT",
 		"uint64":   "BIGINT",
 		"*uint64":  "BIGINT",
-		"float64":  "NUMERIC",
+		"float32":  "INTEGER",
+		"*float32": "INTEGER",
+		"float64":  "BIGINT",
+		"*float64": "BIGINT",
 	}
 
 	if x, ok := typeMap[t]; ok {
@@ -74,7 +77,10 @@ func typeToSqliteType(t string) string {
 		"*uint32":  "INTEGER",
 		"uint64":   "INTEGER",
 		"*uint64":  "INTEGER",
-		"float64":  "REAL",
+		"float32":  "INTEGER",
+		"*float32": "INTEGER",
+		"float64":  "BIGINT",
+		"*float64": "BIGINT",
 	}
 
 	if x, ok := typeMap[t]; ok {
@@ -111,7 +117,10 @@ func typeToMariaDBType(t string) string {
 		"*uint32":  "INTEGER UNSIGNED",
 		"uint64":   "INTEGER UNSIGNED",
 		"*uint64":  "INTEGER UNSIGNED",
-		"float64":  "REAL",
+		"float32":  "INTEGER",
+		"*float32": "INTEGER",
+		"float64":  "BIGINT",
+		"*float64": "BIGINT",
 	}
 
 	if x, ok := typeMap[strings.TrimSpace(t)]; ok {
@@ -141,15 +150,15 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 				description: "create users table",
 				script: jen.Lit(`
 			CREATE TABLE IF NOT EXISTS users (
-				"id" bigserial NOT NULL PRIMARY KEY,
-				"username" text NOT NULL,
-				"hashed_password" text NOT NULL,
+				"id" BIGSERIAL NOT NULL PRIMARY KEY,
+				"username" TEXT NOT NULL,
+				"hashed_password" TEXT NOT NULL,
 				"password_last_changed_on" integer,
-				"two_factor_secret" text NOT NULL,
+				"two_factor_secret" TEXT NOT NULL,
 				"is_admin" boolean NOT NULL DEFAULT 'false',
-				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
-				"updated_on" bigint DEFAULT NULL,
-				"archived_on" bigint DEFAULT NULL,
+				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+				"updated_on" BIGINT DEFAULT NULL,
+				"archived_on" BIGINT DEFAULT NULL,
 				UNIQUE ("username")
 			);`),
 			},
@@ -157,17 +166,17 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 				description: "create oauth2_clients table",
 				script: jen.Lit(`
 			CREATE TABLE IF NOT EXISTS oauth2_clients (
-				"id" bigserial NOT NULL PRIMARY KEY,
-				"name" text DEFAULT '',
-				"client_id" text NOT NULL,
-				"client_secret" text NOT NULL,
-				"redirect_uri" text DEFAULT '',
-				"scopes" text NOT NULL,
+				"id" BIGSERIAL NOT NULL PRIMARY KEY,
+				"name" TEXT DEFAULT '',
+				"client_id" TEXT NOT NULL,
+				"client_secret" TEXT NOT NULL,
+				"redirect_uri" TEXT DEFAULT '',
+				"scopes" TEXT NOT NULL,
 				"implicit_allowed" boolean NOT NULL DEFAULT 'false',
-				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
-				"updated_on" bigint DEFAULT NULL,
-				"archived_on" bigint DEFAULT NULL,
-				"belongs_to" bigint NOT NULL,
+				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+				"updated_on" BIGINT DEFAULT NULL,
+				"archived_on" BIGINT DEFAULT NULL,
+				"belongs_to" BIGINT NOT NULL,
 				FOREIGN KEY(belongs_to) REFERENCES users(id)
 			);`),
 			},
@@ -175,18 +184,18 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 				description: "create webhooks table",
 				script: jen.Lit(`
 			CREATE TABLE IF NOT EXISTS webhooks (
-				"id" bigserial NOT NULL PRIMARY KEY,
-				"name" text NOT NULL,
-				"content_type" text NOT NULL,
-				"url" text NOT NULL,
-				"method" text NOT NULL,
-				"events" text NOT NULL,
-				"data_types" text NOT NULL,
-				"topics" text NOT NULL,
-				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),
-				"updated_on" bigint DEFAULT NULL,
-				"archived_on" bigint DEFAULT NULL,
-				"belongs_to" bigint NOT NULL,
+				"id" BIGSERIAL NOT NULL PRIMARY KEY,
+				"name" TEXT NOT NULL,
+				"content_type" TEXT NOT NULL,
+				"url" TEXT NOT NULL,
+				"method" TEXT NOT NULL,
+				"events" TEXT NOT NULL,
+				"data_types" TEXT NOT NULL,
+				"topics" TEXT NOT NULL,
+				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+				"updated_on" BIGINT DEFAULT NULL,
+				"archived_on" BIGINT DEFAULT NULL,
+				"belongs_to" BIGINT NOT NULL,
 				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")
 			);`),
 			},
@@ -197,30 +206,40 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 
 			scriptParts := []string{
 				fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
-				`				"id" bigserial NOT NULL PRIMARY KEY,`,
+				`				"id" BIGSERIAL NOT NULL PRIMARY KEY,`,
 			}
 
 			for _, field := range typ.Fields {
 				rn := field.Name.RouteName()
 
-				query := fmt.Sprintf("				%q %s", rn, typeToPostgresType(field.Type))
-
-				if !field.Pointer {
-					query += ` NOT NULL`
-				}
-
-				if field.DefaultAllowed {
-					query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+				var query string
+				if field.Type == "float32" || field.Type == "float64" {
+					query = fmt.Sprintf("				%q %s", rn, typeToPostgresType(field.Type))
+					if !field.Pointer {
+						query += ` NOT NULL`
+					}
+					if field.DefaultAllowed {
+						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+					}
+					query += fmt.Sprintf(",\n				\"%s_divisor\" INTEGER DEFAULT 100", rn)
+				} else {
+					query = fmt.Sprintf("				%q %s", rn, typeToPostgresType(field.Type))
+					if !field.Pointer {
+						query += ` NOT NULL`
+					}
+					if field.DefaultAllowed {
+						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+					}
 				}
 
 				scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
 			}
 
 			scriptParts = append(scriptParts,
-				`				"created_on" bigint NOT NULL DEFAULT extract(epoch FROM NOW()),`,
-				`				"updated_on" bigint DEFAULT NULL,`,
-				`				"archived_on" bigint DEFAULT NULL,`,
-				`				"belongs_to" bigint NOT NULL,`,
+				`				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),`,
+				`				"updated_on" BIGINT DEFAULT NULL,`,
+				`				"archived_on" BIGINT DEFAULT NULL,`,
+				`				"belongs_to" BIGINT NOT NULL,`,
 				`				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")`,
 				`			);`,
 			)
@@ -273,13 +292,13 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 				script: jen.Lit(`
 			CREATE TABLE IF NOT EXISTS webhooks (
 				"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				"name" text NOT NULL,
-				"content_type" text NOT NULL,
-				"url" text NOT NULL,
-				"method" text NOT NULL,
-				"events" text NOT NULL,
-				"data_types" text NOT NULL,
-				"topics" text NOT NULL,
+				"name" TEXT NOT NULL,
+				"content_type" TEXT NOT NULL,
+				"url" TEXT NOT NULL,
+				"method" TEXT NOT NULL,
+				"events" TEXT NOT NULL,
+				"data_types" TEXT NOT NULL,
+				"topics" TEXT NOT NULL,
 				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
 				"updated_on" INTEGER,
 				"archived_on" INTEGER DEFAULT NULL,
@@ -303,14 +322,24 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 			for _, field := range typ.Fields {
 				rn := field.Name.RouteName()
 
-				query := fmt.Sprintf("				%q %s", rn, typeToSqliteType(field.Type))
-
-				if !field.Pointer {
-					query += ` NOT NULL`
-				}
-
-				if field.DefaultAllowed {
-					query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+				var query string
+				if field.Type == "float32" || field.Type == "float64" {
+					query = fmt.Sprintf("				%q %s", rn, typeToSqliteType(field.Type))
+					if !field.Pointer {
+						query += ` NOT NULL`
+					}
+					if field.DefaultAllowed {
+						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+					}
+					query += fmt.Sprintf(",\n				\"%s_divisor\" INTEGER DEFAULT 100", rn)
+				} else {
+					query = fmt.Sprintf("				%q %s", rn, typeToSqliteType(field.Type))
+					if !field.Pointer {
+						query += ` NOT NULL`
+					}
+					if field.DefaultAllowed {
+						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+					}
 				}
 
 				scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
@@ -441,14 +470,35 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 
 			for _, field := range typ.Fields {
 				rn := field.Name.RouteName()
-				query := fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))
-				if !field.Pointer {
-					query += ` NOT NULL`
+
+				var query string
+				if field.Type == "float32" || field.Type == "float64" {
+					query = fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))
+					if !field.Pointer {
+						query += ` NOT NULL`
+					}
+					if field.DefaultAllowed {
+						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+					}
+					query += fmt.Sprintf(",\n				`%s_divisor` INTEGER DEFAULT 100", rn)
+				} else {
+					query = fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))
+					if !field.Pointer {
+						query += ` NOT NULL`
+					}
+					if field.DefaultAllowed {
+						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+					}
 				}
 
-				if field.DefaultAllowed {
-					query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
-				}
+				// query := fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))
+				// if !field.Pointer {
+				// 	query += ` NOT NULL`
+				// }
+
+				// if field.DefaultAllowed {
+				// 	query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+				// }
 				scriptParts = append(scriptParts, jen.Lit(fmt.Sprintf("%s,", query)))
 			}
 

@@ -21,7 +21,15 @@ func buildGeneralFields(varName string, typ models.DataType) []jen.Code {
 	fields := []jen.Code{jen.ID(varName).Dot("ID")}
 
 	for _, field := range typ.Fields {
-		fields = append(fields, jen.ID(varName).Dot(field.Name.Singular()))
+		if field.Type == "float32" || field.Type == "float64" {
+			if !field.Pointer {
+				fields = append(fields, jen.ID(varName).Dot(field.Name.Singular()), jen.Lit(100))
+			} else {
+				fields = append(fields, jen.ID(varName).Dot(field.Name.Singular()), jen.Func().Params(jen.ID("x").ID(field.Type)).Params(jen.Op("*").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(jen.Lit(100)))
+			}
+		} else {
+			fields = append(fields, jen.ID(varName).Dot(field.Name.Singular()))
+		}
 	}
 
 	fields = append(fields,
@@ -38,7 +46,11 @@ func buildBadFields(varName string, typ models.DataType) []jen.Code {
 	fields := []jen.Code{jen.ID(varName).Dot("ArchivedOn")}
 
 	for _, field := range typ.Fields {
-		fields = append(fields, jen.ID(varName).Dot(field.Name.Singular()))
+		if field.Type == "float32" || field.Type == "float64" {
+			fields = append(fields, jen.ID(varName).Dot(field.Name.Singular()), jen.Lit(100))
+		} else {
+			fields = append(fields, jen.ID(varName).Dot(field.Name.Singular()))
+		}
 	}
 
 	fields = append(fields,
@@ -55,7 +67,11 @@ func buildStringColumns(typ models.DataType) string {
 	out := []string{"id"}
 
 	for _, field := range typ.Fields {
-		out = append(out, field.Name.RouteName())
+		if field.Type == "float32" || field.Type == "float64" {
+			out = append(out, field.Name.RouteName(), fmt.Sprintf("%s_divisor", field.Name.RouteName()))
+		} else {
+			out = append(out, field.Name.RouteName())
+		}
 	}
 
 	out = append(out, "created_on", "updated_on", "archived_on", "belongs_to")

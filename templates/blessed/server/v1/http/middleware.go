@@ -41,7 +41,7 @@ func middlewareDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.Lit("status").Op(":").ID("ww").Dot("Status").Call(),
 					jen.Lit("bytes_written").Op(":").ID("ww").Dot("BytesWritten").Call(),
 					jen.Lit("elapsed").Op(":").Qual("time", "Since").Call(jen.ID("start")),
-				)).Dot("Debug").Call(jen.Lit("request received")),
+				)).Dot("Debug").Call(jen.Lit("responded to request")),
 			)),
 		),
 		jen.Line(),

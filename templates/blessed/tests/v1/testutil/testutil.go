@@ -279,5 +279,52 @@ cookie problems!
 		),
 		jen.Line(),
 	)
+
+	var f32f, f64f bool
+	for _, typ := range types {
+		for _, field := range typ.Fields {
+			if field.Type == "float32" {
+				f32f = true
+			} else if field.Type == "float64" {
+				f64f = true
+			}
+			if f32f && f64f {
+				break
+			}
+		}
+	}
+
+	if f32f {
+		ret.Add(
+			jen.Func().ID("truncateFloat32").Params(jen.ID("x").ID("float32")).Params(jen.ID("float32")).Block(
+				jen.List(jen.ID("s"), jen.ID("_")).Op(":=").Qual("strconv", "ParseFloat").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%.2f"), jen.ID("x")), jen.Lit(32)),
+				jen.ID("dbr").Op(":=").ID("int64").Call(jen.ID("s").Op("*").ID("float64").Call(jen.Lit(100))),
+				jen.Return().ID("float32").Call(jen.ID("dbr")).Op("/").ID("float32").Call(jen.Lit(100)),
+			),
+			jen.Line(),
+			jen.Line(),
+			jen.Func().ID("RandomFixedPrecisionFloat32").Params().Params(jen.ID("float32")).Block(
+				jen.Return(jen.ID("truncateFloat32").Call(jen.Qual(utils.FakeLibrary, "Float32Range").Call(jen.Lit(-100), jen.Lit(100)))),
+			),
+			jen.Line(),
+		)
+	}
+
+	if f64f {
+		ret.Add(
+			jen.Func().ID("truncateFloat64").Params(jen.ID("x").ID("float64")).Params(jen.ID("float64")).Block(
+				jen.List(jen.ID("s"), jen.ID("_")).Op(":=").Qual("strconv", "ParseFloat").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%.2f"), jen.ID("x")), jen.Lit(64)),
+				jen.ID("dbr").Op(":=").ID("int64").Call(jen.ID("s").Op("*").ID("float64").Call(jen.Lit(100))),
+				jen.Return().ID("float64").Call(jen.ID("dbr")).Op("/").ID("float64").Call(jen.Lit(100)),
+			),
+			jen.Line(),
+			jen.Line(),
+			jen.Func().ID("RandomFixedPrecisionFloat64").Params().Params(jen.ID("float64")).Block(
+				jen.Return(jen.ID("truncateFloat64").Call(jen.Qual(utils.FakeLibrary, "Float64Range").Call(jen.Lit(-100), jen.Lit(100)))),
+			),
+			jen.Line(),
+		)
+	}
+
 	return ret
 }

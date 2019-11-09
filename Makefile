@@ -78,3 +78,9 @@ format:
 .PHONY: compare
 compare:
 	meld example_output ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
+
+.PHONY: fuck
+fuck:
+	printf "\033[2J\033[3J\033[1;1H"
+	rm -rf ../todopartdeux;
+	make example_output

@@ -25,10 +25,9 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 		for _, field := range typ.Fields {
 			sn := field.Name.Singular()
 			if field.Pointer {
-				lines = append(lines, jen.ID(sn).Op(":").Add(utils.FakeCallForField(field)))
-
+				lines = append(lines, jen.ID(sn).Op(":").Add(utils.FakeCallForField(pkgRoot, field)))
 			} else {
-				lines = append(lines, jen.ID(sn).Op(":").Add(utils.FakeCallForField(field)))
+				lines = append(lines, jen.ID(sn).Op(":").Add(utils.FakeCallForField(pkgRoot, field)))
 			}
 		}
 
@@ -55,7 +54,21 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 
 		for _, field := range typ.Fields {
 			sn := field.Name.Singular()
-			lines = append(lines, jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(sn), jen.ID("actual").Dot(sn)))
+			if !field.Pointer {
+				lines = append(lines, jen.ID("assert").Dot("Equal").Call(
+					jen.ID("t"),
+					jen.ID("expected").Dot(sn),
+					jen.ID("actual").Dot(sn),
+					jen.Lit("expected "+sn+" to be %v, but it was %v "), jen.ID("expected").Dot(sn), jen.ID("actual").Dot(sn),
+				))
+			} else {
+				lines = append(lines, jen.ID("assert").Dot("Equal").Call(
+					jen.ID("t"),
+					jen.Op("*").ID("expected").Dot(sn),
+					jen.Op("*").ID("actual").Dot(sn),
+					jen.Lit("expected "+sn+" to be %v, but it was %v "), jen.ID("expected").Dot(sn), jen.ID("actual").Dot(sn),
+				))
+			}
 		}
 		lines = append(lines, jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("CreatedOn")))
 

@@ -75,8 +75,8 @@ func main() {
 	for _, typ := range []string{
 		"bool",
 		"string",
-		// "float32",
-		// "float64",
+		"float32",
+		"float64",
 		"uint",
 		"uint8",
 		"uint16",

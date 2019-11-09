@@ -13,6 +13,16 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+const (
+	CoreOAuth2Pkg  = "golang.org/x/oauth2"
+	LoggingPkg     = "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
+	NoopLoggingPkg = "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
+	AssertPkg      = "github.com/stretchr/testify/assert"
+	MustAssertPkg  = "github.com/stretchr/testify/require"
+	MockPkg        = "github.com/stretchr/testify/mock"
+	FakeLibrary    = "github.com/brianvoe/gofakeit"
+)
+
 func AddImports(pkgRoot string, types []models.DataType, file *jen.File) {
 	file.ImportAlias(filepath.Join(pkgRoot, "client/v1/http"), "client")
 	file.ImportAlias(filepath.Join(pkgRoot, "database/v1"), "database")
