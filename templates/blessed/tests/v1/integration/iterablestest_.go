@@ -59,7 +59,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.ID("t"),
 					jen.ID("expected").Dot(sn),
 					jen.ID("actual").Dot(sn),
-					jen.Lit("expected "+sn+" to be %v, but it was %v "), jen.ID("expected").Dot(sn), jen.ID("actual").Dot(sn),
+					jen.Lit("expected "+sn+" for ID %d to be %v, but it was %v "), jen.ID("expected").Dot("ID"), jen.ID("expected").Dot(sn), jen.ID("actual").Dot(sn),
 				))
 			} else {
 				lines = append(lines, jen.ID("assert").Dot("Equal").Call(

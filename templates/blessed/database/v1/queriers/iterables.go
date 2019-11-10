@@ -54,7 +54,6 @@ func iterablesDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.
 	ret.Add(
 		jen.Const().Defs(
 			jen.IDf("%sTableName", puvn).Op("=").Lit(prn),
-			jen.IDf("default%sDivisor", sn).ID("int64").Op("=").Lit(100),
 		),
 		jen.Line(),
 	)
@@ -68,49 +67,11 @@ func iterablesDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.
 		jen.Line(),
 	)
 
-	buildFloatVars := func(typ models.DataType) jen.Code {
-		dec := jen.Var()
-
-		var floatVars []jen.Code
-		for _, field := range typ.Fields {
-			if field.Type == "float32" || field.Type == "float64" {
-				fn := field.Name.UnexportedVarName()
-				if field.Pointer {
-					floatVars = append(floatVars, jen.ID(fn).Op("*").ID("int64"))
-				} else {
-					floatVars = append(floatVars, jen.ID(fn).ID("int64"))
-				}
-			}
-		}
-
-		dec.Defs(floatVars...)
-
-		return dec
-	}
-
 	buildScanFields := func(typ models.DataType) (scanFields, floatSets []jen.Code) {
 		scanFields = []jen.Code{jen.Op("&").ID("x").Dot("ID")}
 
 		for _, field := range typ.Fields {
-			if field.Type == "float32" || field.Type == "float64" {
-				fn := field.Name.UnexportedVarName()
-				scanFields = append(scanFields, jen.Op("&").ID(fn))
-				if !field.Pointer {
-					floatSets = append(floatSets,
-						jen.Op("x").Dot(field.Name.Singular()).Op("=").ID(field.Type).Call(jen.ID(fn)).Op("/").ID(field.Type).Call(jen.IDf("default%sDivisor", sn)),
-					)
-				} else {
-					floatSets = append(floatSets,
-						jen.If(jen.ID(fn).Op("!=").ID("nil")).Block(
-							jen.ID("x").Dot(field.Name.Singular()).Op("=").Func().Params(jen.ID("x").ID(field.Type)).Params(jen.Op("*").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(
-								jen.ID(field.Type).Call(jen.Op("*").ID(fn)).Op("/").ID(field.Type).Call(jen.IDf("default%sDivisor", sn)),
-							),
-						),
-					)
-				}
-			} else {
-				scanFields = append(scanFields, jen.Op("&").ID("x").Dot(field.Name.Singular()))
-			}
+			scanFields = append(scanFields, jen.Op("&").ID("x").Dot(field.Name.Singular()))
 		}
 
 		scanFields = append(scanFields,
@@ -127,8 +88,6 @@ func iterablesDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.
 	buildScanItemBody := func() []jen.Code {
 		body := []jen.Code{
 			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Values(),
-			jen.Line(),
-			buildFloatVars(typ),
 			jen.Line(),
 			jen.If(jen.ID("err").Op(":=").ID("scan").Dot("Scan").Callln(scanFields...), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
@@ -398,19 +357,8 @@ func iterablesDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.
 	)
 
 	for _, field := range typ.Fields {
-		if field.Type == "float32" || field.Type == "float64" {
-			creationColumns = append(creationColumns, jen.Lit(field.Name.RouteName()))
-			if field.Pointer {
-				// int64(*input.FieldFloat32AsPointer*float32(defaultEntryDivisor))
-				valuesColumns = append(valuesColumns, jen.ID("int64").Call(jen.Op("*").ID("input").Dot(field.Name.Singular()).Op("*").ID(field.Type).Call(jen.IDf("default%sDivisor", sn))))
-			} else {
-				// int64(input.FieldFloat32*float32(defaultEntryDivisor))
-				valuesColumns = append(valuesColumns, jen.ID("int64").Call(jen.ID("input").Dot(field.Name.Singular()).Op("*").ID(field.Type).Call(jen.IDf("default%sDivisor", sn))))
-			}
-		} else {
-			creationColumns = append(creationColumns, jen.Lit(field.Name.RouteName()))
-			valuesColumns = append(valuesColumns, jen.ID("input").Dot(field.Name.Singular()))
-		}
+		creationColumns = append(creationColumns, jen.Lit(field.Name.RouteName()))
+		valuesColumns = append(valuesColumns, jen.ID("input").Dot(field.Name.Singular()))
 	}
 
 	creationColumns = append(creationColumns, jen.Lit("belongs_to"))
@@ -549,16 +497,7 @@ func iterablesDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.
 
 		for _, field := range typ.Fields {
 			if field.ValidForUpdateInput {
-				if field.Type == "float32" || field.Type == "float64" {
-					if !field.Pointer {
-						//	Set("field_float32", int64(input.FieldFloat32*float32(defaultEntryDivisor))*defaultEntryDivisor).
-						x.Dotln("Set").Call(jen.Lit(field.Name.RouteName()), jen.ID("int64").Call(jen.ID("input").Dot(field.Name.Singular()).Op("*").ID(field.Type).Call(jen.IDf("default%sDivisor", sn))))
-					} else {
-						x.Dotln("Set").Call(jen.Lit(field.Name.RouteName()), jen.ID("int64").Call(jen.Op("*").ID("input").Dot(field.Name.Singular()).Op("*").ID(field.Type).Call(jen.IDf("default%sDivisor", sn))))
-					}
-				} else {
-					x.Dotln("Set").Call(jen.Lit(field.Name.RouteName()), jen.ID("input").Dot(field.Name.Singular()))
-				}
+				x.Dotln("Set").Call(jen.Lit(field.Name.RouteName()), jen.ID("input").Dot(field.Name.Singular()))
 			}
 		}
 		x.Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).

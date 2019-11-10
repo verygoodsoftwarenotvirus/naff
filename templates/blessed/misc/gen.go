@@ -293,6 +293,11 @@ frontend-tests:
 	--always-recreate-deps \
 	--abort-on-container-exit
 
+## DELETE ME
+
+.PHONY: gamut
+gamut: revendor rewire config_files quicktest lint integration-tests-postgres integration-tests-sqlite integration-tests-mariadb frontend-tests
+
 ## Integration tests
 
 .PHONY: lintegration-tests # this is just a handy lil' helper I use sometimes

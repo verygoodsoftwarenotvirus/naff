@@ -37,10 +37,10 @@ func typeToPostgresType(t string) string {
 		"*uint32":  "BIGINT",
 		"uint64":   "BIGINT",
 		"*uint64":  "BIGINT",
-		"float32":  "INTEGER",
-		"*float32": "INTEGER",
-		"float64":  "BIGINT",
-		"*float64": "BIGINT",
+		"float32":  "DOUBLE PRECISION",
+		"*float32": "DOUBLE PRECISION",
+		"float64":  "DOUBLE PRECISION",
+		"*float64": "DOUBLE PRECISION",
 	}
 
 	if x, ok := typeMap[t]; ok {
@@ -77,10 +77,10 @@ func typeToSqliteType(t string) string {
 		"*uint32":  "INTEGER",
 		"uint64":   "INTEGER",
 		"*uint64":  "INTEGER",
-		"float32":  "INTEGER",
-		"*float32": "INTEGER",
-		"float64":  "BIGINT",
-		"*float64": "BIGINT",
+		"float32":  "REAL",
+		"*float32": "REAL",
+		"float64":  "REAL",
+		"*float64": "REAL",
 	}
 
 	if x, ok := typeMap[t]; ok {
@@ -117,10 +117,10 @@ func typeToMariaDBType(t string) string {
 		"*uint32":  "INTEGER UNSIGNED",
 		"uint64":   "INTEGER UNSIGNED",
 		"*uint64":  "INTEGER UNSIGNED",
-		"float32":  "INTEGER",
-		"*float32": "INTEGER",
-		"float64":  "BIGINT",
-		"*float64": "BIGINT",
+		"float32":  "DOUBLE PRECISION",
+		"*float32": "DOUBLE PRECISION",
+		"float64":  "DOUBLE PRECISION",
+		"*float64": "DOUBLE PRECISION",
 	}
 
 	if x, ok := typeMap[strings.TrimSpace(t)]; ok {
@@ -212,24 +212,12 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 			for _, field := range typ.Fields {
 				rn := field.Name.RouteName()
 
-				var query string
-				if field.Type == "float32" || field.Type == "float64" {
-					query = fmt.Sprintf("				%q %s", rn, typeToPostgresType(field.Type))
-					if !field.Pointer {
-						query += ` NOT NULL`
-					}
-					if field.DefaultAllowed {
-						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
-					}
-					query += fmt.Sprintf(",\n				\"%s_divisor\" INTEGER DEFAULT 100", rn)
-				} else {
-					query = fmt.Sprintf("				%q %s", rn, typeToPostgresType(field.Type))
-					if !field.Pointer {
-						query += ` NOT NULL`
-					}
-					if field.DefaultAllowed {
-						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
-					}
+				query := fmt.Sprintf("				%q %s", rn, typeToPostgresType(field.Type))
+				if !field.Pointer {
+					query += ` NOT NULL`
+				}
+				if field.DefaultAllowed {
+					query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
 				}
 
 				scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
@@ -322,24 +310,12 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 			for _, field := range typ.Fields {
 				rn := field.Name.RouteName()
 
-				var query string
-				if field.Type == "float32" || field.Type == "float64" {
-					query = fmt.Sprintf("				%q %s", rn, typeToSqliteType(field.Type))
-					if !field.Pointer {
-						query += ` NOT NULL`
-					}
-					if field.DefaultAllowed {
-						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
-					}
-					query += fmt.Sprintf(",\n				\"%s_divisor\" INTEGER DEFAULT 100", rn)
-				} else {
-					query = fmt.Sprintf("				%q %s", rn, typeToSqliteType(field.Type))
-					if !field.Pointer {
-						query += ` NOT NULL`
-					}
-					if field.DefaultAllowed {
-						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
-					}
+				query := fmt.Sprintf("				%q %s", rn, typeToSqliteType(field.Type))
+				if !field.Pointer {
+					query += ` NOT NULL`
+				}
+				if field.DefaultAllowed {
+					query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
 				}
 
 				scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
@@ -471,24 +447,12 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 			for _, field := range typ.Fields {
 				rn := field.Name.RouteName()
 
-				var query string
-				if field.Type == "float32" || field.Type == "float64" {
-					query = fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))
-					if !field.Pointer {
-						query += ` NOT NULL`
-					}
-					if field.DefaultAllowed {
-						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
-					}
-					query += fmt.Sprintf(",\n				`%s_divisor` INTEGER DEFAULT 100", rn)
-				} else {
-					query = fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))
-					if !field.Pointer {
-						query += ` NOT NULL`
-					}
-					if field.DefaultAllowed {
-						query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
-					}
+				query := fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))
+				if !field.Pointer {
+					query += ` NOT NULL`
+				}
+				if field.DefaultAllowed {
+					query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
 				}
 
 				// query := fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))

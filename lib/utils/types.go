@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -100,13 +99,13 @@ func FakeCallForField(pkgRoot string, field models.DataField) jen.Code {
 		}
 		return x
 	case "float32":
-		x := jen.Qual(filepath.Join(pkgRoot, "tests/v1/testutil"), "RandomFixedPrecisionFloat32").Call()
+		x := jen.Qual(FakeLibrary, "Float32").Call()
 		if field.Pointer {
 			return jen.Func().Params(jen.ID("x").ID(field.Type)).Params(jen.Op("*").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
 		}
 		return x
 	case "float64":
-		x := jen.Qual(filepath.Join(pkgRoot, "tests/v1/testutil"), "RandomFixedPrecisionFloat64").Call()
+		x := jen.Qual(FakeLibrary, "Float64").Call()
 		if field.Pointer {
 			return jen.Func().Params(jen.ID("x").ID(field.Type)).Params(jen.Op("*").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(x)
 		}
