@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func wireDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("oauth2clients")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Var().Defs(
@@ -27,7 +27,7 @@ func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideOAuth2ClientDataServer is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer")).Block(
+		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

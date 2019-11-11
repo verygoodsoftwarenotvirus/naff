@@ -8,12 +8,12 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func databaseDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func databaseDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("database")
 
-	modelsImp := fmt.Sprintf("%s/models/v1", pkgRoot)
+	modelsImp := fmt.Sprintf("%s/models/v1", pkg.OutputPath)
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Var().Defs(
@@ -31,7 +31,7 @@ func databaseDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Line(),
 		}
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			lines = append(lines,
 				jen.Qual(modelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())),
 			)

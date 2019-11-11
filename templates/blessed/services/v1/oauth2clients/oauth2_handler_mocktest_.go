@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2HandlerMockTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func oauth2HandlerMockTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("oauth2clients")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Var().ID("_").ID("oauth2Handler").Op("=").Parens(jen.Op("*").ID("mockOauth2Handler")).Call(jen.ID("nil")),

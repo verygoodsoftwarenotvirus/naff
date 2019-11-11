@@ -8,17 +8,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func authenticatorTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func authenticatorTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("auth_test")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Func().ID("TestProvideBcryptHashCost").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "ProvideBcryptHashCost").Call(),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptHashCost").Call(),
 			)),
 		),
 		jen.Line(),

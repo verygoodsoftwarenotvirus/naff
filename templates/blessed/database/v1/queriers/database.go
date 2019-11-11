@@ -10,10 +10,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func databaseDotGo(pkgRoot string, types []models.DataType, vendor wordsmith.SuperPalabra) *jen.File {
+func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.RouteName())
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	uvn := vendor.UnexportedVarName()
 	cn := vendor.SingularCommonName()
@@ -78,7 +78,7 @@ func databaseDotGo(pkgRoot string, types []models.DataType, vendor wordsmith.Sup
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "database/v1"), "Database").Op("=").Params(jen.Op("*").ID(sn)).Params(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database").Op("=").Params(jen.Op("*").ID(sn)).Params(jen.ID("nil")),
 		jen.Line(),
 		jen.Type().Defs(
 			jen.Commentf("%s is our main %s interaction db", sn, sn),
@@ -114,7 +114,7 @@ func databaseDotGo(pkgRoot string, types []models.DataType, vendor wordsmith.Sup
 	ret.Add(
 		jen.Commentf("Provide%s%s provides an instrumented %s db", sn, dbTrail, cn),
 		jen.Line(),
-		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(filepath.Join(pkgRoot, "database/v1"), "ConnectionDetails")).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
+		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "ConnectionDetails")).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
 			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.ID("string").Call(jen.ID("connectionDetails"))),
 		),
@@ -130,7 +130,7 @@ func databaseDotGo(pkgRoot string, types []models.DataType, vendor wordsmith.Sup
 	ret.Add(
 		jen.Commentf("Provide%s provides a %s%s controller", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkgRoot, "database/v1"), "Database")).Block(
+		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database")).Block(
 			jen.Return().Op("&").IDf(sn).Valuesln(
 				jen.ID("db").Op(":").ID("db"),
 				jen.ID("debug").Op(":").ID("debug"),

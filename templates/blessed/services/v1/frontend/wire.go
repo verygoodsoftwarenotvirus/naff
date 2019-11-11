@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func wireDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("frontend")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Var().Defs(

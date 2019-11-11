@@ -8,13 +8,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockOauth2ClientDataServerDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func mockOauth2ClientDataServerDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("OAuth2ClientDataServer")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("OAuth2ClientDataServer")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 
@@ -88,10 +88,10 @@ func mockOauth2ClientDataServerDotGo(pkgRoot string, types []models.DataType) *j
 	ret.Add(
 		jen.Comment("ExtractOAuth2ClientFromRequest is the obligatory implementation for our interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client"),
+		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
 			jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx"), jen.ID("req")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	)

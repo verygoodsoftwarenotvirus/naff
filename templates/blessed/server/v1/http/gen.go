@@ -9,22 +9,22 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, types []models.DataType) error {
+func RenderPackage(pkg *models.Project) error {
 
 	files := map[string]*jen.File{
 		"server/v1/http/doc.go":                      docDotGo(),
-		"server/v1/http/middleware_test.go":          middlewareTestDotGo(pkgRoot, types),
-		"server/v1/http/routes.go":                   routesDotGo(pkgRoot, types),
-		"server/v1/http/server.go":                   serverDotGo(pkgRoot, types),
-		"server/v1/http/server_test.go":              serverTestDotGo(pkgRoot, types),
-		"server/v1/http/middleware.go":               middlewareDotGo(pkgRoot, types),
-		"server/v1/http/wire.go":                     wireDotGo(pkgRoot, types),
-		"server/v1/http/wire_param_fetchers.go":      wireParamFetchersDotGo(pkgRoot, types),
-		"server/v1/http/wire_param_fetchers_test.go": wireParamFetchersTestDotGo(pkgRoot, types),
+		"server/v1/http/middleware_test.go":          middlewareTestDotGo(pkg),
+		"server/v1/http/routes.go":                   routesDotGo(pkg),
+		"server/v1/http/server.go":                   serverDotGo(pkg),
+		"server/v1/http/server_test.go":              serverTestDotGo(pkg),
+		"server/v1/http/middleware.go":               middlewareDotGo(pkg),
+		"server/v1/http/wire.go":                     wireDotGo(pkg),
+		"server/v1/http/wire_param_fetchers.go":      wireParamFetchersDotGo(pkg),
+		"server/v1/http/wire_param_fetchers_test.go": wireParamFetchersTestDotGo(pkg),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkgRoot, path, file); err != nil {
+		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
 			log.Printf("error rendering %q: %v\n", path, err)
 			return err
 		}

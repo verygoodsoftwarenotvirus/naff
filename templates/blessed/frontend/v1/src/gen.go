@@ -7,12 +7,11 @@ import (
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
+func RenderPackage(pkg *models.Project) error {
 	files := map[string]func() []byte{
 		"frontend/v1/src/main.js":                     mainDotJS,
 		"frontend/v1/public/index.html":               indexDotHTML,
@@ -24,14 +23,14 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 		"frontend/v1/src/components/Table.svelte":     tableDotSvelte,
 	}
 
-	for _, typ := range types {
+	for _, typ := range pkg.DataTypes {
 		files[fmt.Sprintf("frontend/v1/src/pages/%s/List.svelte", typ.Name.PluralRouteName())] = listDotSvelte(typ)
 		files[fmt.Sprintf("frontend/v1/src/pages/%s/Create.svelte", typ.Name.PluralRouteName())] = createDotSvelte(typ)
 		files[fmt.Sprintf("frontend/v1/src/pages/%s/Read.svelte", typ.Name.PluralRouteName())] = readDotSvelte(typ)
 	}
 
 	for filename, file := range files {
-		fname := utils.BuildTemplatePath(pkgRoot, filename)
+		fname := utils.BuildTemplatePath(pkg.OutputPath, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)

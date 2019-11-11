@@ -6,9 +6,9 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mainTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func mainTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("client")
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	// vars
 	ret.Add(

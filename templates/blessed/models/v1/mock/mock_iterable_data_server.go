@@ -9,15 +9,15 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockIterableDataServerDotGo(pkgRoot string, typ models.DataType) *jen.File {
+func mockIterableDataServerDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
+	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 
 	sn := typ.Name.Singular()
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sDataServer", sn)).Op("=").Parens(jen.Op("*").IDf("%sDataServer", sn)).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", sn)).Op("=").Parens(jen.Op("*").IDf("%sDataServer", sn)).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 

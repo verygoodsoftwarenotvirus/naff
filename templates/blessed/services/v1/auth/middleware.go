@@ -8,15 +8,15 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func middlewareDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func middlewareDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("UserLoginInputMiddlewareCtxKey is the context key for login input"),
-			jen.ID("UserLoginInputMiddlewareCtxKey").Qual(filepath.Join(pkgRoot, "models/v1"), "ContextKey").Op("=").Lit("user_login_input"),
+			jen.ID("UserLoginInputMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Op("=").Lit("user_login_input"),
 			jen.Line(),
 			jen.Comment("UsernameFormKey is the string we look for in request forms for username information"),
 			jen.ID("UsernameFormKey").Op("=").Lit("username"),
@@ -47,8 +47,8 @@ func middlewareDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.If(jen.ID("user").Op("!=").ID("nil")).Block(
 					jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
 						jen.Qual("context", "WithValue").Callln(
-							jen.Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserKey"), jen.ID("user")),
-							jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserIDKey"),
+							jen.Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserKey"), jen.ID("user")),
+							jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
 							jen.ID("user").Dot("ID"),
 						),
 					),
@@ -73,7 +73,7 @@ func middlewareDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
 					jen.Comment("let's figure out who the user is"),
-					jen.Var().ID("user").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "User"),
+					jen.Var().ID("user").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User"),
 					jen.Line(),
 					jen.Comment("check for a cookie first if we can"),
 					jen.If(jen.ID("allowValidCookieInLieuOfAValidToken")).Block(
@@ -102,7 +102,7 @@ func middlewareDotGo(pkgRoot string, types []models.DataType) *jen.File {
 						),
 						jen.Line(),
 						jen.Comment("attach the oauth2 client and user's info to the request"),
-						jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientKey"), jen.ID("oauth2Client")),
+						jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientKey"), jen.ID("oauth2Client")),
 						jen.List(jen.ID("user"), jen.ID("err")).Op("=").ID("s").Dot("userDB").Dot("GetUser").Call(jen.ID("ctx"), jen.ID("oauth2Client").Dot("BelongsTo")),
 						jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 							jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error authenticating request")),
@@ -119,9 +119,9 @@ func middlewareDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("elsewise, load the request with extra context"),
-					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserKey"), jen.ID("user")),
-					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserIDKey"), jen.ID("user").Dot("ID")),
-					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserIsAdminKey"), jen.ID("user").Dot("IsAdmin")),
+					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserKey"), jen.ID("user")),
+					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"), jen.ID("user").Dot("ID")),
+					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIsAdminKey"), jen.ID("user").Dot("IsAdmin")),
 					jen.Line(),
 					jen.ID("next").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req").Dot("WithContext").Call(jen.ID("ctx"))),
 				)),
@@ -139,7 +139,7 @@ func middlewareDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-				jen.List(jen.ID("user"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserKey")).Assert(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "User")),
+				jen.List(jen.ID("user"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")),
 				jen.Line(),
 				jen.If(jen.Op("!").ID("ok").Op("||").ID("user").Op("==").ID("nil")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("AdminMiddleware called without user attached to context")),
@@ -162,9 +162,9 @@ func middlewareDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("parseLoginInputFromForm checks a request for a login form, and returns the parsed login data if relevant"),
 		jen.Line(),
-		jen.Func().ID("parseLoginInputFromForm").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput")).Block(
+		jen.Func().ID("parseLoginInputFromForm").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput")).Block(
 			jen.If(jen.ID("err").Op(":=").ID("req").Dot("ParseForm").Call(), jen.ID("err").Op("==").ID("nil")).Block(
-				jen.ID("uli").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("uli").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("req").Dot("FormValue").Call(jen.ID("UsernameFormKey")),
 					jen.ID("Password").Op(":").ID("req").Dot("FormValue").Call(jen.ID("PasswordFormKey")),
 					jen.ID("TOTPToken").Op(":").ID("req").Dot("FormValue").Call(jen.ID("TOTPTokenFormKey")),
@@ -187,7 +187,7 @@ func middlewareDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserLoginInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
-				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput")),
+				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput")),
 				jen.If(jen.ID("err").Op(":=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("req"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.If(jen.ID("x").Op("=").ID("parseLoginInputFromForm").Call(jen.ID("req")), jen.ID("x").Op("==").ID("nil")).Block(
 						jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),

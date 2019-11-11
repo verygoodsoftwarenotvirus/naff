@@ -8,19 +8,31 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func wireDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+
+	buildProviderSet := func() []jen.Code {
+		lines := []jen.Code{
+
+			jen.ID("paramFetcherProviders"),
+			jen.ID("ProvideServer"),
+			jen.ID("ProvideNamespace"),
+		}
+
+		// if pkg.EnableNewsman {
+		lines = append(lines, jen.ID("ProvideNewsmanTypeNameManipulationFunc"))
+		// }
+
+		return lines
+	}
 
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is our wire superset of providers this package offers"),
 			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Callln(
-				jen.ID("paramFetcherProviders"),
-				jen.ID("ProvideServer"),
-				jen.ID("ProvideNamespace"),
-				jen.ID("ProvideNewsmanTypeNameManipulationFunc"),
+				buildProviderSet()...,
 			),
 		),
 		jen.Line(),
@@ -29,12 +41,13 @@ func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideNamespace provides a namespace"),
 		jen.Line(),
-		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "Namespace")).Block(
+		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "Namespace")).Block(
 			jen.Return().Lit("todo-service"),
 		),
 		jen.Line(),
 	)
 
+	// if pkg.EnableNewsman {
 	ret.Add(
 		jen.Comment("ProvideNewsmanTypeNameManipulationFunc provides an WebhookIDFetcher"),
 		jen.Line(),
@@ -46,6 +59,7 @@ func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		),
 		jen.Line(),
 	)
+	// }
 
 	ret.Add(
 		jen.Comment("provideHTTPServer provides an HTTP httpServer"),

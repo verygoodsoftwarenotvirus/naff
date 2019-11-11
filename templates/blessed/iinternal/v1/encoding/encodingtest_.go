@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func encodingTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func encodingTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("encoding")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Type().ID("example").Struct(

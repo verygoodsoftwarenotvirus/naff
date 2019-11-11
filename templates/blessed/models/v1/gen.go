@@ -13,30 +13,30 @@ func jsonTag(val string) map[string]string {
 }
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, types []models.DataType) error {
+func RenderPackage(pkg *models.Project) error {
 	files := map[string]*jen.File{
-		"models/v1/webhook.go":             webhookDotGo(pkgRoot, types),
-		"models/v1/oauth2_client.go":       oauth2ClientDotGo(pkgRoot, types),
-		"models/v1/oauth2_client_test.go":  oauth2ClientTestDotGo(pkgRoot, types),
-		"models/v1/query_filter_test.go":   queryFilterTestDotGo(pkgRoot, types),
-		"models/v1/user.go":                userDotGo(pkgRoot, types),
-		"models/v1/webhook_test.go":        webhookTestDotGo(pkgRoot, types),
-		"models/v1/main.go":                mainDotGo(pkgRoot, types),
-		"models/v1/main_test.go":           mainTestDotGo(pkgRoot, types),
-		"models/v1/query_filter.go":        queryFilterDotGo(pkgRoot, types),
-		"models/v1/service_data_events.go": serviceDataEventsDotGo(pkgRoot, types),
-		"models/v1/user_test.go":           userTestDotGo(pkgRoot, types),
-		"models/v1/cookieauth.go":          cookieauthDotGo(pkgRoot, types),
+		"models/v1/webhook.go":             webhookDotGo(pkg),
+		"models/v1/oauth2_client.go":       oauth2ClientDotGo(pkg),
+		"models/v1/oauth2_client_test.go":  oauth2ClientTestDotGo(pkg),
+		"models/v1/query_filter_test.go":   queryFilterTestDotGo(pkg),
+		"models/v1/user.go":                userDotGo(pkg),
+		"models/v1/webhook_test.go":        webhookTestDotGo(pkg),
+		"models/v1/main.go":                mainDotGo(pkg),
+		"models/v1/main_test.go":           mainTestDotGo(pkg),
+		"models/v1/query_filter.go":        queryFilterDotGo(pkg),
+		"models/v1/service_data_events.go": serviceDataEventsDotGo(pkg),
+		"models/v1/user_test.go":           userTestDotGo(pkg),
+		"models/v1/cookieauth.go":          cookieauthDotGo(pkg),
 		"models/v1/doc.go":                 docDotGo(),
 	}
 
-	for _, typ := range types {
-		files[fmt.Sprintf("models/v1/%s.go", typ.Name.RouteName())] = iterableDotGo(pkgRoot, typ)
-		files[fmt.Sprintf("models/v1/%s_test.go", typ.Name.RouteName())] = iterableTestDotGo(pkgRoot, typ)
+	for _, typ := range pkg.DataTypes {
+		files[fmt.Sprintf("models/v1/%s.go", typ.Name.RouteName())] = iterableDotGo(pkg, typ)
+		files[fmt.Sprintf("models/v1/%s_test.go", typ.Name.RouteName())] = iterableTestDotGo(pkg, typ)
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkgRoot, path, file); err != nil {
+		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
 			return err
 		}
 	}

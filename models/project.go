@@ -34,7 +34,7 @@ type Project struct {
 	sourcePackage           string
 	OutputPath              string
 	iterableServicesImports []string
-	EnableWebhooks          bool
+	EnableNewsman           bool
 
 	Name      wordsmith.SuperPalabra
 	DataTypes []DataType
@@ -125,6 +125,7 @@ type projectSurvey struct {
 	Name             string `survey:"name"`
 	OutputRepository string `survey:"outputRepository"`
 	ModelsPackage    string `survey:"modelsPackage"`
+	EnableNewsman    bool   `survey:"enableNewsman"`
 }
 
 // CompleteSurvey asks the user questions to determine core project information
@@ -137,18 +138,29 @@ func CompleteSurvey() (*Project, error) {
 			Validate: survey.Required,
 		},
 		{
-			Name: "outputRepository",
-			Prompt: &survey.Input{
-				Message: "output repository path:",
-				Help:    `the package path that the generated project will live in (i.e. gitlab.com/verygoodsoftwarenotvirus/whatever)`,
-			},
-		},
-		{
 			Name: "modelsPackage",
 			Prompt: &survey.Input{
 				Message: "models package:",
 				Help:    `the input package that defines the base set of models (i.e. gitlab.com/verygoodsoftwarenotvirus/naff/example_models/todo)`,
 			},
+			Validate: survey.Required,
+		},
+		{
+			Name: "outputRepository",
+			Prompt: &survey.Input{
+				Message: "output repository path:",
+				Help:    `the package path that the generated project will live in (i.e. gitlab.com/verygoodsoftwarenotvirus/whatever)`,
+			},
+			Validate: survey.Required,
+		},
+		{
+			Name: "enableNewsman",
+			Prompt: &survey.Confirm{
+				Message: "enable newsman?",
+				Default: true,
+				Help:    "generates newsman code",
+			},
+			Validate: survey.Required,
 		},
 	}
 

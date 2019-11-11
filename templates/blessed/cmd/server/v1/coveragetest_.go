@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func coverageTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func coverageTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(jen.Null(),
 

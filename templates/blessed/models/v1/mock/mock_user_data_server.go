@@ -8,13 +8,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockUserDataServerDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataServer").Op("=").Parens(jen.Op("*").ID("UserDataServer")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataServer").Op("=").Parens(jen.Op("*").ID("UserDataServer")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 

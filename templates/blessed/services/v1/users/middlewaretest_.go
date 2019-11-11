@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func middlewareTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func middlewareTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("users")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Var().ID("_").Qual("net/http", "Handler").Op("=").Parens(jen.Op("*").ID("MockHTTPHandler")).Call(jen.ID("nil")),
@@ -39,7 +39,7 @@ func middlewareTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -68,7 +68,7 @@ func middlewareTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -104,7 +104,7 @@ func middlewareTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -133,7 +133,7 @@ func middlewareTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkgRoot, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -141,7 +141,7 @@ func middlewareTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				).Dot("Return").Call(jen.ID("uint64").Call(jen.Lit(123)), jen.ID("nil")),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -177,7 +177,7 @@ func middlewareTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -206,7 +206,7 @@ func middlewareTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),

@@ -113,10 +113,10 @@ func getTimeQuery(dbrn string) string {
 	return ""
 }
 
-func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
+func iterablesTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
-	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
+	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 
 	n := typ.Name
 	sn := n.Singular()
@@ -146,7 +146,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 	gFields := buildGeneralFields("x", typ)
 
 	ret.Add(
-		jen.Func().IDf("buildMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().IDf("buildMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(gFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -157,7 +157,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 	badFields := buildBadFields("x", typ)
 
 	ret.Add(
-		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(badFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -193,7 +193,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT %s FROM %s WHERE belongs_to = %s AND id = %s", cols, tn, getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -212,7 +212,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT %s FROM %s WHERE belongs_to = %s AND id = %s", cols, tn, getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -244,7 +244,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 				jen.ID("expectedArgCount").Op(":=").Lit(1),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", tn, getIncIndex(dbrn, 0)),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sCountQuery", sn).Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sCountQuery", sn).Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot("Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
@@ -267,7 +267,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 				jen.Line(),
-				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%sCount", sn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%sCount", sn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
 				jen.Line(),
@@ -324,7 +324,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 				jen.Line(),
 				jen.ID("expectedArgCount").Op(":=").Lit(1),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", cols, tn, getIncIndex(dbrn, 0)),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
 				jen.Line(),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.ID("assert").Dot("Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
@@ -342,17 +342,17 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedListQuery").Op(":=").Litf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", cols, tn, getIncIndex(dbrn, 0)),
 				jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
-				jen.IDf("expected%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.IDf("expected%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(321),
 				),
 				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkgRoot, "models/v1"), "Pagination").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
+					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
 						jen.ID("Page").Op(":").Lit(1),
 						jen.ID("Limit").Op(":").Lit(20),
 						jen.ID("TotalCount").Op(":").ID("expectedCount"),
 					),
-					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 						jen.Op("*").IDf("expected%s", sn),
 					),
 				),
@@ -365,7 +365,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).
 					Dot("AddRow").Call(jen.ID("expectedCount"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.Line(),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
@@ -382,7 +382,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
@@ -399,7 +399,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Line(),
@@ -408,7 +408,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error scanning %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(321),
 				),
 				jen.ID("expectedListQuery").Op(":=").Litf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", cols, tn, getIncIndex(dbrn, 0)),
@@ -418,7 +418,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 					Dotln("WillReturnRows").Call(jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID("expected"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Line(),
@@ -427,7 +427,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying for count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(321),
 				),
 				jen.ID("expectedListQuery").Op(":=").Litf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", cols, tn, getIncIndex(dbrn, 0)),
@@ -440,7 +440,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkgRoot, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Line(),
@@ -456,7 +456,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.IDf("expected%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.IDf("expected%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(321),
 				),
 				jen.ID("expectedListQuery").Op(":=").Litf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to = %s", cols, tn, getIncIndex(dbrn, 0)),
@@ -466,7 +466,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn))),
 				jen.Line(),
-				jen.ID("expected").Op(":=").Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn).Values(jen.Op("*").IDf("expected%s", sn)),
+				jen.ID("expected").Op(":=").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(jen.Op("*").IDf("expected%s", sn)),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("GetAll%sForUser", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("expectedUserID")),
 				jen.Line(),
 				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -510,7 +510,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.IDf("example%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.IDf("example%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(321),
 				),
 				jen.ID("expectedListQuery").Op(":=").Litf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to = %s", cols, tn, getIncIndex(dbrn, 0)),
@@ -551,7 +551,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 	creationEqualityExpectations := buildCreationEqualityExpectations("expected", typ)
 	createQueryTestBody := []jen.Code{
 		jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+		jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 			jen.ID("ID").Op(":").Lit(321), jen.ID("BelongsTo").Op(":").Lit(123),
 		),
 		jen.ID("expectedArgCount").Op(":=").Lit(1 + thisFuncExpectedArgCount),
@@ -596,12 +596,12 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 	buildTestCreateHappyPathBody := func() []jen.Code {
 		out := []jen.Code{
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 				jen.ID("ID").Op(":").Lit(123),
 				jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
 				jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 			),
-			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 				expectedInputFields...,
 			),
 		}
@@ -689,12 +689,12 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 
 		out := []jen.Code{
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 				jen.ID("ID").Op(":").Lit(123),
 				jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
 				jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 			),
-			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 				expectedInputFields...,
 			),
 			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO %s (%s,belongs_to%s) VALUES (%s%s)%s",
@@ -745,7 +745,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 
 	testBuildUpdateQueryBody := []jen.Code{
 		jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+		jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 			jen.ID("ID").Op(":").Lit(321),
 			jen.ID("BelongsTo").Op(":").Lit(123),
 		),
@@ -816,7 +816,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 
 		out := []jen.Code{
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 				jen.ID("ID").Op(":").Lit(123),
 				jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
 				jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -859,7 +859,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 
 		out := []jen.Code{
 			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 				jen.ID("ID").Op(":").Lit(123),
 				jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
 				jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -903,7 +903,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(321),
 					jen.ID("BelongsTo").Op(":").Lit(123),
 				),
@@ -933,7 +933,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -955,7 +955,7 @@ func iterablesTestDotGo(pkgRoot string, dbvendor wordsmith.SuperPalabra, typ mod
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("example").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("example").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),

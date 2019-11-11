@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func cookieauthDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func cookieauthDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Comment("CookieAuth represents what we encode in our authentication cookies"),

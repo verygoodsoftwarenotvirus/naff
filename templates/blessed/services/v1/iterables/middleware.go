@@ -9,10 +9,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func middlewareDotGo(pkgRoot string, typ models.DataType) *jen.File {
+func middlewareDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
+	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 	sn := typ.Name.Singular() // singular name, PascalCased by default
 
 	ret.Add(
@@ -20,7 +20,7 @@ func middlewareDotGo(pkgRoot string, typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn))),
+				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))),
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreationInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
@@ -44,7 +44,7 @@ func middlewareDotGo(pkgRoot string, typ models.DataType) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sUpdateInput", sn))),
+				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sUpdateInput", sn))),
 				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),

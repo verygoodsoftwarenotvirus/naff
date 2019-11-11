@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func helpersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func helpersTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Type().ID("testingType").Struct(
@@ -245,7 +245,7 @@ func helpersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 							jen.Func().Params().Params(
 								jen.ID("string"),
 							).Block(
-								jen.ID("er").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "ErrorResponse").Values(),
+								jen.ID("er").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(),
 								jen.List(
 									jen.ID("bs"),
 									jen.ID("err"),
@@ -319,7 +319,7 @@ func helpersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.Lit("blah"),
 				),
 				jen.Line(),
-				jen.ID("rc").Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil/mock"), "NewMockReadCloser").Call(),
+				jen.ID("rc").Op(":=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/mock"), "NewMockReadCloser").Call(),
 				jen.ID("rc").Dot("On").Call(
 					jen.Lit("Read"),
 					jen.Qual(utils.MockPkg, "Anything"),

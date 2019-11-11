@@ -7,19 +7,19 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, types []models.DataType) error {
+func RenderPackage(pkg *models.Project) error {
 	files := map[string]*jen.File{
-		"internal/v1/config/wire.go":         wireDotGo(pkgRoot, types),
-		"internal/v1/config/config.go":       configDotGo(pkgRoot, types),
-		"internal/v1/config/config_test.go":  configTestDotGo(pkgRoot, types),
-		"internal/v1/config/database.go":     databaseDotGo(pkgRoot, types),
+		"internal/v1/config/wire.go":         wireDotGo(pkg),
+		"internal/v1/config/config.go":       configDotGo(pkg),
+		"internal/v1/config/config_test.go":  configTestDotGo(pkg),
+		"internal/v1/config/database.go":     databaseDotGo(pkg),
 		"internal/v1/config/doc.go":          docDotGo(),
-		"internal/v1/config/metrics.go":      metricsDotGo(pkgRoot, types),
-		"internal/v1/config/metrics_test.go": metricsTestDotGo(pkgRoot, types),
+		"internal/v1/config/metrics.go":      metricsDotGo(pkg),
+		"internal/v1/config/metrics_test.go": metricsTestDotGo(pkg),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkgRoot, path, file); err != nil {
+		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
 			return err
 		}
 	}

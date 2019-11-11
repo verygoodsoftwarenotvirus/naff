@@ -135,7 +135,7 @@ type migration struct {
 	script      jen.Code
 }
 
-func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []jen.Code {
+func makeMigrations(pkg *models.Project, dbVendor wordsmith.SuperPalabra) []jen.Code {
 	var (
 		out        []jen.Code
 		migrations []migration
@@ -201,7 +201,7 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 			},
 		}
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			pcn := typ.Name.PluralCommonName()
 
 			scriptParts := []string{
@@ -299,7 +299,7 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 		idType := "INTEGER"
 		idAddendum := " AUTOINCREMENT"
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			pcn := typ.Name.PluralCommonName()
 
 			scriptParts := []string{
@@ -436,7 +436,7 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 			},
 		}
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			pcn := typ.Name.PluralCommonName()
 
 			scriptParts := []jen.Code{
@@ -510,10 +510,10 @@ func makeMigrations(dbVendor wordsmith.SuperPalabra, types []models.DataType) []
 	return out
 }
 
-func migrationsDotGo(pkgRoot string, vendor wordsmith.SuperPalabra, types []models.DataType) *jen.File {
+func migrationsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 	dbvsn := vendor.Singular()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 	dbcn := vendor.SingularCommonName()
@@ -524,7 +524,7 @@ func migrationsDotGo(pkgRoot string, vendor wordsmith.SuperPalabra, types []mode
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("migrations").Op("=").Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(makeMigrations(vendor, types)...),
+			jen.ID("migrations").Op("=").Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(makeMigrations(pkg, vendor)...),
 		),
 	)
 

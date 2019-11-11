@@ -13,29 +13,29 @@ const (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, types []models.DataType) error {
+func RenderPackage(pkg *models.Project) error {
 	files := map[string]*jen.File{
 		"client/v1/http/doc.go":                 docDotGo(),
-		"client/v1/http/client.go":              mainDotGo(pkgRoot, types),
-		"client/v1/http/client_test.go":         mainTestDotGo(pkgRoot, types),
-		"client/v1/http/helpers.go":             helpersDotGo(pkgRoot, types),
-		"client/v1/http/helpers_test.go":        helpersTestDotGo(pkgRoot, types),
-		"client/v1/http/users.go":               usersDotGo(pkgRoot, types),
-		"client/v1/http/users_test.go":          usersTestDotGo(pkgRoot, types),
-		"client/v1/http/roundtripper.go":        roundtripperDotGo(pkgRoot, types),
-		"client/v1/http/webhooks.go":            webhooksDotGo(pkgRoot, types),
-		"client/v1/http/webhooks_test.go":       webhooksTestDotGo(pkgRoot, types),
-		"client/v1/http/oauth2_clients.go":      oauth2ClientsDotGo(pkgRoot, types),
-		"client/v1/http/oauth2_clients_test.go": oauth2ClientsTestDotGo(pkgRoot, types),
+		"client/v1/http/client.go":              mainDotGo(pkg),
+		"client/v1/http/client_test.go":         mainTestDotGo(pkg),
+		"client/v1/http/helpers.go":             helpersDotGo(pkg),
+		"client/v1/http/helpers_test.go":        helpersTestDotGo(pkg),
+		"client/v1/http/users.go":               usersDotGo(pkg),
+		"client/v1/http/users_test.go":          usersTestDotGo(pkg),
+		"client/v1/http/roundtripper.go":        roundtripperDotGo(pkg),
+		"client/v1/http/webhooks.go":            webhooksDotGo(pkg),
+		"client/v1/http/webhooks_test.go":       webhooksTestDotGo(pkg),
+		"client/v1/http/oauth2_clients.go":      oauth2ClientsDotGo(pkg),
+		"client/v1/http/oauth2_clients_test.go": oauth2ClientsTestDotGo(pkg),
 	}
 
-	for _, typ := range types {
-		files[fmt.Sprintf("client/v1/http/%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(pkgRoot, typ)
-		files[fmt.Sprintf("client/v1/http/%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(pkgRoot, typ)
+	for _, typ := range pkg.DataTypes {
+		files[fmt.Sprintf("client/v1/http/%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(pkg, typ)
+		files[fmt.Sprintf("client/v1/http/%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(pkg, typ)
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkgRoot, path, file); err != nil {
+		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
 			return err
 		}
 	}

@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func routesDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func routesDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	// pn := typ.Name.Plural()
 
@@ -24,8 +24,8 @@ func routesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "FrontendSettings"),
-			jen.ID("metricsHandler").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "Handler")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "FrontendSettings"),
+			jen.ID("metricsHandler").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "Handler")).Block(
 			jen.ID("router").Op(":=").Qual("github.com/go-chi/chi", "NewRouter").Call(),
 			jen.Line(),
 			jen.Comment("Basic CORS, for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing"),
@@ -99,7 +99,7 @@ func routesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("UserLoginInputMiddleware")).Dot("Post").Call(jen.Lit("/login"), jen.ID("s").Dot("authService").Dot("LoginHandler").Call()),
 				jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware")).Dot("Post").Call(jen.Lit("/logout"), jen.ID("s").Dot("authService").Dot("LogoutHandler").Call()),
 				jen.Line(),
-				jen.ID("userIDPattern").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("oauth2IDPattern"), jen.Qual(filepath.Join(pkgRoot, "services/v1/users"), "URIParamKey")),
+				jen.ID("userIDPattern").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("oauth2IDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "URIParamKey")),
 				jen.Line(),
 				jen.ID("userRouter").Dot("Get").Call(jen.Lit("/"), jen.ID("s").Dot("usersService").Dot("ListHandler").Call()),
 				jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("usersService").Dot("UserInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dot("usersService").Dot("CreateHandler").Call()),
@@ -139,11 +139,11 @@ func routesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.ID("true"))).Dot("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual("github.com/go-chi/chi", "Router")).Block(
-				buildIterableAPIRoutes(pkgRoot, types),
+				buildIterableAPIRoutes(pkg),
 				jen.Line(),
-				buildWebhookAPIRoutes(pkgRoot),
+				buildWebhookAPIRoutes(pkg),
 				jen.Line(),
-				buildOAuth2ClientsAPIRoutes(pkgRoot),
+				buildOAuth2ClientsAPIRoutes(pkg),
 			)),
 			jen.Line(),
 			jen.ID("s").Dot("router").Op("=").ID("router"),
@@ -153,18 +153,18 @@ func routesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	return ret
 }
 
-func buildIterableAPIRoutes(pkgRoot string, types []models.DataType) jen.Code {
+func buildIterableAPIRoutes(pkg *models.Project) jen.Code {
 
 	g := &jen.Group{}
 
-	for _, typ := range types {
+	for _, typ := range pkg.DataTypes {
 		n := typ.Name
 
 		g.Add(
 			jen.Comment(n.Plural()),
 			jen.Line(),
 			jen.ID("v1Router").Dot("Route").Call(jen.Litf("/%s", n.PluralRouteName()), jen.Func().Params(jen.IDf("%sRouter", n.PluralUnexportedVarName()).Qual("github.com/go-chi/chi", "Router")).Block(
-				jen.ID("sr").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkgRoot, "services/v1", n.PluralRouteName()), "URIParamKey")),
+				jen.ID("sr").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PluralRouteName()), "URIParamKey")),
 				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("With").Call(jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("CreateHandler").Call()),
 				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ReadHandler").Call()),
 				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("With").Call(jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("sr"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("UpdateHandler").Call()),
@@ -178,14 +178,14 @@ func buildIterableAPIRoutes(pkgRoot string, types []models.DataType) jen.Code {
 	return g
 }
 
-func buildWebhookAPIRoutes(pkgRoot string) jen.Code {
+func buildWebhookAPIRoutes(pkg *models.Project) jen.Code {
 	g := &jen.Group{}
 
 	g.Add(
 		jen.Comment("Webhooks"),
 		jen.Line(),
 		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/webhooks"), jen.Func().Params(jen.ID("webhookRouter").Qual("github.com/go-chi/chi", "Router")).Block(
-			jen.ID("sr").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkgRoot, "services/v1/webhooks"), "URIParamKey")),
+			jen.ID("sr").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "URIParamKey")),
 			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("CreationInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dot("webhooksService").Dot("CreateHandler").Call()),
 			jen.ID("webhookRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("ReadHandler").Call()),
 			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("UpdateHandler").Call()),
@@ -197,14 +197,14 @@ func buildWebhookAPIRoutes(pkgRoot string) jen.Code {
 	return g
 }
 
-func buildOAuth2ClientsAPIRoutes(pkgRoot string) jen.Code {
+func buildOAuth2ClientsAPIRoutes(pkg *models.Project) jen.Code {
 	g := &jen.Group{}
 
 	g.Add(
 		jen.Comment("OAuth2 Clients"),
 		jen.Line(),
 		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/oauth2/clients"), jen.Func().Params(jen.ID("clientRouter").Qual("github.com/go-chi/chi", "Router")).Block(
-			jen.ID("sr").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkgRoot, "services/v1/oauth2clients"), "URIParamKey")),
+			jen.ID("sr").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "URIParamKey")),
 			jen.Comment("CreateHandler is not bound to an OAuth2 authentication token"),
 			jen.Comment("UpdateHandler not supported for OAuth2 clients."),
 			jen.ID("clientRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("oauth2ClientsService").Dot("ReadHandler").Call()),

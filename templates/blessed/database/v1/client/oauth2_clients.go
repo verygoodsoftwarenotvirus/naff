@@ -8,13 +8,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "models/v1"),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
 			"OAuth2ClientDataManager",
 		).Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
 		jen.Line(),
@@ -45,7 +45,7 @@ func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2Client gets an OAuth2 client from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetOAuth2Client")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -73,7 +73,7 @@ func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Line(),
 		jen.Comment("This is used by authenticating middleware to fetch client information it needs to validate."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2ClientByClientID").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("string")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2ClientByClientID").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("string")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetOAuth2ClientByClientID")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -95,7 +95,7 @@ func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2ClientCount gets the count of OAuth2 clients in the database that match the current filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetOAuth2ClientCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -127,7 +127,7 @@ func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("GetAllOAuth2ClientsForUser returns all OAuth2 clients belonging to a given user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllOAuth2ClientsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Op("*").Qual(filepath.Join(pkgRoot, "models/v1"),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllOAuth2ClientsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
 			"OAuth2Client",
 		),
 			jen.ID("error")).Block(
@@ -145,7 +145,7 @@ func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("GetAllOAuth2Clients returns all OAuth2 clients, irrespective of ownership."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Index().Op("*").Qual(filepath.Join(pkgRoot, "models/v1"),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
 			"OAuth2Client",
 		),
 			jen.ID("error")).Block(
@@ -162,7 +162,7 @@ func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientList"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetOAuth2Clients")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -179,7 +179,7 @@ func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("CreateOAuth2Client creates an OAuth2 client"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("CreateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("CreateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("CreateOAuth2Client")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -206,7 +206,7 @@ func oauth2ClientsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Line(),
 		jen.Comment("ID field to be valid."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("UpdateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("UpdateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("UpdateOAuth2Client")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),

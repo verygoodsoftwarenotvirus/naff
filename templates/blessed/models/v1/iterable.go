@@ -64,10 +64,10 @@ func buildCreateModelStructFields(fields []models.DataField) []jen.Code {
 	return out
 }
 
-func iterableDotGo(pkgRoot string, typ models.DataType) *jen.File {
+func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
+	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 	n := typ.Name
 	sn := n.Singular()
 	pn := n.Plural()

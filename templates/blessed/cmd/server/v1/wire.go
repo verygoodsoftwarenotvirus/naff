@@ -8,28 +8,29 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func wireDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 	ret.HeaderComment("+build wireinject")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	newsmanImp := "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	loggingImp := "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 
-	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", pkgRoot)
-	internalMetricsImp := fmt.Sprintf("%s/internal/v1/metrics", pkgRoot)
-	internalEncodingImp := fmt.Sprintf("%s/internal/v1/encoding", pkgRoot)
-	databaseClientImp := fmt.Sprintf("%s/database/v1", pkgRoot)
-	internalAuthImp := fmt.Sprintf("%s/internal/v1/auth", pkgRoot)
-	authServiceImp := fmt.Sprintf("%s/services/v1/auth", pkgRoot)
-	usersServiceImp := fmt.Sprintf("%s/services/v1/users", pkgRoot)
-	frontendServiceImp := fmt.Sprintf("%s/services/v1/frontend", pkgRoot)
-	webhooksServiceImp := fmt.Sprintf("%s/services/v1/webhooks", pkgRoot)
-	oauth2ClientsServiceImp := fmt.Sprintf("%s/services/v1/oauth2clients", pkgRoot)
-	httpServerImp := fmt.Sprintf("%s/server/v1/http", pkgRoot)
-	serverImp := fmt.Sprintf("%s/server/v1", pkgRoot)
+	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", pkg.OutputPath)
+	internalMetricsImp := fmt.Sprintf("%s/internal/v1/metrics", pkg.OutputPath)
+	internalEncodingImp := fmt.Sprintf("%s/internal/v1/encoding", pkg.OutputPath)
+	databaseClientImp := fmt.Sprintf("%s/database/v1", pkg.OutputPath)
+	internalAuthImp := fmt.Sprintf("%s/internal/v1/auth", pkg.OutputPath)
+	authServiceImp := fmt.Sprintf("%s/services/v1/auth", pkg.OutputPath)
+	usersServiceImp := fmt.Sprintf("%s/services/v1/users", pkg.OutputPath)
+	frontendServiceImp := fmt.Sprintf("%s/services/v1/frontend", pkg.OutputPath)
+	webhooksServiceImp := fmt.Sprintf("%s/services/v1/webhooks", pkg.OutputPath)
+	oauth2ClientsServiceImp := fmt.Sprintf("%s/services/v1/oauth2clients", pkg.OutputPath)
+	httpServerImp := fmt.Sprintf("%s/server/v1/http", pkg.OutputPath)
+	serverImp := fmt.Sprintf("%s/server/v1", pkg.OutputPath)
 
+	// if pkg.EnableNewsman {
 	ret.Add(
 		jen.Comment("ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day"),
 		jen.Line(),
@@ -38,6 +39,7 @@ func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		),
 		jen.Line(),
 	)
+	// }
 
 	buildWireBuildCallArgs := func() []jen.Code {
 		args := []jen.Code{
@@ -50,16 +52,24 @@ func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Comment("metrics"),
 			jen.Qual(internalMetricsImp, "Providers"),
 			jen.Comment("external libs"),
+		}
+
+		// if pkg.EnableNewsman {
+		args = append(args,
 			jen.Qual(newsmanImp, "NewNewsman"),
+		)
+		// }
+
+		args = append(args,
 			jen.ID("ProvideReporter"),
 			jen.Comment("services"),
 			jen.Qual(authServiceImp, "Providers"),
 			jen.Qual(usersServiceImp, "Providers"),
-		}
+		)
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			args = append(args,
-				jen.Qual(fmt.Sprintf("%s/services/v1/%s", pkgRoot, typ.Name.PluralRouteName()), "Providers"),
+				jen.Qual(fmt.Sprintf("%s/services/v1/%s", pkg.OutputPath, typ.Name.PluralRouteName()), "Providers"),
 			)
 		}
 

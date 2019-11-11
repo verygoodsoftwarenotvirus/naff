@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gosuri/uiprogress"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	naffmodels "gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
 	// completed
@@ -50,13 +49,7 @@ import (
 
 type renderHelper struct {
 	name       string
-	renderFunc func(string, []naffmodels.DataType) error
-	activated  bool
-}
-
-type otherRenderHelper struct {
-	name       string
-	renderFunc func(string, wordsmith.SuperPalabra, []naffmodels.DataType) error
+	renderFunc func(*naffmodels.Project) error
 	activated  bool
 }
 
@@ -64,7 +57,6 @@ func RenderProject(in *naffmodels.Project) error {
 	allActive := true
 
 	packageRenderers := []renderHelper{
-		// completed
 		{name: "httpclient", renderFunc: httpclient.RenderPackage, activated: allActive},
 		{name: "configgen", renderFunc: configgen.RenderPackage, activated: allActive},
 		{name: "servercmd", renderFunc: servercmd.RenderPackage, activated: allActive},
@@ -95,9 +87,6 @@ func RenderProject(in *naffmodels.Project) error {
 		{name: "integrationtests", renderFunc: integrationtests.RenderPackage, activated: allActive},
 		{name: "loadtests", renderFunc: loadtests.RenderPackage, activated: allActive},
 		{name: "queriers", renderFunc: queriers.RenderPackage, activated: allActive},
-	}
-
-	specialSnowflakes := []otherRenderHelper{
 		{name: "composefiles", renderFunc: composefiles.RenderPackage, activated: allActive},
 		{name: "deployfiles", renderFunc: deploy.RenderPackage, activated: allActive},
 		{name: "dockerfiles", renderFunc: dockerfiles.RenderPackage, activated: allActive},
@@ -109,7 +98,7 @@ func RenderProject(in *naffmodels.Project) error {
 	var wg sync.WaitGroup
 
 	uiprogress.Start()
-	progressBar := uiprogress.AddBar(len(packageRenderers) + len(specialSnowflakes)).PrependElapsed().AppendCompleted()
+	progressBar := uiprogress.AddBar(len(packageRenderers)).PrependElapsed().AppendCompleted()
 
 	if in != nil {
 		for _, x := range packageRenderers {
@@ -117,27 +106,12 @@ func RenderProject(in *naffmodels.Project) error {
 				wg.Add(1)
 				go func(taskName string, renderer renderHelper) {
 					start := time.Now()
-					if err := renderer.renderFunc(in.OutputPath, in.DataTypes); err != nil {
+					if err := renderer.renderFunc(in); err != nil {
 						log.Printf("error rendering %q after %s: %v\n", taskName, time.Since(start), err)
 					}
-					// fmt.Printf("rendered %s after %s\n", taskName, time.Since(start))
 					progressBar.Incr()
 					wg.Done()
 				}(x.name, x)
-			}
-		}
-		for _, x := range specialSnowflakes {
-			if x.activated {
-				wg.Add(1)
-				go func(taskName string, packageName wordsmith.SuperPalabra, renderer otherRenderHelper) {
-					start := time.Now()
-					if err := renderer.renderFunc(in.OutputPath, packageName, in.DataTypes); err != nil {
-						log.Printf("error rendering %q after %s\n", taskName, time.Since(start))
-					}
-					// fmt.Printf("rendered %s after %s\n", taskName, time.Since(start))
-					progressBar.Incr()
-					wg.Done()
-				}(x.name, in.Name, x)
 			}
 		}
 	}

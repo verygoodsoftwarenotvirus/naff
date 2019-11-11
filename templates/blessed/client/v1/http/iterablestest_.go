@@ -9,7 +9,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
+func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
 	prn := typ.Name.PluralRouteName()
@@ -20,7 +20,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
 	modelListRoute := fmt.Sprintf("/api/v1/%s", prn)
 
-	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
+	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 
 	ret.Add(
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", ts)).Block(
@@ -67,7 +67,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 				),
 				jen.Line(),
@@ -138,8 +138,8 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", ts)).Valuesln(
-					jen.ID(tp).Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", ts)).Valuesln(
+					jen.ID(tp).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").Op(":").Lit(1),
 						),
@@ -209,7 +209,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
 					cfs[1:]...,
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
@@ -256,10 +256,10 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
 					cfs...,
 				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
 					createCreationInputLines()...,
 				),
 				jen.Line(),
@@ -268,7 +268,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					utils.AssertEqual(jen.ID("req").Dot("URL").Dot("Path"), jen.Lit(modelListRoute), jen.Lit("expected and actual path don't match")),
 					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", ts)),
+					jen.Var().ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)),
 					utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.Op("&").ID("x")), nil),
 					utils.AssertEqual(jen.ID("exampleInput"), jen.ID("x"), nil),
 					jen.Line(),
@@ -291,7 +291,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", utils.ExpectMethod("expectedMethod", "MethodPut"),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 				),
 				jen.Line(),
@@ -317,7 +317,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 				),
 				jen.Line(),
@@ -330,7 +330,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					),
 					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
 					utils.AssertNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), ts).Values()),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Values()),
 						nil,
 					),
 				),

@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func serviceDataEventsDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func serviceDataEventsDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Comment("ServiceDataEvent is a simple string alias"),

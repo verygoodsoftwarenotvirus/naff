@@ -7,16 +7,16 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, types []models.DataType) error {
+func RenderPackage(pkg *models.Project) error {
 	files := map[string]*jen.File{
-		"cmd/server/v1/coverage_test.go": coverageTestDotGo(pkgRoot, types),
+		"cmd/server/v1/coverage_test.go": coverageTestDotGo(pkg),
 		"cmd/server/v1/doc.go":           docDotGo(),
-		"cmd/server/v1/main.go":          mainDotGo(pkgRoot, types),
-		"cmd/server/v1/wire.go":          wireDotGo(pkgRoot, types),
+		"cmd/server/v1/main.go":          mainDotGo(pkg),
+		"cmd/server/v1/wire.go":          wireDotGo(pkg),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkgRoot, path, file); err != nil {
+		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
 			return err
 		}
 	}

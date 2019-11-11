@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func helpersDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func helpersDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(jen.Line())
 
@@ -109,7 +109,7 @@ func helpersDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			),
 			jen.Line(),
 			jen.If(jen.ID("res").Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(
-				jen.ID("apiErr").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "ErrorResponse").Values(),
+				jen.ID("apiErr").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(),
 				jen.If(jen.ID("err").Op("=").Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),
 					jen.Op("&").ID("apiErr"),

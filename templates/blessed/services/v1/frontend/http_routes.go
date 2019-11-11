@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func httpRoutesDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("frontend")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Comment("Routes returns a map of route to HandlerFunc for the parent router to set"),
@@ -76,7 +76,7 @@ func httpRoutesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Line(),
 		}
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			tuvn := typ.Name.PluralUnexportedVarName()
 			pairs = append(pairs,
 				jen.Commentf("%sFrontendPathRegex matches URLs against our frontend router's specification for specific %s routes", tuvn, typ.Name.SingularCommonName()),
@@ -100,7 +100,7 @@ func httpRoutesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Lit("/login"),
 		}
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			prn := typ.Name.PluralRouteName()
 			lines = append(lines, jen.Litf("/%s", prn), jen.Litf("/%s/new", prn))
 		}
@@ -124,7 +124,7 @@ func httpRoutesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			),
 		}
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			tpuvn := typ.Name.PluralUnexportedVarName()
 			lines = append(lines,
 				jen.If(jen.IDf("%sFrontendPathRegex", tpuvn).Dot("MatchString").Call(jen.ID("req").Dot("URL").Dot("Path"))).Block(

@@ -16,9 +16,9 @@ const (
 )
 
 // DatabasePackage renders the package
-func RenderPackage(pkgRoot string, types []models.DataType) error {
+func RenderPackage(pkg *models.Project) error {
 	for _, vendor := range []string{postgres, sqlite, mariadb} {
-		if err := renderDatabasePackage(pkgRoot, vendor, types); err != nil {
+		if err := renderDatabasePackage(pkg, vendor); err != nil {
 			return err
 		}
 	}
@@ -54,7 +54,7 @@ func GetDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 }
 
 // renderDatabasePackage renders the package
-func renderDatabasePackage(pkgRoot, vendor string, types []models.DataType) error {
+func renderDatabasePackage(pkg *models.Project, vendor string) error {
 	var (
 		dbDesc     string
 		vendorWord wordsmith.SuperPalabra
@@ -73,26 +73,26 @@ func renderDatabasePackage(pkgRoot, vendor string, types []models.DataType) erro
 	pn := vendorWord.SingularPackageName()
 
 	files := map[string]*jen.File{
-		fmt.Sprintf("database/v1/queriers/%s/oauth2_clients.go", vendor):      oauth2ClientsDotGo(pkgRoot, types, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/%s.go", pn, pn):                  databaseDotGo(pkgRoot, types, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/webhooks.go", vendor):            webhooksDotGo(pkgRoot, types, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/wire.go", vendor):                wireDotGo(pkgRoot, types, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/oauth2_clients.go", vendor):      oauth2ClientsDotGo(pkg, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/%s.go", pn, pn):                  databaseDotGo(pkg, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/webhooks.go", vendor):            webhooksDotGo(pkg, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/wire.go", vendor):                wireDotGo(pkg, vendorWord),
 		fmt.Sprintf("database/v1/queriers/%s/doc.go", vendor):                 docDotGo(pn, dbDesc),
-		fmt.Sprintf("database/v1/queriers/%s/%s_test.go", pn, pn):             databaseTestDotGo(pkgRoot, types, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/users.go", vendor):               usersDotGo(pkgRoot, types, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/users_test.go", vendor):          usersTestDotGo(pkgRoot, types, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/webhooks_test.go", vendor):       webhooksTestDotGo(pkgRoot, types, vendorWord),
-		fmt.Sprintf("database/v1/queriers/%s/migrations.go", vendor):          migrationsDotGo(pkgRoot, vendorWord, types),
-		fmt.Sprintf("database/v1/queriers/%s/oauth2_clients_test.go", vendor): oauth2ClientsTestDotGo(pkgRoot, types, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/%s_test.go", pn, pn):             databaseTestDotGo(pkg, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/users.go", vendor):               usersDotGo(pkg, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/users_test.go", vendor):          usersTestDotGo(pkg, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/webhooks_test.go", vendor):       webhooksTestDotGo(pkg, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/migrations.go", vendor):          migrationsDotGo(pkg, vendorWord),
+		fmt.Sprintf("database/v1/queriers/%s/oauth2_clients_test.go", vendor): oauth2ClientsTestDotGo(pkg, vendorWord),
 	}
 
-	for _, typ := range types {
-		files[fmt.Sprintf("database/v1/queriers/%s/%s.go", vendor, typ.Name.PluralRouteName())] = iterablesDotGo(pkgRoot, vendorWord, typ)
-		files[fmt.Sprintf("database/v1/queriers/%s/%s_test.go", vendor, typ.Name.PluralRouteName())] = iterablesTestDotGo(pkgRoot, vendorWord, typ)
+	for _, typ := range pkg.DataTypes {
+		files[fmt.Sprintf("database/v1/queriers/%s/%s.go", vendor, typ.Name.PluralRouteName())] = iterablesDotGo(pkg, vendorWord, typ)
+		files[fmt.Sprintf("database/v1/queriers/%s/%s_test.go", vendor, typ.Name.PluralRouteName())] = iterablesTestDotGo(pkg, vendorWord, typ)
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkgRoot, path, file); err != nil {
+		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
 			return err
 		}
 	}

@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Func().ID("TestProvideUserIDFetcher").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -24,7 +24,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 		jen.Line(),
 	)
 
-	for _, typ := range types {
+	for _, typ := range pkg.DataTypes {
 		n := typ.Name
 		ret.Add(
 			jen.Func().IDf("TestProvide%sIDFetcher", n.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -104,7 +104,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(),
-						jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserIDKey"),
+						jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
 						jen.ID("expected"),
 					),
 				),
@@ -131,7 +131,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/users"), "URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
@@ -154,7 +154,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/users"), "URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
 							),
 						),
@@ -168,7 +168,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 		jen.Line(),
 	)
 
-	for _, typ := range types {
+	for _, typ := range pkg.DataTypes {
 		n := typ.Name
 		ret.Add(
 			jen.Func().IDf("Test_buildChi%sIDFetcher", n.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -185,7 +185,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 							jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 							jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 								jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-									jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1", n.PackageName()), "URIParamKey")),
+									jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PackageName()), "URIParamKey")),
 									jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 								),
 							),
@@ -207,7 +207,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 							jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 							jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 								jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-									jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1", n.PackageName()), "URIParamKey")),
+									jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PackageName()), "URIParamKey")),
 									jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
 								),
 							),
@@ -237,7 +237,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/webhooks"), "URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
@@ -260,7 +260,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/webhooks"), "URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
 							),
 						),
@@ -288,7 +288,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/oauth2clients"), "URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
@@ -311,7 +311,7 @@ func wireParamFetchersTestDotGo(pkgRoot string, types []models.DataType) *jen.Fi
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkgRoot, "services/v1/oauth2clients"), "URIParamKey")),
+								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "URIParamKey")),
 								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
 							),
 						),

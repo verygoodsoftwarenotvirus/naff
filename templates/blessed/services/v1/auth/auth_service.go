@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func authServiceDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func authServiceDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -25,7 +25,7 @@ func authServiceDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Comment("OAuth2ClientValidator is a stand-in interface, where we needed to abstract"),
 			jen.Comment("a regular structure with an interface for testing purposes"),
 			jen.ID("OAuth2ClientValidator").Interface(
-				jen.ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client"), jen.ID("error")),
+				jen.ID("ExtractOAuth2ClientFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")),
 			),
 			jen.Line(),
 			jen.Comment("cookieEncoderDecoder is a stand-in interface for gorilla/securecookie"),
@@ -39,13 +39,13 @@ func authServiceDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Line(),
 			jen.Comment("Service handles authentication service-wide"),
 			jen.ID("Service").Struct(
-				jen.ID("config").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "AuthSettings"),
+				jen.ID("config").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings"),
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("authenticator").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "Authenticator"),
+				jen.ID("authenticator").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "Authenticator"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
-				jen.ID("userDB").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataManager"),
+				jen.ID("userDB").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataManager"),
 				jen.ID("oauth2ClientsService").ID("OAuth2ClientValidator"),
-				jen.ID("encoderDecoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
+				jen.ID("encoderDecoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
 				jen.ID("cookieManager").ID("cookieEncoderDecoder"),
 			),
 		),
@@ -57,12 +57,12 @@ func authServiceDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideAuthService").Paramsln(
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("cfg").Op("*").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ServerConfig"),
-			jen.ID("authenticator").Qual(filepath.Join(pkgRoot, "internal/v1/auth"), "Authenticator"),
-			jen.ID("database").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataManager"),
+			jen.ID("cfg").Op("*").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig"),
+			jen.ID("authenticator").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "Authenticator"),
+			jen.ID("database").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataManager"),
 			jen.ID("oauth2ClientsService").ID("OAuth2ClientValidator"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
-			jen.ID("encoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
+			jen.ID("encoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
 		).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(
 				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("serviceName")),

@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func httpRoutesTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("frontend")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Func().ID("buildRequest").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual("net/http", "Request")).Block(
@@ -86,7 +86,7 @@ func httpRoutesTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
-					jen.ID("config").Op(":").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "FrontendSettings").Valuesln(
+					jen.ID("config").Op(":").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "FrontendSettings").Valuesln(
 						jen.ID("CacheStaticFiles").Op(":").ID("true"),
 					),
 				),

@@ -13,20 +13,20 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
+func RenderPackage(project *models.Project) error {
 	files := map[string]func() []byte{
 		"development/badges.json": badgesDotJSON,
 		".dockerignore":           dockerIgnore,
 		".gitignore":              gitIgnore,
 	}
 
-	files["Makefile"] = makefile(pkgRoot, projectName.KebabName())
-	files[".gitlab-ci.yml"] = gitlabCIDotYAML(pkgRoot)
-	files["README.md"] = readmeDotMD(projectName)
-	files[".golangci.yml"] = golancCILintDotYAML(pkgRoot)
+	files["Makefile"] = makefile(project.OutputPath, project.Name.KebabName())
+	files[".gitlab-ci.yml"] = gitlabCIDotYAML(project.OutputPath)
+	files["README.md"] = readmeDotMD(project.Name)
+	files[".golangci.yml"] = golancCILintDotYAML(project.OutputPath)
 
 	for filename, file := range files {
-		fname := utils.BuildTemplatePath(pkgRoot, filename)
+		fname := utils.BuildTemplatePath(project.OutputPath, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)

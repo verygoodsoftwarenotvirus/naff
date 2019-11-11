@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func metricsDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func metricsDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("config")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -56,11 +56,11 @@ func metricsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "InstrumentationHandler"), jen.ID("error")).Block(
-			jen.If(jen.ID("err").Op(":=").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "RegisterDefaultViews").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
+		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "InstrumentationHandler"), jen.ID("error")).Block(
+			jen.If(jen.ID("err").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "RegisterDefaultViews").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("registering default metric views: %w"), jen.ID("err"))),
 			),
-			jen.ID("_").Op("=").Qual(filepath.Join(pkgRoot, "internal/v1/metrics"), "RecordRuntimeStats").Call(jen.Qual("time", "Duration").Callln(
+			jen.ID("_").Op("=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "RecordRuntimeStats").Call(jen.Qual("time", "Duration").Callln(
 				jen.Qual("math", "Max").Callln(
 					jen.ID("float64").Call(jen.ID("MinimumRuntimeCollectionInterval")),
 					jen.ID("float64").Call(jen.ID("cfg").Dot("Metrics").Dot("RuntimeMetricsCollectionInterval")),

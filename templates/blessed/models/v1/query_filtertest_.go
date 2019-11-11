@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func queryFilterTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func queryFilterTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Func().ID("TestFromParams").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(

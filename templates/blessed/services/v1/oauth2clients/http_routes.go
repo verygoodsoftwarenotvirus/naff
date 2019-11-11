@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func httpRoutesDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("oauth2clients")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -19,7 +19,7 @@ func httpRoutesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.ID("URIParamKey").Op("=").Lit("oauth2ClientID"),
 			jen.Line(),
 			jen.ID("oauth2ClientIDURIParamKey").Op("=").Lit("client_id"),
-			jen.ID("clientIDKey").Qual(filepath.Join(pkgRoot, "models/v1"), "ContextKey").Op("=").Lit("client_id"),
+			jen.ID("clientIDKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Op("=").Lit("client_id"),
 		),
 		jen.Line(),
 	)
@@ -78,7 +78,7 @@ func httpRoutesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Comment("fetchUserID grabs a userID out of the request context"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("fetchUserID").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-			jen.If(jen.List(jen.ID("id"), jen.ID("ok")).Op(":=").ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(filepath.Join(pkgRoot, "models/v1"), "UserIDKey")).Assert(jen.ID("uint64")), jen.ID("ok")).Block(
+			jen.If(jen.List(jen.ID("id"), jen.ID("ok")).Op(":=").ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey")).Assert(jen.ID("uint64")), jen.ID("ok")).Block(
 				jen.Return().ID("id"),
 			),
 			jen.Return().Lit(0),
@@ -95,7 +95,7 @@ func httpRoutesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("extract filter"),
-				jen.ID("qf").Op(":=").Qual(filepath.Join(pkgRoot, "models/v1"), "ExtractQueryFilter").Call(jen.ID("req")),
+				jen.ID("qf").Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ExtractQueryFilter").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("determine user"),
 				jen.ID("userID").Op(":=").ID("s").Dot("fetchUserID").Call(jen.ID("req")),
@@ -106,8 +106,8 @@ func httpRoutesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.List(jen.ID("oauth2Clients"), jen.ID("err")).Op(":=").ID("s").Dot("database").Dot("GetOAuth2Clients").Call(jen.ID("ctx"), jen.ID("qf"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.Comment("just return an empty list if there are no results"),
-					jen.ID("oauth2Clients").Op("=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientList").Valuesln(
-						jen.ID("Clients").Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2Client").Values(),
+					jen.ID("oauth2Clients").Op("=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList").Valuesln(
+						jen.ID("Clients").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(),
 					),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encountered error getting list of oauth2 clients from database")),
@@ -133,7 +133,7 @@ func httpRoutesDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("fetch creation input from request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreationMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientCreationInput")),
+				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreationMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),

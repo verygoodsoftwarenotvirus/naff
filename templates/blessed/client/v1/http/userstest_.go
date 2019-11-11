@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func usersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func usersTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		utils.OuterTestFunc("V1Client_BuildGetUserRequest").Block(
@@ -70,7 +70,7 @@ func usersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Valuesln(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 				),
 				jen.Line(),
@@ -180,8 +180,8 @@ func usersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserList").Values(
-					jen.ID("Users").Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(
+					jen.ID("Users").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(
 						jen.Values(jen.ID("ID").Op(":").Lit(1)),
 					),
 				),
@@ -237,7 +237,7 @@ func usersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Values(),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Values(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -272,8 +272,8 @@ func usersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserCreationResponse").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput").Values(),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Values(),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -288,7 +288,7 @@ func usersTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 						nil,
 					),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput"),
+					jen.Var().ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput"),
 					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(
 							jen.ID("req").Dot("Body"),

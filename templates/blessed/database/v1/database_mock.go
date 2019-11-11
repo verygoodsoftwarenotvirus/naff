@@ -13,11 +13,11 @@ const (
 	mockImp = "github.com/stretchr/testify/mock"
 )
 
-func databaseMockDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func databaseMockDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("database")
 
-	mockModelsImp := filepath.Join(pkgRoot, "models/v1/mock")
-	utils.AddImports(pkgRoot, types, ret)
+	mockModelsImp := filepath.Join(pkg.OutputPath, "models/v1/mock")
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Var().ID("_").ID("Database").Op("=").Parens(jen.Op("*").ID("MockDatabase")).Call(jen.ID("nil")),
@@ -27,7 +27,7 @@ func databaseMockDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	buildMockDatabaseLines := func() []jen.Code {
 		var lines []jen.Code
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			lines = append(lines, jen.IDf("%sDataManager", typ.Name.Singular()).Op(":").Op("&").Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())).Values())
 		}
 
@@ -57,7 +57,7 @@ func databaseMockDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Line(),
 		}
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			lines = append(lines, jen.Op("*").Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())))
 		}
 

@@ -9,10 +9,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func serverDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func serverDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -27,32 +27,36 @@ func serverDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.ID("DebugMode").ID("bool"),
 			jen.Line(),
 			jen.Comment("Services"),
-			jen.ID("authService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/auth"), "Service"),
-			jen.ID("frontendService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/frontend"), "Service"),
-			jen.ID("usersService").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataServer"),
-			jen.ID("oauth2ClientsService").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer"),
-			jen.ID("webhooksService").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataServer"),
+			jen.ID("authService").Op("*").Qual(filepath.Join(pkg.OutputPath, "services/v1/auth"), "Service"),
+			jen.ID("frontendService").Op("*").Qual(filepath.Join(pkg.OutputPath, "services/v1/frontend"), "Service"),
+			jen.ID("usersService").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataServer"),
+			jen.ID("oauth2ClientsService").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer"),
+			jen.ID("webhooksService").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer"),
 		}
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			tsn := typ.Name.Singular()
 			tpuvn := typ.Name.PluralUnexportedVarName()
 			lines = append(lines,
-				jen.IDf("%sService", tpuvn).Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sDataServer", tsn)))
+				jen.IDf("%sService", tpuvn).Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", tsn)))
 		}
 
 		lines = append(lines,
-
 			jen.Line(),
 			jen.Comment("infra things"),
-			jen.ID("db").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
-			jen.ID("config").Op("*").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ServerConfig"),
+			jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
+			jen.ID("config").Op("*").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig"),
 			jen.ID("router").Op("*").Qual("github.com/go-chi/chi", "Mux"),
 			jen.ID("httpServer").Op("*").Qual("net/http", "Server"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("encoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
+			jen.ID("encoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
+		)
+
+		// if pkg.EnableNewsman {
+		lines = append(lines,
 			jen.ID("newsManager").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		)
+		// }
 
 		return lines
 	}
@@ -70,24 +74,29 @@ func serverDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	buildProvideServerParams := func() []jen.Code {
 		lines := []jen.Code{
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("cfg").Op("*").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ServerConfig"),
-			jen.ID("authService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/auth"), "Service"),
-			jen.ID("frontendService").Op("*").Qual(filepath.Join(pkgRoot, "services/v1/frontend"), "Service"),
+			jen.ID("cfg").Op("*").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig"),
+			jen.ID("authService").Op("*").Qual(filepath.Join(pkg.OutputPath, "services/v1/auth"), "Service"),
+			jen.ID("frontendService").Op("*").Qual(filepath.Join(pkg.OutputPath, "services/v1/frontend"), "Service"),
 		}
 
-		for _, typ := range types {
-			lines = append(lines, jen.IDf("%sService", typ.Name.PluralUnexportedVarName()).Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sDataServer", typ.Name.Singular())))
+		for _, typ := range pkg.DataTypes {
+			lines = append(lines, jen.IDf("%sService", typ.Name.PluralUnexportedVarName()).Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", typ.Name.Singular())))
 		}
 
 		lines = append(lines,
-			jen.ID("usersService").Qual(filepath.Join(pkgRoot, "models/v1"), "UserDataServer"),
-			jen.ID("oauth2Service").Qual(filepath.Join(pkgRoot, "models/v1"), "OAuth2ClientDataServer"),
-			jen.ID("webhooksService").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookDataServer"),
-			jen.ID("db").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
+			jen.ID("usersService").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataServer"),
+			jen.ID("oauth2Service").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer"),
+			jen.ID("webhooksService").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer"),
+			jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("encoder").Qual(filepath.Join(pkgRoot, "internal/v1/encoding"), "EncoderDecoder"),
+			jen.ID("encoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
+		)
+
+		// if pkg.EnableNewsman {
+		lines = append(lines,
 			jen.ID("newsManager").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		)
+		// }
 
 		return lines
 	}
@@ -101,15 +110,23 @@ func serverDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.ID("encoder").Op(":").ID("encoder"),
 			jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(),
 			jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.Lit("api_server")),
+		}
+
+		// if pkg.EnableNewsman {
+		lines = append(lines,
 			jen.ID("newsManager").Op(":").ID("newsManager"),
+		)
+		// }
+
+		lines = append(lines,
 			jen.Comment("services"),
 			jen.ID("webhooksService").Op(":").ID("webhooksService"),
 			jen.ID("frontendService").Op(":").ID("frontendService"),
 			jen.ID("usersService").Op(":").ID("usersService"),
 			jen.ID("authService").Op(":").ID("authService"),
-		}
+		)
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			tpuvn := typ.Name.PluralUnexportedVarName()
 			lines = append(lines, jen.IDf("%sService", tpuvn).Op(":").IDf("%sService", tpuvn))
 		}
@@ -119,12 +136,8 @@ func serverDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		return lines
 	}
 
-	ret.Add(
-		jen.Comment("ProvideServer builds a new Server instance"),
-		jen.Line(),
-		jen.Func().ID("ProvideServer").Paramsln(
-			buildProvideServerParams()...,
-		).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
+	buildProvideServerLines := func() []jen.Code {
+		lines := []jen.Code{
 			jen.If(jen.ID("len").Call(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).Op("<").Lit(32)).Block(
 				jen.ID("err").Op(":=").ID("errors").Dot("New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
 				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("cookie secret failure")),
@@ -135,12 +148,12 @@ func serverDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				buildServerDecLines()...,
 			),
 			jen.Line(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ErrInvalidTracingProvider")).Block(
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidTracingProvider")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
 			jen.Line(),
 			jen.List(jen.ID("ih"), jen.ID("err")).Op(":=").ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID("logger")),
-			jen.If(jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkgRoot, "internal/v1/config"), "ErrInvalidMetricsProvider")).Block(
+			jen.If(jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidMetricsProvider")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
 			jen.If(jen.ID("ih").Op("!=").ID("nil")).Block(
@@ -152,6 +165,10 @@ func serverDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.ID("FormatSpanName").Op(":").ID("formatSpanNameForRequest"),
 			),
 			jen.Line(),
+		}
+
+		// if pkg.EnableNewsman {
+		lines = append(lines,
 			jen.List(jen.ID("allWebhooks"), jen.ID("err")).Op(":=").ID("db").Dot("GetAllWebhooks").Call(jen.ID("ctx")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.ID("err"))),
@@ -165,7 +182,23 @@ func serverDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.ID("srv").Dot("newsManager").Dot("TuneIn").Call(jen.ID("l")),
 			),
 			jen.Line(),
+		)
+		// }
+
+		lines = append(lines,
 			jen.Return().List(jen.ID("srv"), jen.ID("nil")),
+		)
+
+		return lines
+	}
+
+	ret.Add(
+		jen.Comment("ProvideServer builds a new Server instance"),
+		jen.Line(),
+		jen.Func().ID("ProvideServer").Paramsln(
+			buildProvideServerParams()...,
+		).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
+			buildProvideServerLines()...,
 		),
 		jen.Line(),
 	)

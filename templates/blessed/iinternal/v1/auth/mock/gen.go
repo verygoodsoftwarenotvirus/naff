@@ -7,14 +7,14 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, types []models.DataType) error {
+func RenderPackage(pkg *models.Project) error {
 	files := map[string]*jen.File{
-		"internal/v1/auth/mock/mock.go": mockDotGo(pkgRoot, types),
+		"internal/v1/auth/mock/mock.go": mockDotGo(pkg),
 		"internal/v1/auth/mock/doc.go":  docDotGo(),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkgRoot, path, file); err != nil {
+		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
 			return err
 		}
 	}

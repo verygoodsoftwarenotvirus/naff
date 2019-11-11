@@ -8,13 +8,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func clientDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func clientDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkgRoot, "database/v1"), "Database").Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database").Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 
@@ -31,7 +31,7 @@ func clientDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Line(),
 		jen.Comment("the actual database querying is performed."),
 		jen.Line(),
-		jen.Type().ID("Client").Struct(jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("querier").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
+		jen.Type().ID("Client").Struct(jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("querier").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
 			jen.ID("debug").ID("bool"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")),
 		jen.Line(),
 	)
@@ -60,10 +60,10 @@ func clientDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Func().ID("ProvideDatabaseClient").Paramsln(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("db").Op("*").Qual("database/sql", "DB"),
-			jen.ID("querier").Qual(filepath.Join(pkgRoot, "database/v1"), "Database"),
+			jen.ID("querier").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
 			jen.ID("debug").ID("bool"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-		).Params(jen.Qual(filepath.Join(pkgRoot, "database/v1"), "Database"), jen.ID("error")).Block(
+		).Params(jen.Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"), jen.ID("error")).Block(
 			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(
 				jen.ID("db").Op(":").ID("db"),
 				jen.ID("querier").Op(":").ID("querier"),
@@ -102,7 +102,7 @@ func clientDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("attachFilterToSpan provides a consistent way to attach a filter's info to a span"),
 		jen.Line(),
-		jen.Func().ID("attachFilterToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter")).Block(
+		jen.Func().ID("attachFilterToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Block(
 			jen.If(jen.ID("filter").Op("!=").ID("nil").Op("&&").ID("span").Op("!=").ID("nil")).Block(
 				jen.ID("span").Dot("AddAttributes").Callln(
 					jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("filter_page"), jen.Qual("strconv", "FormatUint").Call(jen.ID("filter").Dot("QueryPage").Call(), jen.Lit(10))),

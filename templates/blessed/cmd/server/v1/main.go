@@ -8,11 +8,11 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mainDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func mainDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
-	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", pkgRoot)
-	utils.AddImports(pkgRoot, types, ret)
+	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", pkg.OutputPath)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Func().ID("main").Params().Block(

@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func usersDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func usersDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(jen.Const().ID("usersBasePath").Op("=").Lit("users"))
 
@@ -50,7 +50,7 @@ func usersDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			utils.CtxParam(),
 			jen.ID("userID").ID("uint64"),
 		).Params(
-			jen.ID("user").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "User"),
+			jen.ID("user").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User"),
 			jen.ID("err").ID("error"),
 		).Block(
 			jen.List(
@@ -88,7 +88,7 @@ func usersDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Line(),
 		newClientMethod("BuildGetUsersRequest").Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -112,12 +112,12 @@ func usersDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Line(),
 		newClientMethod("GetUsers").Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "QueryFilter"),
+			jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 		).Params(
-			jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserList"),
+			jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList"),
 			jen.ID("error"),
 		).Block(
-			jen.ID("users").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserList").Values(),
+			jen.ID("users").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(),
 			jen.Line(),
 			jen.List(
 				jen.ID("req"),
@@ -152,7 +152,7 @@ func usersDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Line(),
 		newClientMethod("BuildCreateUserRequest").Params(
 			utils.CtxParam(),
-			jen.ID("body").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput"),
+			jen.ID("body").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -176,12 +176,12 @@ func usersDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Line(),
 		newClientMethod("CreateUser").Params(
 			utils.CtxParam(),
-			jen.ID("input").Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserInput"),
+			jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput"),
 		).Params(
-			jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "UserCreationResponse"),
+			jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse"),
 			jen.ID("error"),
 		).Block(
-			jen.ID("user").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserCreationResponse").Values(),
+			jen.ID("user").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse").Values(),
 			jen.Line(),
 			jen.List(
 				jen.ID("req"),
@@ -286,7 +286,7 @@ func usersDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.ID("body"),
 				jen.ID("err"),
 			).Op(":=").ID("createBodyFromStruct").Call(
-				jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "UserLoginInput").Valuesln(
+				jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("username"),
 					jen.ID("Password").Op(":").ID("password"),
 					jen.ID("TOTPToken").Op(":").ID("totpToken"),

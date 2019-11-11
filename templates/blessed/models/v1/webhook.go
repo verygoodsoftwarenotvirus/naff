@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func webhookDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func webhookDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Type().Defs(
@@ -130,6 +130,7 @@ func webhookDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		jen.Line(),
 	)
 
+	// if pkg.EnableNewsman {
 	ret.Add(
 		jen.Comment("ToListener creates a newsman Listener from a Webhook"),
 		jen.Line(),
@@ -150,5 +151,7 @@ func webhookDotGo(pkgRoot string, types []models.DataType) *jen.File {
 		),
 		jen.Line(),
 	)
+	// }
+
 	return ret
 }

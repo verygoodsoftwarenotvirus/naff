@@ -8,13 +8,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func webhooksTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("integration")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
-		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook")).Block(
+		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
@@ -28,8 +28,8 @@ func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
+		jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput")).Block(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
 				jen.ID("Name").Op(":").Qual(utils.FakeLibrary, "Word").Call(),
 				jen.ID("URL").Op(":").Qual(utils.FakeLibrary, "DomainName").Call(),
 				jen.ID("ContentType").Op(":").Lit("application/json"),
@@ -41,7 +41,7 @@ func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook")).Block(
+		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.List(jen.ID("y"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("buildDummyWebhookInput").Call()),
@@ -72,12 +72,12 @@ func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Op(":=").ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
+					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
 						jen.ID("Name").Op(":").ID("input").Dot("Name"),
 						jen.ID("URL").Op(":").ID("input").Dot("URL"),
 						jen.ID("ContentType").Op(":").ID("input").Dot("ContentType"),
 						jen.ID("Method").Op(":").ID("input").Dot("Method")),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
+					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
 						jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 						jen.ID("ContentType").Op(":").ID("expected").Dot("ContentType"),
 						jen.ID("URL").Op(":").ID("expected").Dot("URL"),
@@ -103,7 +103,7 @@ func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 					jen.Line(),
 					jen.Comment("Create webhooks"),
-					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook"),
+					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
 					jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.ID("expected").Op("=").ID("append").Call(jen.ID("expected"), jen.ID("buildDummyWebhook").Call(jen.ID("t"))),
 					),
@@ -135,14 +135,14 @@ func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Op(":=").ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
+					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
 						jen.ID("Name").Op(":").ID("input").Dot("Name"),
 						jen.ID("URL").Op(":").ID("input").Dot("URL"),
 						jen.ID("ContentType").Op(":").ID("input").Dot("ContentType"),
 						jen.ID("Method").Op(":").ID("input").Dot("Method")),
 					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(
 						jen.ID("tctx"),
-						jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
+						jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
 							jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 							jen.ID("ContentType").Op(":").ID("expected").Dot("ContentType"),
 							jen.ID("URL").Op(":").ID("expected").Dot("URL"),
@@ -168,7 +168,7 @@ func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to update something that doesn't exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 					jen.Line(),
-					jen.ID("err").Op(":=").ID("todoClient").Dot("UpdateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Values(jen.ID("ID").Op(":").ID("nonexistentID"))),
+					jen.ID("err").Op(":=").ID("todoClient").Dot("UpdateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values(jen.ID("ID").Op(":").ID("nonexistentID"))),
 					jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
 				)),
 				jen.Line(),
@@ -177,14 +177,14 @@ func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Op(":=").ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
+					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
 						jen.ID("Name").Op(":").ID("input").Dot("Name"),
 						jen.ID("URL").Op(":").ID("input").Dot("URL"),
 						jen.ID("ContentType").Op(":").ID("input").Dot("ContentType"),
 						jen.ID("Method").Op(":").ID("input").Dot("Method")),
 					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(
 						jen.ID("tctx"),
-						jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
+						jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
 							jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 							jen.ID("ContentType").Op(":").ID("expected").Dot("ContentType"),
 							jen.ID("URL").Op(":").ID("expected").Dot("URL"),
@@ -219,13 +219,13 @@ func webhooksTestDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Op(":=").ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "Webhook").Valuesln(
+					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
 						jen.ID("Name").Op(":").ID("input").Dot("Name"),
 						jen.ID("URL").Op(":").ID("input").Dot("URL"),
 						jen.ID("ContentType").Op(":").ID("input").Dot("ContentType"),
 						jen.ID("Method").Op(":").ID("input").Dot("Method"),
 					),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "WebhookCreationInput").Valuesln(
+					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
 						jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 						jen.ID("ContentType").Op(":").ID("expected").Dot("ContentType"),
 						jen.ID("URL").Op(":").ID("expected").Dot("URL"),

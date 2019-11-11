@@ -7,12 +7,11 @@ import (
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
+func RenderPackage(project *models.Project) error {
 	files := map[string]func(pkgRoot, binaryName string) []byte{
 		"dockerfiles/development.Dockerfile":                 developmentDotDockerfile,
 		"dockerfiles/frontend-tests.Dockerfile":              frontendTestDotDockerfile,
@@ -24,7 +23,7 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 	}
 
 	for filename, file := range files {
-		fname := utils.BuildTemplatePath(pkgRoot, filename)
+		fname := utils.BuildTemplatePath(project.OutputPath, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)
@@ -36,7 +35,7 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 			return err
 		}
 
-		bytes := file(pkgRoot, projectName.SingularPackageName())
+		bytes := file(project.OutputPath, project.Name.SingularPackageName())
 		if _, err := f.Write(bytes); err != nil {
 			log.Printf("error writing to file: %v", err)
 			return err

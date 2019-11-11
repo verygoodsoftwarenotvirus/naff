@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func initDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func initDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("frontend")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Var().ID("urlToUse").ID("string"),
@@ -31,7 +31,7 @@ func initDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Line(),
 			jen.ID("logger").Op(":=").ID("zerolog").Dot("NewZeroLogger").Call(),
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
-			jen.Qual(filepath.Join(pkgRoot, "tests/v1/testutil"), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
 			jen.Line(),
 			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.Line(),

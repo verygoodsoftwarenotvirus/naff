@@ -7,13 +7,12 @@ import (
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
-	files := map[string]func(wordsmith.SuperPalabra, []models.DataType) []byte{
+func RenderPackage(project *models.Project) error {
+	files := map[string]func(project *models.Project) []byte{
 		"deploy/prometheus/local/config.yaml":                    prometheusLocalConfigDotYAML,
 		"deploy/grafana/dashboards/dashboard.json":               dashboardDotJSON,
 		"deploy/grafana/local/provisioning/dashboards/all.yaml":  grafanaLocalProvisioningDashboardsAllDotYAML,
@@ -21,7 +20,7 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 	}
 
 	for filename, file := range files {
-		fname := utils.BuildTemplatePath(pkgRoot, filename)
+		fname := utils.BuildTemplatePath(project.OutputPath, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)
@@ -33,8 +32,7 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 			return err
 		}
 
-		bytes := file(projectName, types)
-		if _, err := f.Write(bytes); err != nil {
+		if _, err := f.Write(file(project)); err != nil {
 			log.Printf("error writing to file: %v", err)
 			return err
 		}
@@ -43,8 +41,8 @@ func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []m
 	return nil
 }
 
-func prometheusLocalConfigDotYAML(service wordsmith.SuperPalabra, _ []models.DataType) []byte {
-	serviceName := service.KebabName()
+func prometheusLocalConfigDotYAML(project *models.Project) []byte {
+	serviceName := project.Name.KebabName()
 
 	return []byte(fmt.Sprintf(`# my global config
 global:
@@ -80,7 +78,7 @@ scrape_configs:
 `, serviceName, serviceName))
 }
 
-func grafanaLocalProvisioningDashboardsAllDotYAML(_ wordsmith.SuperPalabra, _ []models.DataType) []byte {
+func grafanaLocalProvisioningDashboardsAllDotYAML(project *models.Project) []byte {
 	return []byte(`- name: 'default' # name of this dashboard configuration (not dashboard itself)
   org_id: 1 # id of the org to hold the dashboard
   folder: '' # name of the folder to put the dashboard (http://docs.grafana.org/v5.0/reference/dashboard_folders/)
@@ -90,7 +88,7 @@ func grafanaLocalProvisioningDashboardsAllDotYAML(_ wordsmith.SuperPalabra, _ []
 `)
 }
 
-func grafanLocalProvisioningDataSourcesAllDotYAML(_ wordsmith.SuperPalabra, _ []models.DataType) []byte {
+func grafanLocalProvisioningDataSourcesAllDotYAML(project *models.Project) []byte {
 	return []byte(`apiVersion: 1
 
 # Gracias a https://ops.tips/blog/initialize-grafana-with-preconfigured-dashboards/#configuring-grafana

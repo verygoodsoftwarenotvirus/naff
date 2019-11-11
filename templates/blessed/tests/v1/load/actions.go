@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func actionsDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func actionsDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Var().Defs(
@@ -48,7 +48,7 @@ func actionsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 				jen.Lit("CreateUser").Op(":").Valuesln(
 					jen.ID("Name").Op(":").Lit("CreateUser"),
 					jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.ID("ui").Op(":=").Qual(filepath.Join(pkgRoot, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
+						jen.ID("ui").Op(":=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
 						jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(jen.ID("ctx"), jen.ID("ui")),
 					),
 					jen.ID("Weight").Op(":").Lit(100),
@@ -57,7 +57,7 @@ func actionsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 			jen.Line(),
 		}
 
-		for _, typ := range types {
+		for _, typ := range pkg.DataTypes {
 			lines = append(lines,
 				jen.For(jen.List(jen.ID("k"), jen.ID("v")).Op(":=").Range().IDf("build%sActions", typ.Name.Singular()).Call(jen.ID("c"))).Block(
 					jen.ID("allActions").Index(jen.ID("k")).Op("=").ID("v"),
@@ -99,7 +99,7 @@ func actionsDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment("RandomAction takes a client and returns a closure which is an action"),
 		jen.Line(),
-		jen.Func().ID("RandomAction").Params(jen.ID("c").Op("*").Qual(filepath.Join(pkgRoot, "client/v1/http"), "V1Client")).Params(jen.Op("*").ID("Action")).Block(
+		jen.Func().ID("RandomAction").Params(jen.ID("c").Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client")).Params(jen.Op("*").ID("Action")).Block(
 			buildRandomActionLines()...,
 		),
 		jen.Line(),

@@ -3,12 +3,11 @@ package deploy
 import (
 	"fmt"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func dashboardDotJSON(service wordsmith.SuperPalabra, types []models.DataType) []byte {
-	serviceName := service.RouteName()
+func dashboardDotJSON(project *models.Project) []byte {
+	serviceName := project.Name.RouteName()
 
 	dash := fmt.Sprintf(`{
 	"annotations": {
@@ -155,7 +154,7 @@ func dashboardDotJSON(service wordsmith.SuperPalabra, types []models.DataType) [
 			"steppedLine": false,
 			"targets": [`, serviceName)
 
-	for _, typ := range types {
+	for _, typ := range project.DataTypes {
 		dash += fmt.Sprintf(`
 				{
 					"expr": "%s_server_%s_count",
@@ -823,7 +822,7 @@ func dashboardDotJSON(service wordsmith.SuperPalabra, types []models.DataType) [
 	"title": "%s Server Dashboard",
 	"version": 1
 }
-`, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, service.Singular())
+`, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, project.Name.Singular())
 
 	return []byte(dash)
 }

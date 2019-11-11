@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterableTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
+func iterableTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
+	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 	sn := typ.Name.Singular()
 
 	buildUpdateInputColumns := func() (updateCols []jen.Code, assertCalls []jen.Code) {

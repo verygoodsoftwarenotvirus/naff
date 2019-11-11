@@ -51,21 +51,21 @@ func GetDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 }
 
 // RenderPackage renders the package
-func RenderPackage(pkgRoot string, projectName wordsmith.SuperPalabra, types []models.DataType) error {
+func RenderPackage(project *models.Project) error {
 	files := map[string]models.DockerComposeFile{
-		"compose-files/development.json":          developmentDotJSON(projectName),
-		"compose-files/frontend-tests.json":       frontendTestsDotJSON(projectName),
-		"compose-files/integration-coverage.json": integrationCoverageDotJSON(projectName),
-		"compose-files/production.json":           productionDotJSON(projectName),
+		"compose-files/development.json":          developmentDotJSON(project.Name),
+		"compose-files/frontend-tests.json":       frontendTestsDotJSON(project.Name),
+		"compose-files/integration-coverage.json": integrationCoverageDotJSON(project.Name),
+		"compose-files/production.json":           productionDotJSON(project.Name),
 	}
 
 	for _, db := range []string{"postgres", "sqlite", "mariadb"} {
-		files[fmt.Sprintf("compose-files/integration-tests-%s.json", db)] = integrationTestsDotJSON(projectName, GetDatabasePalabra(db))
-		files[fmt.Sprintf("compose-files/load-tests-%s.json", db)] = loadTestsDotJSON(projectName, GetDatabasePalabra(db))
+		files[fmt.Sprintf("compose-files/integration-tests-%s.json", db)] = integrationTestsDotJSON(project.Name, GetDatabasePalabra(db))
+		files[fmt.Sprintf("compose-files/load-tests-%s.json", db)] = loadTestsDotJSON(project.Name, GetDatabasePalabra(db))
 	}
 
 	for filename, file := range files {
-		fname := utils.BuildTemplatePath(pkgRoot, filename)
+		fname := utils.BuildTemplatePath(project.OutputPath, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)

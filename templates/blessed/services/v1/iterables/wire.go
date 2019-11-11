@@ -9,10 +9,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkgRoot string, typ models.DataType) *jen.File {
+func wireDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
+	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 
 	sn := typ.Name.Singular()
 
@@ -31,7 +31,7 @@ func wireDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment(fmt.Sprintf("Provide%sDataManager turns a database into an %sDataManager", sn, sn)),
 		jen.Line(),
-		jen.Func().ID(fmt.Sprintf("Provide%sDataManager", sn)).Params(jen.ID("db").Qual(filepath.Join(pkgRoot, "database/v1"), "Database")).Params(jen.Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sDataManager", sn))).Block(
+		jen.Func().ID(fmt.Sprintf("Provide%sDataManager", sn)).Params(jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataManager", sn))).Block(
 			jen.Return().ID("db"),
 		),
 		jen.Line(),
@@ -40,7 +40,7 @@ func wireDotGo(pkgRoot string, typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Comment(fmt.Sprintf("Provide%sDataServer is an arbitrary function for dependency injection's sake", sn)),
 		jen.Line(),
-		jen.Func().ID(fmt.Sprintf("Provide%sDataServer", sn)).Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sDataServer", sn))).Block(
+		jen.Func().ID(fmt.Sprintf("Provide%sDataServer", sn)).Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", sn))).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

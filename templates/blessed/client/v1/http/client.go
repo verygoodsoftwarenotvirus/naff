@@ -13,10 +13,10 @@ func newClientMethod(name string) *jen.Statement {
 	return jen.Func().Params(jen.ID("c").Op("*").ID(v1)).ID(name)
 }
 
-func mainDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func mainDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 	ret.Add(jen.Line())
 
 	// consts

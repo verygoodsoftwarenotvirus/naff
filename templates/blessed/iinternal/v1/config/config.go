@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func configDotGo(pkgRoot string, types []models.DataType) *jen.File {
+func configDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("config")
 
-	utils.AddImports(pkgRoot, types, ret)
+	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -146,7 +146,7 @@ func configDotGo(pkgRoot string, types []models.DataType) *jen.File {
 					"toml":         "provider,omitempty",
 				}),
 				jen.Comment("ConnectionDetails indicates how our database driver should connect to the instance"),
-				jen.ID("ConnectionDetails").Qual(filepath.Join(pkgRoot, "database/v1"), "ConnectionDetails").Tag(map[string]string{
+				jen.ID("ConnectionDetails").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "ConnectionDetails").Tag(map[string]string{
 					"mapstructure": "connection_details",
 					"json":         "connection_details",
 					"toml":         "connection_details,omitempty",

@@ -10,17 +10,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesDotGo(pkgRoot string, typ models.DataType) *jen.File {
+func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("randmodel")
 
-	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
+	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 	sn := typ.Name.Singular()
 
 	ret.Add(
 		jen.Commentf("Random%sCreationInput creates a random %sInput", sn, sn),
 		jen.Line(),
-		jen.Func().IDf("Random%sCreationInput", sn).Params().Params(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn))).Block(
-			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(buildFakeCalls(typ.Fields)...),
+		jen.Func().IDf("Random%sCreationInput", sn).Params().Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))).Block(
+			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(buildFakeCalls(typ.Fields)...),
 			jen.Line(),
 			jen.Return().ID("x"),
 		),

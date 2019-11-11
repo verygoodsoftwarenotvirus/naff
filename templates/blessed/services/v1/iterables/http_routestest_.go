@@ -9,10 +9,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
+func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkgRoot, []models.DataType{typ}, ret)
+	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
@@ -53,9 +53,9 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
-					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
+					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").Op(":").Lit(123),
 						),
@@ -66,7 +66,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -74,7 +74,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
@@ -95,19 +95,19 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
+					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
@@ -128,20 +128,20 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s from database", pcn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("requestingUser").Dot("ID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
@@ -163,16 +163,16 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
-					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkgRoot, "models/v1"), sn).Values(),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
+					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
 				),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -180,7 +180,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
@@ -208,12 +208,12 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
+				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				),
@@ -227,12 +227,12 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
@@ -259,12 +259,12 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("without input attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
@@ -286,8 +286,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error creating %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
@@ -295,12 +295,12 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
@@ -327,12 +327,12 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
+				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
@@ -344,12 +344,12 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
@@ -383,8 +383,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
@@ -396,7 +396,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
@@ -404,7 +404,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
@@ -425,8 +425,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with no such %s in database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
@@ -438,11 +438,11 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
@@ -462,8 +462,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s from database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
@@ -475,12 +475,12 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
@@ -500,8 +500,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
@@ -513,13 +513,13 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
@@ -548,12 +548,12 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
+				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				),
@@ -573,7 +573,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
@@ -581,7 +581,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
@@ -624,8 +624,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with no rows fetching %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
@@ -637,11 +637,11 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
@@ -666,8 +666,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
@@ -679,10 +679,10 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkgRoot, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
@@ -707,12 +707,12 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error updating %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
+				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
@@ -728,7 +728,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
@@ -736,7 +736,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
@@ -763,12 +763,12 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
+				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
@@ -784,7 +784,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
@@ -792,7 +792,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
@@ -826,8 +826,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
@@ -835,7 +835,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Op("=").ID("r"),
 				jen.Line(),
-				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "UnitCounter").Values(),
+				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement")).Dot("Return").Call(),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
@@ -847,14 +847,14 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
 				).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -879,8 +879,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with no %s in database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
@@ -892,7 +892,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
@@ -916,8 +916,8 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
@@ -929,7 +929,7 @@ func httpRoutesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
