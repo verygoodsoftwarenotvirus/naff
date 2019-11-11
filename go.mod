@@ -16,6 +16,7 @@ require (
 	github.com/aloder/tojen v0.0.0-20190316230437-fb189648ba82 // indirect
 	github.com/blang/vfs v1.0.0 // indirect
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc
+	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/chromedp/cdproto v0.0.0-20190926234355-1b4886c6fad6 // indirect
 	github.com/codemodus/kace v0.5.1
 	github.com/corpix/uarand v0.1.1 // indirect
@@ -30,9 +31,10 @@ require (
 	github.com/google/wire v0.2.2
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/gorilla/securecookie v1.1.1
+	github.com/gosuri/uilive v0.0.3 // indirect
+	github.com/gosuri/uiprogress v0.0.1
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/huandu/xstrings v1.2.0 // indirect
-	github.com/icrowley/fake v0.0.0-20180203215853-4178557ae428
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/lib/pq v1.2.0
@@ -51,10 +53,9 @@ require (
 	github.com/tebeka/selenium v0.9.9
 	gitlab.com/verygoodsoftwarenotvirus/logging v1.0.2
 	gitlab.com/verygoodsoftwarenotvirus/newsman v0.0.0-20190528023929-c49dc073f989
-	gitlab.com/verygoodsoftwarenotvirus/todo v0.0.0-20191014052256-b072a0a5a6f1
+	gitlab.com/verygoodsoftwarenotvirus/todo v0.0.0-20191014052256-b072a0a5a6f1 // indirect
 	go.opencensus.io v0.22.0
 	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
-	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	gopkg.in/AlecAivazis/survey.v1 v1.8.5
 	gopkg.in/oauth2.v3 v3.11.0

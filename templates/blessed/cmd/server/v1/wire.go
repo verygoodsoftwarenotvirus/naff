@@ -8,8 +8,6 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-const ()
-
 func wireDotGo(pkgRoot string, types []models.DataType) *jen.File {
 	ret := jen.NewFile("main")
 	ret.HeaderComment("+build wireinject")

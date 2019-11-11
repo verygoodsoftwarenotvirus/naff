@@ -4,7 +4,6 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,67 +49,76 @@ func (p *Project) ParseModels(outputPath string) error {
 	}
 
 	for _, pkg := range packages {
-		for _, file := range pkg.Files {
-			ast.Inspect(file, func(n ast.Node) bool {
-				if dec, ok := n.(*ast.TypeSpec); ok {
-					dt := DataType{
-						Name:   wordsmith.FromSingularPascalCase(dec.Name.Name),
-						Fields: []DataField{},
-					}
-
-					if _, ok := dec.Type.(*ast.StructType); !ok {
-						log.Println("ERROR: only structs allowed in model declarations")
-						return false
-					}
-
-					for _, field := range dec.Type.(*ast.StructType).Fields.List {
-						df := DataField{
-							Name:                  wordsmith.FromSingularPascalCase(field.Names[0].Name),
-							ValidForCreationInput: true,
-							ValidForUpdateInput:   true,
-						}
-
-						if x, identOK := field.Type.(*ast.Ident); identOK {
-							df.Type = x.Name
-						} else if y, starOK := field.Type.(*ast.StarExpr); starOK {
-							df.Pointer = true
-							df.Type = y.X.(*ast.Ident).Name
-						}
-
-						var tag string
-						if field != nil && field.Tag != nil {
-							tag = strings.Replace(strings.Replace(
-								strings.Replace(field.Tag.Value, `naff:`, "", 1),
-								"`", "", -1), `"`, "", -1)
-						}
-
-						for _, t := range strings.Split(tag, ",") {
-							switch strings.ToLower(strings.TrimSpace(t)) {
-							case "!creatable":
-								df.ValidForCreationInput = false
-							case "!editable":
-								df.ValidForUpdateInput = false
-							}
-						}
-						dt.Fields = append(dt.Fields, df)
-					}
-
-					p.DataTypes = append(p.DataTypes, dt)
-					p.iterableServicesImports = append(
-						p.iterableServicesImports,
-						filepath.Join(
-							p.OutputPath,
-							"services",
-							"v1",
-							strings.ToLower(dt.Name.Plural()),
-						),
-					)
-				}
-				return true
-			})
-		}
+		dts, imps := parseModels(p.OutputPath, pkg.Files)
+		p.DataTypes = append(p.DataTypes, dts...)
+		p.iterableServicesImports = append(p.iterableServicesImports, imps...)
 	}
+
 	return nil
+}
+
+func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []DataType, imports []string) {
+	for _, file := range pkgFiles {
+		ast.Inspect(file, func(n ast.Node) bool {
+			if dec, ok := n.(*ast.TypeSpec); ok {
+				dt := DataType{
+					Name:   wordsmith.FromSingularPascalCase(dec.Name.Name),
+					Fields: []DataField{},
+				}
+
+				if _, ok := dec.Type.(*ast.StructType); !ok {
+					// log.Println("ERROR: only structs allowed in model declarations")
+					return true
+				}
+
+				for _, field := range dec.Type.(*ast.StructType).Fields.List {
+					df := DataField{
+						Name:                  wordsmith.FromSingularPascalCase(field.Names[0].Name),
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					}
+
+					if x, identOK := field.Type.(*ast.Ident); identOK {
+						df.Type = x.Name
+					} else if y, starOK := field.Type.(*ast.StarExpr); starOK {
+						df.Pointer = true
+						df.Type = y.X.(*ast.Ident).Name
+					}
+
+					var tag string
+					if field != nil && field.Tag != nil {
+						tag = strings.Replace(strings.Replace(
+							strings.Replace(field.Tag.Value, `naff:`, "", 1),
+							"`", "", -1), `"`, "", -1)
+					}
+
+					for _, t := range strings.Split(tag, ",") {
+						switch strings.ToLower(strings.TrimSpace(t)) {
+						case "!creatable":
+							df.ValidForCreationInput = false
+						case "!editable":
+							df.ValidForUpdateInput = false
+						}
+					}
+					dt.Fields = append(dt.Fields, df)
+				}
+
+				dataTypes = append(dataTypes, dt)
+				imports = append(
+					imports,
+					filepath.Join(
+						outputPath,
+						"services",
+						"v1",
+						strings.ToLower(dt.Name.Plural()),
+					),
+				)
+			}
+			return true
+		})
+	}
+
+	return
 }
 
 type projectSurvey struct {

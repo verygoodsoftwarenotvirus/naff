@@ -240,6 +240,16 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
+	createCreationInputLines := func() []jen.Code {
+		var lines []jen.Code
+		for _, field := range typ.Fields {
+			if field.ValidForCreationInput {
+				lines = append(lines, jen.ID(field.Name.Singular()).Op(":").ID("expected").Dot(field.Name.Singular()))
+			}
+		}
+		return lines
+	}
+
 	ret.Add(
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Create%s", ts)).Block(
 			utils.ParallelTest(nil),
@@ -250,7 +260,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					cfs...,
 				),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
-					cfs[1:]...,
+					createCreationInputLines()...,
 				),
 				jen.Line(),
 				utils.BuildTestServer(

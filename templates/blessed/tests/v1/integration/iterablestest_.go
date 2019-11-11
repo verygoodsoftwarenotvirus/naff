@@ -250,7 +250,7 @@ func iterablesTestDotGo(pkgRoot string, typ models.DataType) *jen.File {
 					jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
-					jen.Commentf("Create  %s", scn),
+					jen.Commentf("Create %s", scn),
 					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkgRoot, "models/v1"), sn).Valuesln(
 						buildFakeCallForCreationInput()...,
 					),

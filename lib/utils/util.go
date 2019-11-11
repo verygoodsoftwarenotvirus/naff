@@ -189,31 +189,32 @@ func RunGoFormatForFile(filename string) error {
 func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 	fp := BuildTemplatePath(pkgRoot, path)
 
-	_ = os.Remove(fp)
-	if mkdirErr := os.MkdirAll(filepath.Dir(fp), os.ModePerm); mkdirErr != nil {
-		log.Printf("error making directory: %v\n", mkdirErr)
-	}
+	if _, err := os.Stat(fp); os.IsNotExist(err) {
+		if mkdirErr := os.MkdirAll(filepath.Dir(fp), os.ModePerm); mkdirErr != nil {
+			log.Printf("error making directory: %v\n", mkdirErr)
+		}
 
-	var b bytes.Buffer
-	if err := file.Render(&b); err != nil {
-		return fmt.Errorf("error rendering file %q: %w", path, err)
-	}
+		var b bytes.Buffer
+		if err := file.Render(&b); err != nil {
+			return fmt.Errorf("error rendering file %q: %w", path, err)
+		}
 
-	if err := ioutil.WriteFile(fp, b.Bytes(), 0644); err != nil {
-		return fmt.Errorf("error rendering file %q: %w", path, err)
-	}
+		if err := ioutil.WriteFile(fp, b.Bytes(), 0644); err != nil {
+			return fmt.Errorf("error rendering file %q: %w", path, err)
+		}
 
-	gie := RunGoimportsForFile(fp)
-	if gie != nil {
-		return fmt.Errorf("error rendering file %q: %w", path, gie)
-	}
+		gie := RunGoimportsForFile(fp)
+		if gie != nil {
+			return fmt.Errorf("error rendering file %q: %w", path, gie)
+		}
 
-	if ferr := FindAndFixImportBlock(pkgRoot, fp); ferr != nil {
-		return fmt.Errorf("error sorting imports for file %q: %w", path, ferr)
-	}
+		if ferr := FindAndFixImportBlock(pkgRoot, fp); ferr != nil {
+			return fmt.Errorf("error sorting imports for file %q: %w", path, ferr)
+		}
 
-	if gfe := RunGoFormatForFile(fp); gfe != nil {
-		return fmt.Errorf("error rendering file %q: %w", path, gfe)
+		if gfe := RunGoFormatForFile(fp); gfe != nil {
+			return fmt.Errorf("error rendering file %q: %w", path, gfe)
+		}
 	}
 
 	return nil

@@ -230,8 +230,19 @@ func integrationTestsDotJSON(projectName, dbName wordsmith.SuperPalabra) models.
 			Ports:   []string{"2345:5432"},
 			Logging: nullLogger,
 		}
-		if x, ok := dcf.Services[serviceName]; ok {
-			x.Links = []string{"database"}
+		dcf.Services[serviceName] = models.DockerComposeService{
+			Build: &models.DockerComposeBuild{
+				Context:    "../",
+				Dockerfile: "dockerfiles/integration-server.Dockerfile",
+			},
+			Environment: map[string]string{
+				"DOCKER":                 "true",
+				"CONFIGURATION_FILEPATH": fmt.Sprintf("config_files/integration-tests-%s.toml", dbName.KebabName()),
+			},
+			Links: []string{"database"},
+			Ports: []string{
+				"80:8888",
+			},
 		}
 	case "mariadb", "maria_db":
 		dcf.Services["database"] = models.DockerComposeService{
@@ -246,8 +257,19 @@ func integrationTestsDotJSON(projectName, dbName wordsmith.SuperPalabra) models.
 			Ports:   []string{"3306:3306"},
 			Logging: nullLogger,
 		}
-		if x, ok := dcf.Services[serviceName]; ok {
-			x.Links = []string{"database"}
+		dcf.Services[serviceName] = models.DockerComposeService{
+			Build: &models.DockerComposeBuild{
+				Context:    "../",
+				Dockerfile: "dockerfiles/integration-server.Dockerfile",
+			},
+			Environment: map[string]string{
+				"DOCKER":                 "true",
+				"CONFIGURATION_FILEPATH": fmt.Sprintf("config_files/integration-tests-%s.toml", dbName.KebabName()),
+			},
+			Links: []string{"database"},
+			Ports: []string{
+				"80:8888",
+			},
 		}
 	}
 

@@ -3,10 +3,9 @@ package client
 import (
 	"fmt"
 
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
-
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 )
 
 const (

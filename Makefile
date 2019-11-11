@@ -45,18 +45,18 @@ fix-template-test-files:
 	find templates/ -name "*_test.go" -exec bash -c 'mv "$1" `echo "$1" | sed -r "s/_test\.go/test_\.go/g"` ' - '{}' \;
 
 .PHONY: test
-test: test-wordsmith
+test: test-models test-wordsmith
 
 .PHONY: test-wordsmith
 test-wordsmith:
 	go test -v ./lib/wordsmith/
 
-.PHONY: $(EMBEDDED_PACKAGE)
-$(EMBEDDED_PACKAGE): templates
-	fileb0x b0x.yaml
+.PHONY: test-models
+test-models:
+	go test -v ./models/
 
 .PHONY: install
-install: $(EMBEDDED_PACKAGE)
+install:
 	go build -o $(INSTALL_PATH)/naff -ldflags "-X main.Version=$(VERSION)" $(THIS_PKG)/cmd/cli
 
 .PHONY: example_output_subdirs
@@ -79,8 +79,5 @@ format:
 compare:
 	meld example_output ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
 
-.PHONY: fuck
-fuck:
-	printf "\033[2J\033[3J\033[1;1H"
-	rm -rf ../todopartdeux;
-	make example_output
+docker-image:
+	docker build --tag naff:latest --file Dockerfile .

@@ -9,14 +9,16 @@ import (
 )
 
 var (
-	cfgFile string
-	verbose bool
-
 	// rootCmd represents the base command when called without any subcommands
 	rootCmd = &cobra.Command{
 		Use:   "naff",
-		Short: "not another fucking framework",
-		Long:  `NAFF is for generating server code in an opinionated way`,
+		Short: "(N)ot (A)nother (F)ucking (F)ramework",
+		Long: `NAFF is for generating server code in an opinionated way.
+
+NAFF's primary intended use is to bootstrap projects. It can be used to add to
+an existing codebase, but doesn't modify existing files, it only ever lays new
+files down.
+`,
 	}
 )
 
@@ -31,29 +33,10 @@ func main() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./.naff.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "print extra information")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Search config in home directory with name ".naff" (without extension).
-		wd, _ := os.Getwd()
-		viper.AddConfigPath(wd)
-		viper.SetConfigName(".naff")
-	}
-
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.

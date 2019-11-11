@@ -1,11 +1,11 @@
 package project
 
 import (
-	"fmt"
 	"log"
 	"sync"
 	"time"
 
+	"github.com/gosuri/uiprogress"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	naffmodels "gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
@@ -49,11 +49,13 @@ import (
 )
 
 type renderHelper struct {
+	name       string
 	renderFunc func(string, []naffmodels.DataType) error
 	activated  bool
 }
 
 type otherRenderHelper struct {
+	name       string
 	renderFunc func(string, wordsmith.SuperPalabra, []naffmodels.DataType) error
 	activated  bool
 }
@@ -61,53 +63,56 @@ type otherRenderHelper struct {
 func RenderProject(in *naffmodels.Project) error {
 	allActive := true
 
-	packageRenderers := map[string]renderHelper{
+	packageRenderers := []renderHelper{
 		// completed
-		"httpclient":       {renderFunc: httpclient.RenderPackage, activated: allActive},
-		"configgen":        {renderFunc: configgen.RenderPackage, activated: allActive},
-		"servercmd":        {renderFunc: servercmd.RenderPackage, activated: allActive},
-		"twofactorcmd":     {renderFunc: twofactorcmd.RenderPackage, activated: allActive},
-		"database":         {renderFunc: database.RenderPackage, activated: allActive},
-		"internalauth":     {renderFunc: internalauth.RenderPackage, activated: allActive},
-		"internalauthmock": {renderFunc: internalauthmock.RenderPackage, activated: allActive},
-		"config":           {renderFunc: config.RenderPackage, activated: allActive},
-		"encoding":         {renderFunc: encoding.RenderPackage, activated: allActive},
-		"encodingmock":     {renderFunc: encodingmock.RenderPackage, activated: allActive},
-		"metrics":          {renderFunc: metrics.RenderPackage, activated: allActive},
-		"metricsmock":      {renderFunc: metricsmock.RenderPackage, activated: allActive},
-		"server":           {renderFunc: server.RenderPackage, activated: allActive},
-		"testutil":         {renderFunc: testutil.RenderPackage, activated: allActive},
-		"testutilmock":     {renderFunc: testutilmock.RenderPackage, activated: allActive},
-		"frontendtests":    {renderFunc: frontendtests.RenderPackage, activated: allActive},
-		"webhooks":         {renderFunc: webhooks.RenderPackage, activated: allActive},
-		"oauth2clients":    {renderFunc: oauth2clients.RenderPackage, activated: allActive},
-		"frontend":         {renderFunc: frontend.RenderPackage, activated: allActive},
-		"auth":             {renderFunc: auth.RenderPackage, activated: allActive},
-		"users":            {renderFunc: users.RenderPackage, activated: allActive},
-		"httpserver":       {renderFunc: httpserver.RenderPackage, activated: allActive},
-		"modelsmock":       {renderFunc: modelsmock.RenderPackage, activated: allActive},
-		"models":           {renderFunc: models.RenderPackage, activated: allActive},
-		"randmodel":        {renderFunc: randmodel.RenderPackage, activated: allActive},
-		"iterables":        {renderFunc: iterables.RenderPackage, activated: allActive},
-		"dbclient":         {renderFunc: dbclient.RenderPackage, activated: allActive},
-		"integrationtests": {renderFunc: integrationtests.RenderPackage, activated: allActive},
-		"loadtests":        {renderFunc: loadtests.RenderPackage, activated: allActive},
-		"queriers":         {renderFunc: queriers.RenderPackage, activated: allActive},
+		{name: "httpclient", renderFunc: httpclient.RenderPackage, activated: allActive},
+		{name: "configgen", renderFunc: configgen.RenderPackage, activated: allActive},
+		{name: "servercmd", renderFunc: servercmd.RenderPackage, activated: allActive},
+		{name: "twofactorcmd", renderFunc: twofactorcmd.RenderPackage, activated: allActive},
+		{name: "database", renderFunc: database.RenderPackage, activated: allActive},
+		{name: "internalauth", renderFunc: internalauth.RenderPackage, activated: allActive},
+		{name: "internalauthmock", renderFunc: internalauthmock.RenderPackage, activated: allActive},
+		{name: "config", renderFunc: config.RenderPackage, activated: allActive},
+		{name: "encoding", renderFunc: encoding.RenderPackage, activated: allActive},
+		{name: "encodingmock", renderFunc: encodingmock.RenderPackage, activated: allActive},
+		{name: "metrics", renderFunc: metrics.RenderPackage, activated: allActive},
+		{name: "metricsmock", renderFunc: metricsmock.RenderPackage, activated: allActive},
+		{name: "server", renderFunc: server.RenderPackage, activated: allActive},
+		{name: "testutil", renderFunc: testutil.RenderPackage, activated: allActive},
+		{name: "testutilmock", renderFunc: testutilmock.RenderPackage, activated: allActive},
+		{name: "frontendtests", renderFunc: frontendtests.RenderPackage, activated: allActive},
+		{name: "webhooks", renderFunc: webhooks.RenderPackage, activated: allActive},
+		{name: "oauth2clients", renderFunc: oauth2clients.RenderPackage, activated: allActive},
+		{name: "frontend", renderFunc: frontend.RenderPackage, activated: allActive},
+		{name: "auth", renderFunc: auth.RenderPackage, activated: allActive},
+		{name: "users", renderFunc: users.RenderPackage, activated: allActive},
+		{name: "httpserver", renderFunc: httpserver.RenderPackage, activated: allActive},
+		{name: "modelsmock", renderFunc: modelsmock.RenderPackage, activated: allActive},
+		{name: "models", renderFunc: models.RenderPackage, activated: allActive},
+		{name: "randmodel", renderFunc: randmodel.RenderPackage, activated: allActive},
+		{name: "iterables", renderFunc: iterables.RenderPackage, activated: allActive},
+		{name: "dbclient", renderFunc: dbclient.RenderPackage, activated: allActive},
+		{name: "integrationtests", renderFunc: integrationtests.RenderPackage, activated: allActive},
+		{name: "loadtests", renderFunc: loadtests.RenderPackage, activated: allActive},
+		{name: "queriers", renderFunc: queriers.RenderPackage, activated: allActive},
 	}
 
-	specialSnowflakes := map[string]otherRenderHelper{
-		"composefiles":  {renderFunc: composefiles.RenderPackage, activated: allActive},
-		"deployfiles":   {renderFunc: deploy.RenderPackage, activated: allActive},
-		"dockerfiles":   {renderFunc: dockerfiles.RenderPackage, activated: allActive},
-		"miscellaneous": {renderFunc: misc.RenderPackage, activated: allActive},
-		"frontendmisc":  {renderFunc: frontendmisc.RenderPackage, activated: allActive},
-		"frontendsrc":   {renderFunc: frontendsrc.RenderPackage, activated: allActive},
+	specialSnowflakes := []otherRenderHelper{
+		{name: "composefiles", renderFunc: composefiles.RenderPackage, activated: allActive},
+		{name: "deployfiles", renderFunc: deploy.RenderPackage, activated: allActive},
+		{name: "dockerfiles", renderFunc: dockerfiles.RenderPackage, activated: allActive},
+		{name: "miscellaneous", renderFunc: misc.RenderPackage, activated: allActive},
+		{name: "frontendmisc", renderFunc: frontendmisc.RenderPackage, activated: allActive},
+		{name: "frontendsrc", renderFunc: frontendsrc.RenderPackage, activated: allActive},
 	}
 
 	var wg sync.WaitGroup
 
+	uiprogress.Start()
+	progressBar := uiprogress.AddBar(len(packageRenderers) + len(specialSnowflakes)).PrependElapsed().AppendCompleted()
+
 	if in != nil {
-		for name, x := range packageRenderers {
+		for _, x := range packageRenderers {
 			if x.activated {
 				wg.Add(1)
 				go func(taskName string, renderer renderHelper) {
@@ -115,12 +120,13 @@ func RenderProject(in *naffmodels.Project) error {
 					if err := renderer.renderFunc(in.OutputPath, in.DataTypes); err != nil {
 						log.Printf("error rendering %q after %s: %v\n", taskName, time.Since(start), err)
 					}
-					fmt.Printf("rendered %s after %s\n", taskName, time.Since(start))
+					// fmt.Printf("rendered %s after %s\n", taskName, time.Since(start))
+					progressBar.Incr()
 					wg.Done()
-				}(name, x)
+				}(x.name, x)
 			}
 		}
-		for name, x := range specialSnowflakes {
+		for _, x := range specialSnowflakes {
 			if x.activated {
 				wg.Add(1)
 				go func(taskName string, packageName wordsmith.SuperPalabra, renderer otherRenderHelper) {
@@ -128,9 +134,10 @@ func RenderProject(in *naffmodels.Project) error {
 					if err := renderer.renderFunc(in.OutputPath, packageName, in.DataTypes); err != nil {
 						log.Printf("error rendering %q after %s\n", taskName, time.Since(start))
 					}
-					fmt.Printf("rendered %s after %s\n", taskName, time.Since(start))
+					// fmt.Printf("rendered %s after %s\n", taskName, time.Since(start))
+					progressBar.Incr()
 					wg.Done()
-				}(name, in.Name, x)
+				}(x.name, in.Name, x)
 			}
 		}
 	}
