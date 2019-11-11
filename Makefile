@@ -4,7 +4,7 @@ INSTALL_PATH      := ~/.bin
 EMBEDDED_PACKAGE  := embedded
 GO_FORMAT         := gofmt -s -w
 THIS_PKG          := gitlab.com/verygoodsoftwarenotvirus/naff
-VERSION := $(shell git rev-parse --short HEAD)
+VERSION := $(shell git rev-parse HEAD)
 
 ## Project prerequisites
 .PHONY: deps
