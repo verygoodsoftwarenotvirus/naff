@@ -78,7 +78,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers represents this package's offering to the dependency manager"),
-			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet".Callln(
+			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Callln(
 				jen.ID("ProvideConfigServerSettings"),
 				jen.ID("ProvideConfigAuthSettings"),
 				jen.ID("ProvideConfigDatabaseSettings"),

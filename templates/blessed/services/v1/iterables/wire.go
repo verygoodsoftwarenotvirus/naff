@@ -19,7 +19,7 @@ func wireDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is our collection of what we provide to other services"),
-			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet".Callln(
+			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Callln(
 				jen.ID(fmt.Sprintf("Provide%sService", typ.Name.Plural())),
 				jen.ID(fmt.Sprintf("Provide%sDataManager", sn)),
 				jen.ID(fmt.Sprintf("Provide%sDataServer", sn)),
