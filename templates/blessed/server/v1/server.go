@@ -32,7 +32,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is our wire superset of providers this package offers"),
-			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Callln(jen.ID("ProvideServer")),
+			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet".Callln(jen.ID("ProvideServer")),
 		),
 		jen.Line(),
 	)

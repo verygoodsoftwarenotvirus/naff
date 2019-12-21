@@ -30,7 +30,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is our collection of what we provide to other services"),
-			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Callln(
+			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet".Callln(
 				buildProviderSet()...,
 			),
 		),

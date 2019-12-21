@@ -16,7 +16,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is what we provide for dependency injectors"),
-			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Callln(
+			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet".Callln(
 				jen.ID("ProvideUsersService"),
 				jen.ID("ProvideUserDataServer"),
 				jen.ID("ProvideUserDataManager"),
