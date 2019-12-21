@@ -17,7 +17,7 @@ func authServiceTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("logger").Op(":=").ID("noop").Dot("ProvideNoopLogger").Call(),
+			jen.ID("logger").Op(":=").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("cfg").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig").Valuesln(
 				jen.ID("Auth").Op(":").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Valuesln(
 					jen.ID("CookieSecret").Op(":").Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),

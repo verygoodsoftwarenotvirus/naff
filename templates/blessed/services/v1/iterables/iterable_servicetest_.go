@@ -22,7 +22,7 @@ func iterableServiceTestDotGo(pkg *models.Project, typ models.DataType) *jen.Fil
 	ret.Add(
 		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
 			jen.Return().Op("&").ID("Service").Valuesln(
-				jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
+				jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID(fmt.Sprintf("%sCounter", uvn)).Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID(fmt.Sprintf("%sDatabase", uvn)).Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("userIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
@@ -56,7 +56,7 @@ func iterableServiceTestDotGo(pkg *models.Project, typ models.DataType) *jen.Fil
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					jen.Qual("context", "Background").Call(),
-					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
@@ -87,7 +87,7 @@ func iterableServiceTestDotGo(pkg *models.Project, typ models.DataType) *jen.Fil
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					jen.Qual("context", "Background").Call(),
-					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
@@ -118,7 +118,7 @@ func iterableServiceTestDotGo(pkg *models.Project, typ models.DataType) *jen.Fil
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					jen.Qual("context", "Background").Call(),
-					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),

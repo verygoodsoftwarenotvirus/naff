@@ -26,7 +26,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("TestBcrypt_HashPassword").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+			jen.ID("x").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -44,7 +44,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("TestBcrypt_PasswordMatches").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+			jen.ID("x").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("normal usage"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -69,7 +69,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("TestBcrypt_PasswordIsAcceptable").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+			jen.ID("x").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -85,7 +85,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("TestBcrypt_ValidateLogin").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+			jen.ID("x").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -174,7 +174,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptAuthenticator").Call(
 					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "DefaultBcryptHashCost"),
-					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 			)),
 		),

@@ -17,7 +17,7 @@ func clientTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("buildTestClient").Params().Params(jen.Op("*").ID("Client"), jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "MockDatabase")).Block(
 			jen.ID("db").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(
-				jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
+				jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID("querier").Op(":").ID("db"),
 			),
 			jen.Return(jen.List(jen.ID("c"), jen.ID("db"))),
@@ -81,7 +81,7 @@ func clientTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("nil"),
 					jen.ID("mockDB"),
 					jen.ID("false"),
-					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -97,7 +97,7 @@ func clientTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("nil"),
 					jen.ID("mockDB"),
 					jen.ID("false"),
-					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("x")),
 				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("actual")),

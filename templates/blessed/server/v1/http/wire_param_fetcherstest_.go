@@ -31,7 +31,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("_").Op("=").IDf("Provide%sIDFetcher", n.Singular()).Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+					jen.ID("_").Op("=").IDf("Provide%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				)),
 			),
 			jen.Line(),
@@ -43,7 +43,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideUsernameFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("_").Op("=").ID("ProvideUsernameFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			)),
 		),
 		jen.Line(),
@@ -76,7 +76,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideWebhookIDFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("_").Op("=").ID("ProvideWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			)),
 		),
 		jen.Line(),
@@ -87,7 +87,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideOAuth2ServiceClientIDFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("_").Op("=").ID("ProvideOAuth2ServiceClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			)),
 		),
 		jen.Line(),
@@ -121,7 +121,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("fn").Op(":=").ID("buildChiUserIDFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("fn").Op(":=").ID("buildChiUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -144,7 +144,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Op(":=").ID("buildChiUserIDFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("fn").Op(":=").ID("buildChiUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -175,7 +175,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("fn").Op(":=").IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+					jen.ID("fn").Op(":=").IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
 					jen.Line(),
 					jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -198,7 +198,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 					jen.Comment("NOTE: This will probably never happen in dev or production"),
-					jen.ID("fn").Op(":=").IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+					jen.ID("fn").Op(":=").IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
 					jen.Line(),
 					jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -227,7 +227,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("fn").Op(":=").ID("buildChiWebhookIDFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("fn").Op(":=").ID("buildChiWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -250,7 +250,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Op(":=").ID("buildChiWebhookIDFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("fn").Op(":=").ID("buildChiWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -279,7 +279,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("fn").Op(":=").ID("buildChiOAuth2ClientIDFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("fn").Op(":=").ID("buildChiOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -301,7 +301,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Op(":=").ID("buildChiOAuth2ClientIDFetcher").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("fn").Op(":=").ID("buildChiOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),

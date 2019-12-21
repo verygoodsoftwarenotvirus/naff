@@ -21,9 +21,9 @@ func serverTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("config").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig").Values(),
 			jen.ID("encoder").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 			jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(),
-			jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call(),
+			jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("frontendService").Op(":").Qual(filepath.Join(pkg.OutputPath, "services/v1/frontend"), "ProvideFrontendService").Callln(
-				jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "FrontendSettings").Values(),
 			),
 			jen.ID("webhooksService").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "WebhookDataServer").Values(),
@@ -76,7 +76,7 @@ func serverTestDotGo(pkg *models.Project) *jen.File {
 			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "Service").Values(),
 			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "Service").Values(),
 			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "Service").Values(),
-			jen.ID("mockDB"), jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+			jen.ID("mockDB"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 		)
 

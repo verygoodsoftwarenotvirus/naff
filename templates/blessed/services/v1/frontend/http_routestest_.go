@@ -35,7 +35,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").Op("&").ID("Service").Values(jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("s").Op(":=").Op("&").ID("Service").Values(jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.Line(),
 				jen.List(jen.ID("cwd"), jen.ID("err")).Op(":=").Qual("os", "Getwd").Call(),
 				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -52,7 +52,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with frontend routing path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").Op("&").ID("Service").Values(jen.ID("logger").Op(":").ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("s").Op(":=").Op("&").ID("Service").Values(jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("exampleDir").Op(":=").Lit("."),
 				jen.Line(),
 				jen.List(jen.ID("hf"), jen.ID("err")).Op(":=").ID("s").Dot("StaticDir").Call(jen.ID("exampleDir")),

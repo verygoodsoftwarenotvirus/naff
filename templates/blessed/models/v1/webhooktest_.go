@@ -58,7 +58,7 @@ func webhookTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("w").Op(":=").Op("&").ID("Webhook").Values(),
-				jen.ID("w").Dot("ToListener").Call(jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("w").Dot("ToListener").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			)),
 		),
 		jen.Line(),
@@ -70,7 +70,7 @@ func webhookTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("w").Op(":=").Op("&").ID("Webhook").Values(),
-				jen.ID("actual").Op(":=").ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID("noop").Dot("ProvideNoopLogger").Call()),
+				jen.ID("actual").Op(":=").ID("buildErrorLogFunc").Call(jen.ID("w"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("actual").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			)),
 		),

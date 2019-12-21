@@ -37,7 +37,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 			jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Callln(
 				jen.Qual("context", "Background").Call(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
-				jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID("mockDB"),
 				jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
@@ -78,7 +78,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
-					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
@@ -141,7 +141,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
-					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
@@ -172,7 +172,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
-					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
