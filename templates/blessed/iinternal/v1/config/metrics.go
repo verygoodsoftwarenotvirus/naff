@@ -72,7 +72,7 @@ func metricsDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.Switch(jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")).Block(
 				jen.Case(jen.ID("Prometheus"), jen.ID("DefaultMetricsProvider")).Block(
-					jen.List(jen.ID("p"), jen.ID("err")).Op(":=").ID("prometheus").Dot("NewExporter").Call(jen.ID("prometheus").Dot("Options").Valuesln(
+					jen.List(jen.ID("p"), jen.ID("err")).Op(":=").Qual("contrib.go.opencensus.io/exporter/prometheus", "NewExporter").Call(jen.Qual("contrib.go.opencensus.io/exporter/prometheus", "Options").Valuesln(
 						jen.ID("OnError").Op(":").Func().Params(jen.ID("err").ID("error")).Block(
 							jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("setting up prometheus export")),
 						),
@@ -81,7 +81,7 @@ func metricsDotGo(pkg *models.Project) *jen.File {
 					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to create Prometheus exporter: %w"), jen.ID("err"))),
 					),
-					jen.ID("view").Dot("RegisterExporter").Call(jen.ID("p")), jen.ID("log").Dot("Debug").Call(jen.Lit("metrics provider registered")),
+					jen.Qual("go.opencensus.io/stats/view", "RegisterExporter").Call(jen.ID("p")), jen.ID("log").Dot("Debug").Call(jen.Lit("metrics provider registered")),
 					jen.Return().List(jen.ID("p"), jen.ID("nil"))),
 				jen.Default().Block(jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidMetricsProvider"))),
 			),
@@ -107,9 +107,9 @@ func metricsDotGo(pkg *models.Project) *jen.File {
 					jen.ID("sn").Op(":=").Qual("os", "Getenv").Call(jen.Lit("JAEGER_SERVICE_NAME")),
 					jen.Line(),
 					jen.If(jen.ID("ah").Op("!=").Lit("").Op("&&").ID("ap").Op("!=").Lit("").Op("&&").ID("sn").Op("!=").Lit("")).Block(
-						jen.List(jen.ID("je"), jen.ID("err")).Op(":=").ID("jaeger").Dot("NewExporter").Call(jen.ID("jaeger").Dot("Options").Valuesln(
+						jen.List(jen.ID("je"), jen.ID("err")).Op(":=").Qual("contrib.go.opencensus.io/exporter/jaeger", "NewExporter").Call(jen.Qual("contrib.go.opencensus.io/exporter/jaeger", "Options").Valuesln(
 							jen.ID("AgentEndpoint").Op(":").Qual("fmt", "Sprintf").Call(jen.Lit("%s:%s"), jen.ID("ah"), jen.ID("ap")),
-							jen.ID("Process").Op(":").ID("jaeger").Dot("Process").Values(jen.ID("ServiceName").Op(":").ID("sn")),
+							jen.ID("Process").Op(":").Qual("contrib.go.opencensus.io/exporter/jaeger", "Process").Values(jen.ID("ServiceName").Op(":").ID("sn")),
 						)),
 						jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 							jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("failed to create Jaeger exporter: %w"), jen.ID("err")),

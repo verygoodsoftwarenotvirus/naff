@@ -50,7 +50,7 @@ func iterableServiceDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.Comment(fmt.Sprintf("Service handles to-do list %s", pcn)),
 			jen.ID("Service").Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID(fmt.Sprintf("%sCounter", puvn)).Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
+				jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
 				jen.ID(fmt.Sprintf("%sDatabase", uvn)).Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataManager", sn)),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)),

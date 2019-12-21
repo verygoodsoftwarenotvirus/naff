@@ -21,11 +21,11 @@ func metaDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("MetricAggregationMeasurementView is the corresponding view for the above metric"),
-			jen.ID("MetricAggregationMeasurementView").Op("=").Op("&").ID("view").Dot("View").Valuesln(
+			jen.ID("MetricAggregationMeasurementView").Op("=").Op("&").Qual("go.opencensus.io/stats/view", "View").Valuesln(
 				jen.ID("Name").Op(":").Lit("metrics_aggregation_time"),
 				jen.ID("Measure").Op(":").ID("MetricAggregationMeasurement"),
 				jen.ID("Description").Op(":").Lit("cumulative time in nanoseconds spent aggregating metrics"),
-				jen.ID("Aggregation").Op(":").ID("view").Dot("LastValue").Call(),
+				jen.ID("Aggregation").Op(":").Qual("go.opencensus.io/stats/view", "LastValue").Call(),
 			),
 			jen.Line(),
 		),
@@ -35,7 +35,7 @@ func metaDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("RegisterDefaultViews registers default runtime views"),
 		jen.Line(),
 		jen.Func().ID("RegisterDefaultViews").Params().Params(jen.ID("error")).Block(
-			jen.Return().ID("view").Dot(
+			jen.Return().Qual("go.opencensus.io/stats/view",
 				"Register",
 			).Call(jen.ID("DefaultRuntimeViews").Op("...")),
 		),

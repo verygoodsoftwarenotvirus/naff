@@ -362,8 +362,8 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 			out := []jen.Code{
 				jen.If(jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")).Op(";").ID("err").Op("!=").ID("nil")).Block(
 					jen.Switch(jen.ID("e").Op(":=").ID("err").Assert(jen.Type())).Block(
-						jen.Case(jen.Op("*").ID("pq").Dot("Error")).Block(
-							jen.If(jen.ID("e").Dot("Code").Op("==").ID("pq").Dot("ErrorCode").Call(jen.Lit("23505"))).Block(
+						jen.Case(jen.Op("*").Qual("github.com/lib/pq", "Error")).Block(
+							jen.If(jen.ID("e").Dot("Code").Op("==").Qual("github.com/lib/pq", "ErrorCode").Call(jen.Lit("23505"))).Block(
 								jen.Return().List(jen.ID("nil"), jen.Qual(filepath.Join(pkg.OutputPath, "database/v1/client"), "ErrUserExists")),
 							),
 						),

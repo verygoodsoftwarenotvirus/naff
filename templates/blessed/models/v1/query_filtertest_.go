@@ -119,10 +119,10 @@ func queryFilterTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("TestQueryFilter_ApplyToQueryBuilder").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("baseQueryBuilder").Op(":=").ID("squirrel").Dot("StatementBuilder").Dot("PlaceholderFormat").Call(jen.ID("squirrel").Dot("Dollar")).
+			jen.ID("baseQueryBuilder").Op(":=").Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", "Dollar")).
 				Dotln("Select").Call(jen.Lit("things")).
 				Dotln("From").Call(jen.Lit("stuff")).
-				Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.Lit("condition").Op(":").ID("true"))),
+				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("condition").Op(":").ID("true"))),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Valuesln(
@@ -135,7 +135,7 @@ func queryFilterTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("SortBy").Op(":").ID("SortDescending"),
 				),
 				jen.Line(),
-				jen.ID("sb").Op(":=").ID("squirrel").Dot("StatementBuilder").Dot("Select").Call(jen.Lit("*")).Dot("From").Call(jen.Lit("testing")),
+				jen.ID("sb").Op(":=").Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("Select").Call(jen.Lit("*")).Dot("From").Call(jen.Lit("testing")),
 				jen.ID("qf").Dot("ApplyToQueryBuilder").Call(jen.ID("sb")),
 				jen.ID("expected").Op(":=").Lit("SELECT * FROM testing"),
 				jen.List(jen.ID("actual"), jen.ID("_"), jen.ID("err")).Op(":=").ID("sb").Dot("ToSql").Call(),

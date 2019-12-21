@@ -25,7 +25,7 @@ func counterDotGo(pkg *models.Project) *jen.File {
 			jen.ID("name").ID("string"),
 			jen.ID("actualCount").ID("uint64"),
 			jen.ID("count").Op("*").Qual("go.opencensus.io/stats", "Int64Measure"),
-			jen.ID("counter").Op("*").ID("view").Dot("View"),
+			jen.ID("counter").Op("*").Qual("go.opencensus.io/stats/view", "View"),
 		),
 		jen.Line(),
 	)
@@ -89,14 +89,14 @@ func counterDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("Counts/groups the lengths of lines read in."),
 			jen.ID("count").Op(":=").Qual("go.opencensus.io/stats", "Int64").Call(jen.ID("name"), jen.Lit(""), jen.Lit("By")),
 			jen.Line(),
-			jen.ID("countView").Op(":=").Op("&").ID("view").Dot("View").Valuesln(
+			jen.ID("countView").Op(":=").Op("&").Qual("go.opencensus.io/stats/view", "View").Valuesln(
 				jen.ID("Name").Op(":").ID("name"),
 				jen.ID("Description").Op(":").ID("description"),
 				jen.ID("Measure").Op(":").ID("count"),
-				jen.ID("Aggregation").Op(":").ID("view").Dot("Count").Call(),
+				jen.ID("Aggregation").Op(":").Qual("go.opencensus.io/stats/view", "Count").Call(),
 			),
 			jen.Line(),
-			jen.If(jen.ID("err").Op(":=").ID("view").Dot("Register").Call(jen.ID("countView")), jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID("err").Op(":=").Qual("go.opencensus.io/stats/view", "Register").Call(jen.ID("countView")), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to register views: %w"), jen.ID("err"))),
 			),
 			jen.Line(),
