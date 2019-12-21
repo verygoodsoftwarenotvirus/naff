@@ -160,7 +160,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 				jen.ID("srv").Dot("setupRouter").Call(jen.ID("cfg").Dot("Frontend"), jen.ID("ih")),
 			),
 			jen.Line(),
-			jen.ID("srv").Dot("httpServer").Dot("Handler").Op("=").Op("&").ID("ochttp").Dot("Handler").Valuesln(
+			jen.ID("srv").Dot("httpServer").Dot("Handler").Op("=").Op("&").Qual("go.opencensus.io/plugin/ochttp", "Handler").Valuesln(
 				jen.ID("Handler").Op(":").ID("srv").Dot("router"),
 				jen.ID("FormatSpanName").Op(":").ID("formatSpanNameForRequest"),
 			),

@@ -17,11 +17,11 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 		n := typ.Name
 
 		ret.Add(
-			jen.Func().IDf("Provide%sServiceUserIDFetcher", n.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+			jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("_").Op("=").ID("ProvideUserIDFetcher").Call(),
+					jen.ID("_").Op("=").IDf("TestProvide%sServiceUserIDFetcher", n.Singular()).Call(),
 				)),
 			),
 			jen.Line(),
