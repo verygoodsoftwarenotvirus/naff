@@ -11,7 +11,7 @@ import (
 // RenderPackage renders the package
 func RenderPackage(pkg *models.Project) error {
 	for _, typ := range pkg.DataTypes {
-		pn := typ.Name.PluralRouteName()
+		pn := typ.Name.PackageName()
 		for path, file := range map[string]*jen.File{
 			fmt.Sprintf("services/v1/%s/middleware.go", pn):          middlewareDotGo(pkg, typ),
 			fmt.Sprintf("services/v1/%s/middleware_test.go", pn):     middlewareTestDotGo(pkg, typ),
