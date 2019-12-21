@@ -21,7 +21,7 @@ func encodingDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("EncoderDecoder is a mock EncoderDecoder"),
 		jen.Line(),
-		jen.Type().ID("EncoderDecoder").Struct(jen.ID("mock").Dot("Mock")),
+		jen.Type().ID("EncoderDecoder").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
 		jen.Line(),
 	)
 

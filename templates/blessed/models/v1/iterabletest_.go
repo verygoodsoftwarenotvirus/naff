@@ -16,7 +16,7 @@ func iterableTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 		for _, field := range typ.Fields {
 			sn := field.Name.Singular()
 			updateCols = append(updateCols, jen.ID(sn).Op(":").Add(utils.ExampleValueForField(field)))
-			assertCalls = append(assertCalls, jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot(sn), jen.ID("i").Dot(sn)))
+			assertCalls = append(assertCalls, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot(sn), jen.ID("i").Dot(sn)))
 		}
 
 		return

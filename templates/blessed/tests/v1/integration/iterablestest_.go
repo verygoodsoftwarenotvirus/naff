@@ -49,20 +49,20 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 		lines := []jen.Code{
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
+			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
 		}
 
 		for _, field := range typ.Fields {
 			sn := field.Name.Singular()
 			if !field.Pointer {
-				lines = append(lines, jen.ID("assert").Dot("Equal").Call(
+				lines = append(lines, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(
 					jen.ID("t"),
 					jen.ID("expected").Dot(sn),
 					jen.ID("actual").Dot(sn),
 					jen.Lit("expected "+sn+" for ID %d to be %v, but it was %v "), jen.ID("expected").Dot("ID"), jen.ID("expected").Dot(sn), jen.ID("actual").Dot(sn),
 				))
 			} else {
-				lines = append(lines, jen.ID("assert").Dot("Equal").Call(
+				lines = append(lines, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(
 					jen.ID("t"),
 					jen.Op("*").ID("expected").Dot(sn),
 					jen.Op("*").ID("actual").Dot(sn),
@@ -70,7 +70,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				))
 			}
 		}
-		lines = append(lines, jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("CreatedOn")))
+		lines = append(lines, jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("CreatedOn")))
 
 		return lines
 	}
@@ -123,12 +123,12 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.ID("err").Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(jen.ID("ctx"), jen.ID("premade").Dot("ID")),
-					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 					jen.Line(),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(jen.ID("ctx"), jen.ID("premade").Dot("ID")),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
 					jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-					jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
+					jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
 				)),
 			)),
 			jen.Line(),
@@ -147,7 +147,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 					jen.Commentf("Assert %s list equality", scn),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", pn).Call(jen.ID("ctx"), jen.ID("nil")),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
-					jen.ID("assert").Dot("True").Callln(
+					jen.Qual("github.com/stretchr/testify/assert", "True").Callln(
 						jen.ID("t"),
 						jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot(pn)),
 						jen.Lit("expected %d to be <= %d"), jen.ID("len").Call(jen.ID("expected")),
@@ -157,7 +157,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 					jen.Comment("Clean up"),
 					jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().ID("actual").Dot(pn)).Block(
 						jen.ID("err").Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(jen.ID("ctx"), jen.ID("x").Dot("ID")),
-						jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+						jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 					),
 				)),
 			)),
@@ -170,7 +170,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 					jen.Line(),
 					jen.Commentf("Fetch %s", scn),
 					jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(jen.ID("ctx"), jen.ID("nonexistentID")),
-					jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -197,7 +197,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.ID("err").Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(jen.ID("ctx"), jen.ID("actual").Dot("ID")),
-					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 				)),
 			)),
 			jen.Line(),
@@ -208,7 +208,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
 					jen.ID("err").Op(":=").ID("todoClient").Dotf("Update%s", sn).Call(jen.ID("ctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(jen.ID("ID").Op(":").ID("nonexistentID"))),
-					jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should be updatable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -228,7 +228,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 					jen.Commentf("Change %s", scn),
 					jen.List(jen.ID("premade").Dot("Update").Call(jen.ID("expected").Dot("ToInput").Call())),
 					jen.ID("err").Op("=").ID("todoClient").Dotf("Update%s", sn).Call(jen.ID("ctx"), jen.ID("premade")),
-					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 					jen.Line(),
 					jen.Commentf("Fetch %s", scn),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(jen.ID("ctx"), jen.ID("premade").Dot("ID")),
@@ -236,11 +236,11 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 					jen.Line(),
 					jen.Commentf("Assert %s equality", scn),
 					jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-					jen.ID("assert").Dot("NotNil").Call(jen.ID("t"), jen.ID("actual").Dot("UpdatedOn")),
+					jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual").Dot("UpdatedOn")),
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.ID("err").Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(jen.ID("ctx"), jen.ID("actual").Dot("ID")),
-					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 				)),
 			)),
 			jen.Line(),
@@ -261,7 +261,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.ID("err").Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(jen.ID("ctx"), jen.ID("premade").Dot("ID")),
-					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 				)),
 			)),
 		),

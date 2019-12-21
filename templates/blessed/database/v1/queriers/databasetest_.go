@@ -68,7 +68,7 @@ func databaseTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("assert").Dot("True").Call(jen.ID("t"), jen.ID(dbfl).Dot("IsReady").Call(jen.Qual("context", "Background").Call())),
+				jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID(dbfl).Dot("IsReady").Call(jen.Qual("context", "Background").Call())),
 			)),
 		),
 		jen.Line(),

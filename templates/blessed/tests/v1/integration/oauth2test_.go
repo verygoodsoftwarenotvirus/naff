@@ -58,13 +58,13 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("checkOAuth2ClientEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
-			jen.ID("assert").Dot("NotEmpty").Call(jen.ID("t"), jen.ID("actual").Dot("ClientID")),
-			jen.ID("assert").Dot("NotEmpty").Call(jen.ID("t"), jen.ID("actual").Dot("ClientSecret")),
-			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot("RedirectURI"), jen.ID("actual").Dot("RedirectURI")),
-			jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Scopes"), jen.ID("actual").Dot("Scopes")),
-			jen.ID("assert").Dot("NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("CreatedOn")),
-			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
+			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
+			jen.Qual("github.com/stretchr/testify/assert", "NotEmpty").Call(jen.ID("t"), jen.ID("actual").Dot("ClientID")),
+			jen.Qual("github.com/stretchr/testify/assert", "NotEmpty").Call(jen.ID("t"), jen.ID("actual").Dot("ClientSecret")),
+			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("RedirectURI"), jen.ID("actual").Dot("RedirectURI")),
+			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Scopes"), jen.ID("actual").Dot("Scopes")),
+			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("CreatedOn")),
+			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
 		),
 		jen.Line(),
 	)
@@ -75,7 +75,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("create user"),
 			jen.List(jen.ID("x"), jen.ID("y"), jen.ID("cookie")).Op(":=").ID("buildDummyUser").Call(jen.ID("test")),
-			jen.ID("assert").Dot("NotNil").Call(jen.ID("test"), jen.ID("cookie")),
+			jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 			jen.Line(),
 			jen.ID("input").Op(":=").ID("buildDummyOAuth2ClientInput").Call(
 				jen.ID("test"),
@@ -111,7 +111,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.ID("err").Op("=").ID("testClient").Dot("ArchiveOAuth2Client").Call(jen.ID("tctx"), jen.ID("actual").Dot("ID")),
-					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 				)),
 			)),
 			jen.Line(),
@@ -121,7 +121,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Fetch oauth2Client"),
 					jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("testClient").Dot("GetOAuth2Client").Call(jen.ID("tctx"), jen.ID("nonexistentID")),
-					jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -141,7 +141,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.ID("err").Op("=").ID("testClient").Dot("ArchiveOAuth2Client").Call(jen.ID("tctx"), jen.ID("actual").Dot("ID")),
-					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 				)),
 			)),
 			jen.Line(),
@@ -156,7 +156,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.ID("err").Op("=").ID("testClient").Dot("ArchiveOAuth2Client").Call(jen.ID("tctx"), jen.ID("premade").Dot("ID")),
-					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("should be unable to authorize after being deleted"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -164,7 +164,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("create user"),
 					jen.List(jen.ID("createdUser"), jen.ID("createdUserInput"), jen.ID("_")).Op(":=").ID("buildDummyUser").Call(jen.ID("test")),
-					jen.ID("assert").Dot("NotNil").Call(jen.ID("test"), jen.ID("cookie")),
+					jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 					jen.Line(),
 					jen.ID("input").Op(":=").ID("buildDummyOAuth2ClientInput").Call(
 						jen.ID("test"),
@@ -177,7 +177,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("ArchiveHandler oauth2Client"),
 					jen.ID("err").Op("=").ID("testClient").Dot("ArchiveOAuth2Client").Call(jen.ID("tctx"), jen.ID("premade").Dot("ID")),
-					jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 					jen.Line(),
 					jen.List(jen.ID("c2"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
 						jen.Qual("context", "Background").Call(),
@@ -192,7 +192,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("c2"), jen.ID("err")),
 					jen.Line(),
 					jen.List(jen.ID("_"), jen.ID("err")).Op("=").ID("c2").Dot("GetOAuth2Clients").Call(jen.ID("tctx"), jen.ID("nil")),
-					jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err"), jen.Lit("expected error from what should be an unauthorized client")),
+					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err"), jen.Lit("expected error from what should be an unauthorized client")),
 				)),
 			)),
 			jen.Line(),
@@ -217,7 +217,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					jen.Comment("Assert oauth2Client list equality"),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClient").Dot("GetOAuth2Clients").Call(jen.ID("tctx"), jen.ID("nil")),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
-					jen.ID("assert").Dot("True").Callln(
+					jen.Qual("github.com/stretchr/testify/assert", "True").Callln(
 						jen.ID("t"),
 						jen.ID("len").Call(jen.ID("actual").Dot("Clients")).Op("-").ID("len").Call(jen.ID("expected")).Op(">").Lit(0),
 						jen.Lit("expected %d - %d to be > 0"),
@@ -233,13 +233,13 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 								jen.Break(),
 							),
 						),
-						jen.ID("assert").Dot("True").Call(jen.ID("t"), jen.ID("clientFound"), jen.Lit("expected oAuth2Client ID %d to be present in results"), jen.ID("oAuth2Client").Dot("ID")),
+						jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("clientFound"), jen.Lit("expected oAuth2Client ID %d to be present in results"), jen.ID("oAuth2Client").Dot("ID")),
 					),
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.For(jen.List(jen.ID("_"), jen.ID("oa2c")).Op(":=").Range().ID("expected")).Block(
 						jen.ID("err").Op("=").ID("testClient").Dot("ArchiveOAuth2Client").Call(jen.ID("tctx"), jen.ID("oa2c").Dot("ID")),
-						jen.ID("assert").Dot("NoError").Call(
+						jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(
 							jen.ID("t"),
 							jen.ID("err"),
 							jen.Lit("error deleting client %d: %v"),

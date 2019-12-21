@@ -85,8 +85,8 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("ucp"),
 					jen.ID("nil"),
 				),
-				jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot("NotNil").Call(jen.ID("t"), jen.ID("service")),
+				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("service")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil userIDFetcher"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -114,8 +114,8 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					).Values(), jen.ID("noop").Dot(
 						"ProvideNoopLogger",
 					).Call(), jen.ID("mockDB"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(), jen.ID("nil"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("nil")),
-				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("service")),
+				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error initializing counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -147,8 +147,8 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("nil"),
 				),
-				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("service")),
+				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error getting user count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -179,8 +179,8 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("nil"),
 				),
 				jen.Line(),
-				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("service")),
+				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
 			)),
 		),
 		jen.Line(),

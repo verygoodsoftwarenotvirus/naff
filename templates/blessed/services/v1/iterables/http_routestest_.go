@@ -89,7 +89,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -122,7 +122,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s from database", pcn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -157,7 +157,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -195,7 +195,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
 			)),
 		),
 		jen.Line(),
@@ -253,7 +253,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusCreated")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusCreated")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("without input attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -280,7 +280,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error creating %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -321,7 +321,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -370,7 +370,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusCreated")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusCreated")),
 			)),
 		),
 		jen.Line(),
@@ -419,7 +419,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Litf("with no such %s in database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -456,7 +456,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s from database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -494,7 +494,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -535,7 +535,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
 			)),
 		),
 		jen.Line(),
@@ -601,7 +601,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("without update input"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -618,7 +618,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Litf("with no rows fetching %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -660,7 +660,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -701,7 +701,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error updating %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -757,7 +757,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -813,7 +813,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
 			)),
 		),
 		jen.Line(),
@@ -873,7 +873,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNoContent")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNoContent")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Litf("with no %s in database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -910,7 +910,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -946,7 +946,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("assert").Dot("Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
 			)),
 		),
 		jen.Line(),
