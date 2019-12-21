@@ -19,7 +19,7 @@ func readerDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ReadCloser is a mock io.ReadCloser for testing purposes"),
 		jen.Line(),
-		jen.Type().ID("ReadCloser").Struct(jen.ID("mock").Dot("Mock")),
+		jen.Type().ID("ReadCloser").Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 

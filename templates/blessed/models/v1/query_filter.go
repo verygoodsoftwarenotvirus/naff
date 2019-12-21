@@ -154,7 +154,7 @@ func queryFilterDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ApplyToQueryBuilder applies the query filter to a query builder"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("ApplyToQueryBuilder").Params(jen.ID("queryBuilder").ID("squirrel").Dot("SelectBuilder")).Params(jen.ID("squirrel").Dot("SelectBuilder")).Block(
+		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("ApplyToQueryBuilder").Params(jen.ID("queryBuilder").Qual("github.com/Masterminds/squirrel", "SelectBuilder")).Params(jen.Qual("github.com/Masterminds/squirrel", "SelectBuilder")).Block(
 			jen.If(jen.ID("qf").Op("==").ID("nil")).Block(
 				jen.Return().ID("queryBuilder"),
 			),
@@ -171,19 +171,19 @@ func queryFilterDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.If(jen.ID("qf").Dot("CreatedAfter").Op(">").Lit(0)).Block(
-				jen.ID("queryBuilder").Op("=").ID("queryBuilder").Dot("Where").Call(jen.ID("squirrel").Dot("Gt").Values(jen.Lit("created_on").Op(":").ID("qf").Dot("CreatedAfter"))),
+				jen.ID("queryBuilder").Op("=").ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(jen.Lit("created_on").Op(":").ID("qf").Dot("CreatedAfter"))),
 			),
 			jen.Line(),
 			jen.If(jen.ID("qf").Dot("CreatedBefore").Op(">").Lit(0)).Block(
-				jen.ID("queryBuilder").Op("=").ID("queryBuilder").Dot("Where").Call(jen.ID("squirrel").Dot("Lt").Values(jen.Lit("created_on").Op(":").ID("qf").Dot("CreatedBefore"))),
+				jen.ID("queryBuilder").Op("=").ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(jen.Lit("created_on").Op(":").ID("qf").Dot("CreatedBefore"))),
 			),
 			jen.Line(),
 			jen.If(jen.ID("qf").Dot("UpdatedAfter").Op(">").Lit(0)).Block(
-				jen.ID("queryBuilder").Op("=").ID("queryBuilder").Dot("Where").Call(jen.ID("squirrel").Dot("Gt").Values(jen.Lit("updated_on").Op(":").ID("qf").Dot("UpdatedAfter"))),
+				jen.ID("queryBuilder").Op("=").ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(jen.Lit("updated_on").Op(":").ID("qf").Dot("UpdatedAfter"))),
 			),
 			jen.Line(),
 			jen.If(jen.ID("qf").Dot("UpdatedBefore").Op(">").Lit(0)).Block(
-				jen.ID("queryBuilder").Op("=").ID("queryBuilder").Dot("Where").Call(jen.ID("squirrel").Dot("Lt").Values(jen.Lit("updated_on").Op(":").ID("qf").Dot("UpdatedBefore"))),
+				jen.ID("queryBuilder").Op("=").ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(jen.Lit("updated_on").Op(":").ID("qf").Dot("UpdatedBefore"))),
 			),
 			jen.Line(),
 			jen.Return().ID("queryBuilder"),
