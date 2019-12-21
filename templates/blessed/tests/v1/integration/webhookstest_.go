@@ -45,7 +45,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.List(jen.ID("y"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("buildDummyWebhookInput").Call()),
-			jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.Return().ID("y"),
 		),
 		jen.Line(),

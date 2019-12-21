@@ -44,7 +44,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 				jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ucp"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.ID("nil"), jen.ID("nil")),
 			),
-			jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.Line(),
 			jen.Return().ID("service"),
 		),

@@ -23,7 +23,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("nil"),
 			),
 			jen.Line(),
-			jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
+			jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.Return().ID("req"),
 		),

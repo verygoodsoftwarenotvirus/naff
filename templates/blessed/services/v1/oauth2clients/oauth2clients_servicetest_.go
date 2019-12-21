@@ -19,7 +19,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("manager").Op(":=").ID("manage").Dot("NewDefaultManager").Call(),
 			jen.List(jen.ID("tokenStore"), jen.ID("err")).Op(":=").Qual("gopkg.in/oauth2.v3/store", "NewMemoryTokenStore").Call(),
-			jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.ID("manager").Dot("MustTokenStorage").Call(jen.ID("tokenStore"), jen.ID("err")),
 			jen.ID("server").Op(":=").Qual("gopkg.in/oauth2.v3/server", "NewDefaultServer").Call(jen.ID("manager")),
 			jen.Line(),

@@ -15,7 +15,7 @@ func metaTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("TestRegisterDefaultViews").Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Comment("obligatory"),
-			jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("RegisterDefaultViews").Call()),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("RegisterDefaultViews").Call()),
 		),
 		jen.Line(),
 	)

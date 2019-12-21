@@ -17,7 +17,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("mustBuildCode").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.ID("totpSecret").ID("string")).Params(jen.ID("string")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("totpSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
-			jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.Return().ID("code"),
 		),
 		jen.Line(),
@@ -96,7 +96,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("premade").Dot("Scopes"),
 				jen.ID("debug"),
 			),
-			jen.ID("require").Dot("NoError").Call(jen.ID("test"), jen.ID("err"), jen.Lit("error setting up auxiliary client")),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("test"), jen.ID("err"), jen.Lit("error setting up auxiliary client")),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Run").Call(jen.Lit("should be creatable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(

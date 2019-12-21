@@ -223,7 +223,7 @@ func queryFilterTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("require").Dot("NotNil").Call(jen.ID("t"), jen.ID("req")),
+				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Line(),
 				jen.ID("req").Dot("URL").Dot("RawQuery").Op("=").ID("exampleInput").Dot("Encode").Call(),
 				jen.ID("actual").Op(":=").ID("ExtractQueryFilter").Call(jen.ID("req")),

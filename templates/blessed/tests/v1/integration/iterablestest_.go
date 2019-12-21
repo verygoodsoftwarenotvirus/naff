@@ -90,7 +90,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				buildFakeCallForCreationInput()...,
 			),
 			jen.List(jen.ID("y"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("x")),
-			jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.Return().ID("y"),
 		),
 		jen.Line(),

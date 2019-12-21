@@ -42,7 +42,7 @@ func configTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID("tf"), jen.ID("err")).Op(":=").Qual("io/ioutil", "TempFile").Call(jen.Qual("os", "TempDir").Call(), jen.Lit("*.toml")),
-				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("expected").Op(":=").Lit("thisisatest"),
 				jen.Line(),
 				jen.List(jen.ID("_"), jen.ID("err")).Op("=").ID("tf").Dot("Write").Call(
@@ -62,7 +62,7 @@ connection_details = "%s"
 						),
 					),
 				),
-				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
 				jen.ID("expectedConfig").Op(":=").Op("&").ID("ServerConfig").Valuesln(
 					jen.ID("Server").Op(":").ID("ServerSettings").Valuesln(

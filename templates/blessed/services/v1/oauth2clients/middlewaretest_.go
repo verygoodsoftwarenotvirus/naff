@@ -58,7 +58,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("RedirectURI").Op(":").Lit("https://blah.com"),
 				),
 				jen.List(jen.ID("bs"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("expected")),
-				jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.ID("req").Dot("Body").Op("=").Qual("io/ioutil", "NopCloser").Call(jen.Qual("bytes", "NewReader").Call(jen.ID("bs"))),
 				jen.Line(),
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),

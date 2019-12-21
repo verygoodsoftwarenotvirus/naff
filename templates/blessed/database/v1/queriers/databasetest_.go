@@ -19,7 +19,7 @@ func databaseTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.
 	ret.Add(
 		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID(sn), jen.Qual("github.com/DATA-DOG/go-sqlmock", "Sqlmock")).Block(
 			jen.List(jen.ID("db"), jen.ID("mock"), jen.ID("err")).Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "New").Call(),
-			jen.ID("require").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.ID(dbfl).Op(":=").IDf("Provide%s", sn).Call(jen.ID("true"), jen.ID("db"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Return().List(jen.ID(dbfl).Assert(jen.Op("*").ID(sn)), jen.ID("mock")),
 		),
