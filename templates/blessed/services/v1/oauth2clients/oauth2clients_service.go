@@ -38,7 +38,7 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
-			jen.ID("_").ID("oauth2").Dot("ClientStore").Op("=").Parens(jen.Op("*").ID("clientStore")).Call(jen.ID("nil")),
+			jen.ID("_").Qual("gopkg.in/oauth2.v3", "ClientStore").Op("=").Parens(jen.Op("*").ID("clientStore")).Call(jen.ID("nil")),
 		),
 		jen.Line(),
 	)
@@ -54,7 +54,7 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 				jen.ID("SetAuthorizeScopeHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler")),
 				jen.ID("SetResponseErrorHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler")),
 				jen.ID("SetInternalErrorHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "InternalErrorHandler")),
-				jen.ID("ValidationBearerToken").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("oauth2").Dot("TokenInfo"), jen.ID("error")),
+				jen.ID("ValidationBearerToken").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.Qual("gopkg.in/oauth2.v3", "TokenInfo"), jen.ID("error")),
 				jen.ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("error")),
 				jen.ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("error")),
 			),
@@ -70,7 +70,7 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 				jen.ID("encoderDecoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
 				jen.ID("urlClientIDExtractor").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 				jen.Line(),
-				jen.ID("tokenStore").ID("oauth2").Dot("TokenStore"),
+				jen.ID("tokenStore").Qual("gopkg.in/oauth2.v3", "TokenStore"),
 				jen.ID("oauth2Handler").ID("oauth2Handler"),
 				jen.ID("oauth2ClientCounter").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
 			),
@@ -95,7 +95,7 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetByID implements oauth2.ClientStorage"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("clientStore")).ID("GetByID").Params(jen.ID("id").ID("string")).Params(jen.ID("oauth2").Dot("ClientInfo"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("clientStore")).ID("GetByID").Params(jen.ID("id").ID("string")).Params(jen.Qual("gopkg.in/oauth2.v3", "ClientInfo"), jen.ID("error")).Block(
 			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(jen.Qual("context", "Background").Call(), jen.ID("id")),
 			jen.Line(),
 			jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
@@ -125,13 +125,13 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.ID("err"))),
 			),
 			jen.Line(),
-			jen.ID("manager").Op(":=").ID("manage").Dot("NewDefaultManager").Call(),
+			jen.ID("manager").Op(":=").Qual("gopkg.in/oauth2.v3/manage", "NewDefaultManager").Call(),
 			jen.ID("clientStore").Op(":=").ID("newClientStore").Call(jen.ID("db")),
 			jen.List(jen.ID("tokenStore"), jen.ID("err")).Op(":=").Qual("gopkg.in/oauth2.v3/store", "NewMemoryTokenStore").Call(),
 			jen.ID("manager").Dot("MapClientStorage").Call(jen.ID("clientStore")),
 			jen.ID("manager").Dot("MustTokenStorage").Call(jen.ID("tokenStore"), jen.ID("err")),
-			jen.ID("manager").Dot("SetAuthorizeCodeTokenCfg").Call(jen.ID("manage").Dot("DefaultAuthorizeCodeTokenCfg")),
-			jen.ID("manager").Dot("SetRefreshTokenCfg").Call(jen.ID("manage").Dot("DefaultRefreshTokenCfg")),
+			jen.ID("manager").Dot("SetAuthorizeCodeTokenCfg").Call(jen.Qual("gopkg.in/oauth2.v3/manage", "DefaultAuthorizeCodeTokenCfg")),
+			jen.ID("manager").Dot("SetRefreshTokenCfg").Call(jen.Qual("gopkg.in/oauth2.v3/manage", "DefaultRefreshTokenCfg")),
 			jen.ID("oHandler").Op(":=").Qual("gopkg.in/oauth2.v3/server", "NewDefaultServer").Call(jen.ID("manager")),
 			jen.ID("oHandler").Dot("SetAllowGetAccessRequest").Call(jen.ID("true")),
 			jen.Line(),
@@ -173,8 +173,8 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("this sad type cast is here because I have an arbitrary"),
 			jen.Comment("test-only interface for OAuth2 interactions."),
 			jen.If(jen.List(jen.ID("x"), jen.ID("ok")).Op(":=").ID("handler").Assert(jen.Op("*").Qual("gopkg.in/oauth2.v3/server", "Server")), jen.ID("ok")).Block(
-				jen.ID("x").Dot("Config").Dot("AllowedGrantTypes").Op("=").Index().ID("oauth2").Dot("GrantType").Valuesln(
-					jen.ID("oauth2").Dot("ClientCredentials"),
+				jen.ID("x").Dot("Config").Dot("AllowedGrantTypes").Op("=").Index().Qual("gopkg.in/oauth2.v3", "GrantType").Valuesln(
+					jen.Qual("gopkg.in/oauth2.v3", "ClientCredentials"),
 					jen.Comment("oauth2.AuthorizationCode"),
 					jen.Comment("oauth2.Refreshing"),
 					jen.Comment("oauth2.Implicit"),

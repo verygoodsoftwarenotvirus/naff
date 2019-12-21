@@ -151,7 +151,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ClientAuthorizedHandler satisfies the oauth2server ClientAuthorizedHandler interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientAuthorizedHandler").Params(jen.ID("clientID").ID("string"), jen.ID("grant").ID("oauth2").Dot("GrantType")).Params(jen.ID("allowed").ID("bool"), jen.ID("err").ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientAuthorizedHandler").Params(jen.ID("clientID").ID("string"), jen.ID("grant").Qual("gopkg.in/oauth2.v3", "GrantType")).Params(jen.ID("allowed").ID("bool"), jen.ID("err").ID("error")).Block(
 			jen.Comment("NOTE: it's a shame the interface we're implementing doesn't have this as its first argument"),
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.Qual("context", "Background").Call(), jen.Lit("ClientAuthorizedHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -160,7 +160,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 				jen.Lit("grant").Op(":").ID("grant"), jen.Lit("client_id").Op(":").ID("clientID"))),
 			jen.Line(),
 			jen.Comment("reject invalid grant type"),
-			jen.If(jen.ID("grant").Op("==").ID("oauth2").Dot("PasswordCredentials")).Block(
+			jen.If(jen.ID("grant").Op("==").Qual("gopkg.in/oauth2.v3", "PasswordCredentials")).Block(
 				jen.Return().List(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("invalid grant type: password"))),
 			),
 			jen.Line(),
@@ -172,7 +172,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("disallow implicit grants unless authorized"),
-			jen.If(jen.ID("grant").Op("==").ID("oauth2").Dot("Implicit").Op("&&").Op("!").ID("client").Dot("ImplicitAllowed")).Block(
+			jen.If(jen.ID("grant").Op("==").Qual("gopkg.in/oauth2.v3", "Implicit").Op("&&").Op("!").ID("client").Dot("ImplicitAllowed")).Block(
 				jen.Return().List(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("client not authorized for implicit grants"))),
 			),
 			jen.Line(),

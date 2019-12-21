@@ -96,7 +96,7 @@ func oauth2HandlerMockTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").Op("*").ID("mockOauth2Handler")).ID("ValidationBearerToken").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("oauth2").Dot(
+		jen.Func().Params(jen.ID("m").Op("*").ID("mockOauth2Handler")).ID("ValidationBearerToken").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Qual("gopkg.in/oauth2.v3",
 			"TokenInfo",
 		),
 			jen.ID("error")).Block(
@@ -105,7 +105,7 @@ func oauth2HandlerMockTestDotGo(pkg *models.Project) *jen.File {
 			).Call(jen.ID("req")),
 			jen.Return().List(jen.ID("args").Dot(
 				"Get",
-			).Call(jen.Lit(0)).Assert(jen.ID("oauth2").Dot(
+			).Call(jen.Lit(0)).Assert(jen.Qual("gopkg.in/oauth2.v3",
 				"TokenInfo",
 			)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),

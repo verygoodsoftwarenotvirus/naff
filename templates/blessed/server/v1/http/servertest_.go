@@ -68,8 +68,8 @@ func serverTestDotGo(pkg *models.Project) *jen.File {
 		}
 
 		for _, typ := range pkg.DataTypes {
-			prn := typ.Name.PluralRouteName()
-			args = append(args, jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1", prn), "Service").Values())
+			pn := typ.Name.PackageName()
+			args = append(args, jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), "Service").Values())
 		}
 
 		args = append(args,

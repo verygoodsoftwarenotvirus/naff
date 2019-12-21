@@ -248,7 +248,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.Comment("encode two factor secret as authenticator-friendly QR code"),
-			jen.List(jen.ID("qrcode"), jen.ID("err")).Op(":=").ID("qr").Dot("Encode").Callln(
+			jen.List(jen.ID("qrcode"), jen.ID("err")).Op(":=").Qual("github.com/boombuler/barcode/qr", "Encode").Callln(
 				jen.Comment(`"otpauth://totp/{{ .Issuer }}:{{ .Username }}?secret={{ .Secret }}&issuer={{ .Issuer }}"`),
 				jen.Qual("fmt", "Sprintf").Callln(
 					jen.Lit("otpauth://totp/%s:%s?secret=%s&issuer=%s"),
@@ -257,8 +257,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 					jen.ID("twoFactorSecret"),
 					jen.Lit("todoService"),
 				),
-				jen.ID("qr").Dot("L"),
-				jen.ID("qr").Dot("Auto"),
+				jen.Qual("github.com/boombuler/barcode/qr", "L"),
+				jen.Qual("github.com/boombuler/barcode/qr", "Auto"),
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("trying to encode secret to qr code")),
@@ -266,7 +266,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("scale the QR code so that it's not a PNG for ants"),
-			jen.List(jen.ID("qrcode"), jen.ID("err")).Op("=").ID("barcode").Dot("Scale").Call(jen.ID("qrcode"), jen.Lit(256), jen.Lit(256)),
+			jen.List(jen.ID("qrcode"), jen.ID("err")).Op("=").Qual("github.com/boombuler/barcode", "Scale").Call(jen.ID("qrcode"), jen.Lit(256), jen.Lit(256)),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("trying to enlarge qr code")),
 				jen.Return().Lit(""),

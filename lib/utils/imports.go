@@ -45,7 +45,8 @@ func AddImports(pkgRoot string, types []models.DataType, file *jen.File) {
 	file.ImportName(filepath.Join(pkgRoot, "services/v1/frontend"), "frontend")
 
 	for _, typ := range types {
-		file.ImportName(filepath.Join(pkgRoot, "services/v1", typ.Name.PluralRouteName()), typ.Name.PackageName())
+		pn := typ.Name.PackageName()
+		file.ImportName(filepath.Join(pkgRoot, "services/v1", pn), pn)
 	}
 
 	file.ImportName(filepath.Join(pkgRoot, "services/v1/oauth2clients"), "oauth2clients")

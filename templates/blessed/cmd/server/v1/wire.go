@@ -69,7 +69,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 
 		for _, typ := range pkg.DataTypes {
 			args = append(args,
-				jen.Qual(fmt.Sprintf("%s/services/v1/%s", pkg.OutputPath, typ.Name.PluralRouteName()), "Providers"),
+				jen.Qual(fmt.Sprintf("%s/services/v1/%s", pkg.OutputPath, typ.Name.PackageName()), "Providers"),
 			)
 		}
 

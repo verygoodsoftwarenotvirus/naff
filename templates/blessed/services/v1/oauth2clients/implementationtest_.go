@@ -253,7 +253,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").ID("true"),
 				jen.Line(),
-				jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot("AuthorizationCode"),
+				jen.ID("exampleGrant").Op(":=").Qual("gopkg.in/oauth2.v3", "AuthorizationCode"),
 				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("ClientID").Op(":").Lit("blah"),
@@ -275,7 +275,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with password credentials grant"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").ID("false"),
-				jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot("PasswordCredentials"),
+				jen.ID("exampleGrant").Op(":=").Qual("gopkg.in/oauth2.v3", "PasswordCredentials"),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("s").Dot("ClientAuthorizedHandler").Call(jen.Lit("ID"), jen.ID("exampleGrant")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
@@ -285,7 +285,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").ID("false"),
-				jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot("AuthorizationCode"),
+				jen.ID("exampleGrant").Op(":=").Qual("gopkg.in/oauth2.v3", "AuthorizationCode"),
 				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ID").Op(":").Lit(1), jen.ID("ClientID").Op(":").Lit("blah"), jen.ID("Scopes").Op(":").Index().ID("string").Values(),
 				),
@@ -308,7 +308,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").ID("false"),
 				jen.Line(),
-				jen.ID("exampleGrant").Op(":=").ID("oauth2").Dot("Implicit"),
+				jen.ID("exampleGrant").Op(":=").Qual("gopkg.in/oauth2.v3", "Implicit"),
 				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ID").Op(":").Lit(1),
 					jen.ID("ClientID").Op(":").Lit("blah"),

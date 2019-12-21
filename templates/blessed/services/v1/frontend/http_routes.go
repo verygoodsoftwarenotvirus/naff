@@ -26,8 +26,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").ID("string")).Params(jen.Op("*").ID("afero").Dot("HttpFs"), jen.ID("error")).Block(jen.Var().ID("afs").ID("afero").Dot("Fs"), jen.If(jen.ID("s").Dot("config").Dot("CacheStaticFiles")).Block(
-			jen.ID("afs").Op("=").ID("afero").Dot("NewMemMapFs").Call(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").ID("string")).Params(jen.Op("*").Qual("github.com/spf13/afero", "HttpFs"), jen.ID("error")).Block(jen.Var().ID("afs").Qual("github.com/spf13/afero", "Fs"), jen.If(jen.ID("s").Dot("config").Dot("CacheStaticFiles")).Block(
+			jen.ID("afs").Op("=").Qual("github.com/spf13/afero", "NewMemMapFs").Call(),
 			jen.List(jen.ID("files"), jen.ID("err")).Op(":=").Qual("io/ioutil", "ReadDir").Call(jen.ID("fileDir")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("reading directory for frontend files: %w"), jen.ID("err"))),
@@ -57,12 +57,12 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("closing file while setting up static dir")),
 				),
 			),
-			jen.ID("afs").Op("=").ID("afero").Dot("NewReadOnlyFs").Call(jen.ID("afs")),
+			jen.ID("afs").Op("=").Qual("github.com/spf13/afero", "NewReadOnlyFs").Call(jen.ID("afs")),
 		).Else().Block(
-			jen.ID("afs").Op("=").ID("afero").Dot("NewOsFs").Call(),
+			jen.ID("afs").Op("=").Qual("github.com/spf13/afero", "NewOsFs").Call(),
 		),
 			jen.Line(),
-			jen.Return().List(jen.ID("afero").Dot("NewHttpFs").Call(jen.ID("afs")), jen.ID("nil")),
+			jen.Return().List(jen.Qual("github.com/spf13/afero", "NewHttpFs").Call(jen.ID("afs")), jen.ID("nil")),
 		),
 		jen.Line(),
 	)

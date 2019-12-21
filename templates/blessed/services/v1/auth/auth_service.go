@@ -72,8 +72,8 @@ func authServiceDotGo(pkg *models.Project) *jen.File {
 				jen.ID("oauth2ClientsService").Op(":").ID("oauth2ClientsService"),
 				jen.ID("authenticator").Op(":").ID("authenticator"),
 				jen.ID("userIDFetcher").Op(":").ID("userIDFetcher"),
-				jen.ID("cookieManager").Op(":").ID("securecookie").Dot("New").Callln(
-					jen.ID("securecookie").Dot("GenerateRandomKey").Call(jen.Lit(64)),
+				jen.ID("cookieManager").Op(":").Qual("github.com/gorilla/securecookie", "New").Callln(
+					jen.Qual("github.com/gorilla/securecookie", "GenerateRandomKey").Call(jen.Lit(64)),
 					jen.Index().ID("byte").Call(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")),
 				),
 			),

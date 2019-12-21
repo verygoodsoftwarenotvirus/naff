@@ -29,7 +29,7 @@ func routesDotGo(pkg *models.Project) *jen.File {
 			jen.ID("router").Op(":=").Qual("github.com/go-chi/chi", "NewRouter").Call(),
 			jen.Line(),
 			jen.Comment("Basic CORS, for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing"),
-			jen.ID("ch").Op(":=").ID("cors").Dot("New").Call(jen.ID("cors").Dot("Options").Valuesln(
+			jen.ID("ch").Op(":=").Qual("github.com/go-chi/cors", "New").Call(jen.Qual("github.com/go-chi/cors", "Options").Valuesln(
 				jen.Comment(`AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts`),
 				jen.ID("AllowedOrigins").Op(":").Index().ID("string").Values(jen.Lit("*")),
 				jen.Comment(`AllowOriginFunc:  func(r *http.Request, origin string) bool { return true }`),
@@ -53,8 +53,8 @@ func routesDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("router").Dot("Use").Callln(
-				jen.ID("middleware").Dot("RequestID"),
-				jen.ID("middleware").Dot("Timeout").Call(jen.ID("maxTimeout")),
+				jen.Qual("github.com/go-chi/chi/middleware", "RequestID"),
+				jen.Qual("github.com/go-chi/chi/middleware", "Timeout").Call(jen.ID("maxTimeout")),
 				jen.ID("s").Dot("loggingMiddleware"),
 				jen.ID("ch").Dot("Handler"),
 			),
@@ -62,7 +62,7 @@ func routesDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("all middleware must be defined before routes on a mux"),
 			jen.Line(),
 			jen.ID("router").Dot("Route").Call(jen.Lit("/_meta_"), jen.Func().Params(jen.ID("metaRouter").Qual("github.com/go-chi/chi", "Router")).Block(
-				jen.ID("health").Op(":=").ID("healthcheck").Dot("NewHandler").Call(),
+				jen.ID("health").Op(":=").Qual("github.com/heptiolabs/healthcheck", "NewHandler").Call(),
 				jen.Comment("Expose a liveness check on /live"),
 				jen.ID("metaRouter").Dot("Get").Call(jen.Lit("/live"), jen.ID("health").Dot("LiveEndpoint")),
 				jen.Comment("Expose a readiness check on /ready"),
@@ -164,7 +164,7 @@ func buildIterableAPIRoutes(pkg *models.Project) jen.Code {
 			jen.Comment(n.Plural()),
 			jen.Line(),
 			jen.ID("v1Router").Dot("Route").Call(jen.Litf("/%s", n.PluralRouteName()), jen.Func().Params(jen.IDf("%sRouter", n.PluralUnexportedVarName()).Qual("github.com/go-chi/chi", "Router")).Block(
-				jen.ID("sr").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PluralRouteName()), "URIParamKey")),
+				jen.ID("sr").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PackageName()), "URIParamKey")),
 				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("With").Call(jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("CreateHandler").Call()),
 				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ReadHandler").Call()),
 				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("With").Call(jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("sr"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("UpdateHandler").Call()),

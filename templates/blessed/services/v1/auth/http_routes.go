@@ -215,8 +215,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("_"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CycleSecretHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
-				jen.ID("s").Dot("cookieManager").Op("=").ID("securecookie").Dot("New").Callln(
-					jen.ID("securecookie").Dot("GenerateRandomKey").Call(jen.Lit(64)),
+				jen.ID("s").Dot("cookieManager").Op("=").Qual("github.com/gorilla/securecookie", "New").Callln(
+					jen.Qual("github.com/gorilla/securecookie", "GenerateRandomKey").Call(jen.Lit(64)),
 					jen.Index().ID("byte").Call(jen.ID("s").Dot("config").Dot("CookieSecret")),
 				),
 				jen.Line(),

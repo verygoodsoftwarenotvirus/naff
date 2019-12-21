@@ -32,7 +32,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("loggingMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.ID("ww").Op(":=").ID("middleware").Dot("NewWrapResponseWriter").Call(jen.ID("res"), jen.ID("req").Dot("ProtoMajor")),
+				jen.ID("ww").Op(":=").Qual("github.com/go-chi/chi/middleware", "NewWrapResponseWriter").Call(jen.ID("res"), jen.ID("req").Dot("ProtoMajor")),
 				jen.Line(),
 				jen.ID("start").Op(":=").Qual("time", "Now").Call(),
 				jen.ID("next").Dot("ServeHTTP").Call(jen.ID("ww"), jen.ID("req")),
