@@ -17,7 +17,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("main").Params().Block(
 			jen.Comment("initialize our logger of choice"),
-			jen.ID("logger").Op(":=").ID("zerolog").Dot("NewZeroLogger").Call(),
+			jen.ID("logger").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.Line(),
 			jen.Comment("find and validate our configuration filepath"),
 			jen.ID("configFilepath").Op(":=").Qual("os", "Getenv").Call(jen.Lit("CONFIGURATION_FILEPATH")),
