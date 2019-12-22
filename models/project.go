@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -129,49 +130,71 @@ type projectSurvey struct {
 }
 
 // CompleteSurvey asks the user questions to determine core project information
-func CompleteSurvey() (*Project, error) {
+func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, error) {
 	// the questions to ask
-	questions := []*survey.Question{
-		{
+	questions := []*survey.Question{}
+	p := projectSurvey{}
+
+	if projectName == "" {
+		questions = append(questions, &survey.Question{
 			Name:     "name",
 			Prompt:   &survey.Input{Message: "project name:"},
 			Validate: survey.Required,
-		},
-		{
+		})
+	} else {
+		p.Name = projectName
+	}
+
+	if sourceModels == "" {
+		questions = append(questions, &survey.Question{
 			Name: "modelsPackage",
 			Prompt: &survey.Input{
 				Message: "models package:",
 				Help:    `the input package that defines the base set of models (i.e. gitlab.com/verygoodsoftwarenotvirus/naff/example_models/todo)`,
 			},
 			Validate: survey.Required,
-		},
-		{
+		})
+	} else {
+		p.ModelsPackage = sourceModels
+	}
+
+	if outputPackage == "" {
+		questions = append(questions, &survey.Question{
 			Name: "outputRepository",
 			Prompt: &survey.Input{
 				Message: "output repository path:",
 				Help:    `the package path that the generated project will live in (i.e. gitlab.com/verygoodsoftwarenotvirus/whatever)`,
 			},
 			Validate: survey.Required,
-		},
-		{
-			Name: "enableNewsman",
-			Prompt: &survey.Confirm{
-				Message: "enable newsman?",
-				Default: true,
-				Help:    "generates newsman code",
-			},
-			Validate: survey.Required,
-		},
+		})
+	} else {
+		p.OutputRepository = outputPackage
 	}
 
+	// {
+	// 	Name: "enableNewsman",
+	// 	Prompt: &survey.Confirm{
+	// 		Message: "enable newsman?",
+	// 		Default: true,
+	// 		Help:    "generates newsman code",
+	// 	},
+	// 	Validate: survey.Required,
+	// },
+
 	// perform the questions
-	p := projectSurvey{}
 	if surveyErr := survey.Ask(questions, &p); surveyErr != nil {
 		return nil, surveyErr
 	}
-	os.RemoveAll(filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository))
+
+	targetDestination := filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository)
+	if strings.HasSuffix(targetDestination, "verygoodsoftwarenotvirus") {
+		log.Fatal("I don't think you actually want to do that.")
+	} else {
+		os.RemoveAll(targetDestination)
+	}
 
 	return &Project{
+		EnableNewsman: true,
 		Name:          wordsmith.FromSingularPascalCase(p.Name),
 		OutputPath:    p.OutputRepository,
 		sourcePackage: p.ModelsPackage,

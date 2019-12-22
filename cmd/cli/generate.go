@@ -25,6 +25,8 @@ import (
 )
 
 var (
+	projectName   string
+	sourceModels  string
 	outputPackage string
 
 	// generateCmd represents the generate command
@@ -91,7 +93,7 @@ and run:
 	That will set your dependencies up, and then you should be good to code.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			p, err := models.CompleteSurvey()
+			p, err := models.CompleteSurvey(projectName, sourceModels, outputPackage)
 			if err != nil {
 				return err
 			}
@@ -114,7 +116,9 @@ and run:
 )
 
 func init() {
-	generateCmd.Flags().StringVarP(&outputPackage, "output-package", "o", "", "Package to generate.")
+	generateCmd.Flags().StringVarP(&outputPackage, "name", "n", "", "project name.")
+	generateCmd.Flags().StringVarP(&outputPackage, "source-models", "m", "", "sources models package")
+	generateCmd.Flags().StringVarP(&outputPackage, "output-dir", "o", "", "Package to generate.")
 
 	rootCmd.AddCommand(generateCmd)
 }
