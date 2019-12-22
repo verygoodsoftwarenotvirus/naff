@@ -116,8 +116,8 @@ and run:
 )
 
 func init() {
-	generateCmd.Flags().StringVarP(&outputPackage, "name", "n", "", "project name.")
-	generateCmd.Flags().StringVarP(&outputPackage, "source-models", "m", "", "sources models package")
+	generateCmd.Flags().StringVarP(&projectName, "name", "n", "", "project name.")
+	generateCmd.Flags().StringVarP(&sourceModels, "source-models", "m", "", "sources models package")
 	generateCmd.Flags().StringVarP(&outputPackage, "output-dir", "o", "", "Package to generate.")
 
 	rootCmd.AddCommand(generateCmd)
