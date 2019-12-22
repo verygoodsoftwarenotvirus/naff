@@ -29,7 +29,7 @@ func initDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("init").Params().Block(
 			jen.ID("urlToUse").Op("=").ID("testutil").Dot("DetermineServiceURL").Call(),
 			jen.Line(),
-			jen.ID("logger").Op(":=").ID("zerolog").Dot("NewZeroLogger").Call(),
+			jen.ID("logger").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
 			jen.Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
 			jen.Line(),

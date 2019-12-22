@@ -22,7 +22,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("todoClient").Dot("URL").Dot("Port").Call(),
 			),
 			jen.Line(),
-			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.Qual("strings", "ToUpper").Call(jen.ID("totpSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.Qual("strings", "ToUpper").Call(jen.ID("totpSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 			jen.Line(),
 			jen.ID("bodyStr").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit(`
@@ -74,7 +74,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr"))),
 				jen.Line(),
 				jen.Comment("create login request"),
-				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
 				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("ucr").Dot("Username"),
@@ -114,7 +114,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ucr").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse").Values(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr"))),
 				jen.Line(),
-				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
 				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("ucr").Dot("Username"),
@@ -193,7 +193,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("create login request"),
-				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
 				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("ucr").Dot("Username"),
@@ -223,7 +223,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID("randString").Call(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
 				jen.Line(),
-				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("s"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("s"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
 				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("ui").Dot("Username"),
@@ -269,7 +269,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("create password update request"),
-				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
 				jen.ID("r").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
 					jen.ID("CurrentPassword").Op(":").ID("ui").Dot("Password"),
@@ -308,7 +308,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("StatusCode")),
 				jen.Line(),
 				jen.Comment("create login request"),
-				jen.List(jen.ID("newToken"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+				jen.List(jen.ID("newToken"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("newToken"), jen.ID("err")),
 				jen.List(jen.ID("l"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("user").Dot("Username"),
@@ -341,7 +341,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 				jen.Line(),
 				jen.Comment("create TOTP secret update request"),
-				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+				jen.List(jen.ID("token"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.ID("err")),
 				jen.ID("ir").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Valuesln(
 					jen.ID("CurrentPassword").Op(":").ID("ui").Dot("Password"),
@@ -384,7 +384,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("StatusCode")),
 				jen.Line(),
 				jen.Comment("create login request"),
-				jen.List(jen.ID("newToken"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("r").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+				jen.List(jen.ID("newToken"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("r").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("newToken"), jen.ID("err")),
 				jen.List(jen.ID("l"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("user").Dot("Username"),

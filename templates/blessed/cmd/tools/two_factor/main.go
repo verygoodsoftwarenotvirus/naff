@@ -125,7 +125,7 @@ and logging in.`)
 		jen.Func().ID("doTheThing").Params(jen.ID("secret").ID("string")).Block(
 			jen.ID("t").Op(":=").Qual("strings", "ToUpper").Call(jen.ID("secret")),
 			jen.ID("n").Op(":=").Qual("time", "Now").Call().Dot("UTC").Call(),
-			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.ID("t"), jen.ID("n")),
+			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("t"), jen.ID("n")),
 			jen.ID("mustnt").Call(jen.ID("err")),
 			jen.Line(),
 			jen.If(jen.ID("code").Op("!=").ID("currentCode")).Block(
@@ -133,7 +133,7 @@ and logging in.`)
 				jen.ID("currentCode").Op("=").ID("code"),
 			),
 			jen.Line(),
-			jen.If(jen.Op("!").ID("totp").Dot("Validate").Call(jen.ID("code"), jen.ID("t"))).Block(
+			jen.If(jen.Op("!").Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("code"), jen.ID("t"))).Block(
 				jen.ID("panic").Call(jen.Lit("this shouldn't happen")),
 			),
 			jen.Line(),

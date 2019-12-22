@@ -160,7 +160,7 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 			"User",
 		)).Params(jen.Op("*").Qual("net/http", "Cookie"), jen.ID("error")).Block(
 			jen.ID("uri").Op(":=").ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("users"), jen.Lit("login")),
-			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Call(jen.Qual("strings", "ToUpper").Call(jen.ID("u").Dot("TwoFactorSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.Qual("strings", "ToUpper").Call(jen.ID("u").Dot("TwoFactorSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("generating totp token: %w"), jen.ID("err"))),
 			),
@@ -210,7 +210,7 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
 			jen.ID("firstOAuth2ClientURI").Op(":=").ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("oauth2"), jen.Lit("client")),
 			jen.Line(),
-			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").ID("totp").Dot("GenerateCode").Callln(
+			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Callln(
 				jen.Qual("strings", "ToUpper").Call(jen.ID("u").Dot("TwoFactorSecret")),
 				jen.Qual("time", "Now").Call().Dot("UTC").Call(),
 			),
@@ -253,7 +253,7 @@ cookie problems!
 			jen.Var().ID("o").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
 			jen.Line(),
 			jen.Var().ID("command").Qual("fmt", "Stringer"),
-			jen.If(jen.List(jen.ID("command"), jen.ID("err")).Op("=").ID("http2curl").Dot("GetCurlCommand").Call(jen.ID("req")), jen.ID("err").Op("==").ID("nil")).Block(
+			jen.If(jen.List(jen.ID("command"), jen.ID("err")).Op("=").Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID("req")), jen.ID("err").Op("==").ID("nil")).Block(
 				jen.Qual("log", "Println").Call(jen.ID("command").Dot("String").Call()),
 			),
 			jen.Line(),
