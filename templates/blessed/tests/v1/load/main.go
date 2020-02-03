@@ -25,7 +25,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Setup implement's hazana's Attacker interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Setup").Params(jen.ID("c").ID("hazana").Dot("Config")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Setup").Params(jen.ID("c").Qual("github.com/emicklei/hazana", "Config")).Params(jen.ID("error")).Block(
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
@@ -34,20 +34,20 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Do implement's hazana's Attacker interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Do").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("hazana").Dot("DoResult")).Block(
+		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Do").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Qual("github.com/emicklei/hazana", "DoResult")).Block(
 			jen.Comment("Do performs one request and is executed in a separate goroutine."),
 			jen.Comment("The context is used to cancel the request on timeout."),
 			jen.ID("act").Op(":=").ID("RandomAction").Call(jen.ID("a").Dot("todoClient")),
 			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("act").Dot("Action").Call(),
 			jen.If(jen.ID("err").Op("!=").ID("nil").Op("||").ID("req").Op("==").ID("nil")).Block(
 				jen.If(jen.ID("err").Op("==").ID("ErrUnavailableYet")).Block(
-					jen.Return().ID("hazana").Dot("DoResult").Valuesln(
+					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Valuesln(
 						jen.ID("RequestLabel").Op(":").ID("act").Dot("Name"),
 						jen.ID("Error").Op(":").ID("nil"), jen.ID("StatusCode").Op(":").Lit(200),
 					),
 				),
 				jen.Qual("log", "Printf").Call(jen.Lit("something has gone awry: %v\n"), jen.ID("err")),
-				jen.Return().ID("hazana").Dot("DoResult").Values(jen.ID("Error").Op(":").ID("err")),
+				jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Values(jen.ID("Error").Op(":").ID("err")),
 			),
 			jen.Line(),
 			jen.Var().Defs(
@@ -58,7 +58,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			jen.If(jen.ID("req").Dot("Body").Op("!=").ID("nil")).Block(
 				jen.List(jen.ID("bi"), jen.ID("err")).Op("=").Qual("io/ioutil", "ReadAll").Call(jen.ID("req").Dot("Body")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.Return().ID("hazana").Dot("DoResult").Values(jen.ID("Error").Op(":").ID("err")),
+					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Values(jen.ID("Error").Op(":").ID("err")),
 				),
 				jen.ID("rdr").Op(":=").Qual("io/ioutil", "NopCloser").Call(jen.Qual("bytes", "NewBuffer").Call(jen.ID("bi"))),
 				jen.ID("req").Dot("Body").Op("=").ID("rdr"),
@@ -70,7 +70,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 				jen.ID("bo").Op("=").ID("res").Dot("ContentLength"),
 			),
 			jen.Line(),
-			jen.ID("dr").Op(":=").ID("hazana").Dot("DoResult").Valuesln(
+			jen.ID("dr").Op(":=").Qual("github.com/emicklei/hazana", "DoResult").Valuesln(
 				jen.ID("RequestLabel").Op(":").ID("act").Dot("Name"),
 				jen.ID("Error").Op(":").ID("err"),
 				jen.ID("StatusCode").Op(":").ID("sc"),
@@ -93,7 +93,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Clone implements hazana's Attacker interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Clone").Params().Params(jen.ID("hazana").Dot("Attack")).Block(
+		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Clone").Params().Params(jen.Qual("github.com/emicklei/hazana", "Attack")).Block(
 			jen.Return().ID("a"),
 		),
 		jen.Line(),
@@ -113,7 +113,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.ID("attacker").Op(":=").Op("&").ID("ServiceAttacker").Values(jen.ID("todoClient").Op(":").ID("todoClient")),
-			jen.ID("cfg").Op(":=").ID("hazana").Dot("Config").Valuesln(
+			jen.ID("cfg").Op(":=").Qual("github.com/emicklei/hazana", "Config").Valuesln(
 				jen.ID("RPS").Op(":").Lit(50),
 				jen.ID("AttackTimeSec").Op(":").ID("int").Call(jen.ID("runTime").Dot("Seconds").Call()),
 				jen.ID("RampupTimeSec").Op(":").Lit(5),
@@ -122,13 +122,13 @@ func mainDotGo(pkg *models.Project) *jen.File {
 				jen.ID("DoTimeoutSec").Op(":").Lit(10),
 			),
 			jen.Line(),
-			jen.ID("r").Op(":=").ID("hazana").Dot("Run").Call(jen.ID("attacker"), jen.ID("cfg")),
+			jen.ID("r").Op(":=").Qual("github.com/emicklei/hazana", "Run").Call(jen.ID("attacker"), jen.ID("cfg")),
 			jen.Line(),
 			jen.Comment("inspect the report and compute whether the test has failed"),
 			jen.Comment("e.g by looking at the success percentage and mean response time of each metric."),
 			jen.ID("r").Dot("Failed").Op("=").ID("false"),
 			jen.Line(),
-			jen.ID("hazana").Dot("PrintReport").Call(jen.ID("r")),
+			jen.Qual("github.com/emicklei/hazana", "PrintReport").Call(jen.ID("r")),
 		),
 		jen.Line(),
 	)
