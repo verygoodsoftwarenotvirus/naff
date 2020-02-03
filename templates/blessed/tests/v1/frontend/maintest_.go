@@ -15,8 +15,8 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("T").Op("*").Qual("testing", "T"), jen.ID("tp").ID("testProvider")).Block(
 			jen.For(jen.List(jen.ID("_"), jen.ID("bn")).Op(":=").Range().Index().ID("string").Values(jen.Lit("firefox"), jen.Lit("chrome"))).Block(
 				jen.ID("browserName").Op(":=").ID("bn"),
-				jen.ID("caps").Op(":=").ID("selenium").Dot("Capabilities").Values(jen.Lit("browserName").Op(":").ID("browserName")),
-				jen.List(jen.ID("wd"), jen.ID("err")).Op(":=").ID("selenium").Dot("NewRemote").Call(jen.ID("caps"), jen.ID("seleniumHubAddr")),
+				jen.ID("caps").Op(":=").Qual("github.com/tebeka/selenium", "Capabilities").Values(jen.Lit("browserName").Op(":").ID("browserName")),
+				jen.List(jen.ID("wd"), jen.ID("err")).Op(":=").Qual("github.com/tebeka/selenium", "NewRemote").Call(jen.ID("caps"), jen.ID("seleniumHubAddr")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("panic").Call(jen.ID("err")),
 				),
@@ -29,19 +29,19 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("testProvider").Func().Params(jen.ID("driver").ID("selenium").Dot("WebDriver")).Func().Params(jen.ID("t").Op("*").Qual("testing", "T")),
+		jen.Type().ID("testProvider").Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").Op("*").Qual("testing", "T")),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().ID("TestLoginPage").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("runTestOnAllSupportedBrowsers").Call(jen.ID("T"), jen.Func().Params(jen.ID("driver").ID("selenium").Dot("WebDriver")).Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("runTestOnAllSupportedBrowsers").Call(jen.ID("T"), jen.Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.Return().Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 					jen.Comment("Navigate to the login page"),
 					jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("driver").Dot("Get").Call(jen.ID("urlToUse").Op("+").Lit("/login"))),
 					jen.Line(),
 					jen.Comment("fetch the button"),
-					jen.List(jen.ID("elem"), jen.ID("err")).Op(":=").ID("driver").Dot("FindElement").Call(jen.ID("selenium").Dot("ByID"), jen.Lit("loginButton")),
+					jen.List(jen.ID("elem"), jen.ID("err")).Op(":=").ID("driver").Dot("FindElement").Call(jen.Qual("github.com/tebeka/selenium", "ByID"), jen.Lit("loginButton")),
 					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 						jen.ID("panic").Call(jen.ID("err")),
 					),
