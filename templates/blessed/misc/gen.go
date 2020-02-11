@@ -730,7 +730,7 @@ linters-settings:
     local-prefixes: %s
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
-    min-complexity: 10
+    min-complexity: 20
   gosec:
     exclude:
       - G304
@@ -748,7 +748,7 @@ linters-settings:
   lll:
     # max line length, lines longer will be reported. Default is 120.
     # '\t' is counted as 1 character by default, and can be changed with the tab-width option
-    line-length: 140
+    line-length: 251
     # tab width in spaces. Default to 1.
     tab-width: 1
   misspell:
