@@ -296,7 +296,7 @@ func loadTestsDotJSON(projectName, dbName wordsmith.SuperPalabra) models.DockerC
 					Dockerfile: "dockerfiles/load-tests.Dockerfile",
 				},
 				Environment: map[string]string{
-					"TARGET_ADDRESS": "http://todo-server:8888",
+					"TARGET_ADDRESS": fmt.Sprintf("http://%s:8888", serviceName),
 				},
 				Links: []string{
 					serviceName,

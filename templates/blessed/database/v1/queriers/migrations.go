@@ -177,7 +177,7 @@ func makeMigrations(pkg *models.Project, dbVendor wordsmith.SuperPalabra) []jen.
 				"updated_on" BIGINT DEFAULT NULL,
 				"archived_on" BIGINT DEFAULT NULL,
 				"belongs_to" BIGINT NOT NULL,
-				FOREIGN KEY(belongs_to) REFERENCES users(id)
+				FOREIGN KEY ("belongs_to") REFERENCES "users"("id")
 			);`),
 			},
 			{

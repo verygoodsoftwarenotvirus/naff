@@ -61,7 +61,13 @@ func (s *SuperWord) PluralRouteName() string {
 }
 
 func (s *SuperWord) UnexportedVarName() string {
-	return kace.Camel(s.meta)
+	x := strings.ToLower(s.meta)
+	switch x {
+	case "case", "chan", "const", "continue", "default", "defer", "else", "fallthrough", "for", "func", "go", "goto", "if", "iota", "import", "interface", "map", "package", "range", "return", "select", "struct", "switch", "type", "var":
+		return kace.Camel(fmt.Sprintf("_%s", s.meta))
+	default:
+		return kace.Camel(s.meta)
+	}
 }
 
 func (s *SuperWord) PluralUnexportedVarName() string {
