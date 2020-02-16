@@ -48,7 +48,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				jen.Lit("created_on"),
 				jen.Lit("updated_on"),
 				jen.Lit("archived_on"),
-				jen.Lit("belongs_to"),
+				jen.Lit("belongs_to_user"),
 			),
 		),
 		jen.Line(),
@@ -80,7 +80,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				jen.Op("&").ID("x").Dot("CreatedOn"),
 				jen.Op("&").ID("x").Dot("UpdatedOn"),
 				jen.Op("&").ID("x").Dot("ArchivedOn"),
-				jen.Op("&").ID("x").Dot("BelongsTo"),
+				jen.Op("&").ID("x").Dot("BelongsToUser"),
 			), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
@@ -138,7 +138,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				Dotln("From").Call(jen.ID("webhooksTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("webhookID"),
-				jen.Lit("belongs_to").Op(":").ID("userID"),
+				jen.Lit("belongs_to_user").Op(":").ID("userID"),
 			)).Dot("ToSql").Call(),
 			jen.Line(),
 			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
@@ -179,7 +179,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				Dotln("Select").Call(jen.ID("CountQuery")).
 				Dotln("From").Call(jen.ID("webhooksTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				jen.Lit("belongs_to").Op(":").ID("userID"),
+				jen.Lit("belongs_to_user").Op(":").ID("userID"),
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)),
 			jen.Line(),
@@ -353,7 +353,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				Dotln("Select").Call(jen.ID("webhooksTableColumns").Op("...")).
 				Dotln("From").Call(jen.ID("webhooksTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				jen.Lit("belongs_to").Op(":").ID("userID"),
+				jen.Lit("belongs_to_user").Op(":").ID("userID"),
 				jen.Lit("archived_on").Op(":").ID("nil")),
 			),
 			jen.Line(),
@@ -418,7 +418,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 			jen.Lit("events"),
 			jen.Lit("data_types"),
 			jen.Lit("topics"),
-			jen.Lit("belongs_to"),
+			jen.Lit("belongs_to_user"),
 		}
 		vals := []jen.Code{
 			jen.ID("x").Dot("Name"),
@@ -428,7 +428,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 			jen.Qual("strings", "Join").Call(jen.ID("x").Dot("Events"), jen.ID("eventsSeparator")),
 			jen.Qual("strings", "Join").Call(jen.ID("x").Dot("DataTypes"), jen.ID("typesSeparator")),
 			jen.Qual("strings", "Join").Call(jen.ID("x").Dot("Topics"), jen.ID("topicsSeparator")),
-			jen.ID("x").Dot("BelongsTo"),
+			jen.ID("x").Dot("BelongsToUser"),
 		}
 
 		if isMariaDB {
@@ -497,7 +497,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				jen.ID("Events").Op(":").ID("input").Dot("Events"),
 				jen.ID("DataTypes").Op(":").ID("input").Dot("DataTypes"),
 				jen.ID("Topics").Op(":").ID("input").Dot("Topics"),
-				jen.ID("BelongsTo").Op(":").ID("input").Dot("BelongsTo"),
+				jen.ID("BelongsToUser").Op(":").ID("input").Dot("BelongsToUser"),
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildWebhookCreationQuery").Call(jen.ID("x")),
@@ -557,7 +557,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 			Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 			jen.Lit("id").Op(":").ID("input").Dot("ID"),
-			jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo")),
+			jen.Lit("belongs_to_user").Op(":").ID("input").Dot("BelongsToUser")),
 		)
 
 		if isPostgres {
@@ -617,7 +617,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 			Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 			jen.Lit("id").Op(":").ID("webhookID"),
-			jen.Lit("belongs_to").Op(":").ID("userID"),
+			jen.Lit("belongs_to_user").Op(":").ID("userID"),
 			jen.Lit("archived_on").Op(":").ID("nil"),
 		))
 

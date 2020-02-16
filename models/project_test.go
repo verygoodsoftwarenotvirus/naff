@@ -49,13 +49,15 @@ type Item struct{
 						ValidForUpdateInput:   true,
 					},
 				},
+				BelongsToUser: true,
 			},
 		}
 		expectedImports := []string{
 			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
 		}
 
-		actualDataTypes, actualImports := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		assert.NoError(t, err)
 
 		assert.Equal(t, expectedDataTypes, actualDataTypes)
 		assert.Equal(t, expectedImports, actualImports)
@@ -99,13 +101,15 @@ type Item struct{
 						ValidForUpdateInput:   true,
 					},
 				},
+				BelongsToUser: true,
 			},
 		}
 		expectedImports := []string{
 			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
 		}
 
-		actualDataTypes, actualImports := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		assert.NoError(t, err)
 
 		assert.Equal(t, expectedDataTypes, actualDataTypes)
 		assert.Equal(t, expectedImports, actualImports)
@@ -147,13 +151,15 @@ type Item struct{
 						ValidForUpdateInput:   true,
 					},
 				},
+				BelongsToUser: true,
 			},
 		}
 		expectedImports := []string{
 			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
 		}
 
-		actualDataTypes, actualImports := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		assert.NoError(t, err)
 
 		assert.Equal(t, expectedDataTypes, actualDataTypes)
 		assert.Equal(t, expectedImports, actualImports)
@@ -195,15 +201,162 @@ type Item struct{
 						ValidForUpdateInput:   false,
 					},
 				},
+				BelongsToUser: true,
 			},
 		}
 		expectedImports := []string{
 			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
 		}
 
-		actualDataTypes, actualImports := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		assert.NoError(t, err)
 
 		assert.Equal(t, expectedDataTypes, actualDataTypes)
 		assert.Equal(t, expectedImports, actualImports)
+	})
+
+	T.Run("with meta field indicating belonging to another object", func(t *testing.T) {
+		exampleOutputPath := "things/stuff"
+		exampleCode := `
+package whatever
+
+type Owner struct {
+	FirstName string
+}
+
+type Item struct{
+	Name string
+	Details string
+	_META_ uintptr ` + "`" + `belongs_to:"Owner"` + "`" + `
+}
+`
+		fset := token.NewFileSet()
+		f, err := parser.ParseFile(fset, "", exampleCode, parser.AllErrors)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		expectedDataTypes := []DataType{
+			{
+				Name: wordsmith.FromSingularPascalCase("Owner"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("FirstName"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				BelongsToUser: true,
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("Item"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Details"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				BelongsToUser:   true,
+				BelongsToStruct: wordsmith.FromSingularPascalCase("Owner"),
+			},
+		}
+		expectedImports := []string{
+			fmt.Sprintf("%s/services/v1/owners", exampleOutputPath),
+			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+		}
+
+		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		assert.NoError(t, err)
+
+		assert.Equal(t, expectedImports, actualImports)
+		assert.Equal(t, len(expectedDataTypes), len(actualDataTypes))
+		assert.Equal(t, expectedDataTypes, actualDataTypes)
+	})
+
+	T.Run("with meta field indicating belonging to nothing", func(t *testing.T) {
+		exampleOutputPath := "things/stuff"
+		exampleCode := `
+package whatever
+
+type Item struct{
+	Name string
+	Details string
+	_META_ uintptr ` + "`" + `belongs_to:"__nobody__"` + "`" + `
+}
+`
+		fset := token.NewFileSet()
+		f, err := parser.ParseFile(fset, "", exampleCode, parser.AllErrors)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		expectedDataTypes := []DataType{
+			{
+				Name: wordsmith.FromSingularPascalCase("Item"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Details"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				BelongsToUser: false,
+			},
+		}
+		expectedImports := []string{
+			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+		}
+
+		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		assert.NoError(t, err)
+
+		assert.Equal(t, expectedImports, actualImports)
+		assert.Equal(t, len(expectedDataTypes), len(actualDataTypes))
+		assert.Equal(t, expectedDataTypes, actualDataTypes)
+	})
+
+	T.Run("with invalid ownership arrangement", func(t *testing.T) {
+		exampleOutputPath := "things/stuff"
+		exampleCode := `
+package whatever
+
+type Item struct{
+	Name string
+	Details string
+	_META_ uintptr ` + "`" + `belongs_to:"Owner"` + "`" + `
+}
+`
+		fset := token.NewFileSet()
+		f, err := parser.ParseFile(fset, "", exampleCode, parser.AllErrors)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		_, _, actualErr := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		assert.Error(t, actualErr)
 	})
 }

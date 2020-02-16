@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -14,10 +15,21 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
+const (
+	metaFlag = "_META_"
+
+	belongsTo    = "belongs_to"
+	notCreatable = "!creatable"
+	notEditable  = "!editable"
+)
+
 // DataType represents a data model
 type DataType struct {
-	Name   wordsmith.SuperPalabra
-	Fields []DataField
+	Name            wordsmith.SuperPalabra
+	BelongsToUser   bool
+	BelongsToNobody bool
+	BelongsToStruct wordsmith.SuperPalabra
+	Fields          []DataField
 }
 
 // DataField represents a data model's field
@@ -50,7 +62,11 @@ func (p *Project) ParseModels(outputPath string) error {
 	}
 
 	for _, pkg := range packages {
-		dts, imps := parseModels(p.OutputPath, pkg.Files)
+		dts, imps, err := parseModels(p.OutputPath, pkg.Files)
+		if err != nil {
+			return fmt.Errorf("attempting to read package %s: %w", pkg.Name, err)
+		}
+
 		p.DataTypes = append(p.DataTypes, dts...)
 		p.iterableServicesImports = append(p.iterableServicesImports, imps...)
 	}
@@ -58,13 +74,14 @@ func (p *Project) ParseModels(outputPath string) error {
 	return nil
 }
 
-func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []DataType, imports []string) {
+func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []DataType, imports []string, returnErr error) {
 	for _, file := range pkgFiles {
 		ast.Inspect(file, func(n ast.Node) bool {
 			if dec, ok := n.(*ast.TypeSpec); ok {
 				dt := DataType{
-					Name:   wordsmith.FromSingularPascalCase(dec.Name.Name),
-					Fields: []DataField{},
+					Name:          wordsmith.FromSingularPascalCase(dec.Name.Name),
+					Fields:        []DataField{},
+					BelongsToUser: true,
 				}
 
 				if _, ok := dec.Type.(*ast.StructType); !ok {
@@ -73,8 +90,9 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 				}
 
 				for _, field := range dec.Type.(*ast.StructType).Fields.List {
+					fn := field.Names[0].Name
 					df := DataField{
-						Name:                  wordsmith.FromSingularPascalCase(field.Names[0].Name),
+						Name:                  wordsmith.FromSingularPascalCase(fn),
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					}
@@ -86,25 +104,81 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 						df.Type = y.X.(*ast.Ident).Name
 					}
 
-					var tag string
-					if field != nil && field.Tag != nil {
-						tag = strings.Replace(strings.Replace(
-							strings.Replace(field.Tag.Value, `naff:`, "", 1),
-							"`", "", -1), `"`, "", -1)
-					}
-
-					for _, t := range strings.Split(tag, ",") {
-						switch strings.ToLower(strings.TrimSpace(t)) {
-						case "!creatable":
-							df.ValidForCreationInput = false
-						case "!editable":
-							df.ValidForUpdateInput = false
+					// check if this is the meta flag
+					if fn == metaFlag && df.Type == "uintptr" {
+						// since found the meta flag, process its directives
+						var tag string
+						if field != nil && field.Tag != nil {
+							tag = field.Tag.Value
 						}
+
+						// check belonging
+						if strings.Contains(tag, "belongs_to") {
+							tagWithoutBackticks := strings.ReplaceAll(tag, "`", "")
+							tagWithoutBelongsTo := strings.ReplaceAll(tagWithoutBackticks, fmt.Sprintf("%s:", belongsTo), "")
+							ownerWithoutQuotes := strings.ReplaceAll(tagWithoutBelongsTo, `"`, ``)
+
+							if ownerWithoutQuotes == "__nobody__" {
+								dt.BelongsToUser = false
+								dt.BelongsToNobody = true
+							} else if ownerWithoutQuotes != "" {
+								dt.BelongsToStruct = wordsmith.FromSingularPascalCase(ownerWithoutQuotes)
+							}
+						}
+					} else {
+						var tag string
+						if field != nil && field.Tag != nil {
+							tag = strings.Replace(
+								strings.Replace(
+									strings.Replace(field.Tag.Value,
+										`naff:`, "", 1,
+									),
+									"`", "", -1,
+								),
+								`"`, "", -1,
+							)
+						}
+
+						for _, t := range strings.Split(tag, ",") {
+							switch strings.ToLower(strings.TrimSpace(t)) {
+							case notCreatable:
+								df.ValidForCreationInput = false
+							case notEditable:
+								df.ValidForUpdateInput = false
+							}
+						}
+
+						dt.Fields = append(dt.Fields, df)
 					}
-					dt.Fields = append(dt.Fields, df)
 				}
 
 				dataTypes = append(dataTypes, dt)
+
+				// BEGIN check for invalid ownership arrangements
+				var owners = map[string]string{}
+				var names = []string{}
+				for _, typ := range dataTypes {
+					names = append(names, typ.Name.Singular())
+					if typ.BelongsToStruct != nil && typ.BelongsToStruct.Plural() != "" {
+						owners[typ.Name.Singular()] = typ.BelongsToStruct.Singular()
+					}
+				}
+
+				for dt, owner := range owners {
+					var ownerFound bool
+					for _, name := range names {
+						if name == owner {
+							ownerFound = true
+						}
+					}
+
+					if !ownerFound {
+						returnErr = fmt.Errorf("invalid ownership arrangement: %s belongs to %q, which does not exist", dt, owner)
+						return false
+					}
+				}
+				// END check for invalid ownership arrangements
+
 				imports = append(
 					imports,
 					filepath.Join(

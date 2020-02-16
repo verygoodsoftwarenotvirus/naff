@@ -44,7 +44,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.Lit("created_on"),
 				jen.Lit("updated_on"),
 				jen.Lit("archived_on"),
-				jen.Lit("belongs_to"),
+				jen.Lit("belongs_to_user"),
 			),
 		),
 		jen.Line(),
@@ -70,7 +70,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.Op("&").ID("x").Dot("CreatedOn"),
 				jen.Op("&").ID("x").Dot("UpdatedOn"),
 				jen.Op("&").ID("x").Dot("ArchivedOn"),
-				jen.Op("&").ID("x").Dot("BelongsTo"),
+				jen.Op("&").ID("x").Dot("BelongsToUser"),
 			), jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("err")),
 			),
@@ -251,7 +251,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("clientID"),
-				jen.Lit("belongs_to").Op(":").ID("userID"),
+				jen.Lit("belongs_to_user").Op(":").ID("userID"),
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)).Dot("ToSql").Call(),
 			jen.Line(),
@@ -298,7 +298,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				Dotln("Select").Call(jen.ID("CountQuery")).
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				jen.Lit("belongs_to").Op(":").ID("userID"),
+				jen.Lit("belongs_to_user").Op(":").ID("userID"),
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)),
 			jen.Line(),
@@ -390,7 +390,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Op("...")).
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				jen.Lit("belongs_to").Op(":").ID("userID"),
+				jen.Lit("belongs_to_user").Op(":").ID("userID"),
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)),
 			jen.Line(),
@@ -462,7 +462,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			jen.Lit("client_secret"),
 			jen.Lit("scopes"),
 			jen.Lit("redirect_uri"),
-			jen.Lit("belongs_to"),
+			jen.Lit("belongs_to_user"),
 		}
 
 		vals := []jen.Code{
@@ -471,7 +471,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			jen.ID("input").Dot("ClientSecret"),
 			jen.Qual("strings", "Join").Call(jen.ID("input").Dot("Scopes"), jen.ID("scopesSeparator")),
 			jen.ID("input").Dot("RedirectURI"),
-			jen.ID("input").Dot("BelongsTo"),
+			jen.ID("input").Dot("BelongsToUser"),
 		}
 
 		if isMariaDB {
@@ -540,7 +540,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.ID("ClientSecret").Op(":").ID("input").Dot("ClientSecret"),
 				jen.ID("RedirectURI").Op(":").ID("input").Dot("RedirectURI"),
 				jen.ID("Scopes").Op(":").ID("input").Dot("Scopes"),
-				jen.ID("BelongsTo").Op(":").ID("input").Dot("BelongsTo")),
+				jen.ID("BelongsToUser").Op(":").ID("input").Dot("BelongsToUser")),
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildCreateOAuth2ClientQuery").Call(jen.ID("x")),
 			jen.Line(),
 		}
@@ -595,7 +595,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 			jen.Lit("id").Op(":").ID("input").Dot("ID"),
-			jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo"),
+			jen.Lit("belongs_to_user").Op(":").ID("input").Dot("BelongsToUser"),
 		))
 
 		if isPostgres {
@@ -661,7 +661,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 			jen.Lit("id").Op(":").ID("clientID"),
-			jen.Lit("belongs_to").Op(":").ID("userID"),
+			jen.Lit("belongs_to_user").Op(":").ID("userID"),
 		))
 
 		if isPostgres {

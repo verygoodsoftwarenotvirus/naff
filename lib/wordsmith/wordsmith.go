@@ -11,7 +11,7 @@ import (
 func FromSingularPascalCase(input string) SuperPalabra {
 	if len(input) > 0 {
 		return &SuperWord{
-			meta:       kace.Pascal(input),
+			meta:       kace.Pascal(strings.TrimSpace(input)),
 			pluralizer: pluralize.NewClient(),
 		}
 	}
