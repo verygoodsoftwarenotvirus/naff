@@ -1213,7 +1213,7 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 		expectedQuery = fmt.Sprintf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to_%s = %s LIMIT 20", cols, tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, 0))
 		expectedOwnerID = fmt.Sprintf("example%sID", typ.BelongsToStruct.Singular())
 		bodyBlock = append(bodyBlock, jen.IDf(expectedOwnerID).Op(":=").ID("uint64").Call(jen.Lit(321)))
-	} else {
+	} else if typ.BelongsToNobody {
 		expectedQuery = fmt.Sprintf("SELECT %s FROM %s WHERE archived_on IS NULL LIMIT 20", cols, tn)
 	}
 
@@ -1225,8 +1225,13 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 		jen.Line(),
 		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID(expectedOwnerID), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 	)
+
+	if typ.BelongsToUser || typ.BelongsToStruct != nil {
+		bodyBlock = append(bodyBlock,
+			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID(expectedOwnerID), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
+		)
+	}
 
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_buildGet%sQuery", dbvsn, pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
