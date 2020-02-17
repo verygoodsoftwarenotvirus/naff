@@ -236,6 +236,32 @@ func (s *Statement) Index(items ...Code) *Statement {
 	return s
 }
 
+// Slice is an alias of INdex
+func Slice(items ...Code) *Statement {
+	return newStatement().Index(items...)
+}
+
+// Slice is an alias of INdex
+func (g *Group) Slice(items ...Code) *Statement {
+	s := Index(items...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// Slice is an alias of INdex
+func (s *Statement) Slice(items ...Code) *Statement {
+	g := &Group{
+		close:     "]",
+		items:     items,
+		multi:     false,
+		name:      "index",
+		open:      "[",
+		separator: ":",
+	}
+	*s = append(*s, g)
+	return s
+}
+
 // IndexFunc renders a colon separated list enclosed by square brackets. Use for array / slice indexes and definitions.
 func IndexFunc(f func(*Group)) *Statement {
 	return newStatement().IndexFunc(f)

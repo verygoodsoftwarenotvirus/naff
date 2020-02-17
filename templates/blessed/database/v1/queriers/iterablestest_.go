@@ -252,24 +252,47 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 	tn := typ.Name.PluralRouteName() // table name
 
 	expectQueryArgs := buildExpectQueryArgs("expected", typ)
-
 	updateCols := buildUpdateQueryParts(dbrn, typ)
 	updateColsStr := strings.Join(updateCols, ", ")
 
-	buildFirstSubtest := func() []jen.Code {
+	var (
+		expectedQuery string
+		queryTail     string
+	)
+
+	if isPostgres(dbvendor) {
+		queryTail = " RETURNING updated_on"
+	}
+
+	if typ.BelongsToUser {
+		expectedQuery = fmt.Sprintf("UPDATE %s SET %s, updated_on = %s WHERE belongs_to_user = %s AND id = %s%s", tn, updateColsStr, getTimeQuery(dbrn), getIncIndex(dbrn, uint(len(updateCols))), getIncIndex(dbrn, uint(len(updateCols))+1), queryTail)
+	} else if typ.BelongsToStruct != nil {
+		expectedQuery = fmt.Sprintf("UPDATE %s SET %s, updated_on = %s WHERE belongs_to_%s = %s AND id = %s%s", tn, updateColsStr, getTimeQuery(dbrn), typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, uint(len(updateCols))), getIncIndex(dbrn, uint(len(updateCols))+1), queryTail)
+	} else {
+		expectedQuery = fmt.Sprintf("UPDATE %s SET %s, updated_on = %s WHERE id = %s%s", tn, updateColsStr, getTimeQuery(dbrn), getIncIndex(dbrn, uint(len(updateCols))), queryTail)
+	}
+
+	actuallyBuildFirstSubTest := func() []jen.Code {
 		var (
-			expectFuncName string
+			expectFuncName,
+			returnFuncName string
+			exRows jen.Code
 		)
 
 		if isPostgres(dbvendor) {
 			expectFuncName = "ExpectQuery"
+			returnFuncName = "WillReturnRows"
+
+			exRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			expectFuncName = "ExpectExec"
+			returnFuncName = "WillReturnResult"
+
+			exRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
 		}
 
 		lines := []jen.Code{}
 		expectedValues := []jen.Code{jen.ID("ID").Op(":").Lit(123)}
-
 		if typ.BelongsToUser {
 			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
 			expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").ID("expectedUserID"))
@@ -281,11 +304,13 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 
 		lines = append(lines,
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
-			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1)),
+			exRows,
 			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(expectFuncName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-				Dotln("WithArgs").Callln(expectQueryArgs...).Dot("WillReturnResult").Call(jen.ID("exampleRows")),
+				Dotln("WithArgs").Callln(
+				expectQueryArgs...,
+			).Dot(returnFuncName).Call(jen.ID("exampleRows")),
 			jen.Line(),
 			jen.ID("err").Op(":=").ID(dbfl).Dotf("Update%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected")),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
@@ -346,30 +371,13 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 		return out
 	}
 
-	var (
-		expectedQuery string
-		queryTail     string
-	)
-
-	if isPostgres(dbvendor) {
-		queryTail = " RETURNING archived_on"
-	}
-
-	if typ.BelongsToUser {
-		expectedQuery = fmt.Sprintf("UPDATE %s SET %s, updated_on = %s WHERE belongs_to_user = %s AND id = %s%s", tn, updateColsStr, getTimeQuery(dbrn), getIncIndex(dbrn, uint(len(updateCols))), getIncIndex(dbrn, uint(len(updateCols))+1), queryTail)
-	} else if typ.BelongsToStruct != nil {
-		expectedQuery = fmt.Sprintf("UPDATE %s SET %s, updated_on = %s WHERE belongs_to_%s = %s AND id = %s%s", tn, updateColsStr, getTimeQuery(dbrn), typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, uint(len(updateCols))), getIncIndex(dbrn, uint(len(updateCols))+1), queryTail)
-	} else {
-		expectedQuery = fmt.Sprintf("UPDATE %s SET %s, updated_on = %s WHERE id = %s%s", tn, updateColsStr, getTimeQuery(dbrn), getIncIndex(dbrn, uint(len(updateCols))), queryTail)
-	}
-
 	return []jen.Code{
 		jen.Func().IDf("Test%s_Update%s", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildFirstSubtest()...)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(actuallyBuildFirstSubTest()...)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildSecondSubtest(pkg, dbvendor, typ)...)),
 		),
@@ -751,7 +759,7 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 	insertPlaceholders := strings.Join(ips, ",")
 
 	if isPostgres(dbvendor) {
-		createdOnValueAdd = ",NOW()"
+		queryTail = " RETURNING id, created_on"
 	} else if isMariaDB(dbvendor) {
 		createdOnAddendum = ",created_on"
 		createdOnValueAdd = ",UNIX_TIMESTAMP()"
@@ -810,13 +818,6 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 	}
 
 	buildFirstSubtest := func(pkg *models.Project, typ models.DataType) []jen.Code {
-		fieldCols := buildNonStandardStringColumns(typ)
-
-		var queryTail string
-		if isPostgres(dbvendor) {
-			queryTail = " RETURNING id, created_on"
-		}
-
 		out := []jen.Code{}
 		expectedValues := []jen.Code{jen.ID("ID").Op(":").Lit(123)}
 
@@ -839,7 +840,6 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 					jen.ID("expected").Dot("ID"),
 					jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO %s (%s,belongs_to) VALUES (%s)%s", tn, strings.ReplaceAll(fieldCols, " ", ""), insertPlaceholders, queryTail),
 			)
 		}
 
@@ -852,7 +852,7 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 
 		if isPostgres(dbvendor) {
 			out = append(out,
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCreationQuery"))).
 					Dotln("WithArgs").Callln(
 					nef...,
 				).Dot("WillReturnRows").Call(jen.ID("exampleRows")),
@@ -970,9 +970,8 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbv
 		baseFuncName = fmt.Sprintf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular())
 		testFuncName = fmt.Sprintf("Test%s_%s", dbvsn, baseFuncName)
 		expectedQuery = fmt.Sprintf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to_%s = %s", cols, tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, 0))
-	} else {
-		// we don't need to consider this case
 	}
+	// we don't need to consider the case where this object belongs to nothing
 
 	return []jen.Code{
 		jen.Func().ID(testFuncName).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
@@ -1249,6 +1248,15 @@ func buildTestDBBuildGetSomethingQuery(dbvendor wordsmith.SuperPalabra, typ mode
 	tn := typ.Name.PluralRouteName() // table name
 	cols := buildStringColumns(typ)
 
+	var query string
+	if typ.BelongsToUser {
+		query = fmt.Sprintf("SELECT %s FROM %s WHERE belongs_to_user = %s AND id = %s", cols, tn, getIncIndex(dbrn, 0), getIncIndex(dbrn, 1))
+	} else if typ.BelongsToStruct != nil {
+		query = fmt.Sprintf("SELECT %s FROM %s WHERE belongs_to_%s = %s AND id = %s", cols, tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, 0), getIncIndex(dbrn, 1))
+	} else {
+		query = fmt.Sprintf("SELECT %s FROM %s id = %s", cols, tn, getIncIndex(dbrn, 0))
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_buildGet%sQuery", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -1259,7 +1267,7 @@ func buildTestDBBuildGetSomethingQuery(dbvendor wordsmith.SuperPalabra, typ mode
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.Line(),
 				jen.ID("expectedArgCount").Op(":=").Lit(2),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT %s FROM %s WHERE belongs_to = %s AND id = %s", cols, tn, getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
+				jen.ID("expectedQuery").Op(":=").Lit(query),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("example%sID", sn), jen.ID("exampleUserID")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -1282,11 +1290,20 @@ func buildTestDBGetSomething(pkg *models.Project, dbvendor wordsmith.SuperPalabr
 	tn := typ.Name.PluralRouteName() // table name
 	cols := buildStringColumns(typ)
 
+	var query string
+	if typ.BelongsToUser {
+		query = fmt.Sprintf("SELECT %s FROM %s WHERE belongs_to_user = %s AND id = %s", cols, tn, getIncIndex(dbrn, 0), getIncIndex(dbrn, 1))
+	} else if typ.BelongsToStruct != nil {
+		query = fmt.Sprintf("SELECT %s FROM %s WHERE belongs_to_%s = %s AND id = %s", cols, tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, 0), getIncIndex(dbrn, 1))
+	} else {
+		query = fmt.Sprintf("SELECT %s FROM %s id = %s", cols, tn, getIncIndex(dbrn, 0))
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_Get%s", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedQuery").Op(":=").Litf("SELECT %s FROM %s WHERE belongs_to = %s AND id = %s", cols, tn, getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
+			jen.ID("expectedQuery").Op(":=").Lit(query),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
@@ -1338,6 +1355,15 @@ func buildTestDBBuildGetSomethingCountQuery(pkg *models.Project, dbvendor wordsm
 	dbvsn := dbvendor.Singular()
 	tn := typ.Name.PluralRouteName() // table name
 
+	var query string
+	if typ.BelongsToUser {
+		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", tn, getIncIndex(dbrn, 0))
+	} else if typ.BelongsToStruct != nil {
+		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to_%s = %s LIMIT 20", tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, 0))
+	} else {
+		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL LIMIT 20", tn)
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_buildGet%sCountQuery", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -1347,7 +1373,7 @@ func buildTestDBBuildGetSomethingCountQuery(pkg *models.Project, dbvendor wordsm
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.Line(),
 				jen.ID("expectedArgCount").Op(":=").Lit(1),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", tn, getIncIndex(dbrn, 0)),
+				jen.ID("expectedQuery").Op(":=").Lit(query),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sCountQuery", sn).Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -1368,13 +1394,22 @@ func buildTestDBGetSomethingCount(pkg *models.Project, dbvendor wordsmith.SuperP
 	dbvsn := dbvendor.Singular()
 	tn := typ.Name.PluralRouteName() // table name
 
+	var query string
+	if typ.BelongsToUser {
+		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", tn, getIncIndex(dbrn, 0))
+	} else if typ.BelongsToStruct != nil {
+		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to_%s = %s LIMIT 20", tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, 0))
+	} else {
+		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL LIMIT 20", tn)
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_Get%sCount", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", tn, getIncIndex(dbrn, 0)),
+				jen.ID("expectedQuery").Op(":=").Lit(query),
 				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),

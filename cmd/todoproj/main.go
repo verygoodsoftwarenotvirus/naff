@@ -36,45 +36,45 @@ func main() {
 				},
 				BelongsToUser: true,
 			},
-			{
-				Name: wordsmith.FromSingularPascalCase("First"),
-				Fields: []models.DataField{
-					{
-						Name:                  wordsmith.FromSingularPascalCase("Name"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-				},
-				BelongsToUser: true,
-			},
-			{
-				Name: wordsmith.FromSingularPascalCase("Second"),
-				Fields: []models.DataField{
-					{
-						Name:                  wordsmith.FromSingularPascalCase("Name"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("First"),
-			},
-			{
-				Name: wordsmith.FromSingularPascalCase("Third"),
-				Fields: []models.DataField{
-					{
-						Name:                  wordsmith.FromSingularPascalCase("Name"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Second"),
-			},
+			// {
+			// 	Name: wordsmith.FromSingularPascalCase("First"),
+			// 	Fields: []models.DataField{
+			// 		{
+			// 			Name:                  wordsmith.FromSingularPascalCase("Name"),
+			// 			Type:                  "string",
+			// 			Pointer:               false,
+			// 			ValidForCreationInput: true,
+			// 			ValidForUpdateInput:   true,
+			// 		},
+			// 	},
+			// 	BelongsToUser: true,
+			// },
+			// {
+			// 	Name: wordsmith.FromSingularPascalCase("Second"),
+			// 	Fields: []models.DataField{
+			// 		{
+			// 			Name:                  wordsmith.FromSingularPascalCase("Name"),
+			// 			Type:                  "string",
+			// 			Pointer:               false,
+			// 			ValidForCreationInput: true,
+			// 			ValidForUpdateInput:   true,
+			// 		},
+			// 	},
+			// 	BelongsToStruct: wordsmith.FromSingularPascalCase("First"),
+			// },
+			// {
+			// 	Name: wordsmith.FromSingularPascalCase("Third"),
+			// 	Fields: []models.DataField{
+			// 		{
+			// 			Name:                  wordsmith.FromSingularPascalCase("Name"),
+			// 			Type:                  "string",
+			// 			Pointer:               false,
+			// 			ValidForCreationInput: true,
+			// 			ValidForUpdateInput:   true,
+			// 		},
+			// 	},
+			// 	BelongsToStruct: wordsmith.FromSingularPascalCase("Second"),
+			// },
 		},
 	}
 
