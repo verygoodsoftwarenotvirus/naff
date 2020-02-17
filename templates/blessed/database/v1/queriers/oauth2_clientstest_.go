@@ -85,6 +85,8 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 		jen.Func().IDf("Test%s_GetOAuth2ClientByClientID", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
+			jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND client_id = %s", getIncIndex(dbrn, 0)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -95,7 +97,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
 				jen.Line(),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND client_id = %s", getIncIndex(dbrn, 0)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -111,7 +112,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND client_id = %s", getIncIndex(dbrn, 0)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -136,7 +136,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
 				jen.Line(),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND client_id = %s", getIncIndex(dbrn, 0)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -171,6 +170,8 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 		jen.Func().IDf("Test%s_GetAllOAuth2Clients", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
+			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
@@ -181,7 +182,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 						jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 					),
 				),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
@@ -198,8 +198,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
@@ -212,8 +210,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error executing query"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -236,8 +232,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 					),
 				),
 				jen.Line(),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID("expected").Index(jen.Lit(0)))),
@@ -256,6 +250,8 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 		jen.Func().IDf("Test%s_GetAllOAuth2ClientsForUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
+			jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
@@ -267,7 +263,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 						jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 					),
 				),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
@@ -285,7 +280,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -300,7 +294,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -322,7 +315,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 					jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -363,6 +355,8 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 		jen.Func().IDf("Test%s_GetOAuth2Client", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
+			jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
@@ -372,7 +366,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("things")),
 				),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -395,7 +388,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("things")),
 				),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -418,7 +410,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 					jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -538,6 +529,8 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 		jen.Func().IDf("Test%s_GetOAuth2Clients", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
+			jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
@@ -558,7 +551,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 				),
 				jen.Line(),
 				jen.ID("filter").Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", getIncIndex(dbrn, 0)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -580,7 +572,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
@@ -595,7 +586,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
@@ -625,7 +615,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 						),
 					),
 				),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
@@ -654,7 +643,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 						),
 					),
 				),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", getIncIndex(dbrn, 0)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -761,6 +749,18 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 		jen.Func().IDf("Test%s_CreateOAuth2Client", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
+			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to_user%s) VALUES (%s,%s,%s,%s,%s,%s%s)%s",
+				createdOnCol,
+				getIncIndex(dbrn, 0),
+				getIncIndex(dbrn, 1),
+				getIncIndex(dbrn, 2),
+				getIncIndex(dbrn, 3),
+				getIncIndex(dbrn, 4),
+				getIncIndex(dbrn, 5),
+				createdOnVal,
+				queryTail,
+			),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
@@ -774,17 +774,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 					jen.ID("BelongsToUser").Op(":").ID("expected").Dot("BelongsToUser"),
 				),
 				createOAuth2ClientExampleRows,
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to_user%s) VALUES (%s,%s,%s,%s,%s,%s%s)%s",
-					createdOnCol,
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					createdOnVal,
-					queryTail,
-				),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(happyPathExpectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
@@ -816,17 +805,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 				jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
 					jen.ID("BelongsToUser").Op(":").ID("expected").Dot("BelongsToUser")),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to_user%s) VALUES (%s,%s,%s,%s,%s,%s%s)%s",
-					createdOnCol,
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					createdOnVal,
-					queryTail,
-				),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(happyPathExpectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
@@ -913,17 +891,18 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 		jen.Func().IDf("Test%s_UpdateOAuth2Client", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
+			jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET client_id = %s, client_secret = %s, scopes = %s, redirect_uri = %s, updated_on = %s WHERE belongs_to_user = %s AND id = %s%s",
+				getIncIndex(dbrn, 0),
+				getIncIndex(dbrn, 1),
+				getIncIndex(dbrn, 2),
+				getIncIndex(dbrn, 3),
+				getTimeQuery(dbrn),
+				getIncIndex(dbrn, 4),
+				getIncIndex(dbrn, 5),
+				queryTail,
+			),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET client_id = %s, client_secret = %s, scopes = %s, redirect_uri = %s, updated_on = %s WHERE belongs_to_user = %s AND id = %s%s",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					queryTail,
-				),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -936,16 +915,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET client_id = %s, client_secret = %s, scopes = %s, redirect_uri = %s, updated_on = %s WHERE belongs_to_user = %s AND id = %s%s",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					queryTail,
-				),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -997,14 +966,15 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 		jen.Func().IDf("Test%s_ArchiveOAuth2Client", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
+			jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET updated_on = %s, archived_on = %s WHERE belongs_to_user = %s AND id = %s%s",
+				getTimeQuery(dbrn),
+				getTimeQuery(dbrn),
+				getIncIndex(dbrn, 0),
+				getIncIndex(dbrn, 1),
+				queryTail,
+			),
+			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET updated_on = %s, archived_on = %s WHERE belongs_to_user = %s AND id = %s%s",
-					getTimeQuery(dbrn),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					queryTail,
-				),
 				jen.ID("exampleClientID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.Line(),
@@ -1020,13 +990,6 @@ func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) 
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET updated_on = %s, archived_on = %s WHERE belongs_to_user = %s AND id = %s%s",
-					getTimeQuery(dbrn),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					queryTail,
-				),
 				jen.ID("exampleClientID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.Line(),

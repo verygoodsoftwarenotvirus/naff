@@ -197,10 +197,10 @@ func buildScanFields(typ models.DataType) (scanFields []jen.Code) {
 // what's the difference between these two things
 func buildScanSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	pcnwp := typ.Name.PluralCommonNameWithPrefix()
+	pscnwp := typ.Name.ProperSingularCommonNameWithPrefix()
 
 	return []jen.Code{
-		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct", sn, pcnwp),
+		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct", sn, pscnwp),
 		jen.Line(),
 		jen.Func().IDf("scan%s", sn).Params(jen.ID("scan").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Scanner")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
 			func() []jen.Code {

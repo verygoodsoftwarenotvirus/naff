@@ -1,10 +1,11 @@
-GOPATH            := $(GOPATH)
-COVERAGE_OUT      := coverage.out
-INSTALL_PATH      := ~/.bin
-EMBEDDED_PACKAGE  := embedded
-GO_FORMAT         := gofmt -s -w
-THIS_PKG          := gitlab.com/verygoodsoftwarenotvirus/naff
-VERSION := $(shell git rev-parse HEAD)
+GOPATH             := $(GOPATH)
+COVERAGE_OUT       := coverage.out
+INSTALL_PATH       := ~/.bin
+EMBEDDED_PACKAGE   := embedded
+GO_FORMAT          := gofmt -s -w
+THIS_PKG           := gitlab.com/verygoodsoftwarenotvirus/naff
+VERSION            := $(shell git rev-parse HEAD)
+EXAMPLE_OUTPUT_DIR := example_output
 
 ## Project prerequisites
 .PHONY: deps
@@ -63,9 +64,13 @@ install:
 example_output_subdirs:
 	for dir in `go list gitlab.com/verygoodsoftwarenotvirus/todo/...`; do mkdir -p `echo $$dir | sed -r 's/gitlab\.com\/verygoodsoftwarenotvirus\/todo/example_output/g')`; done
 
-.PHONY: example_output
-example_output:
+.PHONY: $(EXAMPLE_OUTPUT_DIR)
+$(EXAMPLE_OUTPUT_DIR):
 	@go run cmd/todoproj/main.go
+
+.PHONY: clean_example_output
+clean_example_output:
+	rm -rf $(EXAMPLE_OUTPUT_DIR)
 
 .PHONY: install-tojen
 install-tojen:
@@ -76,8 +81,8 @@ format:
 	for file in `find $(PWD) -name '*.go'`; do $(GO_FORMAT) $$file; done
 
 .PHONY: compare
-compare:
-	meld example_output ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
+compare: clean_example_output $(EXAMPLE_OUTPUT_DIR)
+	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
 
 docker-image:
 	docker build --tag naff:latest --file Dockerfile .

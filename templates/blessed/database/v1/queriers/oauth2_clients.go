@@ -26,6 +26,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Const().Defs(
 			jen.ID("scopesSeparator").Op("=").Lit(`,`),
 			jen.ID("oauth2ClientsTableName").Op("=").Lit("oauth2_clients"),
+			jen.ID("oauth2ClientsTableOwnershipColumn").Op("=").Lit("belongs_to_user"),
 		),
 		jen.Line(),
 	)
@@ -44,7 +45,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.Lit("created_on"),
 				jen.Lit("updated_on"),
 				jen.Lit("archived_on"),
-				jen.Lit("belongs_to_user"),
+				jen.ID("oauth2ClientsTableOwnershipColumn"),
 			),
 		),
 		jen.Line(),
@@ -251,7 +252,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 				jen.Lit("id").Op(":").ID("clientID"),
-				jen.Lit("belongs_to_user").Op(":").ID("userID"),
+				jen.ID("oauth2ClientsTableOwnershipColumn").Op(":").ID("userID"),
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)).Dot("ToSql").Call(),
 			jen.Line(),
@@ -298,7 +299,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				Dotln("Select").Call(jen.ID("CountQuery")).
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				jen.Lit("belongs_to_user").Op(":").ID("userID"),
+				jen.ID("oauth2ClientsTableOwnershipColumn").Op(":").ID("userID"),
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)),
 			jen.Line(),
@@ -390,7 +391,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Op("...")).
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				jen.Lit("belongs_to_user").Op(":").ID("userID"),
+				jen.ID("oauth2ClientsTableOwnershipColumn").Op(":").ID("userID"),
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)),
 			jen.Line(),
@@ -462,7 +463,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			jen.Lit("client_secret"),
 			jen.Lit("scopes"),
 			jen.Lit("redirect_uri"),
-			jen.Lit("belongs_to_user"),
+			jen.ID("oauth2ClientsTableOwnershipColumn"),
 		}
 
 		vals := []jen.Code{
@@ -595,7 +596,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 			jen.Lit("id").Op(":").ID("input").Dot("ID"),
-			jen.Lit("belongs_to_user").Op(":").ID("input").Dot("BelongsToUser"),
+			jen.ID("oauth2ClientsTableOwnershipColumn").Op(":").ID("input").Dot("BelongsToUser"),
 		))
 
 		if isPostgres {
@@ -661,7 +662,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
 			jen.Lit("id").Op(":").ID("clientID"),
-			jen.Lit("belongs_to_user").Op(":").ID("userID"),
+			jen.ID("oauth2ClientsTableOwnershipColumn").Op(":").ID("userID"),
 		))
 
 		if isPostgres {

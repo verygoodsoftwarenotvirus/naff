@@ -102,9 +102,14 @@ func RenderProject(in *naffmodels.Project) error {
 
 	if in != nil {
 		for _, x := range packageRenderers {
+
 			if x.activated {
 				wg.Add(1)
 				go func(taskName string, renderer renderHelper) {
+					if x.name == "queriers" {
+						println()
+					}
+
 					start := time.Now()
 					if err := renderer.renderFunc(in); err != nil {
 						log.Printf("error rendering %q after %s: %v\n", taskName, time.Since(start), err)
