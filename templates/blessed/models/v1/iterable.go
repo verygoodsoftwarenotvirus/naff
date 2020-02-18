@@ -9,10 +9,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func buildBaseModelStructFields(fields []models.DataField) []jen.Code {
+func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 	out := []jen.Code{jen.ID("ID").ID("uint64").Tag(jsonTag("id"))}
 
-	for _, field := range fields {
+	for _, field := range typ.Fields {
 		if field.Pointer {
 			out = append(out, jen.ID(field.Name.Singular()).Op("*").ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
 		} else {
@@ -24,16 +24,21 @@ func buildBaseModelStructFields(fields []models.DataField) []jen.Code {
 		jen.ID("CreatedOn").ID("uint64").Tag(jsonTag("created_on")),
 		jen.ID("UpdatedOn").Op("*").ID("uint64").Tag(jsonTag("updated_on")),
 		jen.ID("ArchivedOn").Op("*").ID("uint64").Tag(jsonTag("archived_on")),
-		jen.ID("BelongsTo").ID("uint64").Tag(jsonTag("belongs_to")),
 	)
+
+	if typ.BelongsToUser {
+		out = append(out, jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("belongs_to_user")))
+	} else if typ.BelongsToStruct != nil {
+		out = append(out, jen.ID("BelongsTo").ID("uint64").Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
+	}
 
 	return out
 }
 
-func buildUpdateModelStructFields(fields []models.DataField) []jen.Code {
+func buildUpdateModelStructFields(typ models.DataType) []jen.Code {
 	var out []jen.Code
 
-	for _, field := range fields {
+	for _, field := range typ.Fields {
 		if field.ValidForUpdateInput {
 			if field.Pointer {
 				out = append(out, jen.ID(field.Name.Singular()).Op("*").ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
@@ -43,14 +48,19 @@ func buildUpdateModelStructFields(fields []models.DataField) []jen.Code {
 		}
 	}
 
-	out = append(out, jen.ID("BelongsTo").ID("uint64").Tag(jsonTag("-")))
+	if typ.BelongsToUser {
+		out = append(out, jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("-")))
+	} else if typ.BelongsToStruct != nil {
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).ID("uint64").Tag(jsonTag("-")))
+	}
+
 	return out
 }
 
-func buildCreateModelStructFields(fields []models.DataField) []jen.Code {
+func buildCreateModelStructFields(typ models.DataType) []jen.Code {
 	var out []jen.Code
 
-	for _, field := range fields {
+	for _, field := range typ.Fields {
 		if field.ValidForCreationInput {
 			if field.Pointer {
 				out = append(out, jen.ID(field.Name.Singular()).Op("*").ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
@@ -60,7 +70,12 @@ func buildCreateModelStructFields(fields []models.DataField) []jen.Code {
 		}
 	}
 
-	out = append(out, jen.ID("BelongsTo").ID("uint64").Tag(jsonTag("-")))
+	if typ.BelongsToUser {
+		out = append(out, jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("-")))
+	} else if typ.BelongsToStruct != nil {
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).ID("uint64").Tag(jsonTag("-")))
+	}
+
 	return out
 }
 
@@ -79,7 +94,7 @@ func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Type().Defs(
 			jen.Commentf("%s represents %s", sn, cnwp),
-			jen.ID(sn).Struct(buildBaseModelStructFields(typ.Fields)...),
+			jen.ID(sn).Struct(buildBaseModelStructFields(typ)...),
 			jen.Line(),
 			jen.Commentf("%sList represents a list of %s", sn, pcn),
 			jen.IDf("%sList", sn).Struct(
@@ -88,10 +103,10 @@ func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 			jen.Line(),
 			jen.Commentf("%sCreationInput represents what a user could set as input for creating %s", sn, pcn),
-			jen.IDf("%sCreationInput", sn).Struct(buildCreateModelStructFields(typ.Fields)...),
+			jen.IDf("%sCreationInput", sn).Struct(buildCreateModelStructFields(typ)...),
 			jen.Line(),
 			jen.Commentf("%sUpdateInput represents what a user could set as input for updating %s", sn, pcn),
-			jen.IDf("%sUpdateInput", sn).Struct(buildUpdateModelStructFields(typ.Fields)...),
+			jen.IDf("%sUpdateInput", sn).Struct(buildUpdateModelStructFields(typ)...),
 			jen.Line(),
 			jen.Commentf("%sDataManager describes a structure capable of storing %s permanently", sn, pcn),
 			jen.IDf("%sDataManager", sn).Interface(
