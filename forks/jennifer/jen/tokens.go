@@ -210,6 +210,28 @@ func (s *Statement) Opln(op string) *Statement {
 	return s
 }
 
+// Assign renders the colon equals ( `:=` ) operator
+func Assign() *Statement {
+	return newStatement().Op(":=")
+}
+
+// Assign renders the colon equals ( `:=` ) operator
+func (g *Group) Assign() *Statement {
+	s := Op(":=")
+	g.items = append(g.items, s)
+	return s
+}
+
+// Assign renders the colon equals ( `:=` ) operator
+func (s *Statement) Assign() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: ":=",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // Dot renders a period followed by an identifier. Use for fields and selectors.
 func Dot(name string) *Statement {
 	// notest
