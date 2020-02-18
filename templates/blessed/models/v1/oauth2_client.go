@@ -64,7 +64,7 @@ func oauth2ClientDotGo(pkg *models.Project) *jen.File {
 				jen.ID("CreatedOn").ID("uint64").Tag(jsonTag("created_on")),
 				jen.ID("UpdatedOn").Op("*").ID("uint64").Tag(jsonTag("updated_on")),
 				jen.ID("ArchivedOn").Op("*").ID("uint64").Tag(jsonTag("archived_on")),
-				jen.ID("BelongsTo").ID("uint64").Tag(jsonTag("belongs_to")),
+				jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("belongs_to_user")),
 			),
 			jen.Line(),
 			jen.Comment("OAuth2ClientList is a response struct containing a list of OAuth2Clients"),
@@ -80,7 +80,7 @@ func oauth2ClientDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ClientID").ID("string").Tag(jsonTag("-")),
 				jen.ID("ClientSecret").ID("string").Tag(jsonTag("-")),
 				jen.ID("RedirectURI").ID("string").Tag(jsonTag("redirect_uri")),
-				jen.ID("BelongsTo").ID("uint64").Tag(jsonTag("belongs_to")),
+				jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("-")),
 				jen.ID("Scopes").Index().ID("string").Tag(jsonTag("scopes")),
 			),
 			jen.Line(),
@@ -129,7 +129,7 @@ func oauth2ClientDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("GetUserID returns the client's UserID"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("OAuth2Client")).ID("GetUserID").Params().Params(jen.ID("string")).Block(
-			jen.Return().Qual("strconv", "FormatUint").Call(jen.ID("c").Dot("BelongsTo"), jen.Lit(10)),
+			jen.Return().Qual("strconv", "FormatUint").Call(jen.ID("c").Dot("BelongsToUser"), jen.Lit(10)),
 		),
 		jen.Line(),
 	)

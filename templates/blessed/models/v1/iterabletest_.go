@@ -26,12 +26,9 @@ func iterableTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	buildHappyPathBlock := func() []jen.Code {
 		lines := []jen.Code{
-
 			jen.ID("i").Op(":=").Op("&").ID(sn).Values(),
 			jen.Line(),
-			jen.ID("expected").Op(":=").Op("&").IDf("%sUpdateInput", sn).Valuesln(
-				updateCols...,
-			),
+			jen.ID("expected").Op(":=").Op("&").IDf("%sUpdateInput", sn).Valuesln(updateCols...),
 			jen.Line(),
 			jen.ID("i").Dot("Update").Call(jen.ID("expected")),
 		}
@@ -43,9 +40,7 @@ func iterableTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				buildHappyPathBlock()...,
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildHappyPathBlock()...)),
 		),
 		jen.Line(),
 	)

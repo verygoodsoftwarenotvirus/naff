@@ -91,6 +91,65 @@ func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	pcn := n.PluralCommonName()
 	prn := n.PluralRouteName()
 
+	interfaceMethods := []jen.Code{}
+
+	getSomethingParams := []jen.Code{jen.ID("ctx").Qual("context", "Context")}
+	secondGetSomethingParams := []jen.Code{jen.IDf("%sID", uvn)}
+
+	getSomethingCountParams := []jen.Code{
+		jen.ID("ctx").Qual("context", "Context"),
+		jen.ID("filter").Op("*").ID("QueryFilter"),
+	}
+	getAllSomethingCount := []jen.Code{jen.ID("ctx").Qual("context", "Context")}
+	getListOfSomethingParams := []jen.Code{
+		jen.ID("ctx").Qual("context", "Context"),
+		jen.ID("filter").Op("*").ID("QueryFilter"),
+	}
+	archiveSomethingParams := []jen.Code{jen.ID("ctx").Qual("context", "Context")}
+	secondArchiveSomethingParams := []jen.Code{jen.IDf("%sID", uvn)}
+
+	if typ.BelongsToUser {
+		secondGetSomethingParams = append(secondGetSomethingParams, jen.ID("userID"))
+		secondArchiveSomethingParams = append(secondArchiveSomethingParams, jen.ID("userID"))
+
+		getSomethingCountParams = append(getSomethingCountParams, jen.ID("userID").ID("uint64"))
+		getListOfSomethingParams = append(getListOfSomethingParams, jen.ID("userID").ID("uint64"))
+	} else if typ.BelongsToStruct != nil {
+		secondGetSomethingParams = append(secondGetSomethingParams, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+		secondArchiveSomethingParams = append(secondArchiveSomethingParams, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+
+		getSomethingCountParams = append(getSomethingCountParams, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64"))
+		getListOfSomethingParams = append(getListOfSomethingParams, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64"))
+	}
+
+	getSomethingParams = append(getSomethingParams, jen.List(secondGetSomethingParams...).ID("uint64"))
+	archiveSomethingParams = append(archiveSomethingParams, jen.List(secondArchiveSomethingParams...).ID("uint64"))
+
+	interfaceMethods = append(interfaceMethods,
+		jen.IDf("Get%s", sn).Params(getSomethingParams...).Params(jen.Op("*").ID(sn), jen.ID("error")),
+		jen.IDf("Get%sCount", sn).Params(getSomethingCountParams...).Params(jen.ID("uint64"), jen.ID("error")),
+		jen.IDf("GetAll%sCount", pn).Params(getAllSomethingCount...).Params(jen.ID("uint64"), jen.ID("error")),
+		jen.IDf("Get%s", pn).Params(getListOfSomethingParams...).Params(jen.Op("*").IDf("%sList", sn), jen.ID("error")),
+	)
+
+	if typ.BelongsToUser {
+		interfaceMethods = append(interfaceMethods, jen.IDf("GetAll%sForUser", pn).Params(
+			jen.ID("ctx").Qual("context", "Context"),
+			jen.ID("userID").ID("uint64"),
+		).Params(jen.Index().ID(sn), jen.ID("error")))
+	} else if typ.BelongsToStruct != nil {
+		interfaceMethods = append(interfaceMethods, jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(
+			jen.ID("ctx").Qual("context", "Context"),
+			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64"),
+		).Params(jen.Index().ID(sn), jen.ID("error")))
+	}
+
+	interfaceMethods = append(interfaceMethods,
+		jen.IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").IDf("%sCreationInput", sn)).Params(jen.Op("*").ID(sn), jen.ID("error")),
+		jen.IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").ID(sn)).Params(jen.ID("error")),
+		jen.IDf("Archive%s", sn).Params(archiveSomethingParams...).Params(jen.ID("error")),
+	)
+
 	ret.Add(
 		jen.Type().Defs(
 			jen.Commentf("%s represents %s", sn, cnwp),
@@ -109,16 +168,7 @@ func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.IDf("%sUpdateInput", sn).Struct(buildUpdateModelStructFields(typ)...),
 			jen.Line(),
 			jen.Commentf("%sDataManager describes a structure capable of storing %s permanently", sn, pcn),
-			jen.IDf("%sDataManager", sn).Interface(
-				jen.IDf("Get%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID(sn), jen.ID("error")),
-				jen.IDf("Get%sCount", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")),
-				jen.IDf("GetAll%sCount", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")),
-				jen.IDf("Get%s", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").IDf("%sList", sn), jen.ID("error")),
-				jen.IDf("GetAll%sForUser", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().ID(sn), jen.ID("error")),
-				jen.IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").IDf("%sCreationInput", sn)).Params(jen.Op("*").ID(sn), jen.ID("error")),
-				jen.IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").ID(sn)).Params(jen.ID("error")),
-				jen.IDf("Archive%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("id"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")),
-			),
+			jen.IDf("%sDataManager", sn).Interface(interfaceMethods...),
 			jen.Line(),
 			jen.Commentf("%sDataServer describes a structure capable of serving traffic related to %s", sn, pcn),
 			jen.IDf("%sDataServer", sn).Interface(
