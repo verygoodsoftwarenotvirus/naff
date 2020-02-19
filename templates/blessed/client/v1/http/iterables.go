@@ -14,22 +14,36 @@ import (
 func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
+	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
+
+	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	ret.Add(jen.Const().Defs(
+		jen.ID(basePath).Op("=").Lit(typ.Name.PluralRouteName())),
+	)
+
+	ret.Add(buildBuildGetSomethingRequestFuncDecl(pkg, typ)...)
+	ret.Add(buildGetSomethingFuncDecl(pkg, typ)...)
+	ret.Add(buildBuildGetSomethingsRequestFuncDecl(pkg, typ)...)
+	ret.Add(buildGetSomethingsFuncDecl(pkg, typ)...)
+	ret.Add(buildBuildCreateSomethingRequestFuncDecl(pkg, typ)...)
+	ret.Add(buildCreateSomethingFuncDecl(pkg, typ)...)
+	ret.Add(buildBuildUpdateSomethingRequestFuncDecl(pkg, typ)...)
+	ret.Add(buildUpdateSomethingFuncDecl(pkg, typ)...)
+	ret.Add(buildBuildArchiveSomethingRequestFuncDecl(pkg, typ)...)
+	ret.Add(buildArchiveSomethingFuncDecl(pkg, typ)...)
+
+	return ret
+}
+
+func buildBuildGetSomethingRequestFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular()
-	vn := typ.Name.UnexportedVarName()
 	pvn := typ.Name.PluralUnexportedVarName()
-	prn := typ.Name.PluralRouteName()
-	tp := typ.Name.Plural() // title plural
 
 	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
 	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
 	basePath := fmt.Sprintf("%sBasePath", pvn)
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
-	ret.Add(jen.Const().Defs(
-		jen.ID(basePath).Op("=").Lit(prn)),
-	)
-
-	ret.Add(
+	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching %s", ts, commonNameWithPrefix)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildGet%sRequest", ts)).Params(
@@ -55,9 +69,19 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildGetSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular()
+	vn := typ.Name.UnexportedVarName()
+
+	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
+	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
+
+	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("Get%s retrieves %s", ts, commonNameWithPrefix)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Get%s", ts)).Params(utils.CtxParam(), jen.ID("id").ID("uint64")).Params(
@@ -78,9 +102,18 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.Return().List(jen.ID(vn), jen.ID("nil")),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildBuildGetSomethingsRequestFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	tp := typ.Name.Plural() // title plural
+	pvn := typ.Name.PluralUnexportedVarName()
+
+	basePath := fmt.Sprintf("%sBasePath", pvn)
+
+	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching %s", tp, typ.Name.PluralCommonName())),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildGet%sRequest", tp)).Params(
@@ -102,9 +135,17 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildGetSomethingsFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular()
+	tp := typ.Name.Plural() // title plural
+	pvn := typ.Name.PluralUnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("Get%s retrieves a list of %s", tp, typ.Name.PluralCommonName())),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Get%s", tp)).Params(
@@ -140,9 +181,20 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.Return().List(jen.ID(pvn), jen.ID("nil")),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildBuildCreateSomethingRequestFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular()
+	pvn := typ.Name.PluralUnexportedVarName()
+
+	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
+	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
+	basePath := fmt.Sprintf("%sBasePath", pvn)
+
+	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildCreate%sRequest builds an HTTP request for creating %s", ts, commonNameWithPrefix)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildCreate%sRequest", ts)).Params(
@@ -164,9 +216,19 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildCreateSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular()
+	vn := typ.Name.UnexportedVarName()
+
+	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
+	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
+
+	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("Create%s creates %s", ts, commonNameWithPrefix)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Create%s", ts)).Params(
@@ -203,9 +265,20 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildBuildUpdateSomethingRequestFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular()
+	pvn := typ.Name.PluralUnexportedVarName()
+
+	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
+	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
+	basePath := fmt.Sprintf("%sBasePath", pvn)
+
+	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildUpdate%sRequest builds an HTTP request for updating %s", ts, commonNameWithPrefix)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildUpdate%sRequest", ts)).Params(
@@ -231,9 +304,18 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildUpdateSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular()
+
+	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
+	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
+
+	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("Update%s updates %s", ts, commonNameWithPrefix)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Update%s", ts)).Params(utils.CtxParam(), jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts)).Params(jen.ID("error")).Block(
@@ -258,9 +340,20 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildBuildArchiveSomethingRequestFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular()
+	pvn := typ.Name.PluralUnexportedVarName()
+
+	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
+	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
+	basePath := fmt.Sprintf("%sBasePath", pvn)
+
+	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildArchive%sRequest builds an HTTP request for updating %s", ts, commonNameWithPrefix)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildArchive%sRequest", ts)).Params(
@@ -286,9 +379,18 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildArchiveSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular()
+
+	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
+	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
+
+	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("Archive%s archives %s", ts, commonNameWithPrefix)),
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Archive%s", ts)).Params(
@@ -315,6 +417,7 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("nil"),
 			),
 		),
-	)
-	return ret
+	}
+
+	return lines
 }

@@ -19,26 +19,29 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 
 		for _, typ := range pkg.DataTypes {
 			sn := typ.Name.Singular()
-			args = append(args, jen.IDf("Provide%sServiceUserIDFetcher", sn))
+
+			if typ.BelongsToUser {
+				args = append(args, jen.IDf("Provide%sServiceUserIDFetcher", sn))
+			}
 		}
 
 		args = append(args,
 			jen.ID("ProvideUsernameFetcher"),
 			jen.ID("ProvideOAuth2ServiceClientIDFetcher"),
 			jen.ID("ProvideAuthUserIDFetcher"),
+			jen.ID("ProvideWebhooksUserIDFetcher"),
 		)
 
 		for _, typ := range pkg.DataTypes {
 			sn := typ.Name.Singular()
-			args = append(args,
-				jen.IDf("Provide%sIDFetcher", sn),
-			)
+			args = append(args, jen.IDf("Provide%sIDFetcher", sn))
+
+			if typ.BelongsToStruct != nil {
+				args = append(args, jen.IDf("Provide%sService%sIDFetcher", sn, typ.BelongsToStruct.Singular()))
+			}
 		}
 
-		args = append(args,
-			jen.ID("ProvideWebhooksUserIDFetcher"),
-			jen.ID("ProvideWebhookIDFetcher"),
-		)
+		args = append(args, jen.ID("ProvideWebhookIDFetcher"))
 
 		return args
 	}
@@ -56,14 +59,25 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 		sn := typ.Name.Singular()
 		pn := typ.Name.PackageName()
 
-		ret.Add(
-			jen.Commentf("Provide%sServiceUserIDFetcher provides a UserIDFetcher", sn),
-			jen.Line(),
-			jen.Func().IDf("Provide%sServiceUserIDFetcher", sn).Params().Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), "UserIDFetcher")).Block(
-				jen.Return().ID("UserIDFetcher"),
-			),
-			jen.Line(),
-		)
+		if typ.BelongsToUser {
+			ret.Add(
+				jen.Commentf("Provide%sServiceUserIDFetcher provides a UserIDFetcher", sn),
+				jen.Line(),
+				jen.Func().IDf("Provide%sServiceUserIDFetcher", sn).Params().Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), "UserIDFetcher")).Block(
+					jen.Return().ID("UserIDFetcher"),
+				),
+				jen.Line(),
+			)
+		} else if typ.BelongsToStruct != nil {
+			ret.Add(
+				jen.Commentf("Provide%sService%sIDFetcher provides a %sIDFetcher", sn, typ.BelongsToStruct.Singular(), typ.BelongsToStruct.Singular()),
+				jen.Line(),
+				jen.Func().IDf("Provide%sService%sIDFetcher", sn, typ.BelongsToStruct.Singular()).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), fmt.Sprintf("%sIDFetcher", typ.BelongsToStruct.Singular()))).Block(
+					jen.Return().IDf("buildChi%sIDFetcher", typ.BelongsToStruct.Singular()).Call(jen.ID("logger")),
+				),
+				jen.Line(),
+			)
+		}
 
 		ret.Add(
 			jen.Commentf("Provide%sIDFetcher provides an %sIDFetcher", sn, sn),
@@ -165,6 +179,31 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 		)
+
+		// if typ.BelongsToStruct != nil {
+		// 	ret.Add(
+		// 		jen.Commentf(
+		// 			"build%sServiceChi%sIDFetcher builds a function that fetches a %sID from a request routed by chi.",
+		// 			typ.Name.Plural(),
+		// 			typ.BelongsToStruct.Singular(),
+		// 			typ.BelongsToStruct.Singular(),
+		// 		),
+		// 		jen.Line(),
+		// 		jen.Func().IDf("build%sChi%sIDFetcher",typ.Name.Plural(),, typ.BelongsToStruct.Singular()).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64"))).Block(
+		// 			jen.Return().Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+		// 				jen.Comment("we can generally disregard this error only because we should be able to validate"),
+		// 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
+		// 				jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", typ.BelongsToStruct.PackageName()), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+		// 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+		// 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("fetching %sID from request", typ.BelongsToStruct.Singular())),
+		// 				),
+		// 				jen.Return().ID("u"),
+		// 			),
+		// 		),
+		// 		jen.Line(),
+		// 	)
+		// }
+
 	}
 
 	ret.Add(

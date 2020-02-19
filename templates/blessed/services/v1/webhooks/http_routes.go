@@ -139,7 +139,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
 					jen.Return(),
 				),
-				jen.ID("input").Dot("BelongsTo").Op("=").ID("userID"),
+				jen.ID("input").Dot("BelongsToUser").Op("=").ID("userID"),
 				jen.Line(),
 				jen.Comment("ensure everythings on the up-and-up"),
 				jen.If(jen.ID("err").Op(":=").ID("validateWebhook").Call(jen.ID("input")), jen.ID("err").Op("!=").ID("nil")).Block(

@@ -156,7 +156,7 @@ func buildTestClientGetAllOfSomethingForUser(pkg *models.Project, typ models.Dat
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("expected").Assign().Slice().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Item").Values(),
+				jen.ID("expected").Assign().Slice().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
 				jen.Line(),
 				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sForUser", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleUserID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.Line(),

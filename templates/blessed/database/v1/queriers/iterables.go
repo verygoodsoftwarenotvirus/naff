@@ -59,92 +59,37 @@ func iterablesDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ mo
 
 	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 
-	ret.Add(
-		jen.Const().Defs(
-			buildIterableConstants(typ)...,
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		buildIterableVariableDecs(typ)...,
-	)
-
-	ret.Add(
-		buildScanSomethingFuncDecl(pkg, typ)...,
-	)
-
-	ret.Add(
-		buildScanListOfSomethingsFuncDecl(pkg, typ)...,
-	)
-
-	ret.Add(
-		buildGetSomethingQueryFuncDecl(dbvendor, typ)...,
-	)
-
-	ret.Add(
-		buildGetSomethingFuncDecl(pkg, dbvendor, typ)...,
-	)
-
-	ret.Add(
-		buildGetSomethingCountQueryFuncDecl(pkg, dbvendor, typ)...,
-	)
-
-	ret.Add(
-		buildGetSomethingCountFuncDecl(pkg, dbvendor, typ)...,
-	)
-
-	ret.Add(
-		buildSomethingAllCountQueryDecls(dbvendor, typ)...,
-	)
-
-	ret.Add(
-		buildGetAllSomethingCountFuncDecl(dbvendor, typ)...,
-	)
-
-	ret.Add(
-		buildGetListOfSomethingQueryFuncDecl(pkg, dbvendor, typ)...,
-	)
-
-	ret.Add(
-		buildGetListOfSomethingsFuncDecl(pkg, dbvendor, typ)...,
-	)
+	ret.Add(jen.Const().Defs(buildIterableConstants(typ)...), jen.Line())
+	ret.Add(buildIterableVariableDecs(typ)...)
+	ret.Add(buildScanSomethingFuncDecl(pkg, typ)...)
+	ret.Add(buildScanListOfSomethingsFuncDecl(pkg, typ)...)
+	ret.Add(buildGetSomethingQueryFuncDecl(dbvendor, typ)...)
+	ret.Add(buildGetSomethingFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildGetSomethingCountQueryFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildGetSomethingCountFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildSomethingAllCountQueryDecls(dbvendor, typ)...)
+	ret.Add(buildGetAllSomethingCountFuncDecl(dbvendor, typ)...)
+	ret.Add(buildGetListOfSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildGetListOfSomethingsFuncDecl(pkg, dbvendor, typ)...)
 
 	if typ.BelongsToUser {
-		ret.Add(
-			buildGetAllSomethingsForUserFuncDecl(pkg, dbvendor, typ)...,
-		)
+		ret.Add(buildGetAllSomethingsForUserFuncDecl(pkg, dbvendor, typ)...)
+	} else if typ.BelongsToStruct != nil {
+		ret.Add(buildGetAllSomethingsForSomethingElseFuncDecl(pkg, dbvendor, typ)...)
 	}
 
-	ret.Add(
-		buildCreateSomethingQueryFuncDecl(pkg, dbvendor, typ)...,
-	)
+	ret.Add(buildCreateSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
 
 	if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-		ret.Add(
-			buildSomethingCreationTimeQueryFuncDecl(dbvendor, typ)...,
-		)
+		ret.Add(buildSomethingCreationTimeQueryFuncDecl(dbvendor, typ)...)
 	}
 
-	ret.Add(
-		buildCreateSomethingFuncDecl(pkg, dbvendor, typ)...,
-	)
+	ret.Add(buildCreateSomethingFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildUpdateSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildUpdateSomethingFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildArchiveSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildArchiveSomethingFuncDecl(pkg, dbvendor, typ)...)
 
-	ret.Add(
-		buildUpdateSomethingQueryFuncDecl(pkg, dbvendor, typ)...,
-	)
-
-	ret.Add(
-		buildUpdateSomethingFuncDecl(pkg, dbvendor, typ)...,
-	)
-
-	ret.Add(
-		buildArchiveSomethingQueryFuncDecl(pkg, dbvendor, typ)...,
-	)
-
-	ret.Add(
-		buildArchiveSomethingFuncDecl(pkg, dbvendor, typ)...,
-	)
 	return ret
 }
 
@@ -261,8 +206,8 @@ func buildScanListOfSomethingsFuncDecl(pkg *models.Project, typ models.DataType)
 // buildGetSomethingQueryFuncDecl
 func buildGetSomethingQueryFuncDecl(dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	var (
-		params      jen.Code
-		whereValues []jen.Code
+		comment string
+		params  jen.Code
 	)
 
 	dbvsn := dbvendor.Singular()
@@ -273,28 +218,19 @@ func buildGetSomethingQueryFuncDecl(dbvendor wordsmith.SuperPalabra, typ models.
 	uvn := n.UnexportedVarName()
 	puvn := n.PluralUnexportedVarName()
 
-	var comment string
+	whereValues := []jen.Code{jen.Lit("id").Op(":").IDf("%sID", uvn)}
 
 	if typ.BelongsToUser {
 		comment = fmt.Sprintf("buildGet%sQuery constructs a SQL query for fetching %s with a given ID belong to a user with a given ID.", sn, scnwp)
 		params = jen.List(jen.IDf("%sID", uvn), jen.ID("userID").ID("uint64"))
-		whereValues = []jen.Code{
-			jen.Lit("id").Op(":").IDf("%sID", uvn),
-			jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID("userID"),
-		}
+		whereValues = append(whereValues, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID("userID"))
 	} else if typ.BelongsToStruct != nil {
 		comment = fmt.Sprintf("buildGet%sQuery constructs a SQL query for fetching %s with a given ID belong to %s with a given ID.", sn, scnwp, typ.BelongsToStruct.SingularCommonNameWithPrefix())
 		params = jen.List(jen.IDf("%sID", uvn), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64"))
-		whereValues = []jen.Code{
-			jen.Lit("id").Op(":").IDf("%sID", uvn),
-			jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID(fmt.Sprintf("%sID", typ.BelongsToStruct.UnexportedVarName())),
-		}
+		whereValues = append(whereValues, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID(fmt.Sprintf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	} else if typ.BelongsToNobody {
 		comment = fmt.Sprintf("buildGet%sQuery constructs a SQL query for fetching %s with a given ID.", sn, scnwp)
 		params = jen.List(jen.IDf("%sID", uvn).ID("uint64"))
-		whereValues = []jen.Code{
-			jen.Lit("id").Op(":").IDf("%sID", uvn),
-		}
 	}
 
 	return []jen.Code{
@@ -525,7 +461,7 @@ func buildGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmit
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID("userID"))
 		params = append(params, jen.ID("userID").ID("uint64"))
 	} else if typ.BelongsToStruct != nil {
-		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").IDf("%sID", typ.BelongsToStruct.PluralUnexportedVarName()))
+		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 		params = append(params, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64"))
 	}
 
@@ -652,6 +588,39 @@ func buildGetAllSomethingsForUserFuncDecl(pkg *models.Project, dbvendor wordsmit
 			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("buildError").Call(jen.ID("err"), jen.Litf("fetching %s for user", pcn))),
+			),
+			jen.Line(),
+			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").IDf("scan%s", pn).Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("parsing database results: %w"), jen.ID("err"))),
+			),
+			jen.Line(),
+			jen.Return().List(jen.ID("list"), jen.ID("nil")),
+		),
+		jen.Line(),
+	}
+}
+
+func buildGetAllSomethingsForSomethingElseFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+	dbvsn := dbvendor.Singular()
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	scn := typ.Name.SingularCommonName()
+	pcn := typ.Name.PluralCommonName()
+	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
+
+	return []jen.Code{
+		jen.Commentf("GetAll%sFor%s fetches every %s belonging to %s", pn, typ.BelongsToStruct.Singular(), scn, typ.BelongsToStruct.SingularCommonNameWithPrefix()),
+		jen.Line(),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(
+			jen.ID("ctx").Qual("context", "Context"),
+			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64"),
+		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.ID("nil"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.Line(),
+			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.ID("buildError").Call(jen.ID("err"), jen.Litf("fetching %s for %s", pcn, typ.BelongsToStruct.SingularCommonName()))),
 			),
 			jen.Line(),
 			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").IDf("scan%s", pn).Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
@@ -956,7 +925,7 @@ func buildArchiveSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.
 	} else if typ.BelongsToStruct != nil {
 		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s belonging to a given %s as archived.", sn, scn, typ.BelongsToStruct.SingularCommonName())
 		paramsList = append(paramsList, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
-		vals = append(vals, jen.IDf("%sTableOwnershipColumn", typ.BelongsToStruct.PluralUnexportedVarName()).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	} else {
 		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s as archived.", sn, scn)
 	}

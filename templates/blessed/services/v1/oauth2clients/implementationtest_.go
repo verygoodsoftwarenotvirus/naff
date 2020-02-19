@@ -202,8 +202,8 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(jen.ID("BelongsTo").Op(":").Lit(1)),
-				jen.ID("expected").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("BelongsTo")),
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(jen.ID("BelongsToUser").Op(":").Lit(1)),
+				jen.ID("expected").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("BelongsToUser")),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),

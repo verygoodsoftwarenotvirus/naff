@@ -335,27 +335,26 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 			expectFuncName = "ExpectExec"
 		}
 
+		out := []jen.Code{}
+
 		expectQueryArgs := buildExpectQueryArgs("expected", typ)
 		expectedValues := []jen.Code{
 			jen.ID("ID").Op(":").Lit(123),
 		}
 
 		if typ.BelongsToUser {
-			expectedValues = append(expectedValues,
-				jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
-			)
+			expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").ID("expectedUserID"))
+			out = append(out, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
 		} else if typ.BelongsToStruct != nil {
-			expectedValues = append(expectedValues,
-				jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").IDf("expected%sID", typ.BelongsToStruct.Singular()),
-			)
+			expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").IDf("expected%sID", typ.BelongsToStruct.Singular()))
+			out = append(out, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
 		}
 
 		expectedValues = append(expectedValues,
 			jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 		)
 
-		out := []jen.Code{
-			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
+		out = append(out,
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
 			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -366,7 +365,7 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
 			jen.Line(),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-		}
+		)
 
 		return out
 	}
@@ -475,45 +474,79 @@ func buildTestDBArchiveSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith
 		expectedValues := []jen.Code{
 			jen.ID("ID").Op(":").Lit(123),
 		}
+		actualCallArgs := []jen.Code{
+			jen.Qual("context", "Background").Call(),
+			jen.ID("expected").Dot("ID"),
+		}
 
 		if typ.BelongsToUser {
 			expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").ID("expectedUserID"))
+			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
 		} else if typ.BelongsToStruct != nil {
 			expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").IDf("expected%sID", typ.BelongsToStruct.Singular()))
+			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
 		}
 
 		expectedValues = append(expectedValues, jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
+		block := []jen.Code{}
 
 		if typ.BelongsToUser {
-			dbQuery = fmt.Sprintf("UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to_user = %s AND id = %s%s", tn, getTimeQuery(dbrn), getTimeQuery(dbrn), getIncIndex(dbrn, 0), getIncIndex(dbrn, 1), queryTail)
+			dbQuery = fmt.Sprintf(
+				"UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to_user = %s AND id = %s%s",
+				tn,
+				getTimeQuery(dbrn),
+				getTimeQuery(dbrn),
+				getIncIndex(dbrn, 0),
+				getIncIndex(dbrn, 1),
+				queryTail,
+			)
 			dbQueryExpectationArgs = append(dbQueryExpectationArgs, jen.ID("expected").Dot("BelongsToUser"))
+			block = append(block, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
 		} else if typ.BelongsToStruct != nil {
-			dbQuery = fmt.Sprintf("UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to_%s = %s AND id = %s%s", tn, getTimeQuery(dbrn), getTimeQuery(dbrn), typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, 0), getIncIndex(dbrn, 1), queryTail)
+			dbQuery = fmt.Sprintf(
+				"UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to_%s = %s AND id = %s%s",
+				tn,
+				getTimeQuery(dbrn),
+				getTimeQuery(dbrn),
+				typ.BelongsToStruct.RouteName(),
+				getIncIndex(dbrn, 0),
+				getIncIndex(dbrn, 1),
+				queryTail,
+			)
 			dbQueryExpectationArgs = append(dbQueryExpectationArgs, jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+			block = append(block, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
 		} else {
-			dbQuery = fmt.Sprintf("UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND id = %s%s", tn, getTimeQuery(dbrn), getTimeQuery(dbrn), getIncIndex(dbrn, 0), queryTail)
+			dbQuery = fmt.Sprintf(
+				"UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND id = %s%s",
+				tn,
+				getTimeQuery(dbrn),
+				getTimeQuery(dbrn),
+				getIncIndex(dbrn, 0),
+				queryTail,
+			)
 		}
 
 		dbQueryExpectationArgs = append(dbQueryExpectationArgs, jen.ID("expected").Dot("ID"))
+
+		block = append(block,
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+				Dotln("WithArgs").Callln(dbQueryExpectationArgs...).Dot("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1))),
+			jen.Line(),
+			jen.ID("err").Op(":=").ID(dbfl).Dotf("Archive%s", sn).Call(actualCallArgs...),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Line(),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
 
 		return []jen.Code{
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Op(":=").Lit(dbQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Callln(dbQueryExpectationArgs...).Dot("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1))),
-				jen.Line(),
-				jen.ID("err").Op(":=").ID(dbfl).Dotf("Archive%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(block...)),
 		}
 	}
 
@@ -523,32 +556,47 @@ func buildTestDBArchiveSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith
 		}
 
 		var dbQueryExpectationArgs []jen.Code
+		block := []jen.Code{}
+		actualCallArgs := []jen.Code{
+			jen.Qual("context", "Background").Call(),
+			jen.ID("example").Dot("ID"),
+		}
+
 		if typ.BelongsToUser {
 			exampleValues = append(exampleValues, jen.ID("BelongsToUser").Op(":").ID("expectedUserID"))
 			dbQueryExpectationArgs = append(dbQueryExpectationArgs, jen.ID("example").Dot("BelongsToUser"))
+			block = append(block, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
+			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
 		} else if typ.BelongsToStruct != nil {
 			exampleValues = append(exampleValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").IDf("expected%sID", typ.BelongsToStruct.Singular()))
 			dbQueryExpectationArgs = append(dbQueryExpectationArgs, jen.ID("example").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+			block = append(block, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
+			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
 		}
 
 		dbQueryExpectationArgs = append(dbQueryExpectationArgs, jen.ID("example").Dot("ID"))
 		exampleValues = append(exampleValues, jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 
+		block = append(block,
+			jen.ID("example").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(exampleValues...),
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+				Dotln("WithArgs").Callln(dbQueryExpectationArgs...).
+				Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			jen.Line(),
+			jen.ID("err").Op(":=").ID(dbfl).Dotf("Archive%s", sn).Call(actualCallArgs...),
+			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Line(),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(
+				jen.ID("t"),
+				jen.ID("mockDB").Dot("ExpectationsWereMet").Call(),
+				jen.Lit("not all database expectations were met"),
+			),
+		)
+
 		return []jen.Code{
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("example").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(exampleValues...),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dotln("WithArgs").Callln(
-					dbQueryExpectationArgs...,
-				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.ID("err").Op(":=").ID(dbfl).Dotf("Archive%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("example").Dot("ID"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(block...)),
 		}
 	}
 
@@ -823,13 +871,14 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 
 		if typ.BelongsToUser {
 			expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").ID("expectedUserID"))
+			out = append(out, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
 		} else if typ.BelongsToStruct != nil {
-			expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").ID("expectedUserID"))
+			expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").IDf("expected%sID", typ.BelongsToStruct.Singular()))
+			out = append(out, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
 		}
 		expectedValues = append(expectedValues, jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 
 		out = append(out,
-			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
 			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(expectedInputFields...),
 		)
@@ -884,35 +933,27 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 	}
 
 	buildSecondSubtest := func() []jen.Code {
-		var (
-			expectFuncName string
-		)
-
-		if isPostgres(dbvendor) {
-			queryTail = " RETURNING id, created_on"
-		}
-
+		var expectFuncName string
 		if isPostgres(dbvendor) {
 			expectFuncName = "ExpectQuery"
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			expectFuncName = "ExpectExec"
 		}
-
 		nef := buildNonEssentialFields("expected", typ)
 
-		expectedValues := []jen.Code{
-			jen.ID("ID").Op(":").Lit(123),
-		}
+		expectedValues := []jen.Code{jen.ID("ID").Op(":").Lit(123)}
 
+		out := []jen.Code{}
 		if typ.BelongsToUser {
 			expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").ID("expectedUserID"))
+			out = append(out, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
 		} else if typ.BelongsToStruct != nil {
 			expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").IDf("expected%sID", typ.BelongsToStruct.Singular()))
+			out = append(out, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
 		}
 		expectedValues = append(expectedValues, jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 
-		out := []jen.Code{
-			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
+		out = append(out,
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
 			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(expectedInputFields...),
 			jen.Line(),
@@ -925,7 +966,7 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.Line(),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-		}
+		)
 
 		return out
 	}
@@ -1074,115 +1115,250 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		expectedQuery = fmt.Sprintf("SELECT %s FROM %s WHERE archived_on IS NULL LIMIT 20", cols, tn)
 	}
 
+	buildFirstSubtest := func() []jen.Code {
+		lines := []jen.Code{}
+		var expectQueryMock jen.Code
+		actualCallArgs := []jen.Code{
+			jen.Qual("context", "Background").Call(),
+			jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+		}
+
+		if typ.BelongsToUser {
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			expectQueryMock = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WithArgs").Call(jen.ID("expectedUserID")).
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn)))
+			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
+		} else if typ.BelongsToStruct != nil {
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			expectQueryMock = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn)))
+			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
+		} else if typ.BelongsToNobody {
+			expectQueryMock = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn)))
+		}
+
+		lines = append(lines,
+			jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
+			jen.IDf("expected%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+				jen.ID("ID").Op(":").Lit(321),
+			),
+			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
+				jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
+					jen.ID("Page").Op(":").Lit(1),
+					jen.ID("Limit").Op(":").Lit(20),
+					jen.ID("TotalCount").Op(":").ID("expectedCount"),
+				),
+				jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+					jen.Op("*").IDf("expected%s", sn),
+				),
+			),
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			expectQueryMock,
+			jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
+				Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).
+				Dot("AddRow").Call(jen.ID("expectedCount"))),
+			jen.Line(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(actualCallArgs...),
+			jen.Line(),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.Line(),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
+
+		return lines
+	}
+
+	buildSecondSubtest := func() []jen.Code {
+		lines := []jen.Code{}
+		var mockDBCall jen.Code
+		actualCallArgs := []jen.Code{
+			jen.Qual("context", "Background").Call(),
+			jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+		}
+
+		if typ.BelongsToUser {
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WithArgs").Call(jen.ID("expectedUserID")).
+				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
+			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
+		} else if typ.BelongsToStruct != nil {
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
+				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
+			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
+		} else if typ.BelongsToNobody {
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
+		}
+
+		lines = append(lines,
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			mockDBCall,
+			jen.Line(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(actualCallArgs...),
+			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
+			jen.Line(),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
+
+		return lines
+	}
+
+	buildThirdSubtest := func() []jen.Code {
+		lines := []jen.Code{}
+		var mockDBCall jen.Code
+		actualCallArgs := []jen.Code{
+			jen.Qual("context", "Background").Call(),
+			jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+		}
+
+		if typ.BelongsToUser {
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WithArgs").Call(jen.ID("expectedUserID")).
+				Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah")))
+			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
+		} else if typ.BelongsToStruct != nil {
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
+				Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah")))
+			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
+		} else if typ.BelongsToNobody {
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah")))
+		}
+
+		lines = append(lines,
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			mockDBCall,
+			jen.Line(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(actualCallArgs...),
+			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Line(),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
+
+		return lines
+	}
+
+	buildFourthSubtest := func() []jen.Code {
+		lines := []jen.Code{}
+		var mockDBCall jen.Code
+		actualCallArgs := []jen.Code{
+			jen.Qual("context", "Background").Call(),
+			jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+		}
+
+		if typ.BelongsToUser {
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WithArgs").Call(jen.ID("expectedUserID")).
+				Dotln("WillReturnRows").Call(jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID("expected")))
+			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
+		} else if typ.BelongsToStruct != nil {
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
+				Dotln("WillReturnRows").Call(jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID("expected")))
+			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
+		} else if typ.BelongsToNobody {
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WillReturnRows").Call(jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID("expected")))
+		}
+
+		lines = append(lines,
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+				jen.ID("ID").Op(":").Lit(321),
+			),
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			mockDBCall,
+			jen.Line(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(actualCallArgs...),
+			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Line(),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
+
+		return lines
+	}
+
+	buildFifthSubtest := func() []jen.Code {
+		lines := []jen.Code{}
+		var mockDBCall jen.Code
+		actualCallArgs := []jen.Code{
+			jen.Qual("context", "Background").Call(),
+			jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+		}
+
+		if typ.BelongsToUser {
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WithArgs").Call(jen.ID("expectedUserID")).
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected")))
+			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
+		} else if typ.BelongsToStruct != nil {
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected")))
+			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
+		} else if typ.BelongsToNobody {
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected")))
+		}
+
+		lines = append(lines,
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+				jen.ID("ID").Op(":").Lit(321),
+			),
+			jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			mockDBCall,
+			jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
+				Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			jen.Line(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(actualCallArgs...),
+			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Line(),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
+
+		return lines
+	}
+
 	return []jen.Code{
 		jen.Func().IDf("Test%s_Get%s", dbvsn, pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedListQuery").Op(":=").Lit(expectedQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
-				jen.IDf("expected%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(321),
-				),
-				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
-						jen.ID("Limit").Op(":").Lit(20),
-						jen.ID("TotalCount").Op(":").ID("expectedCount"),
-					),
-					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-						jen.Op("*").IDf("expected%s", sn),
-					),
-				),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn))),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).
-					Dot("AddRow").Call(jen.ID("expectedCount"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildFirstSubtest()...)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildSecondSubtest()...)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error executing read query"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error executing read query"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildThirdSubtest()...)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with error scanning %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(321),
-				),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnRows").Call(jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID("expected"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Litf("with error scanning %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildFourthSubtest()...)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying for count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(321),
-				),
-				jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected"))),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying for count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildFifthSubtest()...)),
 		),
 		jen.Line(),
 	}
@@ -1228,9 +1404,7 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 	)
 
 	if typ.BelongsToUser || typ.BelongsToStruct != nil {
-		bodyBlock = append(bodyBlock,
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID(expectedOwnerID), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-		)
+		bodyBlock = append(bodyBlock, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID(expectedOwnerID), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
 	}
 
 	lines := []jen.Code{
@@ -1262,24 +1436,52 @@ func buildTestDBBuildGetSomethingQuery(dbvendor wordsmith.SuperPalabra, typ mode
 		query = fmt.Sprintf("SELECT %s FROM %s id = %s", cols, tn, getIncIndex(dbrn, 0))
 	}
 
+	block := []jen.Code{
+		jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+		jen.IDf("example%sID", sn).Op(":=").ID("uint64").Call(jen.Lit(123)),
+	}
+
+	if typ.BelongsToUser {
+		block = append(block, jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
+	} else if typ.BelongsToStruct != nil {
+		block = append(block, jen.IDf("example%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
+	}
+
+	block = append(block,
+		jen.Line(),
+		jen.ID("expectedArgCount").Op(":=").Lit(2),
+		jen.ID("expectedQuery").Op(":=").Lit(query),
+	)
+
+	if typ.BelongsToUser {
+		block = append(block, jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("example%sID", sn), jen.ID("exampleUserID")))
+	} else if typ.BelongsToStruct != nil {
+		block = append(block, jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("example%sID", sn), jen.IDf("example%sID", typ.BelongsToStruct.Singular())))
+	} else if typ.BelongsToNobody {
+		block = append(block, jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("example%sID", sn)))
+	}
+
+	block = append(block,
+		jen.Line(),
+		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
+		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
+	)
+
+	if typ.BelongsToUser {
+		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+	} else if typ.BelongsToStruct != nil {
+		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("example%sID", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+	}
+
+	block = append(block,
+		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("example%sID", sn), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_buildGet%sQuery", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.IDf("example%sID", sn).Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.Line(),
-				jen.ID("expectedArgCount").Op(":=").Lit(2),
-				jen.ID("expectedQuery").Op(":=").Lit(query),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("example%sID", sn), jen.ID("exampleUserID")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("example%sID", sn), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(block...)),
 		),
 		jen.Line(),
 	}
@@ -1304,48 +1506,105 @@ func buildTestDBGetSomething(pkg *models.Project, dbvendor wordsmith.SuperPalabr
 		query = fmt.Sprintf("SELECT %s FROM %s id = %s", cols, tn, getIncIndex(dbrn, 0))
 	}
 
+	buildFirstSubtestBlock := func(typ models.DataType) []jen.Code {
+		lines := []jen.Code{
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+				jen.ID("ID").Op(":").Lit(123),
+			),
+		}
+
+		var mockDBCall jen.Code
+		actualCallArgs := []jen.Code{
+			jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"),
+		}
+
+		if typ.BelongsToUser {
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+				Dotln("WithArgs").Call(jen.ID("expectedUserID"), jen.ID("expected").Dot("ID")).
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected")))
+			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
+		} else if typ.BelongsToStruct != nil {
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular()), jen.ID("expected").Dot("ID")).
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected")))
+			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
+		} else if typ.BelongsToNobody {
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+				Dotln("WithArgs").Call(jen.ID("expected").Dot("ID")).
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected")))
+		}
+
+		lines = append(lines,
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			mockDBCall,
+			jen.Line(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", sn).Call(actualCallArgs...),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			jen.Line(),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
+
+		return lines
+	}
+
+	buildSecondSubtestBlock := func(typ models.DataType) []jen.Code {
+		lines := []jen.Code{
+			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+				jen.ID("ID").Op(":").Lit(123),
+			),
+		}
+
+		actualCallArgs := []jen.Code{
+			jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"),
+		}
+		var mockDBCall jen.Code
+		if typ.BelongsToUser {
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+				Dotln("WithArgs").Call(jen.ID("expectedUserID"), jen.ID("expected").Dot("ID")).
+				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
+			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
+		} else if typ.BelongsToStruct != nil {
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular()), jen.ID("expected").Dot("ID")).
+				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
+			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
+		} else if typ.BelongsToNobody {
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+				Dotln("WithArgs").Call(jen.ID("expected").Dot("ID")).
+				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
+		}
+
+		lines = append(lines,
+			jen.Line(),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			mockDBCall,
+			jen.Line(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", sn).Call(actualCallArgs...),
+			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
+			jen.Line(),
+			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
+
+		return lines
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_Get%s", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Op(":=").Lit(query),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-				),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID"), jen.ID("expected").Dot("ID")).
-					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildFirstSubtestBlock(typ)...)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-				),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID"), jen.ID("expected").Dot("ID")).
-					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildSecondSubtestBlock(typ)...)),
 		),
 		jen.Line(),
 	}
@@ -1361,30 +1620,46 @@ func buildTestDBBuildGetSomethingCountQuery(pkg *models.Project, dbvendor wordsm
 	tn := typ.Name.PluralRouteName() // table name
 
 	var query string
+	block := []jen.Code{
+		jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+	}
+	actualCallArgs := []jen.Code{
+		jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+	}
+
 	if typ.BelongsToUser {
 		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", tn, getIncIndex(dbrn, 0))
+		block = append(block, jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
+		actualCallArgs = append(actualCallArgs, jen.ID("exampleUserID"))
 	} else if typ.BelongsToStruct != nil {
 		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to_%s = %s LIMIT 20", tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, 0))
+		block = append(block, jen.IDf("example%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
+		actualCallArgs = append(actualCallArgs, jen.IDf("example%sID", typ.BelongsToStruct.Singular()))
 	} else {
 		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL LIMIT 20", tn)
+	}
+
+	block = append(block,
+		jen.Line(),
+		jen.ID("expectedArgCount").Op(":=").Lit(1),
+		jen.ID("expectedQuery").Op(":=").Lit(query),
+		jen.Line(),
+		jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sCountQuery", sn).Call(actualCallArgs...),
+		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
+		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
+	)
+
+	if typ.BelongsToUser {
+		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+	} else if typ.BelongsToStruct != nil {
+		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("example%sID", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
 	}
 
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_buildGet%sCountQuery", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.Line(),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
-				jen.ID("expectedQuery").Op(":=").Lit(query),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sCountQuery", sn).Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(block...)),
 		),
 		jen.Line(),
 	}
@@ -1399,35 +1674,55 @@ func buildTestDBGetSomethingCount(pkg *models.Project, dbvendor wordsmith.SuperP
 	dbvsn := dbvendor.Singular()
 	tn := typ.Name.PluralRouteName() // table name
 
-	var query string
+	var (
+		query      string
+		mockDBCall jen.Code
+	)
+	block := []jen.Code{}
+
+	callArgs := []jen.Code{
+		jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+	}
+
 	if typ.BelongsToUser {
 		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", tn, getIncIndex(dbrn, 0))
+		block = append(block, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
+		mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+			Dotln("WithArgs").Call(jen.ID("expectedUserID")).
+			Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount")))
+		callArgs = append(callArgs, jen.ID("expectedUserID"))
 	} else if typ.BelongsToStruct != nil {
 		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL AND belongs_to_%s = %s LIMIT 20", tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbrn, 0))
-	} else {
+		block = append(block, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
+		mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+			Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
+			Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount")))
+		callArgs = append(callArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
+	} else if typ.BelongsToNobody {
+		mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+			Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount")))
 		query = fmt.Sprintf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL LIMIT 20", tn)
 	}
+
+	block = append(block,
+		jen.ID("expectedQuery").Op(":=").Lit(query),
+		jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
+		jen.Line(),
+		jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+		mockDBCall,
+		jen.Line(),
+		jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%sCount", sn).Call(callArgs...),
+		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
+		jen.Line(),
+		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+	)
 
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_Get%sCount", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedQuery").Op(":=").Lit(query),
-				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
-				jen.Line(),
-				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID(dbfl).Dotf("Get%sCount", sn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(block...)),
 		),
 		jen.Line(),
 	}

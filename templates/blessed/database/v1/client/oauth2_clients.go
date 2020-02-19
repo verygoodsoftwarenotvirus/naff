@@ -185,7 +185,7 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
 				jen.Lit("client_id").Op(":").ID("input").Dot("ClientID"),
-				jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo")),
+				jen.Lit("belongs_to_user").Op(":").ID("input").Dot("BelongsToUser")),
 			),
 			jen.Line(),
 			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("c").Dot("querier").Dot("CreateOAuth2Client").Call(jen.ID("ctx"), jen.ID("input")),
@@ -227,7 +227,7 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
 				jen.Lit("client_id").Op(":").ID("clientID"),
-				jen.Lit("belongs_to").Op(":").ID("userID"),
+				jen.Lit("belongs_to_user").Op(":").ID("userID"),
 			)),
 			jen.Line(),
 			jen.ID("err").Op(":=").ID("c").Dot("querier").Dot("ArchiveOAuth2Client").Call(jen.ID("ctx"), jen.ID("clientID"), jen.ID("userID")),

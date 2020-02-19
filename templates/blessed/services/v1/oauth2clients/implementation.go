@@ -135,7 +135,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.ID("uid").Op("=").ID("user").Dot("ID"),
 			).Else().Block(
-				jen.ID("uid").Op("=").ID("client").Dot("BelongsTo"),
+				jen.ID("uid").Op("=").ID("client").Dot("BelongsToUser"),
 			),
 			jen.Line(),
 			jen.Return().List(jen.Qual("strconv", "FormatUint").Call(jen.ID("uid"), jen.Lit(10)), jen.ID("nil")),

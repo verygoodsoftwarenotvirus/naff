@@ -29,7 +29,7 @@ func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 	if typ.BelongsToUser {
 		out = append(out, jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("belongs_to_user")))
 	} else if typ.BelongsToStruct != nil {
-		out = append(out, jen.ID("BelongsTo").ID("uint64").Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).ID("uint64").Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
 	}
 
 	return out

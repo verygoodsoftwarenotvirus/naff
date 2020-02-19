@@ -15,7 +15,6 @@ func wireDotGo(pkg *models.Project) *jen.File {
 
 	buildProviderSet := func() []jen.Code {
 		lines := []jen.Code{
-
 			jen.ID("paramFetcherProviders"),
 			jen.ID("ProvideServer"),
 			jen.ID("ProvideNamespace"),

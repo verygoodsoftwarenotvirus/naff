@@ -84,5 +84,10 @@ format:
 compare: clean_example_output $(EXAMPLE_OUTPUT_DIR)
 	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
 
-docker-image:
+.PHONY: docker_image
+docker_image:
 	docker build --tag naff:latest --file Dockerfile .
+
+.PHONY: example_run
+example_run: clean_example_output example_output
+	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) revendor rewire quicktest)

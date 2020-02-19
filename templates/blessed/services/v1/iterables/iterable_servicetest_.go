@@ -14,27 +14,54 @@ func iterableServiceTestDotGo(pkg *models.Project, typ models.DataType) *jen.Fil
 
 	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 
+	ret.Add(buildbuildTestServiceFuncDecl(pkg, typ)...)
+	ret.Add(buildTestProvideServiceFuncDecl(pkg, typ)...)
+
+	return ret
+}
+
+func buildbuildTestServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
+
+	serviceValues := []jen.Code{
+		jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
+		jen.ID(fmt.Sprintf("%sDatabase", uvn)).Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+	}
+
+	if typ.BelongsToUser {
+		serviceValues = append(serviceValues,
+			jen.ID("userIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
+		)
+	} else if typ.BelongsToStruct != nil {
+		serviceValues = append(serviceValues,
+			jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
+		)
+	}
+
+	serviceValues = append(serviceValues,
+		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
+		jen.ID("encoderDecoder").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+		jen.ID("reporter").Op(":").ID("nil"),
+	)
+
+	lines := []jen.Code{
+		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
+			jen.Return().Op("&").ID("Service").Valuesln(serviceValues...),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	cn := typ.Name.SingularCommonName()
-	uvn := typ.Name.UnexportedVarName()
 
-	ret.Add(
-		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
-			jen.Return().Op("&").ID("Service").Valuesln(
-				jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-				jen.ID(fmt.Sprintf("%sCounter", uvn)).Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
-				jen.ID(fmt.Sprintf("%sDatabase", uvn)).Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.ID("userIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-				jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-				jen.ID("encoderDecoder").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
-				jen.ID("reporter").Op(":").ID("nil"),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
+	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("TestProvide%sService", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -132,6 +159,7 @@ func iterableServiceTestDotGo(pkg *models.Project, typ models.DataType) *jen.Fil
 			)),
 		),
 		jen.Line(),
-	)
-	return ret
+	}
+
+	return lines
 }

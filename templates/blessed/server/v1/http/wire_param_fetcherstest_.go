@@ -16,16 +16,29 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 	for _, typ := range pkg.DataTypes {
 		n := typ.Name
 
-		ret.Add(
-			jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Parallel").Call(),
+		if typ.BelongsToUser {
+			ret.Add(
+				jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+					jen.ID("T").Dot("Parallel").Call(),
+					jen.Line(),
+					jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+						jen.ID("_").Op("=").IDf("Provide%sServiceUserIDFetcher", n.Singular()).Call(),
+					)),
+				),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("_").Op("=").IDf("Provide%sServiceUserIDFetcher", n.Singular()).Call(),
-				)),
-			),
-			jen.Line(),
-		)
+			)
+		} else if typ.BelongsToStruct != nil {
+			ret.Add(
+				jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+					jen.ID("T").Dot("Parallel").Call(),
+					jen.Line(),
+					jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+						jen.ID("_").Op("=").IDf("Provide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Call(),
+					)),
+				),
+				jen.Line(),
+			)
+		}
 
 		ret.Add(
 			jen.Func().IDf("TestProvide%sIDFetcher", n.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
