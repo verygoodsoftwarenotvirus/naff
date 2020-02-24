@@ -15,10 +15,10 @@ import (
 const (
 	a = "assert"
 	r = "require"
-	T = "T"
 	t = "t"
 )
 
+// Comments turns a bunch of lines of strings into jen comments
 func Comments(input ...string) []jen.Code {
 	out := []jen.Code{}
 	for i, c := range input {
@@ -31,16 +31,19 @@ func Comments(input ...string) []jen.Code {
 	return out
 }
 
+// WriteHeader calls res.WriteHeader for a given status
 func WriteHeader(status string) jen.Code {
 	return jen.ID("res").Dot("WriteHeader").Call(
 		jen.Qual("net/http", status),
 	)
 }
 
+// ExpectMethod creates a test expectation for a gievn method
 func ExpectMethod(varName, method string) jen.Code {
 	return jen.ID(varName).Op(":=").Qual("net/http", method)
 }
 
+// ParallelTest creates a new t.Parallel call
 func ParallelTest(tee *jen.Statement) jen.Code {
 	if tee == nil {
 		return jen.ID(T).Dot("Parallel").Call()
@@ -48,46 +51,57 @@ func ParallelTest(tee *jen.Statement) jen.Code {
 	return tee.Dot("Parallel").Call()
 }
 
+// RequireNoError creates a require call
 func RequireNoError(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(r, "NoError")(value, message, formatArgs...)
 }
 
+// RequireNotNil creates a require call
 func RequireNotNil(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(r, "NotNil")(value, message, formatArgs...)
 }
 
+// RequireNil creates a require call
 func RequireNil(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(r, "Nil")(value, message, formatArgs...)
 }
 
+// AssertTrue calls assert.True
 func AssertTrue(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(a, "True")(value, message, formatArgs...)
 }
 
+// AssertFalse calls assert.False
 func AssertFalse(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(a, "False")(value, message, formatArgs...)
 }
 
+// AssertNotNil calls assert.NotNil
 func AssertNotNil(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(a, "NotNil")(value, message, formatArgs...)
 }
 
+// AssertNil calls assert.Nil
 func AssertNil(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(a, "Nil")(value, message, formatArgs...)
 }
 
+// AssertError calls assert.Error
 func AssertError(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(a, "Error")(value, message, formatArgs...)
 }
 
+// AssertNoError calls assert.NoError
 func AssertNoError(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(a, "NoError")(value, message, formatArgs...)
 }
 
+// AssertNotEmpty calls assert.NotEmpty
 func AssertNotEmpty(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(a, "NotEmpty")(value, message, formatArgs...)
 }
 
+// AssertEqual calls assert.Equal
 func AssertEqual(expected, actual, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildDoubleValueTestifyFunc(a, "Equal")(expected, actual, message, formatArgs...)
 }
@@ -129,14 +143,17 @@ func buildDoubleValueTestifyFunc(pkg, method string) func(expected, actual, mess
 	}
 }
 
+// BuildTemplatePath builds a template path
 func BuildTemplatePath(pkgRoot, tail string) string {
 	return filepath.Join(os.Getenv("GOPATH"), "src", pkgRoot, tail)
 }
 
+// BuildSubTest builds a subtest
 func BuildSubTest(name string, testInstructions ...jen.Code) jen.Code {
 	return _buildSubtest(name, true, testInstructions...)
 }
 
+// BuildSubTestWithoutContext builds a subtest without context
 func BuildSubTestWithoutContext(name string, testInstructions ...jen.Code) jen.Code {
 	return _buildSubtest(name, false, testInstructions...)
 }
@@ -153,6 +170,7 @@ func _buildSubtest(name string, includeContext bool, testInstructions ...jen.Cod
 	)
 }
 
+// BuildTestServer builds a test server with an example handlerfunc
 func BuildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
 	return jen.ID(name).Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
 		jen.Qual("net/http", "HandlerFunc").Callln(
@@ -164,28 +182,39 @@ func BuildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
 	)
 }
 
+// CreateCtx calls context.Background() and assigns it to a variable called ctx
 func CreateCtx() jen.Code {
 	return jen.ID("ctx").Op(":=").Qual("context", "Background").Call()
 }
 
+// CtxParam is a shorthand for a context param
 func CtxParam() jen.Code {
 	return jen.ID("ctx").Qual("context", "Context")
 }
 
+// OuterTestFunc does
 func OuterTestFunc(subjectName string) *jen.Statement {
 	return jen.Func().ID(fmt.Sprintf("Test%s", subjectName)).Params(
 		jen.ID(T).Op("*").Qual("testing", T),
 	)
 }
 
+// RunGoimportsForFile runs the `goimports` binary for a given filename
 func RunGoimportsForFile(filename string) error {
-	return exec.Command("/home/jeffrey/bin/goimports", "-w", filename).Run()
+	hd, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	return exec.Command(filepath.Join(hd, "bin/goimports"), "-w", filename).Run()
 }
 
+// RunGoFormatForFile does
 func RunGoFormatForFile(filename string) error {
 	return exec.Command("/usr/local/go/bin/gofmt", "-s", "-w", filename).Run()
 }
 
+// RenderGoFile does
 func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 	fp := BuildTemplatePath(pkgRoot, path)
 

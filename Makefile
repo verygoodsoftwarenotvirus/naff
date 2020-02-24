@@ -91,3 +91,8 @@ docker_image:
 .PHONY: example_run
 example_run: clean_example_output example_output
 	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) revendor rewire quicktest)
+
+ensure-goimports:
+ifndef $(shell command -v goimports 2> /dev/null)
+	$(shell GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports)
+endif

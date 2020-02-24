@@ -110,8 +110,6 @@ the following tools are occasionally required for development:
 - [golangci-lint](https://github.com/golangci/golangci-lint) for linting (see included config file)
 - [gocov](https://github.com/axw/gocov) for coverage report generation
 
-assuming you have go installed, you can install these by running `+"`"+`make dev-tools`+"`"+`
-
 ## running the server
 
 1. clone this repository
@@ -191,25 +189,17 @@ SERVER_DOCKER_REPO_NAME  := docker.io/verygoodsoftwarenotvirus/$(SERVER_DOCKER_I
 $(ARTIFACTS_DIR):
 	mkdir -p $(ARTIFACTS_DIR)
 
-## dependency injection
-
-.PHONY: wire-clean
-wire-clean:
-	rm -f cmd/server/v1/wire_gen.go
-
-.PHONY: wire
-wire:
-	wire gen %s/cmd/server/v1
-
-.PHONY: rewire
-rewire: wire-clean wire
-
 ## Go-specific prerequisite stuff
 
-.PHONY: dev-tools
-dev-tools:
-	GO111MODULE=off go get -u github.com/google/wire/cmd/wire
-	GO111MODULE=off go get -u github.com/axw/gocov/gocov
+ensure-wire:
+ifndef $(shell command -v wire 2> /dev/null)
+	$(shell GO111MODULE=off go get -u github.com/google/wire/cmd/wire)
+endif
+
+ensure-gocov:
+ifndef $(shell command -v gocov 2> /dev/null)
+	$(shell GO111MODULE=off go get -u github.com/axw/gocov/gocov)
+endif
 
 .PHONY: vendor-clean
 vendor-clean:
@@ -222,6 +212,19 @@ vendor:
 
 .PHONY: revendor
 revendor: vendor-clean vendor
+
+## dependency injection
+
+.PHONY: wire-clean
+wire-clean:
+	rm -f cmd/server/v1/wire_gen.go
+
+.PHONY: wire
+wire: ensure-wire
+	wire gen %s/cmd/server/v1
+
+.PHONY: rewire
+rewire: ensure-wire wire-clean wire
 
 ## Config
 
@@ -244,7 +247,7 @@ lint:
 		--env=GO111MODULE=on \
 		golangci/golangci-lint:latest golangci-lint run --config=.golangci.yml ./...
 
-$(COVERAGE_OUT): $(ARTIFACTS_DIR)
+$(COVERAGE_OUT): $(ARTIFACTS_DIR) ensure-gocov
 	set -ex; \
 	echo "mode: set" > $(COVERAGE_OUT);
 	for pkg in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
@@ -256,7 +259,7 @@ $(COVERAGE_OUT): $(ARTIFACTS_DIR)
 	gocov convert $(COVERAGE_OUT) | gocov report
 
 .PHONY: quicktest # basically the same as coverage.out, only running once instead of with `+"`"+`-count`+"`"+` set
-quicktest: $(ARTIFACTS_DIR)
+quicktest: $(ARTIFACTS_DIR) ensure-gocov
 	@set -ex; \
 	echo "mode: set" > $(COVERAGE_OUT);
 	for pkg in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
