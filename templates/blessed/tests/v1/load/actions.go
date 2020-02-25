@@ -38,7 +38,7 @@ func actionsDotGo(pkg *models.Project) *jen.File {
 
 	buildRandomActionLines := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+			utils.CreateCtx(),
 			jen.ID("allActions").Op(":=").Map(jen.ID("string")).Op("*").ID("Action").Valuesln(
 				jen.Lit("GetHealthCheck").Op(":").Valuesln(
 					jen.ID("Name").Op(":").Lit("GetHealthCheck"),

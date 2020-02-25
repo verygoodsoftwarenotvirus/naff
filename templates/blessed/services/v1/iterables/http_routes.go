@@ -116,7 +116,7 @@ func buildListHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.Co
 			),
 		).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("error encountered fetching %s", pcn)),
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+			utils.WriteXHeader("res", "StatusInternalServerError"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -171,7 +171,7 @@ func buildCreateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 		jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))),
 		jen.If(jen.Op("!").ID("ok")).Block(
 			jen.ID("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+			utils.WriteXHeader("res", "StatusBadRequest"),
 			jen.Return(),
 		),
 		jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(jen.Lit("input"), jen.ID("input")),
@@ -189,7 +189,7 @@ func buildCreateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 		jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("Create%s", sn)).Call(jen.ID("ctx"), jen.ID("input")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("error creating %s", scn)),
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+			utils.WriteXHeader("res", "StatusInternalServerError"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -203,7 +203,7 @@ func buildCreateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 		)),
 		jen.Line(),
 		jen.Comment("encode our response and peace"),
-		jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusCreated")),
+		utils.WriteXHeader("res", "StatusCreated"),
 		jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
 		),
@@ -269,11 +269,11 @@ func buildReadHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.Co
 		jen.Commentf("fetch %s from database", scn),
 		jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("Get%s", sn)).Call(dbCallArgs...),
 		jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+			utils.WriteXHeader("res", "StatusNotFound"),
 			jen.Return(),
 		).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit(fmt.Sprintf("error fetching %s from database", scn))),
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+			utils.WriteXHeader("res", "StatusInternalServerError"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -311,7 +311,7 @@ func buildUpdateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 		jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sUpdateInput", sn))),
 		jen.If(jen.Op("!").ID("ok")).Block(
 			jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+			utils.WriteXHeader("res", "StatusBadRequest"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -351,11 +351,11 @@ func buildUpdateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 		jen.Commentf("fetch %s from database", scn),
 		jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Get%s", sn).Call(dbCallArgs...),
 		jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+			utils.WriteXHeader("res", "StatusNotFound"),
 			jen.Return(),
 		).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("error encountered getting %s", scn)),
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+			utils.WriteXHeader("res", "StatusInternalServerError"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -365,7 +365,7 @@ func buildUpdateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 		jen.Commentf("update %s in database", scn),
 		jen.If(jen.ID("err").Op("=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Update%s", sn).Call(jen.ID("ctx"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("error encountered updating %s", scn)),
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+			utils.WriteXHeader("res", "StatusInternalServerError"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -441,11 +441,11 @@ func buildArchiveHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen
 		jen.Commentf("archive the %s in the database", scn),
 		jen.ID("err").Op(":=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Archive%s", sn).Call(callArgs...),
 		jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+			utils.WriteXHeader("res", "StatusNotFound"),
 			jen.Return(),
 		).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 			jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("error encountered deleting %s", scn)),
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+			utils.WriteXHeader("res", "StatusInternalServerError"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -458,7 +458,7 @@ func buildArchiveHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen
 		)),
 		jen.Line(),
 		jen.Comment("encode our response and peace"),
-		jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
+		utils.WriteXHeader("res", "StatusNoContent"),
 	)
 
 	lines := []jen.Code{

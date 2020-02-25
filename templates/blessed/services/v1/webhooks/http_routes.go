@@ -70,7 +70,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 						jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values()),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered fetching webhooks")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -136,7 +136,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+					utils.WriteXHeader("res", "StatusBadRequest"),
 					jen.Return(),
 				),
 				jen.ID("input").Dot("BelongsToUser").Op("=").ID("userID"),
@@ -144,7 +144,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("ensure everythings on the up-and-up"),
 				jen.If(jen.ID("err").Op(":=").ID("validateWebhook").Call(jen.ID("input")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Info").Call(jen.Lit("invalid method provided")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+					utils.WriteXHeader("res", "StatusBadRequest"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -152,7 +152,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("wh"), jen.ID("err")).Op(":=").ID("s").Dot("webhookDatabase").Dot("CreateWebhook").Call(jen.ID("ctx"), jen.ID("input")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error creating webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -169,7 +169,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("s").Dot("eventManager").Dot("TuneIn").Call(jen.ID("l")),
 				jen.Line(),
 				jen.Comment("let everybody know we're good"),
-				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusCreated")),
+				utils.WriteXHeader("res", "StatusCreated"),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("wh")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
 				),
@@ -202,11 +202,11 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot("webhookDatabase").Dot("GetWebhook").Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("No rows found in webhookDatabase")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+					utils.WriteXHeader("res", "StatusNotFound"),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("Error fetching webhook from webhookDatabase")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -243,7 +243,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookUpdateInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+					utils.WriteXHeader("res", "StatusBadRequest"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -251,11 +251,11 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("wh"), jen.ID("err")).Op(":=").ID("s").Dot("webhookDatabase").Dot("GetWebhook").Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("no rows found for webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+					utils.WriteXHeader("res", "StatusNotFound"),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered getting webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -265,7 +265,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("save the update in the database"),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot("webhookDatabase").Dot("UpdateWebhook").Call(jen.ID("ctx"), jen.ID("wh")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered updating webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -310,11 +310,11 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("err").Op(":=").ID("s").Dot("webhookDatabase").Dot("ArchiveWebhook").Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("no rows found for webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+					utils.WriteXHeader("res", "StatusNotFound"),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered deleting webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -327,7 +327,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("let everybody go home"),
-				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
+				utils.WriteXHeader("res", "StatusNoContent"),
 			),
 		),
 		jen.Line(),

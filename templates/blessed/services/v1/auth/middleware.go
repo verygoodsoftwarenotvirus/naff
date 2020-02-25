@@ -40,7 +40,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("s").Dot("FetchUserFromRequest").Call(jen.ID("ctx"), jen.ID("req")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered fetching user")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
+					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -143,13 +143,13 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.If(jen.Op("!").ID("ok").Op("||").ID("user").Op("==").ID("nil")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("AdminMiddleware called without user attached to context")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
+					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),
 				),
 				jen.Line(),
 				jen.If(jen.Op("!").ID("user").Dot("IsAdmin")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("AdminMiddleware called by non-admin user")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
+					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -191,7 +191,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 				jen.If(jen.ID("err").Op(":=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("req"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.If(jen.ID("x").Op("=").ID("parseLoginInputFromForm").Call(jen.ID("req")), jen.ID("x").Op("==").ID("nil")).Block(
 						jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),
-						jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+						utils.WriteXHeader("res", "StatusBadRequest"),
 						jen.Return(),
 					),
 				),

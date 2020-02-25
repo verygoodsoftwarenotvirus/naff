@@ -47,7 +47,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("DecodeCookieFromRequest takes a request object and fetches the cookie data if it is present"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("DecodeCookieFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("ca").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "CookieAuth"), jen.ID("err").ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("DecodeCookieFromRequest").Params(utils.CtxParam(), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("ca").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "CookieAuth"), jen.ID("err").ID("error")).Block(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("DecodeCookieFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -100,7 +100,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("FetchUserFromRequest takes a request object and fetches the cookie, and then the user for that cookie"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("FetchUserFromRequest").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("FetchUserFromRequest").Params(utils.CtxParam(), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("FetchUserFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -132,13 +132,13 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("loginData"), jen.ID("errRes")).Op(":=").ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
 				jen.If(jen.ID("errRes").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("errRes"), jen.Lit("error encountered fetching login data from request")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
+					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.If(jen.ID("err").Op(":=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("errRes")), jen.ID("err").Op("!=").ID("nil")).Block(
 						jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
 					),
 					jen.Return(),
 				).Else().If(jen.ID("loginData").Op("==").ID("nil")).Block(
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
+					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -149,14 +149,14 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("loginValid"), jen.ID("err")).Op(":=").ID("s").Dot("validateLogin").Call(jen.ID("ctx"), jen.Op("*").ID("loginData")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered validating login")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
+					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),
 				),
 				jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(jen.Lit("valid"), jen.ID("loginValid")),
 				jen.Line(),
 				jen.If(jen.Op("!").ID("loginValid")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("login was invalid")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
+					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -165,7 +165,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error building cookie")),
 					jen.Line(),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.ID("response").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Valuesln(
 						jen.ID("Code").Op(":").Qual("net/http", "StatusInternalServerError"),
 						jen.ID("Message").Op(":").Lit("error encountered building cookie"),
@@ -177,7 +177,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Qual("net/http", "SetCookie").Call(jen.ID("res"), jen.ID("cookie")),
-				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
+				utils.WriteXHeader("res", "StatusNoContent"),
 			),
 		),
 		jen.Line(),
@@ -200,7 +200,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 					jen.ID("s").Dot("logger").Dot("WithError").Call(jen.ID("err")).Dot("Debug").Call(jen.Lit("logout was called, no cookie was found")),
 				),
 				jen.Line(),
-				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
+				utils.WriteXHeader("res", "StatusOK"),
 			),
 		),
 		jen.Line(),
@@ -220,7 +220,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 					jen.Index().ID("byte").Call(jen.ID("s").Dot("config").Dot("CookieSecret")),
 				),
 				jen.Line(),
-				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusCreated")),
+				utils.WriteXHeader("res", "StatusCreated"),
 			),
 		),
 		jen.Line(),
@@ -279,7 +279,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("In the event that there's an error, this function will return false and the error."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("validateLogin").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("loginInfo").ID("loginData")).Params(jen.ID("bool"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("validateLogin").Params(utils.CtxParam(), jen.ID("loginInfo").ID("loginData")).Params(jen.ID("bool"), jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("validateLogin")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),

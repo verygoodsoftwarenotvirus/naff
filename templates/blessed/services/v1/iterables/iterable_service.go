@@ -115,7 +115,7 @@ func buildProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen
 	uvn := typ.Name.UnexportedVarName()
 
 	params := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 		jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 		jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataManager", sn)),
 	}

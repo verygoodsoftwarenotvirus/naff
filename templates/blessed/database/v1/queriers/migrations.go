@@ -45,9 +45,9 @@ func typeToPostgresType(t string) string {
 
 	if x, ok := typeMap[t]; ok {
 		return x
-	} else {
-		panic(fmt.Sprintf("unknown type!: %q", t))
 	}
+
+	panic(fmt.Sprintf("unknown type!: %q", t))
 }
 
 func typeToSqliteType(t string) string {
@@ -85,9 +85,9 @@ func typeToSqliteType(t string) string {
 
 	if x, ok := typeMap[t]; ok {
 		return x
-	} else {
-		panic(fmt.Sprintf("unknown type!: %q", t))
 	}
+
+	panic(fmt.Sprintf("unknown type!: %q", t))
 }
 
 func typeToMariaDBType(t string) string {
@@ -125,9 +125,9 @@ func typeToMariaDBType(t string) string {
 
 	if x, ok := typeMap[strings.TrimSpace(t)]; ok {
 		return x
-	} else {
-		panic(fmt.Sprintf("unknown type!: %q", t))
 	}
+
+	panic(fmt.Sprintf("unknown type!: %q", t))
 }
 
 type migration struct {

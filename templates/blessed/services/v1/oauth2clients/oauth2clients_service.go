@@ -113,7 +113,7 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ProvideOAuth2ClientsService builds a new OAuth2ClientsService"),
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientsService").Paramsln(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 			jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
 			jen.ID("authenticator").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "Authenticator"),

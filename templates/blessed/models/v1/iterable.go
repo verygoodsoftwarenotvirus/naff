@@ -97,12 +97,12 @@ func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	secondGetSomethingParams := []jen.Code{jen.IDf("%sID", uvn)}
 
 	getSomethingCountParams := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 		jen.ID("filter").Op("*").ID("QueryFilter"),
 	}
 	getAllSomethingCount := []jen.Code{jen.ID("ctx").Qual("context", "Context")}
 	getListOfSomethingParams := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 		jen.ID("filter").Op("*").ID("QueryFilter"),
 	}
 	archiveSomethingParams := []jen.Code{jen.ID("ctx").Qual("context", "Context")}
@@ -134,19 +134,19 @@ func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	if typ.BelongsToUser {
 		interfaceMethods = append(interfaceMethods, jen.IDf("GetAll%sForUser", pn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.ID("userID").ID("uint64"),
 		).Params(jen.Index().ID(sn), jen.ID("error")))
 	} else if typ.BelongsToStruct != nil {
 		interfaceMethods = append(interfaceMethods, jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64"),
 		).Params(jen.Index().ID(sn), jen.ID("error")))
 	}
 
 	interfaceMethods = append(interfaceMethods,
-		jen.IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").IDf("%sCreationInput", sn)).Params(jen.Op("*").ID(sn), jen.ID("error")),
-		jen.IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").ID(sn)).Params(jen.ID("error")),
+		jen.IDf("Create%s", sn).Params(utils.CtxParam(), jen.ID("input").Op("*").IDf("%sCreationInput", sn)).Params(jen.Op("*").ID(sn), jen.ID("error")),
+		jen.IDf("Update%s", sn).Params(utils.CtxParam(), jen.ID("updated").Op("*").ID(sn)).Params(jen.ID("error")),
 		jen.IDf("Archive%s", sn).Params(archiveSomethingParams...).Params(jen.ID("error")),
 	)
 

@@ -66,7 +66,7 @@ example_output_subdirs:
 
 .PHONY: $(EXAMPLE_OUTPUT_DIR)
 $(EXAMPLE_OUTPUT_DIR):
-	@go run cmd/todoproj/main.go
+	go run cmd/todoproj/main.go
 
 .PHONY: clean_example_output
 clean_example_output:
@@ -89,7 +89,7 @@ docker_image:
 	docker build --tag naff:latest --file Dockerfile .
 
 .PHONY: example_run
-example_run: clean_example_output example_output
+example_run: clean_example_output $(EXAMPLE_OUTPUT_DIR)
 	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) revendor rewire quicktest)
 
 ensure-goimports:

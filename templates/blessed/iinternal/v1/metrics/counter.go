@@ -43,7 +43,7 @@ func counterDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("IncrementBy satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("IncrementBy").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("val").ID("uint64")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").ID("uint64")).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot(
 				"actualCount",
 			), jen.ID("val")),

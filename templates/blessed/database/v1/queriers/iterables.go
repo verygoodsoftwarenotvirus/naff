@@ -260,7 +260,7 @@ func buildGetSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPala
 	sn := typ.Name.Singular()
 
 	params := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 	}
 	buildQueryParams := []jen.Code{
 		jen.IDf("%sID", uvn),
@@ -358,7 +358,7 @@ func buildGetSomethingCountFuncDecl(pkg *models.Project, dbvendor wordsmith.Supe
 
 	var comment string
 	params := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 		jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 	}
 	queryBuildingParams := []jen.Code{
@@ -510,7 +510,7 @@ func buildGetListOfSomethingsFuncDecl(pkg *models.Project, dbvendor wordsmith.Su
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
 	params := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 		jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 	}
 	queryBuildingParams := []jen.Code{
@@ -580,7 +580,7 @@ func buildGetAllSomethingsForUserFuncDecl(pkg *models.Project, dbvendor wordsmit
 		jen.Commentf("GetAll%sForUser fetches every %s belonging to a user", pn, scn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("GetAll%sForUser", pn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.ID("userID").ID("uint64"),
 		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.ID("nil"), jen.ID("userID")),
@@ -613,7 +613,7 @@ func buildGetAllSomethingsForSomethingElseFuncDecl(pkg *models.Project, dbvendor
 		jen.Commentf("GetAll%sFor%s fetches every %s belonging to %s", pn, typ.BelongsToStruct.Singular(), scn, typ.BelongsToStruct.SingularCommonNameWithPrefix()),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64"),
 		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.ID("nil"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
@@ -811,7 +811,7 @@ func buildCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 		jen.Commentf("Create%s creates %s in the database", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Create%s", sn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)),
 		).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
 			baseCreateFuncBody...,
@@ -893,7 +893,7 @@ func buildUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 	return []jen.Code{
 		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the provided input to have a valid ID.", sn, scn, sn),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Update%s", sn).Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildUpdate%sQuery", sn).Call(jen.ID("input")),
 			finalStatement,
 		),
@@ -986,7 +986,7 @@ func buildArchiveSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.Super
 	return []jen.Code{
 		jen.Commentf("Archive%s marks %s as archived in the database", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Archive%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(idParams...).ID("uint64")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Archive%s", sn).Params(utils.CtxParam(), jen.List(idParams...).ID("uint64")).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildArchive%sQuery", sn).Call(queryBuildingParams...),
 			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("err"),

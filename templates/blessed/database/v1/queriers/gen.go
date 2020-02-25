@@ -15,7 +15,7 @@ const (
 	mariadb  = "mariadb"
 )
 
-// DatabasePackage renders the package
+// RenderPackage renders the package
 func RenderPackage(pkg *models.Project) error {
 	for _, vendor := range []string{postgres, sqlite, mariadb} {
 		if err := renderDatabasePackage(pkg, vendor); err != nil {
@@ -25,6 +25,7 @@ func RenderPackage(pkg *models.Project) error {
 	return nil
 }
 
+// GetDatabasePalabra gets a given DB's superpalabra
 func GetDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 	switch vendor {
 	case postgres:

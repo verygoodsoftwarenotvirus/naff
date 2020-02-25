@@ -137,7 +137,7 @@ func runtimeDotGo(pkg *models.Project) *jen.File {
 					jen.Select().Block(
 						jen.Case(jen.Op("<-").ID("ticker").Dot("C")).Block(
 							jen.ID("startTime").Op(":=").Qual("time", "Now").Call(),
-							jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+							utils.CreateCtx(),
 							jen.Line(),
 							jen.Qual("runtime", "ReadMemStats").Call(jen.ID("ms")),
 							jen.Qual("go.opencensus.io/stats", "Record").Callln(

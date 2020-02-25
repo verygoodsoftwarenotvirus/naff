@@ -10,13 +10,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
-	ret := jen.NewFile(vendor.SingularPackageName())
+func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	ret := jen.NewFile(dbvendor.SingularPackageName())
 
 	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
-	sn := vendor.Singular()
+	sn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
-	dbrn := vendor.RouteName()
+	dbrn := dbvendor.RouteName()
 
 	isPostgres := dbrn == "postgres"
 	isSqlite := dbrn == "sqlite"
@@ -68,7 +68,7 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
 				jen.ID("expectedArgCount").Op(":=").Lit(1),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = %s", getIncIndex(dbrn, 0)),
+				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUserQuery").Call(jen.ID("expectedUserID")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -83,7 +83,7 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 		jen.Func().IDf("Test%s_GetUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = %s", getIncIndex(dbrn, 0)),
+			jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
@@ -271,7 +271,7 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				jen.Line(),
 				jen.ID("expectedUsername").Op(":=").Lit("username"),
 				jen.ID("expectedArgCount").Op(":=").Lit(1),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = %s", getIncIndex(dbrn, 0)),
+				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = %s", getIncIndex(dbvendor, 0)),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUserByUsernameQuery").Call(jen.ID("expectedUsername")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -286,7 +286,7 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 		jen.Func().IDf("Test%s_GetUserByUsername", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = %s", getIncIndex(dbrn, 0)),
+			jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = %s", getIncIndex(dbvendor, 0)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
@@ -429,10 +429,10 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				jen.ID("expectedArgCount").Op(":=").Lit(4),
 				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
 					createdOnCol,
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
+					getIncIndex(dbvendor, 0),
+					getIncIndex(dbvendor, 1),
+					getIncIndex(dbvendor, 2),
+					getIncIndex(dbvendor, 3),
 					createdOnVal,
 					queryTail,
 				),
@@ -454,7 +454,7 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 
 	var specialSnowflakePGTest jen.Code
 	if isPostgres {
-		specialSnowflakePGTest = jen.ID("T").Dot("Run").Call(jen.Litf("with %s row exists error", vendor.SingularCommonName()), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		specialSnowflakePGTest = jen.ID("T").Dot("Run").Call(jen.Litf("with %s row exists error", dbvendor.SingularCommonName()), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
 				jen.ID("ID").Op(":").Lit(123),
 				jen.ID("Username").Op(":").Lit("username"),
@@ -465,10 +465,10 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			),
 			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
 				createdOnCol,
-				getIncIndex(dbrn, 0),
-				getIncIndex(dbrn, 1),
-				getIncIndex(dbrn, 2),
-				getIncIndex(dbrn, 3),
+				getIncIndex(dbvendor, 0),
+				getIncIndex(dbvendor, 1),
+				getIncIndex(dbvendor, 2),
+				getIncIndex(dbvendor, 3),
 				createdOnVal,
 				queryTail,
 			),
@@ -514,10 +514,10 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			jen.Line(),
 			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
 				createdOnCol,
-				getIncIndex(dbrn, 0),
-				getIncIndex(dbrn, 1),
-				getIncIndex(dbrn, 2),
-				getIncIndex(dbrn, 3),
+				getIncIndex(dbvendor, 0),
+				getIncIndex(dbvendor, 1),
+				getIncIndex(dbvendor, 2),
+				getIncIndex(dbvendor, 3),
 				createdOnVal,
 				queryTail),
 			jen.Line(),
@@ -562,7 +562,7 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 
 					if isSqlite || isMariaDB {
 						out = append(out,
-							jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM users WHERE id = %s", getIncIndex(dbrn, 0)),
+							jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
 							jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
 								Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("CreatedOn"))),
 						)
@@ -631,11 +631,11 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				),
 				jen.ID("expectedArgCount").Op(":=").Lit(4),
 				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET username = %s, hashed_password = %s, two_factor_secret = %s, updated_on = %s WHERE id = %s%s",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 3),
+					getIncIndex(dbvendor, 0),
+					getIncIndex(dbvendor, 1),
+					getIncIndex(dbvendor, 2),
+					getTimeQuery(dbvendor),
+					getIncIndex(dbvendor, 3),
 					queryTail,
 				),
 				jen.Line(),
@@ -681,11 +681,11 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				),
 				buildUpdateUserExampleRows(),
 				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET username = %s, hashed_password = %s, two_factor_secret = %s, updated_on = %s WHERE id = %s%s",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 3),
+					getIncIndex(dbvendor, 0),
+					getIncIndex(dbvendor, 1),
+					getIncIndex(dbvendor, 2),
+					getTimeQuery(dbvendor),
+					getIncIndex(dbvendor, 3),
 					queryTail,
 				),
 				jen.Line(),
@@ -722,9 +722,9 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expectedArgCount").Op(":=").Lit(1),
 				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET updated_on = %s, archived_on = %s WHERE id = %s%s",
-					getTimeQuery(dbrn),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 0),
+					getTimeQuery(dbvendor),
+					getTimeQuery(dbvendor),
+					getIncIndex(dbvendor, 0),
 					queryTail,
 				),
 				jen.Line(),
@@ -748,9 +748,9 @@ func usersTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
 				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET updated_on = %s, archived_on = %s WHERE id = %s%s",
-					getTimeQuery(dbrn),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 0),
+					getTimeQuery(dbvendor),
+					getTimeQuery(dbvendor),
+					getIncIndex(dbvendor, 0),
 					queryTail,
 				),
 				jen.Line(),

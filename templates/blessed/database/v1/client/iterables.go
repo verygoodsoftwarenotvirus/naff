@@ -62,7 +62,7 @@ func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	scnwp := n.SingularCommonNameWithPrefix()
 
 	args := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 	}
 	loggerValues := []jen.Code{
 		jen.Litf("%s_id", rn).Op(":").IDf("%sID", uvn),
@@ -112,7 +112,7 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 	pcn := n.PluralCommonName()
 
 	params := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 		jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 	}
 
@@ -193,7 +193,7 @@ func buildGetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Cod
 	pcn := n.PluralCommonName()
 
 	params := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 		jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 	}
 	callArgs := []jen.Code{
@@ -266,7 +266,7 @@ func buildGetAllSomethingForUser(pkg *models.Project, typ models.DataType) []jen
 	return []jen.Code{
 		jen.Commentf("GetAll%sForUser fetches a list of %s from the database that meet a particular filter", pn, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("GetAll%sForUser", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("GetAll%sForUser", pn).Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("GetAll%sForUser", pn)),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -297,7 +297,7 @@ func buildGetAllSomethingForSomethingElse(pkg *models.Project, typ models.DataTy
 	return []jen.Code{
 		jen.Commentf("GetAll%sFor%s fetches a list of %s from the database that meet a particular filter", pn, btsns, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("GetAll%sFor%s", pn, btsns).Params(jen.ID("ctx").Qual("context", "Context"), jen.IDf("%sID", btsuvn).ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("GetAll%sFor%s", pn, btsns).Params(utils.CtxParam(), jen.IDf("%sID", btsuvn).ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("GetAll%sFor%s", pn, btsns)),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -321,7 +321,7 @@ func buildCreateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	return []jen.Code{
 		jen.Commentf("Create%s creates %s in the database", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Create%s", sn).Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Create%s", sn)),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -345,7 +345,7 @@ func buildUpdateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 		jen.Comment("provided input to have a valid ID."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Update%s", sn).Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Update%s", sn)),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -366,7 +366,7 @@ func buildArchiveSomething(pkg *models.Project, typ models.DataType) []jen.Code 
 	scnwp := n.SingularCommonNameWithPrefix()
 
 	params := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 	}
 	loggerValues := []jen.Code{
 		jen.Litf("%s_id", rn).Op(":").IDf("%sID", uvn),

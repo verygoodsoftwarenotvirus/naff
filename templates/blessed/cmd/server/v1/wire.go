@@ -86,7 +86,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("BuildServer builds a server"),
 		jen.Line(),
 		jen.Func().ID("BuildServer").Paramsln(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.ID("cfg").Op("*").Qual(internalConfigImp, "ServerConfig"),
 			jen.ID("logger").Qual(loggingImp, "Logger"),
 			jen.ID("database").Qual(databaseClientImp, "Database")).

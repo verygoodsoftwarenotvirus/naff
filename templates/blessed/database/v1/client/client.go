@@ -58,7 +58,7 @@ func clientDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ProvideDatabaseClient provides a new Database client"),
 		jen.Line(),
 		jen.Func().ID("ProvideDatabaseClient").Paramsln(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.ID("db").Op("*").Qual("database/sql", "DB"),
 			jen.ID("querier").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
 			jen.ID("debug").ID("bool"),

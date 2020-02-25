@@ -59,7 +59,7 @@ func usersServiceDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ProvideUsersService builds a new UsersService"),
 		jen.Line(),
 		jen.Func().ID("ProvideUsersService").Paramsln(
-			jen.ID("ctx").Qual("context", "Context"), jen.ID("authSettings").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings"),
+			utils.CtxParam(), jen.ID("authSettings").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 			jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
 			jen.ID("authenticator").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "Authenticator"),

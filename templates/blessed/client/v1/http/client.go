@@ -49,7 +49,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			jen.ID("Debug").ID("bool"),
 			jen.ID("URL").Op("*").Qual("net/url", "URL"),
 			jen.ID("Scopes").Index().ID("string"),
-			jen.ID("tokenSource").Qual(utils.CoreOAuth2Pkg, "TokenSource"),
+			jen.ID("tokenSource").Qual("golang.org/x/oauth2", "TokenSource"),
 		),
 		jen.Line(),
 	)

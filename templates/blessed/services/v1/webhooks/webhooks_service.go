@@ -67,7 +67,7 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ProvideWebhooksService builds a new WebhooksService"),
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksService").Paramsln(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 			jen.ID("webhookDatabase").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataManager"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),

@@ -2,12 +2,14 @@ package utils
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 )
@@ -16,6 +18,7 @@ const (
 	a = "assert"
 	r = "require"
 	t = "t"
+	T = "T"
 )
 
 // Comments turns a bunch of lines of strings into jen comments
@@ -33,7 +36,12 @@ func Comments(input ...string) []jen.Code {
 
 // WriteHeader calls res.WriteHeader for a given status
 func WriteHeader(status string) jen.Code {
-	return jen.ID("res").Dot("WriteHeader").Call(
+	return WriteXHeader("res", status)
+}
+
+// WriteXHeader calls WriteHeader for a given variable name
+func WriteXHeader(varName, status string) jen.Code {
+	return jen.ID(varName).Dot("WriteHeader").Call(
 		jen.Qual("net/http", status),
 	)
 }
@@ -211,16 +219,24 @@ func RunGoimportsForFile(filename string) error {
 
 // RunGoFormatForFile does
 func RunGoFormatForFile(filename string) error {
-	return exec.Command("/usr/local/go/bin/gofmt", "-s", "-w", filename).Run()
+	if runtime.GOOS == "linux" {
+		return exec.Command("/usr/local/go/bin/gofmt", "-s", "-w", filename).Run()
+	} else if runtime.GOOS == "darwin" {
+		return exec.Command("/usr/local/bin/gofmt", "-s", "-w", filename).Run()
+	} else {
+		return errors.New("invalid platform")
+	}
 }
 
 // RenderGoFile does
 func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 	fp := BuildTemplatePath(pkgRoot, path)
+	log.Printf("rendering %q\n", fp)
 
 	if _, err := os.Stat(fp); os.IsNotExist(err) {
 		if mkdirErr := os.MkdirAll(filepath.Dir(fp), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)
+			return err
 		}
 
 		var b bytes.Buffer
@@ -232,8 +248,7 @@ func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 			return fmt.Errorf("error rendering file %q: %w", path, err)
 		}
 
-		gie := RunGoimportsForFile(fp)
-		if gie != nil {
+		if gie := RunGoimportsForFile(fp); gie != nil {
 			return fmt.Errorf("error rendering file %q: %w", path, gie)
 		}
 
@@ -244,6 +259,8 @@ func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 		if gfe := RunGoFormatForFile(fp); gfe != nil {
 			return fmt.Errorf("error rendering file %q: %w", path, gfe)
 		}
+	} else {
+		return err
 	}
 
 	return nil

@@ -73,7 +73,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 
 	buildProvideServerParams := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.ID("cfg").Op("*").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig"),
 			jen.ID("authService").Op("*").Qual(filepath.Join(pkg.OutputPath, "services/v1/auth"), "Service"),
 			jen.ID("frontendService").Op("*").Qual(filepath.Join(pkg.OutputPath, "services/v1/frontend"), "Service"),

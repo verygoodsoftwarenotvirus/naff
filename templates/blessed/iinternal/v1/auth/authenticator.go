@@ -42,8 +42,8 @@ func authenticatorDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("PasswordHasher hashes passwords"),
 			jen.ID("PasswordHasher").Interface(
 				jen.ID("PasswordIsAcceptable").Params(jen.ID("password").ID("string")).Params(jen.ID("bool")),
-				jen.ID("HashPassword").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")),
-				jen.ID("PasswordMatches").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("salt").Index().ID("byte")).Params(jen.ID("bool")),
+				jen.ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")),
+				jen.ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("salt").Index().ID("byte")).Params(jen.ID("bool")),
 			),
 			jen.Line(),
 			jen.Comment("Authenticator is a poorly named Authenticator interface"),
@@ -51,7 +51,7 @@ func authenticatorDotGo(pkg *models.Project) *jen.File {
 				jen.ID("PasswordHasher"),
 				jen.Line(),
 				jen.ID("ValidateLogin").Paramsln(
-					jen.ID("ctx").Qual("context", "Context"),
+					utils.CtxParam(),
 					jen.Listln(
 						jen.ID("HashedPassword"),
 						jen.ID("ProvidedPassword"),

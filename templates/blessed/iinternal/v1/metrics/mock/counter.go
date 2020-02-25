@@ -37,7 +37,7 @@ func counterDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("IncrementBy implements our UnitCounter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("IncrementBy").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("val").ID("uint64")).Block(
+		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").ID("uint64")).Block(
 			jen.ID("m").Dot("Called").Call(jen.ID("val")),
 		),
 		jen.Line(),

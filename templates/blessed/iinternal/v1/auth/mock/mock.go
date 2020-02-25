@@ -29,7 +29,7 @@ func mockDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ValidateLogin satisfies our authenticator interface"), jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("Authenticator")).ID("ValidateLogin").Paramsln(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.Listln(jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 				jen.ID("twoFactorSecret"),
@@ -58,7 +58,7 @@ func mockDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Comment("HashPassword satisfies our authenticator interface"), jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("Authenticator")).ID("HashPassword").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("m").Op("*").ID("Authenticator")).ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx"), jen.ID("password")),
 			jen.Return().List(jen.ID("args").Dot("String").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
@@ -68,7 +68,7 @@ func mockDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("PasswordMatches satisfies our authenticator interface"), jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("Authenticator")).ID("PasswordMatches").Paramsln(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxParam(),
 			jen.Listln(jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 			).ID("string"),

@@ -58,7 +58,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("buildDummyUser").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse"), jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput"), jen.Op("*").Qual("net/http", "Cookie")).Block(
 			jen.ID("t").Dot("Helper").Call(),
-			jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+			utils.CreateCtx(),
 			jen.Line(),
 			jen.Comment("build user creation route input"),
 			jen.ID("userInput").Op(":=").ID("buildDummyUserInput").Call(jen.ID("t")),

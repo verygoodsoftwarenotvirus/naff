@@ -111,7 +111,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 					),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encountered error getting list of oauth2 clients from database")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -136,7 +136,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreationMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+					utils.WriteXHeader("res", "StatusBadRequest"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -150,7 +150,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("s").Dot("database").Dot("GetUserByUsername").Call(jen.ID("ctx"), jen.ID("input").Dot("Username")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("fetching user by username")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.ID("input").Dot("BelongsToUser").Op("=").ID("user").Dot("ID"),
@@ -169,11 +169,11 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.If(jen.Op("!").ID("valid")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("invalid credentials provided")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
+					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("validating user credentials")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -186,7 +186,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("s").Dot("database").Dot("CreateOAuth2Client").Call(jen.ID("ctx"), jen.ID("input")),
 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("creating oauth2Client in the database")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -194,7 +194,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("attachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("client").Dot("ID")),
 				jen.ID("s").Dot("oauth2ClientCounter").Dot("Increment").Call(jen.ID("ctx")),
 				jen.Line(),
-				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusCreated")),
+				utils.WriteXHeader("res", "StatusCreated"),
 				jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("client")), jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
 				),
@@ -225,11 +225,11 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot("database").Dot("GetOAuth2Client").Call(jen.ID("ctx"), jen.ID("oauth2ClientID"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("ReadHandler called on nonexistent client")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+					utils.WriteXHeader("res", "StatusNotFound"),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching oauth2Client from database")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -262,17 +262,17 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("mark client as archived"),
 				jen.ID("err").Op(":=").ID("s").Dot("database").Dot("ArchiveOAuth2Client").Call(jen.ID("ctx"), jen.ID("oauth2ClientID"), jen.ID("userID")),
 				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+					utils.WriteXHeader("res", "StatusNotFound"),
 					jen.Return(),
 				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encountered error deleting oauth2 client")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
 				jen.Comment("notify relevant parties"),
 				jen.ID("s").Dot("oauth2ClientCounter").Dot("Decrement").Call(jen.ID("ctx")),
-				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
+				utils.WriteXHeader("res", "StatusNoContent"),
 			),
 		),
 		jen.Line(),

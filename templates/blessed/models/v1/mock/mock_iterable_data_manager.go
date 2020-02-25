@@ -54,7 +54,7 @@ func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	uvn := n.UnexportedVarName()
 
 	params := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 	}
 	callArgs := []jen.Code{
 		jen.ID("ctx"), jen.IDf("%sID", uvn),
@@ -89,7 +89,7 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 	sn := n.Singular()
 
 	params := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 		jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 	}
 	callArgs := []jen.Code{
@@ -141,7 +141,7 @@ func buildGetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Cod
 	pn := n.Plural()
 
 	params := []jen.Code{
-		jen.ID("ctx").Qual("context", "Context"),
+		utils.CtxParam(),
 		jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 	}
 	callArgs := []jen.Code{
@@ -178,7 +178,7 @@ func buildGetAllSomethingsForUser(pkg *models.Project, typ models.DataType) []je
 	lines := []jen.Code{
 		jen.Commentf("GetAll%sForUser is a mock function", pn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("GetAll%sForUser", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("GetAll%sForUser", pn).Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx"), jen.ID("userID")),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
@@ -197,7 +197,7 @@ func buildGetAllSomethingsForSomethingElse(pkg *models.Project, typ models.DataT
 	lines := []jen.Code{
 		jen.Commentf("GetAll%sFor%s is a mock function", pn, typ.BelongsToStruct.Singular()),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(jen.ID("ctx").Qual("context", "Context"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(utils.CtxParam(), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
@@ -215,7 +215,7 @@ func buildCreateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("Create%s is a mock function", sn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("models").Dotf("%sCreationInput", sn)).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Create%s", sn).Params(utils.CtxParam(), jen.ID("input").Op("*").ID("models").Dotf("%sCreationInput", sn)).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx"), jen.ID("input")),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
@@ -233,7 +233,7 @@ func buildUpdateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("Update%s is a mock function", sn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Update%s", sn).Params(utils.CtxParam(), jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.ID("error")).Block(
 			jen.Return().ID("m").Dot("Called").Call(jen.ID("ctx"), jen.ID("updated")).Dot("Error").Call(jen.Lit(0)),
 		),
 		jen.Line(),

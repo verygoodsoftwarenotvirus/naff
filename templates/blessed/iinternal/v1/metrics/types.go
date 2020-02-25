@@ -35,7 +35,7 @@ func typesDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("Meant to handle integers exclusively"),
 			jen.ID("UnitCounter").Interface(
 				jen.ID("Increment").Params(jen.ID("ctx").Qual("context", "Context")),
-				jen.ID("IncrementBy").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("val").ID("uint64")),
+				jen.ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").ID("uint64")),
 				jen.ID("Decrement").Params(jen.ID("ctx").Qual("context", "Context")),
 			),
 			jen.Line(),

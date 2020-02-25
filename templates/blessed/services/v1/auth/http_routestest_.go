@@ -656,7 +656,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Op(":=").ID("true"),
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+				utils.CreateCtx(),
 				jen.ID("exampleInput").Op(":=").ID("loginData").Valuesln(
 					jen.ID("loginInput").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 						jen.ID("Username").Op(":").Lit("username"),
@@ -685,7 +685,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Op(":=").ID("true"),
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+				utils.CreateCtx(),
 				jen.ID("exampleInput").Op(":=").ID("loginData").Valuesln(
 					jen.ID("loginInput").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 						jen.ID("Username").Op(":").Lit("username"),
@@ -725,7 +725,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("expected").Op(":=").ID("false"),
 				jen.ID("expectedErr").Op(":=").Qual("errors", "New").Call(jen.Lit("arbitrary")),
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+				utils.CreateCtx(),
 				jen.ID("exampleInput").Op(":=").ID("loginData").Valuesln(
 					jen.ID("loginInput").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 						jen.ID("Username").Op(":").Lit("username"),
@@ -759,7 +759,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("expected").Op(":=").ID("false"),
 				jen.ID("expectedErr").Op(":=").Qual("errors", "New").Call(jen.Lit("arbitrary")),
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+				utils.CreateCtx(),
 				jen.ID("exampleInput").Op(":=").ID("loginData").Valuesln(
 					jen.ID("loginInput").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 						jen.ID("Username").Op(":").Lit("username"),
@@ -796,7 +796,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+				utils.CreateCtx(),
 				jen.ID("expected").Op(":=").ID("false"),
 				jen.ID("expectedErr").Op(":=").Qual("errors", "New").Call(jen.Lit("arbitrary")),
 				jen.ID("exampleInput").Op(":=").ID("loginData").Valuesln(
@@ -837,7 +837,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.Line(),
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+				utils.CreateCtx(),
 				jen.ID("exampleInput").Op(":=").ID("loginData").Valuesln(
 					jen.ID("loginInput").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 						jen.ID("Username").Op(":").Lit("username"),
