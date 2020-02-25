@@ -231,7 +231,7 @@ func RunGoFormatForFile(filename string) error {
 // RenderGoFile does
 func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 	fp := BuildTemplatePath(pkgRoot, path)
-	log.Printf("rendering %q\n", fp)
+	// log.Printf("rendering %q\n", fp)
 
 	if _, err := os.Stat(fp); os.IsNotExist(err) {
 		if mkdirErr := os.MkdirAll(filepath.Dir(fp), os.ModePerm); mkdirErr != nil {

@@ -386,6 +386,7 @@ func buildTestDBArchiveSomethingQueryFuncDecl(pkg *models.Project, dbvendor word
 	var (
 		expectedQuery string
 		queryTail     string
+		queryArgCount int
 	)
 
 	if isPostgres(dbvendor) {
@@ -399,21 +400,24 @@ func buildTestDBArchiveSomethingQueryFuncDecl(pkg *models.Project, dbvendor word
 	}
 
 	if typ.BelongsToUser {
+		queryArgCount = 2
 		expectedQuery = fmt.Sprintf("UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to_user = %s AND id = %s%s", tn, getTimeQuery(dbvendor), getTimeQuery(dbvendor), getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), queryTail)
 		expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").Lit(123))
 		archiveQueryBuildingParams = append(archiveQueryBuildingParams, jen.ID("expected").Dot("BelongsToUser"))
 	} else if typ.BelongsToStruct != nil {
+		queryArgCount = 2
 		expectedQuery = fmt.Sprintf("UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to_%s = %s AND id = %s%s", tn, getTimeQuery(dbvendor), getTimeQuery(dbvendor), typ.BelongsToStruct.RouteName(), getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), queryTail)
 		expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").Lit(123))
 		archiveQueryBuildingParams = append(archiveQueryBuildingParams, jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 	} else {
+		queryArgCount = 1
 		expectedQuery = fmt.Sprintf("UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND id = %s%s", tn, getTimeQuery(dbvendor), getTimeQuery(dbvendor), getIncIndex(dbvendor, 0), queryTail)
 	}
 
 	testLines := []jen.Code{
 		jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 		jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
-		jen.ID("expectedArgCount").Op(":=").Lit(2),
+		jen.ID("expectedArgCount").Op(":=").Lit(queryArgCount),
 		jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildArchive%sQuery", sn).Call(archiveQueryBuildingParams...),
 		jen.Line(),
@@ -620,6 +624,7 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 	var (
 		expectedQuery string
 		queryTail     string
+		varCount      int
 	)
 
 	if isPostgres(dbvendor) {
@@ -638,6 +643,7 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 			queryTail,
 		)
 		expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").Lit(123))
+		varCount = len(updateCols) + 2
 	} else if typ.BelongsToStruct != nil {
 		expectedQuery = fmt.Sprintf("UPDATE %s SET %s, updated_on = %s WHERE belongs_to_%s = %s AND id = %s%s",
 			tn,
@@ -649,6 +655,7 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 			queryTail,
 		)
 		expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").Lit(123))
+		varCount = len(updateCols) + 2
 	} else {
 		expectedQuery = fmt.Sprintf("UPDATE %s SET %s, updated_on = %s WHERE id = %s%s",
 			tn,
@@ -657,12 +664,13 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 			getIncIndex(dbvendor, uint(len(updateCols))),
 			queryTail,
 		)
+		varCount = len(updateCols) + 1
 	}
 
 	testBuildUpdateQueryBody := []jen.Code{
 		jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 		jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
-		jen.ID("expectedArgCount").Op(":=").Lit(len(updateCols) + 2), // +2 because of ID and BelongsTo
+		jen.ID("expectedArgCount").Op(":=").Lit(varCount), // +2 because of ID and BelongsTo
 		jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildUpdate%sQuery", sn).Call(jen.ID("expected")),
 		jen.Line(),
