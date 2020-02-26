@@ -14,46 +14,71 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
 
+	ret.Add(buildTestServiceListFuncDecl(pkg, typ)...)
+	ret.Add(buildTestServiceCreateFuncDecl(pkg, typ)...)
+	ret.Add(buildTestServiceReadFuncDecl(pkg, typ)...)
+	ret.Add(buildTestServiceUpdateFuncDecl(pkg, typ)...)
+	ret.Add(buildTestServiceArchiveFuncDecl(pkg, typ)...)
+
+	return ret
+}
+
+func buildOwnerVarName(typ models.DataType) string {
+	if typ.BelongsToUser {
+		return "requestingUser"
+	} else if typ.BelongsToStruct != nil {
+		return fmt.Sprintf("requesting%s", typ.BelongsToStruct.Singular())
+	}
+
+	return ""
+}
+
+func buildRelevantOwnerVar(pkg *models.Project, typ models.DataType) jen.Code {
+	if typ.BelongsToUser {
+		return jen.ID(buildOwnerVarName(typ)).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1))
+	} else if typ.BelongsToStruct != nil {
+		return jen.ID(buildOwnerVarName(typ)).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.BelongsToStruct.Singular()).Values(jen.ID("ID").Op(":").Lit(1))
+	}
+
+	return nil
+}
+
+func buildDBCallOwnerVar(typ models.DataType) jen.Code {
+	if typ.BelongsToUser || typ.BelongsToStruct != nil {
+		return jen.ID(buildOwnerVarName(typ)).Dot("ID")
+	}
+
+	return nil
+}
+
+func buildRelevantIDFetcher(typ models.DataType) jen.Code {
+	if typ.BelongsToUser {
+		return jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+			jen.Return().ID(buildOwnerVarName(typ)).Dot("ID"),
+		)
+	} else if typ.BelongsToStruct != nil {
+		return jen.ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+			jen.Return().ID(buildOwnerVarName(typ)).Dot("ID"),
+		)
+	}
+
+	return nil
+}
+
+func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
-	scn := typ.Name.SingularCommonName()
 	pcn := typ.Name.PluralCommonName()
 	uvn := typ.Name.UnexportedVarName()
 
-	buildCreationInputFromExpectedLines := func() []jen.Code {
-		lines := []jen.Code{}
-
-		for _, field := range typ.Fields {
-			if field.ValidForCreationInput {
-				sn := field.Name.Singular()
-				lines = append(lines, jen.ID(sn).Op(":").ID("expected").Dot(sn))
-			}
-		}
-
-		return lines
-	}
-
-	buildUpdateInputFromExpectedLines := func() []jen.Code {
-		lines := []jen.Code{}
-
-		for _, field := range typ.Fields {
-			if field.ValidForUpdateInput {
-				sn := field.Name.Singular()
-				lines = append(lines, jen.ID(sn).Op(":").ID("expected").Dot(sn))
-			}
-		}
-
-		return lines
-	}
-
-	ret.Add(
+	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("Test%sService_List", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
 					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 						jen.Valuesln(
@@ -62,15 +87,13 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.ID("requestingUser").Dot("ID"),
+					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
@@ -95,16 +118,14 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantOwnerVar(pkg, typ),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
@@ -128,16 +149,14 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s from database", pcn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantOwnerVar(pkg, typ),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.ID("requestingUser").Dot("ID"),
+					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
@@ -163,20 +182,18 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
 					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.ID("requestingUser").Dot("ID"),
+					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
@@ -199,16 +216,38 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	scn := typ.Name.SingularCommonName()
+	uvn := typ.Name.UnexportedVarName()
+
+	buildCreationInputFromExpectedLines := func() []jen.Code {
+		lines := []jen.Code{}
+
+		for _, field := range typ.Fields {
+			if field.ValidForCreationInput {
+				sn := field.Name.Singular()
+				lines = append(lines, jen.ID(sn).Op(":").ID("expected").Dot(sn))
+			}
+		}
+
+		return lines
+	}
+
+	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("Test%sService_Create", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
@@ -223,9 +262,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Op("=").ID("r"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -259,10 +296,8 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("without input attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantOwnerVar(pkg, typ),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -286,14 +321,12 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error creating %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -327,7 +360,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
@@ -340,9 +373,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Op("=").ID("r"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -374,23 +405,31 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	scn := typ.Name.SingularCommonName()
+	uvn := typ.Name.UnexportedVarName()
+
+	lines := []jen.Code{
+
 		jen.Func().ID(fmt.Sprintf("Test%sService_Read", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -400,7 +439,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID"),
+					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
@@ -425,14 +464,12 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with no such %s in database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -441,7 +478,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID"),
+					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
@@ -462,14 +499,12 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s from database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -479,7 +514,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID"),
+					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
@@ -500,14 +535,12 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -516,7 +549,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
@@ -539,16 +572,38 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	scn := typ.Name.SingularCommonName()
+	uvn := typ.Name.UnexportedVarName()
+
+	buildUpdateInputFromExpectedLines := func() []jen.Code {
+		lines := []jen.Code{}
+
+		for _, field := range typ.Fields {
+			if field.ValidForUpdateInput {
+				sn := field.Name.Singular()
+				lines = append(lines, jen.ID(sn).Op(":").ID("expected").Dot(sn))
+			}
+		}
+
+		return lines
+	}
+
+	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("Test%sService_Update", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
@@ -565,9 +620,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Op("=").ID("r"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -576,7 +629,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("id").Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
@@ -624,14 +677,12 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with no rows fetching %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -640,7 +691,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID"),
+					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
@@ -666,14 +717,12 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -682,7 +731,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
@@ -707,7 +756,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with error updating %s", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
@@ -720,9 +769,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Op("=").ID("r"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -731,7 +778,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("id").Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
@@ -763,7 +810,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
@@ -776,9 +823,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Op("=").ID("r"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -787,7 +832,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
 				jen.ID("id").Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
@@ -817,16 +862,25 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	scn := typ.Name.SingularCommonName()
+	uvn := typ.Name.UnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("Test%sService_Archive", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
@@ -839,9 +893,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement")).Dot("Return").Call(),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Op("=").ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -850,7 +902,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID"),
+					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.ID("nil")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
@@ -879,14 +931,12 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Litf("with no %s in database", scn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -895,7 +945,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID"),
+					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
@@ -916,14 +966,12 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(123),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-					jen.Return().ID("requestingUser").Dot("ID"),
-				),
+				buildRelevantIDFetcher(typ),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expected").Dot("ID"),
@@ -932,7 +980,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.ID("id").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("id").Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
@@ -950,6 +998,7 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
-	return ret
+	}
+
+	return lines
 }

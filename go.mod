@@ -50,7 +50,10 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.3.0
+	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tebeka/selenium v0.9.9
+	github.com/tidwall/pretty v1.0.1 // indirect
+	github.com/uber/jaeger-client-go v2.22.1+incompatible // indirect
 	gitlab.com/verygoodsoftwarenotvirus/logging v1.0.2
 	gitlab.com/verygoodsoftwarenotvirus/newsman v0.0.0-20190528023929-c49dc073f989
 	gitlab.com/verygoodsoftwarenotvirus/todo v0.0.0-20191014052256-b072a0a5a6f1 // indirect
@@ -59,5 +62,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	gopkg.in/AlecAivazis/survey.v1 v1.8.5
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
+	gopkg.in/ini.v1 v1.52.0 // indirect
 	gopkg.in/oauth2.v3 v3.11.0
 )

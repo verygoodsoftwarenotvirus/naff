@@ -56,6 +56,13 @@ func buildbuildTestServiceFuncDecl(pkg *models.Project, typ models.DataType) []j
 	return lines
 }
 
+func relevantIDFetcherParam(typ models.DataType) jen.Code {
+	if typ.BelongsToUser || typ.BelongsToStruct != nil {
+		return jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0))
+	}
+	return nil
+}
+
 func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
@@ -86,7 +93,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
+					relevantIDFetcherParam(typ),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 					jen.ID("nil"),
@@ -117,7 +124,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
+					relevantIDFetcherParam(typ),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 					jen.ID("nil"),
@@ -148,7 +155,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
+					relevantIDFetcherParam(typ),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 					jen.ID("nil"),

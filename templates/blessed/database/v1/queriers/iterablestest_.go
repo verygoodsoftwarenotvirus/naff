@@ -270,6 +270,9 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 		dbfl := string(dbrn[0])
 
 		expectQueryArgs := buildExpectQueryArgs("expected", typ)
+		if typ.BelongsToNobody {
+			expectQueryArgs = append(expectQueryArgs, jen.ID("expected").Dot("ID"))
+		}
 
 		if isPostgres(dbvendor) {
 			expectFuncName = "ExpectQuery"
@@ -340,6 +343,8 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 		} else if typ.BelongsToStruct != nil {
 			expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").IDf("expected%sID", typ.BelongsToStruct.Singular()))
 			out = append(out, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
+		} else if typ.BelongsToNobody {
+			expectQueryArgs = append(expectQueryArgs, jen.ID("expected").Dot("ID"))
 		}
 
 		expectedValues = append(expectedValues,
@@ -425,18 +430,23 @@ func buildTestDBArchiveSomethingQueryFuncDecl(pkg *models.Project, dbvendor word
 		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 	}
 
+	var assertIndesx int
 	if typ.BelongsToUser {
+		assertIndesx = 1
 		testLines = append(testLines,
 			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("BelongsToUser"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 		)
 	} else if typ.BelongsToStruct != nil {
+		assertIndesx = 1
 		testLines = append(testLines,
 			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
 		)
+	} else if typ.BelongsToNobody {
+		assertIndesx = 0
 	}
 
 	testLines = append(testLines,
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
+		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ID"), jen.ID("args").Index(jen.Lit(assertIndesx)).Assert(jen.ID("uint64"))),
 	)
 
 	return []jen.Code{
@@ -708,7 +718,11 @@ func buildTestDBCreateSomethingQueryFuncDecl(pkg *models.Project, dbvendor words
 	for i := range typ.Fields {
 		ips = append(ips, getIncIndex(dbvendor, uint(i)))
 	}
-	ips = append(ips, getIncIndex(dbvendor, uint(len(ips))))
+
+	if typ.BelongsToStruct != nil || typ.BelongsToUser {
+		ips = append(ips, getIncIndex(dbvendor, uint(len(ips))))
+	}
+
 	insertPlaceholders := strings.Join(ips, ",")
 
 	var queryTail string
@@ -775,7 +789,6 @@ func buildTestDBCreateSomethingQueryFuncDecl(pkg *models.Project, dbvendor words
 	createQueryTestBody = append(createQueryTestBody, creationEqualityExpectations...)
 
 	return []jen.Code{
-
 		jen.Func().IDf("Test%s_buildCreate%sQuery", dbvsn, sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -803,7 +816,9 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 	for i := range typ.Fields {
 		ips = append(ips, getIncIndex(dbvendor, uint(i)))
 	}
-	ips = append(ips, getIncIndex(dbvendor, uint(len(ips))))
+	if typ.BelongsToUser || typ.BelongsToStruct != nil {
+		ips = append(ips, getIncIndex(dbvendor, uint(len(ips))))
+	}
 	insertPlaceholders := strings.Join(ips, ",")
 
 	if isPostgres(dbvendor) {
@@ -1373,8 +1388,9 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 	cols := buildStringColumns(typ)
 
 	var (
-		expectedQuery   string
-		expectedOwnerID string
+		expectedQuery    string
+		expectedOwnerID  string
+		expectedArgCount int
 	)
 
 	bodyBlock := []jen.Code{
@@ -1382,20 +1398,23 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 	}
 
 	if typ.BelongsToUser {
+		expectedArgCount = 1
 		expectedQuery = fmt.Sprintf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", cols, tn, getIncIndex(dbvendor, 0))
 		expectedOwnerID = "exampleUserID"
 		bodyBlock = append(bodyBlock, jen.ID(expectedOwnerID).Op(":=").ID("uint64").Call(jen.Lit(321)))
 	} else if typ.BelongsToStruct != nil {
+		expectedArgCount = 1
 		expectedQuery = fmt.Sprintf("SELECT %s FROM %s WHERE archived_on IS NULL AND belongs_to_%s = %s LIMIT 20", cols, tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbvendor, 0))
 		expectedOwnerID = fmt.Sprintf("example%sID", typ.BelongsToStruct.Singular())
 		bodyBlock = append(bodyBlock, jen.IDf(expectedOwnerID).Op(":=").ID("uint64").Call(jen.Lit(321)))
 	} else if typ.BelongsToNobody {
+		expectedArgCount = 0
 		expectedQuery = fmt.Sprintf("SELECT %s FROM %s WHERE archived_on IS NULL LIMIT 20", cols, tn)
 	}
 
 	bodyBlock = append(bodyBlock,
 		jen.Line(),
-		jen.ID("expectedArgCount").Op(":=").Lit(1),
+		jen.ID("expectedArgCount").Op(":=").Lit(expectedArgCount),
 		jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID(expectedOwnerID)),
 		jen.Line(),
@@ -1427,13 +1446,17 @@ func buildTestDBBuildGetSomethingQuery(dbvendor wordsmith.SuperPalabra, typ mode
 	tn := typ.Name.PluralRouteName() // table name
 	cols := buildStringColumns(typ)
 
-	var query string
+	var (
+		query            string
+		expectedArgCount int
+	)
+
 	if typ.BelongsToUser {
 		query = fmt.Sprintf("SELECT %s FROM %s WHERE belongs_to_user = %s AND id = %s", cols, tn, getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1))
 	} else if typ.BelongsToStruct != nil {
 		query = fmt.Sprintf("SELECT %s FROM %s WHERE belongs_to_%s = %s AND id = %s", cols, tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1))
 	} else {
-		query = fmt.Sprintf("SELECT %s FROM %s id = %s", cols, tn, getIncIndex(dbvendor, 0))
+		query = fmt.Sprintf("SELECT %s FROM %s WHERE id = %s", cols, tn, getIncIndex(dbvendor, 0))
 	}
 
 	block := []jen.Code{
@@ -1442,14 +1465,18 @@ func buildTestDBBuildGetSomethingQuery(dbvendor wordsmith.SuperPalabra, typ mode
 	}
 
 	if typ.BelongsToUser {
+		expectedArgCount = 2
 		block = append(block, jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
 	} else if typ.BelongsToStruct != nil {
+		expectedArgCount = 2
 		block = append(block, jen.IDf("example%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
+	} else if typ.BelongsToNobody {
+		expectedArgCount = 1
 	}
 
 	block = append(block,
 		jen.Line(),
-		jen.ID("expectedArgCount").Op(":=").Lit(2),
+		jen.ID("expectedArgCount").Op(":=").Lit(expectedArgCount),
 		jen.ID("expectedQuery").Op(":=").Lit(query),
 	)
 
@@ -1467,14 +1494,19 @@ func buildTestDBBuildGetSomethingQuery(dbvendor wordsmith.SuperPalabra, typ mode
 		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 	)
 
+	var argIndex int
 	if typ.BelongsToUser {
+		argIndex = 1
 		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
 	} else if typ.BelongsToStruct != nil {
+		argIndex = 1
 		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("example%sID", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+	} else if typ.BelongsToNobody {
+		argIndex = 0
 	}
 
 	block = append(block,
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("example%sID", sn), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
+		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("example%sID", sn), jen.ID("args").Index(jen.Lit(argIndex)).Assert(jen.ID("uint64"))),
 	)
 
 	lines := []jen.Code{
@@ -1503,7 +1535,7 @@ func buildTestDBGetSomething(pkg *models.Project, dbvendor wordsmith.SuperPalabr
 	} else if typ.BelongsToStruct != nil {
 		query = fmt.Sprintf("SELECT %s FROM %s WHERE belongs_to_%s = %s AND id = %s", cols, tn, typ.BelongsToStruct.RouteName(), getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1))
 	} else {
-		query = fmt.Sprintf("SELECT %s FROM %s id = %s", cols, tn, getIncIndex(dbvendor, 0))
+		query = fmt.Sprintf("SELECT %s FROM %s WHERE id = %s", cols, tn, getIncIndex(dbvendor, 0))
 	}
 
 	buildFirstSubtestBlock := func(typ models.DataType) []jen.Code {

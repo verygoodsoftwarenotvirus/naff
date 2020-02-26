@@ -103,7 +103,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 						jen.Line(),
 						jen.Comment("attach the oauth2 client and user's info to the request"),
 						jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientKey"), jen.ID("oauth2Client")),
-						jen.List(jen.ID("user"), jen.ID("err")).Op("=").ID("s").Dot("userDB").Dot("GetUser").Call(jen.ID("ctx"), jen.ID("oauth2Client").Dot("BelongsTo")),
+						jen.List(jen.ID("user"), jen.ID("err")).Op("=").ID("s").Dot("userDB").Dot("GetUser").Call(jen.ID("ctx"), jen.ID("oauth2Client").Dot("BelongsToUser")),
 						jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 							jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error authenticating request")),
 							jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.Lit("fetching user"), jen.Qual("net/http", "StatusInternalServerError")),

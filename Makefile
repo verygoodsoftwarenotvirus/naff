@@ -17,7 +17,7 @@ vendor-clean:
 	rm -rf vendor go.sum
 
 .PHONY: vendor
-vendor: template-clean
+vendor:
 	GO111MODULE=on go mod vendor
 
 .PHONY: revendor
@@ -29,21 +29,6 @@ run:
 
 naff_debug:
 	go build -o naff_debug $(THIS_PKG)/cmd/cli
-
-.PHONY: template-clean
-template-clean:
-	rm -rf template
-	mkdir -p template
-
-templates: template-clean
-	go run cmd/tools/template_builder/main.go
-
-template-dirs:
-	@# for dir in `find ../todo -type d -not -path "*\.git*" -not -path "*node_modules*" -not -path "*vendor*" | sed -r 's/\.\.\/todo\/?/templates\/experimental\//g'`; do mkdir -p $$dir; done
-	for dir in `find ../todo -type d -not -path "*\.git*" -not -path "*node_modules*" -not -path "*vendor*" | sed -r 's/\.\.\/todo\/?/templates\/blessed\//g'`; do mkdir -p $$dir; done
-
-fix-template-test-files:
-	find templates/ -name "*_test.go" -exec bash -c 'mv "$1" `echo "$1" | sed -r "s/_test\.go/test_\.go/g"` ' - '{}' \;
 
 .PHONY: test
 test: test-models test-wordsmith
@@ -90,7 +75,8 @@ docker_image:
 
 .PHONY: example_run
 example_run: clean_example_output $(EXAMPLE_OUTPUT_DIR)
-	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) revendor rewire quicktest)
+	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) vendor rewire config_filesx integration-tests-postgres)
+	# (cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) vendor rewire && go test -cover -v gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/independents)
 
 ensure-goimports:
 ifndef $(shell command -v goimports 2> /dev/null)

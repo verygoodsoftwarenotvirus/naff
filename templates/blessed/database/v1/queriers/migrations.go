@@ -217,19 +217,22 @@ func makePostgresMigrations(pkg *models.Project) []migration {
 		scriptParts = append(scriptParts,
 			`				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),`,
 			`				"updated_on" BIGINT DEFAULT NULL,`,
-			`				"archived_on" BIGINT DEFAULT NULL,`,
 		)
 
 		if typ.BelongsToUser {
 			scriptParts = append(scriptParts,
+				`				"archived_on" BIGINT DEFAULT NULL,`,
 				`				"belongs_to_user" BIGINT NOT NULL,`,
 				`				FOREIGN KEY ("belongs_to_user") REFERENCES "users"("id")`,
 			)
 		} else if typ.BelongsToStruct != nil {
 			scriptParts = append(scriptParts,
+				`				"archived_on" BIGINT DEFAULT NULL,`,
 				fmt.Sprintf(`				"belongs_to_%s" BIGINT NOT NULL,`, typ.BelongsToStruct.RouteName()),
 				fmt.Sprintf(`				FOREIGN KEY ("belongs_to_%s") REFERENCES "%s"("id")`, typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),
 			)
+		} else if typ.BelongsToNobody {
+			scriptParts = append(scriptParts, `				"archived_on" BIGINT DEFAULT NULL`)
 		}
 
 		scriptParts = append(scriptParts,

@@ -49,7 +49,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ClientSecret").Op(":").ID("input").Dot("ClientSecret"),
 				jen.ID("RedirectURI").Op(":").ID("input").Dot("RedirectURI"),
 				jen.ID("Scopes").Op(":").ID("input").Dot("Scopes"),
-				jen.ID("BelongsTo").Op(":").ID("input").Dot("BelongsTo")),
+				jen.ID("BelongsToUser").Op(":").ID("input").Dot("BelongsToUser")),
 		),
 		jen.Line(),
 	)

@@ -33,7 +33,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("T").Dot("Parallel").Call(),
 					jen.Line(),
 					jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-						jen.ID("_").Op("=").IDf("Provide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Call(),
+						jen.ID("_").Op("=").IDf("Provide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					)),
 				),
 				jen.Line(),
