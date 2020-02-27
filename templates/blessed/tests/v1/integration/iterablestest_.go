@@ -90,12 +90,7 @@ func buildFakeCallForCreationInput(pkg *models.Project, typ models.DataType) []j
 	lines := []jen.Code{}
 
 	for _, field := range typ.Fields {
-		sn := field.Name.Singular()
-		if field.Pointer {
-			lines = append(lines, jen.ID(sn).Op(":").Add(utils.FakeCallForField(pkg.OutputPath, field)))
-		} else {
-			lines = append(lines, jen.ID(sn).Op(":").Add(utils.FakeCallForField(pkg.OutputPath, field)))
-		}
+		lines = append(lines, jen.ID(field.Name.Singular()).Op(":").Add(utils.FakeCallForField(pkg.OutputPath, field)))
 	}
 
 	return lines

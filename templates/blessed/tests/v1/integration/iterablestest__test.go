@@ -17,14 +17,32 @@ func Test_buildRequisiteCreationCode(T *testing.T) {
 	T.Run("normal operation", func(t *testing.T) {
 		apple := models.DataType{
 			Name: wordsmith.FromSingularPascalCase("Apple"),
+			Fields: []models.DataField{
+				{
+					Name: wordsmith.FromSingularPascalCase("AppleName"),
+					Type: "string",
+				},
+			},
 		}
 		banana := models.DataType{
 			Name:            wordsmith.FromSingularPascalCase("Banana"),
 			BelongsToStruct: apple.Name,
+			Fields: []models.DataField{
+				{
+					Name: wordsmith.FromSingularPascalCase("BananaName"),
+					Type: "string",
+				},
+			},
 		}
 		cherry := models.DataType{
 			Name:            wordsmith.FromSingularPascalCase("Cherry"),
 			BelongsToStruct: banana.Name,
+			Fields: []models.DataField{
+				{
+					Name: wordsmith.FromSingularPascalCase("CherryName"),
+					Type: "string",
+				},
+			},
 		}
 
 		proj := &models.Project{
