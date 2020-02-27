@@ -11,6 +11,15 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+// func buildPathForType(pkg *models.Project, typ models.DataType) string {
+// 	if typ.BelongsToStruct != nil {
+// 		parentType := pkg.FindType(typ.BelongsToStruct.Singular())
+// 		if parentType != nil {
+// 			return filepath.Join(buildPathForType(pkg, *parentType), )
+// 		}
+// 	}
+// }
+
 func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
@@ -48,7 +57,7 @@ func buildBuildGetSomethingRequestFuncDecl(pkg *models.Project, typ models.DataT
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildGet%sRequest", ts)).Params(
 			utils.CtxParam(),
-			jen.ID("id").ID("uint64"),
+			jen.IDf("%sID", typ.Name.UnexportedVarName()).ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -57,7 +66,7 @@ func buildBuildGetSomethingRequestFuncDecl(pkg *models.Project, typ models.DataT
 				jen.ID("nil"),
 				jen.ID(basePath),
 				jen.Qual("strconv", "FormatUint").Call(
-					jen.ID("id"),
+					jen.IDf("%sID", typ.Name.UnexportedVarName()),
 					jen.Lit(10),
 				),
 			),
@@ -358,7 +367,7 @@ func buildBuildArchiveSomethingRequestFuncDecl(pkg *models.Project, typ models.D
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("BuildArchive%sRequest", ts)).Params(
 			utils.CtxParam(),
-			jen.ID("id").ID("uint64"),
+			jen.IDf("%sID", typ.Name.UnexportedVarName()).ID("uint64"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -367,7 +376,7 @@ func buildBuildArchiveSomethingRequestFuncDecl(pkg *models.Project, typ models.D
 				jen.ID("nil"),
 				jen.ID(basePath),
 				jen.Qual("strconv", "FormatUint").Call(
-					jen.ID("id"),
+					jen.IDf("%sID", typ.Name.UnexportedVarName()),
 					jen.Lit(10),
 				),
 			),
@@ -395,14 +404,14 @@ func buildArchiveSomethingFuncDecl(pkg *models.Project, typ models.DataType) []j
 		jen.Line(),
 		newClientMethod(fmt.Sprintf("Archive%s", ts)).Params(
 			utils.CtxParam(),
-			jen.ID("id").ID("uint64"),
+			jen.IDf("%sID", typ.Name.UnexportedVarName()).ID("uint64"),
 		).Params(jen.ID("error")).Block(
 			jen.List(
 				jen.ID("req"),
 				jen.ID("err"),
 			).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
 				jen.ID("ctx"),
-				jen.ID("id"),
+				jen.IDf("%sID", typ.Name.UnexportedVarName()),
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(

@@ -8,12 +8,38 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+func buildCORSHandlerDef() []jen.Code {
+	return []jen.Code{
+		jen.Comment("Basic CORS, for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing"),
+		jen.ID("ch").Op(":=").Qual("github.com/go-chi/cors", "New").Call(jen.Qual("github.com/go-chi/cors", "Options").Valuesln(
+			jen.Comment(`AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts`),
+			jen.ID("AllowedOrigins").Op(":").Index().ID("string").Values(jen.Lit("*")),
+			jen.Comment(`AllowOriginFunc:  func(r *http.Request, origin string) bool { return true }`),
+			jen.ID("AllowedMethods").Op(":").Index().ID("string").Valuesln(
+				jen.Qual("net/http", "MethodGet"),
+				jen.Qual("net/http", "MethodPost"),
+				jen.Qual("net/http", "MethodPut"),
+				jen.Qual("net/http", "MethodDelete"),
+				jen.Qual("net/http", "MethodOptions"),
+			),
+			jen.ID("AllowedHeaders").Op(":").Index().ID("string").Valuesln(
+				jen.Lit("Accept"),
+				jen.Lit("Authorization"),
+				jen.Lit("Content-Provider"),
+				jen.Lit("X-CSRF-Token"),
+			),
+			jen.ID("ExposedHeaders").Op(":").Index().ID("string").Values(jen.Lit("Link")),
+			jen.ID("AllowCredentials").Op(":").ID("true"),
+			jen.Comment("Maximum value not ignored by any of major browsers"),
+			jen.ID("MaxAge").Op(":").Lit(300),
+		)),
+	}
+}
+
 func routesDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
 	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
-
-	// pn := typ.Name.Plural()
 
 	ret.Add(
 		jen.Const().Defs(
@@ -23,159 +49,192 @@ func routesDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "FrontendSettings"),
-			jen.ID("metricsHandler").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "Handler")).Block(
-			jen.ID("router").Op(":=").Qual("github.com/go-chi/chi", "NewRouter").Call(),
-			jen.Line(),
-			jen.Comment("Basic CORS, for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing"),
-			jen.ID("ch").Op(":=").Qual("github.com/go-chi/cors", "New").Call(jen.Qual("github.com/go-chi/cors", "Options").Valuesln(
-				jen.Comment(`AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts`),
-				jen.ID("AllowedOrigins").Op(":").Index().ID("string").Values(jen.Lit("*")),
-				jen.Comment(`AllowOriginFunc:  func(r *http.Request, origin string) bool { return true }`),
-				jen.ID("AllowedMethods").Op(":").Index().ID("string").Valuesln(
-					jen.Qual("net/http", "MethodGet"),
-					jen.Qual("net/http", "MethodPost"),
-					jen.Qual("net/http", "MethodPut"),
-					jen.Qual("net/http", "MethodDelete"),
-					jen.Qual("net/http", "MethodOptions"),
-				),
-				jen.ID("AllowedHeaders").Op(":").Index().ID("string").Valuesln(
-					jen.Lit("Accept"),
-					jen.Lit("Authorization"),
-					jen.Lit("Content-Provider"),
-					jen.Lit("X-CSRF-Token"),
-				),
-				jen.ID("ExposedHeaders").Op(":").Index().ID("string").Values(jen.Lit("Link")),
-				jen.ID("AllowCredentials").Op(":").ID("true"),
-				jen.Comment("Maximum value not ignored by any of major browsers"),
-				jen.ID("MaxAge").Op(":").Lit(300),
-			)),
-			jen.Line(),
-			jen.ID("router").Dot("Use").Callln(
-				jen.Qual("github.com/go-chi/chi/middleware", "RequestID"),
-				jen.Qual("github.com/go-chi/chi/middleware", "Timeout").Call(jen.ID("maxTimeout")),
-				jen.ID("s").Dot("loggingMiddleware"),
-				jen.ID("ch").Dot("Handler"),
-			),
-			jen.Line(),
-			jen.Comment("all middleware must be defined before routes on a mux"),
-			jen.Line(),
-			jen.ID("router").Dot("Route").Call(jen.Lit("/_meta_"), jen.Func().Params(jen.ID("metaRouter").Qual("github.com/go-chi/chi", "Router")).Block(
-				jen.ID("health").Op(":=").Qual("github.com/heptiolabs/healthcheck", "NewHandler").Call(),
-				jen.Comment("Expose a liveness check on /live"),
-				jen.ID("metaRouter").Dot("Get").Call(jen.Lit("/live"), jen.ID("health").Dot("LiveEndpoint")),
-				jen.Comment("Expose a readiness check on /ready"),
-				jen.ID("metaRouter").Dot("Get").Call(jen.Lit("/ready"), jen.ID("health").Dot("ReadyEndpoint")),
-			)),
-			jen.Line(),
-			jen.If(jen.ID("metricsHandler").Op("!=").ID("nil")).Block(
-				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("establishing metrics handler")),
-				jen.ID("router").Dot("Handle").Call(jen.Lit("/metrics"), jen.ID("metricsHandler")),
-			),
-			jen.Line(),
-			jen.Comment("Frontend routes"),
-			jen.If(jen.ID("s").Dot("config").Dot("Frontend").Dot("StaticFilesDirectory").Op("!=").Lit("")).Block(
-				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("setting static file server")),
-				jen.List(jen.ID("staticFileServer"), jen.ID("err")).Op(":=").ID("s").Dot("frontendService").Dot("StaticDir").Call(jen.ID("frontendConfig").Dot("StaticFilesDirectory")),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("establishing static file server")),
-				),
-				jen.ID("router").Dot("Get").Call(jen.Lit("/*"), jen.ID("staticFileServer")),
-			),
-			jen.Line(),
-			jen.For(jen.List(jen.ID("route"), jen.ID("handler")).Op(":=").Range().ID("s").Dot("frontendService").Dot("Routes").Call()).Block(
-				jen.ID("router").Dot("Get").Call(jen.ID("route"), jen.ID("handler")),
-			),
-			jen.Line(),
-			jen.ID("router").Dot("With").Callln(
-				jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.ID("true")),
-				jen.ID("s").Dot("authService").Dot("AdminMiddleware"),
-			).Dot("Route").Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").Qual("github.com/go-chi/chi", "Router")).Block(
-				jen.ID("adminRouter").Dot("Post").Call(jen.Lit("/cycle_cookie_secret"), jen.ID("s").Dot("authService").Dot("CycleSecretHandler").Call()),
-			)),
-			jen.Line(),
-			jen.ID("router").Dot("Route").Call(jen.Lit("/users"), jen.Func().Params(jen.ID("userRouter").Qual("github.com/go-chi/chi", "Router")).Block(
-				jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("UserLoginInputMiddleware")).Dot("Post").Call(jen.Lit("/login"), jen.ID("s").Dot("authService").Dot("LoginHandler").Call()),
-				jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware")).Dot("Post").Call(jen.Lit("/logout"), jen.ID("s").Dot("authService").Dot("LogoutHandler").Call()),
-				jen.Line(),
-				jen.ID("userIDPattern").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("oauth2IDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "URIParamKey")),
-				jen.Line(),
-				jen.ID("userRouter").Dot("Get").Call(jen.Lit("/"), jen.ID("s").Dot("usersService").Dot("ListHandler").Call()),
-				jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("usersService").Dot("UserInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dot("usersService").Dot("CreateHandler").Call()),
-				jen.ID("userRouter").Dot("Get").Call(jen.ID("userIDPattern"), jen.ID("s").Dot("usersService").Dot("ReadHandler").Call()),
-				jen.ID("userRouter").Dot("Delete").Call(jen.ID("userIDPattern"), jen.ID("s").Dot("usersService").Dot("ArchiveHandler").Call()),
-				jen.Line(),
-				jen.ID("userRouter").Dot("With").Callln(
-					jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
-					jen.ID("s").Dot("usersService").Dot("TOTPSecretRefreshInputMiddleware"),
-				).Dot("Post").Call(jen.Lit("/totp_secret/new"), jen.ID("s").Dot("usersService").Dot("NewTOTPSecretHandler").Call()),
-				jen.Line(),
-				jen.ID("userRouter").Dot("With").Callln(
-					jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
-					jen.ID("s").Dot("usersService").Dot("PasswordUpdateInputMiddleware"),
-				).Dot("Put").Call(jen.Lit("/password/new"), jen.ID("s").Dot("usersService").Dot("UpdatePasswordHandler").Call()),
-			)),
-			jen.Line(),
-			jen.ID("router").Dot("Route").Call(jen.Lit("/oauth2"), jen.Func().Params(jen.ID("oauth2Router").Qual("github.com/go-chi/chi", "Router")).Block(
-				jen.ID("oauth2Router").Dot("With").Callln(
-					jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
-					jen.ID("s").Dot("oauth2ClientsService").Dot("CreationInputMiddleware"),
-				).Dot("Post").Call(jen.Lit("/client"), jen.ID("s").Dot("oauth2ClientsService").Dot("CreateHandler").Call()),
-				jen.Line(),
-				jen.ID("oauth2Router").Dot("With").Call(jen.ID("s").Dot("oauth2ClientsService").Dot("OAuth2ClientInfoMiddleware")).
-					Dotln("Post").Call(jen.Lit("/authorize"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-					jen.ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).Dot("Debug").Call(jen.Lit("oauth2 authorize route hit")),
-					jen.If(jen.ID("err").Op(":=").ID("s").Dot("oauth2ClientsService").Dot("HandleAuthorizeRequest").Call(jen.ID("res"), jen.ID("req")), jen.ID("err").Op("!=").ID("nil")).Block(
-						jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.ID("err").Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
-					),
-				)),
-				jen.Line(),
-				jen.ID("oauth2Router").Dot("Post").Call(jen.Lit("/token"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-					jen.If(jen.ID("err").Op(":=").ID("s").Dot("oauth2ClientsService").Dot("HandleTokenRequest").Call(jen.ID("res"), jen.ID("req")), jen.ID("err").Op("!=").ID("nil")).Block(
-						jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.ID("err").Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
-					),
-				)),
-			)),
-			jen.Line(),
-			jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.ID("true"))).Dot("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual("github.com/go-chi/chi", "Router")).Block(
-				buildIterableAPIRoutes(pkg),
-				jen.Line(),
-				buildWebhookAPIRoutes(pkg),
-				jen.Line(),
-				buildOAuth2ClientsAPIRoutes(pkg),
-			)),
-			jen.Line(),
-			jen.ID("s").Dot("router").Op("=").ID("router"),
-		),
-		jen.Line(),
-	)
+	ret.Add(buildSetupRouterFuncDef(pkg)...)
+
 	return ret
 }
 
 func buildIterableAPIRoutes(pkg *models.Project) jen.Code {
-
 	g := &jen.Group{}
+
+	generatedTypes := map[string]bool{}
 
 	for _, typ := range pkg.DataTypes {
 		n := typ.Name
 
-		g.Add(
-			jen.Comment(n.Plural()),
-			jen.Line(),
-			jen.ID("v1Router").Dot("Route").Call(jen.Litf("/%s", n.PluralRouteName()), jen.Func().Params(jen.IDf("%sRouter", n.PluralUnexportedVarName()).Qual("github.com/go-chi/chi", "Router")).Block(
-				jen.ID("sr").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PackageName()), "URIParamKey")),
-				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("With").Call(jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("CreateHandler").Call()),
-				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ReadHandler").Call()),
-				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("With").Call(jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("sr"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("UpdateHandler").Call()),
-				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Delete").Call(jen.ID("sr"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ArchiveHandler").Call()),
-				jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Get").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ListHandler").Call()),
-			)),
-			jen.Line(),
-		)
+		if _, ok := generatedTypes[n.Singular()]; !ok {
+			g.Add(
+				jen.Comment(n.Plural()),
+				jen.Line(),
+				buildSubRouterDecl(pkg, generatedTypes, "v1", typ),
+				jen.Line(),
+			)
+		}
+
 	}
 
 	return g
+}
+
+func buildSubRouterDecl(pkg *models.Project, doneMap map[string]bool, routerPrefix string, typ models.DataType) jen.Code {
+	x := jen.IDf("%sRouter", routerPrefix).Dot("Route").Call(jen.Litf("/%s", typ.Name.PluralRouteName()), jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual("github.com/go-chi/chi", "Router")).Block(
+		buildIterableAPIRoutesBlock(pkg, doneMap, "", typ)...,
+	))
+
+	doneMap[typ.Name.Singular()] = true
+
+	return x
+}
+
+func buildIterableAPIRoutesBlock(pkg *models.Project, doneMap map[string]bool, routerPrefix string, typ models.DataType) []jen.Code {
+	n := typ.Name
+
+	lines := []jen.Code{}
+
+	if routerPrefix != "" {
+		lines = append(lines,
+			jen.Line(),
+			jen.Comment(n.Plural()),
+			jen.Line(),
+			buildSubRouterDecl(pkg, doneMap, routerPrefix, typ),
+			jen.Line(),
+		)
+	} else {
+		lines = append(lines,
+			jen.IDf("%sRoute", typ.Name.UnexportedVarName()).Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PackageName()), "URIParamKey")),
+			jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("With").Call(jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("CreateHandler").Call()),
+			jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Get").Call(jen.IDf("%sRoute", typ.Name.UnexportedVarName()), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ReadHandler").Call()),
+			jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("With").Call(jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.IDf("%sRoute", typ.Name.UnexportedVarName()), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("UpdateHandler").Call()),
+			jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Delete").Call(jen.IDf("%sRoute", typ.Name.UnexportedVarName()), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ArchiveHandler").Call()),
+			jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Get").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ListHandler").Call()),
+		)
+	}
+
+	deps := pkg.FindDependentsOfType(typ)
+	for _, dep := range deps {
+		if _, ok := doneMap[n.Singular()]; !ok {
+			furtherLines := buildIterableAPIRoutesBlock(pkg, doneMap, typ.Name.PluralUnexportedVarName(), dep)
+			lines = append(lines, jen.Line())
+			lines = append(lines, furtherLines...)
+		}
+	}
+
+	doneMap[n.Singular()] = true
+
+	return lines
+}
+
+func buildSetupRouterFuncDef(pkg *models.Project) []jen.Code {
+	block := []jen.Code{
+		jen.ID("router").Op(":=").Qual("github.com/go-chi/chi", "NewRouter").Call(),
+		jen.Line(),
+	}
+	block = append(block, buildCORSHandlerDef()...)
+
+	block = append(block,
+		jen.Line(),
+		jen.ID("router").Dot("Use").Callln(
+			jen.Qual("github.com/go-chi/chi/middleware", "RequestID"),
+			jen.Qual("github.com/go-chi/chi/middleware", "Timeout").Call(jen.ID("maxTimeout")),
+			jen.ID("s").Dot("loggingMiddleware"),
+			jen.ID("ch").Dot("Handler"),
+		),
+		jen.Line(),
+		jen.Comment("all middleware must be defined before routes on a mux"),
+		jen.Line(),
+		jen.ID("router").Dot("Route").Call(jen.Lit("/_meta_"), jen.Func().Params(jen.ID("metaRouter").Qual("github.com/go-chi/chi", "Router")).Block(
+			jen.ID("health").Op(":=").Qual("github.com/heptiolabs/healthcheck", "NewHandler").Call(),
+			jen.Comment("Expose a liveness check on /live"),
+			jen.ID("metaRouter").Dot("Get").Call(jen.Lit("/live"), jen.ID("health").Dot("LiveEndpoint")),
+			jen.Comment("Expose a readiness check on /ready"),
+			jen.ID("metaRouter").Dot("Get").Call(jen.Lit("/ready"), jen.ID("health").Dot("ReadyEndpoint")),
+		)),
+		jen.Line(),
+		jen.If(jen.ID("metricsHandler").Op("!=").ID("nil")).Block(
+			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("establishing metrics handler")),
+			jen.ID("router").Dot("Handle").Call(jen.Lit("/metrics"), jen.ID("metricsHandler")),
+		),
+		jen.Line(),
+		jen.Comment("Frontend routes"),
+		jen.If(jen.ID("s").Dot("config").Dot("Frontend").Dot("StaticFilesDirectory").Op("!=").Lit("")).Block(
+			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("setting static file server")),
+			jen.List(jen.ID("staticFileServer"), jen.ID("err")).Op(":=").ID("s").Dot("frontendService").Dot("StaticDir").Call(jen.ID("frontendConfig").Dot("StaticFilesDirectory")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("establishing static file server")),
+			),
+			jen.ID("router").Dot("Get").Call(jen.Lit("/*"), jen.ID("staticFileServer")),
+		),
+		jen.Line(),
+		jen.For(jen.List(jen.ID("route"), jen.ID("handler")).Op(":=").Range().ID("s").Dot("frontendService").Dot("Routes").Call()).Block(
+			jen.ID("router").Dot("Get").Call(jen.ID("route"), jen.ID("handler")),
+		),
+		jen.Line(),
+		jen.ID("router").Dot("With").Callln(
+			jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.ID("true")),
+			jen.ID("s").Dot("authService").Dot("AdminMiddleware"),
+		).Dot("Route").Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").Qual("github.com/go-chi/chi", "Router")).Block(
+			jen.ID("adminRouter").Dot("Post").Call(jen.Lit("/cycle_cookie_secret"), jen.ID("s").Dot("authService").Dot("CycleSecretHandler").Call()),
+		)),
+		jen.Line(),
+		jen.ID("router").Dot("Route").Call(jen.Lit("/users"), jen.Func().Params(jen.ID("userRouter").Qual("github.com/go-chi/chi", "Router")).Block(
+			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("UserLoginInputMiddleware")).Dot("Post").Call(jen.Lit("/login"), jen.ID("s").Dot("authService").Dot("LoginHandler").Call()),
+			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware")).Dot("Post").Call(jen.Lit("/logout"), jen.ID("s").Dot("authService").Dot("LogoutHandler").Call()),
+			jen.Line(),
+			jen.ID("userIDPattern").Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("oauth2IDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "URIParamKey")),
+			jen.Line(),
+			jen.ID("userRouter").Dot("Get").Call(jen.Lit("/"), jen.ID("s").Dot("usersService").Dot("ListHandler").Call()),
+			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("usersService").Dot("UserInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dot("usersService").Dot("CreateHandler").Call()),
+			jen.ID("userRouter").Dot("Get").Call(jen.ID("userIDPattern"), jen.ID("s").Dot("usersService").Dot("ReadHandler").Call()),
+			jen.ID("userRouter").Dot("Delete").Call(jen.ID("userIDPattern"), jen.ID("s").Dot("usersService").Dot("ArchiveHandler").Call()),
+			jen.Line(),
+			jen.ID("userRouter").Dot("With").Callln(
+				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
+				jen.ID("s").Dot("usersService").Dot("TOTPSecretRefreshInputMiddleware"),
+			).Dot("Post").Call(jen.Lit("/totp_secret/new"), jen.ID("s").Dot("usersService").Dot("NewTOTPSecretHandler").Call()),
+			jen.Line(),
+			jen.ID("userRouter").Dot("With").Callln(
+				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
+				jen.ID("s").Dot("usersService").Dot("PasswordUpdateInputMiddleware"),
+			).Dot("Put").Call(jen.Lit("/password/new"), jen.ID("s").Dot("usersService").Dot("UpdatePasswordHandler").Call()),
+		)),
+		jen.Line(),
+		jen.ID("router").Dot("Route").Call(jen.Lit("/oauth2"), jen.Func().Params(jen.ID("oauth2Router").Qual("github.com/go-chi/chi", "Router")).Block(
+			jen.ID("oauth2Router").Dot("With").Callln(
+				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
+				jen.ID("s").Dot("oauth2ClientsService").Dot("CreationInputMiddleware"),
+			).Dot("Post").Call(jen.Lit("/client"), jen.ID("s").Dot("oauth2ClientsService").Dot("CreateHandler").Call()),
+			jen.Line(),
+			jen.ID("oauth2Router").Dot("With").Call(jen.ID("s").Dot("oauth2ClientsService").Dot("OAuth2ClientInfoMiddleware")).
+				Dotln("Post").Call(jen.Lit("/authorize"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
+				jen.ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).Dot("Debug").Call(jen.Lit("oauth2 authorize route hit")),
+				jen.If(jen.ID("err").Op(":=").ID("s").Dot("oauth2ClientsService").Dot("HandleAuthorizeRequest").Call(jen.ID("res"), jen.ID("req")), jen.ID("err").Op("!=").ID("nil")).Block(
+					jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.ID("err").Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
+				),
+			)),
+			jen.Line(),
+			jen.ID("oauth2Router").Dot("Post").Call(jen.Lit("/token"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
+				jen.If(jen.ID("err").Op(":=").ID("s").Dot("oauth2ClientsService").Dot("HandleTokenRequest").Call(jen.ID("res"), jen.ID("req")), jen.ID("err").Op("!=").ID("nil")).Block(
+					jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.ID("err").Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
+				),
+			)),
+		)),
+		jen.Line(),
+		jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.ID("true"))).Dot("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual("github.com/go-chi/chi", "Router")).Block(
+			buildIterableAPIRoutes(pkg),
+			jen.Line(),
+			buildWebhookAPIRoutes(pkg),
+			jen.Line(),
+			buildOAuth2ClientsAPIRoutes(pkg),
+		)),
+		jen.Line(),
+		jen.ID("s").Dot("router").Op("=").ID("router"),
+	)
+
+	return []jen.Code{
+		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "FrontendSettings"),
+			jen.ID("metricsHandler").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "Handler")).Block(block...),
+		jen.Line(),
+	}
 }
 
 func buildWebhookAPIRoutes(pkg *models.Project) jen.Code {

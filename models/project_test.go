@@ -7,11 +7,13 @@ import (
 	"go/token"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseModels(T *testing.T) {
+	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		exampleOutputPath := "things/stuff"
@@ -358,5 +360,56 @@ type Item struct{
 
 		_, _, actualErr := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
 		assert.Error(t, actualErr)
+	})
+}
+
+func TestProject_containsCyclicOwnerships(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p := &Project{
+			DataTypes: []DataType{
+				{
+					Name: wordsmith.FromSingularPascalCase("A"),
+				},
+				{
+					Name:            wordsmith.FromSingularPascalCase("B"),
+					BelongsToStruct: wordsmith.FromSingularPascalCase("A"),
+				},
+				{
+					Name:            wordsmith.FromSingularPascalCase("C"),
+					BelongsToStruct: wordsmith.FromSingularPascalCase("B"),
+				},
+			},
+		}
+
+		expected := false
+		actual := p.containsCyclicOwnerships()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with violation", func(t *testing.T) {
+		p := &Project{
+			DataTypes: []DataType{
+				{
+					Name:            wordsmith.FromSingularPascalCase("A"),
+					BelongsToStruct: wordsmith.FromSingularPascalCase("C"),
+				},
+				{
+					Name:            wordsmith.FromSingularPascalCase("B"),
+					BelongsToStruct: wordsmith.FromSingularPascalCase("A"),
+				},
+				{
+					Name:            wordsmith.FromSingularPascalCase("C"),
+					BelongsToStruct: wordsmith.FromSingularPascalCase("B"),
+				},
+			},
+		}
+
+		expected := true
+		actual := p.containsCyclicOwnerships()
+
+		assert.Equal(t, expected, actual)
 	})
 }

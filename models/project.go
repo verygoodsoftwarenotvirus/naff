@@ -1,14 +1,20 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"hash/fnv"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gonum/graph/simple"
+	"github.com/gonum/graph/topo"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
@@ -43,6 +49,20 @@ type DataField struct {
 	ValidForUpdateInput   bool
 }
 
+type depWrapper struct {
+	dependency string
+}
+
+func (dw depWrapper) ID() int {
+	x := fnv.New32a()
+
+	if _, err := x.Write([]byte(dw.dependency)); err != nil {
+		panic(err)
+	}
+
+	return int(x.Sum32())
+}
+
 type Project struct {
 	sourcePackage           string
 	OutputPath              string
@@ -68,10 +88,35 @@ func (p *Project) ParseModels(outputPath string) error {
 		}
 
 		p.DataTypes = append(p.DataTypes, dts...)
+		if p.containsCyclicOwnerships() {
+			return errors.New("error: cyclic ownership detected")
+		}
+
 		p.iterableServicesImports = append(p.iterableServicesImports, imps...)
 	}
 
 	return nil
+}
+
+func (p *Project) FindType(name string) *DataType {
+	for _, typ := range p.DataTypes {
+		if typ.Name.Singular() == name {
+			return &typ
+		}
+	}
+
+	return nil
+}
+
+func (p *Project) FindDependentsOfType(parentType DataType) []DataType {
+	dependents := []DataType{}
+	for _, typ := range p.DataTypes {
+		if typ.BelongsToStruct != nil && typ.BelongsToStruct.Singular() == parentType.Name.Singular() {
+			dependents = append(dependents, typ)
+		}
+	}
+
+	return dependents
 }
 
 func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []DataType, imports []string, returnErr error) {
@@ -194,6 +239,28 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 	}
 
 	return
+}
+
+func (p *Project) containsCyclicOwnerships() bool {
+	g := simple.NewDirectedGraph(0, math.Inf(1))
+
+	for _, typ := range p.DataTypes {
+		w := depWrapper{dependency: typ.Name.Singular()}
+		if !g.Has(w) {
+			g.AddNode(w)
+		}
+	}
+
+	for _, typ := range p.DataTypes {
+		w := depWrapper{dependency: typ.Name.Singular()}
+
+		if typ.BelongsToStruct != nil {
+			g.SetEdge(simple.Edge{F: w, T: depWrapper{typ.BelongsToStruct.Singular()}})
+		}
+	}
+
+	cycles := topo.CyclesIn(g)
+	return len(cycles) != 0
 }
 
 type projectSurvey struct {
