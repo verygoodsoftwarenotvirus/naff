@@ -9,20 +9,29 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
-	prn := typ.Name.PluralRouteName()
-	tp := typ.Name.Plural()   // title plural
+	utils.AddImports(proj.OutputPath, []models.DataType{typ}, ret)
+
+	ret.Add(buildTestV1Client_BuildGetSomethingRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_GetSomething(proj, typ)...)
+	ret.Add(buildTestV1Client_BuildGetListOfSomethingRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_GetListOfSomething(proj, typ)...)
+	ret.Add(buildTestV1Client_BuildCreateSomethingRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_CreateSomething(proj, typ)...)
+	ret.Add(buildTestV1Client_BuildUpdateSomethingRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_UpdateSomething(proj, typ)...)
+	ret.Add(buildTestV1Client_BuildArchiveSomethingRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_ArchiveSomething(proj, typ)...)
+
+	return ret
+}
+
+func buildTestV1Client_BuildGetSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	// routes
-	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
-	modelListRoute := fmt.Sprintf("/api/v1/%s", prn)
-
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
-
-	ret.Add(
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -59,9 +68,19 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestV1Client_GetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
+	prn := typ.Name.PluralRouteName()
+	ts := typ.Name.Singular() // title singular
+
+	// routes
+	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -105,9 +124,15 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestV1Client_BuildGetListOfSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
+	tp := typ.Name.Plural() // title plural
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", tp)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -130,9 +155,20 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestV1Client_GetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Code {
+	prn := typ.Name.PluralRouteName()
+	tp := typ.Name.Plural()   // title plural
+	ts := typ.Name.Singular() // title singular
+
+	// routes
+	modelListRoute := fmt.Sprintf("/api/v1/%s", prn)
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", tp)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -186,7 +222,13 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
+
+	return lines
+}
+
+func buildTestV1Client_BuildCreateSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
 
 	creationFields := func() []jen.Code {
 		lines := []jen.Code{
@@ -200,7 +242,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	}
 	cfs := creationFields()
 
-	ret.Add(
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildCreate%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -238,7 +280,17 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
+
+	return lines
+}
+
+func buildTestV1Client_CreateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
+	prn := typ.Name.PluralRouteName()
+	ts := typ.Name.Singular() // title singular
+
+	// routes
+	modelListRoute := fmt.Sprintf("/api/v1/%s", prn)
 
 	createCreationInputLines := func() []jen.Code {
 		var lines []jen.Code
@@ -248,9 +300,21 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			}
 		}
 		return lines
-	}
 
-	ret.Add(
+	}
+	creationFields := func() []jen.Code {
+		lines := []jen.Code{
+			jen.ID("ID").Op(":").Lit(1),
+		}
+
+		for _, field := range typ.Fields {
+			lines = append(lines, jen.ID(field.Name.Singular()).Op(":").Add(utils.ExampleValueForField(field)))
+		}
+		return lines
+	}
+	cfs := creationFields()
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Create%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -284,9 +348,15 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestV1Client_BuildUpdateSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildUpdate%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -310,9 +380,19 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestV1Client_UpdateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
+	prn := typ.Name.PluralRouteName()
+	ts := typ.Name.Singular() // title singular
+
+	// routes
+	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Update%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -340,9 +420,15 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestV1Client_BuildArchiveSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildArchive%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -379,9 +465,19 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestV1Client_ArchiveSomething(pkg *models.Project, typ models.DataType) []jen.Code {
+	prn := typ.Name.PluralRouteName()
+	ts := typ.Name.Singular() // title singular
+
+	// routes
+	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Archive%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -409,7 +505,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return ret
+	return lines
 }

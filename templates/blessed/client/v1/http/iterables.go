@@ -33,7 +33,7 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret.Add(buildBuildGetSomethingRequestFuncDecl(pkg, typ)...)
 	ret.Add(buildGetSomethingFuncDecl(pkg, typ)...)
 	ret.Add(buildBuildGetSomethingsRequestFuncDecl(pkg, typ)...)
-	ret.Add(buildGetSomethingsFuncDecl(pkg, typ)...)
+	ret.Add(buildGetListOfSomethingsFuncDecl(pkg, typ)...)
 	ret.Add(buildBuildCreateSomethingRequestFuncDecl(pkg, typ)...)
 	ret.Add(buildCreateSomethingFuncDecl(pkg, typ)...)
 	ret.Add(buildBuildUpdateSomethingRequestFuncDecl(pkg, typ)...)
@@ -44,13 +44,33 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	return ret
 }
 
+func buildURLBuildingParmasForSingleInstanceOfSomething(pkg *models.Project, typ models.DataType) []jen.Code {
+	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
+	urlBuildingParams := []jen.Code{jen.Nil()}
+
+	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+		urlBuildingParams = append(urlBuildingParams,
+			jen.IDf("%sBasePath", pt.Name.UnexportedVarName()),
+			jen.Qual("strconv", "FormatUint").Call(
+				jen.IDf("%sID", pt.Name.UnexportedVarName()),
+				jen.Lit(10),
+			),
+		)
+	}
+	urlBuildingParams = append(urlBuildingParams,
+		jen.ID(basePath),
+		jen.Qual("strconv", "FormatUint").Call(
+			jen.IDf("%sID", typ.Name.UnexportedVarName()),
+			jen.Lit(10),
+		),
+	)
+
+	return urlBuildingParams
+}
+
 func buildBuildGetSomethingRequestFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular()
-	pvn := typ.Name.PluralUnexportedVarName()
-
-	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
-	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
-	basePath := fmt.Sprintf("%sBasePath", pvn)
+	commonNameWithPrefix := typ.Name.SingularCommonNameWithPrefix()
 
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching %s", ts, commonNameWithPrefix)),
@@ -59,14 +79,7 @@ func buildBuildGetSomethingRequestFuncDecl(pkg *models.Project, typ models.DataT
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
 		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-				jen.ID("nil"),
-				jen.ID(basePath),
-				jen.Qual("strconv", "FormatUint").Call(
-					jen.IDf("%sID", typ.Name.UnexportedVarName()),
-					jen.Lit(10),
-				),
-			),
+			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(buildURLBuildingParmasForSingleInstanceOfSomething(pkg, typ)...),
 			jen.Line(),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodGet"),
@@ -113,7 +126,7 @@ func buildGetSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.C
 			jen.ID(uvn).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts),
 			jen.ID("err").ID("error"),
 		).Block(
-			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(jen.ID("ctx"), jen.IDf("%sID", uvn)),
+			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ)...),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"),
 					jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.ID("err")),
@@ -165,7 +178,7 @@ func buildBuildGetSomethingsRequestFuncDecl(pkg *models.Project, typ models.Data
 	return lines
 }
 
-func buildGetSomethingsFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildGetListOfSomethingsFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular()
 	tp := typ.Name.Plural() // title plural
 	pvn := typ.Name.PluralUnexportedVarName()
@@ -420,8 +433,7 @@ func buildArchiveSomethingFuncDecl(pkg *models.Project, typ models.DataType) []j
 				jen.ID("req"),
 				jen.ID("err"),
 			).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
-				jen.ID("ctx"),
-				jen.IDf("%sID", typ.Name.UnexportedVarName()),
+				buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ)...,
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(

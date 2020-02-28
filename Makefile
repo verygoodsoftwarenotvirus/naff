@@ -31,15 +31,19 @@ naff_debug:
 	go build -o naff_debug $(THIS_PKG)/cmd/cli
 
 .PHONY: test
-test: test-models test-wordsmith
+test: test-models test-wordsmith test-http-client
 
 .PHONY: test-wordsmith
 test-wordsmith:
-	go test -v ./lib/wordsmith/
+	go test -race -cover -v ./lib/wordsmith/
 
 .PHONY: test-models
 test-models:
-	go test -v ./models/
+	go test -race -cover -v ./models/
+
+.PHONY: test-http-client
+test-http-client:
+	go test -race -cover -v ./templates/blessed/client/v1/http/
 
 .PHONY: install
 install:
