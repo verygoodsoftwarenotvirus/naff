@@ -98,6 +98,29 @@ func (p *Project) ParseModels(outputPath string) error {
 	return nil
 }
 
+// FindOwnerTypeChain returns the owner chain of a given object from highest ancestor to lowest
+// so if C belongs to B belongs to A, then calling `FindOwnerTypeChain` for C would yield [A, B]
+func (p *Project) FindOwnerTypeChain(typ DataType) []DataType {
+	parentTypes := []DataType{}
+
+	var parentType *DataType = &typ
+
+	for parentType != nil && parentType.BelongsToStruct != nil {
+		newParent := p.FindType(parentType.BelongsToStruct.Singular())
+		if newParent != nil {
+			parentTypes = append(parentTypes, *newParent)
+		}
+		parentType = newParent
+	}
+
+	// reverse it
+	for i, j := 0, len(parentTypes)-1; i < j; i, j = i+1, j-1 {
+		parentTypes[i], parentTypes[j] = parentTypes[j], parentTypes[i]
+	}
+
+	return parentTypes
+}
+
 func (p *Project) FindType(name string) *DataType {
 	for _, typ := range p.DataTypes {
 		if typ.Name.Singular() == name {

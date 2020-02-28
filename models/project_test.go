@@ -413,3 +413,48 @@ func TestProject_containsCyclicOwnerships(T *testing.T) {
 		assert.Equal(t, expected, actual)
 	})
 }
+
+func TestProject_FindOwnerTypeChain(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		apple := DataType{
+			Name: wordsmith.FromSingularPascalCase("Apple"),
+			Fields: []DataField{
+				{
+					Name: wordsmith.FromSingularPascalCase("AppleName"),
+					Type: "string",
+				},
+			},
+		}
+		banana := DataType{
+			Name:            wordsmith.FromSingularPascalCase("Banana"),
+			BelongsToStruct: apple.Name,
+			Fields: []DataField{
+				{
+					Name: wordsmith.FromSingularPascalCase("BananaName"),
+					Type: "string",
+				},
+			},
+		}
+		cherry := DataType{
+			Name:            wordsmith.FromSingularPascalCase("Cherry"),
+			BelongsToStruct: banana.Name,
+			Fields: []DataField{
+				{
+					Name: wordsmith.FromSingularPascalCase("CherryName"),
+					Type: "string",
+				},
+			},
+		}
+
+		proj := &Project{
+			DataTypes: []DataType{apple, banana, cherry},
+		}
+
+		expected := []DataType{apple, banana}
+		actual := proj.FindOwnerTypeChain(cherry)
+
+		assert.Equal(t, expected, actual)
+	})
+}

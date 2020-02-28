@@ -96,12 +96,12 @@ func buildFakeCallForCreationInput(pkg *models.Project, typ models.DataType) []j
 	return lines
 }
 
-func fieldToExpectedDotField(typ models.DataType) []jen.Code {
+func fieldToExpectedDotField(varName string, typ models.DataType) []jen.Code {
 	lines := []jen.Code{}
 
 	for _, field := range typ.Fields {
 		sn := field.Name.Singular()
-		lines = append(lines, jen.ID(sn).Op(":").ID("expected").Dot(sn))
+		lines = append(lines, jen.ID(sn).Op(":").ID(varName).Dot(sn))
 	}
 
 	return lines
@@ -137,14 +137,53 @@ func buildEqualityCheckLines(typ models.DataType) []jen.Code {
 	return lines
 }
 
+func buildCreationArguments(pkg *models.Project, varPrefix string, typ models.DataType) []jen.Code {
+	creationArgs := []jen.Code{}
+
+	if typ.BelongsToStruct != nil {
+		parentTyp := pkg.FindType(typ.BelongsToStruct.Singular())
+		if parentTyp != nil {
+			nca := buildCreationArguments(pkg, varPrefix, *parentTyp)
+			creationArgs = append(creationArgs, nca...)
+		}
+	}
+
+	creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, typ.Name.Singular()).Dot("ID"))
+
+	return creationArgs
+}
+
 func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.Code {
-	lines := []jen.Code{}
+	var lines []jen.Code
+	sn := typ.Name.Singular()
+
+	const (
+		sourceVarPrefix  = "example"
+		createdVarPrefix = "created"
+	)
+
+	creationArgs := []jen.Code{
+		jen.ID("ctx"),
+		jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(fieldToExpectedDotField(fmt.Sprintf("%s%s", sourceVarPrefix, typ.Name.Singular()), typ)...),
+	}
+	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
+	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
+
+	if typ.BelongsToStruct != nil {
+		if parentTyp := pkg.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
+			newLines := buildRequisiteCreationCode(pkg, *parentTyp)
+			lines = append(lines, newLines...)
+		}
+	}
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("expected%s", typ.Name.Singular()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
+		jen.IDf("%s%s", sourceVarPrefix, typ.Name.Singular()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
+		jen.Line(),
+		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(creationArgs...),
+		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.ID("err")),
 		jen.Line(),
 	)
 
@@ -155,13 +194,6 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
-	creationArgs := []jen.Code{
-		jen.ID("ctx"),
-		jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
-			fieldToExpectedDotField(typ)...,
-		),
-	}
-
 	lines := []jen.Code{
 		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
@@ -169,20 +201,11 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 	}
 
-	// createdItems := []jen.Code{}
+	lines = append(lines, buildRequisiteCreationCode(pkg, typ)...)
 
 	lines = append(lines,
-		//
-		jen.Commentf("Create %s", scn),
-		jen.IDf("expected%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-			buildFakeCallForCreationInput(pkg, typ)...,
-		),
-		//
-		jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(creationArgs...),
-		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
-		jen.Line(),
 		jen.Commentf("Assert %s equality", scn),
-		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("expected%s", typ.Name.Singular()), jen.ID("premade")),
+		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("created%s", typ.Name.Singular()), jen.ID("premade")),
 		jen.Line(),
 		jen.Comment("Clean up"),
 		jen.ID("err").Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(jen.ID("ctx"), jen.ID("premade").Dot("ID")),
@@ -190,7 +213,7 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(jen.ID("ctx"), jen.ID("premade").Dot("ID")),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
-		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("expected%s", typ.Name.Singular()), jen.ID("actual")),
+		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("created%s", typ.Name.Singular()), jen.ID("actual")),
 		jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
 	)
 
@@ -265,7 +288,7 @@ func buildTestReadingShouldBeReadable(pkg *models.Project, typ models.DataType) 
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(jen.ID("ctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
-			fieldToExpectedDotField(typ)...,
+			fieldToExpectedDotField("expected", typ)...,
 		),
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
@@ -353,7 +376,7 @@ func buildTestDeletingShouldBeAbleToBeDeleted(pkg *models.Project, typ models.Da
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(jen.ID("ctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
-			fieldToExpectedDotField(typ)...,
+			fieldToExpectedDotField("expected", typ)...,
 		)),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
 		jen.Line(),
