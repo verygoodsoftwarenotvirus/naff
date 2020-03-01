@@ -190,14 +190,21 @@ func BuildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
 	)
 }
 
+const ctxVarName = "ctx"
+
 // CreateCtx calls context.Background() and assigns it to a variable called ctx
 func CreateCtx() jen.Code {
-	return jen.ID("ctx").Op(":=").Qual("context", "Background").Call()
+	return CtxVar().Op(":=").Qual("context", "Background").Call()
 }
 
 // CtxParam is a shorthand for a context param
 func CtxParam() jen.Code {
-	return jen.ID("ctx").Qual("context", "Context")
+	return CtxVar().Qual("context", "Context")
+}
+
+// CtxParam is a shorthand for a context param
+func CtxVar() *jen.Statement {
+	return jen.ID(ctxVarName)
 }
 
 // OuterTestFunc does

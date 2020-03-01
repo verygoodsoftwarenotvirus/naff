@@ -11,48 +11,50 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+var (
+	a = models.DataType{
+		Name: wordsmith.FromSingularPascalCase("Grandparent"),
+		Fields: []models.DataField{
+			{
+				Name: wordsmith.FromSingularPascalCase("GrandparentName"),
+				Type: "string",
+			},
+		},
+	}
+	b = models.DataType{
+		Name:            wordsmith.FromSingularPascalCase("Parent"),
+		BelongsToStruct: a.Name,
+		Fields: []models.DataField{
+			{
+				Name: wordsmith.FromSingularPascalCase("ParentName"),
+				Type: "string",
+			},
+		},
+	}
+	c = models.DataType{
+		Name:            wordsmith.FromSingularPascalCase("Child"),
+		BelongsToStruct: b.Name,
+		Fields: []models.DataField{
+			{
+				Name: wordsmith.FromSingularPascalCase("ChildName"),
+				Type: "string",
+			},
+		},
+	}
+)
+
 func Test_buildParamsForMethodThatHandlesAnInstanceOfADataType(T *testing.T) {
 	T.Parallel()
 
+	proj := &models.Project{
+		DataTypes: []models.DataType{a, b, c},
+	}
+
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
-		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
-		}
-
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(proj, cherry)...).Block(),
+			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(proj, c, false)...).Block(),
 		)
 
 		var b bytes.Buffer
@@ -65,7 +67,7 @@ import (
 	"context"
 )
 
-func doSomething(ctx context.Context, appleID, bananaID, cherryID uint64) {}
+func doSomething(ctx context.Context, grandparentID, parentID, childID uint64) {}
 `
 		actual := b.String()
 
@@ -73,34 +75,10 @@ func doSomething(ctx context.Context, appleID, bananaID, cherryID uint64) {}
 	})
 
 	T.Run("normal operation with fewer dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-
-		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana},
-		}
-
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(proj, banana)...).Block(),
+			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(proj, b, false)...).Block(),
 		)
 
 		var b bytes.Buffer
@@ -113,7 +91,7 @@ import (
 	"context"
 )
 
-func doSomething(ctx context.Context, appleID, bananaID uint64) {}
+func doSomething(ctx context.Context, grandparentID, parentID uint64) {}
 `
 		actual := b.String()
 
@@ -121,24 +99,24 @@ func doSomething(ctx context.Context, appleID, bananaID uint64) {}
 	})
 
 	T.Run("normal operation without dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
+		gp := models.DataType{
+			Name: wordsmith.FromSingularPascalCase("Grandparent"),
 			Fields: []models.DataField{
 				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
+					Name: wordsmith.FromSingularPascalCase("Name"),
 					Type: "string",
 				},
 			},
 			BelongsToNobody: true,
 		}
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple},
+			DataTypes: []models.DataType{gp},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(proj, apple)...).Block(),
+			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(proj, a, false)...).Block(),
 		)
 
 		var b bytes.Buffer
@@ -151,7 +129,110 @@ import (
 	"context"
 )
 
-func doSomething(ctx context.Context, appleID uint64) {}
+func doSomething(ctx context.Context, grandparentID uint64) {}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildParamsForMethodThatIncludesItsOwnTypeInItsParams(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation with dependencies", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params(
+				buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, c, false)...,
+			).Block(),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	v1 "models/v1"
+)
+
+func doSomething(ctx context.Context, grandparentID uint64, child *v1.Child) {}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("normal operation with fewer dependencies", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params(buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, b, false)...).Block(),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	v1 "models/v1"
+)
+
+func doSomething(ctx context.Context, parent *v1.Parent) {}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("normal operation without dependencies", func(t *testing.T) {
+		gp := models.DataType{
+			Name: wordsmith.FromSingularPascalCase("Grandparent"),
+			Fields: []models.DataField{
+				{
+					Name: wordsmith.FromSingularPascalCase("Name"),
+					Type: "string",
+				},
+			},
+			BelongsToNobody: true,
+		}
+		proj := &models.Project{
+			DataTypes: []models.DataType{gp},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params(buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, a, false)...).Block(),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	v1 "models/v1"
+)
+
+func doSomething(ctx context.Context, grandparent *v1.Grandparent) {}
 `
 		actual := b.String()
 
@@ -163,44 +244,14 @@ func TestBuildBuildGetSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildBuildGetSomethingRequestFuncDecl(proj, cherry)...,
+			buildBuildGetSomethingRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -215,9 +266,17 @@ import (
 	"strconv"
 )
 
-// BuildGetCherryRequest builds an HTTP request for fetching a cherry
-func (c *V1Client) BuildGetCherryRequest(ctx context.Context, appleID, bananaID, cherryID uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, applesBasePath, strconv.FormatUint(appleID, 10), bananasBasePath, strconv.FormatUint(bananaID, 10), cherriesBasePath, strconv.FormatUint(cherryID, 10))
+// BuildGetChildRequest builds an HTTP request for fetching a child
+func (c *V1Client) BuildGetChildRequest(ctx context.Context, grandparentID, parentID, childID uint64) (*http.Request, error) {
+	uri := c.BuildURL(
+		nil,
+		grandparentsBasePath,
+		strconv.FormatUint(grandparentID, 10),
+		parentsBasePath,
+		strconv.FormatUint(parentID, 10),
+		childrenBasePath,
+		strconv.FormatUint(childID, 10),
+	)
 
 	return http.NewRequest(http.MethodGet, uri, nil)
 }
@@ -232,44 +291,14 @@ func TestBuildGetSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildGetSomethingFuncDecl(proj, cherry)...,
+			buildGetSomethingFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -280,15 +309,22 @@ func TestBuildGetSomethingFuncDecl(T *testing.T) {
 
 import (
 	"context"
-	"net/http"
-	"strconv"
+	"fmt"
+	v1 "models/v1"
 )
 
-// BuildGetCherryRequest builds an HTTP request for fetching a cherry
-func (c *V1Client) BuildGetCherryRequest(ctx context.Context, appleID, bananaID, cherryID uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, applesBasePath, strconv.FormatUint(appleID, 10), bananasBasePath, strconv.FormatUint(bananaID, 10), cherriesBasePath, strconv.FormatUint(cherryID, 10))
+// GetChild retrieves a child
+func (c *V1Client) GetChild(ctx context.Context, grandparentID, parentID, childID uint64) (child *v1.Child, err error) {
+	req, err := c.BuildGetChildRequest(ctx, grandparentID, parentID, childID)
+	if err != nil {
+		return nil, fmt.Errorf("building request: %w", err)
+	}
 
-	return http.NewRequest(http.MethodGet, uri, nil)
+	if retrieveErr := c.retrieve(ctx, req, &child); retrieveErr != nil {
+		return nil, retrieveErr
+	}
+
+	return child, nil
 }
 `
 		actual := b.String()
@@ -301,44 +337,14 @@ func TestBuildBuildGetSomethingsRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildBuildGetSomethingsRequestFuncDecl(proj, cherry)...,
+			buildBuildGetSomethingsRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -349,13 +355,24 @@ func TestBuildBuildGetSomethingsRequestFuncDecl(T *testing.T) {
 
 import (
 	"context"
+	v1 "models/v1"
 	"net/http"
 	"strconv"
 )
 
-// BuildGetCherryRequest builds an HTTP request for fetching a cherry
-func (c *V1Client) BuildGetCherryRequest(ctx context.Context, appleID, bananaID, cherryID uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, applesBasePath, strconv.FormatUint(appleID, 10), bananasBasePath, strconv.FormatUint(bananaID, 10), cherriesBasePath, strconv.FormatUint(cherryID, 10))
+// BuildGetChildrenRequest builds an HTTP request for fetching children
+func (c *V1Client) BuildGetChildrenRequest(ctx context.Context, filter *v1.QueryFilter) (*http.Request, error) {
+	uri := c.BuildURL(
+		filter.ToValues(),
+		childrenBasePath,
+		filter.ToValues(),
+		grandparentsBasePath,
+		strconv.FormatUint(grandparentID, 10),
+		parentsBasePath,
+		strconv.FormatUint(parentID, 10),
+		childrenBasePath,
+		strconv.FormatUint(childID, 10),
+	)
 
 	return http.NewRequest(http.MethodGet, uri, nil)
 }
@@ -370,44 +387,14 @@ func TestBuildGetListOfSomethingsFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildGetListOfSomethingsFuncDecl(proj, cherry)...,
+			buildGetListOfSomethingsFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -418,15 +405,22 @@ func TestBuildGetListOfSomethingsFuncDecl(T *testing.T) {
 
 import (
 	"context"
-	"net/http"
-	"strconv"
+	"fmt"
+	v1 "models/v1"
 )
 
-// BuildGetCherryRequest builds an HTTP request for fetching a cherry
-func (c *V1Client) BuildGetCherryRequest(ctx context.Context, appleID, bananaID, cherryID uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, applesBasePath, strconv.FormatUint(appleID, 10), bananasBasePath, strconv.FormatUint(bananaID, 10), cherriesBasePath, strconv.FormatUint(cherryID, 10))
+// GetChildren retrieves a list of children
+func (c *V1Client) GetChildren(ctx context.Context, filter *v1.QueryFilter) (children *v1.ChildList, err error) {
+	req, err := c.BuildGetChildrenRequest(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("building request: %w", err)
+	}
 
-	return http.NewRequest(http.MethodGet, uri, nil)
+	if retrieveErr := c.retrieve(ctx, req, &children); retrieveErr != nil {
+		return nil, retrieveErr
+	}
+
+	return children, nil
 }
 `
 		actual := b.String()
@@ -439,44 +433,14 @@ func TestBuildBuildCreateSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildBuildCreateSomethingRequestFuncDecl(proj, cherry)...,
+			buildBuildCreateSomethingRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -487,15 +451,24 @@ func TestBuildBuildCreateSomethingRequestFuncDecl(T *testing.T) {
 
 import (
 	"context"
+	v1 "models/v1"
 	"net/http"
 	"strconv"
 )
 
-// BuildGetCherryRequest builds an HTTP request for fetching a cherry
-func (c *V1Client) BuildGetCherryRequest(ctx context.Context, appleID, bananaID, cherryID uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, applesBasePath, strconv.FormatUint(appleID, 10), bananasBasePath, strconv.FormatUint(bananaID, 10), cherriesBasePath, strconv.FormatUint(cherryID, 10))
+// BuildCreateChildRequest builds an HTTP request for creating a child
+func (c *V1Client) BuildCreateChildRequest(ctx context.Context, body *v1.ChildCreationInput) (*http.Request, error) {
+	uri := c.BuildURL(
+		nil,
+		grandparentsBasePath,
+		strconv.FormatUint(grandparentID, 10),
+		parentsBasePath,
+		strconv.FormatUint(parentID, 10),
+		childrenBasePath,
+		strconv.FormatUint(childID, 10),
+	)
 
-	return http.NewRequest(http.MethodGet, uri, nil)
+	return c.buildDataRequest(http.MethodPost, uri, body)
 }
 `
 		actual := b.String()
@@ -508,44 +481,14 @@ func TestBuildCreateSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildCreateSomethingFuncDecl(proj, cherry)...,
+			buildCreateSomethingFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -556,15 +499,19 @@ func TestBuildCreateSomethingFuncDecl(T *testing.T) {
 
 import (
 	"context"
-	"net/http"
-	"strconv"
+	"fmt"
+	v1 "models/v1"
 )
 
-// BuildGetCherryRequest builds an HTTP request for fetching a cherry
-func (c *V1Client) BuildGetCherryRequest(ctx context.Context, appleID, bananaID, cherryID uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, applesBasePath, strconv.FormatUint(appleID, 10), bananasBasePath, strconv.FormatUint(bananaID, 10), cherriesBasePath, strconv.FormatUint(cherryID, 10))
+// CreateChild creates a child
+func (c *V1Client) CreateChild(ctx context.Context, input *v1.ChildCreationInput) (child *v1.Child, err error) {
+	req, err := c.BuildCreateChildRequest(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("building request: %w", err)
+	}
 
-	return http.NewRequest(http.MethodGet, uri, nil)
+	err = c.executeRequest(ctx, req, &child)
+	return child, err
 }
 `
 		actual := b.String()
@@ -577,44 +524,14 @@ func TestBuildBuildUpdateSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildBuildUpdateSomethingRequestFuncDecl(proj, cherry)...,
+			buildBuildUpdateSomethingRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -625,15 +542,24 @@ func TestBuildBuildUpdateSomethingRequestFuncDecl(T *testing.T) {
 
 import (
 	"context"
+	v1 "models/v1"
 	"net/http"
 	"strconv"
 )
 
-// BuildGetCherryRequest builds an HTTP request for fetching a cherry
-func (c *V1Client) BuildGetCherryRequest(ctx context.Context, appleID, bananaID, cherryID uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, applesBasePath, strconv.FormatUint(appleID, 10), bananasBasePath, strconv.FormatUint(bananaID, 10), cherriesBasePath, strconv.FormatUint(cherryID, 10))
+// BuildUpdateChildRequest builds an HTTP request for updating a child
+func (c *V1Client) BuildUpdateChildRequest(ctx context.Context, ctx context.Context, grandparentID, parentID, childID uint64, updated *v1.Child) (*http.Request, error) {
+	uri := c.BuildURL(
+		nil,
+		grandparentsBasePath,
+		strconv.FormatUint(grandparentID, 10),
+		parentsBasePath,
+		strconv.FormatUint(parentID, 10),
+		childrenBasePath,
+		strconv.FormatUint(childID, 10),
+	)
 
-	return http.NewRequest(http.MethodGet, uri, nil)
+	return c.buildDataRequest(http.MethodPut, uri, updated)
 }
 `
 		actual := b.String()
@@ -646,44 +572,14 @@ func TestBuildUpdateSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildUpdateSomethingFuncDecl(proj, cherry)...,
+			buildUpdateSomethingFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -694,15 +590,18 @@ func TestBuildUpdateSomethingFuncDecl(T *testing.T) {
 
 import (
 	"context"
-	"net/http"
-	"strconv"
+	"fmt"
+	v1 "models/v1"
 )
 
-// BuildGetCherryRequest builds an HTTP request for fetching a cherry
-func (c *V1Client) BuildGetCherryRequest(ctx context.Context, appleID, bananaID, cherryID uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, applesBasePath, strconv.FormatUint(appleID, 10), bananasBasePath, strconv.FormatUint(bananaID, 10), cherriesBasePath, strconv.FormatUint(cherryID, 10))
+// UpdateChild updates a child
+func (c *V1Client) UpdateChild(ctx context.Context, grandparentID uint64, child *v1.Child) error {
+	req, err := c.BuildUpdateChildRequest(ctx, updated)
+	if err != nil {
+		return fmt.Errorf("building request: %w", err)
+	}
 
-	return http.NewRequest(http.MethodGet, uri, nil)
+	return c.executeRequest(ctx, req, &updated)
 }
 `
 		actual := b.String()
@@ -715,44 +614,14 @@ func TestBuildBuildArchiveSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildBuildArchiveSomethingRequestFuncDecl(proj, cherry)...,
+			buildBuildArchiveSomethingRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -767,11 +636,19 @@ import (
 	"strconv"
 )
 
-// BuildGetCherryRequest builds an HTTP request for fetching a cherry
-func (c *V1Client) BuildGetCherryRequest(ctx context.Context, appleID, bananaID, cherryID uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, applesBasePath, strconv.FormatUint(appleID, 10), bananasBasePath, strconv.FormatUint(bananaID, 10), cherriesBasePath, strconv.FormatUint(cherryID, 10))
+// BuildArchiveChildRequest builds an HTTP request for updating a child
+func (c *V1Client) BuildArchiveChildRequest(ctx context.Context, grandparentID, parentID, childID uint64) (*http.Request, error) {
+	uri := c.BuildURL(
+		nil,
+		grandparentsBasePath,
+		strconv.FormatUint(grandparentID, 10),
+		parentsBasePath,
+		strconv.FormatUint(parentID, 10),
+		childrenBasePath,
+		strconv.FormatUint(childID, 10),
+	)
 
-	return http.NewRequest(http.MethodGet, uri, nil)
+	return http.NewRequest(http.MethodDelete, uri, nil)
 }
 `
 		actual := b.String()
@@ -784,44 +661,14 @@ func TestBuildArchiveSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildArchiveSomethingFuncDecl(proj, cherry)...,
+			buildArchiveSomethingFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -832,15 +679,17 @@ func TestBuildArchiveSomethingFuncDecl(T *testing.T) {
 
 import (
 	"context"
-	"net/http"
-	"strconv"
+	"fmt"
 )
 
-// BuildGetCherryRequest builds an HTTP request for fetching a cherry
-func (c *V1Client) BuildGetCherryRequest(ctx context.Context, appleID, bananaID, cherryID uint64) (*http.Request, error) {
-	uri := c.BuildURL(nil, applesBasePath, strconv.FormatUint(appleID, 10), bananasBasePath, strconv.FormatUint(bananaID, 10), cherriesBasePath, strconv.FormatUint(cherryID, 10))
+// ArchiveChild archives a child
+func (c *V1Client) ArchiveChild(ctx context.Context, grandparentID, parentID, childID uint64) error {
+	req, err := c.BuildArchiveChildRequest(ctx, grandparentID, parentID, childID)
+	if err != nil {
+		return fmt.Errorf("building request: %w", err)
+	}
 
-	return http.NewRequest(http.MethodGet, uri, nil)
+	return c.executeRequest(ctx, req, nil)
 }
 `
 		actual := b.String()

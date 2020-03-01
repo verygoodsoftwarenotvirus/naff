@@ -44,13 +44,15 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	return ret
 }
 
-func buildURLBuildingParmasForSingleInstanceOfSomething(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildV1ClientURLBuildingParmasForSingleInstanceOfSomething(pkg *models.Project, firstVar jen.Code, typVar jen.Code, typ models.DataType) []jen.Code {
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
-	urlBuildingParams := []jen.Code{jen.Nil()}
+	urlBuildingParams := []jen.Code{
+		firstVar,
+	}
 
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
 		urlBuildingParams = append(urlBuildingParams,
-			jen.IDf("%sBasePath", pt.Name.UnexportedVarName()),
+			jen.IDf("%sBasePath", pt.Name.PluralUnexportedVarName()),
 			jen.Qual("strconv", "FormatUint").Call(
 				jen.IDf("%sID", pt.Name.UnexportedVarName()),
 				jen.Lit(10),
@@ -75,11 +77,18 @@ func buildBuildGetSomethingRequestFuncDecl(pkg *models.Project, typ models.DataT
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("BuildGet%sRequest", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ)...).Params(
+		newClientMethod(fmt.Sprintf("BuildGet%sRequest", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, false)...).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
 		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(buildURLBuildingParmasForSingleInstanceOfSomething(pkg, typ)...),
+			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Callln(
+				buildV1ClientURLBuildingParmasForSingleInstanceOfSomething(
+					pkg,
+					jen.Nil(),
+					jen.IDf("%sID", typ.Name.UnexportedVarName()),
+					typ,
+				)...,
+			),
 			jen.Line(),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodGet"),
@@ -93,11 +102,17 @@ func buildBuildGetSomethingRequestFuncDecl(pkg *models.Project, typ models.DataT
 	return lines
 }
 
-func buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg *models.Project, typ models.DataType, call bool) []jen.Code {
 	parents := pkg.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
 	params := []jen.Code{
-		utils.CtxParam(),
+		func() jen.Code {
+			if call {
+				return utils.CtxVar()
+			} else {
+				return utils.CtxParam()
+			}
+		}(),
 	}
 
 	if len(parents) > 0 {
@@ -105,10 +120,51 @@ func buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg *models.Project, t
 			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 		}
 		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
-		params = append(params, jen.List(listParams...).ID("uint64"))
+		if !call {
+			params = append(params, jen.List(listParams...).ID("uint64"))
+		} else {
+			params = append(params, listParams...)
+		}
 	} else {
-		params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).ID("uint64"))
+		if !call {
+			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).ID("uint64"))
+		} else {
+			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+		}
 	}
+
+	return params
+}
+
+func buildParamsForMethodThatIncludesItsOwnTypeInItsParams(pkg *models.Project, typ models.DataType, call bool) []jen.Code {
+	parents := pkg.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{
+		func() jen.Code {
+			if call {
+				return utils.CtxVar()
+			} else {
+				return utils.CtxParam()
+			}
+		}(),
+	}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		listParams = listParams[:len(listParams)-1]
+
+		if len(listParams) > 0 {
+			if !call {
+				params = append(params, jen.List(listParams...).ID("uint64"))
+			} else {
+				params = append(params, listParams...)
+			}
+		}
+	}
+
+	params = append(params, jen.ID(typ.Name.UnexportedVarName()).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()))
 
 	return params
 }
@@ -122,11 +178,11 @@ func buildGetSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.C
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("Get%s retrieves %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("Get%s", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ)...).Params(
+		newClientMethod(fmt.Sprintf("Get%s", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, false)...).Params(
 			jen.ID(uvn).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts),
 			jen.ID("err").ID("error"),
 		).Block(
-			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ)...),
+			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, true)...),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"),
 					jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.ID("err")),
@@ -150,6 +206,19 @@ func buildBuildGetSomethingsRequestFuncDecl(pkg *models.Project, typ models.Data
 	pvn := typ.Name.PluralUnexportedVarName()
 
 	basePath := fmt.Sprintf("%sBasePath", pvn)
+	urlBuildingParams := []jen.Code{
+		jen.ID("filter").Dot("ToValues").Call(),
+		jen.ID(basePath),
+	}
+
+	urlBuildingParams = append(urlBuildingParams,
+		buildV1ClientURLBuildingParmasForSingleInstanceOfSomething(
+			pkg,
+			jen.ID("filter").Dot("ToValues").Call(),
+			jen.IDf("%sID", typ.Name.UnexportedVarName()),
+			typ,
+		)...,
+	)
 
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching %s", tp, typ.Name.PluralCommonName())),
@@ -161,10 +230,7 @@ func buildBuildGetSomethingsRequestFuncDecl(pkg *models.Project, typ models.Data
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
 		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-				jen.ID("filter").Dot("ToValues").Call(),
-				jen.ID(basePath),
-			),
+			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Callln(urlBuildingParams...),
 			jen.Line(),
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodGet"),
@@ -226,11 +292,9 @@ func buildGetListOfSomethingsFuncDecl(pkg *models.Project, typ models.DataType) 
 
 func buildBuildCreateSomethingRequestFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular()
-	pvn := typ.Name.PluralUnexportedVarName()
 
 	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
 	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
-	basePath := fmt.Sprintf("%sBasePath", pvn)
 
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildCreate%sRequest builds an HTTP request for creating %s", ts, commonNameWithPrefix)),
@@ -242,9 +306,13 @@ func buildBuildCreateSomethingRequestFuncDecl(pkg *models.Project, typ models.Da
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
 		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-				jen.ID("nil"),
-				jen.ID(basePath),
+			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Callln(
+				buildV1ClientURLBuildingParmasForSingleInstanceOfSomething(
+					pkg,
+					jen.Nil(),
+					jen.IDf("%sID", typ.Name.UnexportedVarName()),
+					typ,
+				)...,
 			),
 			jen.Line(),
 			jen.Return().ID("c").Dot("buildDataRequest").Call(
@@ -310,29 +378,30 @@ func buildCreateSomethingFuncDecl(pkg *models.Project, typ models.DataType) []je
 
 func buildBuildUpdateSomethingRequestFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular()
-	pvn := typ.Name.PluralUnexportedVarName()
 
 	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
 	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
-	basePath := fmt.Sprintf("%sBasePath", pvn)
+
+	depParams := buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, false)
+
+	funcParams := []jen.Code{utils.CtxParam()}
+	funcParams = append(funcParams, depParams...)
+	funcParams = append(funcParams, jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts))
 
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildUpdate%sRequest builds an HTTP request for updating %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("BuildUpdate%sRequest", ts)).Params(
-			utils.CtxParam(),
-			jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts),
-		).Params(
+		newClientMethod(fmt.Sprintf("BuildUpdate%sRequest", ts)).Params(funcParams...).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
 		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-				jen.ID("nil"),
-				jen.ID(basePath),
-				jen.Qual("strconv", "FormatUint").Call(
+			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Callln(
+				buildV1ClientURLBuildingParmasForSingleInstanceOfSomething(
+					pkg,
+					jen.Nil(),
 					jen.ID("updated").Dot("ID"),
-					jen.Lit(10),
-				),
+					typ,
+				)...,
 			),
 			jen.Line(),
 			jen.Return().ID("c").Dot("buildDataRequest").Call(
@@ -349,14 +418,16 @@ func buildBuildUpdateSomethingRequestFuncDecl(pkg *models.Project, typ models.Da
 
 func buildUpdateSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular()
-
-	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
-	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
+	commonNameWithPrefix := typ.Name.SingularCommonNameWithPrefix()
 
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("Update%s updates %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("Update%s", ts)).Params(utils.CtxParam(), jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts)).Params(jen.ID("error")).Block(
+		newClientMethod(fmt.Sprintf("Update%s", ts)).Params(
+			buildParamsForMethodThatIncludesItsOwnTypeInItsParams(pkg, typ, false)...,
+		//utils.CtxParam(),
+		//jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts),
+		).Params(jen.ID("error")).Block(
 			jen.List(
 				jen.ID("req"),
 				jen.ID("err"),
@@ -385,26 +456,24 @@ func buildUpdateSomethingFuncDecl(pkg *models.Project, typ models.DataType) []je
 
 func buildBuildArchiveSomethingRequestFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular()
-	pvn := typ.Name.PluralUnexportedVarName()
 
 	commonName := strings.Join(strings.Split(typ.Name.RouteName(), "_"), " ")
 	commonNameWithPrefix := fmt.Sprintf("%s %s", wordsmith.AOrAn(ts), commonName)
-	basePath := fmt.Sprintf("%sBasePath", pvn)
 
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildArchive%sRequest builds an HTTP request for updating %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("BuildArchive%sRequest", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ)...).Params(
+		newClientMethod(fmt.Sprintf("BuildArchive%sRequest", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, false)...).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
 		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-				jen.ID("nil"),
-				jen.ID(basePath),
-				jen.Qual("strconv", "FormatUint").Call(
+			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Callln(
+				buildV1ClientURLBuildingParmasForSingleInstanceOfSomething(
+					pkg,
+					jen.Nil(),
 					jen.IDf("%sID", typ.Name.UnexportedVarName()),
-					jen.Lit(10),
-				),
+					typ,
+				)...,
 			),
 			jen.Line(),
 			jen.Return().Qual("net/http", "NewRequest").Call(
@@ -428,12 +497,12 @@ func buildArchiveSomethingFuncDecl(pkg *models.Project, typ models.DataType) []j
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("Archive%s archives %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("Archive%s", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ)...).Params(jen.ID("error")).Block(
+		newClientMethod(fmt.Sprintf("Archive%s", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, false)...).Params(jen.ID("error")).Block(
 			jen.List(
 				jen.ID("req"),
 				jen.ID("err"),
 			).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
-				buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ)...,
+				buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, true)...,
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(
