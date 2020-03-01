@@ -37,7 +37,7 @@ func main() {
 				BelongsToUser: true,
 			},
 			{
-				Name: wordsmith.FromSingularPascalCase("First"),
+				Name: wordsmith.FromSingularPascalCase("Forum"),
 				Fields: []models.DataField{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
@@ -50,36 +50,36 @@ func main() {
 				BelongsToUser: true,
 			},
 			{
-				Name: wordsmith.FromSingularPascalCase("Second"),
+				Name: wordsmith.FromSingularPascalCase("Thread"),
 				Fields: []models.DataField{
 					{
-						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Name:                  wordsmith.FromSingularPascalCase("Title"),
 						Type:                  "string",
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("First"),
+				BelongsToStruct: wordsmith.FromSingularPascalCase("Forum"),
 			},
 			{
-				Name: wordsmith.FromSingularPascalCase("Third"),
+				Name: wordsmith.FromSingularPascalCase("Comment"),
 				Fields: []models.DataField{
 					{
-						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Name:                  wordsmith.FromSingularPascalCase("Content"),
 						Type:                  "string",
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Second"),
+				BelongsToStruct: wordsmith.FromSingularPascalCase("Thread"),
 			},
 			{
-				Name: wordsmith.FromSingularPascalCase("Independent"),
+				Name: wordsmith.FromSingularPascalCase("Tag"),
 				Fields: []models.DataField{
 					{
-						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Name:                  wordsmith.FromSingularPascalCase("Key"),
 						Type:                  "string",
 						Pointer:               false,
 						ValidForCreationInput: true,

@@ -410,8 +410,8 @@ import (
 )
 
 // GetChildren retrieves a list of children
-func (c *V1Client) GetChildren(ctx context.Context, filter *v1.QueryFilter) (children *v1.ChildList, err error) {
-	req, err := c.BuildGetChildrenRequest(ctx, filter)
+func (c *V1Client) GetChildren(ctx context.Context, grandparentID, parentID uint64, filter *v1.QueryFilter) (children *v1.ChildList, err error) {
+	req, err := c.BuildGetChildrenRequest(ctx, grandparentID, parentID, filter)
 	if err != nil {
 		return nil, fmt.Errorf("building request: %w", err)
 	}
@@ -457,7 +457,7 @@ import (
 )
 
 // BuildCreateChildRequest builds an HTTP request for creating a child
-func (c *V1Client) BuildCreateChildRequest(ctx context.Context, body *v1.ChildCreationInput) (*http.Request, error) {
+func (c *V1Client) BuildCreateChildRequest(ctx context.Context, grandparentID, parentID uint64, input *v1.ChildCreationInput) (*http.Request, error) {
 	uri := c.BuildURL(
 		nil,
 		grandparentsBasePath,
@@ -468,7 +468,7 @@ func (c *V1Client) BuildCreateChildRequest(ctx context.Context, body *v1.ChildCr
 		strconv.FormatUint(childID, 10),
 	)
 
-	return c.buildDataRequest(http.MethodPost, uri, body)
+	return c.buildDataRequest(http.MethodPost, uri, input)
 }
 `
 		actual := b.String()
@@ -504,8 +504,8 @@ import (
 )
 
 // CreateChild creates a child
-func (c *V1Client) CreateChild(ctx context.Context, input *v1.ChildCreationInput) (child *v1.Child, err error) {
-	req, err := c.BuildCreateChildRequest(ctx, input)
+func (c *V1Client) CreateChild(ctx context.Context, grandparentID, parentID uint64, input *v1.ChildCreationInput) (child *v1.Child, err error) {
+	req, err := c.BuildCreateChildRequest(ctx, grandparentID, parentID, input)
 	if err != nil {
 		return nil, fmt.Errorf("building request: %w", err)
 	}
@@ -548,18 +548,18 @@ import (
 )
 
 // BuildUpdateChildRequest builds an HTTP request for updating a child
-func (c *V1Client) BuildUpdateChildRequest(ctx context.Context, ctx context.Context, grandparentID, parentID, childID uint64, updated *v1.Child) (*http.Request, error) {
+func (c *V1Client) BuildUpdateChildRequest(ctx context.Context, grandparentID uint64, child *v1.Child) (*http.Request, error) {
 	uri := c.BuildURL(
 		nil,
 		grandparentsBasePath,
 		strconv.FormatUint(grandparentID, 10),
 		parentsBasePath,
-		strconv.FormatUint(parentID, 10),
+		strconv.FormatUint(child.BelongsToParent, 10),
 		childrenBasePath,
-		strconv.FormatUint(childID, 10),
+		strconv.FormatUint(child.ID, 10),
 	)
 
-	return c.buildDataRequest(http.MethodPut, uri, updated)
+	return c.buildDataRequest(http.MethodPut, uri, child)
 }
 `
 		actual := b.String()
@@ -596,12 +596,12 @@ import (
 
 // UpdateChild updates a child
 func (c *V1Client) UpdateChild(ctx context.Context, grandparentID uint64, child *v1.Child) error {
-	req, err := c.BuildUpdateChildRequest(ctx, updated)
+	req, err := c.BuildUpdateChildRequest(ctx, grandparentID, child)
 	if err != nil {
 		return fmt.Errorf("building request: %w", err)
 	}
 
-	return c.executeRequest(ctx, req, &updated)
+	return c.executeRequest(ctx, req, &child)
 }
 `
 		actual := b.String()
