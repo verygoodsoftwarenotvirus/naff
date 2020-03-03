@@ -16,8 +16,9 @@ var (
 		Name: wordsmith.FromSingularPascalCase("Grandparent"),
 		Fields: []models.DataField{
 			{
-				Name: wordsmith.FromSingularPascalCase("GrandparentName"),
-				Type: "string",
+				Name:                  wordsmith.FromSingularPascalCase("GrandparentName"),
+				Type:                  "string",
+				ValidForCreationInput: true,
 			},
 		},
 	}
@@ -26,8 +27,9 @@ var (
 		BelongsToStruct: a.Name,
 		Fields: []models.DataField{
 			{
-				Name: wordsmith.FromSingularPascalCase("ParentName"),
-				Type: "string",
+				Name:                  wordsmith.FromSingularPascalCase("ParentName"),
+				Type:                  "string",
+				ValidForCreationInput: true,
 			},
 		},
 	}
@@ -36,8 +38,9 @@ var (
 		BelongsToStruct: b.Name,
 		Fields: []models.DataField{
 			{
-				Name: wordsmith.FromSingularPascalCase("ChildName"),
-				Type: "string",
+				Name:                  wordsmith.FromSingularPascalCase("ChildName"),
+				Type:                  "string",
+				ValidForCreationInput: true,
 			},
 		},
 	}
