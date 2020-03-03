@@ -31,41 +31,55 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 func buildTestV1Client_BuildGetSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
+	subtestLines := []jen.Code{
+		utils.ExpectMethod("expectedMethod", "MethodGet"),
+		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+		jen.Line(),
+		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+	}
+
+	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+		subtestLines = append(subtestLines,
+			jen.IDf("%sID", pt.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(1)),
+		)
+	}
+	subtestLines = append(subtestLines,
+		jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(1)),
+	)
+
+	subtestLines = append(subtestLines,
+		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
+			buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, true)...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(
+			jen.ID("err"),
+			jen.Lit("no error should be returned"),
+		),
+		utils.AssertTrue(
+			jen.Qual("strings", "HasSuffix").Call(
+				jen.ID("actual").Dot("URL").Dot("String").Call(),
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit("%d"),
+					jen.IDf("%sID", typ.Name.UnexportedVarName()),
+				),
+			),
+			nil,
+		),
+		utils.AssertEqual(
+			jen.ID("actual").Dot("Method"),
+			jen.ID("expectedMethod"),
+			jen.Lit("request should be a %s request"),
+			jen.ID("expectedMethod"),
+		),
+	)
+
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				utils.ExpectMethod("expectedMethod", "MethodGet"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
-				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-				jen.ID("expectedID").Op(":=").ID("uint64").Call(jen.Lit(1)),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(jen.ID("ctx"), jen.ID("expectedID")),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
-				utils.AssertTrue(
-					jen.Qual("strings", "HasSuffix").Call(
-						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
-							jen.ID("expectedID"),
-						),
-					),
-					nil,
-				),
-				utils.AssertEqual(
-					jen.ID("actual").Dot("Method"),
-					jen.ID("expectedMethod"),
-					jen.Lit("request should be a %s request"),
-					jen.ID("expectedMethod"),
-				),
-			),
+			utils.BuildSubTest("happy path", subtestLines...),
 		),
 		jen.Line(),
 	}
@@ -74,54 +88,90 @@ func buildTestV1Client_BuildGetSomethingRequest(pkg *models.Project, typ models.
 }
 
 func buildTestV1Client_GetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
-	prn := typ.Name.PluralRouteName()
 	ts := typ.Name.Singular() // title singular
+	uvn := typ.Name.UnexportedVarName()
 
 	// routes
-	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
+	modelRoute := "/api/v1/"
+	var subtestLines []jen.Code
+	actualCallArgs := []jen.Code{jen.ID("ctx")}
+	pathFmtCallArgs := []jen.Code{}
+
+	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+		actualCallArgs = append(actualCallArgs, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+		modelRoute += fmt.Sprintf("%s/", pt.Name.PluralRouteName()) + "%d/"
+		pathFmtCallArgs = append(pathFmtCallArgs, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+
+		if pt.BelongsToStruct != nil {
+			subtestLines = append(subtestLines,
+				jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), pt.Name.Singular()).Valuesln(
+					jen.ID("ID").Op(":").Lit(1),
+					jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).Op(":").ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID"),
+				),
+			)
+		} else {
+			subtestLines = append(subtestLines,
+				jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), pt.Name.Singular()).Values(jen.ID("ID").Op(":").Lit(1)),
+			)
+		}
+	}
+
+	actualCallArgs = append(actualCallArgs, jen.ID(uvn).Dot("ID"))
+	modelRoute += fmt.Sprintf("%s/", typ.Name.PluralRouteName()) + "%d"
+	pathFmtCallArgs = append(pathFmtCallArgs, jen.ID(uvn).Dot("ID"))
+
+	actualPathFmtCallArgs := []jen.Code{jen.Lit(modelRoute)}
+	actualPathFmtCallArgs = append(actualPathFmtCallArgs, pathFmtCallArgs...)
+
+	subtestLines = append(subtestLines,
+		jen.ID(uvn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
+			jen.ID("ID").Op(":").Lit(1),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
+				} else {
+					return nil
+				}
+			}(),
+		),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertTrue(
+				jen.Qual("strings", "HasSuffix").Call(
+					jen.ID("req").Dot("URL").Dot("String").Call(),
+					jen.Qual("strconv", "Itoa").Call(
+						jen.ID("int").Call(
+							jen.ID(uvn).Dot("ID"),
+						),
+					),
+				),
+				nil,
+			),
+			utils.AssertEqual(
+				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.Qual("fmt", "Sprintf").Call(actualPathFmtCallArgs...),
+				jen.Lit("expected and actual path don't match"),
+			),
+			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(uvn)), nil),
+		),
+		jen.Line(),
+		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
+			actualCallArgs...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+		utils.AssertEqual(jen.ID(uvn), jen.ID("actual"), nil),
+	)
 
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
-				),
-				jen.Line(),
-				utils.BuildTestServer(
-					"ts",
-					utils.AssertTrue(
-						jen.Qual("strings", "HasSuffix").Call(
-							jen.ID("req").Dot("URL").Dot("String").Call(),
-							jen.Qual("strconv", "Itoa").Call(
-								jen.ID("int").Call(
-									jen.ID("expected").Dot("ID"),
-								),
-							),
-						),
-						nil,
-					),
-					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(modelRoute),
-							jen.ID("expected").Dot("ID"),
-						),
-						jen.Lit("expected and actual path don't match"),
-					),
-					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
-					utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")), nil),
-				),
-				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(jen.ID("ctx"), jen.ID("expected").Dot("ID")),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
-				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			),
+			utils.BuildSubTest("happy path", subtestLines...),
 		),
 		jen.Line(),
 	}
@@ -142,7 +192,9 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(pkg *models.Project, typ m
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(jen.ID("ctx"), jen.ID("nil")),
+				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
+					buildParamsForMethodThatRetrievesAListOfADataType(pkg, typ, true)...,
+				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),

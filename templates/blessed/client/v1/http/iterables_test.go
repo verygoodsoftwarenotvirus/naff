@@ -361,17 +361,14 @@ import (
 )
 
 // BuildGetChildrenRequest builds an HTTP request for fetching children
-func (c *V1Client) BuildGetChildrenRequest(ctx context.Context, filter *v1.QueryFilter) (*http.Request, error) {
+func (c *V1Client) BuildGetChildrenRequest(ctx context.Context, grandparentID, parentID uint64, filter *v1.QueryFilter) (*http.Request, error) {
 	uri := c.BuildURL(
-		filter.ToValues(),
-		childrenBasePath,
 		filter.ToValues(),
 		grandparentsBasePath,
 		strconv.FormatUint(grandparentID, 10),
 		parentsBasePath,
 		strconv.FormatUint(parentID, 10),
 		childrenBasePath,
-		strconv.FormatUint(childID, 10),
 	)
 
 	return http.NewRequest(http.MethodGet, uri, nil)
@@ -465,7 +462,6 @@ func (c *V1Client) BuildCreateChildRequest(ctx context.Context, grandparentID, p
 		parentsBasePath,
 		strconv.FormatUint(parentID, 10),
 		childrenBasePath,
-		strconv.FormatUint(childID, 10),
 	)
 
 	return c.buildDataRequest(http.MethodPost, uri, input)

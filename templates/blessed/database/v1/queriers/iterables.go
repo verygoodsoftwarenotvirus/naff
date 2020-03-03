@@ -450,6 +450,58 @@ func buildGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmit
 	puvn := typ.Name.PluralUnexportedVarName()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
+	/*
+		CREATE TABLE IF NOT EXISTS forums (
+			"id" BIGSERIAL NOT NULL PRIMARY KEY,
+			"name" CHARACTER VARYING NOT NULL,
+			"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+			"updated_on" BIGINT DEFAULT NULL,
+			"archived_on" BIGINT DEFAULT NULL
+		);
+
+
+		CREATE TABLE IF NOT EXISTS threads (
+			"id" BIGSERIAL NOT NULL PRIMARY KEY,
+			"title" CHARACTER VARYING NOT NULL,
+			"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+			"updated_on" BIGINT DEFAULT NULL,
+			"archived_on" BIGINT DEFAULT NULL,
+			"belongs_to_forum" BIGINT NOT NULL,
+			FOREIGN KEY ("belongs_to_forum") REFERENCES "forums"("id")
+		);
+
+
+		CREATE TABLE IF NOT EXISTS comments (
+			"id" BIGSERIAL NOT NULL PRIMARY KEY,
+			"content" CHARACTER VARYING NOT NULL,
+			"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+			"updated_on" BIGINT DEFAULT NULL,
+			"archived_on" BIGINT DEFAULT NULL,
+			"belongs_to_thread" BIGINT NOT NULL,
+			FOREIGN KEY ("belongs_to_thread") REFERENCES "threads"("id")
+		);
+
+		INSERT INTO forums (name) VALUES ('forum_a');
+		INSERT INTO forums (name) VALUES ('forum_b');
+
+		INSERT INTO threads (title, belongs_to_forum) VALUES('thread_a', 2);
+		INSERT INTO threads (title, belongs_to_forum) VALUES('thread_b', 2);
+		INSERT INTO threads (title, belongs_to_forum) VALUES('thread_c', 2);
+
+		INSERT INTO comments (content, belongs_to_thread) VALUES ('hello world', 3);
+		INSERT INTO comments (content, belongs_to_thread) VALUES ('hello world', 3);
+		INSERT INTO comments (content, belongs_to_thread) VALUES ('hello world', 3);
+		INSERT INTO comments (content, belongs_to_thread) VALUES ('hello world', 3);
+		INSERT INTO comments (content, belongs_to_thread) VALUES ('hello world', 3);
+	*/
+
+	/*
+		SELECT comments.content, comments.created_on, comments.belongs_to_thread FROM comments
+			INNER JOIN threads ON comments.belongs_to_thread=threads.id
+			INNER JOIN forums ON threads.belongs_to_forum=forums.id
+			WHERE threads.ID = 3 AND forums.id = 2;
+	*/
+
 	vals := []jen.Code{
 		jen.Lit("archived_on").Op(":").ID("nil"),
 	}

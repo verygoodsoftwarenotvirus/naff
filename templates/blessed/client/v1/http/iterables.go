@@ -70,6 +70,28 @@ func buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(pkg *models.Proj
 	return urlBuildingParams
 }
 
+func buildV1ClientURLBuildingParamsForListOfSomething(pkg *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
+	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
+	urlBuildingParams := []jen.Code{
+		firstVar,
+	}
+
+	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+		urlBuildingParams = append(urlBuildingParams,
+			jen.IDf("%sBasePath", pt.Name.PluralUnexportedVarName()),
+			jen.Qual("strconv", "FormatUint").Call(
+				jen.IDf("%sID", pt.Name.UnexportedVarName()),
+				jen.Lit(10),
+			),
+		)
+	}
+	urlBuildingParams = append(urlBuildingParams,
+		jen.ID(basePath),
+	)
+
+	return urlBuildingParams
+}
+
 func buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(pkg *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
 	urlBuildingParams := []jen.Code{firstVar}
@@ -308,30 +330,17 @@ func buildGetSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.C
 
 func buildBuildGetSomethingsRequestFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	tp := typ.Name.Plural() // title plural
-	pvn := typ.Name.PluralUnexportedVarName()
 
-	basePath := fmt.Sprintf("%sBasePath", pvn)
-	urlBuildingParams := []jen.Code{
+	urlBuildingParams := buildV1ClientURLBuildingParamsForListOfSomething(
+		pkg,
 		jen.ID("filter").Dot("ToValues").Call(),
-		jen.ID(basePath),
-	}
-
-	urlBuildingParams = append(urlBuildingParams,
-		buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(
-			pkg,
-			jen.ID("filter").Dot("ToValues").Call(),
-			jen.IDf("%sID", typ.Name.UnexportedVarName()),
-			typ,
-		)...,
+		typ,
 	)
 
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching %s", tp, typ.Name.PluralCommonName())),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("BuildGet%sRequest", tp)).Params(
-			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-		).Params(
+		newClientMethod(fmt.Sprintf("BuildGet%sRequest", tp)).Params(buildParamsForMethodThatRetrievesAListOfADataType(pkg, typ, false)...).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
 		).Block(
@@ -402,10 +411,9 @@ func buildBuildCreateSomethingRequestFuncDecl(pkg *models.Project, typ models.Da
 			jen.ID("error"),
 		).Block(
 			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Callln(
-				buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(
+				buildV1ClientURLBuildingParamsForListOfSomething(
 					pkg,
 					jen.Nil(),
-					jen.IDf("%sID", typ.Name.UnexportedVarName()),
 					typ,
 				)...,
 			),
