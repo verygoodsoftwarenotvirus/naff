@@ -502,6 +502,41 @@ func buildGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmit
 			WHERE threads.ID = 3 AND forums.id = 2;
 	*/
 
+	/*
+		queryParts := []string{
+			`SELECT comments.content, comments.created_on, comments.belongs_to_thread FROM comments`,
+			`JOIN threads ON comments.belongs_to_thread=threads.id`,
+			`JOIN forums ON threads.belongs_to_forum=forums.id`,
+			`WHERE forums.id = $1 AND threads.id = $2`,
+		}
+
+		sqlBuilder := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
+
+		q, _, err := sqlBuilder.
+			Select(
+				"comments.content",
+				"comments.created_on",
+				"comments.belongs_to_thread",
+			).
+			From("comments").
+			Join("threads ON comments.belongs_to_thread=threads.id").
+			Join("forums ON threads.belongs_to_forum=forums.id").
+			Where(squirrel.Eq{
+				"threads.id": 3,
+				"forums.id":  2,
+			}).
+			ToSql()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		x := strings.Join(queryParts, " ")
+
+		fmt.Println(q == x)
+		fmt.Println(q)
+		fmt.Println(x)
+	*/
+
 	vals := []jen.Code{
 		jen.Lit("archived_on").Op(":").ID("nil"),
 	}

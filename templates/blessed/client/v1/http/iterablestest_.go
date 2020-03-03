@@ -182,29 +182,39 @@ func buildTestV1Client_GetSomething(pkg *models.Project, typ models.DataType) []
 func buildTestV1Client_BuildGetListOfSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
 	tp := typ.Name.Plural() // title plural
 
+	subTestLines := []jen.Code{
+		utils.ExpectMethod("expectedMethod", "MethodGet"),
+		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+		jen.Line(),
+		jen.ID("filter").Op(":=").Call(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
+	}
+
+	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+		subTestLines = append(subTestLines, jen.IDf("%sID", pt.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(1)))
+	}
+
+	subTestLines = append(subTestLines,
+		jen.Line(),
+		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
+			buildParamsForMethodThatRetrievesAListOfADataType(pkg, typ, true)...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+		utils.AssertEqual(
+			jen.ID("actual").Dot("Method"),
+			jen.ID("expectedMethod"),
+			jen.Lit("request should be a %s request"),
+			jen.ID("expectedMethod"),
+		),
+	)
+
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", tp)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				utils.ExpectMethod("expectedMethod", "MethodGet"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
-				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
-					buildParamsForMethodThatRetrievesAListOfADataType(pkg, typ, true)...,
-				),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
-				utils.AssertEqual(
-					jen.ID("actual").Dot("Method"),
-					jen.ID("expectedMethod"),
-					jen.Lit("request should be a %s request"),
-					jen.ID("expectedMethod"),
-				),
-			),
+			utils.BuildSubTest("happy path", subTestLines...),
 		),
 		jen.Line(),
 	}

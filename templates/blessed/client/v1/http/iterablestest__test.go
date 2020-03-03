@@ -164,6 +164,7 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
+	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -177,6 +178,7 @@ func TestV1Client_BuildGetChildrenRequest(T *testing.T) {
 		expectedMethod := http.MethodGet
 		ts := httptest.NewTLSServer(nil)
 
+		filter := (*v1.QueryFilter)(nil)
 		grandparentID := uint64(1)
 		parentID := uint64(1)
 
