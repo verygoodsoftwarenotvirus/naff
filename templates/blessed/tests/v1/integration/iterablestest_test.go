@@ -11,44 +11,50 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+var (
+	a = models.DataType{
+		Name: wordsmith.FromSingularPascalCase("Grandparent"),
+		Fields: []models.DataField{
+			{
+				Name:                  wordsmith.FromSingularPascalCase("GrandparentName"),
+				Type:                  "string",
+				ValidForCreationInput: true,
+			},
+		},
+	}
+	b = models.DataType{
+		Name:            wordsmith.FromSingularPascalCase("Parent"),
+		BelongsToStruct: a.Name,
+		Fields: []models.DataField{
+			{
+				Name:                  wordsmith.FromSingularPascalCase("ParentName"),
+				Type:                  "string",
+				ValidForCreationInput: true,
+			},
+		},
+	}
+	c = models.DataType{
+		Name:            wordsmith.FromSingularPascalCase("Child"),
+		BelongsToStruct: b.Name,
+		Fields: []models.DataField{
+			{
+				Name:                  wordsmith.FromSingularPascalCase("ChildName"),
+				Type:                  "string",
+				ValidForCreationInput: true,
+			},
+		},
+	}
+)
+
 func Test_buildRequisiteCreationCode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-		proj := &models.Project{DataTypes: []models.DataType{apple, banana, cherry}}
+		proj := &models.Project{DataTypes: []models.DataType{a, b, c}}
 
 		ret := jen.NewFile("farts")
 		ret.Add(jen.Func().ID("doSomething").Params().Block(
-			buildRequisiteCreationCode(proj, cherry)...,
+			buildRequisiteCreationCode(proj, c)...,
 		))
 
 		var b bytes.Buffer
@@ -62,35 +68,35 @@ import (
 )
 
 func doSomething() {
-	// Create apple
-	exampleApple := &v1.Apple{
-		AppleName: gofakeit.Word(),
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
 	}
 
-	createdApple, err := todoClient.CreateApple(ctx, &v1.AppleCreationInput{
-		AppleName: exampleApple.AppleName,
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
 	})
-	checkValueAndError(t, createdApple, err)
+	checkValueAndError(t, createdGrandparent, err)
 
-	// Create banana
-	exampleBanana := &v1.Banana{
-		BananaName: gofakeit.Word(),
+	// Create parent
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
 	}
 
-	createdBanana, err := todoClient.CreateBanana(ctx, &v1.BananaCreationInput{
-		BananaName: exampleBanana.BananaName,
-	}, createdApple.ID)
-	checkValueAndError(t, createdBanana, err)
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
 
-	// Create cherry
-	exampleCherry := &v1.Cherry{
-		CherryName: gofakeit.Word(),
+	// Create child
+	exampleChild := &v1.Child{
+		ChildName: gofakeit.Word(),
 	}
 
-	createdCherry, err := todoClient.CreateCherry(ctx, &v1.CherryCreationInput{
-		CherryName: exampleCherry.CherryName,
-	}, createdApple.ID, createdBanana.ID)
-	checkValueAndError(t, createdCherry, err)
+	createdChild, err := todoClient.CreateChild(ctx, createdGrandparent.ID, createdParent.ID, &v1.ChildCreationInput{
+		ChildName: exampleChild.ChildName,
+	})
+	checkValueAndError(t, createdChild, err)
 
 }
 `
@@ -100,108 +106,19 @@ func doSomething() {
 	})
 }
 
-//func Test_buildTestCreating(T *testing.T) {
-//	T.Parallel()
-//
-//	T.Run("normal operation", func(t *testing.T) {
-//		apple := models.DataType{
-//			Name: wordsmith.FromSingularPascalCase("Apple"),
-//			Fields: []models.DataField{
-//				{
-//					Name: wordsmith.FromSingularPascalCase("AppleName"),
-//					Type: "string",
-//				},
-//			},
-//		}
-//		banana := models.DataType{
-//			Name:            wordsmith.FromSingularPascalCase("Banana"),
-//			BelongsToStruct: apple.Name,
-//			Fields: []models.DataField{
-//				{
-//					Name: wordsmith.FromSingularPascalCase("BananaName"),
-//					Type: "string",
-//				},
-//			},
-//		}
-//		cherry := models.DataType{
-//			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-//			BelongsToStruct: banana.Name,
-//			Fields: []models.DataField{
-//				{
-//					Name: wordsmith.FromSingularPascalCase("CherryName"),
-//					Type: "string",
-//				},
-//			},
-//		}
-//
-//		proj := &models.Project{
-//			DataTypes: []models.DataType{apple, banana, cherry},
-//		}
-//
-//		ret := jen.NewFile("farts")
-//
-//		ret.Add(
-//			jen.Func().ID("doSomething").Params().Block(
-//				buildTestCreating(proj, cherry)...,
-//			),
-//		)
-//
-//		var b bytes.Buffer
-//		err := ret.Render(&b)
-//		require.NoError(t, err)
-//
-//		expected := `package farts
-//
-//`
-//		actual := b.String()
-//
-//		assert.Equal(t, expected, actual)
-//	})
-//}
-
 func Test_buildCreationArguments(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation", func(t *testing.T) {
-		apple := models.DataType{
-			Name: wordsmith.FromSingularPascalCase("Apple"),
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("AppleName"),
-					Type: "string",
-				},
-			},
-		}
-		banana := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Banana"),
-			BelongsToStruct: apple.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("BananaName"),
-					Type: "string",
-				},
-			},
-		}
-		cherry := models.DataType{
-			Name:            wordsmith.FromSingularPascalCase("Cherry"),
-			BelongsToStruct: banana.Name,
-			Fields: []models.DataField{
-				{
-					Name: wordsmith.FromSingularPascalCase("CherryName"),
-					Type: "string",
-				},
-			},
-		}
-
 		proj := &models.Project{
-			DataTypes: []models.DataType{apple, banana, cherry},
+			DataTypes: []models.DataType{a, b, c},
 		}
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
-				buildCreationArguments(proj, "expected", cherry)...,
+				buildCreationArguments(proj, "expected", c)...,
 			),
 		)
 
@@ -214,9 +131,728 @@ func Test_buildCreationArguments(T *testing.T) {
 import ()
 
 func doSomething() {
-	expectedApple.ID
-	expectedBanana.ID
-	expectedCherry.ID
+	expectedGrandparent.ID
+	expectedParent.ID
+	expectedChild.ID
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildEqualityCheckLines(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildEqualityCheckLines(
+					models.DataType{
+						Name:            wordsmith.FromSingularPascalCase("Everything"),
+						BelongsToUser:   false,
+						BelongsToNobody: true,
+						BelongsToStruct: nil,
+						Fields: []models.DataField{
+							{
+								Name: wordsmith.FromSingularPascalCase("stringVar"),
+								Type: "string",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToStringVar"),
+								Type:    "string",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("boolVar"),
+								Type: "bool",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToBoolVar"),
+								Type:    "bool",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("intVar"),
+								Type: "int",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToIntVar"),
+								Type:    "int",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("int8Var"),
+								Type: "int8",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToint8Var"),
+								Type:    "int8",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("int16Var"),
+								Type: "int16",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToInt16Var"),
+								Type:    "int16",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("int32Var"),
+								Type: "int32",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToInt32Var"),
+								Type:    "int32",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("int64Var"),
+								Type: "int64",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToInt64Var"),
+								Type:    "int64",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("uintVar"),
+								Type: "uint",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToUintVar"),
+								Type:    "uint",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("uint8Var"),
+								Type: "uint8",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToUint8Var"),
+								Type:    "uint8",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("uint16Var"),
+								Type: "uint16",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToUint16Var"),
+								Type:    "uint16",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("uint32Var"),
+								Type: "uint32",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToUint32Var"),
+								Type:    "uint32",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("uint64Var"),
+								Type: "uint64",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToUint64Var"),
+								Type:    "uint64",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("float32Var"),
+								Type: "float32",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToFloat32Var"),
+								Type:    "float32",
+								Pointer: true,
+							},
+							{
+								Name: wordsmith.FromSingularPascalCase("float64Var"),
+								Type: "float64",
+							},
+							{
+								Name:    wordsmith.FromSingularPascalCase("pointerToFloat64Var"),
+								Type:    "float64",
+								Pointer: true,
+							},
+						},
+					},
+				)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	assert "github.com/stretchr/testify/assert"
+)
+
+func doSomething() {
+	t.Helper()
+
+	assert.NotZero(t, actual.ID)
+	assert.Equal(t, expected.StringVar, actual.StringVar, "expected StringVar for ID %d to be %v, but it was %v ", expected.ID, expected.StringVar, actual.StringVar)
+	assert.Equal(t, *expected.PointerToStringVar, *actual.PointerToStringVar, "expected PointerToStringVar to be %v, but it was %v ", expected.PointerToStringVar, actual.PointerToStringVar)
+	assert.Equal(t, expected.BoolVar, actual.BoolVar, "expected BoolVar for ID %d to be %v, but it was %v ", expected.ID, expected.BoolVar, actual.BoolVar)
+	assert.Equal(t, *expected.PointerToBoolVar, *actual.PointerToBoolVar, "expected PointerToBoolVar to be %v, but it was %v ", expected.PointerToBoolVar, actual.PointerToBoolVar)
+	assert.Equal(t, expected.IntVar, actual.IntVar, "expected IntVar for ID %d to be %v, but it was %v ", expected.ID, expected.IntVar, actual.IntVar)
+	assert.Equal(t, *expected.PointerToIntVar, *actual.PointerToIntVar, "expected PointerToIntVar to be %v, but it was %v ", expected.PointerToIntVar, actual.PointerToIntVar)
+	assert.Equal(t, expected.Int8Var, actual.Int8Var, "expected Int8Var for ID %d to be %v, but it was %v ", expected.ID, expected.Int8Var, actual.Int8Var)
+	assert.Equal(t, *expected.PointerToint8Var, *actual.PointerToint8Var, "expected PointerToint8Var to be %v, but it was %v ", expected.PointerToint8Var, actual.PointerToint8Var)
+	assert.Equal(t, expected.Int16Var, actual.Int16Var, "expected Int16Var for ID %d to be %v, but it was %v ", expected.ID, expected.Int16Var, actual.Int16Var)
+	assert.Equal(t, *expected.PointerToInt16Var, *actual.PointerToInt16Var, "expected PointerToInt16Var to be %v, but it was %v ", expected.PointerToInt16Var, actual.PointerToInt16Var)
+	assert.Equal(t, expected.Int32Var, actual.Int32Var, "expected Int32Var for ID %d to be %v, but it was %v ", expected.ID, expected.Int32Var, actual.Int32Var)
+	assert.Equal(t, *expected.PointerToInt32Var, *actual.PointerToInt32Var, "expected PointerToInt32Var to be %v, but it was %v ", expected.PointerToInt32Var, actual.PointerToInt32Var)
+	assert.Equal(t, expected.Int64Var, actual.Int64Var, "expected Int64Var for ID %d to be %v, but it was %v ", expected.ID, expected.Int64Var, actual.Int64Var)
+	assert.Equal(t, *expected.PointerToInt64Var, *actual.PointerToInt64Var, "expected PointerToInt64Var to be %v, but it was %v ", expected.PointerToInt64Var, actual.PointerToInt64Var)
+	assert.Equal(t, expected.UintVar, actual.UintVar, "expected UintVar for ID %d to be %v, but it was %v ", expected.ID, expected.UintVar, actual.UintVar)
+	assert.Equal(t, *expected.PointerToUintVar, *actual.PointerToUintVar, "expected PointerToUintVar to be %v, but it was %v ", expected.PointerToUintVar, actual.PointerToUintVar)
+	assert.Equal(t, expected.Uint8Var, actual.Uint8Var, "expected Uint8Var for ID %d to be %v, but it was %v ", expected.ID, expected.Uint8Var, actual.Uint8Var)
+	assert.Equal(t, *expected.PointerToUint8Var, *actual.PointerToUint8Var, "expected PointerToUint8Var to be %v, but it was %v ", expected.PointerToUint8Var, actual.PointerToUint8Var)
+	assert.Equal(t, expected.Uint16Var, actual.Uint16Var, "expected Uint16Var for ID %d to be %v, but it was %v ", expected.ID, expected.Uint16Var, actual.Uint16Var)
+	assert.Equal(t, *expected.PointerToUint16Var, *actual.PointerToUint16Var, "expected PointerToUint16Var to be %v, but it was %v ", expected.PointerToUint16Var, actual.PointerToUint16Var)
+	assert.Equal(t, expected.Uint32Var, actual.Uint32Var, "expected Uint32Var for ID %d to be %v, but it was %v ", expected.ID, expected.Uint32Var, actual.Uint32Var)
+	assert.Equal(t, *expected.PointerToUint32Var, *actual.PointerToUint32Var, "expected PointerToUint32Var to be %v, but it was %v ", expected.PointerToUint32Var, actual.PointerToUint32Var)
+	assert.Equal(t, expected.Uint64Var, actual.Uint64Var, "expected Uint64Var for ID %d to be %v, but it was %v ", expected.ID, expected.Uint64Var, actual.Uint64Var)
+	assert.Equal(t, *expected.PointerToUint64Var, *actual.PointerToUint64Var, "expected PointerToUint64Var to be %v, but it was %v ", expected.PointerToUint64Var, actual.PointerToUint64Var)
+	assert.Equal(t, expected.Float32Var, actual.Float32Var, "expected Float32Var for ID %d to be %v, but it was %v ", expected.ID, expected.Float32Var, actual.Float32Var)
+	assert.Equal(t, *expected.PointerToFloat32Var, *actual.PointerToFloat32Var, "expected PointerToFloat32Var to be %v, but it was %v ", expected.PointerToFloat32Var, actual.PointerToFloat32Var)
+	assert.Equal(t, expected.Float64Var, actual.Float64Var, "expected Float64Var for ID %d to be %v, but it was %v ", expected.ID, expected.Float64Var, actual.Float64Var)
+	assert.Equal(t, *expected.PointerToFloat64Var, *actual.PointerToFloat64Var, "expected PointerToFloat64Var to be %v, but it was %v ", expected.PointerToFloat64Var, actual.PointerToFloat64Var)
+	assert.NotZero(t, actual.CreatedOn)
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildTestCreating(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestCreating(proj, c)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parent
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
+
+	// Create child
+	exampleChild := &v1.Child{
+		ChildName: gofakeit.Word(),
+	}
+
+	createdChild, err := todoClient.CreateChild(ctx, createdGrandparent.ID, createdParent.ID, &v1.ChildCreationInput{
+		ChildName: exampleChild.ChildName,
+	})
+	checkValueAndError(t, createdChild, err)
+
+	// Assert child equality
+	checkChildEquality(t, createdChild, exampleChild)
+
+	// Clean up
+	err = todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID)
+	assert.NoError(t, err)
+
+	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID)
+	checkValueAndError(t, actual, err)
+	checkChildEquality(t, createdChild, actual)
+	assert.NotZero(t, actual.ArchivedOn)
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildTestListing(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestListing(proj, c)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create children
+	var expected []*v1.Child
+	for i := 0; i < 5; i++ {
+		expected = append(expected, buildDummyChild(t))
+	}
+
+	// Assert child list equality
+	actual, err := todoClient.GetChildren(ctx, nil)
+	checkValueAndError(t, actual, err)
+	assert.True(
+		t,
+		len(expected) <= len(actual.Children),
+		"expected %d to be <= %d",
+		len(expected),
+		len(actual.Children),
+	)
+
+	// Clean up
+	for _, x := range actual.Children {
+		err = todoClient.ArchiveChild(ctx, x.ID)
+		assert.NoError(t, err)
+	}
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(c)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parent
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
+
+	// Fetch child
+	_, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdParent.ID, nonexistentID)
+	assert.Error(t, err)
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildTestReadingShouldBeReadable(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestReadingShouldBeReadable(proj, c)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parent
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
+
+	// Create child
+	exampleChild := &v1.Child{
+		ChildName: gofakeit.Word(),
+	}
+
+	createdChild, err := todoClient.CreateChild(ctx, createdGrandparent.ID, createdParent.ID, &v1.ChildCreationInput{
+		ChildName: exampleChild.ChildName,
+	})
+	checkValueAndError(t, createdChild, err)
+
+	// Fetch child
+	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID)
+	checkValueAndError(t, actual, err)
+
+	// Assert child equality
+	checkChildEquality(t, exampleChild, actual)
+
+	// Clean up
+	err = todoClient.ArchiveChild(ctx, createdGrandparent.ID, actual.BelongstoParent, actual.ID)
+	assert.NoError(t, err)
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, c)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parent
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
+
+	err := todoClient.UpdateChild(ctx, createdGrandparent.ID, createdParent.ID,  &v1.Child{ID: nonexistentID})
+	assert.Error(t, err)
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildTestUpdatingShouldBeUpdatable(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestUpdatingShouldBeUpdatable(proj, c)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parent
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
+
+	// Create child
+	exampleChild := &v1.Child{
+		ChildName: gofakeit.Word(),
+	}
+
+	createdChild, err := todoClient.CreateChild(ctx, createdGrandparent.ID, createdParent.ID, &v1.ChildCreationInput{
+		ChildName: exampleChild.ChildName,
+	})
+	checkValueAndError(t, createdChild, err)
+
+	// Change child
+	createdChild.Update(exampleChild.ToInput())
+	err = todoClient.UpdateChild(ctx, createdGrandparent.ID, createdChild)
+	assert.NoError(t, err)
+
+	// Fetch child
+	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID)
+	checkValueAndError(t, actual, err)
+
+	// Assert child equality
+	checkChildEquality(t, exampleChild, actual)
+	assert.NotNil(t, actual.UpdatedOn)
+
+	// Clean up
+	err = todoClient.ArchiveChild(ctx, createdGrandparent.ID, actual.BelongsToParent, actual.ID)
+	assert.NoError(t, err)
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildTestDeletingShouldBeAbleToBeDeleted(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestDeletingShouldBeAbleToBeDeleted(proj, c)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parent
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
+
+	// Create child
+	exampleChild := &v1.Child{
+		ChildName: gofakeit.Word(),
+	}
+
+	createdChild, err := todoClient.CreateChild(ctx, createdGrandparent.ID, createdParent.ID, &v1.ChildCreationInput{
+		ChildName: exampleChild.ChildName,
+	})
+	checkValueAndError(t, createdChild, err)
+
+	// Clean up
+	err = todoClient.ArchiveChild(ctx, grandparent.ID, createdChild.BelongsToParent, createdChild.ID)
+	assert.NoError(t, err)
 }
 `
 		actual := b.String()

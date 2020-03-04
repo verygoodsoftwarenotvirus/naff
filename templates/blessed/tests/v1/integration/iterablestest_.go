@@ -164,10 +164,14 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 
 	creationArgs := []jen.Code{
 		jen.ID("ctx"),
-		jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(fieldToExpectedDotField(fmt.Sprintf("%s%s", sourceVarPrefix, typ.Name.Singular()), typ)...),
 	}
 	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
+	creationArgs = append(creationArgs,
+		jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+			fieldToExpectedDotField(fmt.Sprintf("%s%s", sourceVarPrefix, typ.Name.Singular()), typ)...,
+		),
+	)
 
 	if typ.BelongsToStruct != nil {
 		if parentTyp := pkg.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
