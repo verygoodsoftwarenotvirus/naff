@@ -521,6 +521,8 @@ func buildTestV1Client_CreateSomething(pkg *models.Project, typ models.DataType)
 func buildTestV1Client_BuildUpdateSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
+	actualParams := buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)
+
 	subtestLines := buildVarDeclarationsOfDependentStructs(pkg, typ)
 	subtestLines = append(subtestLines,
 		utils.ExpectMethod("expectedMethod", "MethodPut"),
@@ -528,7 +530,7 @@ func buildTestV1Client_BuildUpdateSomethingRequest(pkg *models.Project, typ mode
 		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
-			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)...,
+			actualParams...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -580,7 +582,7 @@ func buildTestV1Client_UpdateSomething(pkg *models.Project, typ models.DataType)
 		),
 		jen.Line(),
 		jen.ID("err").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Update%s", ts)).Call(
-			buildParamsForMethodThatIncludesItsOwnTypeInItsParams(pkg, typ, true)...,
+			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)...,
 		),
 		utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
 	)

@@ -491,6 +491,114 @@ func TestV1Client_BuildUpdateChildRequest(T *testing.T) {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("second level dependencies", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			buildTestV1Client_BuildUpdateSomethingRequest(proj, b)...,
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	assert "github.com/stretchr/testify/assert"
+	require "github.com/stretchr/testify/require"
+	v1 "models/v1"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestV1Client_BuildUpdateParentRequest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+		grandparent := &v1.Grandparent{
+			ID: 1,
+		}
+		parent := &v1.Parent{
+			ID:                   1,
+			BelongsToGrandparent: grandparent.ID,
+		}
+		expectedMethod := http.MethodPut
+
+		ts := httptest.NewTLSServer(nil)
+		c := buildTestClient(t, ts)
+		actual, err := c.BuildUpdateParentRequest(ctx, parent)
+
+		require.NotNil(t, actual)
+		assert.NoError(t, err, "no error should be returned")
+		assert.Equal(t, actual.Method, expectedMethod, "request should be a %s request", expectedMethod)
+	})
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("first level dependencies", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			buildTestV1Client_BuildUpdateSomethingRequest(proj, a)...,
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	assert "github.com/stretchr/testify/assert"
+	require "github.com/stretchr/testify/require"
+	v1 "models/v1"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestV1Client_BuildUpdateGrandparentRequest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+		grandparent := &v1.Grandparent{
+			ID: 1,
+		}
+		expectedMethod := http.MethodPut
+
+		ts := httptest.NewTLSServer(nil)
+		c := buildTestClient(t, ts)
+		actual, err := c.BuildUpdateGrandparentRequest(ctx, grandparent)
+
+		require.NotNil(t, actual)
+		assert.NoError(t, err, "no error should be returned")
+		assert.Equal(t, actual.Method, expectedMethod, "request should be a %s request", expectedMethod)
+	})
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func Test_buildTestV1Client_UpdateSomething(T *testing.T) {
@@ -551,7 +659,7 @@ func TestV1Client_UpdateChild(T *testing.T) {
 			),
 		)
 
-		err := buildTestClient(t, ts).UpdateChild(ctx, grandparentID, child)
+		err := buildTestClient(t, ts).UpdateChild(ctx, grandparent.ID, child)
 		assert.NoError(t, err, "no error should be returned")
 	})
 }

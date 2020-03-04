@@ -371,13 +371,14 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParams(pkg *models.Project, 
 				params = append(params, jen.List(listParams...).ID("uint64"))
 			} else {
 				params = append(params, listParams...)
-				params = append(params, jen.ID(typ.Name.UnexportedVarName()))
 			}
 		}
 	}
 
 	if !call {
 		params = append(params, jen.ID(typ.Name.UnexportedVarName()).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()))
+	} else {
+		params = append(params, jen.ID(typ.Name.UnexportedVarName()))
 	}
 
 	return params
@@ -396,10 +397,9 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg 
 
 		if len(listParams) > 0 {
 			params = append(params, listParams...)
-			params = append(params, jen.ID(typ.Name.UnexportedVarName()))
-
 		}
 	}
+	params = append(params, jen.ID(typ.Name.UnexportedVarName()))
 
 	return params
 }

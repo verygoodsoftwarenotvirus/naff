@@ -607,6 +607,45 @@ func (c *V1Client) UpdateChild(ctx context.Context, grandparentID uint64, child 
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("first level dependencies", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			buildUpdateSomethingFuncDecl(proj, a)...,
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	"fmt"
+	v1 "models/v1"
+)
+
+// UpdateGrandparent updates a grandparent
+func (c *V1Client) UpdateGrandparent(ctx context.Context, grandparent *v1.Grandparent) error {
+	req, err := c.BuildUpdateGrandparentRequest(ctx, grandparent)
+	if err != nil {
+		return fmt.Errorf("building request: %w", err)
+	}
+
+	return c.executeRequest(ctx, req, &grandparent)
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
 }
 
 func TestBuildBuildArchiveSomethingRequestFuncDecl(T *testing.T) {
