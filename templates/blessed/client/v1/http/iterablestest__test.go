@@ -177,15 +177,20 @@ func TestV1Client_BuildGetChildrenRequest(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+		grandparent := &v1.Grandparent{
+			ID: 1,
+		}
+		parent := &v1.Parent{
+			ID:                   1,
+			BelongsToGrandparent: grandparent.ID,
+		}
+
+		filter := (*v1.QueryFilter)(nil)
 		expectedMethod := http.MethodGet
 		ts := httptest.NewTLSServer(nil)
 
-		filter := (*v1.QueryFilter)(nil)
-		grandparentID := uint64(1)
-		parentID := uint64(1)
-
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildGetChildrenRequest(ctx, grandparentID, parentID, filter)
+		actual, err := c.BuildGetChildrenRequest(ctx, grandparent.ID, parent.ID, filter)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -222,6 +227,7 @@ func Test_buildTestV1Client_GetListOfSomething(T *testing.T) {
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
 	v1 "models/v1"
@@ -235,7 +241,16 @@ func TestV1Client_GetChildren(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
-		expected := &v1.ChildList{
+		grandparent := &v1.Grandparent{
+			ID: 1,
+		}
+		parent := &v1.Parent{
+			ID:                   1,
+			BelongsToGrandparent: grandparent.ID,
+		}
+		input := (*v1.QueryFilter)(nil)
+
+		children := &v1.ChildList{
 			Children: []v1.Child{
 				{
 					ID: 1,
@@ -246,19 +261,19 @@ func TestV1Client_GetChildren(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, "/api/v1/children", "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children", grandparent.ID, parent.ID), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodGet)
-					require.NoError(t, json.NewEncoder(res).Encode(expected))
+					require.NoError(t, json.NewEncoder(res).Encode(children))
 				},
 			),
 		)
 
 		c := buildTestClient(t, ts)
-		actual, err := c.GetChildren(ctx, nil)
+		actual, err := c.GetChildren(ctx, grandparent.ID, parent.ID, input)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
-		assert.Equal(t, expected, actual)
+		assert.Equal(t, children, actual)
 	})
 }
 `
@@ -303,14 +318,22 @@ func TestV1Client_BuildCreateChildRequest(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+		grandparent := &v1.Grandparent{
+			ID: 1,
+		}
+		parent := &v1.Parent{
+			ID:                   1,
+			BelongsToGrandparent: grandparent.ID,
+		}
+
 		expectedMethod := http.MethodPost
 		ts := httptest.NewTLSServer(nil)
 
-		exampleInput := &v1.ChildCreationInput{
+		input := &v1.ChildCreationInput{
 			ChildName: "example",
 		}
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildCreateChildRequest(ctx, exampleInput)
+		actual, err := c.BuildCreateChildRequest(ctx, grandparent.ID, parent.ID, input)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -347,6 +370,7 @@ func Test_buildTestV1Client_CreateSomething(T *testing.T) {
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
 	v1 "models/v1"
@@ -360,35 +384,42 @@ func TestV1Client_CreateChild(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
-		expected := &v1.Child{
-			ID:        1,
-			ChildName: "example",
+		grandparent := &v1.Grandparent{
+			ID: 1,
 		}
-		exampleInput := &v1.ChildCreationInput{
-			ChildName: expected.ChildName,
+		parent := &v1.Parent{
+			ID:                   1,
+			BelongsToGrandparent: grandparent.ID,
+		}
+		child := &v1.Child{
+			ID:              1,
+			BelongsToParent: parent.ID,
+		}
+		input := &v1.ChildCreationInput{
+			ChildName: child.ChildName,
 		}
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, "/api/v1/children", "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children", grandparent.ID, parent.ID), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodPost)
 
 					var x *v1.ChildCreationInput
 					require.NoError(t, json.NewDecoder(req.Body).Decode(&x))
-					assert.Equal(t, exampleInput, x)
+					assert.Equal(t, input, x)
 
-					require.NoError(t, json.NewEncoder(res).Encode(expected))
+					require.NoError(t, json.NewEncoder(res).Encode(child))
 				},
 			),
 		)
 
 		c := buildTestClient(t, ts)
-		actual, err := c.CreateChild(ctx, exampleInput)
+		actual, err := c.CreateChild(ctx, grandparent.ID, parent.ID, input)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
-		assert.Equal(t, expected, actual)
+		assert.Equal(t, child, actual)
 	})
 }
 `
@@ -433,14 +464,22 @@ func TestV1Client_BuildUpdateChildRequest(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
-		expectedMethod := http.MethodPut
-		exampleInput := &v1.Child{
+		grandparent := &v1.Grandparent{
 			ID: 1,
 		}
+		parent := &v1.Parent{
+			ID:                   1,
+			BelongsToGrandparent: grandparent.ID,
+		}
+		child := &v1.Child{
+			ID:              1,
+			BelongsToParent: parent.ID,
+		}
+		expectedMethod := http.MethodPut
 
 		ts := httptest.NewTLSServer(nil)
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildUpdateChildRequest(ctx, exampleInput)
+		actual, err := c.BuildUpdateChildRequest(ctx, grandparent.ID, child)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -490,21 +529,29 @@ func TestV1Client_UpdateChild(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
-		expected := &v1.Child{
+		grandparent := &v1.Grandparent{
 			ID: 1,
+		}
+		parent := &v1.Parent{
+			ID:                   1,
+			BelongsToGrandparent: grandparent.ID,
+		}
+		child := &v1.Child{
+			ID:              1,
+			BelongsToParent: parent.ID,
 		}
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/children/%d", expected.ID), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children/%d", grandparent.ID, child.BelongsToParent, child.ID), "expected and actual paths don't match")
 					assert.Equal(t, req.Method, http.MethodPut)
-					assert.NoError(t, json.NewEncoder(res).Encode(&v1.Child{}))
+					assert.NoError(t, json.NewEncoder(res).Encode(child))
 				},
 			),
 		)
 
-		err := buildTestClient(t, ts).UpdateChild(ctx, expected)
+		err := buildTestClient(t, ts).UpdateChild(ctx, grandparentID, child)
 		assert.NoError(t, err, "no error should be returned")
 	})
 }
@@ -540,6 +587,7 @@ import (
 	"fmt"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
+	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -554,13 +602,24 @@ func TestV1Client_BuildArchiveChildRequest(T *testing.T) {
 		expectedMethod := http.MethodDelete
 		ts := httptest.NewTLSServer(nil)
 
-		expectedID := uint64(1)
+		grandparent := &v1.Grandparent{
+			ID: 1,
+		}
+		parent := &v1.Parent{
+			ID:                   1,
+			BelongsToGrandparent: grandparent.ID,
+		}
+		child := &v1.Child{
+			ID:              1,
+			BelongsToParent: parent.ID,
+		}
+
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildArchiveChildRequest(ctx, expectedID)
+		actual, err := c.BuildArchiveChildRequest(ctx, grandparent.ID, parent.ID, child.ID)
 
 		require.NotNil(t, actual)
 		require.NotNil(t, actual.URL)
-		assert.True(t, strings.HasSuffix(actual.URL.String(), fmt.Sprintf("%d", expectedID)))
+		assert.True(t, strings.HasSuffix(actual.URL.String(), fmt.Sprintf("%d", child.ID)))
 		assert.NoError(t, err, "no error should be returned")
 		assert.Equal(t, actual.Method, expectedMethod, "request should be a %s request", expectedMethod)
 	})
@@ -596,6 +655,7 @@ import (
 	"context"
 	"fmt"
 	assert "github.com/stretchr/testify/assert"
+	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -606,19 +666,29 @@ func TestV1Client_ArchiveChild(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
-		expected := uint64(1)
+		grandparent := &v1.Grandparent{
+			ID: 1,
+		}
+		parent := &v1.Parent{
+			ID:                   1,
+			BelongsToGrandparent: grandparent.ID,
+		}
+		child := &v1.Child{
+			ID:              1,
+			BelongsToParent: parent.ID,
+		}
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/children/%d", expected), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children/%d", grandparent.ID, parent.ID, child.ID), "expected and actual path don't match")
 					assert.Equal(t, req.Method, http.MethodDelete)
 					res.WriteHeader(http.StatusOK)
 				},
 			),
 		)
 
-		err := buildTestClient(t, ts).ArchiveChild(ctx, expected)
+		err := buildTestClient(t, ts).ArchiveChild(ctx, grandparent.ID, parent.ID, child.ID)
 		assert.NoError(t, err, "no error should be returned")
 	})
 }

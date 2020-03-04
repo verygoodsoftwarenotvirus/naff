@@ -57,7 +57,7 @@ func Test_buildParamsForMethodThatHandlesAnInstanceOfADataType(T *testing.T) {
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(proj, c, false)...).Block(),
+			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, c, false)...).Block(),
 		)
 
 		var b bytes.Buffer
@@ -81,7 +81,7 @@ func doSomething(ctx context.Context, grandparentID, parentID, childID uint64) {
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(proj, b, false)...).Block(),
+			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, b, false)...).Block(),
 		)
 
 		var b bytes.Buffer
@@ -119,7 +119,7 @@ func doSomething(ctx context.Context, grandparentID, parentID uint64) {}
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(proj, a, false)...).Block(),
+			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, a, false)...).Block(),
 		)
 
 		var b bytes.Buffer

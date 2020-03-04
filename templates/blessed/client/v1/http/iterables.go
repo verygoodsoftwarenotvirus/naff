@@ -135,7 +135,7 @@ func buildBuildGetSomethingRequestFuncDecl(pkg *models.Project, typ models.DataT
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildGet%sRequest builds an HTTP request for fetching %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("BuildGet%sRequest", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, false)...).Params(
+		newClientMethod(fmt.Sprintf("BuildGet%sRequest", ts)).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(pkg, typ, false)...).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
 		).Block(
@@ -160,7 +160,7 @@ func buildBuildGetSomethingRequestFuncDecl(pkg *models.Project, typ models.DataT
 	return lines
 }
 
-func buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg *models.Project, typ models.DataType, call bool) []jen.Code {
+func buildParamsForMethodThatHandlesAnInstanceWithIDs(pkg *models.Project, typ models.DataType, call bool) []jen.Code {
 	parents := pkg.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
 	params := []jen.Code{
@@ -189,6 +189,27 @@ func buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg *models.Project, t
 		} else {
 			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 		}
+	}
+
+	return params
+}
+
+func buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg *models.Project, typ models.DataType) []jen.Code {
+	parents := pkg.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{utils.CtxVar()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+		}
+		listParams = append(listParams, jen.ID(typ.Name.UnexportedVarName()).Dot("ID"))
+
+		params = append(params, listParams...)
+
+	} else {
+		params = append(params, jen.ID(typ.Name.UnexportedVarName()).Dot("ID"))
+
 	}
 
 	return params
@@ -227,6 +248,39 @@ func buildParamsForMethodThatRetrievesAListOfADataType(pkg *models.Project, typ 
 	return params
 }
 
+func buildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(pkg *models.Project, typ models.DataType, call bool) []jen.Code {
+	parents := pkg.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{
+		func() jen.Code {
+			if call {
+				return utils.CtxVar()
+			} else {
+				return utils.CtxParam()
+			}
+		}(),
+	}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+		}
+		if !call {
+			params = append(params, jen.List(listParams...).ID("uint64"))
+		} else {
+			params = append(params, listParams...)
+		}
+	}
+
+	if !call {
+		params = append(params, jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"))
+	} else {
+		params = append(params, jen.ID("filter"))
+	}
+
+	return params
+}
+
 func buildParamsForMethodThatCreatesADataType(pkg *models.Project, typ models.DataType, call bool) []jen.Code {
 	parents := pkg.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
@@ -243,6 +297,39 @@ func buildParamsForMethodThatCreatesADataType(pkg *models.Project, typ models.Da
 	if len(parents) > 0 {
 		for _, pt := range parents {
 			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		if !call {
+			params = append(params, jen.List(listParams...).ID("uint64"))
+		} else {
+			params = append(params, listParams...)
+		}
+	}
+
+	if !call {
+		params = append(params, jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+	} else {
+		params = append(params, jen.ID("input"))
+	}
+
+	return params
+}
+
+func buildParamsForMethodThatCreatesADataTypeFromStructs(pkg *models.Project, typ models.DataType, call bool) []jen.Code {
+	parents := pkg.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{
+		func() jen.Code {
+			if call {
+				return utils.CtxVar()
+			} else {
+				return utils.CtxParam()
+			}
+		}(),
+	}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
 		}
 		if !call {
 			params = append(params, jen.List(listParams...).ID("uint64"))
@@ -296,6 +383,27 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParams(pkg *models.Project, 
 	return params
 }
 
+func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg *models.Project, typ models.DataType) []jen.Code {
+	parents := pkg.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{utils.CtxVar()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+		}
+		listParams = listParams[:len(listParams)-1]
+
+		if len(listParams) > 0 {
+			params = append(params, listParams...)
+			params = append(params, jen.ID(typ.Name.UnexportedVarName()))
+
+		}
+	}
+
+	return params
+}
+
 func buildGetSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular()
 	uvn := typ.Name.UnexportedVarName()
@@ -305,11 +413,11 @@ func buildGetSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.C
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("Get%s retrieves %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("Get%s", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, false)...).Params(
+		newClientMethod(fmt.Sprintf("Get%s", ts)).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(pkg, typ, false)...).Params(
 			jen.ID(uvn).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts),
 			jen.ID("err").ID("error"),
 		).Block(
-			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, true)...),
+			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(buildParamsForMethodThatHandlesAnInstanceWithIDs(pkg, typ, true)...),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"),
 					jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.ID("err")),
@@ -550,7 +658,7 @@ func buildBuildArchiveSomethingRequestFuncDecl(pkg *models.Project, typ models.D
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("BuildArchive%sRequest builds an HTTP request for updating %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("BuildArchive%sRequest", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, false)...).Params(
+		newClientMethod(fmt.Sprintf("BuildArchive%sRequest", ts)).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(pkg, typ, false)...).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
 		).Block(
@@ -584,12 +692,12 @@ func buildArchiveSomethingFuncDecl(pkg *models.Project, typ models.DataType) []j
 	lines := []jen.Code{
 		jen.Comment(fmt.Sprintf("Archive%s archives %s", ts, commonNameWithPrefix)),
 		jen.Line(),
-		newClientMethod(fmt.Sprintf("Archive%s", ts)).Params(buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, false)...).Params(jen.ID("error")).Block(
+		newClientMethod(fmt.Sprintf("Archive%s", ts)).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(pkg, typ, false)...).Params(jen.ID("error")).Block(
 			jen.List(
 				jen.ID("req"),
 				jen.ID("err"),
 			).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
-				buildParamsForMethodThatHandlesAnInstanceOfADataType(pkg, typ, true)...,
+				buildParamsForMethodThatHandlesAnInstanceWithIDs(pkg, typ, true)...,
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(
