@@ -46,6 +46,148 @@ var (
 	}
 )
 
+func Test_buildBuildDummySomething(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		proj := &models.Project{DataTypes: []models.DataType{a, b, c}}
+
+		ret := jen.NewFile("farts")
+		ret.Add(buildBuildDummySomething(proj, c)...)
+
+		var b bytes.Buffer
+		require.NoError(t, ret.Render(&b))
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	require "github.com/stretchr/testify/require"
+	v1 "models/v1"
+	"testing"
+)
+
+func buildDummyChild(t *testing.T, ctx context.Context) *v1.Child {
+	t.Helper()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parent
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
+
+	x := &v1.ChildCreationInput{
+		ChildName: gofakeit.Word(),
+	}
+	y, err := todoClient.CreateChild(ctx, createdGrandparent.ID, createdParent.ID, x)
+	require.NoError(t, err)
+
+	return y
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("one dependency", func(t *testing.T) {
+		proj := &models.Project{DataTypes: []models.DataType{a, b, c}}
+
+		ret := jen.NewFile("farts")
+		ret.Add(buildBuildDummySomething(proj, b)...)
+
+		var b bytes.Buffer
+		require.NoError(t, ret.Render(&b))
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	require "github.com/stretchr/testify/require"
+	v1 "models/v1"
+	"testing"
+)
+
+func buildDummyParent(t *testing.T, ctx context.Context) *v1.Parent {
+	t.Helper()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	x := &v1.ParentCreationInput{
+		ParentName: gofakeit.Word(),
+	}
+	y, err := todoClient.CreateParent(ctx, createdGrandparent.ID, x)
+	require.NoError(t, err)
+
+	return y
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("lone type", func(t *testing.T) {
+		proj := &models.Project{DataTypes: []models.DataType{a, b, c}}
+
+		ret := jen.NewFile("farts")
+		ret.Add(buildBuildDummySomething(proj, a)...)
+
+		var b bytes.Buffer
+		require.NoError(t, ret.Render(&b))
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	require "github.com/stretchr/testify/require"
+	v1 "models/v1"
+	"testing"
+)
+
+func buildDummyGrandparent(t *testing.T, ctx context.Context) *v1.Grandparent {
+	t.Helper()
+
+	x := &v1.GrandparentCreationInput{
+		GrandparentName: gofakeit.Word(),
+	}
+	y, err := todoClient.CreateGrandparent(ctx, x)
+	require.NoError(t, err)
+
+	return y
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
 func Test_buildRequisiteCreationCode(T *testing.T) {
 	T.Parallel()
 

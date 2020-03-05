@@ -111,17 +111,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
-			jen.ID("t").Dot("Helper").Call(),
-			jen.Line(),
-			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
-				buildFakeCallForCreationInput(pkg, typ)...,
-			),
-			jen.List(jen.ID("y"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(jen.Qual("context", "Background").Call(), jen.ID("x")),
-			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
-			jen.Return().ID("y"),
-		),
-		jen.Line(),
+		buildBuildDummySomething(pkg, typ)...,
 	)
 
 	ret.Add(
@@ -170,6 +160,48 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	)
 
 	return ret
+}
+
+func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+
+	blockLines := []jen.Code{
+		jen.ID("t").Dot("Helper").Call(),
+		jen.Line(),
+	}
+
+	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
+	cc := buildRequisiteCreationCode(pkg, typ)
+	if len(cc) > stopIndex {
+		blockLines = append(blockLines, cc[:len(cc)-stopIndex]...)
+	}
+
+	creationArgs := []jen.Code{utils.CtxVar()}
+	ca := buildCreationArguments(pkg, "created", typ)
+	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
+	creationArgs = append(creationArgs, jen.ID("x"))
+
+	blockLines = append(blockLines,
+		jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+			buildFakeCallForCreationInput(pkg, typ)...,
+		),
+		jen.List(jen.ID("y"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(
+			creationArgs...,
+		//	jen.Qual("context", "Background").Call(), jen.ID("x"),
+		),
+		jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+		jen.Line(),
+		jen.Return().ID("y"),
+	)
+
+	lines := []jen.Code{
+		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").Op("*").Qual("testing", "T"), utils.CtxParam()).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
+			blockLines...,
+		),
+		jen.Line(),
+	}
+
+	return lines
 }
 
 func buildFakeCallForCreationInput(pkg *models.Project, typ models.DataType) []jen.Code {
@@ -340,8 +372,6 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *mo
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
-	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
-
 	lines := []jen.Code{
 		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
@@ -351,6 +381,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *mo
 
 	args := buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(pkg, typ)
 
+	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
 	cc := buildRequisiteCreationCode(pkg, typ)
 	if len(cc) > stopIndex {
 		lines = append(lines, cc[:len(cc)-stopIndex]...)
