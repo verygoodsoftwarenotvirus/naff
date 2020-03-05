@@ -109,10 +109,6 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		buildBuildDummySomething(pkg, typ)...,
-	)
-
-	ret.Add(
 		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Parallel").Call(),
 			jen.Line(),
@@ -420,7 +416,13 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *mo
 
 	lines = append(lines,
 		jen.Commentf("Attempt to fetch nonexistent %s", scn),
-		jen.List(jen.ID("_"), jen.ID("err")).Op("=").ID("todoClient").Dotf("Get%s", sn).Call(
+		jen.List(jen.ID("_"), jen.ID("err")).Op(func() string {
+			if typ.BelongsToStruct == nil {
+				return ":="
+			} else {
+				return "="
+			}
+		}()).ID("todoClient").Dotf("Get%s", sn).Call(
 			args...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
