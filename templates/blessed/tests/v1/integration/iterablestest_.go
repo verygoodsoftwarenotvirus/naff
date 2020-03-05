@@ -349,7 +349,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *mo
 		jen.Line(),
 	}
 
-	args := buildParamsForCheckingATypeThatDoesNotExist(pkg, typ)
+	args := buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(pkg, typ)
 
 	cc := buildRequisiteCreationCode(pkg, typ)
 	if len(cc) > stopIndex {
@@ -411,22 +411,50 @@ func buildTestReadingShouldBeReadable(pkg *models.Project, typ models.DataType) 
 
 func buildParamsForCheckingATypeThatDoesNotExist(pkg *models.Project, typ models.DataType) []jen.Code {
 	parents := pkg.FindOwnerTypeChain(typ)
+	params := []jen.Code{utils.CtxVar()}
+
+	for i, pt := range parents {
+		if i == len(parents)-1 {
+			params = append(params, jen.ID("nonexistentID"))
+		} else {
+			params = append(params, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
+		}
+	}
+
+	if len(params) == 0 {
+		params = append(params, jen.ID("nonexistentID"))
+	}
+
+	return params
+}
+
+func buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(pkg *models.Project, typ models.DataType) []jen.Code {
+	parents := pkg.FindOwnerTypeChain(typ)
+	params := []jen.Code{utils.CtxVar()}
+
+	for _, pt := range parents {
+		params = append(params, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
+	}
+
+	params = append(params, jen.ID("nonexistentID"))
+
+	return params
+}
+
+func buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(pkg *models.Project, typ models.DataType) []jen.Code {
+	parents := pkg.FindOwnerTypeChain(typ)
 	sn := typ.Name.Singular()
 	listParams := []jen.Code{}
 	params := []jen.Code{utils.CtxVar()}
 
 	if len(parents) > 0 {
 		for i, pt := range parents {
-			if i == len(parents)-1 && typ.BelongsToStruct != nil {
-				//listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
-			} else {
+			if !(i == len(parents)-1 && typ.BelongsToStruct != nil) {
 				listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
 			}
 		}
 
 		params = append(params, listParams...)
-	} else {
-		params = append(params, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
 	}
 
 	params = append(params, jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(jen.ID("ID").Op(":").ID("nonexistentID")))
@@ -446,7 +474,7 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg 
 		jen.Line(),
 	}
 
-	args := buildParamsForCheckingATypeThatDoesNotExist(pkg, typ)
+	args := buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(pkg, typ)
 	cc := buildRequisiteCreationCode(pkg, typ)
 
 	if len(cc) > stopIndex {

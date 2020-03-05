@@ -583,7 +583,7 @@ func doSomething() {
 	checkValueAndError(t, createdParent, err)
 
 	// Attempt to fetch nonexistent child
-	_, err = todoClient.GetChild(ctx, createdGrandparent.ID, &v1.Child{ID: nonexistentID})
+	_, err = todoClient.GetChild(ctx, createdGrandparent.ID, createdParent.ID, nonexistentID)
 	assert.Error(t, err)
 
 	// Clean up parent
@@ -640,7 +640,7 @@ func doSomething() {
 	checkValueAndError(t, createdGrandparent, err)
 
 	// Attempt to fetch nonexistent parent
-	_, err = todoClient.GetParent(ctx, createdGrandparent.ID, &v1.Parent{ID: nonexistentID})
+	_, err = todoClient.GetParent(ctx, createdGrandparent.ID, nonexistentID)
 	assert.Error(t, err)
 
 	// Clean up grandparent
@@ -672,10 +672,8 @@ func doSomething() {
 
 import (
 	"context"
-	gofakeit "github.com/brianvoe/gofakeit"
 	assert "github.com/stretchr/testify/assert"
 	trace "go.opencensus.io/trace"
-	v1 "models/v1"
 )
 
 func doSomething() {
@@ -684,7 +682,7 @@ func doSomething() {
 	defer span.End()
 
 	// Attempt to fetch nonexistent grandparent
-	_, err = todoClient.GetGrandparent(ctx, &v1.Grandparent{ID: nonexistentID})
+	_, err = todoClient.GetGrandparent(ctx, nonexistentID)
 	assert.Error(t, err)
 }
 `
