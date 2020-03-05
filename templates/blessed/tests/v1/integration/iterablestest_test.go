@@ -106,6 +106,44 @@ func doSomething() {
 	})
 }
 
+func Test_buildRequisiteCleanupCode(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		proj := &models.Project{DataTypes: []models.DataType{a, b, c}}
+
+		ret := jen.NewFile("farts")
+		ret.Add(jen.Func().ID("doSomething").Params().Block(
+			buildRequisiteCleanupCode(proj, c)...,
+		))
+
+		var b bytes.Buffer
+		require.NoError(t, ret.Render(&b))
+
+		expected := `package farts
+
+import (
+	assert "github.com/stretchr/testify/assert"
+)
+
+func doSomething() {
+
+	// Clean up child
+	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID))
+
+	// Clean up parent
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
 func Test_buildCreationArguments(T *testing.T) {
 	T.Parallel()
 
@@ -115,7 +153,6 @@ func Test_buildCreationArguments(T *testing.T) {
 		}
 
 		ret := jen.NewFile("farts")
-
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildCreationArguments(proj, "expected", c)...,
@@ -147,7 +184,6 @@ func Test_buildEqualityCheckLines(T *testing.T) {
 
 	T.Run("normal operation", func(t *testing.T) {
 		ret := jen.NewFile("farts")
-
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildEqualityCheckLines(
@@ -349,7 +385,6 @@ func Test_buildTestCreating(T *testing.T) {
 		}
 
 		ret := jen.NewFile("farts")
-
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestCreating(proj, c)...,
@@ -409,13 +444,19 @@ func doSomething() {
 	checkChildEquality(t, createdChild, exampleChild)
 
 	// Clean up
-	err = todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID)
+	err = todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild)
 	assert.NoError(t, err)
 
-	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID)
+	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdChild)
 	checkValueAndError(t, actual, err)
 	checkChildEquality(t, createdChild, actual)
 	assert.NotZero(t, actual.ArchivedOn)
+
+	// Clean up parent
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
 }
 `
 		actual := b.String()
@@ -433,7 +474,6 @@ func Test_buildTestListing(T *testing.T) {
 		}
 
 		ret := jen.NewFile("farts")
-
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestListing(proj, c)...,
@@ -492,11 +532,14 @@ func Test_buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(T 
 	T.Parallel()
 
 	T.Run("normal operation", func(t *testing.T) {
-		ret := jen.NewFile("farts")
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
 
+		ret := jen.NewFile("farts")
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
-				buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(c)...,
+				buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, c)...,
 			),
 		)
 
@@ -508,8 +551,10 @@ func Test_buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(T 
 
 import (
 	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
 	assert "github.com/stretchr/testify/assert"
 	trace "go.opencensus.io/trace"
+	v1 "models/v1"
 )
 
 func doSomething() {
@@ -537,9 +582,15 @@ func doSomething() {
 	})
 	checkValueAndError(t, createdParent, err)
 
-	// Fetch child
-	_, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdParent.ID, nonexistentID)
+	// Attempt to fetch nonexistent child
+	_, err := todoClient.GetChild(ctx, createdGrandparent.ID, &v1.Child{ID: nonexistentID})
 	assert.Error(t, err)
+
+	// Clean up parent
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
 }
 `
 		actual := b.String()
@@ -557,7 +608,6 @@ func Test_buildTestReadingShouldBeReadable(T *testing.T) {
 		}
 
 		ret := jen.NewFile("farts")
-
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestReadingShouldBeReadable(proj, c)...,
@@ -618,11 +668,16 @@ func doSomething() {
 	checkValueAndError(t, actual, err)
 
 	// Assert child equality
-	checkChildEquality(t, exampleChild, actual)
+	checkChildEquality(t, createdChild, actual)
 
-	// Clean up
-	err = todoClient.ArchiveChild(ctx, createdGrandparent.ID, actual.BelongstoParent, actual.ID)
-	assert.NoError(t, err)
+	// Clean up child
+	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID))
+
+	// Clean up parent
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
 }
 `
 		actual := b.String()
@@ -640,7 +695,6 @@ func Test_buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist
 		}
 
 		ret := jen.NewFile("farts")
-
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, c)...,
@@ -655,6 +709,7 @@ func Test_buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist
 
 import (
 	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
 	assert "github.com/stretchr/testify/assert"
 	trace "go.opencensus.io/trace"
 	v1 "models/v1"
@@ -664,7 +719,6 @@ func doSomething() {
 	tctx := context.Background()
 	ctx, span := trace.StartSpan(tctx, t.Name())
 	defer span.End()
-
 
 	// Create grandparent
 	exampleGrandparent := &v1.Grandparent{
@@ -686,7 +740,105 @@ func doSomething() {
 	})
 	checkValueAndError(t, createdParent, err)
 
-	err := todoClient.UpdateChild(ctx, createdGrandparent.ID, createdParent.ID,  &v1.Child{ID: nonexistentID})
+	err := todoClient.UpdateChild(ctx, createdGrandparent.ID, &v1.Child{ID: nonexistentID})
+	assert.Error(t, err)
+
+	// Clean up parent
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with only one dependency", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, b)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	err := todoClient.UpdateParent(ctx, &v1.Parent{ID: nonexistentID})
+	assert.Error(t, err)
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("for one type", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, a)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	err := todoClient.UpdateGrandparent(ctx, &v1.Grandparent{ID: nonexistentID})
 	assert.Error(t, err)
 }
 `
@@ -696,7 +848,7 @@ func doSomething() {
 	})
 }
 
-func Test_buildTestUpdatingShouldBeUpdatable(T *testing.T) {
+func Test_buildTestUpdatingShouldBeUpdateable(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation", func(t *testing.T) {
@@ -705,10 +857,9 @@ func Test_buildTestUpdatingShouldBeUpdatable(T *testing.T) {
 		}
 
 		ret := jen.NewFile("farts")
-
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
-				buildTestUpdatingShouldBeUpdatable(proj, c)...,
+				buildTestUpdatingShouldBeUpdateable(proj, c)...,
 			),
 		)
 
@@ -752,6 +903,9 @@ func doSomething() {
 	checkValueAndError(t, createdParent, err)
 
 	// Create child
+	expected := &v1.Child{
+		ChildName: gofakeit.Word(),
+	}
 	exampleChild := &v1.Child{
 		ChildName: gofakeit.Word(),
 	}
@@ -762,7 +916,7 @@ func doSomething() {
 	checkValueAndError(t, createdChild, err)
 
 	// Change child
-	createdChild.Update(exampleChild.ToInput())
+	createdChild.Update(expected.ToInput())
 	err = todoClient.UpdateChild(ctx, createdGrandparent.ID, createdChild)
 	assert.NoError(t, err)
 
@@ -771,12 +925,162 @@ func doSomething() {
 	checkValueAndError(t, actual, err)
 
 	// Assert child equality
-	checkChildEquality(t, exampleChild, actual)
+	checkChildEquality(t, expected, actual)
 	assert.NotNil(t, actual.UpdatedOn)
 
-	// Clean up
-	err = todoClient.ArchiveChild(ctx, createdGrandparent.ID, actual.BelongsToParent, actual.ID)
+	// Clean up child
+	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID))
+
+	// Clean up parent
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with only one dependency", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestUpdatingShouldBeUpdateable(proj, b)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parent
+	expected := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
+
+	// Change parent
+	createdParent.Update(expected.ToInput())
+	err = todoClient.UpdateParent(ctx, createdParent)
 	assert.NoError(t, err)
+
+	// Fetch parent
+	actual, err := todoClient.GetParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID)
+	checkValueAndError(t, actual, err)
+
+	// Assert parent equality
+	checkParentEquality(t, expected, actual)
+	assert.NotNil(t, actual.UpdatedOn)
+
+	// Clean up parent
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("for one type", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestUpdatingShouldBeUpdateable(proj, a)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	expected := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Change grandparent
+	createdGrandparent.Update(expected.ToInput())
+	err = todoClient.UpdateGrandparent(ctx, createdGrandparent)
+	assert.NoError(t, err)
+
+	// Fetch grandparent
+	actual, err := todoClient.GetGrandparent(ctx, createdGrandparent.ID)
+	checkValueAndError(t, actual, err)
+
+	// Assert grandparent equality
+	checkGrandparentEquality(t, expected, actual)
+	assert.NotNil(t, actual.UpdatedOn)
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
 }
 `
 		actual := b.String()
@@ -794,7 +1098,6 @@ func Test_buildTestDeletingShouldBeAbleToBeDeleted(T *testing.T) {
 		}
 
 		ret := jen.NewFile("farts")
-
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestDeletingShouldBeAbleToBeDeleted(proj, c)...,
@@ -850,9 +1153,14 @@ func doSomething() {
 	})
 	checkValueAndError(t, createdChild, err)
 
-	// Clean up
-	err = todoClient.ArchiveChild(ctx, grandparent.ID, createdChild.BelongsToParent, createdChild.ID)
-	assert.NoError(t, err)
+	// Clean up child
+	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID))
+
+	// Clean up parent
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
 }
 `
 		actual := b.String()

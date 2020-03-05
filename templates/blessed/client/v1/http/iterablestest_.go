@@ -653,8 +653,6 @@ func buildTestV1Client_BuildArchiveSomethingRequest(pkg *models.Project, typ mod
 	return lines
 }
 
-// pass
-
 func buildTestV1Client_ArchiveSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
