@@ -337,20 +337,6 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 }
 
 func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *models.Project, typ models.DataType) []jen.Code {
-	//sn := typ.Name.Singular()
-	//
-	//lines := []jen.Code{
-	//	jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-	//	jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
-	//	jen.Defer().ID("span").Dot("End").Call(),
-	//	jen.Line(),
-	//	jen.Commentf("Fetch %s", scn),
-	//	jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(jen.ID("ctx"), jen.ID("nonexistentID")),
-	//	jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-	//}
-	//
-	//return lines
-
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
@@ -363,13 +349,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *mo
 		jen.Line(),
 	}
 
-	allArgs := buildParamsForCheckingATypeThatDoesNotExist(pkg, typ)
-	if len(allArgs) > 2 {
-		allArgs = allArgs[:len(allArgs)-2]
-	} else {
-		allArgs = allArgs[:len(allArgs)-1]
-	}
-	args := append(allArgs, jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(jen.ID("ID").Op(":").ID("nonexistentID")))
+	args := buildParamsForCheckingATypeThatDoesNotExist(pkg, typ)
 
 	cc := buildRequisiteCreationCode(pkg, typ)
 	if len(cc) > stopIndex {
@@ -378,7 +358,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *mo
 
 	lines = append(lines,
 		jen.Commentf("Attempt to fetch nonexistent %s", scn),
-		jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(
+		jen.List(jen.ID("_"), jen.ID("err")).Op("=").ID("todoClient").Dotf("Get%s", sn).Call(
 			args...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
@@ -431,19 +411,25 @@ func buildTestReadingShouldBeReadable(pkg *models.Project, typ models.DataType) 
 
 func buildParamsForCheckingATypeThatDoesNotExist(pkg *models.Project, typ models.DataType) []jen.Code {
 	parents := pkg.FindOwnerTypeChain(typ)
+	sn := typ.Name.Singular()
 	listParams := []jen.Code{}
 	params := []jen.Code{utils.CtxVar()}
 
 	if len(parents) > 0 {
-		for _, pt := range parents {
-			listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
+		for i, pt := range parents {
+			if i == len(parents)-1 && typ.BelongsToStruct != nil {
+				//listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
+			} else {
+				listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
+			}
 		}
-		listParams = append(listParams, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
 
 		params = append(params, listParams...)
 	} else {
 		params = append(params, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
 	}
+
+	params = append(params, jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(jen.ID("ID").Op(":").ID("nonexistentID")))
 
 	return params
 }
@@ -460,14 +446,7 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg 
 		jen.Line(),
 	}
 
-	allArgs := buildParamsForCheckingATypeThatDoesNotExist(pkg, typ)
-	if len(allArgs) > 2 {
-		allArgs = allArgs[:len(allArgs)-2]
-	} else {
-		allArgs = allArgs[:len(allArgs)-1]
-	}
-	args := append(allArgs, jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(jen.ID("ID").Op(":").ID("nonexistentID")))
-
+	args := buildParamsForCheckingATypeThatDoesNotExist(pkg, typ)
 	cc := buildRequisiteCreationCode(pkg, typ)
 
 	if len(cc) > stopIndex {
@@ -475,8 +454,7 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg 
 	}
 
 	lines = append(lines,
-		jen.ID("err").Op(":=").ID("todoClient").Dotf("Update%s", sn).Call(args...),
-		jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("todoClient").Dotf("Update%s", sn).Call(args...)),
 	)
 
 	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
@@ -525,7 +503,6 @@ func buildTestUpdatingShouldBeUpdateable(pkg *models.Project, typ models.DataTyp
 		jen.Commentf("Change %s", scn),
 		jen.List(jen.IDf("created%s", sn).Dot("Update").Call(jen.ID("expected").Dot("ToInput").Call())),
 		jen.ID("err").Op("=").ID("todoClient").Dotf("Update%s", sn).Call(
-			//		jen.ID("ctx"), jen.IDf("created%s", sn),
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),

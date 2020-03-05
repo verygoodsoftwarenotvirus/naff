@@ -583,7 +583,7 @@ func doSomething() {
 	checkValueAndError(t, createdParent, err)
 
 	// Attempt to fetch nonexistent child
-	_, err := todoClient.GetChild(ctx, createdGrandparent.ID, &v1.Child{ID: nonexistentID})
+	_, err = todoClient.GetChild(ctx, createdGrandparent.ID, &v1.Child{ID: nonexistentID})
 	assert.Error(t, err)
 
 	// Clean up parent
@@ -591,6 +591,101 @@ func doSomething() {
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("one dependency", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, b)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Attempt to fetch nonexistent parent
+	_, err = todoClient.GetParent(ctx, createdGrandparent.ID, &v1.Parent{ID: nonexistentID})
+	assert.Error(t, err)
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("lone type", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, a)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Attempt to fetch nonexistent grandparent
+	_, err = todoClient.GetGrandparent(ctx, &v1.Grandparent{ID: nonexistentID})
+	assert.Error(t, err)
 }
 `
 		actual := b.String()
@@ -684,6 +779,133 @@ func doSomething() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("single dependency", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestReadingShouldBeReadable(proj, b)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parent
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
+
+	// Fetch parent
+	actual, err := todoClient.GetParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID)
+	checkValueAndError(t, actual, err)
+
+	// Assert parent equality
+	checkParentEquality(t, createdParent, actual)
+
+	// Clean up parent
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("lone type", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestReadingShouldBeReadable(proj, a)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Fetch grandparent
+	actual, err := todoClient.GetGrandparent(ctx, createdGrandparent.ID)
+	checkValueAndError(t, actual, err)
+
+	// Assert grandparent equality
+	checkGrandparentEquality(t, createdGrandparent, actual)
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func Test_buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(T *testing.T) {
@@ -740,8 +962,7 @@ func doSomething() {
 	})
 	checkValueAndError(t, createdParent, err)
 
-	err := todoClient.UpdateChild(ctx, createdGrandparent.ID, &v1.Child{ID: nonexistentID})
-	assert.Error(t, err)
+	assert.Error(t, todoClient.UpdateChild(ctx, createdGrandparent.ID, &v1.Child{ID: nonexistentID}))
 
 	// Clean up parent
 	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
@@ -796,8 +1017,7 @@ func doSomething() {
 	})
 	checkValueAndError(t, createdGrandparent, err)
 
-	err := todoClient.UpdateParent(ctx, &v1.Parent{ID: nonexistentID})
-	assert.Error(t, err)
+	assert.Error(t, todoClient.UpdateParent(ctx, &v1.Parent{ID: nonexistentID}))
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
@@ -838,8 +1058,7 @@ func doSomething() {
 	ctx, span := trace.StartSpan(tctx, t.Name())
 	defer span.End()
 
-	err := todoClient.UpdateGrandparent(ctx, &v1.Grandparent{ID: nonexistentID})
-	assert.Error(t, err)
+	assert.Error(t, todoClient.UpdateGrandparent(ctx, &v1.Grandparent{ID: nonexistentID}))
 }
 `
 		actual := b.String()

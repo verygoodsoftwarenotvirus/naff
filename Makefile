@@ -53,9 +53,9 @@ install:
 example_output_subdirs:
 	for dir in `go list gitlab.com/verygoodsoftwarenotvirus/todo/...`; do mkdir -p `echo $$dir | sed -r 's/gitlab\.com\/verygoodsoftwarenotvirus\/todo/example_output/g')`; done
 
-.PHONY: $(EXAMPLE_OUTPUT_DIR)
 $(EXAMPLE_OUTPUT_DIR):
 	go run cmd/todoproj/main.go
+	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) vendor config_files)
 
 .PHONY: clean_example_output
 clean_example_output:
@@ -79,7 +79,7 @@ docker_image:
 
 .PHONY: example_run
 example_run: clean_example_output $(EXAMPLE_OUTPUT_DIR)
-	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) vendor rewire config_files integration-tests-postgres)
+	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) vendor config_files rewire integration-tests-postgres)
 	# (cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) vendor rewire && go test -cover -v gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/independents)
 
 ensure-goimports:
