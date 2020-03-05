@@ -42,7 +42,9 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.Line(),
-		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(creationArgs...),
+		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(
+			creationArgs...,
+		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.ID("err")),
 		jen.Line(),
 	)
@@ -58,7 +60,7 @@ func buildRequisiteCleanupCode(pkg *models.Project, typ models.DataType) []jen.C
 		jen.Line(),
 		jen.Commentf("Clean up %s", typ.Name.SingularCommonName()),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("todoClient").Dotf("Archive%s", sn).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg, typ)...,
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		)),
 	)
 
@@ -72,18 +74,14 @@ func buildRequisiteCleanupCode(pkg *models.Project, typ models.DataType) []jen.C
 	return lines
 }
 
-func buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg *models.Project, typ models.DataType) []jen.Code {
 	parents := pkg.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
 	params := []jen.Code{utils.CtxVar()}
 
 	if len(parents) > 0 {
-		for i, pt := range parents {
-			if i == len(parents)-1 && typ.BelongsToStruct != nil {
-				listParams = append(listParams, jen.IDf("created%s", typ.Name.Singular()).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-			} else {
-				listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
-			}
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
 		}
 		listParams = append(listParams, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
 
@@ -297,15 +295,18 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	lines := []jen.Code{
 		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(
+			jen.ID("tctx"),
+			jen.ID("t").Dot("Name").Call(),
+		),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
 
 	lines = append(lines, buildRequisiteCreationCode(pkg, typ)...)
 
-	allArgs := buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)
-	getSomethingArgs := append(allArgs, jen.Null())
+	//allArgs := buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)
+	//getSomethingArgs := append(allArgs, jen.Null())
 
 	lines = append(lines,
 		jen.Commentf("Assert %s equality", scn),
@@ -313,13 +314,12 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 		jen.Comment("Clean up"),
 		jen.ID("err").Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(
-			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)...,
-		//	jen.ID("ctx"), jen.ID("premade").Dot("ID"),
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(
-			getSomethingArgs...,
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("created%s", typ.Name.Singular()), jen.ID("actual")),
@@ -342,14 +342,34 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
+	}
+
+	listArgs := []jen.Code{jen.ID("ctx")}
+	ca := buildCreationArguments(pkg, "created", typ)
+	listArgs = append(listArgs, ca[:len(ca)-1]...)
+	listArgs = append(listArgs, jen.Nil())
+
+	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
+	cc := buildRequisiteCreationCode(pkg, typ)
+	if len(cc) > stopIndex {
+		lines = append(lines, cc[:len(cc)-stopIndex]...)
+	}
+	cc = append(cc, jen.ID("expected").Op("=").ID("append").Call(jen.ID("expected"), jen.IDf("created%s", typ.Name.Singular())))
+
+	lines = append(lines,
 		jen.Commentf("Create %s", pcn),
 		jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 		jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
-			jen.ID("expected").Op("=").ID("append").Call(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
+			func() []jen.Code {
+				return cc[len(cc)-stopIndex:]
+			}()...,
 		),
 		jen.Line(),
 		jen.Commentf("Assert %s list equality", scn),
-		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", pn).Call(jen.ID("ctx"), jen.ID("nil")),
+		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", pn).Call(
+			//jen.ID("ctx"), jen.ID("nil"),
+			listArgs...,
+		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
 		jen.Qual("github.com/stretchr/testify/assert", "True").Callln(
 			jen.ID("t"),
@@ -359,11 +379,22 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Line(),
 		jen.Comment("Clean up"),
-		jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().ID("actual").Dot(pn)).Block(
-			jen.ID("err").Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(jen.ID("ctx"), jen.ID("x").Dot("ID")),
+		jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Op(":=").Range().ID("actual").Dot(pn)).Block(
+			jen.ID("err").Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(
+				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
+			),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
 		),
+	)
+
+	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
+	dc := buildRequisiteCleanupCode(pkg, typ)
+	if len(dc) > ccsi {
+		dc = dc[ccsi:]
+	} else if len(dc) == ccsi {
+		dc = []jen.Code{}
 	}
+	lines = append(lines, dc...)
 
 	return lines
 }
@@ -425,8 +456,7 @@ func buildTestReadingShouldBeReadable(pkg *models.Project, typ models.DataType) 
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
 		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(
-			//	jen.ID("ctx"), jen.ID("premade").Dot("ID"),
-			buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg, typ)...,
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
 		jen.Line(),
@@ -568,7 +598,7 @@ func buildTestUpdatingShouldBeUpdateable(pkg *models.Project, typ models.DataTyp
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
 		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg, typ)...,
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
 		jen.Line(),

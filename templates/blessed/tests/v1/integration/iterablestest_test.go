@@ -271,10 +271,10 @@ import (
 func doSomething() {
 
 	// Clean up child
-	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID))
+	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdParent.ID, createdChild.ID))
 
 	// Clean up parent
-	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID))
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
@@ -586,16 +586,16 @@ func doSomething() {
 	checkChildEquality(t, createdChild, exampleChild)
 
 	// Clean up
-	err = todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild)
+	err = todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdParent.ID, createdChild.ID)
 	assert.NoError(t, err)
 
-	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdChild)
+	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdParent.ID, createdChild.ID)
 	checkValueAndError(t, actual, err)
 	checkChildEquality(t, createdChild, actual)
 	assert.NotZero(t, actual.ArchivedOn)
 
 	// Clean up parent
-	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID))
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
@@ -630,6 +630,7 @@ func Test_buildTestListing(T *testing.T) {
 
 import (
 	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
 	assert "github.com/stretchr/testify/assert"
 	trace "go.opencensus.io/trace"
 	v1 "models/v1"
@@ -640,14 +641,43 @@ func doSomething() {
 	ctx, span := trace.StartSpan(tctx, t.Name())
 	defer span.End()
 
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parent
+	exampleParent := &v1.Parent{
+		ParentName: gofakeit.Word(),
+	}
+
+	createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+		ParentName: exampleParent.ParentName,
+	})
+	checkValueAndError(t, createdParent, err)
+
 	// Create children
 	var expected []*v1.Child
 	for i := 0; i < 5; i++ {
-		expected = append(expected, buildDummyChild(t))
+		exampleChild := &v1.Child{
+			ChildName: gofakeit.Word(),
+		}
+
+		createdChild, err := todoClient.CreateChild(ctx, createdGrandparent.ID, createdParent.ID, &v1.ChildCreationInput{
+			ChildName: exampleChild.ChildName,
+		})
+		checkValueAndError(t, createdChild, err)
+
+		expected = append(expected, createdChild)
 	}
 
 	// Assert child list equality
-	actual, err := todoClient.GetChildren(ctx, nil)
+	actual, err := todoClient.GetChildren(ctx, createdGrandparent.ID, createdParent.ID, nil)
 	checkValueAndError(t, actual, err)
 	assert.True(
 		t,
@@ -658,8 +688,165 @@ func doSomething() {
 	)
 
 	// Clean up
-	for _, x := range actual.Children {
-		err = todoClient.ArchiveChild(ctx, x.ID)
+	for _, createdChild := range actual.Children {
+		err = todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdParent.ID, createdChild.ID)
+		assert.NoError(t, err)
+	}
+
+	// Clean up parent
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID))
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("single dependency", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestListing(proj, b)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparent
+	exampleGrandparent := &v1.Grandparent{
+		GrandparentName: gofakeit.Word(),
+	}
+
+	createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+		GrandparentName: exampleGrandparent.GrandparentName,
+	})
+	checkValueAndError(t, createdGrandparent, err)
+
+	// Create parents
+	var expected []*v1.Parent
+	for i := 0; i < 5; i++ {
+		exampleParent := &v1.Parent{
+			ParentName: gofakeit.Word(),
+		}
+
+		createdParent, err := todoClient.CreateParent(ctx, createdGrandparent.ID, &v1.ParentCreationInput{
+			ParentName: exampleParent.ParentName,
+		})
+		checkValueAndError(t, createdParent, err)
+
+		expected = append(expected, createdParent)
+	}
+
+	// Assert parent list equality
+	actual, err := todoClient.GetParents(ctx, createdGrandparent.ID, nil)
+	checkValueAndError(t, actual, err)
+	assert.True(
+		t,
+		len(expected) <= len(actual.Parents),
+		"expected %d to be <= %d",
+		len(expected),
+		len(actual.Parents),
+	)
+
+	// Clean up
+	for _, createdParent := range actual.Parents {
+		err = todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID)
+		assert.NoError(t, err)
+	}
+
+	// Clean up grandparent
+	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("lone type", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildTestListing(proj, a)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+	gofakeit "github.com/brianvoe/gofakeit"
+	assert "github.com/stretchr/testify/assert"
+	trace "go.opencensus.io/trace"
+	v1 "models/v1"
+)
+
+func doSomething() {
+	tctx := context.Background()
+	ctx, span := trace.StartSpan(tctx, t.Name())
+	defer span.End()
+
+	// Create grandparents
+	var expected []*v1.Grandparent
+	for i := 0; i < 5; i++ {
+		exampleGrandparent := &v1.Grandparent{
+			GrandparentName: gofakeit.Word(),
+		}
+
+		createdGrandparent, err := todoClient.CreateGrandparent(ctx, &v1.GrandparentCreationInput{
+			GrandparentName: exampleGrandparent.GrandparentName,
+		})
+		checkValueAndError(t, createdGrandparent, err)
+
+		expected = append(expected, createdGrandparent)
+	}
+
+	// Assert grandparent list equality
+	actual, err := todoClient.GetGrandparents(ctx, nil)
+	checkValueAndError(t, actual, err)
+	assert.True(
+		t,
+		len(expected) <= len(actual.Grandparents),
+		"expected %d to be <= %d",
+		len(expected),
+		len(actual.Grandparents),
+	)
+
+	// Clean up
+	for _, createdGrandparent := range actual.Grandparents {
+		err = todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID)
 		assert.NoError(t, err)
 	}
 }
@@ -729,7 +916,7 @@ func doSomething() {
 	assert.Error(t, err)
 
 	// Clean up parent
-	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID))
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
@@ -899,17 +1086,17 @@ func doSomething() {
 	checkValueAndError(t, createdChild, err)
 
 	// Fetch child
-	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID)
+	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdParent.ID, createdChild.ID)
 	checkValueAndError(t, actual, err)
 
 	// Assert child equality
 	checkChildEquality(t, createdChild, actual)
 
 	// Clean up child
-	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID))
+	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdParent.ID, createdChild.ID))
 
 	// Clean up parent
-	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID))
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
@@ -972,14 +1159,14 @@ func doSomething() {
 	checkValueAndError(t, createdParent, err)
 
 	// Fetch parent
-	actual, err := todoClient.GetParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID)
+	actual, err := todoClient.GetParent(ctx, createdGrandparent.ID, createdParent.ID)
 	checkValueAndError(t, actual, err)
 
 	// Assert parent equality
 	checkParentEquality(t, createdParent, actual)
 
 	// Clean up parent
-	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID))
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
@@ -1105,7 +1292,7 @@ func doSomething() {
 	assert.Error(t, todoClient.UpdateChild(ctx, createdGrandparent.ID, &v1.Child{ID: nonexistentID}))
 
 	// Clean up parent
-	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID))
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
@@ -1280,7 +1467,7 @@ func doSomething() {
 	assert.NoError(t, err)
 
 	// Fetch child
-	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID)
+	actual, err := todoClient.GetChild(ctx, createdGrandparent.ID, createdParent.ID, createdChild.ID)
 	checkValueAndError(t, actual, err)
 
 	// Assert child equality
@@ -1288,10 +1475,10 @@ func doSomething() {
 	assert.NotNil(t, actual.UpdatedOn)
 
 	// Clean up child
-	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID))
+	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdParent.ID, createdChild.ID))
 
 	// Clean up parent
-	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID))
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
@@ -1362,7 +1549,7 @@ func doSomething() {
 	assert.NoError(t, err)
 
 	// Fetch parent
-	actual, err := todoClient.GetParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID)
+	actual, err := todoClient.GetParent(ctx, createdGrandparent.ID, createdParent.ID)
 	checkValueAndError(t, actual, err)
 
 	// Assert parent equality
@@ -1370,7 +1557,7 @@ func doSomething() {
 	assert.NotNil(t, actual.UpdatedOn)
 
 	// Clean up parent
-	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID))
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
@@ -1513,10 +1700,10 @@ func doSomething() {
 	checkValueAndError(t, createdChild, err)
 
 	// Clean up child
-	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdChild.BelongsToParent, createdChild.ID))
+	assert.NoError(t, todoClient.ArchiveChild(ctx, createdGrandparent.ID, createdParent.ID, createdChild.ID))
 
 	// Clean up parent
-	assert.NoError(t, todoClient.ArchiveParent(ctx, createdParent.BelongsToGrandparent, createdParent.ID))
+	assert.NoError(t, todoClient.ArchiveParent(ctx, createdGrandparent.ID, createdParent.ID))
 
 	// Clean up grandparent
 	assert.NoError(t, todoClient.ArchiveGrandparent(ctx, createdGrandparent.ID))
