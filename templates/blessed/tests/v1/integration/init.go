@@ -24,7 +24,7 @@ func initDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.ID("urlToUse").ID("string"),
-			jen.ID("todoClient").Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client"),
+			jen.IDf("%sClient", pkg.Name.UnexportedVarName()).Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client"),
 		),
 		jen.Line(),
 	)
@@ -49,7 +49,7 @@ func initDotGo(pkg *models.Project) *jen.File {
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Line(),
-			jen.ID("todoClient").Op("=").ID("initializeClient").Call(jen.ID("oa2Client")), // VARME
+			jen.IDf("%sClient", pkg.Name.UnexportedVarName()).Op("=").ID("initializeClient").Call(jen.ID("oa2Client")), // VARME
 			jen.Line(),
 			jen.ID("fiftySpaces").Op(":=").Qual("strings", "Repeat").Call(jen.Lit("\n"), jen.Lit(50)),
 			jen.Qual("fmt", "Printf").Call(jen.Lit("%s\tRunning tests%s"), jen.ID("fiftySpaces"), jen.ID("fiftySpaces")),

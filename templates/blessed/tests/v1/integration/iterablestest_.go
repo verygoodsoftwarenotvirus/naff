@@ -59,7 +59,7 @@ func buildRequisiteCleanupCode(pkg *models.Project, typ models.DataType) []jen.C
 	lines = append(lines,
 		jen.Line(),
 		jen.Commentf("Clean up %s", typ.Name.SingularCommonName()),
-		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("todoClient").Dotf("Archive%s", sn).Call(
+		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.IDf("%sClient", pkg.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		)),
 	)
@@ -300,9 +300,6 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 	}
 
 	lines = append(lines, buildRequisiteCreationCode(pkg, typ)...)
-
-	//allArgs := buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)
-	//getSomethingArgs := append(allArgs, jen.Null())
 
 	lines = append(lines,
 		jen.Commentf("Assert %s equality", scn),
@@ -545,7 +542,7 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg 
 	}
 
 	lines = append(lines,
-		jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("todoClient").Dotf("Update%s", sn).Call(args...)),
+		jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.IDf("%sClient", pkg.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(args...)),
 	)
 
 	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
