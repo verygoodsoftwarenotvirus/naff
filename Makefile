@@ -79,7 +79,7 @@ docker_image:
 
 .PHONY: example_run
 example_run: clean_example_output $(EXAMPLE_OUTPUT_DIR)
-	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) vendor config_files rewire integration-tests-postgres)
+	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) vendor config_files rewire quicktest integration-tests-postgres)
 	# (cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) vendor rewire && go test -cover -v gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/independents)
 
 ensure-goimports:

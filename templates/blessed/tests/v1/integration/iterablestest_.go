@@ -303,7 +303,7 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	lines = append(lines,
 		jen.Commentf("Assert %s equality", scn),
-		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("created%s", typ.Name.Singular()), jen.IDf("example%s", typ.Name.Singular())),
+		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("example%s", typ.Name.Singular()), jen.IDf("created%s", typ.Name.Singular())),
 		jen.Line(),
 		jen.Comment("Clean up"),
 		jen.ID("err").Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(

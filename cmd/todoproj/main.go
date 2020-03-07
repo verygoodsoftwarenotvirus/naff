@@ -36,58 +36,58 @@ func main() {
 				},
 				BelongsToUser: true,
 			},
-			{
-				Name: wordsmith.FromSingularPascalCase("Forum"),
-				Fields: []models.DataField{
-					{
-						Name:                  wordsmith.FromSingularPascalCase("Name"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-				},
-				BelongsToUser: true,
-			},
-			{
-				Name: wordsmith.FromSingularPascalCase("Thread"),
-				Fields: []models.DataField{
-					{
-						Name:                  wordsmith.FromSingularPascalCase("Title"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Forum"),
-			},
-			{
-				Name: wordsmith.FromSingularPascalCase("Comment"),
-				Fields: []models.DataField{
-					{
-						Name:                  wordsmith.FromSingularPascalCase("Content"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Thread"),
-			},
-			{
-				Name: wordsmith.FromSingularPascalCase("Tag"),
-				Fields: []models.DataField{
-					{
-						Name:                  wordsmith.FromSingularPascalCase("Key"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-				},
-				BelongsToNobody: true,
-			},
+			// {
+			// 	Name: wordsmith.FromSingularPascalCase("Forum"),
+			// 	Fields: []models.DataField{
+			// 		{
+			// 			Name:                  wordsmith.FromSingularPascalCase("Name"),
+			// 			Type:                  "string",
+			// 			Pointer:               false,
+			// 			ValidForCreationInput: true,
+			// 			ValidForUpdateInput:   true,
+			// 		},
+			// 	},
+			// 	BelongsToUser: true,
+			// },
+			// {
+			// 	Name: wordsmith.FromSingularPascalCase("Thread"),
+			// 	Fields: []models.DataField{
+			// 		{
+			// 			Name:                  wordsmith.FromSingularPascalCase("Title"),
+			// 			Type:                  "string",
+			// 			Pointer:               false,
+			// 			ValidForCreationInput: true,
+			// 			ValidForUpdateInput:   true,
+			// 		},
+			// 	},
+			// 	BelongsToStruct: wordsmith.FromSingularPascalCase("Forum"),
+			// },
+			// {
+			// 	Name: wordsmith.FromSingularPascalCase("Comment"),
+			// 	Fields: []models.DataField{
+			// 		{
+			// 			Name:                  wordsmith.FromSingularPascalCase("Content"),
+			// 			Type:                  "string",
+			// 			Pointer:               false,
+			// 			ValidForCreationInput: true,
+			// 			ValidForUpdateInput:   true,
+			// 		},
+			// 	},
+			// 	BelongsToStruct: wordsmith.FromSingularPascalCase("Thread"),
+			// },
+			// {
+			// 	Name: wordsmith.FromSingularPascalCase("Tag"),
+			// 	Fields: []models.DataField{
+			// 		{
+			// 			Name:                  wordsmith.FromSingularPascalCase("Key"),
+			// 			Type:                  "string",
+			// 			Pointer:               false,
+			// 			ValidForCreationInput: true,
+			// 			ValidForUpdateInput:   true,
+			// 		},
+			// 	},
+			// 	BelongsToNobody: true,
+			// },
 		},
 	}
 
