@@ -61,9 +61,8 @@ func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	uvn := n.UnexportedVarName()
 	scnwp := n.SingularCommonNameWithPrefix()
 
-	args := []jen.Code{
-		utils.CtxParam(),
-	}
+	params := typ.BuildGetSomethingParams(pkg)
+	args := typ.BuildGetSomethingArgs(pkg)
 	loggerValues := []jen.Code{
 		jen.Litf("%s_id", rn).Op(":").IDf("%sID", uvn),
 	}
@@ -72,22 +71,12 @@ func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
-	callArgs := []jen.Code{
-		jen.ID("ctx"),
-		jen.IDf("%sID", uvn),
-	}
 
 	if typ.BelongsToUser {
-		args = append(args, jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64"))
 		block = append(block, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 		loggerValues = append(loggerValues, jen.Lit("user_id").Op(":").ID("userID"))
-		callArgs = append(callArgs, jen.ID("userID"))
 	} else if typ.BelongsToStruct != nil {
-		args = append(args, jen.List(jen.IDf("%sID", uvn), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64")))
 		loggerValues = append(loggerValues, jen.Litf("%s_id", typ.BelongsToStruct.RouteName()).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
-		callArgs = append(callArgs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
-	} else {
-		args = append(args, jen.IDf("%sID", uvn).ID("uint64"))
 	}
 
 	block = append(block,
@@ -95,13 +84,13 @@ func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 		jen.ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(loggerValues...)).Dot("Debug").Call(jen.Litf("Get%s called", sn)),
 		jen.Line(),
-		jen.Return().ID("c").Dot("querier").Dotf("Get%s", sn).Call(callArgs...),
+		jen.Return().ID("c").Dot("querier").Dotf("Get%s", sn).Call(args...),
 	)
 
 	return []jen.Code{
 		jen.Commentf("Get%s fetches %s from the database", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%s", sn).Params(args...).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(block...),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%s", sn).Params(params...).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(block...),
 		jen.Line(),
 	}
 }
@@ -111,10 +100,8 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 	sn := n.Singular()
 	pcn := n.PluralCommonName()
 
-	params := []jen.Code{
-		utils.CtxParam(),
-		jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-	}
+	params := typ.BuildGetListOfSomethingParams(pkg, false)
+	args := typ.BuildGetListOfSomethingArgs(pkg)
 
 	block := []jen.Code{
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Get%sCount", sn)),
@@ -123,10 +110,8 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 	}
 
 	if typ.BelongsToUser {
-		params = append(params, jen.ID("userID").ID("uint64"))
 		block = append(block, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 	} else if typ.BelongsToStruct != nil {
-		params = append(params, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64"))
 		block = append(block, jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	}
 	// we don't need to consider the other case
@@ -141,21 +126,11 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 	} else if typ.BelongsToStruct != nil {
 		block = append(block, jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())).Dot("Debug").Call(jen.Litf("Get%sCount called", sn)))
 	}
-	block = append(block, jen.Line())
 
-	if typ.BelongsToUser {
-		block = append(block,
-			jen.Return().ID("c").Dot("querier").Dotf("Get%sCount", sn).Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
-		)
-	} else if typ.BelongsToStruct != nil {
-		block = append(block,
-			jen.Return().ID("c").Dot("querier").Dotf("Get%sCount", sn).Call(jen.ID("ctx"), jen.ID("filter"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
-		)
-	} else {
-		block = append(block,
-			jen.Return().ID("c").Dot("querier").Dotf("Get%sCount", sn).Call(jen.ID("ctx"), jen.ID("filter")),
-		)
-	}
+	block = append(block,
+		jen.Line(),
+		jen.Return().ID("c").Dot("querier").Dotf("Get%sCount", sn).Call(args...),
+	)
 
 	return []jen.Code{
 		jen.Commentf("Get%sCount fetches the count of %s from the database that meet a particular filter", sn, pcn),
@@ -192,14 +167,8 @@ func buildGetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Cod
 	pn := n.Plural()
 	pcn := n.PluralCommonName()
 
-	params := []jen.Code{
-		utils.CtxParam(),
-		jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-	}
-	callArgs := []jen.Code{
-		jen.ID("ctx"),
-		jen.ID("filter"),
-	}
+	params := typ.BuildGetListOfSomethingParams(pkg, false)
+	callArgs := typ.BuildGetListOfSomethingArgs(pkg)
 	block := []jen.Code{
 		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Get%s", pn)),
 		jen.Defer().ID("span").Dot("End").Call(),
@@ -207,19 +176,13 @@ func buildGetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Cod
 	}
 
 	if typ.BelongsToUser {
-		jen.ID("userID").ID("uint64")
 		block = append(block,
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 		)
-		callArgs = append(callArgs, jen.ID("userID"))
-		params = append(params, jen.ID("userID").ID("uint64"))
 	} else if typ.BelongsToStruct != nil {
-		jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64")
 		block = append(block,
 			jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 		)
-		params = append(params, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).ID("uint64"))
-		callArgs = append(callArgs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
 
 	block = append(block,
@@ -294,10 +257,15 @@ func buildGetAllSomethingForSomethingElse(pkg *models.Project, typ models.DataTy
 	btsuvn := btsn.UnexportedVarName()
 	btsrn := btsn.RouteName()
 
+	params := typ.BuildGetSomethingForSomethingElseParams(pkg)
+	args := typ.BuildGetSomethingForSomethingElseArgs(pkg)
+
 	return []jen.Code{
 		jen.Commentf("GetAll%sFor%s fetches a list of %s from the database that meet a particular filter", pn, btsns, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("GetAll%sFor%s", pn, btsns).Params(utils.CtxParam(), jen.IDf("%sID", btsuvn).ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("GetAll%sFor%s", pn, btsns).Params(
+			params...,
+		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("GetAll%sFor%s", pn, btsns)),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -305,7 +273,9 @@ func buildGetAllSomethingForSomethingElse(pkg *models.Project, typ models.DataTy
 			jen.IDf("attach%sIDToSpan", btsns).Call(jen.ID("span"), jen.IDf("%sID", btsuvn)),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", btsrn), jen.IDf("%sID", btsuvn)).Dot("Debug").Call(jen.Litf("GetAll%sFor%s called", pn, btsns)),
 			jen.Line(),
-			jen.List(jen.IDf("%sList", uvn), jen.ID("err")).Op(":=").ID("c").Dot("querier").Dotf("GetAll%sFor%s", pn, btsns).Call(jen.ID("ctx"), jen.IDf("%sID", btsuvn)),
+			jen.List(jen.IDf("%sList", uvn), jen.ID("err")).Op(":=").ID("c").Dot("querier").Dotf("GetAll%sFor%s", pn, btsns).Call(
+				args...,
+			),
 			jen.Line(),
 			jen.Return().List(jen.IDf("%sList", uvn), jen.ID("err")),
 		),
@@ -318,17 +288,24 @@ func buildCreateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	sn := n.Singular()
 	scnwp := n.SingularCommonNameWithPrefix()
 
+	params := typ.BuildCreateSomethingParams(pkg, false)
+	args := typ.BuildCreateSomethingArgs(pkg)
+
 	return []jen.Code{
 		jen.Commentf("Create%s creates %s in the database", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Create%s", sn).Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Create%s", sn).Params(
+			params...,
+		).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Create%s", sn)),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("input"), jen.ID("input")).Dot("Debug").Call(jen.Litf("Create%s called", sn)),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dotf("Create%s", sn).Call(jen.ID("ctx"), jen.ID("input")),
+			jen.Return().ID("c").Dot("querier").Dotf("Create%s", sn).Call(
+				args...,
+			),
 		),
 		jen.Line(),
 	}
@@ -340,19 +317,28 @@ func buildUpdateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	rn := n.RouteName()
 	scn := n.SingularCommonName()
 
+	const updatedVarName = "updated"
+
+	params := typ.BuildUpdateSomethingParams(pkg, updatedVarName, false)
+	args := typ.BuildUpdateSomethingArgs(pkg, updatedVarName)
+
 	return []jen.Code{
 		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the", sn, scn, sn),
 		jen.Line(),
 		jen.Comment("provided input to have a valid ID."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Update%s", sn).Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Update%s", sn).Params(
+			params...,
+		).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Litf("Update%s", sn)),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.IDf("attach%sIDToSpan", sn).Call(jen.ID("span"), jen.ID("input").Dot("ID")),
-			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", rn), jen.ID("input").Dot("ID")).Dot("Debug").Call(jen.Litf("Update%s called", sn)),
+			jen.IDf("attach%sIDToSpan", sn).Call(jen.ID("span"), jen.ID(updatedVarName).Dot("ID")),
+			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", rn), jen.ID(updatedVarName).Dot("ID")).Dot("Debug").Call(jen.Litf("Update%s called", sn)),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dotf("Update%s", sn).Call(jen.ID("ctx"), jen.ID("input")),
+			jen.Return().ID("c").Dot("querier").Dotf("Update%s", sn).Call(
+				args...,
+			),
 		),
 		jen.Line(),
 	}
@@ -365,27 +351,16 @@ func buildArchiveSomething(pkg *models.Project, typ models.DataType) []jen.Code 
 	uvn := n.UnexportedVarName()
 	scnwp := n.SingularCommonNameWithPrefix()
 
-	params := []jen.Code{
-		utils.CtxParam(),
-	}
+	params := typ.BuildGetSomethingParams(pkg)
+	callArgs := typ.BuildGetSomethingArgs(pkg)
 	loggerValues := []jen.Code{
 		jen.Litf("%s_id", rn).Op(":").IDf("%sID", uvn),
 	}
-	callArgs := []jen.Code{
-		jen.ID("ctx"),
-		jen.IDf("%sID", uvn),
-	}
 
 	if typ.BelongsToUser {
-		params = append(params, jen.List(jen.IDf("%sID", uvn), jen.ID("userID")).ID("uint64"))
 		loggerValues = append(loggerValues, jen.Lit("user_id").Op(":").ID("userID"))
-		callArgs = append(callArgs, jen.ID("userID"))
 	} else if typ.BelongsToStruct != nil {
-		params = append(params, jen.List(jen.IDf("%sID", uvn), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())).ID("uint64"))
 		loggerValues = append(loggerValues, jen.Litf("%s_id", typ.BelongsToStruct.RouteName()).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
-		callArgs = append(callArgs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
-	} else {
-		params = append(params, jen.IDf("%sID", uvn).ID("uint64"))
 	}
 
 	block := []jen.Code{

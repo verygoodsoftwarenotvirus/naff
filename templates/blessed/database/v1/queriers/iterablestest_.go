@@ -17,20 +17,71 @@ const (
 	mariaDBUnixTimeQuery         = "UNIX_TIMESTAMP()"
 )
 
-func iterablesTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
+func buildRequisiteIDDeclarations(pkg *models.Project, varPrefix string, typ models.DataType) []jen.Code {
+	lines := []jen.Code{}
+
+	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+		if varPrefix != "" {
+			lines = append(lines, jen.IDf("%s%sID", varPrefix, pt.Name.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+		} else {
+			lines = append(lines, jen.IDf("%sID", pt.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+		}
+	}
+
+	if varPrefix != "" {
+		lines = append(lines, jen.IDf("%s%sID", varPrefix, typ.Name.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+	} else {
+		lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+	}
+
+	if typ.BelongsToUser {
+		if varPrefix != "" {
+			lines = append(lines, jen.IDf("%sUserID", varPrefix).Op(":=").ID("uint64").Call(jen.Lit(123)))
+		} else {
+			lines = append(lines, jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+		}
+	}
+
+	return lines
+}
+
+func buildRequisiteIDCallArgs(pkg *models.Project, varPrefix string, typ models.DataType) []jen.Code {
+	lines := []jen.Code{}
+
+	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+		if varPrefix != "" {
+			lines = append(lines, jen.IDf("%s%sID", varPrefix, pt.Name.Singular()))
+		} else {
+			lines = append(lines, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+	}
+
+	if varPrefix != "" {
+		lines = append(lines, jen.IDf("%s%sID", varPrefix, typ.Name.Singular()))
+	} else {
+		lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+	}
+
+	if typ.BelongsToUser {
+		lines = append(lines, jen.ID("userID"))
+	}
+
+	return lines
+}
+
+func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(proj.OutputPath, []models.DataType{typ}, ret)
 
 	n := typ.Name
 	sn := n.Singular()
 	puvn := n.PluralUnexportedVarName()
 
-	//allColumns := buildTableColumns(typ)
 	gFields := buildGeneralFields("x", typ)
 
 	ret.Add(
-		jen.Func().IDf("buildMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().IDf("buildMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), sn)).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(gFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -41,7 +92,7 @@ func iterablesTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra, ty
 	badFields := buildBadFields("x", typ)
 
 	ret.Add(
-		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), sn)).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(badFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -49,25 +100,25 @@ func iterablesTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra, ty
 		jen.Line(),
 	)
 
-	ret.Add(buildTestDBBuildGetSomethingQuery(dbvendor, typ)...)
-	ret.Add(buildTestDBGetSomething(pkg, dbvendor, typ)...)
-	ret.Add(buildTestDBBuildGetSomethingCountQuery(pkg, dbvendor, typ)...)
-	ret.Add(buildTestDBGetSomethingCount(pkg, dbvendor, typ)...)
-	ret.Add(buildTestDBBuildGetAllSomethingCountQuery(pkg, dbvendor, typ)...)
-	ret.Add(buildTestDBGetAllSomethingCount(pkg, dbvendor, typ)...)
-	ret.Add(buildTestDBGetListOfSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildTestDBGetListOfSomethingFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildTestDBBuildGetSomethingQuery(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBGetSomething(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBBuildGetSomethingCountQuery(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBGetSomethingCount(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBBuildGetAllSomethingCountQuery(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBGetAllSomethingCount(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
 
 	if typ.BelongsToUser || typ.BelongsToStruct != nil {
-		ret.Add(buildTestDBGetAllSomethingForSomethingElseFuncDecl(pkg, dbvendor, typ)...)
+		ret.Add(buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj, dbvendor, typ)...)
 	}
 
-	ret.Add(buildTestDBCreateSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildTestDBCreateSomethingFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildTestBuildUpdateSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildTestDBUpdateSomethingFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildTestDBArchiveSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildTestDBArchiveSomethingFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildTestDBCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBCreateSomethingFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildTestBuildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBArchiveSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildTestDBArchiveSomethingFuncDecl(proj, dbvendor, typ)...)
 
 	return ret
 }
@@ -1438,7 +1489,31 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 	return lines
 }
 
-func buildTestDBBuildGetSomethingQuery(dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildRequisitIDExpectations(pkg *models.Project, startIndex int, varPrefix string, typ models.DataType) []jen.Code {
+	lines := []jen.Code{}
+
+	i := startIndex
+
+	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+		if varPrefix != "" {
+			lines = append(lines, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("%s%sID", varPrefix, pt.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID("uint64"))))
+			i += i
+		} else {
+			lines = append(lines, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("%sID", pt.Name.UnexportedVarName()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID("uint64"))))
+			i += i
+		}
+	}
+
+	lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+
+	if typ.BelongsToUser {
+		lines = append(lines, jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+	}
+
+	return lines
+}
+
+func buildTestDBBuildGetSomethingQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbrn := dbvendor.RouteName()
 	dbfl := string(dbrn[0])
 	sn := typ.Name.Singular()
@@ -1461,15 +1536,17 @@ func buildTestDBBuildGetSomethingQuery(dbvendor wordsmith.SuperPalabra, typ mode
 
 	block := []jen.Code{
 		jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.IDf("example%sID", sn).Op(":=").ID("uint64").Call(jen.Lit(123)),
+		utils.CreateCtx(),
 	}
+
+	const varPrefix = "example"
+
+	block = append(block, buildRequisiteIDDeclarations(proj, "", typ)...)
 
 	if typ.BelongsToUser {
 		expectedArgCount = 2
-		block = append(block, jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
 	} else if typ.BelongsToStruct != nil {
 		expectedArgCount = 2
-		block = append(block, jen.IDf("example%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(321)))
 	} else if typ.BelongsToNobody {
 		expectedArgCount = 1
 	}
@@ -1480,13 +1557,10 @@ func buildTestDBBuildGetSomethingQuery(dbvendor wordsmith.SuperPalabra, typ mode
 		jen.ID("expectedQuery").Op(":=").Lit(query),
 	)
 
-	if typ.BelongsToUser {
-		block = append(block, jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("example%sID", sn), jen.ID("exampleUserID")))
-	} else if typ.BelongsToStruct != nil {
-		block = append(block, jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("example%sID", sn), jen.IDf("example%sID", typ.BelongsToStruct.Singular())))
-	} else if typ.BelongsToNobody {
-		block = append(block, jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(jen.IDf("example%sID", sn)))
-	}
+	callArgs := typ.BuildGetSomethingArgs(proj)
+	block = append(block, jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dotf("buildGet%sQuery", sn).Call(
+		callArgs...,
+	))
 
 	block = append(block,
 		jen.Line(),
@@ -1497,16 +1571,16 @@ func buildTestDBBuildGetSomethingQuery(dbvendor wordsmith.SuperPalabra, typ mode
 	var argIndex int
 	if typ.BelongsToUser {
 		argIndex = 1
-		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("%sUserID", varPrefix), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
 	} else if typ.BelongsToStruct != nil {
 		argIndex = 1
-		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("example%sID", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
 	} else if typ.BelongsToNobody {
 		argIndex = 0
 	}
 
 	block = append(block,
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("example%sID", sn), jen.ID("args").Index(jen.Lit(argIndex)).Assert(jen.ID("uint64"))),
+		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("%s%sID", varPrefix, sn), jen.ID("args").Index(jen.Lit(argIndex)).Assert(jen.ID("uint64"))),
 	)
 
 	lines := []jen.Code{

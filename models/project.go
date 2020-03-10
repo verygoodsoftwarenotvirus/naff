@@ -29,26 +29,6 @@ const (
 	notEditable  = "!editable"
 )
 
-// DataType represents a data model
-type DataType struct {
-	Name            wordsmith.SuperPalabra
-	BelongsToUser   bool
-	BelongsToNobody bool
-	BelongsToStruct wordsmith.SuperPalabra
-	Fields          []DataField
-}
-
-// DataField represents a data model's field
-type DataField struct {
-	Name                  wordsmith.SuperPalabra
-	Type                  string
-	Pointer               bool
-	DefaultAllowed        bool
-	DefaultValue          string
-	ValidForCreationInput bool
-	ValidForUpdateInput   bool
-}
-
 type depWrapper struct {
 	dependency string
 }

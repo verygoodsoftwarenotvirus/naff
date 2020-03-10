@@ -20,9 +20,12 @@ func Test_buildGetSomethingQueryFuncDecl(T *testing.T) {
 			Name:          wordsmith.FromSingularPascalCase("Something"),
 			BelongsToUser: true,
 		}
+		proj := &models.Project{
+			DataTypes: []models.DataType{dt},
+		}
 
 		f := jen.NewFile(dbv.SingularPackageName())
-		lines := buildGetSomethingQueryFuncDecl(dbv, dt)
+		lines := buildGetSomethingQueryFuncDecl(proj, dbv, dt)
 		f.Add(lines...)
 
 		var b bytes.Buffer
@@ -62,9 +65,12 @@ func (p *Postgres) buildGetSomethingQuery(somethingID, userID uint64) (query str
 			BelongsToUser:   false,
 			BelongsToStruct: wordsmith.FromSingularPascalCase("Owner"),
 		}
+		proj := &models.Project{
+			DataTypes: []models.DataType{dt},
+		}
 
 		f := jen.NewFile(dbv.SingularPackageName())
-		lines := buildGetSomethingQueryFuncDecl(dbv, dt)
+		lines := buildGetSomethingQueryFuncDecl(proj, dbv, dt)
 		f.Add(lines...)
 
 		var b bytes.Buffer
@@ -105,9 +111,12 @@ func (p *Postgres) buildGetSomethingQuery(somethingID, ownerID uint64) (query st
 			BelongsToStruct: nil,
 			BelongsToNobody: true,
 		}
+		proj := &models.Project{
+			DataTypes: []models.DataType{dt},
+		}
 
 		f := jen.NewFile(dbv.SingularPackageName())
-		lines := buildGetSomethingQueryFuncDecl(dbv, dt)
+		lines := buildGetSomethingQueryFuncDecl(proj, dbv, dt)
 		f.Add(lines...)
 
 		var b bytes.Buffer
