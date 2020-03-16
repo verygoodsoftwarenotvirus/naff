@@ -9,7 +9,7 @@ import (
 func metaTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("integration")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Func().ID("TestHoldOnForever").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(

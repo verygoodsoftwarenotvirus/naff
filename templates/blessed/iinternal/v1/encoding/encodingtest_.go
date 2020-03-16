@@ -9,7 +9,7 @@ import (
 func encodingTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("encoding")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Type().ID("example").Struct(

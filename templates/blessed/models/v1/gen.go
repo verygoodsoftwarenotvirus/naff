@@ -36,7 +36,7 @@ func RenderPackage(pkg *models.Project) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
+		if err := utils.RenderGoFile(pkg, path, file); err != nil {
 			return err
 		}
 	}

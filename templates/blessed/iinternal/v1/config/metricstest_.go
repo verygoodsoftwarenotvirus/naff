@@ -9,7 +9,7 @@ import (
 func metricsTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("config")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(

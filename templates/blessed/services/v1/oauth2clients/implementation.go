@@ -11,7 +11,7 @@ import (
 func implementationDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("oauth2clients")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Comment("gopkg.in/oauth2.v3/server specific implementations"),

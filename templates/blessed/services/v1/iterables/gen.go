@@ -22,7 +22,7 @@ func RenderPackage(pkg *models.Project) error {
 			fmt.Sprintf("services/v1/%s/%s_service.go", pn, pn):      iterableServiceDotGo(pkg, typ),
 			fmt.Sprintf("services/v1/%s/%s_service_test.go", pn, pn): iterableServiceTestDotGo(pkg, typ),
 		} {
-			if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
+			if err := utils.RenderGoFile(pkg, path, file); err != nil {
 				return err
 			}
 		}

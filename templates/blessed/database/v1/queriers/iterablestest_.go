@@ -72,7 +72,7 @@ func buildRequisiteIDCallArgs(pkg *models.Project, varPrefix string, typ models.
 func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
-	utils.AddImports(proj.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(proj, ret)
 
 	n := typ.Name
 	sn := n.Singular()

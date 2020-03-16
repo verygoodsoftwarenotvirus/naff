@@ -13,7 +13,7 @@ import (
 func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.RouteName())
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	uvn := vendor.UnexportedVarName()
 	cn := vendor.SingularCommonName()

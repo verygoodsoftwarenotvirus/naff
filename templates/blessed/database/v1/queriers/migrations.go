@@ -575,7 +575,7 @@ func makeMigrations(pkg *models.Project, dbVendor wordsmith.SuperPalabra) []jen.
 func migrationsDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Var().Defs(

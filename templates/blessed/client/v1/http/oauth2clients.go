@@ -11,7 +11,7 @@ import (
 func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(jen.Null())
 	ret.Add(jen.Const().Defs(

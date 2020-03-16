@@ -10,7 +10,7 @@ import (
 func wireDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 	sn := vendor.Singular()
 
 	isMariaDB := vendor.RouteName() == "mariadb" || vendor.RouteName() == "maria_db"

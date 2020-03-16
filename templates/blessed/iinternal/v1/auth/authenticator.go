@@ -9,7 +9,7 @@ import (
 func authenticatorDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(jen.Null(),
 

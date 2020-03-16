@@ -12,7 +12,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 	ret.HeaderComment("+build wireinject")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	newsmanImp := "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	loggingImp := "gitlab.com/verygoodsoftwarenotvirus/logging/v1"

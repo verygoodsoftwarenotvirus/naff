@@ -12,6 +12,7 @@ import (
 	"runtime"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 const (
@@ -236,9 +237,8 @@ func RunGoFormatForFile(filename string) error {
 }
 
 // RenderGoFile does
-func RenderGoFile(pkgRoot, path string, file *jen.File) error {
-	fp := BuildTemplatePath(pkgRoot, path)
-	// log.Printf("rendering %q\n", fp)
+func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
+	fp := BuildTemplatePath(proj.OutputPath, path)
 
 	if _, err := os.Stat(fp); os.IsNotExist(err) {
 		if mkdirErr := os.MkdirAll(filepath.Dir(fp), os.ModePerm); mkdirErr != nil {
@@ -259,7 +259,7 @@ func RenderGoFile(pkgRoot, path string, file *jen.File) error {
 			return fmt.Errorf("error rendering file %q: %w", path, gie)
 		}
 
-		if ferr := FindAndFixImportBlock(pkgRoot, fp); ferr != nil {
+		if ferr := FindAndFixImportBlock(proj.OutputPath, fp); ferr != nil {
 			return fmt.Errorf("error sorting imports for file %q: %w", path, ferr)
 		}
 

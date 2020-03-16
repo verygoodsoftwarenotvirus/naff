@@ -11,7 +11,7 @@ import (
 func oauth2ClientsTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		utils.OuterTestFunc("V1Client_BuildGetOAuth2ClientRequest").Block(

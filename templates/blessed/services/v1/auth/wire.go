@@ -11,7 +11,7 @@ import (
 func wireDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	buildProviderSet := func() []jen.Code {
 		lines := []jen.Code{

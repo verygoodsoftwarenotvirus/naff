@@ -2,18 +2,20 @@ package models
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	"path/filepath"
 )
 
 // DataType represents a data model
 type DataType struct {
-	Name            wordsmith.SuperPalabra
-	BelongsToUser   bool
-	BelongsToNobody bool
-	BelongsToStruct wordsmith.SuperPalabra
-	Fields          []DataField
+	Name                 wordsmith.SuperPalabra
+	BelongsToUser        bool
+	ReadRestrictedToUser bool
+	BelongsToNobody      bool
+	BelongsToStruct      wordsmith.SuperPalabra
+	Fields               []DataField
 }
 
 // DataField represents a data model's field

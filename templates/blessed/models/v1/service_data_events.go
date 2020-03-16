@@ -9,7 +9,7 @@ import (
 func serviceDataEventsDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Comment("ServiceDataEvent is a simple string alias"),

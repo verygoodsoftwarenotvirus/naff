@@ -9,7 +9,7 @@ import (
 func userTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Func().ID("TestUser_Update").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(

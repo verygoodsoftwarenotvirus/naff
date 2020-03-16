@@ -11,7 +11,7 @@ import (
 func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	for _, typ := range pkg.DataTypes {
 		n := typ.Name

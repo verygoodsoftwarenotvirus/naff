@@ -57,7 +57,7 @@ func buildIterableVariableDecs(typ models.DataType) []jen.Code {
 func iterablesDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(jen.Const().Defs(buildIterableConstants(typ)...), jen.Line())
 	ret.Add(buildIterableVariableDecs(typ)...)
@@ -508,7 +508,7 @@ func buildGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmit
 	vals := []jen.Code{
 		jen.Lit("archived_on").Op(":").ID("nil"),
 	}
-	params := typ.BuildGetListOfSomethingParams(pkg, false)[1:]
+	params := typ.BuildGetListOfSomethingParams(pkg, false)
 
 	if typ.BelongsToUser {
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID("userID"))

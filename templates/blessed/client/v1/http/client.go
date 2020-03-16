@@ -16,7 +16,7 @@ func newClientMethod(name string) *jen.Statement {
 func mainDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 	ret.Add(jen.Line())
 
 	// consts

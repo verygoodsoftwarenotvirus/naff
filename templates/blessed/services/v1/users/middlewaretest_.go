@@ -11,7 +11,7 @@ import (
 func middlewareTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("users")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Var().ID("_").Qual("net/http", "Handler").Op("=").Parens(jen.Op("*").ID("MockHTTPHandler")).Call(jen.ID("nil")),

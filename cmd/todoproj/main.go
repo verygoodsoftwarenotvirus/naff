@@ -14,28 +14,6 @@ func main() {
 		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
 		Name:       wordsmith.FromSingularPascalCase("Todo"),
 		DataTypes: []models.DataType{
-			//{
-			//	Name: wordsmith.FromSingularPascalCase("Item"),
-			//	Fields: []models.DataField{
-			//		{
-			//			Name:                  wordsmith.FromSingularPascalCase("Name"),
-			//			Type:                  "string",
-			//			Pointer:               false,
-			//			ValidForCreationInput: true,
-			//			ValidForUpdateInput:   true,
-			//		},
-			//		{
-			//			Name:                  wordsmith.FromSingularPascalCase("Details"),
-			//			Type:                  "string",
-			//			Pointer:               false,
-			//			DefaultAllowed:        true,
-			//			DefaultValue:          "''",
-			//			ValidForCreationInput: true,
-			//			ValidForUpdateInput:   true,
-			//		},
-			//	},
-			//	BelongsToUser: true,
-			//},
 			{
 				Name: wordsmith.FromSingularPascalCase("Forum"),
 				Fields: []models.DataField{
@@ -60,8 +38,8 @@ func main() {
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Forum"),
-				BelongsToNobody: true,
+				BelongsToStruct:      wordsmith.FromSingularPascalCase("Forum"),
+				ReadRestrictedToUser: false,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Thread"),
@@ -74,8 +52,9 @@ func main() {
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Subforum"),
-				BelongsToUser:   true,
+				ReadRestrictedToUser: false,
+				BelongsToStruct:      wordsmith.FromSingularPascalCase("Subforum"),
+				BelongsToUser:        true,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Post"),
@@ -88,25 +67,12 @@ func main() {
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Thread"),
-				BelongsToUser:   true,
+				ReadRestrictedToUser: false,
+				BelongsToStruct:      wordsmith.FromSingularPascalCase("Thread"),
+				BelongsToUser:        true,
 			},
 			{
-				Name: wordsmith.FromSingularPascalCase("PostRating"),
-				Fields: []models.DataField{
-					{
-						Name:                  wordsmith.FromSingularPascalCase("Rating"),
-						Type:                  "uint8",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Post"),
-				BelongsToUser:   true,
-			},
-			{
-				Name: wordsmith.FromSingularPascalCase("Signature"),
+				Name: wordsmith.FromSingularPascalCase("Message"),
 				Fields: []models.DataField{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Text"),
@@ -116,7 +82,7 @@ func main() {
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToUser: true,
+				ReadRestrictedToUser: true,
 			},
 		},
 	}

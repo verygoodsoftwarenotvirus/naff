@@ -13,7 +13,7 @@ import (
 func webhooksTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 	sn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 	dbrn := dbvendor.RouteName()

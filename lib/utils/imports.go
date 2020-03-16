@@ -23,7 +23,9 @@ const (
 	FakeLibrary    = "github.com/brianvoe/gofakeit"
 )
 
-func AddImports(pkgRoot string, types []models.DataType, file *jen.File) {
+func AddImports(proj *models.Project, file *jen.File) {
+	pkgRoot := proj.OutputPath
+
 	file.ImportAlias(filepath.Join(pkgRoot, "client/v1/http"), "client")
 	file.ImportAlias(filepath.Join(pkgRoot, "database/v1"), "database")
 	file.ImportName(filepath.Join(pkgRoot, "internal/v1/auth"), "auth")
@@ -44,7 +46,7 @@ func AddImports(pkgRoot string, types []models.DataType, file *jen.File) {
 	file.ImportName(filepath.Join(pkgRoot, "services/v1/auth"), "auth")
 	file.ImportName(filepath.Join(pkgRoot, "services/v1/frontend"), "frontend")
 
-	for _, typ := range types {
+	for _, typ := range proj.DataTypes {
 		pn := typ.Name.PackageName()
 		file.ImportName(filepath.Join(pkgRoot, "services/v1", pn), pn)
 	}

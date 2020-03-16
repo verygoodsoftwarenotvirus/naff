@@ -11,7 +11,7 @@ import (
 func webhooksDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("randmodel")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Comment("RandomWebhookInput creates a random WebhookCreationInput"),

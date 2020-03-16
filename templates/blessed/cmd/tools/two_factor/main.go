@@ -13,7 +13,7 @@ func RenderPackage(pkg *models.Project) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
+		if err := utils.RenderGoFile(pkg, path, file); err != nil {
 			return err
 		}
 	}
@@ -24,7 +24,7 @@ func RenderPackage(pkg *models.Project) error {
 func mainDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.PackageComment(`Command two_factor is a CLI that takes in a secret as a positional argument
 and draws the TOTP code for that secret in big ASCII numbers. This command is

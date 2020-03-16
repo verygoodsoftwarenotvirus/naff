@@ -11,7 +11,7 @@ import (
 func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Comment("fetchRandomOAuth2Client retrieves a random client from the list of available clients"),

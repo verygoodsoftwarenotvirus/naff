@@ -12,7 +12,7 @@ import (
 func mockIterableDataServerDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 
 	sn := typ.Name.Singular()
 

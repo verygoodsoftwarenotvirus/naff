@@ -12,7 +12,7 @@ import (
 func serverTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	buildServerLines := func() []jen.Code {
 		lines := []jen.Code{

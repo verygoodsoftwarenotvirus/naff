@@ -70,10 +70,11 @@ func buildCreateModelStructFields(typ models.DataType) []jen.Code {
 		}
 	}
 
+	if typ.BelongsToStruct != nil {
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).ID("uint64").Tag(jsonTag("-")))
+	}
 	if typ.BelongsToUser {
 		out = append(out, jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("-")))
-	} else if typ.BelongsToStruct != nil {
-		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).ID("uint64").Tag(jsonTag("-")))
 	}
 
 	return out
@@ -113,7 +114,7 @@ func buildInterfaceMethods(pkg *models.Project, typ models.DataType) []jen.Code 
 func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 	n := typ.Name
 	sn := n.Singular()
 	pn := n.Plural()

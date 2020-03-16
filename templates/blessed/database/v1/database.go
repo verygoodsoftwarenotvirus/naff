@@ -13,7 +13,7 @@ func databaseDotGo(pkg *models.Project) *jen.File {
 
 	modelsImp := fmt.Sprintf("%s/models/v1", pkg.OutputPath)
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Var().Defs(

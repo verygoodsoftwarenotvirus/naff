@@ -9,7 +9,7 @@ import (
 func cookieauthDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Comment("CookieAuth represents what we encode in our authentication cookies"),

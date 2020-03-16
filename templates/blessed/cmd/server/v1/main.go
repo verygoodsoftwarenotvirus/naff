@@ -12,7 +12,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
 	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", pkg.OutputPath)
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Func().ID("main").Params().Block(

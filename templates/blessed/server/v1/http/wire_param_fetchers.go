@@ -12,7 +12,7 @@ import (
 func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	buildNewSetArgs := func() []jen.Code {
 		args := []jen.Code{}

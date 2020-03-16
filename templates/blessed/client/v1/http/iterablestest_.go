@@ -12,7 +12,7 @@ import (
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(proj.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(buildTestV1Client_BuildGetSomethingRequest(proj, typ)...)
 	ret.Add(buildTestV1Client_GetSomething(proj, typ)...)

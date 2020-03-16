@@ -11,7 +11,7 @@ import (
 func mockIterableDataManagerDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 
 	n := typ.Name
 	sn := n.Singular()

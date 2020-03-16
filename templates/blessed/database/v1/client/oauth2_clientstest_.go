@@ -11,7 +11,7 @@ import (
 func oauth2ClientsTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Func().ID("TestClient_GetOAuth2Client").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(

@@ -11,21 +11,12 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-// func buildPathForType(pkg *models.Project, typ models.DataType) string {
-// 	if typ.BelongsToStruct != nil {
-// 		parentType := pkg.FindType(typ.BelongsToStruct.Singular())
-// 		if parentType != nil {
-// 			return filepath.Join(buildPathForType(pkg, *parentType), )
-// 		}
-// 	}
-// }
-
 func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("client")
 
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 	ret.Add(jen.Const().Defs(
 		jen.ID(basePath).Op("=").Lit(typ.Name.PluralRouteName())),
 	)

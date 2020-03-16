@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	metaFlag = "_META_"
+	metaFlag = "meta"
 
 	belongsTo    = "belongs_to"
 	notCreatable = "!creatable"
@@ -44,8 +44,12 @@ func (dw depWrapper) ID() int {
 }
 
 type Project struct {
-	sourcePackage           string
-	OutputPath              string
+	sourcePackage string
+
+	OutputPath                string
+	OutputPathStringToReplace string
+	OutputPathSubstitution    string
+
 	iterableServicesImports []string
 	EnableNewsman           bool
 

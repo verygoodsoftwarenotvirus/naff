@@ -17,7 +17,7 @@ func databaseMockDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("database")
 
 	mockModelsImp := filepath.Join(pkg.OutputPath, "models/v1/mock")
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(
 		jen.Var().ID("_").ID("Database").Op("=").Parens(jen.Op("*").ID("MockDatabase")).Call(jen.ID("nil")),
