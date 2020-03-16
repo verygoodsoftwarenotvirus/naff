@@ -12,9 +12,7 @@ import (
 func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
-
-	ret.Add()
+	utils.AddImports(pkg, ret)
 
 	ret.Add(buildTestClientGetSomething(pkg, typ)...)
 	ret.Add(buildTestClientGetSomethingCount(pkg, typ)...)
