@@ -12,7 +12,7 @@ import (
 func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(buildTestServiceListFuncDecl(pkg, typ)...)
 	ret.Add(buildTestServiceCreateFuncDecl(pkg, typ)...)
@@ -26,7 +26,8 @@ func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 func buildOwnerVarName(typ models.DataType) string {
 	if typ.BelongsToUser {
 		return "requestingUser"
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		return fmt.Sprintf("requesting%s", typ.BelongsToStruct.Singular())
 	}
 
@@ -36,7 +37,8 @@ func buildOwnerVarName(typ models.DataType) string {
 func buildRelevantOwnerVar(pkg *models.Project, typ models.DataType) jen.Code {
 	if typ.BelongsToUser {
 		return jen.ID(buildOwnerVarName(typ)).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		return jen.ID(buildOwnerVarName(typ)).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.BelongsToStruct.Singular()).Values(jen.ID("ID").Op(":").Lit(1))
 	}
 
@@ -56,7 +58,8 @@ func buildRelevantIDFetcher(typ models.DataType) jen.Code {
 		return jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 			jen.Return().ID(buildOwnerVarName(typ)).Dot("ID"),
 		)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		return jen.ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 			jen.Return().ID(buildOwnerVarName(typ)).Dot("ID"),
 		)

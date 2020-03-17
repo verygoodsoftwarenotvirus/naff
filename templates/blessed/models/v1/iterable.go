@@ -28,7 +28,8 @@ func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 
 	if typ.BelongsToUser {
 		out = append(out, jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("belongs_to_user")))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).ID("uint64").Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
 	}
 
@@ -50,7 +51,8 @@ func buildUpdateModelStructFields(typ models.DataType) []jen.Code {
 
 	if typ.BelongsToUser {
 		out = append(out, jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("-")))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).ID("uint64").Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
 	}
 
@@ -97,7 +99,8 @@ func buildInterfaceMethods(pkg *models.Project, typ models.DataType) []jen.Code 
 			jen.IDf("GetAll%sForUser", pn).Params(
 				utils.CtxParam(), jen.ID("userID").ID("uint64"),
 			).Params(jen.Index().ID(sn), jen.ID("error")))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		interfaceMethods = append(interfaceMethods,
 			jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(typ.BuildGetSomethingForSomethingElseParamsForModelsPackage(pkg)...).Params(jen.Index().ID(sn), jen.ID("error")))
 	}

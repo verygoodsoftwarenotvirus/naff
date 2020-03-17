@@ -13,7 +13,7 @@ import (
 func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("randmodel")
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 	sn := typ.Name.Singular()
 
 	ret.Add(

@@ -12,7 +12,7 @@ import (
 func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(buildFetchRandomSomething(pkg, typ)...)
 	ret.Add(buildRandomActionMap(pkg, typ)...)

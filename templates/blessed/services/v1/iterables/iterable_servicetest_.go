@@ -12,7 +12,7 @@ import (
 func iterableServiceTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 
 	ret.Add(buildbuildTestServiceFuncDecl(pkg, typ)...)
 	ret.Add(buildTestProvideServiceFuncDecl(pkg, typ)...)
@@ -34,7 +34,8 @@ func buildbuildTestServiceFuncDecl(pkg *models.Project, typ models.DataType) []j
 		serviceValues = append(serviceValues,
 			jen.ID("userIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 		)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		serviceValues = append(serviceValues,
 			jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 		)

@@ -34,7 +34,8 @@ func buildIterableConstants(typ models.DataType) []jen.Code {
 
 	if typ.BelongsToUser {
 		consts = append(consts, jen.IDf("%sTableOwnershipColumn", puvn).Op("=").Lit("belongs_to_user"))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		consts = append(consts, jen.IDf("%sTableOwnershipColumn", puvn).Op("=").Litf("belongs_to_%s", typ.BelongsToStruct.RouteName()))
 	}
 
@@ -74,7 +75,8 @@ func iterablesDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ mo
 
 	if typ.BelongsToUser {
 		ret.Add(buildGetAllSomethingForUserFuncDecl(pkg, dbvendor, typ)...)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		ret.Add(buildGetAllSomethingForSomethingElseFuncDecl(pkg, dbvendor, typ)...)
 	}
 
@@ -110,7 +112,8 @@ func buildTableColumns(typ models.DataType) []jen.Code {
 
 	if typ.BelongsToUser {
 		tableColumns = append(tableColumns, jen.IDf("%sTableOwnershipColumn", puvn))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		tableColumns = append(tableColumns, jen.IDf("%sTableOwnershipColumn", puvn))
 	}
 
@@ -132,7 +135,8 @@ func buildScanFields(typ models.DataType) (scanFields []jen.Code) {
 
 	if typ.BelongsToUser {
 		scanFields = append(scanFields, jen.Op("&").ID("x").Dot("BelongsToUser"))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		scanFields = append(scanFields, jen.Op("&").ID("x").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 	}
 
@@ -222,7 +226,8 @@ func buildGetSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.Supe
 	if typ.BelongsToUser {
 		comment = fmt.Sprintf("buildGet%sQuery constructs a SQL query for fetching %s with a given ID belong to a user with a given ID.", sn, scnwp)
 		whereValues = append(whereValues, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID("userID"))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		comment = fmt.Sprintf("buildGet%sQuery constructs a SQL query for fetching %s with a given ID belong to %s with a given ID.", sn, scnwp, typ.BelongsToStruct.SingularCommonNameWithPrefix())
 		whereValues = append(whereValues, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID(fmt.Sprintf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	} else if typ.BelongsToNobody {
@@ -292,7 +297,8 @@ func buildGetSomethingCountQueryFuncDecl(pkg *models.Project, dbvendor wordsmith
 
 		commentOne = fmt.Sprintf("buildGet%sCountQuery takes a QueryFilter and a user ID and returns a SQL query (and the relevant arguments) for", sn)
 		commentTwo = fmt.Sprintf("fetching the number of %s belonging to a given user that meet a given query", pcn)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 
 		commentOne = fmt.Sprintf("buildGet%sCountQuery takes a QueryFilter and %s ID and returns a SQL query (and the relevant arguments) for", sn, typ.BelongsToStruct.SingularCommonNameWithPrefix())
@@ -339,7 +345,8 @@ func buildGetSomethingCountFuncDecl(pkg *models.Project, dbvendor wordsmith.Supe
 
 	if typ.BelongsToUser {
 		comment = fmt.Sprintf("Get%sCount will fetch the count of %s from the database that meet a particular filter and belong to a particular user.", sn, pcn)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		comment = fmt.Sprintf("Get%sCount will fetch the count of %s from the database that meet a particular filter and belongs to a particular %s.", sn, pcn, typ.BelongsToStruct.SingularCommonName())
 	} else if typ.BelongsToNobody {
 		comment = fmt.Sprintf("Get%sCount will fetch the count of %s from the database that meet a particular filter.", sn, pcn)
@@ -512,14 +519,16 @@ func buildGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmit
 
 	if typ.BelongsToUser {
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID("userID"))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
 
 	var firstCommentLine string
 	if typ.BelongsToUser {
 		firstCommentLine = fmt.Sprintf("buildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter and belong to a given user,", pn, pcn)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		firstCommentLine = fmt.Sprintf("buildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter and belong to a given %s,", pn, pcn, typ.BelongsToStruct.SingularCommonName())
 	} else {
 		firstCommentLine = fmt.Sprintf("buildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter,", pn, pcn)
@@ -690,7 +699,8 @@ func determineCreationColumns(dbvendor wordsmith.SuperPalabra, typ models.DataTy
 
 	if typ.BelongsToUser {
 		creationColumns = append(creationColumns, jen.IDf("%sTableOwnershipColumn", puvn))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		creationColumns = append(creationColumns, jen.IDf("%sTableOwnershipColumn", puvn))
 	}
 
@@ -710,7 +720,8 @@ func determineValuesColumns(dbvendor wordsmith.SuperPalabra, inputVarName string
 
 	if typ.BelongsToUser {
 		valuesColumns = append(valuesColumns, jen.ID(inputVarName).Dot("BelongsToUser"))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		valuesColumns = append(valuesColumns, jen.ID(inputVarName).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 	}
 
@@ -812,7 +823,8 @@ func buildCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 
 	if typ.BelongsToUser {
 		createInitColumns = append(createInitColumns, jen.ID("BelongsToUser").Op(":").ID("input").Dot("BelongsToUser"))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		createInitColumns = append(createInitColumns, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 	}
 
@@ -888,7 +900,8 @@ func buildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.S
 	}
 	if typ.BelongsToUser {
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID(inputVarName).Dot("BelongsToUser"))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID(inputVarName).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 	}
 
@@ -986,7 +999,8 @@ func buildArchiveSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.
 	if typ.BelongsToUser {
 		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s belonging to a given user as archived.", sn, scn)
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").ID("userID"))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s belonging to a given %s as archived.", sn, scn, typ.BelongsToStruct.SingularCommonName())
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	} else {

@@ -27,7 +27,8 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 			)
-		} else if typ.BelongsToStruct != nil {
+		}
+		if typ.BelongsToStruct != nil {
 			ret.Add(
 				jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 					jen.ID("T").Dot("Parallel").Call(),

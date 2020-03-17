@@ -55,7 +55,6 @@ example_output_subdirs:
 
 $(EXAMPLE_OUTPUT_DIR):
 	go run cmd/todoproj/main.go
-	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) vendor config_files)
 
 .PHONY: clean_example_output
 clean_example_output:

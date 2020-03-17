@@ -12,7 +12,7 @@ import (
 func iterableServiceDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 
 	sn := typ.Name.Singular()
 	cn := typ.Name.SingularCommonName()
@@ -64,7 +64,8 @@ func buildServiceTypeDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 		serviceLines = append(serviceLines,
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 		)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		serviceLines = append(serviceLines,
 			jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).IDf("%sIDFetcher", typ.BelongsToStruct.Singular()),
 		)
@@ -87,7 +88,8 @@ func buildServiceTypeDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
 			jen.ID("UserIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 		)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		typeDefs = append(typeDefs,
 			jen.Commentf("%sIDFetcher is a function that fetches %s IDs", typ.BelongsToStruct.Singular(), typ.BelongsToStruct.SingularCommonName()),
 			jen.IDf("%sIDFetcher", typ.BelongsToStruct.Singular()).Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
@@ -129,7 +131,8 @@ func buildProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen
 	if typ.BelongsToUser {
 		params = append(params, jen.ID("userIDFetcher").ID("UserIDFetcher"))
 		serviceValues = append(serviceValues, jen.ID("userIDFetcher").Op(":").ID("userIDFetcher"))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		params = append(params, jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).IDf("%sIDFetcher", typ.BelongsToStruct.Singular()))
 		serviceValues = append(serviceValues, jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Op(":").IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()))
 	}

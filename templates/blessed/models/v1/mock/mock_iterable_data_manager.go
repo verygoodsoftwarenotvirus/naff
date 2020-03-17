@@ -35,7 +35,8 @@ func mockIterableDataManagerDotGo(pkg *models.Project, typ models.DataType) *jen
 
 	if typ.BelongsToUser {
 		ret.Add(buildGetAllSomethingsForUser(pkg, typ)...)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		ret.Add(buildGetAllSomethingsForSomethingElse(pkg, typ)...)
 	}
 

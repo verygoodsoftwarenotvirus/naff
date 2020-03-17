@@ -43,7 +43,8 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	if typ.BelongsToUser {
 		ret.Add(buildGetAllSomethingForUser(pkg, typ)...)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		ret.Add(buildGetAllSomethingForSomethingElse(pkg, typ)...)
 	}
 
@@ -75,7 +76,9 @@ func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	if typ.BelongsToUser {
 		block = append(block, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 		loggerValues = append(loggerValues, jen.Lit("user_id").Op(":").ID("userID"))
-	} else if typ.BelongsToStruct != nil {
+	}
+
+	if typ.BelongsToStruct != nil {
 		loggerValues = append(loggerValues, jen.Litf("%s_id", typ.BelongsToStruct.RouteName()).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
 
@@ -111,7 +114,8 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 
 	if typ.BelongsToUser {
 		block = append(block, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		block = append(block, jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	}
 	// we don't need to consider the other case
@@ -123,7 +127,8 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 
 	if typ.BelongsToUser {
 		block = append(block, jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Litf("Get%sCount called", sn)))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		block = append(block, jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())).Dot("Debug").Call(jen.Litf("Get%sCount called", sn)))
 	}
 
@@ -179,7 +184,8 @@ func buildGetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Cod
 		block = append(block,
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 		)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		block = append(block,
 			jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 		)
@@ -194,11 +200,12 @@ func buildGetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Cod
 		block = append(block,
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Litf("Get%s called", pn)),
 		)
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		block = append(block,
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())).Dot("Debug").Call(jen.Litf("Get%s called", pn)),
 		)
-	} else {
+	} else if typ.BelongsToNobody {
 		block = append(block,
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Litf("Get%s called", pn)),
 		)
@@ -359,7 +366,8 @@ func buildArchiveSomething(pkg *models.Project, typ models.DataType) []jen.Code 
 
 	if typ.BelongsToUser {
 		loggerValues = append(loggerValues, jen.Lit("user_id").Op(":").ID("userID"))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		loggerValues = append(loggerValues, jen.Litf("%s_id", typ.BelongsToStruct.RouteName()).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
 
@@ -371,7 +379,8 @@ func buildArchiveSomething(pkg *models.Project, typ models.DataType) []jen.Code 
 
 	if typ.BelongsToUser {
 		block = append(block, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
-	} else if typ.BelongsToStruct != nil {
+	}
+	if typ.BelongsToStruct != nil {
 		block = append(block, jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	}
 

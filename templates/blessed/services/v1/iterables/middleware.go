@@ -12,7 +12,7 @@ import (
 func middlewareDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 	sn := typ.Name.Singular() // singular name, PascalCased by default
 
 	ret.Add(

@@ -225,7 +225,8 @@ func makePostgresMigrations(pkg *models.Project) []migration {
 				`				"belongs_to_user" BIGINT NOT NULL,`,
 				`				FOREIGN KEY ("belongs_to_user") REFERENCES "users"("id")`,
 			)
-		} else if typ.BelongsToStruct != nil {
+		}
+		if typ.BelongsToStruct != nil {
 			scriptParts = append(scriptParts,
 				`				"archived_on" BIGINT DEFAULT NULL,`,
 				fmt.Sprintf(`				"belongs_to_%s" BIGINT NOT NULL,`, typ.BelongsToStruct.RouteName()),
@@ -381,7 +382,8 @@ func makeMariaDBMigrations(pkg *models.Project) []migration {
 			scriptParts = append(scriptParts,
 				jen.Lit("    `belongs_to_user` BIGINT UNSIGNED NOT NULL,"),
 			)
-		} else if typ.BelongsToStruct != nil {
+		}
+		if typ.BelongsToStruct != nil {
 			scriptParts = append(scriptParts,
 				jen.Litf("    `belongs_to_%s` BIGINT UNSIGNED NOT NULL,", typ.BelongsToStruct.RouteName()),
 			)
@@ -395,7 +397,8 @@ func makeMariaDBMigrations(pkg *models.Project) []migration {
 			scriptParts = append(scriptParts,
 				jen.Lit("    FOREIGN KEY (`belongs_to_user`) REFERENCES users(`id`)"),
 			)
-		} else if typ.BelongsToStruct != nil {
+		}
+		if typ.BelongsToStruct != nil {
 			scriptParts = append(scriptParts,
 				jen.Litf("    FOREIGN KEY (`belongs_to_%s`) REFERENCES %s(`id`)", typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),
 			)
@@ -523,7 +526,8 @@ func makeSqliteMigrations(pkg *models.Project) []migration {
 				`				"belongs_to_user" INTEGER NOT NULL,`,
 				`				FOREIGN KEY(belongs_to_user) REFERENCES users(id)`,
 			)
-		} else if typ.BelongsToStruct != nil {
+		}
+		if typ.BelongsToStruct != nil {
 			scriptParts = append(scriptParts,
 				fmt.Sprintf(`				"belongs_to_%s" INTEGER NOT NULL,`, typ.BelongsToStruct.RouteName()),
 				fmt.Sprintf(`				FOREIGN KEY(belongs_to_%s) REFERENCES %s(id)`, typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),

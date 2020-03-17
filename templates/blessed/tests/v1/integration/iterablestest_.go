@@ -96,7 +96,7 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg *models.
 func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("integration")
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(pkg, ret)
 
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()

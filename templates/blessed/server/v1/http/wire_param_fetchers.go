@@ -68,7 +68,8 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 			)
-		} else if typ.BelongsToStruct != nil {
+		}
+		if typ.BelongsToStruct != nil {
 			ret.Add(
 				jen.Commentf("Provide%sService%sIDFetcher provides a %sIDFetcher", sn, typ.BelongsToStruct.Singular(), typ.BelongsToStruct.Singular()),
 				jen.Line(),
