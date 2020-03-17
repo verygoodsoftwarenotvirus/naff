@@ -22,9 +22,9 @@ func usersDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("mustBuildCode").Params(jen.ID("totpSecret").ID("string")).Params(jen.ID("string")).Block(
-			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("totpSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.List(jen.ID("code"), jen.Err()).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("totpSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Return().ID("code"),
 		),

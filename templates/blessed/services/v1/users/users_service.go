@@ -71,16 +71,16 @@ func usersServiceDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("userIDFetcher must be provided"))),
 			),
 			jen.Line(),
-			jen.List(jen.ID("counter"), jen.ID("err")).Op(":=").ID("counterProvider").Call(jen.ID("counterName"), jen.Lit("number of users managed by the users service")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.ID("err"))),
+			jen.List(jen.ID("counter"), jen.Err()).Op(":=").ID("counterProvider").Call(jen.ID("counterName"), jen.Lit("number of users managed by the users service")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("userCount"), jen.ID("err")).Op(":=").ID("db").Dot("GetUserCount").Call(jen.ID("ctx"), jen.ID("nil")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.ID("err"))),
+			jen.List(jen.ID("userCount"), jen.Err()).Op(":=").ID("db").Dot("GetUserCount").Call(utils.CtxVar(), jen.ID("nil")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.Err())),
 			),
-			jen.ID("counter").Dot("IncrementBy").Call(jen.ID("ctx"), jen.ID("userCount")),
+			jen.ID("counter").Dot("IncrementBy").Call(utils.CtxVar(), jen.ID("userCount")),
 			jen.Line(),
 			jen.ID("us").Op(":=").Op("&").ID("Service").Valuesln(
 				jen.ID("cookieSecret").Op(":").Index().ID("byte").Call(jen.ID("authSettings").Dot("CookieSecret")),

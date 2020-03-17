@@ -161,13 +161,13 @@ func buildTestV1Client_BuildGetSomethingRequest(pkg *models.Project, typ models.
 	subtestLines = append(subtestLines, depVarDecls...)
 
 	subtestLines = append(subtestLines,
-		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithIDs(pkg, typ, true)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
 		utils.AssertNoError(
-			jen.ID("err"),
+			jen.Err(),
 			jen.Lit("no error should be returned"),
 		),
 		utils.AssertTrue(
@@ -206,7 +206,7 @@ func buildTestV1Client_GetSomething(pkg *models.Project, typ models.DataType) []
 
 	// routes
 	var subtestLines []jen.Code
-	actualCallArgs := []jen.Code{jen.ID("ctx")}
+	actualCallArgs := []jen.Code{utils.CtxVar()}
 
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
 		actualCallArgs = append(actualCallArgs, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
@@ -266,12 +266,12 @@ func buildTestV1Client_GetSomething(pkg *models.Project, typ models.DataType) []
 		),
 		jen.Line(),
 		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
 			actualCallArgs...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
-		utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 		utils.AssertEqual(jen.ID(uvn), jen.ID("actual"), nil),
 	)
 
@@ -299,12 +299,12 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(pkg *models.Project, typ m
 		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 		jen.Line(),
 		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
 			buildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(pkg, typ, true)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
-		utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 		utils.AssertEqual(
 			jen.ID("actual").Dot("Method"),
 			jen.ID("expectedMethod"),
@@ -370,14 +370,14 @@ func buildTestV1Client_GetListOfSomething(pkg *models.Project, typ models.DataTy
 			jen.ID("t"),
 			jen.ID("ts"),
 		),
-		jen.List(jen.ID("actual"), jen.ID("err")).
+		jen.List(jen.ID("actual"), jen.Err()).
 			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
 			buildParamsForMethodThatCreatesADataTypeFromStructs(pkg, typ, true)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
 		utils.AssertNoError(
-			jen.ID("err"),
+			jen.Err(),
 			jen.Lit("no error should be returned"),
 		),
 		utils.AssertEqual(jen.ID(puvn), jen.ID("actual"), nil),
@@ -419,14 +419,14 @@ func buildTestV1Client_BuildCreateSomethingRequest(pkg *models.Project, typ mode
 		),
 		jen.List(
 			jen.ID("actual"),
-			jen.ID("err"),
+			jen.Err(),
 		).Op(":=").ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
 			buildParamsForMethodThatCreatesADataTypeFromStructs(pkg, typ, true)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
 		utils.AssertNoError(
-			jen.ID("err"),
+			jen.Err(),
 			jen.Lit("no error should be returned"),
 		),
 		utils.AssertEqual(
@@ -494,12 +494,12 @@ func buildTestV1Client_CreateSomething(pkg *models.Project, typ models.DataType)
 		),
 		jen.Line(),
 		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
 			buildParamsForMethodThatCreatesADataTypeFromStructs(pkg, typ, true)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
-		utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 		utils.AssertEqual(jen.ID(uvn), jen.ID("actual"), nil),
 	)
 
@@ -529,12 +529,12 @@ func buildTestV1Client_BuildUpdateSomethingRequest(pkg *models.Project, typ mode
 		jen.Line(),
 		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
 			actualParams...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
-		utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 		utils.AssertEqual(
 			jen.ID("actual").Dot("Method"),
 			jen.ID("expectedMethod"),
@@ -581,10 +581,10 @@ func buildTestV1Client_UpdateSomething(pkg *models.Project, typ models.DataType)
 			),
 		),
 		jen.Line(),
-		jen.ID("err").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Update%s", ts)).Call(
+		jen.Err().Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Update%s", ts)).Call(
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)...,
 		),
-		utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	)
 
 	lines := []jen.Code{
@@ -613,7 +613,7 @@ func buildTestV1Client_BuildArchiveSomethingRequest(pkg *models.Project, typ mod
 	subtestLines = append(subtestLines,
 		jen.Line(),
 		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg, typ)...,
 		),
 		jen.Line(),
@@ -629,7 +629,7 @@ func buildTestV1Client_BuildArchiveSomethingRequest(pkg *models.Project, typ mod
 			),
 			nil,
 		),
-		utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 		utils.AssertEqual(
 			jen.ID("actual").Dot("Method"),
 			jen.ID("expectedMethod"),
@@ -680,10 +680,10 @@ func buildTestV1Client_ArchiveSomething(pkg *models.Project, typ models.DataType
 			utils.WriteHeader("StatusOK"),
 		),
 		jen.Line(),
-		jen.ID("err").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
+		jen.Err().Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg, typ)...,
 		),
-		utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	)
 
 	lines := []jen.Code{

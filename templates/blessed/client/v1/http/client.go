@@ -13,10 +13,10 @@ func newClientMethod(name string) *jen.Statement {
 	return jen.Func().Params(jen.ID("c").Op("*").ID(v1)).ID(name)
 }
 
-func mainDotGo(pkg *models.Project) *jen.File {
+func mainDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("client")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 	ret.Add(jen.Line())
 
 	// consts
@@ -54,37 +54,70 @@ func mainDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	ret.Add(buildAuthenticatedClient()...)
+	ret.Add(buildPlainClient()...)
+	ret.Add(buildTokenSource()...)
+	ret.Add(buildNewClient()...)
+	ret.Add(buildbuildOAuthClient()...)
+	ret.Add(buildtokenEndpoint()...)
+	ret.Add(buildNewSimpleClient()...)
+	ret.Add(buildexecuteRawRequest()...)
+	ret.Add(buildBuildURL()...)
+	ret.Add(buildbuildURL()...)
+	ret.Add(buildbuildVersionlessURL()...)
+	ret.Add(buildBuildWebsocketURL()...)
+	ret.Add(buildBuildHealthCheckRequest()...)
+	ret.Add(buildIsUp()...)
+	ret.Add(buildbuildDataRequest()...)
+	ret.Add(buildCheckExistence()...)
+	ret.Add(buildRetrieve()...)
+	ret.Add(buildexecuteRequest()...)
+	ret.Add(buildexecuteUnathenticatedDataRequest()...)
+
+	return ret
+}
+
+func buildAuthenticatedClient() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("AuthenticatedClient returns the authenticated *http.Client that we use to make most requests"),
 		jen.Line(),
 		newClientMethod("AuthenticatedClient").Params().Params(jen.Op("*").Qual("net/http", "Client")).Block(
 			jen.Return().ID("c").Dot("authedClient"),
 		),
 		jen.Line(),
-	)
+	}
 
-	// c.PlainClient
-	ret.Add(
+	return lines
+}
+
+func buildPlainClient() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("PlainClient returns the unauthenticated *http.Client that we use to make certain requests"),
 		jen.Line(),
 		newClientMethod("PlainClient").Params().Params(jen.Op("*").Qual("net/http", "Client")).Block(
 			jen.Return().ID("c").Dot("plainClient"),
 		),
 		jen.Line(),
-	)
+	}
 
-	// c.TokenSource
-	ret.Add(
+	return lines
+}
+
+func buildTokenSource() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("TokenSource provides the client's token source"),
 		jen.Line(),
 		newClientMethod("TokenSource").Params().Params(jen.ID("oauth2").Dot("TokenSource")).Block(
 			jen.Return().ID("c").Dot("tokenSource"),
 		),
 		jen.Line(),
-	)
+	}
 
-	// NewClient
-	ret.Add(
+	return lines
+}
+
+func buildNewClient() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("NewClient builds a new API client for us"),
 		jen.Line(),
 		jen.Func().ID("NewClient").Paramsln(
@@ -125,7 +158,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ac"),
 				jen.ID("ts"),
 			).Op(":=").ID("buildOAuthClient").Call(
-				jen.ID("ctx"),
+				utils.CtxVar(),
 				jen.ID("address"),
 				jen.ID("clientID"),
 				jen.ID("clientSecret"),
@@ -151,10 +184,13 @@ func mainDotGo(pkg *models.Project) *jen.File {
 				jen.ID("nil")),
 		),
 		jen.Line(),
-	)
+	}
 
-	// buildOAuthClient
-	ret.Add(
+	return lines
+}
+
+func buildbuildOAuthClient() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("buildOAuthClient does too much"),
 		jen.Line(),
 		jen.Func().ID("buildOAuthClient").Paramsln(
@@ -185,7 +221,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			jen.ID("ts").Op(":=").ID("oauth2").Dot("ReuseTokenSource").Call(
 				jen.ID("nil"),
 				jen.ID("conf").Dot("TokenSource").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 				),
 			),
 			jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Valuesln(
@@ -202,10 +238,13 @@ func mainDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ts")),
 		),
 		jen.Line(),
-	)
+	}
 
-	// tokenEndpoint
-	ret.Add(
+	return lines
+}
+
+func buildtokenEndpoint() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("tokenEndpoint provides the oauth2 Endpoint for a given host"),
 		jen.Line(),
 		jen.Func().ID("tokenEndpoint").Params(
@@ -231,16 +270,22 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	// NewSimpleClient
-	ret.Add(utils.Comments(
-		"NewSimpleClient is a client that is capable of much less than the normal client",
-		"and has noops or empty values for most of its authentication and debug parts.",
-		"Its purpose at the time of this writing is merely so I can make users (which",
-		"is a route that doesn't require authentication)",
-	)...)
-	ret.Add(
+	return lines
+}
+
+func buildNewSimpleClient() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("NewSimpleClient is a client that is capable of much less than the normal client"),
+		jen.Line(),
+		jen.Comment("and has noops or empty values for most of its authentication and debug parts."),
+		jen.Line(),
+		jen.Comment("Its purpose at the time of this writing is merely so I can make users (which"),
+		jen.Line(),
+		jen.Comment("is a route that doesn't require authentication)"),
+		jen.Line(),
+		jen.Line(),
 		jen.Func().ID("NewSimpleClient").Params(
 			utils.CtxParam(),
 			jen.ID("address").Op("*").Qual("net/url", "URL"),
@@ -255,9 +300,9 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.List(
 				jen.ID("c"),
-				jen.ID("err"),
+				jen.Err(),
 			).Op(":=").ID("NewClient").Call(
-				jen.ID("ctx"),
+				utils.CtxVar(),
 				jen.Lit(""),
 				jen.Lit(""),
 				jen.ID("address"),
@@ -268,86 +313,93 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Return().List(
 				jen.ID("c"),
-				jen.ID("err"),
+				jen.Err(),
 			),
 		),
 		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildexecuteRawRequest() []jen.Code {
+	block := utils.StartSpan(true, "executeRawRequest")
+	block = append(block,
+		jen.Var().ID("logger").Op("=").ID("c").Dot("logger"),
+		jen.If(jen.List(
+			jen.ID("command"),
+			jen.Err(),
+		).Op(":=").Qual("github.com/moul/http2curl", "GetCurlCommand").Call(
+			jen.ID("req"),
+		),
+			jen.Err().Op("==").ID("nil").Op("&&").ID("c").Dot("Debug"),
+		).Block(
+			jen.ID("logger").Op("=").ID("c").Dot("logger").Dot("WithValue").Call(
+				jen.Lit("curl"),
+				jen.ID("command").Dot("String").Call(),
+			),
+		),
+		jen.Line(),
+		jen.List(
+			jen.ID("res"),
+			jen.Err(),
+		).Op(":=").ID("client").Dot("Do").Call(
+			jen.ID("req").Dot("WithContext").Call(
+				jen.ID("ctx"),
+			),
+		),
+		jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.Return().List(
+				jen.ID("nil"),
+				jen.Qual("fmt", "Errorf").Call(
+					jen.Lit("executing request: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.Line(),
+		jen.If(jen.ID("c").Dot("Debug")).Block(
+			jen.List(
+				jen.ID("bdump"),
+				jen.Err(),
+			).Op(":=").Qual("net/http/httputil", "DumpResponse").Call(
+				jen.ID("res"),
+				jen.ID("true"),
+			),
+			jen.If(jen.Err().Op("==").ID("nil").Op("&&").ID("req").Dot("Method").Op("!=").Qual("net/http", "MethodGet")).Block(
+				jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+					jen.Lit("response_body"),
+					jen.ID("string").Call(
+						jen.ID("bdump"),
+					),
+				),
+			),
+			jen.ID("logger").Dot("Debug").Call(
+				jen.Lit("request executed"),
+			),
+		),
+		jen.Line(),
+		jen.Return().List(jen.ID("res"), jen.ID("nil")),
 	)
 
-	// c.executeRawRequest
-	ret.Add(utils.Comments(
-		"executeRawRequest takes a given *http.Request and executes it with the provided",
-		"client, alongside some debugging logging.",
-	)...)
-	ret.Add(
+	lines := []jen.Code{
+		jen.Comment("executeRawRequest takes a given *http.Request and executes it with the provided"),
+		jen.Line(),
+		jen.Comment("client, alongside some debugging logging."),
+		jen.Line(),
 		newClientMethod("executeRawRequest").Params(
 			utils.CtxParam(),
 			jen.ID("client").Op("*").Qual("net/http", "Client"),
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
-		).Params(jen.Op("*").Qual("net/http", "Response"),
-			jen.ID("error")).Block(
-			jen.Var().ID("logger").Op("=").ID("c").Dot("logger"),
-			jen.If(jen.List(
-				jen.ID("command"),
-				jen.ID("err"),
-			).Op(":=").Qual("github.com/moul/http2curl", "GetCurlCommand").Call(
-				jen.ID("req"),
-			),
-				jen.ID("err").Op("==").ID("nil").Op("&&").ID("c").Dot("Debug"),
-			).Block(
-				jen.ID("logger").Op("=").ID("c").Dot("logger").Dot("WithValue").Call(
-					jen.Lit("curl"),
-					jen.ID("command").Dot("String").Call(),
-				),
-			),
-			jen.Line(),
-			jen.List(
-				jen.ID("res"),
-				jen.ID("err"),
-			).Op(":=").ID("client").Dot("Do").Call(
-				jen.ID("req").Dot("WithContext").Call(
-					jen.ID("ctx"),
-				),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.Qual("fmt", "Errorf").Call(
-						jen.Lit("executing request: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.If(jen.ID("c").Dot("Debug")).Block(
-				jen.List(
-					jen.ID("bdump"),
-					jen.ID("err"),
-				).Op(":=").Qual("net/http/httputil", "DumpResponse").Call(
-					jen.ID("res"),
-					jen.ID("true"),
-				),
-				jen.If(jen.ID("err").Op("==").ID("nil").Op("&&").ID("req").Dot("Method").Op("!=").Qual("net/http", "MethodGet")).Block(
-					jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
-						jen.Lit("response_body"),
-						jen.ID("string").Call(
-							jen.ID("bdump"),
-						),
-					),
-				),
-				jen.ID("logger").Dot("Debug").Call(
-					jen.Lit("request executed"),
-				),
-			),
-			jen.Line(),
-			jen.Return().List(jen.ID("res"),
-				jen.ID("nil")),
-		),
+		).Params(jen.Op("*").Qual("net/http", "Response"), jen.ID("error")).Block(block...),
 		jen.Line(),
-	)
+	}
 
-	// c.BuildURL
-	ret.Add(
+	return lines
+}
+
+func buildBuildURL() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("BuildURL builds standard service URLs"),
 		jen.Line(),
 		newClientMethod("BuildURL").Params(
@@ -366,14 +418,17 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			).Dot("String").Call(),
 		),
 		jen.Line(),
-	)
+	}
 
-	// c.buildURL
-	ret.Add(utils.Comments(
-		"buildURL takes a given set of query parameters and URL parts, and returns",
-		"a parsed URL object from them.",
-	)...)
-	ret.Add(
+	return lines
+}
+
+func buildbuildURL() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("buildURL takes a given set of query parameters and URL parts, and returns"),
+		jen.Line(),
+		jen.Comment("a parsed URL object from them."),
+		jen.Line(),
 		newClientMethod("buildURL").Params(
 			jen.ID("queryParams").Qual("net/url", "Values"),
 			jen.ID("parts").Op("...").ID("string"),
@@ -386,18 +441,18 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.List(
 				jen.ID("u"),
-				jen.ID("err"),
+				jen.Err(),
 			).Op(":=").Qual("net/url", "Parse").Call(
 				jen.Qual("strings", "Join").Call(
 					jen.ID("parts"),
 					jen.Lit("/"),
 				),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("panic").Call(
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("was asked to build an invalid URL: %v"),
-						jen.ID("err"),
+						jen.Err(),
 					),
 				),
 			),
@@ -411,14 +466,17 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	// c.buildVersionlessURL
-	ret.Add(utils.Comments(
-		"buildVersionlessURL builds a URL without the `/api/v1/` prefix. It should",
-		"otherwise be identical to buildURL",
-	)...)
-	ret.Add(
+	return lines
+}
+
+func buildbuildVersionlessURL() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("buildVersionlessURL builds a URL without the `/api/v1/` prefix. It should"),
+		jen.Line(),
+		jen.Comment("otherwise be identical to buildURL"),
+		jen.Line(),
 		newClientMethod("buildVersionlessURL").Params(
 			jen.ID("qp").Qual("net/url", "Values"),
 			jen.ID("parts").Op("...").ID("string"),
@@ -427,17 +485,17 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.List(
 				jen.ID("u"),
-				jen.ID("err"),
+				jen.Err(),
 			).Op(":=").Qual("net/url", "Parse").Call(
 				jen.Qual("path", "Join").Call(
 					jen.ID("parts").Op("..."),
 				),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("panic").Call(
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("user tried to build an invalid URL: %v"),
-						jen.ID("err"),
+						jen.Err(),
 					),
 				),
 			),
@@ -451,11 +509,15 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			).Dot("String").Call(),
 		),
 		jen.Line(),
-	)
+	}
 
-	// c.BuildWebsocketURL
-	ret.Add(utils.Comments("BuildWebsocketURL builds a standard URL and then converts its scheme to the websocket protocol")...)
-	ret.Add(
+	return lines
+}
+
+func buildBuildWebsocketURL() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("BuildWebsocketURL builds a standard URL and then converts its scheme to the websocket protocol"),
+		jen.Line(),
 		newClientMethod("BuildWebsocketURL").Params(
 			jen.ID("parts").Op("...").ID("string"),
 		).Params(jen.ID("string")).Block(
@@ -468,11 +530,15 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			jen.Return().ID("u").Dot("String").Call(),
 		),
 		jen.Line(),
-	)
+	}
 
-	// c.BuildHealthCheckRequest
-	ret.Add(utils.Comments("BuildHealthCheckRequest builds a health check HTTP Request")...)
-	ret.Add(
+	return lines
+}
+
+func buildBuildHealthCheckRequest() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("BuildHealthCheckRequest builds a health check HTTP Request"),
+		jen.Line(),
 		newClientMethod("BuildHealthCheckRequest").Params().Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -491,19 +557,23 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	// c.IsUp
-	ret.Add(utils.Comments("IsUp returns whether or not the service's health endpoint is returning 200s")...)
-	ret.Add(
+	return lines
+}
+
+func buildIsUp() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("IsUp returns whether or not the service's health endpoint is returning 200s"),
+		jen.Line(),
 		newClientMethod("IsUp").Params().Params(jen.ID("bool")).Block(
 			jen.List(
 				jen.ID("req"),
-				jen.ID("err"),
+				jen.Err(),
 			).Op(":=").ID("c").Dot("BuildHealthCheckRequest").Call(),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("c").Dot("logger").Dot("Error").Call(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("building request"),
 				),
 				jen.Return().ID("false"),
@@ -511,23 +581,23 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.List(
 				jen.ID("res"),
-				jen.ID("err"),
+				jen.Err(),
 			).Op(":=").ID("c").Dot("plainClient").Dot("Do").Call(
 				jen.ID("req"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("c").Dot("logger").Dot("Error").Call(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("health check"),
 				),
 				jen.Return().ID("false"),
 			),
 			jen.Line(),
 			jen.Defer().Func().Params().Block(
-				jen.If(jen.ID("err").Op(":=").ID("res").Dot("Body").Dot("Close").Call(),
-					jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.If(jen.Err().Op(":=").ID("res").Dot("Body").Dot("Close").Call(),
+					jen.Err().Op("!=").ID("nil")).Block(
 					jen.ID("c").Dot("logger").Dot("Error").Call(
-						jen.ID("err"),
+						jen.Err(),
 						jen.Lit("closing response body"),
 					),
 				),
@@ -536,213 +606,275 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			jen.Return().ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusOK"),
 		),
 		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildbuildDataRequest() []jen.Code {
+	block := utils.StartSpan(false, "buildDataRequest")
+	block = append(block,
+		jen.List(
+			jen.ID("body"),
+			jen.Err(),
+		).Op(":=").ID("createBodyFromStruct").Call(
+			jen.ID("in"),
+		),
+		jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.Return().List(jen.ID("nil"), jen.Err()),
+		),
+		jen.Line(),
+		jen.List(
+			jen.ID("req"),
+			jen.Err(),
+		).Op(":=").Qual("net/http", "NewRequest").Call(
+			jen.ID("method"),
+			jen.ID("uri"),
+			jen.ID("body"),
+		),
+		jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.Return().List(
+				jen.ID("nil"),
+				jen.Err(),
+			),
+		),
+		jen.Line(),
+		jen.ID("req").Dot("Header").Dot("Set").Call(
+			jen.Lit("Content-type"),
+			jen.Lit("application/json"),
+		),
+		jen.Return().List(jen.ID("req"), jen.ID("nil")),
 	)
 
-	// c.buildDataRequest
-	ret.Add(utils.Comments("buildDataRequest builds an HTTP request for a given method, URL, and body data.")...)
-	ret.Add(
+	lines := []jen.Code{
+		jen.Comment("buildDataRequest builds an HTTP request for a given method, URL, and body data."),
+		jen.Line(),
 		newClientMethod("buildDataRequest").Params(
+			utils.CtxParam(),
 			jen.List(
 				jen.ID("method"),
 				jen.ID("uri"),
 			).ID("string"),
 			jen.ID("in").Interface(),
-		).Params(jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error")).Block(
-			jen.List(
-				jen.ID("body"),
-				jen.ID("err"),
-			).Op(":=").ID("createBodyFromStruct").Call(
-				jen.ID("in"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"),
-					jen.ID("err")),
-			),
-			jen.Line(),
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").Qual("net/http", "NewRequest").Call(
-				jen.ID("method"),
-				jen.ID("uri"),
-				jen.ID("body"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.ID("err"),
-				),
-			),
-			jen.Line(),
-			jen.ID("req").Dot("Header").Dot("Set").Call(
-				jen.Lit("Content-type"),
-				jen.Lit("application/json"),
-			),
-			jen.Return().List(jen.ID("req"),
-				jen.ID("nil")),
+		).Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildCheckExistence() []jen.Code {
+	block := utils.StartSpan(true, "checkExistence")
+	block = append(block,
+		jen.List(jen.ID("res"), jen.Err()).Op(":=").ID("c").Dot("executeRawRequest").Call(utils.CtxVar(), jen.ID("c").Dot("authedClient"), jen.ID("req")),
+		jen.If(jen.Err().Op("!=").Nil()).Block(
+			jen.Return(jen.False(), jen.Err()),
 		),
 		jen.Line(),
+		jen.Defer().Func().Params().Block(
+			jen.If(jen.Err().Op(":=").ID("res").Dot("Body").Dot("Close").Call().Op(";").Err().Op("!=").Nil()).Block(
+				jen.ID("c").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("closing response body")),
+			),
+		).Call(),
+		jen.Line(),
+		jen.Return(jen.ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusOK"), jen.Nil()),
 	)
 
-	// c.retrieve
-	ret.Add(utils.Comments("retrieve executes an HTTP request and loads the response content into a struct")...)
-	ret.Add(
-		newClientMethod("retrieve").Params(
+	lines := []jen.Code{
+		jen.Comment("checkExistence executes an HTTP request and loads the response content into a bool"),
+		jen.Line(),
+		newClientMethod("checkExistence").Params(
+			utils.CtxParam(),
+			jen.ID("req").Op("*").Qual("net/http", "Request"),
+		).Params(jen.Bool(), jen.Error()).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildRetrieve() []jen.Code {
+	funcName := "retrieve"
+
+	block := utils.StartSpan(true, funcName)
+	block = append(block,
+		jen.If(jen.Err().Op(":=").ID("argIsNotPointerOrNil").Call(
+			jen.ID("obj"),
+		),
+			jen.Err().Op("!=").ID("nil"),
+		).Block(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("struct to load must be a pointer: %w"),
+				jen.Err(),
+			),
+		),
+		jen.Line(),
+		jen.List(
+			jen.ID("res"),
+			jen.Err(),
+		).Op(":=").ID("c").Dot("executeRawRequest").Call(
+			utils.CtxVar(),
+			jen.ID("c").Dot("authedClient"),
+			jen.ID("req"),
+		),
+		jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("executing request: %w"),
+				jen.Err(),
+			),
+		),
+		jen.Line(),
+		jen.If(jen.ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusNotFound")).Block(
+			jen.Return().ID("ErrNotFound"),
+		),
+		jen.Line(),
+		jen.Return().ID("unmarshalBody").Call(
+			jen.ID("res"), jen.Op("&").ID("obj"),
+		),
+	)
+
+	lines := []jen.Code{
+		jen.Commentf("%s executes an HTTP request and loads the response content into a struct", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
 			utils.CtxParam(),
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
 			jen.ID("obj").Interface(),
-		).Params(jen.ID("error")).Block(
-			jen.If(jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(
-				jen.ID("obj"),
+		).Params(jen.ID("error")).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildexecuteRequest() []jen.Code {
+	funcName := "executeRequest"
+
+	block := utils.StartSpan(true, funcName)
+	block = append(block,
+		jen.List(
+			jen.ID("res"),
+			jen.Err(),
+		).Op(":=").ID("c").Dot("executeRawRequest").Call(
+			utils.CtxVar(),
+			jen.ID("c").Dot("authedClient"),
+			jen.ID("req"),
+		),
+		jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("executing request: %w"),
+				jen.Err(),
 			),
-				jen.ID("err").Op("!=").ID("nil"),
+		),
+		jen.Line(),
+		jen.Switch(jen.ID("res").Dot("StatusCode")).Block(
+			jen.Case(jen.Qual("net/http", "StatusNotFound")).Block(
+				jen.Return().ID("ErrNotFound"),
+			),
+			jen.Case(jen.Qual("net/http", "StatusUnauthorized")).Block(
+				jen.Return().ID("ErrUnauthorized"),
+			),
+		),
+		jen.Line(),
+		jen.If(jen.ID("out").Op("!=").ID("nil")).Block(
+			jen.ID("resErr").Op(":=").ID("unmarshalBody").Call(
+				jen.ID("res"), jen.Op("&").ID("out"),
+			),
+			jen.If(jen.ID("resErr").Op("!=").ID("nil")).Block(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("loading response from server: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.Line(),
+		jen.Return().ID("nil"),
+	)
+
+	lines := []jen.Code{
+		jen.Commentf("%s takes a given request and executes it with the auth client. It returns some errors", funcName),
+		jen.Line(),
+		jen.Comment("upon receiving certain status codes, but otherwise will return nil upon success."),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			utils.CtxParam(),
+			jen.ID("req").Op("*").Qual("net/http", "Request"),
+			jen.ID("out").Interface(),
+		).Params(jen.ID("error")).Block(block...,
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildexecuteUnathenticatedDataRequest() []jen.Code {
+	funcName := "executeUnathenticatedDataRequest"
+
+	block := utils.StartSpan(true, funcName)
+	block = append(block,
+		jen.Comment("sometimes we want to make requests with data attached, but we don't really care about the response"),
+		jen.Comment("so we give this function a nil `out` value. That said, if you provide us a value, it needs to be a pointer."),
+		jen.If(jen.ID("out").Op("!=").ID("nil")).Block(
+			jen.If(jen.List(
+				jen.ID("np"),
+				jen.Err(),
+			).Op(":=").ID("argIsNotPointer").Call(
+				jen.ID("out"),
+			),
+				jen.ID("np").Op("||").ID("err").Op("!=").ID("nil"),
 			).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(
 					jen.Lit("struct to load must be a pointer: %w"),
-					jen.ID("err"),
+					jen.Err(),
 				),
-			),
-			jen.Line(),
-			jen.List(
-				jen.ID("res"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("executeRawRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("c").Dot("authedClient"),
-				jen.ID("req"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("executing request: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Line(),
-			jen.If(jen.ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusNotFound")).Block(
-				jen.Return().ID("ErrNotFound"),
-			),
-			jen.Line(),
-			jen.Return().ID("unmarshalBody").Call(
-				jen.ID("res"), jen.Op("&").ID("obj"),
 			),
 		),
 		jen.Line(),
+		jen.List(
+			jen.ID("res"),
+			jen.Err(),
+		).Op(":=").ID("c").Dot("executeRawRequest").Call(
+			utils.CtxVar(),
+			jen.ID("c").Dot("plainClient"),
+			jen.ID("req"),
+		),
+		jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("executing request: %w"),
+				jen.Err(),
+			),
+		),
+		jen.Line(),
+		jen.If(jen.ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusNotFound")).Block(
+			jen.Return().ID("ErrNotFound"),
+		),
+		jen.Line(),
+		jen.If(jen.ID("out").Op("!=").ID("nil")).Block(
+			jen.ID("resErr").Op(":=").ID("unmarshalBody").Call(
+				jen.ID("res"), jen.Op("&").ID("out"),
+			),
+			jen.If(jen.ID("resErr").Op("!=").ID("nil")).Block(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("loading response from server: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.Line(),
+		jen.Return().ID("nil"),
 	)
 
-	// c.executeRequest
-	ret.Add(utils.Comments(
-		"executeRequest takes a given request and executes it with the auth client. It returns some errors",
-		"upon receiving certain status codes, but otherwise will return nil upon success.",
-	)...)
-	ret.Add(
-		newClientMethod("executeRequest").Params(
+	lines := []jen.Code{
+		jen.Commentf("%s takes a given request and loads the response into an interface value.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
 			utils.CtxParam(),
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
 			jen.ID("out").Interface(),
-		).Params(jen.ID("error")).Block(
-			jen.List(
-				jen.ID("res"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("executeRawRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("c").Dot("authedClient"),
-				jen.ID("req"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("executing request: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Line(),
-			jen.Switch(jen.ID("res").Dot("StatusCode")).Block(
-				jen.Case(jen.Qual("net/http", "StatusNotFound")).Block(
-					jen.Return().ID("ErrNotFound"),
-				),
-				jen.Case(jen.Qual("net/http", "StatusUnauthorized")).Block(
-					jen.Return().ID("ErrUnauthorized"),
-				),
-			),
-			jen.Line(),
-			jen.If(jen.ID("out").Op("!=").ID("nil")).Block(
-				jen.ID("resErr").Op(":=").ID("unmarshalBody").Call(
-					jen.ID("res"), jen.Op("&").ID("out"),
-				),
-				jen.If(jen.ID("resErr").Op("!=").ID("nil")).Block(
-					jen.Return().Qual("fmt", "Errorf").Call(
-						jen.Lit("loading response from server: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.Return().ID("nil"),
-		),
+		).Params(jen.ID("error")).Block(block...),
 		jen.Line(),
-	)
+	}
 
-	// c.executeUnathenticatedDataRequest
-	ret.Add(utils.Comments("executeUnathenticatedDataRequest takes a given request and loads the response into an interface value.")...)
-	ret.Add(
-		newClientMethod("executeUnathenticatedDataRequest").Params(
-			utils.CtxParam(),
-			jen.ID("req").Op("*").Qual("net/http", "Request"),
-			jen.ID("out").Interface(),
-		).Params(jen.ID("error")).Block(
-			jen.Comment("sometimes we want to make requests with data attached, but we don't really care about the response"),
-			jen.Comment("so we give this function a nil `out` value. That said, if you provide us a value, it needs to be a pointer."),
-			jen.If(jen.ID("out").Op("!=").ID("nil")).Block(
-				jen.If(jen.List(
-					jen.ID("np"),
-					jen.ID("err"),
-				).Op(":=").ID("argIsNotPointer").Call(
-					jen.ID("out"),
-				),
-					jen.ID("np").Op("||").ID("err").Op("!=").ID("nil"),
-				).Block(
-					jen.Return().Qual("fmt", "Errorf").Call(
-						jen.Lit("struct to load must be a pointer: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.List(
-				jen.ID("res"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("executeRawRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("c").Dot("plainClient"),
-				jen.ID("req"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("executing request: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Line(),
-			jen.If(jen.ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusNotFound")).Block(
-				jen.Return().ID("ErrNotFound"),
-			),
-			jen.Line(),
-			jen.If(jen.ID("out").Op("!=").ID("nil")).Block(
-				jen.ID("resErr").Op(":=").ID("unmarshalBody").Call(
-					jen.ID("res"), jen.Op("&").ID("out"),
-				),
-				jen.If(jen.ID("resErr").Op("!=").ID("nil")).Block(
-					jen.Return().Qual("fmt", "Errorf").Call(
-						jen.Lit("loading response from server: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.Return().ID("nil"),
-		),
-		jen.Line(),
-	)
-
-	return ret
+	return lines
 }

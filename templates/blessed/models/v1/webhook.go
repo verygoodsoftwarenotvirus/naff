@@ -17,9 +17,9 @@ func webhookDotGo(pkg *models.Project) *jen.File {
 			jen.ID("WebhookDataManager").Interface(
 				jen.ID("GetWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("Webhook"), jen.ID("error")),
 				jen.ID("GetWebhookCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").ID("QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")),
-				jen.ID("GetAllWebhooksCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")),
+				jen.ID("GetAllWebhooksCount").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")),
 				jen.ID("GetWebhooks").Params(utils.CtxParam(), jen.ID("filter").Op("*").ID("QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("WebhookList"), jen.ID("error")),
-				jen.ID("GetAllWebhooks").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Op("*").ID("WebhookList"), jen.ID("error")),
+				jen.ID("GetAllWebhooks").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Op("*").ID("WebhookList"), jen.ID("error")),
 				jen.ID("GetAllWebhooksForUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Index().ID("Webhook"), jen.ID("error")),
 				jen.ID("CreateWebhook").Params(utils.CtxParam(), jen.ID("input").Op("*").ID("WebhookCreationInput")).Params(jen.Op("*").ID("Webhook"), jen.ID("error")),
 				jen.ID("UpdateWebhook").Params(utils.CtxParam(), jen.ID("updated").Op("*").ID("Webhook")).Params(jen.ID("error")),
@@ -119,12 +119,12 @@ func webhookDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("buildErrorLogFunc").Params(jen.ID("w").Op("*").ID("Webhook"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Func().Params(jen.ID("error"))).Block(
-			jen.Return().Func().Params(jen.ID("err").ID("error")).Block(
+			jen.Return().Func().Params(jen.Err().ID("error")).Block(
 				jen.ID("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
 					jen.Lit("url").Op(":").ID("w").Dot("URL"),
 					jen.Lit("method").Op(":").ID("w").Dot("Method"),
 					jen.Lit("content_type").Op(":").ID("w").Dot("ContentType")),
-				).Dot("Error").Call(jen.ID("err"), jen.Lit("error executing webhook")),
+				).Dot("Error").Call(jen.Err(), jen.Lit("error executing webhook")),
 			),
 		),
 		jen.Line(),

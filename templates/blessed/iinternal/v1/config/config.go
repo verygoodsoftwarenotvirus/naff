@@ -27,8 +27,8 @@ func configDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
-			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.If(jen.List(jen.ID("_"), jen.Err()).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 		),
 		jen.Line(),
@@ -226,8 +226,8 @@ func configDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("EncodeToFile renders your config to a file given your favorite encoder"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("EncodeToFile").Params(jen.ID("path").ID("string"), jen.ID("marshaler").ID("MarshalFunc")).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("byteSlice"), jen.ID("err")).Op(":=").ID("marshaler").Call(jen.Op("*").ID("cfg")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.List(jen.ID("byteSlice"), jen.Err()).Op(":=").ID("marshaler").Call(jen.Op("*").ID("cfg")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Return().ID("err"),
 			),
 			jen.Line(),
@@ -270,13 +270,13 @@ func configDotGo(pkg *models.Project) *jen.File {
 			jen.ID("cfg").Op(":=").ID("BuildConfig").Call(),
 			jen.ID("cfg").Dot("SetConfigFile").Call(jen.ID("filename")),
 			jen.Line(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("ReadInConfig").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to read the config file: %w"), jen.ID("err"))),
+			jen.If(jen.Err().Op(":=").ID("cfg").Dot("ReadInConfig").Call(), jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to read the config file: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Var().ID("serverConfig").Op("*").ID("ServerConfig"),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Unmarshal").Call(jen.Op("&").ID("serverConfig")), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to unmarshal the config: %w"), jen.ID("err"))),
+			jen.If(jen.Err().Op(":=").ID("cfg").Dot("Unmarshal").Call(jen.Op("&").ID("serverConfig")), jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to unmarshal the config: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("serverConfig"), jen.ID("nil")),
@@ -291,8 +291,8 @@ func configDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("randString").Params().Params(jen.ID("string")).Block(
 			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.ID("randStringSize")),
-			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.If(jen.List(jen.ID("_"), jen.Err()).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Return().Qual("encoding/base32", "StdEncoding").Dot("WithPadding").Call(jen.Qual("encoding/base32", "NoPadding")).Dot("EncodeToString").Call(jen.ID("b")),
 		),

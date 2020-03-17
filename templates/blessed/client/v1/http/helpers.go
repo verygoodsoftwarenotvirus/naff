@@ -19,7 +19,7 @@ func helpersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("argIsNotPointer").Params(jen.ID("i").Interface()).Params(
 			jen.ID("notAPointer").ID("bool"),
-			jen.ID("err").ID("error"),
+			jen.Err().ID("error"),
 		).Block(
 			jen.If(
 				jen.ID("i").Op("==").ID("nil").
@@ -43,7 +43,7 @@ func helpersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("argIsNotNil").Params(jen.ID("i").Interface()).Params(
 			jen.ID("isNil").ID("bool"),
-			jen.ID("err").ID("error"),
+			jen.Err().ID("error"),
 		).Block(
 			jen.If(jen.ID("i").Op("==").ID("nil")).Block(
 				jen.Return().List(
@@ -67,12 +67,12 @@ func helpersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("argIsNotPointerOrNil").Params(jen.ID("i").Interface()).Params(jen.ID("error")).Block(
 			jen.If(
-				jen.List(jen.ID("nn"), jen.ID("err")).Op(":=").ID("argIsNotNil").Call(jen.ID("i")),
+				jen.List(jen.ID("nn"), jen.Err()).Op(":=").ID("argIsNotNil").Call(jen.ID("i")),
 				jen.ID("nn").Op("||").ID("err").Op("!=").ID("nil"),
 			).Block(jen.Return().ID("err")),
 			jen.Line(),
 			jen.If(
-				jen.List(jen.ID("np"), jen.ID("err")).Op(":=").ID("argIsNotPointer").Call(jen.ID("i")),
+				jen.List(jen.ID("np"), jen.Err()).Op(":=").ID("argIsNotPointer").Call(jen.ID("i")),
 				jen.ID("np").Op("||").ID("err").Op("!=").ID("nil"),
 			).Block(jen.Return().ID("err")),
 			jen.Line(),
@@ -95,45 +95,45 @@ func helpersDotGo(pkg *models.Project) *jen.File {
 		).Params(
 			jen.ID("error"),
 		).Block(
-			jen.If(jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(jen.ID("dest")), jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op(":=").ID("argIsNotPointerOrNil").Call(jen.ID("dest")), jen.Err().Op("!=").ID("nil")).Block(
 				jen.Return().ID("err"),
 			),
 			jen.Line(),
 			jen.List(
 				jen.ID("bodyBytes"),
-				jen.ID("err"),
+				jen.Err(),
 			).Op(":=").Qual("io/ioutil", "ReadAll").
 				Call(jen.ID("res").Dot("Body")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Return().ID("err"),
 			),
 			jen.Line(),
 			jen.If(jen.ID("res").Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(
 				jen.ID("apiErr").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(),
-				jen.If(jen.ID("err").Op("=").Qual("encoding/json", "Unmarshal").Call(
+				jen.If(jen.Err().Op("=").Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),
 					jen.Op("&").ID("apiErr"),
 				),
-					jen.ID("err").Op("!=").ID("nil"),
+					jen.Err().Op("!=").ID("nil"),
 				).Block(
 					jen.Return().Qual("fmt", "Errorf").Call(
 						jen.Lit("unmarshaling error: %w"),
-						jen.ID("err"),
+						jen.Err(),
 					),
 				),
 				jen.Return().ID("apiErr"),
 			),
 			jen.Line(),
 			jen.If(
-				jen.ID("err").Op("=").Qual("encoding/json", "Unmarshal").Call(
+				jen.Err().Op("=").Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),
 					jen.Op("&").ID("dest"),
 				),
-				jen.ID("err").Op("!=").ID("nil"),
+				jen.Err().Op("!=").ID("nil"),
 			).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(
 					jen.Lit("unmarshaling body: %w"),
-					jen.ID("err"),
+					jen.Err(),
 				),
 			),
 			jen.Line(),
@@ -155,13 +155,13 @@ func helpersDotGo(pkg *models.Project) *jen.File {
 		).Block(
 			jen.List(
 				jen.ID("out"),
-				jen.ID("err"),
+				jen.Err(),
 			).Op(":=").Qual("encoding/json", "Marshal").Call(
 				jen.ID("in"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"),
-					jen.ID("err")),
+					jen.Err()),
 			),
 			jen.Return().List(jen.Qual("bytes", "NewReader").Call(
 				jen.ID("out"),

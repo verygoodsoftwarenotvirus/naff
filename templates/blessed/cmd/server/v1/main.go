@@ -26,28 +26,28 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("parse our config file"),
-			jen.List(jen.ID("cfg"), jen.ID("err")).Op(":=").Qual(internalConfigImp, "ParseConfigFile").Call(jen.ID("configFilepath")),
-			jen.If(jen.ID("err").Op("!=").ID("nil").Op("||").ID("cfg").Op("==").ID("nil")).Block(
-				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
+			jen.List(jen.ID("cfg"), jen.Err()).Op(":=").Qual(internalConfigImp, "ParseConfigFile").Call(jen.ID("configFilepath")),
+			jen.If(jen.Err().Op("!=").ID("nil").Op("||").ID("cfg").Op("==").ID("nil")).Block(
+				jen.ID("logger").Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.Comment("only allow initialization to take so long"),
 			jen.List(jen.ID("tctx"), jen.ID("cancel")).Op(":=").Qual("context", "WithTimeout").Call(jen.Qual("context", "Background").Call(), jen.ID("cfg").Dot("Meta").Dot("StartupDeadline")),
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.Lit("initialization")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.Lit("initialization")),
 			jen.Line(),
 			jen.Comment("connect to our database"),
-			jen.List(jen.ID("db"), jen.ID("err")).Op(":=").ID("cfg").Dot("ProvideDatabase").Call(jen.ID("ctx"), jen.ID("logger")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
+			jen.List(jen.ID("db"), jen.Err()).Op(":=").ID("cfg").Dot("ProvideDatabase").Call(utils.CtxVar(), jen.ID("logger")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("logger").Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.Comment("build our server struct"),
-			jen.List(jen.ID("server"), jen.ID("err")).Op(":=").ID("BuildServer").Call(jen.ID("ctx"), jen.ID("cfg"), jen.ID("logger"), jen.ID("db")),
+			jen.List(jen.ID("server"), jen.Err()).Op(":=").ID("BuildServer").Call(utils.CtxVar(), jen.ID("cfg"), jen.ID("logger"), jen.ID("db")),
 			jen.ID("span").Dot("End").Call(),
 			jen.ID("cancel").Call(),
 			jen.Line(),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Qual("log", "Fatal").Call(jen.ID("err")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Qual("log", "Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.Comment("I slept and dreamt that life was joy."),

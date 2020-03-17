@@ -32,14 +32,14 @@ func initDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.Line(),
-			jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
+			jen.List(jen.ID("u"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("logger").Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("oa2Client"), jen.ID("err")).Op("=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("u")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
+			jen.List(jen.ID("oa2Client"), jen.Err()).Op("=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("u")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("logger").Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.ID("fiftySpaces").Op(":=").Qual("strings", "Repeat").Call(jen.Lit("\n"), jen.Lit(50)),
@@ -62,12 +62,12 @@ func initDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client")).Block(
-			jen.List(jen.ID("uri"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("urlToUse")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.List(jen.ID("uri"), jen.Err()).Op(":=").Qual("net/url", "Parse").Call(jen.ID("urlToUse")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("c"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
+			jen.List(jen.ID("c"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
 				jen.Qual("context", "Background").Call(),
 				jen.ID("oa2Client").Dot("ClientID"),
 				jen.ID("oa2Client").Dot("ClientSecret"),
@@ -76,8 +76,8 @@ func initDotGo(pkg *models.Project) *jen.File {
 				jen.ID("oa2Client").Dot("Scopes"),
 				jen.ID("debug"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Return().ID("c"),
 		),

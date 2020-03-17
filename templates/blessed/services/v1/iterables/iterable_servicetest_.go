@@ -89,7 +89,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.ID("idm").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.ID("nil")),
 				jen.Line(),
-				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
+				jen.List(jen.ID("s"), jen.Err()).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
@@ -101,7 +101,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 				),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("s")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing unit counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -120,7 +120,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.ID("idm").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.ID("nil")),
 				jen.Line(),
-				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
+				jen.List(jen.ID("s"), jen.Err()).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
@@ -132,7 +132,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 				),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "Nil").Call(jen.ID("t"), jen.ID("s")),
-				jen.Qual("github.com/stretchr/testify/require", "Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "Error").Call(jen.ID("t"), jen.Err()),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit(fmt.Sprintf("with error fetching %s count", cn)), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -151,7 +151,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.ID("idm").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
+				jen.List(jen.ID("s"), jen.Err()).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
@@ -163,7 +163,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 				),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "Nil").Call(jen.ID("t"), jen.ID("s")),
-				jen.Qual("github.com/stretchr/testify/require", "Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "Error").Call(jen.ID("t"), jen.Err()),
 			)),
 		),
 		jen.Line(),

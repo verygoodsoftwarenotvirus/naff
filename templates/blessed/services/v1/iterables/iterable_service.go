@@ -22,9 +22,9 @@ func iterableServiceDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Comment(fmt.Sprintf("CreateMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts", cn)),
+			jen.Commentf("CreateMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts", cn),
 			jen.ID("CreateMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Op("=").Lit(fmt.Sprintf("%s_create_input", srn)),
-			jen.Comment(fmt.Sprintf("UpdateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts", cn)),
+			jen.Commentf("UpdateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts", cn),
 			jen.ID("UpdateMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Op("=").Lit(fmt.Sprintf("%s_update_input", srn)),
 			jen.Line(),
 			jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName").Op("=").Lit(puvn),
@@ -78,7 +78,7 @@ func buildServiceTypeDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	)
 
 	typeDefs := []jen.Code{
-		jen.Comment(fmt.Sprintf("Service handles to-do list %s", pcn)),
+		jen.Commentf("Service handles to-do list %s", pcn),
 		jen.ID("Service").Struct(serviceLines...),
 		jen.Line(),
 	}
@@ -98,7 +98,7 @@ func buildServiceTypeDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	typeDefs = append(typeDefs,
 		jen.Line(),
-		jen.Comment(fmt.Sprintf("%sIDFetcher is a function that fetches %s IDs", sn, cn)),
+		jen.Commentf("%sIDFetcher is a function that fetches %s IDs", sn, cn),
 		jen.ID(fmt.Sprintf("%sIDFetcher", sn)).Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 	)
 
@@ -149,21 +149,21 @@ func buildProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen
 	)
 
 	lines := []jen.Code{
-		jen.Comment(fmt.Sprintf("Provide%sService builds a new %sService", pn, pn)),
+		jen.Commentf("Provide%sService builds a new %sService", pn, pn),
 		jen.Line(),
 		jen.Func().ID(fmt.Sprintf("Provide%sService", pn)).Paramsln(params...).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
-			jen.List(jen.ID(fmt.Sprintf("%sCounter", uvn)), jen.ID("err")).Op(":=").ID(fmt.Sprintf("%sCounterProvider", uvn)).Call(jen.ID("counterName"), jen.ID("counterDescription")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.ID("err"))),
+			jen.List(jen.ID(fmt.Sprintf("%sCounter", uvn)), jen.Err()).Op(":=").ID(fmt.Sprintf("%sCounterProvider", uvn)).Call(jen.ID("counterName"), jen.ID("counterDescription")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(serviceValues...),
 			jen.Line(),
-			jen.List(jen.ID(fmt.Sprintf("%sCount", uvn)), jen.ID("err")).Op(":=").ID("svc").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("GetAll%sCount", pn)).Call(jen.ID("ctx")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("setting current %s count: ", cn)+"%w"), jen.ID("err"))),
+			jen.List(jen.ID(fmt.Sprintf("%sCount", uvn)), jen.Err()).Op(":=").ID("svc").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("GetAll%sCount", pn)).Call(utils.CtxVar()),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("setting current %s count: ", cn)+"%w"), jen.Err())),
 			),
-			jen.ID("svc").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("IncrementBy").Call(jen.ID("ctx"), jen.ID(fmt.Sprintf("%sCount", uvn))),
+			jen.ID("svc").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("IncrementBy").Call(utils.CtxVar(), jen.ID(fmt.Sprintf("%sCount", uvn))),
 			jen.Line(),
 			jen.Return().List(jen.ID("svc"), jen.ID("nil")),
 		),

@@ -149,9 +149,9 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("buildChiUserIDFetcher").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "UserIDFetcher")).Block(
 			jen.Return().Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-				jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("fetching user ID from request")),
+				jen.List(jen.ID("u"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching user ID from request")),
 				),
 				jen.Return().ID("u"),
 			),
@@ -171,9 +171,9 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 				jen.Return().Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Comment("we can generally disregard this error only because we should be able to validate"),
 					jen.Comment("that the string only contains numbers via chi's regex url param feature."),
-					jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
-					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-						jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("fetching %sID from request", sn)),
+					jen.List(jen.ID("u"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+					jen.If(jen.Err().Op("!=").ID("nil")).Block(
+						jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("fetching %sID from request", sn)),
 					),
 					jen.Return().ID("u"),
 				),
@@ -194,9 +194,9 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 		// 			jen.Return().Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 		// 				jen.Comment("we can generally disregard this error only because we should be able to validate"),
 		// 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
-		// 				jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", typ.BelongsToStruct.PackageName()), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
-		// 				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-		// 					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Litf("fetching %sID from request", typ.BelongsToStruct.Singular())),
+		// 				jen.List(jen.ID("u"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", typ.BelongsToStruct.PackageName()), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+		// 				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+		// 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("fetching %sID from request", typ.BelongsToStruct.Singular())),
 		// 				),
 		// 				jen.Return().ID("u"),
 		// 			),
@@ -214,9 +214,9 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 			jen.Return().Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Comment("we can generally disregard this error only because we should be able to validate"),
 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
-				jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("fetching WebhookID from request")),
+				jen.List(jen.ID("u"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching WebhookID from request")),
 				),
 				jen.Return().ID("u"),
 			),
@@ -231,9 +231,9 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 			jen.Return().Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Comment("we can generally disregard this error only because we should be able to validate"),
 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
-				jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("fetching OAuth2ClientID from request")),
+				jen.List(jen.ID("u"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching OAuth2ClientID from request")),
 				),
 				jen.Return().ID("u"),
 			),

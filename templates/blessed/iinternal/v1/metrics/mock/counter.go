@@ -28,7 +28,7 @@ func counterDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Increment implements our UnitCounter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("Increment").Params(jen.ID("ctx").Qual("context", "Context")).Block(
+		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("Increment").Params(utils.CtxVar().Qual("context", "Context")).Block(
 			jen.ID("m").Dot("Called").Call(),
 		),
 		jen.Line(),
@@ -46,7 +46,7 @@ func counterDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Decrement implements our UnitCounter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("Decrement").Params(jen.ID("ctx").Qual("context", "Context")).Block(
+		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("Decrement").Params(utils.CtxVar().Qual("context", "Context")).Block(
 			jen.ID("m").Dot("Called").Call(),
 		),
 		jen.Line(),

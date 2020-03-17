@@ -336,7 +336,7 @@ func (c *V1Client) GetChild(ctx context.Context, grandparentID, parentID, childI
 	})
 }
 
-func TestBuildBuildGetSomethingsRequestFuncDecl(T *testing.T) {
+func TestBuildBuildGetListOfSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
@@ -347,7 +347,7 @@ func TestBuildBuildGetSomethingsRequestFuncDecl(T *testing.T) {
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildBuildGetSomethingsRequestFuncDecl(proj, c)...,
+			buildBuildGetListOfSomethingRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
@@ -383,7 +383,7 @@ func (c *V1Client) BuildGetChildrenRequest(ctx context.Context, grandparentID, p
 	})
 }
 
-func TestBuildGetListOfSomethingsFuncDecl(T *testing.T) {
+func TestBuildGetListOfSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
@@ -394,7 +394,7 @@ func TestBuildGetListOfSomethingsFuncDecl(T *testing.T) {
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildGetListOfSomethingsFuncDecl(proj, c)...,
+			buildGetListOfSomethingFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer

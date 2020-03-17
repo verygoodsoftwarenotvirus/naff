@@ -33,13 +33,13 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CookieAuthenticationMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CookieAuthenticationMiddleware")),
+				jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CookieAuthenticationMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("fetch the user from the request"),
-				jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("s").Dot("FetchUserFromRequest").Call(jen.ID("ctx"), jen.ID("req")),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered fetching user")),
+				jen.List(jen.ID("user"), jen.Err()).Op(":=").ID("s").Dot("FetchUserFromRequest").Call(utils.CtxVar(), jen.ID("req")),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error encountered fetching user")),
 					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),
 				),
@@ -47,7 +47,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 				jen.If(jen.ID("user").Op("!=").ID("nil")).Block(
 					jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
 						jen.Qual("context", "WithValue").Callln(
-							jen.Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserKey"), jen.ID("user")),
+							jen.Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserKey"), jen.ID("user")),
 							jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
 							jen.ID("user").Dot("ID"),
 						),
@@ -69,7 +69,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("AuthenticationMiddleware").Params(jen.ID("allowValidCookieInLieuOfAValidToken").ID("bool")).Params(jen.Func().Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler"))).Block(
 			jen.Return().Func().Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 				jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-					jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AuthenticationMiddleware")),
+					jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AuthenticationMiddleware")),
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
 					jen.Comment("let's figure out who the user is"),
@@ -77,12 +77,12 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("check for a cookie first if we can"),
 					jen.If(jen.ID("allowValidCookieInLieuOfAValidToken")).Block(
-						jen.List(jen.ID("cookieAuth"), jen.ID("err")).Op(":=").ID("s").Dot("DecodeCookieFromRequest").Call(jen.ID("ctx"), jen.ID("req")),
+						jen.List(jen.ID("cookieAuth"), jen.Err()).Op(":=").ID("s").Dot("DecodeCookieFromRequest").Call(utils.CtxVar(), jen.ID("req")),
 						jen.Line(),
-						jen.If(jen.ID("err").Op("==").ID("nil").Op("&&").ID("cookieAuth").Op("!=").ID("nil")).Block(
-							jen.List(jen.ID("user"), jen.ID("err")).Op("=").ID("s").Dot("userDB").Dot("GetUser").Call(jen.ID("ctx"), jen.ID("cookieAuth").Dot("UserID")),
-							jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-								jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error authenticating request")),
+						jen.If(jen.Err().Op("==").ID("nil").Op("&&").ID("cookieAuth").Op("!=").ID("nil")).Block(
+							jen.List(jen.ID("user"), jen.Err()).Op("=").ID("s").Dot("userDB").Dot("GetUser").Call(utils.CtxVar(), jen.ID("cookieAuth").Dot("UserID")),
+							jen.If(jen.Err().Op("!=").ID("nil")).Block(
+								jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error authenticating request")),
 								jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.Lit("fetching user"), jen.Qual("net/http", "StatusInternalServerError")),
 								jen.Comment("if we get here, then we just don't have a valid cookie, and we need to move on"),
 								jen.Return(),
@@ -94,18 +94,18 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 					jen.If(jen.ID("user").Op("==").ID("nil")).Block(
 						jen.Comment("check to see if there is an OAuth2 token for a valid client attached to the request."),
 						jen.Comment("We do this first because it is presumed to be the primary means by which requests are made to the httpServer."),
-						jen.List(jen.ID("oauth2Client"), jen.ID("err")).Op(":=").ID("s").Dot("oauth2ClientsService").Dot("ExtractOAuth2ClientFromRequest").Call(jen.ID("ctx"), jen.ID("req")),
-						jen.If(jen.ID("err").Op("!=").ID("nil").Op("||").ID("oauth2Client").Op("==").ID("nil")).Block(
-							jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("fetching oauth2 client")),
+						jen.List(jen.ID("oauth2Client"), jen.Err()).Op(":=").ID("s").Dot("oauth2ClientsService").Dot("ExtractOAuth2ClientFromRequest").Call(utils.CtxVar(), jen.ID("req")),
+						jen.If(jen.Err().Op("!=").ID("nil").Op("||").ID("oauth2Client").Op("==").ID("nil")).Block(
+							jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching oauth2 client")),
 							jen.Qual("net/http", "Redirect").Call(jen.ID("res"), jen.ID("req"), jen.Lit("/login"), jen.Qual("net/http", "StatusUnauthorized")),
 							jen.Return(),
 						),
 						jen.Line(),
 						jen.Comment("attach the oauth2 client and user's info to the request"),
-						jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientKey"), jen.ID("oauth2Client")),
-						jen.List(jen.ID("user"), jen.ID("err")).Op("=").ID("s").Dot("userDB").Dot("GetUser").Call(jen.ID("ctx"), jen.ID("oauth2Client").Dot("BelongsToUser")),
-						jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-							jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error authenticating request")),
+						utils.CtxVar().Op("=").Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientKey"), jen.ID("oauth2Client")),
+						jen.List(jen.ID("user"), jen.Err()).Op("=").ID("s").Dot("userDB").Dot("GetUser").Call(utils.CtxVar(), jen.ID("oauth2Client").Dot("BelongsToUser")),
+						jen.If(jen.Err().Op("!=").ID("nil")).Block(
+							jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error authenticating request")),
 							jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.Lit("fetching user"), jen.Qual("net/http", "StatusInternalServerError")),
 							jen.Return(),
 						),
@@ -119,11 +119,11 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("elsewise, load the request with extra context"),
-					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserKey"), jen.ID("user")),
-					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"), jen.ID("user").Dot("ID")),
-					jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIsAdminKey"), jen.ID("user").Dot("IsAdmin")),
+					utils.CtxVar().Op("=").Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserKey"), jen.ID("user")),
+					utils.CtxVar().Op("=").Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"), jen.ID("user").Dot("ID")),
+					utils.CtxVar().Op("=").Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIsAdminKey"), jen.ID("user").Dot("IsAdmin")),
 					jen.Line(),
-					jen.ID("next").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req").Dot("WithContext").Call(jen.ID("ctx"))),
+					jen.ID("next").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req").Dot("WithContext").Call(utils.CtxVar())),
 				)),
 			),
 		),
@@ -135,7 +135,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("AdminMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AdminMiddleware")),
+				jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AdminMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
@@ -163,7 +163,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("parseLoginInputFromForm checks a request for a login form, and returns the parsed login data if relevant"),
 		jen.Line(),
 		jen.Func().ID("parseLoginInputFromForm").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput")).Block(
-			jen.If(jen.ID("err").Op(":=").ID("req").Dot("ParseForm").Call(), jen.ID("err").Op("==").ID("nil")).Block(
+			jen.If(jen.Err().Op(":=").ID("req").Dot("ParseForm").Call(), jen.Err().Op("==").ID("nil")).Block(
 				jen.ID("uli").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
 					jen.ID("Username").Op(":").ID("req").Dot("FormValue").Call(jen.ID("UsernameFormKey")),
 					jen.ID("Password").Op(":").ID("req").Dot("FormValue").Call(jen.ID("PasswordFormKey")),
@@ -184,20 +184,20 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UserLoginInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserLoginInputMiddleware")),
+				jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserLoginInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput")),
-				jen.If(jen.ID("err").Op(":=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("req"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.If(jen.Err().Op(":=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("req"), jen.ID("x")), jen.Err().Op("!=").ID("nil")).Block(
 					jen.If(jen.ID("x").Op("=").ID("parseLoginInputFromForm").Call(jen.ID("req")), jen.ID("x").Op("==").ID("nil")).Block(
-						jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered decoding request body")),
+						jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),
 						utils.WriteXHeader("res", "StatusBadRequest"),
 						jen.Return(),
 					),
 				),
 				jen.Line(),
-				jen.ID("ctx").Op("=").Qual("context", "WithValue").Call(jen.ID("ctx"), jen.ID("UserLoginInputMiddlewareCtxKey"), jen.ID("x")),
-				jen.ID("next").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req").Dot("WithContext").Call(jen.ID("ctx"))),
+				utils.CtxVar().Op("=").Qual("context", "WithValue").Call(utils.CtxVar(), jen.ID("UserLoginInputMiddlewareCtxKey"), jen.ID("x")),
+				jen.ID("next").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req").Dot("WithContext").Call(utils.CtxVar())),
 			)),
 		),
 		jen.Line(),

@@ -37,15 +37,15 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("BuildGetWebhookRequest").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.ID("expectedID"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertTrue(
@@ -118,15 +118,15 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("GetWebhook").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.ID("expected").Dot("ID"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(jen.ID("expected"),
@@ -151,15 +151,15 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("BuildGetWebhooksRequest").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.ID("nil"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(
@@ -212,15 +212,15 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("GetWebhooks").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.ID("nil"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(jen.ID("expected"),
@@ -248,15 +248,15 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("BuildCreateWebhookRequest").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.ID("exampleInput"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(
@@ -324,15 +324,15 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("CreateWebhook").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.ID("exampleInput"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(jen.ID("expected"),
@@ -360,15 +360,15 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("BuildUpdateWebhookRequest").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.ID("exampleInput"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(
@@ -413,15 +413,15 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 						nil),
 				),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("buildTestClient").Call(
+				jen.Err().Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				).Dot("UpdateWebhook").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.ID("expected"),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 			),
@@ -447,9 +447,9 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("BuildArchiveWebhookRequest").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.ID("expectedID"),
 				),
 				jen.Line(),
@@ -469,7 +469,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					nil,
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(
@@ -510,15 +510,15 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("buildTestClient").Call(
+				jen.Err().Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				).Dot("ArchiveWebhook").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.ID("expected"),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 			),

@@ -618,8 +618,8 @@ func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Func().Params()).Block(
 			jen.Return().Func().Params().Block(
 				jen.ID("driver").Op(":=").Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(jen.ID("db"), jen.Qual("github.com/GuiaBolso/darwin", dialectName).Values()),
-				jen.If(jen.ID("err").Op(":=").Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot("Migrate").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("panic").Call(jen.ID("err")),
+				jen.If(jen.Err().Op(":=").Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot("Migrate").Call(), jen.Err().Op("!=").ID("nil")).Block(
+					jen.ID("panic").Call(jen.Err()),
 				),
 			),
 		),
@@ -636,9 +636,9 @@ func buildMigrate(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Comment("safe (as in idempotent, though not necessarily recommended) to call this function multiple times."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("error")).Block(
 			jen.ID(dbfl).Dot("logger").Dot("Info").Call(jen.Lit("migrating db")),
-			jen.If(jen.Op("!").ID(dbfl).Dot("IsReady").Call(jen.ID("ctx"))).Block(
+			jen.If(jen.Op("!").ID(dbfl).Dot("IsReady").Call(utils.CtxVar())).Block(
 				jen.Return().ID("errors").Dot("New").Call(jen.Lit("db is not ready yet")),
 			),
 			jen.Line(),

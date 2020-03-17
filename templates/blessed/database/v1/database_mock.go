@@ -82,8 +82,8 @@ func databaseMockDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Migrate satisfies the database.Database interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("MockDatabase")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MockDatabase")).ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("error")).Block(
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar()),
 			jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
 		),
 		jen.Line(),
@@ -92,8 +92,8 @@ func databaseMockDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("IsReady satisfies the database.Database interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("MockDatabase")).ID("IsReady").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("m").Op("*").ID("MockDatabase")).ID("IsReady").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar()),
 			jen.Return().ID("args").Dot("Bool").Call(jen.Lit(0)),
 		),
 		jen.Line(),

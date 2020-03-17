@@ -39,8 +39,8 @@ func clientDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Migrate is a simple wrapper around the core querier Migrate call"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
-			jen.Return().ID("c").Dot("querier").Dot("Migrate").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("error")).Block(
+			jen.Return().ID("c").Dot("querier").Dot("Migrate").Call(utils.CtxVar()),
 		),
 		jen.Line(),
 	)
@@ -48,8 +48,8 @@ func clientDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("IsReady is a simple wrapper around the core querier IsReady call"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("IsReady").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
-			jen.Return().ID("c").Dot("querier").Dot("IsReady").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("IsReady").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
+			jen.Return().ID("c").Dot("querier").Dot("IsReady").Call(utils.CtxVar()),
 		),
 		jen.Line(),
 	)
@@ -76,8 +76,8 @@ func clientDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("migrating querier")),
-			jen.If(jen.ID("err").Op(":=").ID("c").Dot("querier").Dot("Migrate").Call(jen.ID("ctx")), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.If(jen.Err().Op(":=").ID("c").Dot("querier").Dot("Migrate").Call(utils.CtxVar()), jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("querier migrated!")),
 			jen.Line(),
@@ -89,10 +89,10 @@ func clientDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("attachUserIDToSpan provides a consistent way to attach a user's ID to a span"),
 		jen.Line(),
-		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
+		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual(utils.TracingLibrary, "Span"), jen.ID("userID").ID("uint64")).Block(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
 				jen.ID("span").Dot("AddAttributes").Callln(
-					jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10))),
+					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10))),
 				),
 			),
 		),
@@ -102,11 +102,11 @@ func clientDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("attachFilterToSpan provides a consistent way to attach a filter's info to a span"),
 		jen.Line(),
-		jen.Func().ID("attachFilterToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Block(
+		jen.Func().ID("attachFilterToSpan").Params(jen.ID("span").Op("*").Qual(utils.TracingLibrary, "Span"), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Block(
 			jen.If(jen.ID("filter").Op("!=").ID("nil").Op("&&").ID("span").Op("!=").ID("nil")).Block(
 				jen.ID("span").Dot("AddAttributes").Callln(
-					jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("filter_page"), jen.Qual("strconv", "FormatUint").Call(jen.ID("filter").Dot("QueryPage").Call(), jen.Lit(10))),
-					jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("filter_limit"), jen.Qual("strconv", "FormatUint").Call(jen.ID("filter").Dot("Limit"), jen.Lit(10)))),
+					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(jen.Lit("filter_page"), jen.Qual("strconv", "FormatUint").Call(jen.ID("filter").Dot("QueryPage").Call(), jen.Lit(10))),
+					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(jen.Lit("filter_limit"), jen.Qual("strconv", "FormatUint").Call(jen.ID("filter").Dot("Limit"), jen.Lit(10)))),
 			),
 		),
 		jen.Line(),

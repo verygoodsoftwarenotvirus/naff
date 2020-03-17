@@ -34,9 +34,9 @@ func mockDotGo(pkg *models.Project) *jen.File {
 				jen.ID("providedPassword"),
 				jen.ID("twoFactorSecret"),
 				jen.ID("twoFactorCode")).ID("string"),
-			jen.ID("salt").Index().ID("byte")).Params(jen.ID("valid").ID("bool"), jen.ID("err").ID("error")).Block(
+			jen.ID("salt").Index().ID("byte")).Params(jen.ID("valid").ID("bool"), jen.Err().ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Callln(
-				jen.ID("ctx"),
+				utils.CtxVar(),
 				jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 				jen.ID("twoFactorSecret"),
@@ -59,7 +59,7 @@ func mockDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("HashPassword satisfies our authenticator interface"), jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("Authenticator")).ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx"), jen.ID("password")),
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("password")),
 			jen.Return().List(jen.ID("args").Dot("String").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -74,7 +74,7 @@ func mockDotGo(pkg *models.Project) *jen.File {
 			).ID("string"),
 			jen.ID("salt").Index().ID("byte")).Params(jen.ID("bool")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Callln(
-				jen.ID("ctx"),
+				utils.CtxVar(),
 				jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 				jen.ID("salt"),

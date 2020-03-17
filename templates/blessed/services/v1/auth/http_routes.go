@@ -47,15 +47,15 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("DecodeCookieFromRequest takes a request object and fetches the cookie data if it is present"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("DecodeCookieFromRequest").Params(utils.CtxParam(), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("ca").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "CookieAuth"), jen.ID("err").ID("error")).Block(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("DecodeCookieFromRequest")),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("DecodeCookieFromRequest").Params(utils.CtxParam(), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("ca").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "CookieAuth"), jen.Err().ID("error")).Block(
+			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("DecodeCookieFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.List(jen.ID("cookie"), jen.ID("err")).Op(":=").ID("req").Dot("Cookie").Call(jen.ID("CookieName")),
-			jen.If(jen.ID("err").Op("!=").Qual("net/http", "ErrNoCookie").Op("&&").ID("cookie").Op("!=").ID("nil")).Block(
+			jen.List(jen.ID("cookie"), jen.Err()).Op(":=").ID("req").Dot("Cookie").Call(jen.ID("CookieName")),
+			jen.If(jen.Err().Op("!=").Qual("net/http", "ErrNoCookie").Op("&&").ID("cookie").Op("!=").ID("nil")).Block(
 				jen.ID("decodeErr").Op(":=").ID("s").Dot("cookieManager").Dot("Decode").Call(jen.ID("CookieName"), jen.ID("cookie").Dot("Value"), jen.Op("&").ID("ca")),
 				jen.If(jen.ID("decodeErr").Op("!=").ID("nil")).Block(
-					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("decoding request cookie")),
+					jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("decoding request cookie")),
 					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("decoding request cookie: %w"), jen.ID("decodeErr"))),
 				),
 				jen.Line(),
@@ -72,25 +72,25 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("WebsocketAuthFunction is provided to Newsman to determine if a user has access to websockets"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("WebsocketAuthFunction").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("bool")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("WebsocketAuthFunction")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("WebsocketAuthFunction")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.Comment("First we check to see if there is an OAuth2 token for a valid client attached to the request."),
 			jen.Comment("We do this first because it is presumed to be the primary means by which requests are made to the httpServer."),
-			jen.List(jen.ID("oauth2Client"), jen.ID("err")).Op(":=").ID("s").Dot("oauth2ClientsService").Dot("ExtractOAuth2ClientFromRequest").Call(jen.ID("ctx"), jen.ID("req")),
-			jen.If(jen.ID("err").Op("==").ID("nil").Op("&&").ID("oauth2Client").Op("!=").ID("nil")).Block(
+			jen.List(jen.ID("oauth2Client"), jen.Err()).Op(":=").ID("s").Dot("oauth2ClientsService").Dot("ExtractOAuth2ClientFromRequest").Call(utils.CtxVar(), jen.ID("req")),
+			jen.If(jen.Err().Op("==").ID("nil").Op("&&").ID("oauth2Client").Op("!=").ID("nil")).Block(
 				jen.Return().ID("true"),
 			),
 			jen.Line(),
 			jen.Comment("In the event there's not a valid OAuth2 token attached to the request, or there is some other OAuth2 issue,"),
 			jen.Comment("we next check to see if a valid cookie is attached to the request"),
-			jen.List(jen.ID("cookieAuth"), jen.ID("cookieErr")).Op(":=").ID("s").Dot("DecodeCookieFromRequest").Call(jen.ID("ctx"), jen.ID("req")),
+			jen.List(jen.ID("cookieAuth"), jen.ID("cookieErr")).Op(":=").ID("s").Dot("DecodeCookieFromRequest").Call(utils.CtxVar(), jen.ID("req")),
 			jen.If(jen.ID("cookieErr").Op("==").ID("nil").Op("&&").ID("cookieAuth").Op("!=").ID("nil")).Block(
 				jen.Return().ID("true"),
 			),
 			jen.Line(),
 			jen.Comment("If your request gets here, you're likely either trying to get here, or desperately trying to get anywhere"),
-			jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error authenticated token-authenticated request")),
+			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error authenticated token-authenticated request")),
 			jen.Return().ID("false"),
 		),
 		jen.Line(),
@@ -101,10 +101,10 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("FetchUserFromRequest takes a request object and fetches the cookie, and then the user for that cookie"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("FetchUserFromRequest").Params(utils.CtxParam(), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("FetchUserFromRequest")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("FetchUserFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.List(jen.ID("ca"), jen.ID("decodeErr")).Op(":=").ID("s").Dot("DecodeCookieFromRequest").Call(jen.ID("ctx"), jen.ID("req")),
+			jen.List(jen.ID("ca"), jen.ID("decodeErr")).Op(":=").ID("s").Dot("DecodeCookieFromRequest").Call(utils.CtxVar(), jen.ID("req")),
 			jen.If(jen.ID("decodeErr").Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching cookie data from request: %w"), jen.ID("decodeErr"))),
 			),
@@ -126,15 +126,15 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("LoginHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("LoginHandler")),
+				jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("LoginHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.List(jen.ID("loginData"), jen.ID("errRes")).Op(":=").ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
 				jen.If(jen.ID("errRes").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("errRes"), jen.Lit("error encountered fetching login data from request")),
 					utils.WriteXHeader("res", "StatusUnauthorized"),
-					jen.If(jen.ID("err").Op(":=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("errRes")), jen.ID("err").Op("!=").ID("nil")).Block(
-						jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
+					jen.If(jen.Err().Op(":=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("errRes")), jen.Err().Op("!=").ID("nil")).Block(
+						jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 					),
 					jen.Return(),
 				).Else().If(jen.ID("loginData").Op("==").ID("nil")).Block(
@@ -146,9 +146,9 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("attachUsernameToSpan").Call(jen.ID("span"), jen.ID("loginData").Dot("user").Dot("Username")),
 				jen.Line(),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user"), jen.ID("loginData").Dot("user").Dot("ID")),
-				jen.List(jen.ID("loginValid"), jen.ID("err")).Op(":=").ID("s").Dot("validateLogin").Call(jen.ID("ctx"), jen.Op("*").ID("loginData")),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered validating login")),
+				jen.List(jen.ID("loginValid"), jen.Err()).Op(":=").ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.Op("*").ID("loginData")),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error encountered validating login")),
 					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),
 				),
@@ -161,17 +161,17 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("logger").Dot("Debug").Call(jen.Lit("login was valid")),
-				jen.List(jen.ID("cookie"), jen.ID("err")).Op(":=").ID("s").Dot("buildAuthCookie").Call(jen.ID("loginData").Dot("user")),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error building cookie")),
+				jen.List(jen.ID("cookie"), jen.Err()).Op(":=").ID("s").Dot("buildAuthCookie").Call(jen.ID("loginData").Dot("user")),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error building cookie")),
 					jen.Line(),
 					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.ID("response").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Valuesln(
 						jen.ID("Code").Op(":").Qual("net/http", "StatusInternalServerError"),
 						jen.ID("Message").Op(":").Lit("error encountered building cookie"),
 					),
-					jen.If(jen.ID("err").Op(":=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("response")), jen.ID("err").Op("!=").ID("nil")).Block(
-						jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
+					jen.If(jen.Err().Op(":=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("response")), jen.Err().Op("!=").ID("nil")).Block(
+						jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 					),
 					jen.Return(),
 				),
@@ -191,13 +191,13 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("_"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("LogoutHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
-				jen.If(jen.List(jen.ID("cookie"), jen.ID("err")).Op(":=").ID("req").Dot("Cookie").Call(jen.ID("CookieName")), jen.ID("err").Op("==").ID("nil").Op("&&").ID("cookie").Op("!=").ID("nil")).Block(
+				jen.If(jen.List(jen.ID("cookie"), jen.Err()).Op(":=").ID("req").Dot("Cookie").Call(jen.ID("CookieName")), jen.Err().Op("==").ID("nil").Op("&&").ID("cookie").Op("!=").ID("nil")).Block(
 					jen.ID("c").Op(":=").ID("s").Dot("buildCookie").Call(jen.Lit("deleted")),
 					jen.ID("c").Dot("Expires").Op("=").Qual("time", "Time").Values(),
 					jen.ID("c").Dot("MaxAge").Op("=").Op("-").Lit(1),
 					jen.Qual("net/http", "SetCookie").Call(jen.ID("res"), jen.ID("c")),
 				).Else().Block(
-					jen.ID("s").Dot("logger").Dot("WithError").Call(jen.ID("err")).Dot("Debug").Call(jen.Lit("logout was called, no cookie was found")),
+					jen.ID("s").Dot("logger").Dot("WithError").Call(jen.Err()).Dot("Debug").Call(jen.Lit("logout was called, no cookie was found")),
 				),
 				jen.Line(),
 				utils.WriteXHeader("res", "StatusOK"),
@@ -237,7 +237,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("returns a helper struct with the relevant login information"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("fetchLoginDataFromRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("loginData"), jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("fetchLoginDataFromRequest")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("fetchLoginDataFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.List(jen.ID("loginInput"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UserLoginInputMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput")),
@@ -254,12 +254,12 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("you could ensure there isn't an unsatisfied password reset token"),
 			jen.Comment("requested before allowing login here"),
 			jen.Line(),
-			jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("s").Dot("userDB").Dot("GetUserByUsername").Call(jen.ID("ctx"), jen.ID("username")),
-			jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-				jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("no matching user")),
+			jen.List(jen.ID("user"), jen.Err()).Op(":=").ID("s").Dot("userDB").Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("username")),
+			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("no matching user")),
 				jen.Return().List(jen.ID("nil"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(jen.ID("Code").Op(":").Qual("net/http", "StatusBadRequest"))),
-			).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching user")),
+			).Else().If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching user")),
 				jen.Return().List(jen.ID("nil"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(jen.ID("Code").Op(":").Qual("net/http", "StatusInternalServerError"))),
 			),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("user").Dot("ID")),
@@ -280,7 +280,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("In the event that there's an error, this function will return false and the error."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("validateLogin").Params(utils.CtxParam(), jen.ID("loginInfo").ID("loginData")).Params(jen.ID("bool"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("validateLogin")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("validateLogin")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.Comment("alias the relevant data"),
@@ -289,8 +289,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("username"), jen.ID("user").Dot("Username")),
 			jen.Line(),
 			jen.Comment("check for login validity"),
-			jen.List(jen.ID("loginValid"), jen.ID("err")).Op(":=").ID("s").Dot("authenticator").Dot("ValidateLogin").Callln(
-				jen.ID("ctx"),
+			jen.List(jen.ID("loginValid"), jen.Err()).Op(":=").ID("s").Dot("authenticator").Dot("ValidateLogin").Callln(
+				utils.CtxVar(),
 				jen.ID("user").Dot("HashedPassword"),
 				jen.ID("loginInput").Dot("Password"),
 				jen.ID("user").Dot("TwoFactorSecret"),
@@ -299,23 +299,23 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("if the login is otherwise valid, but the password is too weak, try to rehash it."),
-			jen.If(jen.ID("err").Op("==").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ErrPasswordHashTooWeak").Op("&&").ID("loginValid")).Block(
+			jen.If(jen.Err().Op("==").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ErrPasswordHashTooWeak").Op("&&").ID("loginValid")).Block(
 				jen.ID("logger").Dot("Debug").Call(jen.Lit("hashed password was deemed to weak, updating its hash")),
 				jen.Line(),
 				jen.Comment("re-hash the password"),
-				jen.List(jen.ID("updated"), jen.ID("hashErr")).Op(":=").ID("s").Dot("authenticator").Dot("HashPassword").Call(jen.ID("ctx"), jen.ID("loginInput").Dot("Password")),
+				jen.List(jen.ID("updated"), jen.ID("hashErr")).Op(":=").ID("s").Dot("authenticator").Dot("HashPassword").Call(utils.CtxVar(), jen.ID("loginInput").Dot("Password")),
 				jen.If(jen.ID("hashErr").Op("!=").ID("nil")).Block(
 					jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("updating password hash: %w"), jen.ID("hashErr"))),
 				),
 				jen.Line(),
 				jen.Comment("update stored hashed password in the database"),
 				jen.ID("user").Dot("HashedPassword").Op("=").ID("updated"),
-				jen.If(jen.ID("updateErr").Op(":=").ID("s").Dot("userDB").Dot("UpdateUser").Call(jen.ID("ctx"), jen.ID("user")), jen.ID("updateErr").Op("!=").ID("nil")).Block(
+				jen.If(jen.ID("updateErr").Op(":=").ID("s").Dot("userDB").Dot("UpdateUser").Call(utils.CtxVar(), jen.ID("user")), jen.ID("updateErr").Op("!=").ID("nil")).Block(
 					jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("saving updated password hash: %w"), jen.ID("updateErr"))),
 				),
-			).Else().If(jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ErrPasswordHashTooWeak")).Block(
-				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("issue validating login")),
-				jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("validating login: %w"), jen.ID("err"))),
+			).Else().If(jen.Err().Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ErrPasswordHashTooWeak")).Block(
+				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("issue validating login")),
+				jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("validating login: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("loginValid"), jen.ID("nil")),
@@ -330,7 +330,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("NOTE: code here is duplicated into the unit tests for"),
 			jen.Comment("DecodeCookieFromRequest any changes made here might need"),
 			jen.Comment("to be reflected there"),
-			jen.List(jen.ID("encoded"), jen.ID("err")).Op(":=").ID("s").Dot("cookieManager").Dot("Encode").Callln(
+			jen.List(jen.ID("encoded"), jen.Err()).Op(":=").ID("s").Dot("cookieManager").Dot("Encode").Callln(
 				jen.ID("CookieName"),
 				jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "CookieAuth").Valuesln(
 					jen.ID("UserID").Op(":").ID("user").Dot("ID"),
@@ -339,10 +339,10 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				),
 			),
 			jen.Line(),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Comment("NOTE: these errors should be infrequent, and should cause alarm when they do occur"),
-				jen.ID("s").Dot("logger").Dot("WithName").Call(jen.ID("cookieErrorLogName")).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("user").Dot("ID")).Dot("Error").Call(jen.ID("err"), jen.Lit("error encoding cookie")),
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+				jen.ID("s").Dot("logger").Dot("WithName").Call(jen.ID("cookieErrorLogName")).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("user").Dot("ID")).Dot("Error").Call(jen.Err(), jen.Lit("error encoding cookie")),
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("s").Dot("buildCookie").Call(jen.ID("encoded")), jen.ID("nil")),

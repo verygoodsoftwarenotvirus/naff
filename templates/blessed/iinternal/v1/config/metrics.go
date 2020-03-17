@@ -57,8 +57,8 @@ func metricsDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "InstrumentationHandler"), jen.ID("error")).Block(
-			jen.If(jen.ID("err").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "RegisterDefaultViews").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("registering default metric views: %w"), jen.ID("err"))),
+			jen.If(jen.Err().Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "RegisterDefaultViews").Call(), jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("registering default metric views: %w"), jen.Err())),
 			),
 			jen.ID("_").Op("=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "RecordRuntimeStats").Call(jen.Qual("time", "Duration").Callln(
 				jen.Qual("math", "Max").Callln(
@@ -72,14 +72,14 @@ func metricsDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.Switch(jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")).Block(
 				jen.Case(jen.ID("Prometheus"), jen.ID("DefaultMetricsProvider")).Block(
-					jen.List(jen.ID("p"), jen.ID("err")).Op(":=").Qual("contrib.go.opencensus.io/exporter/prometheus", "NewExporter").Call(jen.Qual("contrib.go.opencensus.io/exporter/prometheus", "Options").Valuesln(
-						jen.ID("OnError").Op(":").Func().Params(jen.ID("err").ID("error")).Block(
-							jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("setting up prometheus export")),
+					jen.List(jen.ID("p"), jen.Err()).Op(":=").Qual("contrib.go.opencensus.io/exporter/prometheus", "NewExporter").Call(jen.Qual("contrib.go.opencensus.io/exporter/prometheus", "Options").Valuesln(
+						jen.ID("OnError").Op(":").Func().Params(jen.Err().ID("error")).Block(
+							jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("setting up prometheus export")),
 						),
 						jen.ID("Namespace").Op(":").ID("string").Call(jen.ID("MetricsNamespace")),
 					)),
-					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to create Prometheus exporter: %w"), jen.ID("err"))),
+					jen.If(jen.Err().Op("!=").ID("nil")).Block(
+						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to create Prometheus exporter: %w"), jen.Err())),
 					),
 					jen.Qual("go.opencensus.io/stats/view", "RegisterExporter").Call(jen.ID("p")), jen.ID("log").Dot("Debug").Call(jen.Lit("metrics provider registered")),
 					jen.Return().List(jen.ID("p"), jen.ID("nil"))),
@@ -107,12 +107,12 @@ func metricsDotGo(pkg *models.Project) *jen.File {
 					jen.ID("sn").Op(":=").Qual("os", "Getenv").Call(jen.Lit("JAEGER_SERVICE_NAME")),
 					jen.Line(),
 					jen.If(jen.ID("ah").Op("!=").Lit("").Op("&&").ID("ap").Op("!=").Lit("").Op("&&").ID("sn").Op("!=").Lit("")).Block(
-						jen.List(jen.ID("je"), jen.ID("err")).Op(":=").Qual("contrib.go.opencensus.io/exporter/jaeger", "NewExporter").Call(jen.Qual("contrib.go.opencensus.io/exporter/jaeger", "Options").Valuesln(
+						jen.List(jen.ID("je"), jen.Err()).Op(":=").Qual("contrib.go.opencensus.io/exporter/jaeger", "NewExporter").Call(jen.Qual("contrib.go.opencensus.io/exporter/jaeger", "Options").Valuesln(
 							jen.ID("AgentEndpoint").Op(":").Qual("fmt", "Sprintf").Call(jen.Lit("%s:%s"), jen.ID("ah"), jen.ID("ap")),
 							jen.ID("Process").Op(":").Qual("contrib.go.opencensus.io/exporter/jaeger", "Process").Values(jen.ID("ServiceName").Op(":").ID("sn")),
 						)),
-						jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-							jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("failed to create Jaeger exporter: %w"), jen.ID("err")),
+						jen.If(jen.Err().Op("!=").ID("nil")).Block(
+							jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("failed to create Jaeger exporter: %w"), jen.Err()),
 						),
 						jen.Line(),
 						jen.Qual("go.opencensus.io/trace", "RegisterExporter").Call(jen.ID("je")),

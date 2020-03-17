@@ -49,7 +49,7 @@ func actionsDotGo(pkg *models.Project) *jen.File {
 					jen.ID("Name").Op(":").Lit("CreateUser"),
 					jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
 						jen.ID("ui").Op(":=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
-						jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(jen.ID("ctx"), jen.ID("ui")),
+						jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(utils.CtxVar(), jen.ID("ui")),
 					),
 					jen.ID("Weight").Op(":").Lit(100),
 				),

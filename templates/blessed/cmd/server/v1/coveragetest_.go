@@ -21,9 +21,9 @@ func coverageTestDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("tests exhibit. We run the main function (i.e. a production server)"),
 			jen.Comment("on an independent goroutine and sleep for long enough that the integration"),
 			jen.Comment("tests can run, then we quit."),
-			jen.List(jen.ID("d"), jen.ID("err")).Op(":=").Qual("time", "ParseDuration").Call(jen.Qual("os", "Getenv").Call(jen.Lit("RUNTIME_DURATION"))),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Qual("log", "Fatal").Call(jen.ID("err")),
+			jen.List(jen.ID("d"), jen.Err()).Op(":=").Qual("time", "ParseDuration").Call(jen.Qual("os", "Getenv").Call(jen.Lit("RUNTIME_DURATION"))),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Qual("log", "Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.Go().ID("main").Call(),

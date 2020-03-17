@@ -34,9 +34,9 @@ func typesDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("UnitCounter describes a counting interface for things like total user counts"),
 			jen.Comment("Meant to handle integers exclusively"),
 			jen.ID("UnitCounter").Interface(
-				jen.ID("Increment").Params(jen.ID("ctx").Qual("context", "Context")),
+				jen.ID("Increment").Params(utils.CtxVar().Qual("context", "Context")),
 				jen.ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").ID("uint64")),
-				jen.ID("Decrement").Params(jen.ID("ctx").Qual("context", "Context")),
+				jen.ID("Decrement").Params(utils.CtxVar().Qual("context", "Context")),
 			),
 			jen.Line(),
 			jen.Comment("UnitCounterProvider is a function that provides a UnitCounter and an error"),

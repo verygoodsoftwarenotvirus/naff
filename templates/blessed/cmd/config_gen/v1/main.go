@@ -182,8 +182,8 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("main").Params().Block(
 			jen.For(jen.List(jen.ID("filepath"), jen.ID("fun")).Op(":=").Range().ID("files")).Block(
-				jen.If(jen.ID("err").Op(":=").ID("fun").Call(jen.ID("filepath")), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.Qual("log", "Fatal").Call(jen.ID("err")),
+				jen.If(jen.Err().Op(":=").ID("fun").Call(jen.ID("filepath")), jen.Err().Op("!=").ID("nil")).Block(
+					jen.Qual("log", "Fatal").Call(jen.Err()),
 				),
 			),
 		),

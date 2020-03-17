@@ -158,9 +158,9 @@ func buildSetupRouterFuncDef(pkg *models.Project) []jen.Code {
 		jen.Comment("Frontend routes"),
 		jen.If(jen.ID("s").Dot("config").Dot("Frontend").Dot("StaticFilesDirectory").Op("!=").Lit("")).Block(
 			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("setting static file server")),
-			jen.List(jen.ID("staticFileServer"), jen.ID("err")).Op(":=").ID("s").Dot("frontendService").Dot("StaticDir").Call(jen.ID("frontendConfig").Dot("StaticFilesDirectory")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("establishing static file server")),
+			jen.List(jen.ID("staticFileServer"), jen.Err()).Op(":=").ID("s").Dot("frontendService").Dot("StaticDir").Call(jen.ID("frontendConfig").Dot("StaticFilesDirectory")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("establishing static file server")),
 			),
 			jen.ID("router").Dot("Get").Call(jen.Lit("/*"), jen.ID("staticFileServer")),
 		),
@@ -207,14 +207,14 @@ func buildSetupRouterFuncDef(pkg *models.Project) []jen.Code {
 			jen.ID("oauth2Router").Dot("With").Call(jen.ID("s").Dot("oauth2ClientsService").Dot("OAuth2ClientInfoMiddleware")).
 				Dotln("Post").Call(jen.Lit("/authorize"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
 				jen.ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).Dot("Debug").Call(jen.Lit("oauth2 authorize route hit")),
-				jen.If(jen.ID("err").Op(":=").ID("s").Dot("oauth2ClientsService").Dot("HandleAuthorizeRequest").Call(jen.ID("res"), jen.ID("req")), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.ID("err").Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
+				jen.If(jen.Err().Op(":=").ID("s").Dot("oauth2ClientsService").Dot("HandleAuthorizeRequest").Call(jen.ID("res"), jen.ID("req")), jen.Err().Op("!=").ID("nil")).Block(
+					jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.Err().Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
 				),
 			)),
 			jen.Line(),
 			jen.ID("oauth2Router").Dot("Post").Call(jen.Lit("/token"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.If(jen.ID("err").Op(":=").ID("s").Dot("oauth2ClientsService").Dot("HandleTokenRequest").Call(jen.ID("res"), jen.ID("req")), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.ID("err").Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
+				jen.If(jen.Err().Op(":=").ID("s").Dot("oauth2ClientsService").Dot("HandleTokenRequest").Call(jen.ID("res"), jen.ID("req")), jen.Err().Op("!=").ID("nil")).Block(
+					jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.Err().Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
 				),
 			)),
 		)),

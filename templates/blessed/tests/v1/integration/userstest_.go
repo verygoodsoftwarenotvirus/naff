@@ -16,8 +16,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
-			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.If(jen.List(jen.ID("_"), jen.Err()).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 		),
 		jen.Line(),
@@ -31,8 +31,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("randString").Params().Params(jen.ID("string"), jen.ID("error")).Block(
 			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
 			jen.Comment("Note that err == nil only if we read len(b) bytes"),
-			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.Lit(""), jen.ID("err")),
+			jen.If(jen.List(jen.ID("_"), jen.Err()).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.Lit(""), jen.Err()),
 			),
 			jen.Line(),
 			jen.Return().List(jen.Qual("encoding/base32", "StdEncoding").Dot("EncodeToString").Call(jen.ID("b")), jen.ID("nil")),
@@ -62,9 +62,9 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("build user creation route input"),
 			jen.ID("userInput").Op(":=").ID("buildDummyUserInput").Call(jen.ID("t")),
-			jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("ctx"), jen.ID("userInput")),
+			jen.List(jen.ID("user"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateUser").Call(utils.CtxVar(), jen.ID("userInput")),
 			jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("user")),
-			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.Line(),
 			jen.If(jen.ID("user").Op("==").ID("nil").Op("||").ID("err").Op("!=").ID("nil")).Block(
 				jen.ID("t").Dot("FailNow").Call(),
@@ -76,7 +76,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("user").Dot("TwoFactorSecret"),
 			),
 			jen.Line(),
-			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("cookie")),
 			jen.Line(),
 			jen.Return().List(jen.ID("user"), jen.ID("userInput"), jen.ID("cookie")),
@@ -129,10 +129,10 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("expected").Op(":=").ID("buildDummyUserInput").Call(jen.ID("t")),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
 						jen.ID("Username").Op(":").ID("expected").Dot("Username"),
 						jen.ID("Password").Op(":").ID("expected").Dot("Password"))),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.Line(),
 					jen.Comment("Assert user equality"),
 					jen.ID("checkUserCreationEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
@@ -147,9 +147,9 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 					jen.Line(),
 					jen.Comment("Fetch user"),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot("GetUser").Call(jen.ID("tctx"), jen.ID("nonexistentID")),
+					jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dot("GetUser").Call(jen.ID("tctx"), jen.ID("nonexistentID")),
 					jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
@@ -157,18 +157,18 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("expected").Op(":=").ID("buildDummyUserInput").Call(jen.ID("t")),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.List(jen.ID("premade"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
 						jen.ID("Username").Op(":").ID("expected").Dot("Username"),
 						jen.ID("Password").Op(":").ID("expected").Dot("Password"))),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
 					jen.Qual("github.com/stretchr/testify/assert", "NotEmpty").Call(jen.ID("t"), jen.ID("premade").Dot("TwoFactorSecret")),
 					jen.Line(),
 					jen.Comment("Fetch user"),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot("GetUser").Call(jen.ID("tctx"), jen.ID("premade").Dot("ID")),
-					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-						jen.ID("t").Dot("Logf").Call(jen.Lit("error encountered trying to fetch user %q: %v\n"), jen.ID("premade").Dot("Username"), jen.ID("err")),
+					jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dot("GetUser").Call(jen.ID("tctx"), jen.ID("premade").Dot("ID")),
+					jen.If(jen.Err().Op("!=").ID("nil")).Block(
+						jen.ID("t").Dot("Logf").Call(jen.Lit("error encountered trying to fetch user %q: %v\n"), jen.ID("premade").Dot("Username"), jen.Err()),
 					),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.Line(),
 					jen.Comment("Assert user equality"),
 					jen.ID("checkUserEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
@@ -184,8 +184,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("y").Op(":=").ID("buildDummyUserInput").Call(jen.ID("t")),
-					jen.List(jen.ID("u"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.ID("y")),
-					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.List(jen.ID("u"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.ID("y")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 					jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("u")),
 					jen.Line(),
 					jen.If(jen.ID("u").Op("==").ID("nil").Op("||").ID("err").Op("!=").ID("nil")).Block(
@@ -194,8 +194,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("Execute"),
-					jen.ID("err").Op("=").ID("todoClient").Dot("ArchiveUser").Call(jen.ID("tctx"), jen.ID("u").Dot("ID")),
-					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Err().Op("=").ID("todoClient").Dot("ArchiveUser").Call(jen.ID("tctx"), jen.ID("u").Dot("ID")),
+					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				)),
 			)),
 			jen.Line(),
@@ -212,14 +212,14 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("Assert user list equality"),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot("GetUsers").Call(jen.ID("tctx"), jen.ID("nil")),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
+					jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dot("GetUsers").Call(jen.ID("tctx"), jen.ID("nil")),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Users"))),
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.For(jen.List(jen.ID("_"), jen.ID("user")).Op(":=").Range().ID("actual").Dot("Users")).Block(
-						jen.ID("err").Op("=").ID("todoClient").Dot("ArchiveUser").Call(jen.ID("tctx"), jen.ID("user").Dot("ID")),
-						jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+						jen.Err().Op("=").ID("todoClient").Dot("ArchiveUser").Call(jen.ID("tctx"), jen.ID("user").Dot("ID")),
+						jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 					),
 				)),
 			)),

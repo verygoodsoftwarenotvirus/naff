@@ -17,8 +17,8 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("fetchRandomWebhook retrieves a random webhook from the list of available webhooks"),
 		jen.Line(),
 		jen.Func().ID("fetchRandomWebhook").Params(jen.ID("c").Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Block(
-			jen.List(jen.ID("webhooks"), jen.ID("err")).Op(":=").ID("c").Dot("GetWebhooks").Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
-			jen.If(jen.ID("err").Op("!=").ID("nil").Op("||").ID("webhooks").Op("==").ID("nil").Op("||").ID("len").Call(jen.ID("webhooks").Dot("Webhooks")).Op("==").Lit(0)).Block(
+			jen.List(jen.ID("webhooks"), jen.Err()).Op(":=").ID("c").Dot("GetWebhooks").Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
+			jen.If(jen.Err().Op("!=").ID("nil").Op("||").ID("webhooks").Op("==").ID("nil").Op("||").ID("len").Call(jen.ID("webhooks").Dot("Webhooks")).Op("==").Lit(0)).Block(
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),

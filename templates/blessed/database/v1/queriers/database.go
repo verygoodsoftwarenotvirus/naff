@@ -154,8 +154,8 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				).Dot("Debug").Call(jen.Lit("IsReady called")),
 				jen.Line(),
 				jen.For(jen.Op("!").ID("ready")).Block(
-					jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("Ping").Call(),
-					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+					jen.Err().Op(":=").ID(dbfl).Dot("db").Dot("Ping").Call(),
+					jen.If(jen.Err().Op("!=").ID("nil")).Block(
 						jen.ID(dbfl).Dot("logger").Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
 						jen.Line(),
@@ -180,8 +180,8 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				).Dot("Debug").Call(jen.Lit("IsReady called")),
 				jen.Line(),
 				jen.For(jen.Op("!").ID("ready")).Block(
-					jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("Ping").Call(),
-					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+					jen.Err().Op(":=").ID(dbfl).Dot("db").Dot("Ping").Call(),
+					jen.If(jen.Err().Op("!=").ID("nil")).Block(
 						jen.ID(dbfl).Dot("logger").Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
 						jen.Line(),
@@ -203,7 +203,7 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("IsReady reports whether or not the db is ready"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("IsReady").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("IsReady").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
 			buildIsReadyBody()...,
 		),
 		jen.Line(),
@@ -220,9 +220,9 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 		jen.Comment("with the utmost priority."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("logQueryBuildingError").Params(jen.ID("err").ID("error")).Block(
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID(dbfl).Dot("logger").Dot("WithName").Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("logQueryBuildingError").Params(jen.Err().ID("error")).Block(
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID(dbfl).Dot("logger").Dot("WithName").Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.Err(), jen.Lit("building query")),
 			),
 		),
 		jen.Line(),
@@ -240,9 +240,9 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 			jen.Line(),
 			jen.Comment("with the utmost priority."),
 			jen.Line(),
-			jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("logCreationTimeRetrievalError").Params(jen.ID("err").ID("error")).Block(
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID(dbfl).Dot("logger").Dot("WithName").Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot("Error").Call(jen.ID("err"), jen.Lit("retrieving creation time")),
+			jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("logCreationTimeRetrievalError").Params(jen.Err().ID("error")).Block(
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.ID(dbfl).Dot("logger").Dot("WithName").Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot("Error").Call(jen.Err(), jen.Lit("retrieving creation time")),
 				),
 			),
 			jen.Line(),
@@ -254,8 +254,8 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 		jen.Comment("IS NOT sql.ErrNoRows, which we want to preserve and surface to the services."),
 		jen.Line(),
-		jen.Func().ID("buildError").Params(jen.ID("err").ID("error"), jen.ID("msg").ID("string")).Params(jen.ID("error")).Block(
-			jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
+		jen.Func().ID("buildError").Params(jen.Err().ID("error"), jen.ID("msg").ID("string")).Params(jen.ID("error")).Block(
+			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
 				jen.Return().ID("err"),
 			),
 			jen.Line(),
@@ -263,7 +263,7 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				jen.ID("msg").Op("+=").Lit(": %w"),
 			),
 			jen.Line(),
-			jen.Return().Qual("fmt", "Errorf").Call(jen.ID("msg"), jen.ID("err")),
+			jen.Return().Qual("fmt", "Errorf").Call(jen.ID("msg"), jen.Err()),
 		),
 		jen.Line(),
 	)

@@ -24,8 +24,8 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("OAuth2InternalErrorHandler fulfills a role for the OAuth2 server-side provider"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("OAuth2InternalErrorHandler").Params(jen.ID("err").ID("error")).Params(jen.Op("*").Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
-			jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("OAuth2 Internal Error")),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("OAuth2InternalErrorHandler").Params(jen.Err().ID("error")).Params(jen.Op("*").Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
+			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("OAuth2 Internal Error")),
 			jen.Line(),
 			jen.ID("res").Op(":=").Op("&").Qual("gopkg.in/oauth2.v3/errors", "Response").Valuesln(
 				jen.ID("Error").Op(":").ID("err"),
@@ -66,8 +66,8 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("AuthorizeScopeHandler satisfies the oauth2server AuthorizeScopeHandler interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("AuthorizeScopeHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("scope").ID("string"), jen.ID("err").ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AuthorizeScopeHandler")),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("AuthorizeScopeHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("scope").ID("string"), jen.Err().ID("error")).Block(
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AuthorizeScopeHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("scope").Op("=").ID("determineScope").Call(jen.ID("req")),
@@ -85,16 +85,16 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("check to see if the client ID is present instead"),
 			jen.If(jen.ID("clientID").Op(":=").ID("s").Dot("fetchOAuth2ClientIDFromRequest").Call(jen.ID("req")), jen.ID("clientID").Op("!=").Lit("")).Block(
 				jen.Comment("fetch oauth2 client from database"),
-				jen.List(jen.ID("client"), jen.ID("err")).Op("=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(jen.ID("ctx"), jen.ID("clientID")),
+				jen.List(jen.ID("client"), jen.Err()).Op("=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("clientID")),
 				jen.Line(),
-				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching OAuth2 Client")),
+				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 Client")),
 					utils.WriteXHeader("res", "StatusNotFound"),
-					jen.Return().List(jen.Lit(""), jen.ID("err")),
-				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching OAuth2 Client")),
+					jen.Return().List(jen.Lit(""), jen.Err()),
+				).Else().If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 Client")),
 					utils.WriteXHeader("res", "StatusInternalServerError"),
-					jen.Return().List(jen.Lit(""), jen.ID("err")),
+					jen.Return().List(jen.Lit(""), jen.Err()),
 				),
 				jen.Line(),
 				jen.Comment("authorization check"),
@@ -121,8 +121,8 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("UserAuthorizationHandler satisfies the oauth2server UserAuthorizationHandler interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UserAuthorizationHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("userID").ID("string"), jen.ID("err").ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserAuthorizationHandler")),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UserAuthorizationHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("userID").ID("string"), jen.Err().ID("error")).Block(
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserAuthorizationHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Var().ID("uid").ID("uint64"),
 			jen.Line(),
@@ -151,9 +151,9 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ClientAuthorizedHandler satisfies the oauth2server ClientAuthorizedHandler interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientAuthorizedHandler").Params(jen.ID("clientID").ID("string"), jen.ID("grant").Qual("gopkg.in/oauth2.v3", "GrantType")).Params(jen.ID("allowed").ID("bool"), jen.ID("err").ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientAuthorizedHandler").Params(jen.ID("clientID").ID("string"), jen.ID("grant").Qual("gopkg.in/oauth2.v3", "GrantType")).Params(jen.ID("allowed").ID("bool"), jen.Err().ID("error")).Block(
 			jen.Comment("NOTE: it's a shame the interface we're implementing doesn't have this as its first argument"),
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.Qual("context", "Background").Call(), jen.Lit("ClientAuthorizedHandler")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.Qual("context", "Background").Call(), jen.Lit("ClientAuthorizedHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
@@ -165,10 +165,10 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("fetch client data"),
-			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(jen.ID("ctx"), jen.ID("clientID")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("fetching oauth2 client from database")),
-				jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 client from database: %w"), jen.ID("err"))),
+			jen.List(jen.ID("client"), jen.Err()).Op(":=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("clientID")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching oauth2 client from database")),
+				jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 client from database: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Comment("disallow implicit grants unless authorized"),
@@ -189,9 +189,9 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ClientScopeHandler satisfies the oauth2server ClientScopeHandler interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientScopeHandler").Params(jen.List(jen.ID("clientID"), jen.ID("scope")).ID("string")).Params(jen.ID("authed").ID("bool"), jen.ID("err").ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientScopeHandler").Params(jen.List(jen.ID("clientID"), jen.ID("scope")).ID("string")).Params(jen.ID("authed").ID("bool"), jen.Err().ID("error")).Block(
 			jen.Comment("NOTE: it's a shame the interface we're implementing doesn't have this as its first argument"),
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.Qual("context", "Background").Call(), jen.Lit("UserAuthorizationHandler")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.Qual("context", "Background").Call(), jen.Lit("UserAuthorizationHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
@@ -200,10 +200,10 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("fetch client info"),
-			jen.List(jen.ID("c"), jen.ID("err")).Op(":=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(jen.ID("ctx"), jen.ID("clientID")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching OAuth2 client for ClientScopeHandler")),
-				jen.Return().List(jen.ID("false"), jen.ID("err")),
+			jen.List(jen.ID("c"), jen.Err()).Op(":=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("clientID")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 client for ClientScopeHandler")),
+				jen.Return().List(jen.ID("false"), jen.Err()),
 			),
 			jen.Line(),
 			jen.Comment("check for scope"),

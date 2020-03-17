@@ -10,6 +10,10 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("client")
 	utils.AddImports(pkg, ret)
 
+	ret.Add(
+		utils.FakeSeedFunc(),
+	)
+
 	// vars
 	ret.Add(
 		jen.Const().Defs(
@@ -54,13 +58,13 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 		).Block(
 			jen.List(
 				jen.ID("u"),
-				jen.ID("err"),
+				jen.Err(),
 			).Op(":=").Qual("net/url", "Parse").Call(
 				jen.ID("uri"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("panic").Call(
-					jen.ID("err"),
+					jen.Err(),
 				),
 			),
 			jen.Return().ID("u"),
@@ -151,12 +155,13 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
+				utils.CreateCtx(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.List(
 					jen.ID("c"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("NewClient").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Lit(""),
 					jen.Lit(""),
 					jen.ID("mustParseURL").Call(
@@ -167,7 +172,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 					jen.Index().ID("string").Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("actual").Op(":=").ID("c").Dot("TokenSource").Call(),
 				jen.Line(),
@@ -183,12 +188,13 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
+				utils.CreateCtx(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.List(
 					jen.ID("c"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("NewClient").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Lit(""),
 					jen.Lit(""),
 					jen.ID("mustParseURL").Call(
@@ -201,16 +207,18 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("c"), nil),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with client but invalid timeout",
+				utils.CreateCtx(),
+				jen.Line(),
 				jen.List(
 					jen.ID("c"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("NewClient").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Lit(""),
 					jen.Lit(""),
 					jen.ID("mustParseURL").Call(
@@ -225,7 +233,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("c"), nil),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				utils.AssertEqual(
 					jen.ID("c").Dot("plainClient").Dot("Timeout"),
 					jen.ID("defaultTimeout"),
@@ -242,16 +250,18 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
+				utils.CreateCtx(),
+				jen.Line(),
 				jen.List(
 					jen.ID("c"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("NewSimpleClient").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.ID("mustParseURL").Call(jen.ID("exampleURI")),
 					jen.ID("true"),
 				),
 				utils.AssertNotNil(jen.ID("c"), nil),
-				utils.AssertNoError(jen.ID("err"), nil),
+				utils.AssertNoError(jen.Err(), nil),
 			),
 		),
 		jen.Line(),
@@ -284,20 +294,20 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.List(
 					jen.ID("res"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("executeRawRequest").Call(
-					jen.ID("ctx"),
+					utils.CtxVar(),
 					jen.Op("&").Qual("net/http", "Client").Values(
 						jen.ID("Timeout").Op(":").Qual("time", "Second"),
 					),
@@ -308,7 +318,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 					nil,
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					nil,
 				),
 			),
@@ -324,6 +334,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				"various urls",
 				utils.ParallelTest(jen.ID("t")),
 				jen.Line(),
+				utils.CreateCtx(),
 				jen.List(
 					jen.ID("u"),
 					jen.ID("_"),
@@ -332,9 +343,9 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("c"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("NewClient").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Lit(""),
 					jen.Lit(""),
 					jen.ID("u"),
@@ -343,7 +354,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 					jen.Index().ID("string").Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("testCases").Op(":=").Index().Struct(
 					jen.ID("expectation").ID("string"),
@@ -403,6 +414,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
+				utils.CreateCtx(),
 				jen.List(
 					jen.ID("u"),
 					jen.ID("_"),
@@ -411,9 +423,9 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("c"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("NewClient").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Lit(""),
 					jen.Lit(""),
 					jen.ID("u"),
@@ -422,7 +434,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 					jen.Index().ID("string").Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("expected").Op(":=").Lit("ws://todo.verygoodsoftwarenotvirus.ru/api/v1/things/and/stuff"),
 				jen.ID("actual").Op(":=").ID("c").Dot("BuildWebsocketURL").Call(
@@ -453,12 +465,12 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("BuildHealthCheckRequest").Call(),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(
@@ -576,6 +588,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				utils.CreateCtx(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -584,18 +597,19 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("c").Dot("buildDataRequest").Call(
+					utils.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Op("&").ID("testingType").Values(
-						jen.ID("Name").Op(":").Lit("name"),
+						jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 					),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					nil,
 				),
 				utils.AssertEqual(
@@ -631,7 +645,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 									jen.ID("res"),
 								).Dot("Encode").Call(
 									jen.Op("&").ID("argleBargle").Values(
-										jen.ID("Name").Op(":").Lit("name"),
+										jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 									),
 								),
 								nil,
@@ -646,22 +660,22 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.ID("err").Op("=").ID("c").Dot("executeRequest").Call(
-					jen.ID("ctx"),
+				jen.Err().Op("=").ID("c").Dot("executeRequest").Call(
+					utils.CtxVar(),
 					jen.ID("req"),
 					jen.Op("&").ID("argleBargle").Values(),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					nil,
 				),
 			),
@@ -691,7 +705,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
@@ -701,12 +715,12 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("req"),
 					nil,
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertEqual(
 					jen.ID("ErrNotFound"),
 					jen.ID("c").Dot("executeRequest").Call(
-						jen.ID("ctx"),
+						utils.CtxVar(),
 						jen.ID("req"),
 						jen.Op("&").ID("argleBargle").Values(),
 					),
@@ -739,7 +753,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 									jen.ID("res"),
 								).Dot("Encode").Call(
 									jen.Op("&").ID("argleBargle").Values(
-										jen.ID("Name").Op(":").Lit("name"),
+										jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 									),
 								),
 								nil,
@@ -762,31 +776,31 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("body"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("in"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("body"), nil),
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
-				jen.ID("err").Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
-					jen.ID("ctx"),
+				jen.Err().Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
+					utils.CtxVar(),
 					jen.ID("req"),
 					jen.ID("out"),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					nil,
 				),
 			),
@@ -824,35 +838,35 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("body"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("in"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("body"), nil),
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
-				jen.ID("err").Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
-					jen.ID("ctx"),
+				jen.Err().Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
+					utils.CtxVar(),
 					jen.ID("req"),
 					jen.ID("out"),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					nil,
 				),
 				utils.AssertEqual(jen.ID("ErrNotFound"),
-					jen.ID("err"), nil),
+					jen.Err(), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -890,28 +904,28 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("body"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("in"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("body"), nil),
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				jen.ID("c").Dot("plainClient").Dot("Timeout").Op("=").Lit(500).Op("*").Qual("time", "Millisecond"),
 				utils.AssertError(
 					jen.ID("c").Dot("executeUnathenticatedDataRequest").Call(
-						jen.ID("ctx"),
+						utils.CtxVar(),
 						jen.ID("req"),
 						jen.ID("out"),
 					),
@@ -932,31 +946,31 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("body"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("in"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("body"), nil),
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
 				),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
-				jen.ID("err").Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
-					jen.ID("ctx"),
+				jen.Err().Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
+					utils.CtxVar(),
 					jen.ID("req"),
 					jen.ID("testingType").Values(),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					nil,
 				),
 			),
@@ -987,7 +1001,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 									jen.ID("res"),
 								).Dot("Encode").Call(
 									jen.Op("&").ID("argleBargle").Values(
-										jen.ID("Name").Op(":").Lit("name"),
+										jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 									),
 								),
 								nil,
@@ -1002,22 +1016,22 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
-					jen.ID("ctx"),
+				jen.Err().Op("=").ID("c").Dot("retrieve").Call(
+					utils.CtxVar(),
 					jen.ID("req"),
 					jen.Op("&").ID("argleBargle").Values(),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					nil,
 				),
 			),
@@ -1032,22 +1046,22 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.Qual("net/http", "MethodPost"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
-					jen.ID("ctx"),
+				jen.Err().Op("=").ID("c").Dot("retrieve").Call(
+					utils.CtxVar(),
 					jen.ID("req"),
 					jen.ID("nil"),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					nil,
 				),
 			),
@@ -1079,23 +1093,23 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("c").Dot("authedClient").Dot("Timeout").Op("=").Lit(500).Op("*").Qual("time", "Millisecond"),
-				jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
-					jen.ID("ctx"),
+				jen.Err().Op("=").ID("c").Dot("retrieve").Call(
+					utils.CtxVar(),
 					jen.ID("req"),
 					jen.Op("&").ID("argleBargle").Values(),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					nil,
 				),
 			),
@@ -1125,19 +1139,19 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(
 					jen.ID("req"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("nil"),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
-				utils.RequireNoError(jen.ID("err"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertEqual(
 					jen.ID("ErrNotFound"),
 					jen.ID("c").Dot("retrieve").Call(
-						jen.ID("ctx"),
+						utils.CtxVar(),
 						jen.ID("req"),
 						jen.Op("&").ID("argleBargle").Values(),
 					),

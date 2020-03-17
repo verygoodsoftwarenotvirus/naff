@@ -29,9 +29,9 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 				jen.ID("panic").Call(jen.Lit("must provide target address!")),
 			),
 			jen.Line(),
-			jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("ta")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.List(jen.ID("u"), jen.Err()).Op(":=").Qual("net/url", "Parse").Call(jen.ID("ta")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.Return().ID("u").Dot("String").Call(),
@@ -71,17 +71,17 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("IsUp").Params(jen.ID("address").ID("string")).Params(jen.ID("bool")).Block(
 			jen.ID("uri").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%s/_meta_/ready"), jen.ID("address")),
-			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.ID("uri"), jen.ID("nil")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.ID("uri"), jen.ID("nil")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("res"), jen.ID("err")).Op(":=").Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.List(jen.ID("res"), jen.Err()).Op(":=").Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Return().ID("false"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("err").Op("=").ID("res").Dot("Body").Dot("Close").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op("=").ID("res").Dot("Body").Dot("Close").Call(), jen.Err().Op("!=").ID("nil")).Block(
 				jen.Qual("log", "Println").Call(jen.Lit("error closing body")),
 			),
 			jen.Line(),
@@ -96,14 +96,14 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").ID("string"), jen.ID("debug").ID("bool")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
 			"User",
 		), jen.ID("error")).Block(
-			jen.List(jen.ID("tu"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("address")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("tu"), jen.Err()).Op(":=").Qual("net/url", "Parse").Call(jen.ID("address")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("c"), jen.ID("err")).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewSimpleClient").Call(jen.Qual("context", "Background").Call(), jen.ID("tu"), jen.ID("debug")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("c"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewSimpleClient").Call(jen.Qual("context", "Background").Call(), jen.ID("tu"), jen.ID("debug")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
 			jen.Comment("I had difficulty ensuring these values were unique, even when fake.Seed was called. Could've been fake's fault,"),
@@ -114,9 +114,9 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 				jen.ID("Password").Op(":").Qual(utils.FakeLibrary, "Password").Call(jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.Lit(64)),
 			),
 			jen.Line(),
-			jen.List(jen.ID("ucr"), jen.ID("err")).Op(":=").ID("c").Dot("CreateUser").Call(jen.Qual("context", "Background").Call(), jen.ID("in")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("ucr"), jen.Err()).Op(":=").ID("c").Dot("CreateUser").Call(jen.Qual("context", "Background").Call(), jen.ID("in")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			).Else().If(jen.ID("ucr").Op("==").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.ID("errors").Dot("New").Call(jen.Lit("something happened"))),
 			),
@@ -140,14 +140,14 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("buildURL").Params(jen.ID("address").ID("string"), jen.ID("parts").Op("...").ID("string")).Params(jen.ID("string")).Block(
-			jen.List(jen.ID("tu"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("address")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.List(jen.ID("tu"), jen.Err()).Op(":=").Qual("net/url", "Parse").Call(jen.ID("address")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("u"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.Qual("strings", "Join").Call(jen.ID("parts"), jen.Lit("/"))),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.List(jen.ID("u"), jen.Err()).Op(":=").Qual("net/url", "Parse").Call(jen.Qual("strings", "Join").Call(jen.ID("parts"), jen.Lit("/"))),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.Return().ID("tu").Dot("ResolveReference").Call(jen.ID("u")).Dot("String").Call(),
@@ -160,12 +160,12 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 			"User",
 		)).Params(jen.Op("*").Qual("net/http", "Cookie"), jen.ID("error")).Block(
 			jen.ID("uri").Op(":=").ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("users"), jen.Lit("login")),
-			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.Qual("strings", "ToUpper").Call(jen.ID("u").Dot("TwoFactorSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("generating totp token: %w"), jen.ID("err"))),
+			jen.List(jen.ID("code"), jen.Err()).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.Qual("strings", "ToUpper").Call(jen.ID("u").Dot("TwoFactorSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("generating totp token: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+			jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 				jen.Qual("net/http", "MethodPost"), jen.ID("uri"), jen.Qual("strings", "NewReader").Callln(
 					jen.Qual("fmt", "Sprintf").Callln(
 						jen.Lit(`
@@ -181,16 +181,16 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 					),
 				),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.ID("err"))),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("res"), jen.ID("err")).Op(":=").Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("executing request: %w"), jen.ID("err"))),
+			jen.List(jen.ID("res"), jen.Err()).Op(":=").Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("executing request: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.If(jen.ID("err").Op("=").ID("res").Dot("Body").Dot("Close").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Op("=").ID("res").Dot("Body").Dot("Close").Call(), jen.Err().Op("!=").ID("nil")).Block(
 				jen.Qual("log", "Println").Call(jen.Lit("error closing body")),
 			),
 			jen.Line(),
@@ -210,15 +210,15 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
 			jen.ID("firstOAuth2ClientURI").Op(":=").ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("oauth2"), jen.Lit("client")),
 			jen.Line(),
-			jen.List(jen.ID("code"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Callln(
+			jen.List(jen.ID("code"), jen.Err()).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Callln(
 				jen.Qual("strings", "ToUpper").Call(jen.ID("u").Dot("TwoFactorSecret")),
 				jen.Qual("time", "Now").Call().Dot("UTC").Call(),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+			jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 				jen.Qual("net/http", "MethodPost"), jen.ID("firstOAuth2ClientURI"), jen.Qual("strings", "NewReader").Call(
 					jen.Qual("fmt", "Sprintf").Call(jen.Lit(`
 	{
@@ -237,41 +237,41 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 					),
 				),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("cookie"), jen.ID("err")).Op(":=").ID("getLoginCookie").Call(jen.ID("serviceURL"), jen.ID("u")),
-			jen.If(jen.ID("err").Op("!=").ID("nil").Op("||").ID("cookie").Op("==").ID("nil")).Block(
+			jen.List(jen.ID("cookie"), jen.Err()).Op(":=").ID("getLoginCookie").Call(jen.ID("serviceURL"), jen.ID("u")),
+			jen.If(jen.Err().Op("!=").ID("nil").Op("||").ID("cookie").Op("==").ID("nil")).Block(
 				jen.Qual("log", "Fatalf").Call(jen.Lit(`
 cookie problems!
 	cookie == nil: %v
 			  err: %v
-	`), jen.ID("cookie").Op("==").ID("nil"), jen.ID("err")),
+	`), jen.ID("cookie").Op("==").ID("nil"), jen.Err()),
 			),
 			jen.ID("req").Dot("AddCookie").Call(jen.ID("cookie")),
 			jen.Var().ID("o").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
 			jen.Line(),
 			jen.Var().ID("command").Qual("fmt", "Stringer"),
-			jen.If(jen.List(jen.ID("command"), jen.ID("err")).Op("=").Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID("req")), jen.ID("err").Op("==").ID("nil")).Block(
+			jen.If(jen.List(jen.ID("command"), jen.Err()).Op("=").Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID("req")), jen.Err().Op("==").ID("nil")).Block(
 				jen.Qual("log", "Println").Call(jen.ID("command").Dot("String").Call()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("res"), jen.ID("err")).Op(":=").Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("res"), jen.Err()).Op(":=").Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			).Else().If(jen.ID("res").Dot("StatusCode").Op("!=").Qual("net/http", "StatusCreated")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("bad status: %d"), jen.ID("res").Dot("StatusCode"))),
 			),
 			jen.Line(),
 			jen.Defer().Func().Params().Block(
-				jen.If(jen.ID("err").Op("=").ID("res").Dot("Body").Dot("Close").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.Qual("log", "Fatal").Call(jen.ID("err")),
+				jen.If(jen.Err().Op("=").ID("res").Dot("Body").Dot("Close").Call(), jen.Err().Op("!=").ID("nil")).Block(
+					jen.Qual("log", "Fatal").Call(jen.Err()),
 				),
 			).Call(),
 			jen.Line(),
-			jen.List(jen.ID("bdump"), jen.ID("err")).Op(":=").ID("httputil").Dot("DumpResponse").Call(jen.ID("res"), jen.ID("true")),
-			jen.If(jen.ID("err").Op("==").ID("nil").Op("&&").ID("req").Dot("Method").Op("!=").Qual("net/http", "MethodGet")).Block(
+			jen.List(jen.ID("bdump"), jen.Err()).Op(":=").ID("httputil").Dot("DumpResponse").Call(jen.ID("res"), jen.ID("true")),
+			jen.If(jen.Err().Op("==").ID("nil").Op("&&").ID("req").Dot("Method").Op("!=").Qual("net/http", "MethodGet")).Block(
 				jen.Qual("log", "Println").Call(jen.ID("string").Call(jen.ID("bdump"))),
 			),
 			jen.Line(),

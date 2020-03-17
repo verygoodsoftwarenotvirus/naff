@@ -14,11 +14,11 @@ func float64Metric(varName, measurementName, measurementDescription string, coun
 	g := jen.Group{}
 
 	return g.Add(
-		jen.Comment(fmt.Sprintf("%s captures the runtime memstats %s field", sn, varName)),
+		jen.Commentf("%s captures the runtime memstats %s field", sn, varName),
 		jen.Line(),
 		statsDotFloat64(fmt.Sprintf("Runtime%sMeasurement", varName), measurementName, measurementDescription),
 		jen.Line(),
-		jen.Comment(fmt.Sprintf("%s is the corresponding view for the above field", vn)),
+		jen.Commentf("%s is the corresponding view for the above field", vn),
 		jen.Line(),
 		viewDotView(vn, measurementName, sn, measurementDescription, count),
 		jen.Line(),
@@ -32,11 +32,11 @@ func int64Metric(varName, measurementName, measurementDescription string, count 
 	g := jen.Group{}
 
 	return g.Add(
-		jen.Comment(fmt.Sprintf("%s captures the runtime memstats %s field", sn, varName)),
+		jen.Commentf("%s captures the runtime memstats %s field", sn, varName),
 		jen.Line(),
 		statsDotInt64(fmt.Sprintf("Runtime%sMeasurement", varName), measurementName, measurementDescription),
 		jen.Line(),
-		jen.Comment(fmt.Sprintf("%s is the corresponding view for the above field", vn)),
+		jen.Commentf("%s is the corresponding view for the above field", vn),
 		jen.Line(),
 		viewDotView(vn, measurementName, sn, measurementDescription, count),
 		jen.Line(),
@@ -141,7 +141,7 @@ func runtimeDotGo(pkg *models.Project) *jen.File {
 							jen.Line(),
 							jen.Qual("runtime", "ReadMemStats").Call(jen.ID("ms")),
 							jen.Qual("go.opencensus.io/stats", "Record").Callln(
-								jen.ID("ctx"),
+								utils.CtxVar(),
 								jen.ID("RuntimeTotalAllocMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("TotalAlloc"))),
 								jen.ID("RuntimeSysMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("Sys"))),
 								jen.ID("RuntimeLookupsMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("Lookups"))),
@@ -171,7 +171,7 @@ func runtimeDotGo(pkg *models.Project) *jen.File {
 								jen.ID("RuntimeGCCPUFractionMeasurement").Dot("M").Call(jen.ID("ms").Dot("GCCPUFraction")),
 							),
 							jen.Qual("go.opencensus.io/stats", "Record").Call(
-								jen.ID("ctx"), jen.ID("MetricAggregationMeasurement").Dot("M").Call(
+								utils.CtxVar(), jen.ID("MetricAggregationMeasurement").Dot("M").Call(
 									jen.Qual("time", "Since").Call(jen.ID("startTime")).Dot("Nanoseconds").Call(),
 								),
 							),

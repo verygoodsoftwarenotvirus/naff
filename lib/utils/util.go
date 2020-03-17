@@ -4,15 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
-
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 const (
@@ -115,6 +114,44 @@ func AssertEqual(expected, actual, message *jen.Statement, formatArgs ...*jen.St
 	return buildDoubleValueTestifyFunc(a, "Equal")(expected, actual, message, formatArgs...)
 }
 
+// FakeSeedFunc builds a consistent fake library seed init function
+func FakeSeedFunc() jen.Code {
+	return jen.Func().ID("init").Params().Block(
+		jen.Qual(FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
+	)
+}
+
+func FakeNameFunc() jen.Code {
+	return jen.Qual(FakeLibrary, "Name").Call()
+}
+
+func FakeStringFunc() jen.Code {
+	return jen.Qual(FakeLibrary, "Word").Call()
+}
+
+func FakeUUIDFunc() jen.Code {
+	return jen.Qual(FakeLibrary, "UUID").Call()
+}
+
+func FakeUint64Func() jen.Code {
+	return jen.Qual(FakeLibrary, "Uint64").Call()
+}
+
+func FakeUsernameFunc() jen.Code {
+	return jen.Qual(FakeLibrary, "Username").Call()
+}
+
+func FakePasswordFunc() jen.Code {
+	return jen.Qual(FakeLibrary, "Password").Call(
+		jen.True(),
+		jen.True(),
+		jen.True(),
+		jen.True(),
+		jen.True(),
+		jen.Lit(32),
+	)
+}
+
 func buildSingleValueTestifyFunc(pkg, method string) func(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return func(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 		args := []jen.Code{
@@ -213,6 +250,25 @@ func OuterTestFunc(subjectName string) *jen.Statement {
 	return jen.Func().ID(fmt.Sprintf("Test%s", subjectName)).Params(
 		jen.ID(T).Op("*").Qual("testing", T),
 	)
+}
+
+func StartSpan(saveCtx bool, spanName string) []jen.Code {
+	const spanVarName = "span"
+	/*
+		ctx, span := trace.StartSpan(ctx, "UpdateItem")
+		defer span.End()
+	*/
+	lines := []jen.Code{
+		jen.List(func() jen.Code {
+			if saveCtx {
+				return CtxVar()
+			}
+			return jen.ID("_")
+		}(), jen.ID(spanVarName)).Op(":=").Qual(TracingLibrary, "StartSpan").Call(CtxVar(), jen.Lit(spanName)),
+		jen.Defer().ID(spanVarName).Dot("End").Call(),
+	}
+
+	return lines
 }
 
 // RunGoimportsForFile runs the `goimports` binary for a given filename

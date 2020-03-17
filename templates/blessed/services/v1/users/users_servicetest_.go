@@ -34,7 +34,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.ID("uc"), jen.ID("nil")),
 			),
 			jen.Line(),
-			jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Callln(
+			jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideUsersService").Callln(
 				jen.Qual("context", "Background").Call(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
 				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -44,7 +44,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 				jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ucp"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.ID("nil"), jen.ID("nil")),
 			),
-			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.Line(),
 			jen.Return().ID("service"),
 		),
@@ -75,7 +75,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Return().List(jen.ID("uc"), jen.ID("nil")),
 				),
 				jen.Line(),
-				jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Callln(
+				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideUsersService").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -85,7 +85,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("ucp"),
 					jen.ID("nil"),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("service")),
 			)),
 			jen.Line(),
@@ -108,13 +108,13 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Return().List(jen.ID("uc"), jen.ID("nil")),
 				),
 				jen.Line(),
-				jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Callln(
+				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideUsersService").Callln(
 					jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"),
 						"AuthSettings",
 					).Values(), jen.ID("noop").Dot(
 						"ProvideNoopLogger",
 					).Call(), jen.ID("mockDB"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(), jen.ID("nil"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("nil")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
 			)),
 			jen.Line(),
@@ -138,7 +138,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Return().List(jen.ID("uc"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				),
 				jen.Line(),
-				jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Callln(
+				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideUsersService").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -147,7 +147,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("nil"),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
 			)),
 			jen.Line(),
@@ -169,7 +169,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Return().List(jen.ID("uc"), jen.ID("nil")),
 				),
 				jen.Line(),
-				jen.List(jen.ID("service"), jen.ID("err")).Op(":=").ID("ProvideUsersService").Callln(
+				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideUsersService").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -179,7 +179,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.ID("nil"),
 				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
 			)),
 		),

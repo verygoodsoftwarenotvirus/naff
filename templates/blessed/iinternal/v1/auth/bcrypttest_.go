@@ -32,8 +32,8 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("x").Dot("HashPassword").Call(jen.ID("tctx"), jen.Lit("password")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("x").Dot("HashPassword").Call(jen.ID("tctx"), jen.Lit("password")),
+				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "NotEmpty").Call(jen.ID("t"), jen.ID("actual")),
 			)),
 		),
@@ -90,10 +90,10 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Line(),
-				jen.List(jen.ID("code"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("exampleTwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err"), jen.Lit("error generating code to validate login")),
+				jen.List(jen.ID("code"), jen.Err()).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("exampleTwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err(), jen.Lit("error generating code to validate login")),
 				jen.Line(),
-				jen.List(jen.ID("valid"), jen.ID("err")).Op(":=").ID("x").Dot("ValidateLogin").Callln(
+				jen.List(jen.ID("valid"), jen.Err()).Op(":=").ID("x").Dot("ValidateLogin").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.ID("hashedExamplePassword"),
 					jen.ID("examplePassword"),
@@ -103,9 +103,9 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(
 					jen.ID("t"),
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("unexpected error encountered validating login: %v"),
-					jen.ID("err"),
+					jen.Err(),
 				),
 				jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("valid")),
 			)),
@@ -113,13 +113,13 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with weak hash"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Line(),
-				jen.List(jen.ID("code"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
+				jen.List(jen.ID("code"), jen.Err()).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
 					jen.ID("exampleTwoFactorSecret"),
 					jen.Qual("time", "Now").Call().Dot("UTC").Call(),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err"), jen.Lit("error generating code to validate login")),
+				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err(), jen.Lit("error generating code to validate login")),
 				jen.Line(),
-				jen.List(jen.ID("valid"), jen.ID("err")).Op(":=").ID("x").Dot("ValidateLogin").Callln(
+				jen.List(jen.ID("valid"), jen.Err()).Op(":=").ID("x").Dot("ValidateLogin").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.ID("weaklyHashedExamplePassword"),
 					jen.ID("examplePassword"),
@@ -127,17 +127,17 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("code"),
 					jen.ID("nil"),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err"), jen.Lit("unexpected error encountered validating login: %v"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err(), jen.Lit("unexpected error encountered validating login: %v"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("valid")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with non-matching password"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Line(),
-				jen.List(jen.ID("code"), jen.ID("err")).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("exampleTwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err"), jen.Lit("error generating code to validate login")),
+				jen.List(jen.ID("code"), jen.Err()).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("exampleTwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
+				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err(), jen.Lit("error generating code to validate login")),
 				jen.Line(),
-				jen.List(jen.ID("valid"), jen.ID("err")).Op(":=").ID("x").Dot("ValidateLogin").Callln(
+				jen.List(jen.ID("valid"), jen.Err()).Op(":=").ID("x").Dot("ValidateLogin").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.ID("hashedExamplePassword"),
 					jen.Lit("examplePassword"),
@@ -145,14 +145,14 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("code"),
 					jen.ID("nil"),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err"), jen.Lit("unexpected error encountered validating login: %v"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err(), jen.Lit("unexpected error encountered validating login: %v"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("valid")),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid code"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Line(),
-				jen.List(jen.ID("valid"), jen.ID("err")).Op(":=").ID("x").Dot("ValidateLogin").Callln(
+				jen.List(jen.ID("valid"), jen.Err()).Op(":=").ID("x").Dot("ValidateLogin").Callln(
 					jen.Qual("context", "Background").Call(),
 					jen.ID("hashedExamplePassword"),
 					jen.ID("examplePassword"),
@@ -160,7 +160,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("CODE"),
 					jen.ID("nil"),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err"), jen.Lit("unexpected error encountered validating login: %v"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err(), jen.Lit("unexpected error encountered validating login: %v"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("valid")),
 			)),
 		),

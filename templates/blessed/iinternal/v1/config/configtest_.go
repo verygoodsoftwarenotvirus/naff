@@ -41,11 +41,11 @@ func configTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID("tf"), jen.ID("err")).Op(":=").Qual("io/ioutil", "TempFile").Call(jen.Qual("os", "TempDir").Call(), jen.Lit("*.toml")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.List(jen.ID("tf"), jen.Err()).Op(":=").Qual("io/ioutil", "TempFile").Call(jen.Qual("os", "TempDir").Call(), jen.Lit("*.toml")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.ID("expected").Op(":=").Lit("thisisatest"),
 				jen.Line(),
-				jen.List(jen.ID("_"), jen.ID("err")).Op("=").ID("tf").Dot("Write").Call(
+				jen.List(jen.ID("_"), jen.Err()).Op("=").ID("tf").Dot("Write").Call(
 					jen.Index().ID("byte").Call(
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit(`
@@ -62,7 +62,7 @@ connection_details = "%s"
 						),
 					),
 				),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("expectedConfig").Op(":=").Op("&").ID("ServerConfig").Valuesln(
 					jen.ID("Server").Op(":").ID("ServerSettings").Valuesln(
@@ -76,8 +76,8 @@ connection_details = "%s"
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID("cfg"), jen.ID("err")).Op(":=").ID("ParseConfigFile").Call(jen.ID("tf").Dot("Name").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.List(jen.ID("cfg"), jen.Err()).Op(":=").ID("ParseConfigFile").Call(jen.ID("tf").Dot("Name").Call()),
+				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedConfig").Dot("Server").Dot("HTTPPort"), jen.ID("cfg").Dot("Server").Dot("HTTPPort")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedConfig").Dot("Server").Dot("Debug"), jen.ID("cfg").Dot("Server").Dot("Debug")),
@@ -89,8 +89,8 @@ connection_details = "%s"
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nonexistent file"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID("cfg"), jen.ID("err")).Op(":=").ID("ParseConfigFile").Call(jen.Lit("/this/doesn't/even/exist/lol")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.List(jen.ID("cfg"), jen.Err()).Op(":=").ID("ParseConfigFile").Call(jen.Lit("/this/doesn't/even/exist/lol")),
+				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("cfg")),
 			)),
 		),

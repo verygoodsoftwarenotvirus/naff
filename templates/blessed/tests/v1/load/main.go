@@ -34,19 +34,19 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Do implement's hazana's Attacker interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Do").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Qual("github.com/emicklei/hazana", "DoResult")).Block(
+		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Do").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Qual("github.com/emicklei/hazana", "DoResult")).Block(
 			jen.Comment("Do performs one request and is executed in a separate goroutine."),
 			jen.Comment("The context is used to cancel the request on timeout."),
 			jen.ID("act").Op(":=").ID("RandomAction").Call(jen.ID("a").Dot("todoClient")),
-			jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("act").Dot("Action").Call(),
-			jen.If(jen.ID("err").Op("!=").ID("nil").Op("||").ID("req").Op("==").ID("nil")).Block(
-				jen.If(jen.ID("err").Op("==").ID("ErrUnavailableYet")).Block(
+			jen.List(jen.ID("req"), jen.Err()).Op(":=").ID("act").Dot("Action").Call(),
+			jen.If(jen.Err().Op("!=").ID("nil").Op("||").ID("req").Op("==").ID("nil")).Block(
+				jen.If(jen.Err().Op("==").ID("ErrUnavailableYet")).Block(
 					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Valuesln(
 						jen.ID("RequestLabel").Op(":").ID("act").Dot("Name"),
 						jen.ID("Error").Op(":").ID("nil"), jen.ID("StatusCode").Op(":").Lit(200),
 					),
 				),
-				jen.Qual("log", "Printf").Call(jen.Lit("something has gone awry: %v\n"), jen.ID("err")),
+				jen.Qual("log", "Printf").Call(jen.Lit("something has gone awry: %v\n"), jen.Err()),
 				jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Values(jen.ID("Error").Op(":").ID("err")),
 			),
 			jen.Line(),
@@ -56,15 +56,15 @@ func mainDotGo(pkg *models.Project) *jen.File {
 				jen.ID("bi").Index().ID("byte"),
 			),
 			jen.If(jen.ID("req").Dot("Body").Op("!=").ID("nil")).Block(
-				jen.List(jen.ID("bi"), jen.ID("err")).Op("=").Qual("io/ioutil", "ReadAll").Call(jen.ID("req").Dot("Body")),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
+				jen.List(jen.ID("bi"), jen.Err()).Op("=").Qual("io/ioutil", "ReadAll").Call(jen.ID("req").Dot("Body")),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
 					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Values(jen.ID("Error").Op(":").ID("err")),
 				),
 				jen.ID("rdr").Op(":=").Qual("io/ioutil", "NopCloser").Call(jen.Qual("bytes", "NewBuffer").Call(jen.ID("bi"))),
 				jen.ID("req").Dot("Body").Op("=").ID("rdr"),
 			),
 			jen.Line(),
-			jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID("a").Dot("todoClient").Dot("AuthenticatedClient").Call().Dot("Do").Call(jen.ID("req")),
+			jen.List(jen.ID("res"), jen.Err()).Op(":=").ID("a").Dot("todoClient").Dot("AuthenticatedClient").Call().Dot("Do").Call(jen.ID("req")),
 			jen.If(jen.ID("res").Op("!=").ID("nil")).Block(
 				jen.ID("sc").Op("=").ID("res").Dot("StatusCode"),
 				jen.ID("bo").Op("=").ID("res").Dot("ContentLength"),
@@ -105,9 +105,9 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.Var().ID("runTime").Op("=").Lit(10).Op("*").Qual("time", "Minute"),
 			jen.If(jen.ID("rt").Op(":=").Qual("os", "Getenv").Call(jen.Lit("LOADTEST_RUN_TIME")), jen.ID("rt").Op("!=").Lit("")).Block(
-				jen.List(jen.ID("_rt"), jen.ID("err")).Op(":=").Qual("time", "ParseDuration").Call(jen.ID("rt")),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("panic").Call(jen.ID("err")),
+				jen.List(jen.ID("_rt"), jen.Err()).Op(":=").Qual("time", "ParseDuration").Call(jen.ID("rt")),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.ID("panic").Call(jen.Err()),
 				),
 				jen.ID("runTime").Op("=").ID("_rt"),
 			),

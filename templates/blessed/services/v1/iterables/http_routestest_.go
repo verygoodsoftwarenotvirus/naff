@@ -105,13 +105,13 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -136,13 +136,13 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -169,13 +169,13 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -205,13 +205,13 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -278,13 +278,13 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sCreationInput", sn).Valuesln(
 					buildCreationInputFromExpectedLines()...,
@@ -308,13 +308,13 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -342,13 +342,13 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sCreationInput", sn).Valuesln(
 					buildCreationInputFromExpectedLines()...,
@@ -389,13 +389,13 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sCreationInput", sn).Valuesln(
 					buildCreationInputFromExpectedLines()...,
@@ -451,13 +451,13 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -486,13 +486,13 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -522,13 +522,13 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -561,13 +561,13 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -642,13 +642,13 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
 					buildUpdateInputFromExpectedLines()...,
@@ -664,13 +664,13 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -699,13 +699,13 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
 					buildUpdateInputFromExpectedLines()...,
@@ -738,13 +738,13 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
 					buildUpdateInputFromExpectedLines()...,
@@ -792,13 +792,13 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
 					buildUpdateInputFromExpectedLines()...,
@@ -846,13 +846,13 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").ID("models").Dotf("%sUpdateInput", sn).Valuesln(
 					buildUpdateInputFromExpectedLines()...,
@@ -918,13 +918,13 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -953,13 +953,13 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -987,13 +987,13 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Op("=").ID("id"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.List(jen.ID("req"), jen.ID("err")).Op(":=").Qual("net/http", "NewRequest").Callln(
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
 					jen.ID("nil"),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),

@@ -21,6 +21,8 @@ const (
 	MustAssertPkg  = "github.com/stretchr/testify/require"
 	MockPkg        = "github.com/stretchr/testify/mock"
 	FakeLibrary    = "github.com/brianvoe/gofakeit"
+
+	TracingLibrary = "go.opencensus.io/trace"
 )
 
 func AddImports(proj *models.Project, file *jen.File) {
@@ -35,6 +37,7 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportAlias(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "mockencoding")
 	file.ImportName(filepath.Join(pkgRoot, "internal/v1/metrics"), "metrics")
 	file.ImportAlias(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "mockmetrics")
+	file.ImportName(filepath.Join(pkgRoot, "internal/v1/tracing"), "tracing")
 	file.ImportAlias(filepath.Join(pkgRoot, "database/v1/client"), "dbclient")
 	file.ImportName(filepath.Join(pkgRoot, "database/v1/queriers/mariadb"), "mariadb")
 	file.ImportName(filepath.Join(pkgRoot, "database/v1/queriers/postgres"), "postgres")

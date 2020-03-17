@@ -97,9 +97,9 @@ func buildGetAllSomethingsCount(typ models.DataType) []jen.Code {
 		jen.Commentf("GetAll%sCount is a mock function", pn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("GetAll%sCount", pn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
+			utils.CtxVar().Qual("context", "Context"),
 		).Params(jen.ID("uint64"), jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx")),
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar()),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -144,7 +144,7 @@ func buildGetAllSomethingsForUser(pkg *models.Project, typ models.DataType) []je
 			params...,
 		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx"), jen.ID("userID")),
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("userID")),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -167,7 +167,7 @@ func buildGetAllSomethingsForSomethingElse(pkg *models.Project, typ models.DataT
 			params...,
 		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),

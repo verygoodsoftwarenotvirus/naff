@@ -59,7 +59,7 @@ func authenticatorDotGo(pkg *models.Project) *jen.File {
 						jen.ID("TwoFactorCode"),
 					).ID("string"),
 					jen.ID("Salt").Index().ID("byte"),
-				).Params(jen.ID("valid").ID("bool"), jen.ID("err").ID("error")),
+				).Params(jen.ID("valid").ID("bool"), jen.Err().ID("error")),
 			),
 		),
 		jen.Line(),
@@ -69,8 +69,8 @@ func authenticatorDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
-			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.If(jen.List(jen.ID("_"), jen.Err()).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 		),
 

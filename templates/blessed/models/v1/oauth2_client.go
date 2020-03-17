@@ -25,10 +25,10 @@ func oauth2ClientDotGo(pkg *models.Project) *jen.File {
 			jen.ID("OAuth2ClientDataManager").Interface(
 				jen.ID("GetOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("OAuth2Client"), jen.ID("error")),
 				jen.ID("GetOAuth2ClientByClientID").Params(utils.CtxParam(), jen.ID("clientID").ID("string")).Params(jen.Op("*").ID("OAuth2Client"), jen.ID("error")),
-				jen.ID("GetAllOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")),
+				jen.ID("GetAllOAuth2ClientCount").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")),
 				jen.ID("GetOAuth2ClientCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").ID("QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")),
 				jen.ID("GetOAuth2Clients").Params(utils.CtxParam(), jen.ID("filter").Op("*").ID("QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("OAuth2ClientList"), jen.ID("error")),
-				jen.ID("GetAllOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Index().Op("*").ID("OAuth2Client"), jen.ID("error")),
+				jen.ID("GetAllOAuth2Clients").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Index().Op("*").ID("OAuth2Client"), jen.ID("error")),
 				jen.ID("GetAllOAuth2ClientsForUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Index().Op("*").ID("OAuth2Client"), jen.ID("error")),
 				jen.ID("CreateOAuth2Client").Params(utils.CtxParam(), jen.ID("input").Op("*").ID("OAuth2ClientCreationInput")).Params(jen.Op("*").ID("OAuth2Client"), jen.ID("error")),
 				jen.ID("UpdateOAuth2Client").Params(utils.CtxParam(), jen.ID("updated").Op("*").ID("OAuth2Client")).Params(jen.ID("error")),

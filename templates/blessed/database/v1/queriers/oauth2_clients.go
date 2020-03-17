@@ -62,7 +62,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.ID("scopes").ID("string"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("err").Op(":=").ID("scan").Dot("Scan").Callln(
+			jen.If(jen.Err().Op(":=").ID("scan").Dot("Scan").Callln(
 				jen.Op("&").ID("x").Dot("ID"),
 				jen.Op("&").ID("x").Dot("Name"),
 				jen.Op("&").ID("x").Dot("ClientID"),
@@ -72,8 +72,8 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.Op("&").ID("x").Dot("UpdatedOn"),
 				jen.Op("&").ID("x").Dot("ArchivedOn"),
 				jen.Op("&").ID("x").Dot("BelongsToUser"),
-			), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			), jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
 			jen.If(jen.ID("scopes").Op(":=").Qual("strings", "Split").Call(jen.ID("scopes"), jen.ID("scopesSeparator")), jen.ID("len").Call(jen.ID("scopes")).Op(">=").Lit(1).Op("&&").ID("scopes").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
@@ -96,18 +96,18 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			jen.Var().ID("list").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
-				jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("scanOAuth2Client").Call(jen.ID("rows")),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.Return().List(jen.ID("nil"), jen.ID("err")),
+				jen.List(jen.ID("client"), jen.Err()).Op(":=").ID("scanOAuth2Client").Call(jen.ID("rows")),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.Return().List(jen.ID("nil"), jen.Err()),
 				),
 				jen.ID("list").Op("=").ID("append").Call(jen.ID("list"), jen.ID("client")),
 			),
-			jen.If(jen.ID("err").Op(":=").ID("rows").Dot("Err").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.If(jen.Err().Op(":=").ID("rows").Dot("Err").Call(), jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
-			jen.If(jen.ID("err").Op(":=").ID("rows").Dot("Close").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID(dbfl).Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("closing rows")),
+			jen.If(jen.Err().Op(":=").ID("rows").Dot("Close").Call(), jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID(dbfl).Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("closing rows")),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
@@ -124,7 +124,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			jen.Var().ID("err").ID("error"),
 			jen.Comment("This query is more or less the same as the normal OAuth2 client retrieval query, only that it doesn't"),
 			jen.Comment("care about ownership. It does still care about archived status"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Op("...")).
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
@@ -132,7 +132,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)).Dot("ToSql").Call(),
 			jen.Line(),
-			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -147,7 +147,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2ClientByClientID").Params(utils.CtxParam(), jen.ID("clientID").ID("string")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientByClientIDQuery").Call(jen.ID("clientID")),
-			jen.ID("row").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.ID("row").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("scanOAuth2Client").Call(jen.ID("row")),
 		),
 		jen.Line(),
@@ -173,13 +173,13 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				"Do",
 			).Call(jen.Func().Params().Block(
 				jen.Var().ID("err").ID("error"),
-				jen.List(jen.ID("getAllOAuth2ClientsQuery"), jen.ID("_"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+				jen.List(jen.ID("getAllOAuth2ClientsQuery"), jen.ID("_"), jen.Err()).Op("=").ID(dbfl).Dot("sqlBuilder").
 					Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Op("...")).
 					Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("archived_on").Op(":").ID("nil"))).
 					Dotln("ToSql").Call(),
 				jen.Line(),
-				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			)),
 			jen.Line(),
 			jen.Return().ID("getAllOAuth2ClientsQuery"),
@@ -192,21 +192,21 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 	ret.Add(
 		jen.Comment("GetAllOAuth2Clients gets a list of OAuth2 clients regardless of ownership"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllOAuth2Clients").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
 			"OAuth2Client",
 		),
 			jen.ID("error")).Block(
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID(dbfl).Dot("buildGetAllOAuth2ClientsQuery").Call()),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("rows"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID(dbfl).Dot("buildGetAllOAuth2ClientsQuery").Call()),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+					jen.Return().List(jen.ID("nil"), jen.Err()),
 				),
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying database for oauth2 clients: %w"), jen.ID("err"))),
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying database for oauth2 clients: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID(dbfl).Dot("scanOAuth2Clients").Call(jen.ID("rows")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching list of OAuth2Clients: %w"), jen.ID("err"))),
+			jen.List(jen.ID("list"), jen.Err()).Op(":=").ID(dbfl).Dot("scanOAuth2Clients").Call(jen.ID("rows")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching list of OAuth2Clients: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
@@ -222,17 +222,17 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllOAuth2ClientsForUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientsQuery").Call(jen.ID("nil"), jen.ID("userID")),
 			jen.Line(),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("rows"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+					jen.Return().List(jen.ID("nil"), jen.Err()),
 				),
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying database for oauth2 clients: %w"), jen.ID("err"))),
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying database for oauth2 clients: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID(dbfl).Dot("scanOAuth2Clients").Call(jen.ID("rows")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching list of OAuth2Clients: %w"), jen.ID("err"))),
+			jen.List(jen.ID("list"), jen.Err()).Op(":=").ID(dbfl).Dot("scanOAuth2Clients").Call(jen.ID("rows")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching list of OAuth2Clients: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("list"), jen.ID("nil")),
@@ -247,7 +247,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetOAuth2ClientQuery").Params(jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Op("...")).
 				Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
@@ -256,7 +256,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)).Dot("ToSql").Call(),
 			jen.Line(),
-			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -270,14 +270,14 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientQuery").Call(jen.ID("clientID"), jen.ID("userID")),
-			jen.ID("row").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.ID("row").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Line(),
-			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("scanOAuth2Client").Call(jen.ID("row")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("client"), jen.Err()).Op(":=").ID("scanOAuth2Client").Call(jen.ID("row")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+					jen.Return().List(jen.ID("nil"), jen.Err()),
 				),
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for oauth2 client: %w"), jen.ID("err"))),
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for oauth2 client: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("client"), jen.ID("nil")),
@@ -309,8 +309,8 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				).Call(jen.ID("builder")),
 			),
 			jen.Line(),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("builder").Dot("ToSql").Call(),
-			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID("builder").Dot("ToSql").Call(),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -323,9 +323,9 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Comment("GetOAuth2ClientCount will get the count of OAuth2 clients that match the given filter and belong to the user"),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2ClientCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
+			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientCountQuery").Call(jen.ID("filter"), jen.ID("userID")),
-			jen.ID("err").Op("=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("count")),
+			jen.Err().Op("=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("count")),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -351,13 +351,13 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetAllOAuth2ClientCountQuery").Params().Params(jen.ID("string")).Block(
 			jen.ID("getAllOAuth2ClientCountQueryBuilder").Dot("Do").Call(jen.Func().Params().Block(
 				jen.Var().ID("err").ID("error"),
-				jen.List(jen.ID("getAllOAuth2ClientCountQuery"), jen.ID("_"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+				jen.List(jen.ID("getAllOAuth2ClientCountQuery"), jen.ID("_"), jen.Err()).Op("=").ID(dbfl).Dot("sqlBuilder").
 					Dotln("Select").Call(jen.ID("CountQuery")).
 					Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("archived_on").Op(":").ID("nil"))).
 					Dotln("ToSql").Call(),
 				jen.Line(),
-				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			)),
 			jen.Line(),
 			jen.Return().ID("getAllOAuth2ClientCountQuery"),
@@ -370,10 +370,10 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 	ret.Add(
 		jen.Comment("GetAllOAuth2ClientCount will get the count of OAuth2 clients that match the current filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllOAuth2ClientCount").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Block(
 			jen.Var().ID("count").ID("uint64"),
-			jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID(dbfl).Dot("buildGetAllOAuth2ClientCountQuery").Call()).Dot("Scan").Call(jen.Op("&").ID("count")),
-			jen.Return().List(jen.ID("count"), jen.ID("err")),
+			jen.Err().Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID(dbfl).Dot("buildGetAllOAuth2ClientCountQuery").Call()).Dot("Scan").Call(jen.Op("&").ID("count")),
+			jen.Return().List(jen.ID("count"), jen.Err()),
 		),
 		jen.Line(),
 	)
@@ -399,8 +399,8 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.ID("builder").Op("=").ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
 			),
 			jen.Line(),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID("builder").Dot("ToSql").Call(),
-			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID("builder").Dot("ToSql").Call(),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -414,18 +414,18 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2Clients").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList"), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientsQuery").Call(jen.ID("filter"), jen.ID("userID")),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.List(jen.ID("rows"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Line(),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+					jen.Return().List(jen.ID("nil"), jen.Err()),
 				),
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for oauth2 clients: %w"), jen.ID("err"))),
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for oauth2 clients: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("list"), jen.ID("err")).Op(":=").ID(dbfl).Dot("scanOAuth2Clients").Call(jen.ID("rows")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.ID("err"))),
+			jen.List(jen.ID("list"), jen.Err()).Op(":=").ID(dbfl).Dot("scanOAuth2Clients").Call(jen.ID("rows")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Comment("de-pointer-ize clients"),
@@ -435,9 +435,9 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.ID("clients").Index(jen.ID("i")).Op("=").Op("*").ID("t"),
 			),
 			jen.Line(),
-			jen.List(jen.ID("totalCount"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2ClientCount").Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 client count: %w"), jen.ID("err"))),
+			jen.List(jen.ID("totalCount"), jen.Err()).Op(":=").ID(dbfl).Dot("GetOAuth2ClientCount").Call(utils.CtxVar(), jen.ID("filter"), jen.ID("userID")),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 client count: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.ID("ocl").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList").Valuesln(
@@ -480,7 +480,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			vals = append(vals, jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery")))
 		}
 
-		q := jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+		q := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID(dbfl).Dot("sqlBuilder").
 			Dotln("Insert").Call(jen.ID("oauth2ClientsTableName")).
 			Dotln("Columns").Callln(cols...).
 			Dotln("Values").Callln(vals...)
@@ -499,7 +499,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			jen.Var().ID("err").ID("error"),
 			buildCreateQueryCreation(),
 			jen.Line(),
-			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -517,13 +517,13 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildOAuth2ClientCreationTimeQuery").Params(jen.ID("clientID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 				jen.Var().ID("err").ID("error"),
 				jen.Line(),
-				jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+				jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID(dbfl).Dot("sqlBuilder").
 					Dotln("Select").Call(jen.Lit("created_on")).
 					Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
 					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("id").Op(":").ID("clientID"))).
 					Dotln("ToSql").Call(),
 				jen.Line(),
-				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 				jen.Line(),
 				jen.Return().List(jen.ID("query"), jen.ID("args")),
 			),
@@ -548,16 +548,16 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 
 		if isPostgres {
 			out = append(out,
-				jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing client creation query: %w"), jen.ID("err"))),
+				jen.Err().Op(":=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("CreatedOn")),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing client creation query: %w"), jen.Err())),
 				),
 			)
 		} else if isSqlite || isMariaDB {
 			out = append(out,
-				jen.List(jen.ID("res"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing client creation query: %w"), jen.ID("err"))),
+				jen.List(jen.ID("res"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
+				jen.If(jen.Err().Op("!=").ID("nil")).Block(
+					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing client creation query: %w"), jen.Err())),
 				),
 				jen.Line(),
 				jen.Comment("fetch the last inserted ID"),
@@ -565,7 +565,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 					jen.ID("x").Dot("ID").Op("=").ID("uint64").Call(jen.ID("id")),
 					jen.Line(),
 					jen.List(jen.ID("query"), jen.ID("args")).Op("=").ID(dbfl).Dot("buildOAuth2ClientCreationTimeQuery").Call(jen.ID("x").Dot("ID")),
-					jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("CreatedOn"))),
+					jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("x").Dot("CreatedOn"))),
 				),
 			)
 		}
@@ -587,7 +587,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 
 	buildBuildCreateOauth2ClientTestBody := func() []jen.Code {
 		out := []jen.Code{jen.Var().ID("err").ID("error")}
-		q := jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+		q := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID(dbfl).Dot("sqlBuilder").
 			Dotln("Update").Call(jen.ID("oauth2ClientsTableName")).
 			Dotln("Set").Call(jen.Lit("client_id"), jen.ID("input").Dot("ClientID")).
 			Dotln("Set").Call(jen.Lit("client_secret"), jen.ID("input").Dot("ClientSecret")).
@@ -606,7 +606,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 
 		out = append(out, q,
 			jen.Line(),
-			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		)
@@ -631,10 +631,10 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		}
 
 		if isPostgres {
-			out = append(out, jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")))
+			out = append(out, jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("input").Dot("UpdatedOn")))
 		} else if isSqlite || isMariaDB {
 			out = append(out,
-				jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+				jen.List(jen.ID("_"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 				jen.Return().ID("err"),
 			)
 		}
@@ -656,7 +656,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 	////////////
 
 	buildBuildArchiveOAuth2ClientQuery := func() jen.Code {
-		q := jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op("=").ID(dbfl).Dot("sqlBuilder").
+		q := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID(dbfl).Dot("sqlBuilder").
 			Dotln("Update").Call(jen.ID("oauth2ClientsTableName")).
 			Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
 			Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
@@ -680,7 +680,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 			jen.Var().ID("err").ID("error"),
 			buildBuildArchiveOAuth2ClientQuery(),
 			jen.Line(),
-			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.ID("err")),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			jen.Line(),
 			jen.Return().List(jen.ID("query"), jen.ID("args")),
 		),
@@ -694,7 +694,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("ArchiveOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildArchiveOAuth2ClientQuery").Call(jen.ID("clientID"), jen.ID("userID")),
-			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(jen.ID("ctx"), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.List(jen.ID("_"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("err"),
 		),
 		jen.Line(),

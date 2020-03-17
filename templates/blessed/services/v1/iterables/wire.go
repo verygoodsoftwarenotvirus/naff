@@ -29,7 +29,7 @@ func wireDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(fmt.Sprintf("Provide%sDataManager turns a database into an %sDataManager", sn, sn)),
+		jen.Commentf("Provide%sDataManager turns a database into an %sDataManager", sn, sn),
 		jen.Line(),
 		jen.Func().ID(fmt.Sprintf("Provide%sDataManager", sn)).Params(jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataManager", sn))).Block(
 			jen.Return().ID("db"),
@@ -38,7 +38,7 @@ func wireDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(fmt.Sprintf("Provide%sDataServer is an arbitrary function for dependency injection's sake", sn)),
+		jen.Commentf("Provide%sDataServer is an arbitrary function for dependency injection's sake", sn),
 		jen.Line(),
 		jen.Func().ID(fmt.Sprintf("Provide%sDataServer", sn)).Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", sn))).Block(
 			jen.Return().ID("s"),

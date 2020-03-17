@@ -139,22 +139,22 @@ func serverDotGo(pkg *models.Project) *jen.File {
 	buildProvideServerLines := func() []jen.Code {
 		lines := []jen.Code{
 			jen.If(jen.ID("len").Call(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).Op("<").Lit(32)).Block(
-				jen.ID("err").Op(":=").ID("errors").Dot("New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
-				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("cookie secret failure")),
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+				jen.Err().Op(":=").ID("errors").Dot("New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
+				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("cookie secret failure")),
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
 			jen.ID("srv").Op(":=").Op("&").ID("Server").Valuesln(
 				buildServerDecLines()...,
 			),
 			jen.Line(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidTracingProvider")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.If(jen.Err().Op(":=").ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.Err().Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidTracingProvider")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("ih"), jen.ID("err")).Op(":=").ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID("logger")),
-			jen.If(jen.ID("err").Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidMetricsProvider")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("ih"), jen.Err()).Op(":=").ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID("logger")),
+			jen.If(jen.Err().Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidMetricsProvider")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.If(jen.ID("ih").Op("!=").ID("nil")).Block(
 				jen.ID("srv").Dot("setupRouter").Call(jen.ID("cfg").Dot("Frontend"), jen.ID("ih")),
@@ -169,9 +169,9 @@ func serverDotGo(pkg *models.Project) *jen.File {
 
 		// if pkg.EnableNewsman {
 		lines = append(lines,
-			jen.List(jen.ID("allWebhooks"), jen.ID("err")).Op(":=").ID("db").Dot("GetAllWebhooks").Call(jen.ID("ctx")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.ID("err"))),
+			jen.List(jen.ID("allWebhooks"), jen.Err()).Op(":=").ID("db").Dot("GetAllWebhooks").Call(utils.CtxVar()),
+			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Block(
@@ -211,9 +211,9 @@ func serverDotGo(pkg *models.Project) *jen.File {
 			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("Listening for HTTP requests on %q"), jen.ID("s").Dot("httpServer").Dot("Addr"))),
 			jen.Line(),
 			jen.Comment("returns ErrServerClosed on graceful close"),
-			jen.If(jen.ID("err").Op(":=").ID("s").Dot("httpServer").Dot("ListenAndServe").Call(), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("server shutting down")),
-				jen.If(jen.ID("err").Op("==").Qual("net/http", "ErrServerClosed")).Block(
+			jen.If(jen.Err().Op(":=").ID("s").Dot("httpServer").Dot("ListenAndServe").Call(), jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("server shutting down")),
+				jen.If(jen.Err().Op("==").Qual("net/http", "ErrServerClosed")).Block(
 					jen.Comment("NOTE: there is a chance that next line won't have time to run,"),
 					jen.Comment("as main() doesn't wait for this goroutine to stop."),
 					jen.Qual("os", "Exit").Call(jen.Lit(0)),

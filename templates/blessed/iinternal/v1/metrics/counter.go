@@ -33,9 +33,9 @@ func counterDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Increment satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("Increment").Params(jen.ID("ctx").Qual("context", "Context")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("Increment").Params(utils.CtxVar().Qual("context", "Context")).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot("actualCount"), jen.Lit(1)),
-			jen.Qual("go.opencensus.io/stats", "Record").Call(jen.ID("ctx"), jen.ID("c").Dot("count").Dot("M").Call(jen.Lit(1))),
+			jen.Qual("go.opencensus.io/stats", "Record").Call(utils.CtxVar(), jen.ID("c").Dot("count").Dot("M").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	)
@@ -47,7 +47,7 @@ func counterDotGo(pkg *models.Project) *jen.File {
 			jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot(
 				"actualCount",
 			), jen.ID("val")),
-			jen.Qual("go.opencensus.io/stats", "Record").Call(jen.ID("ctx"), jen.ID("c").Dot(
+			jen.Qual("go.opencensus.io/stats", "Record").Call(utils.CtxVar(), jen.ID("c").Dot(
 				"count",
 			).Dot(
 				"M",
@@ -59,11 +59,11 @@ func counterDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Decrement satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("Decrement").Params(jen.ID("ctx").Qual("context", "Context")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("Decrement").Params(utils.CtxVar().Qual("context", "Context")).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot(
 				"actualCount",
 			), jen.Op("^").ID("uint64").Call(jen.Lit(0))),
-			jen.Qual("go.opencensus.io/stats", "Record").Call(jen.ID("ctx"), jen.ID("c").Dot(
+			jen.Qual("go.opencensus.io/stats", "Record").Call(utils.CtxVar(), jen.ID("c").Dot(
 				"count",
 			).Dot(
 				"M",
@@ -96,8 +96,8 @@ func counterDotGo(pkg *models.Project) *jen.File {
 				jen.ID("Aggregation").Op(":").Qual("go.opencensus.io/stats/view", "Count").Call(),
 			),
 			jen.Line(),
-			jen.If(jen.ID("err").Op(":=").Qual("go.opencensus.io/stats/view", "Register").Call(jen.ID("countView")), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to register views: %w"), jen.ID("err"))),
+			jen.If(jen.Err().Op(":=").Qual("go.opencensus.io/stats/view", "Register").Call(jen.ID("countView")), jen.Err().Op("!=").ID("nil")).Block(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to register views: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Return().List(jen.Op("&").ID("opencensusCounter").Valuesln(jen.ID("name").Op(":").ID("name"), jen.ID("count").Op(":").ID("count"), jen.ID("counter").Op(":").ID("countView")), jen.ID("nil")),

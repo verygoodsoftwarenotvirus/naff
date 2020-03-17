@@ -62,14 +62,14 @@ func buildFetchRandomSomething(pkg *models.Project, typ models.DataType) []jen.C
 		jen.Commentf("fetchRandom%s retrieves a random %s from the list of available %s", sn, scn, pcn),
 		jen.Line(),
 		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
-			jen.List(jen.IDf("%sRes", puvn), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", pn).Call(
+			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Op(":=").ID("c").Dotf("Get%s", pn).Call(
 				callArgs...,
 			/*
 				jen.Qual("context", "Background").Call(),
 				jen.ID("nil"),
 			*/
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil").Op("||").IDf("%sRes", puvn).Op("==").ID("nil").Op("||").ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).Op("==").Lit(0)).Block(
+			jen.If(jen.Err().Op("!=").ID("nil").Op("||").IDf("%sRes", puvn).Op("==").ID("nil").Op("||").ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).Op("==").Lit(0)).Block(
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),
@@ -152,11 +152,11 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.Line(),
-		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.ID("err")).Op(":=").ID("c").Dotf("Create%s", sn).Call(
+		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Op(":=").ID("c").Dotf("Create%s", sn).Call(
 			creationArgs...,
 		),
-		jen.If(jen.ID("err").Op("!=").Nil()).Block(
-			jen.Return(jen.Nil(), jen.ID("err")),
+		jen.If(jen.Err().Op("!=").Nil()).Block(
+			jen.Return(jen.Nil(), jen.Err()),
 		),
 		jen.Line(),
 	)
@@ -268,11 +268,11 @@ func buildCreateSomethingBlock(pkg *models.Project, typ models.DataType) []jen.C
 	args = append(args, jen.Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call())
 
 	lines = append(lines,
-		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dotf("BuildCreate%sRequest", sn).Call(
+		jen.List(jen.ID("req"), jen.Err()).Op(":=").ID("c").Dotf("BuildCreate%sRequest", sn).Call(
 			args...,
 		),
 		jen.Line(),
-		jen.Return(jen.List(jen.ID("req"), jen.ID("err"))),
+		jen.Return(jen.List(jen.ID("req"), jen.Err())),
 	)
 
 	return lines

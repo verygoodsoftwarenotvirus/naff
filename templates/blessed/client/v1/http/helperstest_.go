@@ -26,33 +26,33 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"expected use",
-				jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(
+				jen.Err().Op(":=").ID("argIsNotPointerOrNil").Call(
 					jen.Op("&").ID("testingType").Values(),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should not be returned when a pointer is provided"),
 				),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with non-pointer",
-				jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(
+				jen.Err().Op(":=").ID("argIsNotPointerOrNil").Call(
 					jen.ID("testingType").Values(),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should be returned when a non-pointer is provided"),
 				),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with nil",
-				jen.ID("err").Op(":=").ID("argIsNotPointerOrNil").Call(
+				jen.Err().Op(":=").ID("argIsNotPointerOrNil").Call(
 					jen.ID("nil"),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should be returned when nil is provided"),
 				),
 			),
@@ -68,7 +68,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				"expected use",
 				jen.List(
 					jen.ID("notAPointer"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("argIsNotPointer").Call(
 					jen.Op("&").ID("testingType").Values(),
 				),
@@ -77,7 +77,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("expected `false` when a pointer is provided"),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should not be returned when a pointer is provided"),
 				),
 			),
@@ -86,7 +86,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				"with non-pointer",
 				jen.List(
 					jen.ID("notAPointer"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("argIsNotPointer").Call(
 					jen.ID("testingType").Values(),
 				),
@@ -95,7 +95,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("expected `true` when a non-pointer is provided"),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should be returned when a non-pointer is provided"),
 				),
 			),
@@ -104,7 +104,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				"with nil",
 				jen.List(
 					jen.ID("notAPointer"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("argIsNotPointer").Call(
 					jen.ID("nil"),
 				),
@@ -113,7 +113,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("expected `true` when nil is provided"),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should be returned when nil is provided"),
 				),
 			),
@@ -129,7 +129,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				"without nil",
 				jen.List(
 					jen.ID("isNil"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("argIsNotNil").Call(
 					jen.Op("&").ID("testingType").Values(),
 				),
@@ -138,7 +138,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("expected `false` when a pointer is provided"),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should not be returned when a pointer is provided"),
 				),
 			),
@@ -147,7 +147,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				"with non-pointer",
 				jen.List(
 					jen.ID("isNil"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("argIsNotNil").Call(
 					jen.ID("testingType").Values(),
 				),
@@ -156,7 +156,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("expected `true` when a non-pointer is provided"),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should not be returned when a non-pointer is provided"),
 				),
 			),
@@ -165,7 +165,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				"with nil",
 				jen.List(
 					jen.ID("isNil"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("argIsNotNil").Call(
 					jen.ID("nil"),
 				),
@@ -174,7 +174,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("expected `true` when nil is provided"),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should be returned when nil is provided"),
 				),
 			),
@@ -188,7 +188,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"expected use",
-				jen.ID("expected").Op(":=").Lit("example"),
+				jen.ID("expected").Op(":=").Add(utils.FakeStringFunc()),
 				jen.ID("res").Op(":=").Op("&").Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").Op(":").Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(
@@ -202,7 +202,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Var().ID("out").ID("testingType"),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
+				jen.Err().Op(":=").ID("unmarshalBody").Call(
 					jen.ID("res"),
 					jen.Op("&").ID("out"),
 				),
@@ -212,7 +212,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("expected marshaling to work"),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be encountered unmarshaling into a valid struct"),
 				),
 			),
@@ -227,12 +227,12 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Var().ID("out").ID("testingType"),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
+				jen.Err().Op(":=").ID("unmarshalBody").Call(
 					jen.ID("res"),
 					jen.Op("&").ID("out"),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be encountered unmarshaling into a valid struct"),
 				),
 			),
@@ -248,11 +248,11 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 								jen.ID("er").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(),
 								jen.List(
 									jen.ID("bs"),
-									jen.ID("err"),
+									jen.Err(),
 								).Op(":=").Qual("encoding/json", "Marshal").Call(
 									jen.ID("er"),
 								),
-								utils.RequireNoError(jen.ID("err"), nil),
+								utils.RequireNoError(jen.Err(), nil),
 								jen.Return().ID("string").Call(
 									jen.ID("bs"),
 								),
@@ -263,7 +263,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Var().ID("out").Op("*").ID("testingType"),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
+				jen.Err().Op(":=").ID("unmarshalBody").Call(
 					jen.ID("res"),
 					jen.Op("&").ID("out"),
 				),
@@ -272,7 +272,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("expected nil to be returned"),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should be returned from the API"),
 				),
 			),
@@ -287,7 +287,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Var().ID("out").Op("*").ID("testingType"),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
+				jen.Err().Op(":=").ID("unmarshalBody").Call(
 					jen.ID("res"),
 					jen.Op("&").ID("out"),
 				),
@@ -296,19 +296,19 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("expected nil to be returned"),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should be returned from the unmarshaller"),
 				),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with nil target variable",
-				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
+				jen.Err().Op(":=").ID("unmarshalBody").Call(
 					jen.ID("nil"),
 					jen.ID("nil"),
 				),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("error should be encountered when passed nil"),
 				),
 			),
@@ -322,7 +322,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("rc").Op(":=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/mock"), "NewMockReadCloser").Call(),
 				jen.ID("rc").Dot("On").Call(
 					jen.Lit("Read"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("[]uint8")),
 				).Dot("Return").Call(
 					jen.Lit(0),
 					jen.ID("expected"),
@@ -334,12 +334,12 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Var().ID("out").ID("testingType"),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("unmarshalBody").Call(
+				jen.Err().Op(":=").ID("unmarshalBody").Call(
 					jen.ID("res"), jen.Op("&").ID("out"),
 				),
-				utils.AssertEqual(jen.ID("expected"), jen.ID("err"), nil),
+				utils.AssertEqual(jen.ID("expected"), jen.Err(), nil),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be encountered unmarshaling into a valid struct"),
 				),
 			),
@@ -362,30 +362,31 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"expected use",
-				jen.ID("expected").Op(":=").Lit(`{"name":"expected"}`),
+				jen.ID("name").Op(":=").Add(utils.FakeStringFunc()),
+				jen.ID("expected").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit(`{"name":%q}`), jen.ID("name")),
 				jen.ID("x").Op(":=").Op("&").ID("testingType").Values(
-					jen.ID("Name").Op(":").Lit("expected"),
+					jen.ID("Name").Op(":").ID("name"),
 				),
 				jen.Line(),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("x"),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("expected no error creating JSON from valid struct"),
 				),
 				jen.Line(),
 				jen.List(
 					jen.ID("bs"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").Qual("io/ioutil", "ReadAll").Call(
 					jen.ID("actual"),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("expected no error reading JSON from valid struct"),
 				),
 				utils.AssertEqual(
@@ -404,13 +405,13 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.List(
 					jen.ID("_"),
-					jen.ID("err"),
+					jen.Err(),
 				).Op(":=").ID("createBodyFromStruct").Call(
 					jen.ID("x"),
 				),
 				jen.Line(),
 				utils.AssertError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("expected no error creating JSON from valid struct"),
 				),
 			),

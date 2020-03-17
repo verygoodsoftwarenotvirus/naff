@@ -21,9 +21,9 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("attachWebhookIDToSpan provides a consistent way to attach a webhook's ID to a span"),
 		jen.Line(),
-		jen.Func().ID("attachWebhookIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("webhookID").ID("uint64")).Block(
+		jen.Func().ID("attachWebhookIDToSpan").Params(jen.ID("span").Op("*").Qual(utils.TracingLibrary, "Span"), jen.ID("webhookID").ID("uint64")).Block(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("webhook_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("webhookID"), jen.Lit(10)))),
+				jen.ID("span").Dot("AddAttributes").Call(jen.Qual(utils.TracingLibrary, "StringAttribute").Call(jen.Lit("webhook_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("webhookID"), jen.Lit(10)))),
 			),
 		),
 		jen.Line(),
@@ -34,7 +34,7 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
 			jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetWebhook")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetWebhook")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -45,7 +45,7 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 				jen.Lit("user_id").Op(":").ID("userID"),
 			)).Dot("Debug").Call(jen.Lit("GetWebhook called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetWebhook").Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")),
+			jen.Return().ID("c").Dot("querier").Dot("GetWebhook").Call(utils.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
 		),
 		jen.Line(),
 	)
@@ -54,7 +54,7 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("GetWebhooks fetches a list of webhooks from the database that meet a particular filter"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetWebhooks").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetWebhooks")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetWebhooks")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -62,7 +62,7 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetWebhookCount called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetWebhooks").Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
+			jen.Return().ID("c").Dot("querier").Dot("GetWebhooks").Call(utils.CtxVar(), jen.ID("filter"), jen.ID("userID")),
 		),
 		jen.Line(),
 	)
@@ -70,13 +70,13 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetAllWebhooks fetches a list of webhooks from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllWebhooks").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllWebhooks")),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllWebhooks").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList"), jen.ID("error")).Block(
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetAllWebhooks")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("GetWebhookCount called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetAllWebhooks").Call(jen.ID("ctx")),
+			jen.Return().ID("c").Dot("querier").Dot("GetAllWebhooks").Call(utils.CtxVar()),
 		),
 		jen.Line(),
 	)
@@ -85,13 +85,13 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("GetAllWebhooksForUser fetches a list of webhooks from the database that meet a particular filter"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllWebhooksForUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllWebhooksForUser")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetAllWebhooksForUser")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetAllWebhooksForUser called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetAllWebhooksForUser").Call(jen.ID("ctx"), jen.ID("userID")),
+			jen.Return().ID("c").Dot("querier").Dot("GetAllWebhooksForUser").Call(utils.CtxVar(), jen.ID("userID")),
 		),
 		jen.Line(),
 	)
@@ -100,8 +100,8 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("GetWebhookCount fetches the count of webhooks from the database that meet a particular filter"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetWebhookCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetWebhookCount")),
+			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetWebhookCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
@@ -112,7 +112,7 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 				jen.Lit("user_id").Op(":").ID("userID"),
 			)).Dot("Debug").Call(jen.Lit("GetWebhookCount called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetWebhookCount").Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
+			jen.Return().ID("c").Dot("querier").Dot("GetWebhookCount").Call(utils.CtxVar(), jen.ID("filter"), jen.ID("userID")),
 		),
 		jen.Line(),
 	)
@@ -120,13 +120,13 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetAllWebhooksCount fetches the count of webhooks from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllWebhooksCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("count").ID("uint64"), jen.ID("err").ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllWebhooksCount")),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllWebhooksCount").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetAllWebhooksCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("GetAllWebhooksCount called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetAllWebhooksCount").Call(jen.ID("ctx")),
+			jen.Return().ID("c").Dot("querier").Dot("GetAllWebhooksCount").Call(utils.CtxVar()),
 		),
 		jen.Line(),
 	)
@@ -136,13 +136,13 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("CreateWebhook").Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
 			jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("CreateWebhook")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("CreateWebhook")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("input").Dot("BelongsToUser")),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("input").Dot("BelongsToUser")).Dot("Debug").Call(jen.Lit("CreateWebhook called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("CreateWebhook").Call(jen.ID("ctx"), jen.ID("input")),
+			jen.Return().ID("c").Dot("querier").Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID("input")),
 		),
 		jen.Line(),
 	)
@@ -153,7 +153,7 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("NOTE: this function expects the provided input to have a non-zero ID."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("UpdateWebhook").Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("UpdateWebhook")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("UpdateWebhook")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("input").Dot("ID")),
@@ -161,7 +161,7 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("webhook_id"), jen.ID("input").Dot("ID")).Dot("Debug").Call(jen.Lit("UpdateWebhook called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("UpdateWebhook").Call(jen.ID("ctx"), jen.ID("input")),
+			jen.Return().ID("c").Dot("querier").Dot("UpdateWebhook").Call(utils.CtxVar(), jen.ID("input")),
 		),
 		jen.Line(),
 	)
@@ -170,7 +170,7 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ArchiveWebhook archives a webhook from the database"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("ArchiveWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("ArchiveWebhook")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("ArchiveWebhook")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -181,7 +181,7 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 				jen.Lit("user_id").Op(":").ID("userID")),
 			).Dot("Debug").Call(jen.Lit("ArchiveWebhook called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("ArchiveWebhook").Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")),
+			jen.Return().ID("c").Dot("querier").Dot("ArchiveWebhook").Call(utils.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
 		),
 		jen.Line(),
 	)

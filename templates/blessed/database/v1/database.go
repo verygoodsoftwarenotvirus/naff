@@ -26,8 +26,8 @@ func databaseDotGo(pkg *models.Project) *jen.File {
 
 	buildInterfaceLines := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")),
-			jen.ID("IsReady").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("ready").ID("bool")),
+			jen.ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("error")),
+			jen.ID("IsReady").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")),
 			jen.Line(),
 		}
 

@@ -61,27 +61,27 @@ func queryFilterDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("FromParams overrides the core QueryFilter values with values retrieved from url.Params"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("FromParams").Params(jen.ID("params").Qual("net/url", "Values")).Block(
-			jen.If(jen.List(jen.ID("i"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("pageKey")), jen.Lit(10), jen.Lit(64)), jen.ID("err").Op("==").ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("pageKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
 				jen.ID("qf").Dot("Page").Op("=").ID("uint64").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(1))),
 			),
 			jen.Line(),
-			jen.If(jen.List(jen.ID("i"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("limitKey")), jen.Lit(10), jen.Lit(64)), jen.ID("err").Op("==").ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("limitKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
 				jen.ID("qf").Dot("Limit").Op("=").ID("uint64").Call(jen.Qual("math", "Max").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(0)), jen.ID("MaxLimit"))),
 			),
 			jen.Line(),
-			jen.If(jen.List(jen.ID("i"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("createdBeforeKey")), jen.Lit(10), jen.Lit(64)), jen.ID("err").Op("==").ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("createdBeforeKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
 				jen.ID("qf").Dot("CreatedBefore").Op("=").ID("uint64").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(0))),
 			),
 			jen.Line(),
-			jen.If(jen.List(jen.ID("i"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("createdAfterKey")), jen.Lit(10), jen.Lit(64)), jen.ID("err").Op("==").ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("createdAfterKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
 				jen.ID("qf").Dot("CreatedAfter").Op("=").ID("uint64").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(0))),
 			),
 			jen.Line(),
-			jen.If(jen.List(jen.ID("i"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("updatedBeforeKey")), jen.Lit(10), jen.Lit(64)), jen.ID("err").Op("==").ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("updatedBeforeKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
 				jen.ID("qf").Dot("UpdatedBefore").Op("=").ID("uint64").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(0))),
 			),
 			jen.Line(),
-			jen.If(jen.List(jen.ID("i"), jen.ID("err")).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("updatedAfterKey")), jen.Lit(10), jen.Lit(64)), jen.ID("err").Op("==").ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("updatedAfterKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
 				jen.ID("qf").Dot("UpdatedAfter").Op("=").ID("uint64").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(0))),
 			),
 			jen.Line(),
