@@ -503,7 +503,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.ID("premade").Dot("ClientID"),
 					jen.ID("premade").Dot("ClientSecret"),
 					jen.IDf("%sClient", pkg.Name.UnexportedVarName()).Dot("URL"),

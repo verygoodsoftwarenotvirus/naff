@@ -138,7 +138,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetUserCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("uint64").Call(jen.Add(utils.FakeUint64Func())), jen.ID("nil")),
+				).Dot("Return").Call(jen.Add(utils.FakeUint64Func()), jen.ID("nil")),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),

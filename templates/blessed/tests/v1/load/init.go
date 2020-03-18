@@ -68,7 +68,7 @@ func initDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.List(jen.ID("c"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
-				jen.Qual("context", "Background").Call(),
+				utils.CtxVar(),
 				jen.ID("oa2Client").Dot("ClientID"),
 				jen.ID("oa2Client").Dot("ClientSecret"),
 				jen.ID("uri"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),

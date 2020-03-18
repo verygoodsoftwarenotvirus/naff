@@ -39,11 +39,11 @@ func ctxVar() *jen.Statement {
 	return jen.ID("ctx")
 }
 
-func (typ DataType) BuildGetSomethingParams(pkg *Project) []jen.Code {
+func (typ DataType) BuildGetSomethingParams(proj *Project) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
 	lp := []jen.Code{}
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
@@ -57,10 +57,10 @@ func (typ DataType) BuildGetSomethingParams(pkg *Project) []jen.Code {
 	return params
 }
 
-func (typ DataType) BuildGetSomethingArgs(pkg *Project) []jen.Code {
+func (typ DataType) BuildGetSomethingArgs(proj *Project) []jen.Code {
 	params := []jen.Code{ctxVar()}
 
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
@@ -72,11 +72,55 @@ func (typ DataType) BuildGetSomethingArgs(pkg *Project) []jen.Code {
 	return params
 }
 
-func (typ DataType) BuildGetListOfSomethingParams(pkg *Project, isModelsPackage bool) []jen.Code {
+func (typ DataType) BuildGetSomethingLogValues(proj *Project) jen.Code {
+	params := []jen.Code{}
+
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
+		params = append(params, jen.Litf("%s_id", pt.Name.RouteName()).Op(":").IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	params = append(params, jen.Litf("%s_id", typ.Name.RouteName()).Op(":").IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.BelongsToUser {
+		params = append(params, jen.Lit("user_id").Op(":").ID("userID"))
+	}
+
+	return jen.Map(jen.ID("string")).Interface().Valuesln(params...)
+}
+
+func (typ DataType) BuildGetListOfSomethingLogValues(proj *Project) jen.Code {
+	params := []jen.Code{}
+
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
+		params = append(params, jen.Litf("%s_id", pt.Name.RouteName()).Op(":").IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+
+	if typ.BelongsToUser {
+		params = append(params, jen.Lit("user_id").Op(":").ID("userID"))
+	}
+
+	return jen.Map(jen.ID("string")).Interface().Valuesln(params...)
+}
+
+func (typ DataType) BuildSomethingExistsArgs(proj *Project) []jen.Code {
+	params := []jen.Code{ctxVar()}
+
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
+		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.BelongsToUser {
+		params = append(params, jen.ID("userID"))
+	}
+
+	return params
+}
+
+func (typ DataType) BuildGetListOfSomethingParams(proj *Project, isModelsPackage bool) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
 	lp := []jen.Code{}
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	if typ.BelongsToUser {
@@ -87,7 +131,7 @@ func (typ DataType) BuildGetListOfSomethingParams(pkg *Project, isModelsPackage 
 	}
 
 	if !isModelsPackage {
-		params = append(params, jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"))
+		params = append(params, jen.ID("filter").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
 	} else {
 		params = append(params, jen.ID("filter").Op("*").ID("QueryFilter"))
 	}
@@ -97,11 +141,11 @@ func (typ DataType) BuildGetListOfSomethingParams(pkg *Project, isModelsPackage 
 
 const creationObjectVarName = "input"
 
-func (typ DataType) BuildCreateSomethingParams(pkg *Project, isModelsPackage bool) []jen.Code {
+func (typ DataType) BuildCreateSomethingParams(proj *Project, isModelsPackage bool) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
 	lp := []jen.Code{}
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 
@@ -113,17 +157,17 @@ func (typ DataType) BuildCreateSomethingParams(pkg *Project, isModelsPackage boo
 	if isModelsPackage {
 		params = append(params, jen.ID(creationObjectVarName).Op("*").IDf("%sCreationInput", sn))
 	} else {
-		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), fmt.Sprintf("%sCreationInput", sn)))
+		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models", "v1"), fmt.Sprintf("%sCreationInput", sn)))
 	}
 
 	return params
 }
 
-func (typ DataType) BuildCreateSomethingArgs(pkg *Project) []jen.Code {
+func (typ DataType) BuildCreateSomethingArgs(proj *Project) []jen.Code {
 	params := []jen.Code{ctxVar()}
 
 	lp := []jen.Code{}
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 
@@ -133,7 +177,7 @@ func (typ DataType) BuildCreateSomethingArgs(pkg *Project) []jen.Code {
 	return params
 }
 
-func (typ DataType) BuildUpdateSomethingParams(pkg *Project, updatedVarName string, isModelsPackage bool) []jen.Code {
+func (typ DataType) BuildUpdateSomethingParams(proj *Project, updatedVarName string, isModelsPackage bool) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
 	if updatedVarName == "" {
@@ -141,7 +185,7 @@ func (typ DataType) BuildUpdateSomethingParams(pkg *Project, updatedVarName stri
 	}
 
 	lp := []jen.Code{}
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	if len(lp) > 1 {
@@ -152,17 +196,17 @@ func (typ DataType) BuildUpdateSomethingParams(pkg *Project, updatedVarName stri
 	if isModelsPackage {
 		params = append(params, jen.ID(updatedVarName).Op("*").ID(sn))
 	} else {
-		params = append(params, jen.ID(updatedVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), sn))
+		params = append(params, jen.ID(updatedVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models", "v1"), sn))
 	}
 
 	return params
 }
 
-func (typ DataType) BuildUpdateSomethingArgs(pkg *Project, updatedVarName string) []jen.Code {
+func (typ DataType) BuildUpdateSomethingArgs(proj *Project, updatedVarName string) []jen.Code {
 	params := []jen.Code{ctxVar()}
 
 	lp := []jen.Code{}
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	if len(lp) >= 1 {
@@ -173,24 +217,24 @@ func (typ DataType) BuildUpdateSomethingArgs(pkg *Project, updatedVarName string
 	return params
 }
 
-func (typ DataType) BuildGetSomethingForSomethingElseParams(pkg *Project) []jen.Code {
+func (typ DataType) BuildGetSomethingForSomethingElseParams(proj *Project) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
 	lp := []jen.Code{}
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	params = append(params, jen.List(lp...).ID("uint64"))
-	params = append(params, jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), "QueryFilter"))
+	params = append(params, jen.ID("filter").Op("*").Qual(filepath.Join(proj.OutputPath, "models", "v1"), "QueryFilter"))
 
 	return params
 }
 
-func (typ DataType) BuildGetSomethingForSomethingElseParamsForModelsPackage(pkg *Project) []jen.Code {
+func (typ DataType) BuildGetSomethingForSomethingElseParamsForModelsPackage(proj *Project) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
 	lp := []jen.Code{}
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	params = append(params, jen.List(lp...).ID("uint64"))
@@ -199,10 +243,10 @@ func (typ DataType) BuildGetSomethingForSomethingElseParamsForModelsPackage(pkg 
 	return params
 }
 
-func (typ DataType) BuildGetSomethingForSomethingElseArgs(pkg *Project) []jen.Code {
+func (typ DataType) BuildGetSomethingForSomethingElseArgs(proj *Project) []jen.Code {
 	params := []jen.Code{ctxVar()}
 
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	params = append(params, jen.ID("filter"))
@@ -210,10 +254,10 @@ func (typ DataType) BuildGetSomethingForSomethingElseArgs(pkg *Project) []jen.Co
 	return params
 }
 
-func (typ DataType) BuildGetListOfSomethingArgs(pkg *Project) []jen.Code {
+func (typ DataType) BuildGetListOfSomethingArgs(proj *Project) []jen.Code {
 	params := []jen.Code{ctxVar()}
 
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	if typ.BelongsToUser {
@@ -224,11 +268,11 @@ func (typ DataType) BuildGetListOfSomethingArgs(pkg *Project) []jen.Code {
 	return params
 }
 
-func (typ DataType) BuildGetSomethingForUserParams(pkg *Project) []jen.Code {
+func (typ DataType) BuildGetSomethingForUserParams(proj *Project) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
 	lp := []jen.Code{}
-	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	lp = append(lp, jen.ID("userID"))

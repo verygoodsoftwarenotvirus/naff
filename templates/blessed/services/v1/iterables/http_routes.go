@@ -203,7 +203,7 @@ func buildCreateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 	block = append(block,
 		jen.Line(),
 		jen.Comment("check request context for parsed input struct"),
-		jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))),
+		jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID(utils.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))),
 		jen.If(jen.Op("!").ID("ok")).Block(notOkayBlock...),
 	)
 
@@ -393,7 +393,7 @@ func buildUpdateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("check for parsed input attached to request context"),
-		jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sUpdateInput", sn))),
+		jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sUpdateInput", sn))),
 		jen.If(jen.Op("!").ID("ok")).Block(
 			jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
 			utils.WriteXHeader("res", "StatusBadRequest"),

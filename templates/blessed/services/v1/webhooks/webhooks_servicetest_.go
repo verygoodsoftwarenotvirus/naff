@@ -33,7 +33,7 @@ func webhooksServiceTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
+				jen.ID("expectation").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
@@ -48,7 +48,7 @@ func webhooksServiceTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("dm").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.ID("nil")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("ProvideWebhooksService").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("dm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
@@ -69,7 +69,7 @@ func webhooksServiceTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("ProvideWebhooksService").Callln(
-					jen.Qual("context", "Background").Call(), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					utils.CtxVar(), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "WebhookDataManager").Values(),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
@@ -81,7 +81,7 @@ func webhooksServiceTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error setting count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
+				jen.ID("expectation").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
@@ -96,7 +96,7 @@ func webhooksServiceTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("dm").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("ProvideWebhooksService").Callln(
-					jen.Qual("context", "Background").Call(), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					utils.CtxVar(), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("dm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),

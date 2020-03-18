@@ -36,34 +36,62 @@ func clientDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Comment("Migrate is a simple wrapper around the core querier Migrate call"),
+	ret.Add(buildMigrate()...)
+	ret.Add(buildIsReady()...)
+	ret.Add(buildProvideDatabaseClient(pkg)...)
+
+	return ret
+}
+
+func buildMigrate() []jen.Code {
+	funcName := "Migrate"
+
+	lines := []jen.Code{
+		jen.Commentf("%s is a simple wrapper around the core querier %s call", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("error")).Block(
-			jen.Return().ID("c").Dot("querier").Dot("Migrate").Call(utils.CtxVar()),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID(funcName).Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("error")).Block(
+			append(
+				utils.StartSpan(true, funcName),
+				jen.Return().ID("c").Dot("querier").Dot(funcName).Call(utils.CtxVar()),
+			)...,
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
-		jen.Comment("IsReady is a simple wrapper around the core querier IsReady call"),
+	return lines
+}
+
+func buildIsReady() []jen.Code {
+	funcName := "IsReady"
+
+	lines := []jen.Code{
+		jen.Commentf("%s is a simple wrapper around the core querier %s call", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("IsReady").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
-			jen.Return().ID("c").Dot("querier").Dot("IsReady").Call(utils.CtxVar()),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID(funcName).Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
+			append(
+				utils.StartSpan(true, funcName),
+				jen.Return().ID("c").Dot("querier").Dot(funcName).Call(utils.CtxVar()),
+			)...,
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
-		jen.Comment("ProvideDatabaseClient provides a new Database client"),
+	return lines
+}
+
+func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
+	funcName := "ProvideDatabaseClient"
+
+	lines := []jen.Code{
+		jen.Commentf("%s provides a new Database client", funcName),
 		jen.Line(),
-		jen.Func().ID("ProvideDatabaseClient").Paramsln(
+		jen.Func().ID(funcName).Paramsln(
 			utils.CtxParam(),
 			jen.ID("db").Op("*").Qual("database/sql", "DB"),
-			jen.ID("querier").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
+			jen.ID("querier").Qual(filepath.Join(proj.OutputPath, "database/v1"), "Database"),
 			jen.ID("debug").ID("bool"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-		).Params(jen.Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"), jen.ID("error")).Block(
+		).Params(jen.Qual(filepath.Join(proj.OutputPath, "database/v1"), "Database"), jen.ID("error")).Block(
 			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(
 				jen.ID("db").Op(":").ID("db"),
 				jen.ID("querier").Op(":").ID("querier"),
@@ -84,32 +112,7 @@ func clientDotGo(pkg *models.Project) *jen.File {
 			jen.Return().List(jen.ID("c"), jen.ID("nil")),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
-		jen.Comment("attachUserIDToSpan provides a consistent way to attach a user's ID to a span"),
-		jen.Line(),
-		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual(utils.TracingLibrary, "Span"), jen.ID("userID").ID("uint64")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Callln(
-					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10))),
-				),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("attachFilterToSpan provides a consistent way to attach a filter's info to a span"),
-		jen.Line(),
-		jen.Func().ID("attachFilterToSpan").Params(jen.ID("span").Op("*").Qual(utils.TracingLibrary, "Span"), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Block(
-			jen.If(jen.ID("filter").Op("!=").ID("nil").Op("&&").ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Callln(
-					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(jen.Lit("filter_page"), jen.Qual("strconv", "FormatUint").Call(jen.ID("filter").Dot("QueryPage").Call(), jen.Lit(10))),
-					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(jen.Lit("filter_limit"), jen.Qual("strconv", "FormatUint").Call(jen.ID("filter").Dot("Limit"), jen.Lit(10)))),
-			),
-		),
-		jen.Line(),
-	)
-	return ret
+	return lines
 }

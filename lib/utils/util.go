@@ -118,6 +118,20 @@ func NilQueryFilter(proj *models.Project) jen.Code {
 	return jen.Call(jen.Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
 }
 
+func DefaultQueryFilter(proj *models.Project) jen.Code {
+	return jen.Qual(filepath.Join(proj.OutputPath, "models/v1"), "DefaultQueryFilter").Call()
+}
+
+const FilterVarName = "filter"
+
+func CreateNilQueryFilter(proj *models.Project) jen.Code {
+	return jen.ID(FilterVarName).Op(":=").Call(jen.Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
+}
+
+func CreateDefaultQueryFilter(proj *models.Project) jen.Code {
+	return jen.ID(FilterVarName).Op(":=").Qual(filepath.Join(proj.OutputPath, "models/v1"), "DefaultQueryFilter").Call()
+}
+
 // FakeSeedFunc builds a consistent fake library seed init function
 func FakeSeedFunc() jen.Code {
 	return jen.Func().ID("init").Params().Block(
@@ -241,7 +255,7 @@ func BuildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
 	)
 }
 
-const ctxVarName = "ctx"
+const ContextVarName = "ctx"
 
 // CreateCtx calls context.Background() and assigns it to a variable called ctx
 func CreateCtx() jen.Code {
@@ -255,7 +269,7 @@ func CtxParam() jen.Code {
 
 // CtxParam is a shorthand for a context param
 func CtxVar() *jen.Statement {
-	return jen.ID(ctxVarName)
+	return jen.ID(ContextVarName)
 }
 
 // OuterTestFunc does
@@ -265,8 +279,9 @@ func OuterTestFunc(subjectName string) *jen.Statement {
 	)
 }
 
+const SpanVarName = "span"
+
 func StartSpan(saveCtx bool, spanName string) []jen.Code {
-	const spanVarName = "span"
 	/*
 		ctx, span := trace.StartSpan(ctx, "UpdateItem")
 		defer span.End()
@@ -277,8 +292,8 @@ func StartSpan(saveCtx bool, spanName string) []jen.Code {
 				return CtxVar()
 			}
 			return jen.ID("_")
-		}(), jen.ID(spanVarName)).Op(":=").Qual(TracingLibrary, "StartSpan").Call(CtxVar(), jen.Lit(spanName)),
-		jen.Defer().ID(spanVarName).Dot("End").Call(),
+		}(), jen.ID(SpanVarName)).Op(":=").Qual(TracingLibrary, "StartSpan").Call(CtxVar(), jen.Lit(spanName)),
+		jen.Defer().ID(SpanVarName).Dot("End").Call(),
 	}
 
 	return lines

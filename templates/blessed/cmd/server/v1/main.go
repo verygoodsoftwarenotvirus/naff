@@ -32,7 +32,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("only allow initialization to take so long"),
-			jen.List(jen.ID("tctx"), jen.ID("cancel")).Op(":=").Qual("context", "WithTimeout").Call(jen.Qual("context", "Background").Call(), jen.ID("cfg").Dot("Meta").Dot("StartupDeadline")),
+			jen.List(jen.ID("tctx"), jen.ID("cancel")).Op(":=").Qual("context", "WithTimeout").Call(utils.CtxVar(), jen.ID("cfg").Dot("Meta").Dot("StartupDeadline")),
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.Lit("initialization")),
 			jen.Line(),
 			jen.Comment("connect to our database"),

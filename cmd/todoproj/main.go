@@ -32,7 +32,7 @@ var (
 							ValidForUpdateInput:   true,
 						},
 					},
-					BelongsToNobody: true,
+					BelongsToUser: true,
 				},
 			},
 		},

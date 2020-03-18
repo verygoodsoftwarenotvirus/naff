@@ -350,7 +350,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.Qual("context", "Background").Call(),
+						utils.CtxVar(),
 						jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientKey"),
 						jen.ID("expected"),
 					),
@@ -380,7 +380,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.Qual("context", "Background").Call(),
+						utils.CtxVar(),
 						jen.ID("clientIDKey"),
 						jen.ID("expected").Dot("ClientID"),
 					),

@@ -345,7 +345,7 @@ func buildexecuteRawRequest() []jen.Code {
 			jen.Err(),
 		).Op(":=").ID("client").Dot("Do").Call(
 			jen.ID("req").Dot("WithContext").Call(
-				jen.ID("ctx"),
+				utils.CtxVar(),
 			),
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(

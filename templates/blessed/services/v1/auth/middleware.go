@@ -139,7 +139,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-				jen.List(jen.ID("user"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")),
+				jen.List(jen.ID("user"), jen.ID("ok")).Op(":=").ID(utils.ContextVarName).Dot("Value").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")),
 				jen.Line(),
 				jen.If(jen.Op("!").ID("ok").Op("||").ID("user").Op("==").ID("nil")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("AdminMiddleware called without user attached to context")),

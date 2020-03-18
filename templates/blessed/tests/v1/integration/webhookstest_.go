@@ -44,7 +44,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.List(jen.ID("y"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("buildDummyWebhookInput").Call()),
+			jen.List(jen.ID("y"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID("buildDummyWebhookInput").Call()),
 			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.Return().ID("y"),
 		),

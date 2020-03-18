@@ -74,7 +74,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
+				jen.ID("expectation").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
@@ -90,7 +90,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.ID("nil")),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
@@ -105,7 +105,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing unit counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
+				jen.ID("expectation").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
@@ -121,7 +121,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.ID("nil")),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
@@ -136,7 +136,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit(fmt.Sprintf("with error fetching %s count", cn)), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
+				jen.ID("expectation").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
@@ -152,7 +152,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),

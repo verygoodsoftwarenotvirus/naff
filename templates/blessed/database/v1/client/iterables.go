@@ -16,26 +16,13 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	n := typ.Name
 	sn := n.Singular()
-	rn := n.RouteName()
-	uvn := n.UnexportedVarName()
-	scnwp := n.SingularCommonNameWithPrefix()
 
 	ret.Add(
 		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataManager", sn)).Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Commentf("attach%sIDToSpan provides a consistent way to attach %s's ID to a span", sn, scnwp),
-		jen.Line(),
-		jen.Func().IDf("attach%sIDToSpan", sn).Params(jen.ID("span").Op("*").Qual(utils.TracingLibrary, "Span"), jen.IDf("%sID", uvn).ID("uint64")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Call(jen.Qual(utils.TracingLibrary, "StringAttribute").Call(jen.Litf("%s_id", rn), jen.Qual("strconv", "FormatUint").Call(jen.IDf("%sID", uvn), jen.Lit(10)))),
-			),
-		),
-		jen.Line(),
-	)
-
+	ret.Add(buildSomethingExists(pkg, typ)...)
 	ret.Add(buildGetSomething(pkg, typ)...)
 	ret.Add(buildGetSomethingCount(pkg, typ)...)
 	ret.Add(buildGetAllSomethingCount(pkg, typ)...)
@@ -55,18 +42,49 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	return ret
 }
 
+func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scnwp := typ.Name.SingularCommonNameWithPrefix()
+
+	funcName := fmt.Sprintf("%sExists", sn)
+	params := typ.BuildGetSomethingParams(proj)
+	args := typ.BuildGetSomethingArgs(proj)
+
+	block := utils.StartSpan(true, funcName)
+	block = append(block,
+		jen.Line(),
+		jen.Qual(filepath.Join(proj.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+		jen.Qual(filepath.Join(proj.OutputPath, "internal/v1/tracing"), "AttachItemIDToSpan").Call(jen.ID("span"), jen.ID("itemID")),
+		jen.Line(),
+		jen.ID("c").Dot("logger").Dot("WithValues").Call(
+			typ.BuildGetSomethingLogValues(proj),
+		).Dot("Debug").Call(jen.Litf("%s called", funcName)),
+		jen.Line(),
+		jen.Return(jen.ID("c").Dot("querier").Dotf("%sExists", sn).Call(args...)),
+	)
+
+	lines := []jen.Code{
+		jen.Commentf("%s fetches whether or not %s exists from the database", funcName, scnwp),
+		jen.Line(),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID(funcName).Params(
+			params...,
+		).Params(jen.Bool(), jen.ID("error")).Block(
+			block...,
+		),
+	}
+
+	return lines
+}
+
 func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
-	rn := n.RouteName()
 	uvn := n.UnexportedVarName()
 	scnwp := n.SingularCommonNameWithPrefix()
 
 	params := typ.BuildGetSomethingParams(pkg)
 	args := typ.BuildGetSomethingArgs(pkg)
-	loggerValues := []jen.Code{
-		jen.Litf("%s_id", rn).Op(":").IDf("%sID", uvn),
-	}
+	loggerValues := typ.BuildGetSomethingLogValues(pkg)
 	block := []jen.Code{
 		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Litf("Get%s", sn)),
 		jen.Defer().ID("span").Dot("End").Call(),
@@ -74,18 +92,15 @@ func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	}
 
 	if typ.BelongsToUser {
-		block = append(block, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
-		loggerValues = append(loggerValues, jen.Lit("user_id").Op(":").ID("userID"))
-	}
-
-	if typ.BelongsToStruct != nil {
-		loggerValues = append(loggerValues, jen.Litf("%s_id", typ.BelongsToStruct.RouteName()).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+		block = append(block, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 	}
 
 	block = append(block,
-		jen.IDf("attach%sIDToSpan", sn).Call(jen.ID("span"), jen.IDf("%sID", uvn)),
+		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.IDf("%sID", uvn)),
 		jen.Line(),
-		jen.ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(loggerValues...)).Dot("Debug").Call(jen.Litf("Get%s called", sn)),
+		jen.ID("c").Dot("logger").Dot("WithValues").Call(
+			loggerValues,
+		).Dot("Debug").Call(jen.Litf("Get%s called", sn)),
 		jen.Line(),
 		jen.Return().ID("c").Dot("querier").Dotf("Get%s", sn).Call(args...),
 	)
@@ -102,7 +117,6 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 	n := typ.Name
 	sn := n.Singular()
 	pcn := n.PluralCommonName()
-
 	params := typ.BuildGetListOfSomethingParams(pkg, false)
 	args := typ.BuildGetListOfSomethingArgs(pkg)
 
@@ -113,24 +127,19 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 	}
 
 	if typ.BelongsToUser {
-		block = append(block, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
+		block = append(block, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 	}
 	if typ.BelongsToStruct != nil {
-		block = append(block, jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
+		block = append(block, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	}
-	// we don't need to consider the other case
 
 	block = append(block,
-		jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
+		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
 		jen.Line(),
 	)
 
-	if typ.BelongsToUser {
-		block = append(block, jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Litf("Get%sCount called", sn)))
-	}
-	if typ.BelongsToStruct != nil {
-		block = append(block, jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())).Dot("Debug").Call(jen.Litf("Get%sCount called", sn)))
-	}
+	loggerValues := typ.BuildGetListOfSomethingLogValues(pkg)
+	block = append(block, jen.ID("c").Dot("logger").Dot("WithValues").Call(loggerValues).Dot("Debug").Call(jen.Litf("Get%sCount called", sn)))
 
 	block = append(block,
 		jen.Line(),
@@ -182,17 +191,17 @@ func buildGetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Cod
 
 	if typ.BelongsToUser {
 		block = append(block,
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		block = append(block,
-			jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.IDf("Attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 		)
 	}
 
 	block = append(block,
-		jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
+		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
 		jen.Line(),
 	)
 
@@ -241,7 +250,7 @@ func buildGetAllSomethingForUser(pkg *models.Project, typ models.DataType) []jen
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Litf("GetAll%sForUser", pn)),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Litf("GetAll%sForUser called", pn)),
 			jen.Line(),
 			jen.List(jen.IDf("%sList", uvn), jen.Err()).Op(":=").ID("c").Dot("querier").Dotf("GetAll%sForUser", pn).Call(utils.CtxVar(), jen.ID("userID")),
@@ -277,7 +286,7 @@ func buildGetAllSomethingForSomethingElse(pkg *models.Project, typ models.DataTy
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Litf("GetAll%sFor%s", pn, btsns)),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.IDf("attach%sIDToSpan", btsns).Call(jen.ID("span"), jen.IDf("%sID", btsuvn)),
+			jen.IDf("Attach%sIDToSpan", btsns).Call(jen.ID("span"), jen.IDf("%sID", btsuvn)),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", btsrn), jen.IDf("%sID", btsuvn)).Dot("Debug").Call(jen.Litf("GetAll%sFor%s called", pn, btsns)),
 			jen.Line(),
 			jen.List(jen.IDf("%sList", uvn), jen.Err()).Op(":=").ID("c").Dot("querier").Dotf("GetAll%sFor%s", pn, btsns).Call(
@@ -340,7 +349,7 @@ func buildUpdateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Litf("Update%s", sn)),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.IDf("attach%sIDToSpan", sn).Call(jen.ID("span"), jen.ID(updatedVarName).Dot("ID")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(updatedVarName).Dot("ID")),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", rn), jen.ID(updatedVarName).Dot("ID")).Dot("Debug").Call(jen.Litf("Update%s called", sn)),
 			jen.Line(),
 			jen.Return().ID("c").Dot("querier").Dotf("Update%s", sn).Call(
@@ -378,14 +387,14 @@ func buildArchiveSomething(pkg *models.Project, typ models.DataType) []jen.Code 
 	}
 
 	if typ.BelongsToUser {
-		block = append(block, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
+		block = append(block, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 	}
 	if typ.BelongsToStruct != nil {
-		block = append(block, jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
+		block = append(block, jen.IDf("Attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	}
 
 	block = append(block,
-		jen.IDf("attach%sIDToSpan", sn).Call(jen.ID("span"), jen.IDf("%sID", uvn)),
+		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.IDf("%sID", uvn)),
 		jen.Line(),
 		jen.ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(loggerValues...)).Dot("Debug").Call(jen.Litf("Archive%s called", sn)),
 		jen.Line(),

@@ -17,7 +17,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("expectedUserCount").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
+			jen.ID("expectedUserCount").Op(":=").Add(utils.FakeUint64Func()),
 			jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 			jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 				jen.Lit("GetUserCount"),
@@ -35,7 +35,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideUsersService").Callln(
-				jen.Qual("context", "Background").Call(),
+				utils.CtxVar(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
 				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID("mockDB"),
@@ -76,7 +76,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideUsersService").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
@@ -109,7 +109,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideUsersService").Callln(
-					jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"),
+					utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"),
 						"AuthSettings",
 					).Values(), jen.ID("noop").Dot(
 						"ProvideNoopLogger",
@@ -139,7 +139,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideUsersService").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"),
@@ -170,7 +170,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideUsersService").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Values(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"),

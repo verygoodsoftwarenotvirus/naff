@@ -23,7 +23,7 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 func buildParamsForMethodThatHandlesAnInstanceWithRetrievedStructs(pkg *models.Project, typ models.DataType, call bool) []jen.Code {
 	parents := pkg.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
-	params := []jen.Code{jen.Qual("context", "Background").Call()}
+	params := []jen.Code{utils.CtxVar()}
 
 	for _, pt := range parents {
 		listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
@@ -65,7 +65,7 @@ func buildFetchRandomSomething(pkg *models.Project, typ models.DataType) []jen.C
 			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Op(":=").ID("c").Dotf("Get%s", pn).Call(
 				callArgs...,
 			/*
-				jen.Qual("context", "Background").Call(),
+				utils.CtxVar(),
 				jen.ID("nil"),
 			*/
 			),
@@ -129,7 +129,7 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 	)
 
 	creationArgs := []jen.Code{
-		jen.Qual("context", "Background").Call(),
+		utils.CtxVar(),
 	}
 	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
@@ -167,7 +167,7 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 func buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg *models.Project, typ models.DataType) []jen.Code {
 	parents := pkg.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
-	params := []jen.Code{jen.Qual("context", "Background").Call()}
+	params := []jen.Code{utils.CtxVar()}
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
@@ -187,7 +187,7 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg *models.Project, t
 func buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(pkg *models.Project, typ models.DataType) []jen.Code {
 	parents := pkg.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
-	params := []jen.Code{jen.Qual("context", "Background").Call()}
+	params := []jen.Code{utils.CtxVar()}
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
@@ -306,7 +306,7 @@ func buildGetSomethingBlock(pkg *models.Project, typ models.DataType) []jen.Code
 	ca = ca[1 : len(ca)-1]
 	callArgs := append([]jen.Code{jen.ID("c")}, ca...)
 
-	requestBuildingArgs := append([]jen.Code{jen.Qual("context", "Background").Call()}, ca...)
+	requestBuildingArgs := append([]jen.Code{utils.CtxVar()}, ca...)
 	requestBuildingArgs = append(requestBuildingArgs, jen.IDf("random%s", sn).Dot("ID"))
 
 	lines := buildRandomDependentIDFetchers(pkg, typ)
@@ -333,7 +333,7 @@ func buildGetListOfSomethingBlock(pkg *models.Project, typ models.DataType) []je
 	ca := buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(pkg, typ)
 	ca = ca[1 : len(ca)-1]
 
-	requestBuildingArgs := append([]jen.Code{jen.Qual("context", "Background").Call()}, ca...)
+	requestBuildingArgs := append([]jen.Code{utils.CtxVar()}, ca...)
 	requestBuildingArgs = append(requestBuildingArgs, jen.Nil())
 
 	lines := buildRandomDependentIDFetchers(pkg, typ)
@@ -357,7 +357,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	ca = ca[1 : len(ca)-1]
 	callArgs := append([]jen.Code{jen.ID("c")}, ca...)
 
-	requestBuildingArgs := append([]jen.Code{jen.Qual("context", "Background").Call()}, ca...)
+	requestBuildingArgs := append([]jen.Code{utils.CtxVar()}, ca...)
 	if len(requestBuildingArgs) > 1 {
 		requestBuildingArgs = requestBuildingArgs[:len(requestBuildingArgs)-1]
 	}
@@ -396,7 +396,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	//ca = ca[1 : len(ca)-1]
 	//callArgs := append([]jen.Code{jen.ID("c")}, ca...)
 	//
-	//requestBuildingArgs := append([]jen.Code{jen.Qual("context", "Background").Call()}, ca...)
+	//requestBuildingArgs := append([]jen.Code{utils.CtxVar()}, ca...)
 	//requestBuildingArgs = append(requestBuildingArgs, jen.IDf("random%s", sn).Dot("ID"))
 	//
 	//var randomLines []jen.Code
@@ -409,7 +409,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	//randomLines = append(randomLines,
 	//	jen.Return().ID("c").Dotf("BuildUpdate%sRequest", sn).Call(
 	//		requestBuildingArgs...,
-	//	// 	jen.Qual("context", "Background").Call(), jen.IDf("random%s", sn),
+	//	// 	utils.CtxVar(), jen.IDf("random%s", sn),
 	//	),
 	//)
 	//
@@ -433,7 +433,7 @@ func buildArchiveSomethingBlock(pkg *models.Project, typ models.DataType) []jen.
 	ca = ca[1 : len(ca)-1]
 	callArgs := append([]jen.Code{jen.ID("c")}, ca...)
 
-	requestBuildingArgs := append([]jen.Code{jen.Qual("context", "Background").Call()}, ca...)
+	requestBuildingArgs := append([]jen.Code{utils.CtxVar()}, ca...)
 	requestBuildingArgs = append(requestBuildingArgs, jen.IDf("random%s", sn).Dot("ID"))
 
 	lines := buildRandomDependentIDFetchers(pkg, typ)

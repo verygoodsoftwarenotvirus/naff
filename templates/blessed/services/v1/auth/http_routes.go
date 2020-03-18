@@ -240,7 +240,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("fetchLoginDataFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.List(jen.ID("loginInput"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UserLoginInputMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput")),
+			jen.List(jen.ID("loginInput"), jen.ID("ok")).Op(":=").ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UserLoginInputMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput")),
 			jen.If(jen.Op("!").ID("ok")).Block(
 				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no UserLoginInput found for /login request")),
 				jen.Return().List(jen.ID("nil"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Valuesln(

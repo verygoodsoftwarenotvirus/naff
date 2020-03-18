@@ -24,15 +24,6 @@ func usersDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("attachUsernameToSpan").Params(jen.ID("span").Op("*").Qual(utils.TracingLibrary, "Span"), jen.ID("username").ID("string")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Call(jen.Qual(utils.TracingLibrary, "StringAttribute").Call(jen.Lit("username"), jen.ID("username"))),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
 		jen.Comment("GetUser fetches a user"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
@@ -42,7 +33,7 @@ func usersDotGo(pkg *models.Project) *jen.File {
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetUser")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetUser called")),
 			jen.Line(),
 			jen.Return().ID("c").Dot("querier").Dot("GetUser").Call(utils.CtxVar(), jen.ID("userID")),
@@ -57,7 +48,7 @@ func usersDotGo(pkg *models.Project) *jen.File {
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetUserByUsername")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachUsernameToSpan").Call(jen.ID("span"), jen.ID("username")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUsernameToSpan").Call(jen.ID("span"), jen.ID("username")),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("username"), jen.ID("username")).Dot("Debug").Call(jen.Lit("GetUserByUsername called")),
 			jen.Line(),
 			jen.Return().ID("c").Dot("querier").Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("username")),
@@ -72,7 +63,7 @@ func usersDotGo(pkg *models.Project) *jen.File {
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetUserCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("GetUserCount called")),
 			jen.Line(),
 			jen.Return().ID("c").Dot("querier").Dot("GetUserCount").Call(utils.CtxVar(), jen.ID("filter")),
@@ -87,7 +78,7 @@ func usersDotGo(pkg *models.Project) *jen.File {
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetUsers")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("filter"), jen.ID("filter")).Dot("Debug").Call(jen.Lit("GetUsers called")),
 			jen.Line(),
 			jen.Return().ID("c").Dot("querier").Dot("GetUsers").Call(utils.CtxVar(), jen.ID("filter")),
@@ -102,7 +93,7 @@ func usersDotGo(pkg *models.Project) *jen.File {
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("CreateUser")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachUsernameToSpan").Call(jen.ID("span"), jen.ID("input").Dot("Username")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUsernameToSpan").Call(jen.ID("span"), jen.ID("input").Dot("Username")),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("username"), jen.ID("input").Dot("Username")).Dot("Debug").Call(jen.Lit("CreateUser called")),
 			jen.Line(),
 			jen.Return().ID("c").Dot("querier").Dot("CreateUser").Call(utils.CtxVar(), jen.ID("input")),
@@ -119,7 +110,7 @@ func usersDotGo(pkg *models.Project) *jen.File {
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("UpdateUser")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachUsernameToSpan").Call(jen.ID("span"), jen.ID("updated").Dot("Username")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUsernameToSpan").Call(jen.ID("span"), jen.ID("updated").Dot("Username")),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("username"), jen.ID("updated").Dot("Username")).Dot("Debug").Call(jen.Lit("UpdateUser called")),
 			jen.Line(),
 			jen.Return().ID("c").Dot("querier").Dot("UpdateUser").Call(utils.CtxVar(), jen.ID("updated")),
@@ -134,7 +125,7 @@ func usersDotGo(pkg *models.Project) *jen.File {
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("ArchiveUser")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("ArchiveUser called")),
 			jen.Line(),
 			jen.Return().ID("c").Dot("querier").Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("userID")),

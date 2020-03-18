@@ -181,7 +181,7 @@ func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Co
 		),
 		jen.List(jen.ID("y"), jen.Err()).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(
 			creationArgs...,
-		//	jen.Qual("context", "Background").Call(), jen.ID("x"),
+		//	utils.CtxVar(), jen.ID("x"),
 		),
 		jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 		jen.Line(),

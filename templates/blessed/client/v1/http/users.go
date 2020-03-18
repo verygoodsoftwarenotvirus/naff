@@ -89,7 +89,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Err().Op("=").ID("c").Dot("retrieve").Call(
-			jen.ID("ctx"),
+			utils.CtxVar(),
 			jen.ID("req"),
 			jen.Op("&").ID("user"),
 		),

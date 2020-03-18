@@ -55,7 +55,7 @@ func queryFilterTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Values(),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
+				jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("qf").Dot("SetPage").Call(jen.ID("expected")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("qf").Dot("Page")),
 			)),

@@ -101,7 +101,7 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("c"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewSimpleClient").Call(jen.Qual("context", "Background").Call(), jen.ID("tu"), jen.ID("debug")),
+			jen.List(jen.ID("c"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewSimpleClient").Call(utils.CtxVar(), jen.ID("tu"), jen.ID("debug")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
@@ -114,7 +114,7 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 				jen.ID("Password").Op(":").Qual(utils.FakeLibrary, "Password").Call(jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.Lit(64)),
 			),
 			jen.Line(),
-			jen.List(jen.ID("ucr"), jen.Err()).Op(":=").ID("c").Dot("CreateUser").Call(jen.Qual("context", "Background").Call(), jen.ID("in")),
+			jen.List(jen.ID("ucr"), jen.Err()).Op(":=").ID("c").Dot("CreateUser").Call(utils.CtxVar(), jen.ID("in")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Err()),
 			).Else().If(jen.ID("ucr").Op("==").ID("nil")).Block(

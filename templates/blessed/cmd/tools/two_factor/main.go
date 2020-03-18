@@ -150,7 +150,7 @@ and logging in.`)
 				jen.Err().ID("error"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("len").Call(jen.Qual("os", "Args")).Op("==").Add(utils.FakeUint64Func())).Block(
+			jen.If(jen.ID("len").Call(jen.Qual("os", "Args")).Op("==").Lit(1)).Block(
 				jen.ID("reader").Op(":=").Qual("bufio", "NewReader").Call(jen.Qual("os", "Stdin")),
 				jen.Qual("fmt", "Print").Call(jen.Lit("token: ")),
 				jen.List(jen.ID("token"), jen.Err()).Op("=").ID("reader").Dot("ReadString").Call(jen.ID(`'\n'`)),
@@ -169,7 +169,7 @@ and logging in.`)
 			jen.ID("secret").Op(":=").ID("requestTOTPSecret").Call(),
 			jen.ID("clearTheScreen").Call(),
 			jen.ID("doTheThing").Call(jen.ID("secret")),
-			jen.ID("every").Op(":=").Qual("time", "Tick").Call(jen.Add(utils.FakeUint64Func()).Op("*").Qual("time", "Second")),
+			jen.ID("every").Op(":=").Qual("time", "Tick").Call(jen.Lit(1).Op("*").Qual("time", "Second")),
 			jen.ID("lastChange").Op("=").Qual("time", "Now").Call(),
 			jen.Line(),
 			jen.For().Range().ID("every").Block(

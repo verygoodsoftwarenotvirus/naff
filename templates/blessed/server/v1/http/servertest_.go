@@ -57,7 +57,7 @@ func serverTestDotGo(pkg *models.Project) *jen.File {
 
 	buildProvideServerArgs := func() []jen.Code {
 		args := []jen.Code{
-			jen.Qual("context", "Background").Call(),
+			utils.CtxVar(),
 			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig").Valuesln(
 				jen.ID("Auth").Op(":").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Valuesln(
 					jen.ID("CookieSecret").Op(":").Lit("THISISAVERYLONGSTRINGFORTESTPURPOSES"),

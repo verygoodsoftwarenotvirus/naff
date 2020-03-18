@@ -65,7 +65,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideOAuth2ClientsService").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("mockDB"),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
@@ -99,7 +99,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideOAuth2ClientsService").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
@@ -134,7 +134,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideOAuth2ClientsService").Callln(
-					jen.Qual("context", "Background").Call(),
+					utils.CtxVar(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"),
 					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
