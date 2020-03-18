@@ -37,7 +37,7 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 				"Get",
 			).Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
 				"OAuth2Client",
-			)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
 		),
 		jen.Line(),
 	)
@@ -61,7 +61,7 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 			).Call(jen.ID("name"), jen.ID("value")),
 			jen.Return().List(jen.ID("args").Dot(
 				"String",
-			).Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			).Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
 		),
 		jen.Line(),
 	)

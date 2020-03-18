@@ -46,7 +46,7 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 					jen.ID("Name").Op(":").Lit("CreateWebhook"), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
 						jen.Return().ID("c").Dot("BuildCreateWebhookRequest").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), "RandomWebhookInput").Call()),
 					),
-					jen.ID("Weight").Op(":").Lit(1)), jen.Lit("UpdateWebhook").Op(":").Valuesln(
+					jen.ID("Weight").Op(":").Add(utils.FakeUint64Func())), jen.Lit("UpdateWebhook").Op(":").Valuesln(
 					jen.ID("Name").Op(":").Lit("UpdateWebhook"), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
 						jen.If(jen.ID("randomWebhook").Op(":=").ID("fetchRandomWebhook").Call(jen.ID("c")), jen.ID("randomWebhook").Op("!=").ID("nil")).Block(
 							jen.ID("randomWebhook").Dot("Name").Op("=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), "RandomWebhookInput").Call().Dot("Name"),

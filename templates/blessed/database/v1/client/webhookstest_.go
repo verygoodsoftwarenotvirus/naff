@@ -18,7 +18,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleID").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("exampleID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values(),
 				jen.Line(),
@@ -41,7 +41,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(jen.Lit("GetWebhookCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
@@ -55,7 +55,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(jen.Lit("GetWebhookCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.ID("nil")), jen.ID("exampleUserID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
@@ -75,7 +75,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
@@ -192,7 +192,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleID").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("exampleID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.Var().ID("expected").ID("error"),
 				jen.Line(),

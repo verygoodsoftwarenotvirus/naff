@@ -194,7 +194,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.If(jen.List(jen.ID("cookie"), jen.Err()).Op(":=").ID("req").Dot("Cookie").Call(jen.ID("CookieName")), jen.Err().Op("==").ID("nil").Op("&&").ID("cookie").Op("!=").ID("nil")).Block(
 					jen.ID("c").Op(":=").ID("s").Dot("buildCookie").Call(jen.Lit("deleted")),
 					jen.ID("c").Dot("Expires").Op("=").Qual("time", "Time").Values(),
-					jen.ID("c").Dot("MaxAge").Op("=").Op("-").Lit(1),
+					jen.ID("c").Dot("MaxAge").Op("=").Op("-").Add(utils.FakeUint64Func()),
 					jen.Qual("net/http", "SetCookie").Call(jen.ID("res"), jen.ID("c")),
 				).Else().Block(
 					jen.ID("s").Dot("logger").Dot("WithError").Call(jen.Err()).Dot("Debug").Call(jen.Lit("logout was called, no cookie was found")),

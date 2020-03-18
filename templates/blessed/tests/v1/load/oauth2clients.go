@@ -20,7 +20,7 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 			"OAuth2Client",
 		)).Block(
 			jen.List(jen.ID("clientsRes"), jen.Err()).Op(":=").ID("c").Dot("GetOAuth2Clients").Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
-			jen.If(jen.Err().Op("!=").ID("nil").Op("||").ID("clientsRes").Op("==").ID("nil").Op("||").ID("len").Call(jen.ID("clientsRes").Dot("Clients")).Op("<=").Lit(1)).Block(jen.Return().ID("nil")),
+			jen.If(jen.Err().Op("!=").ID("nil").Op("||").ID("clientsRes").Op("==").ID("nil").Op("||").ID("len").Call(jen.ID("clientsRes").Dot("Clients")).Op("<=").Add(utils.FakeUint64Func())).Block(jen.Return().ID("nil")),
 			jen.Line(),
 			jen.Var().ID("selectedClient").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
 			jen.For(jen.ID("selectedClient").Op("==").ID("nil")).Block(

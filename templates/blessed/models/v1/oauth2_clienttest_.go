@@ -61,7 +61,7 @@ func oauth2ClientTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Lit("123"),
 				jen.ID("oac").Op(":=").Op("&").ID("OAuth2Client").Valuesln(
 					jen.ID("BelongsToUser").Op(":").ID("expectation"),

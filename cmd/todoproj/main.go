@@ -10,7 +10,7 @@ import (
 
 var (
 	projects = map[string]*models.Project{
-		"todo": &models.Project{
+		"todo": {
 			OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
 			Name:       wordsmith.FromSingularPascalCase("Todo"),
 			DataTypes: []models.DataType{
@@ -25,7 +25,7 @@ var (
 							ValidForUpdateInput:   true,
 						},
 						{
-							Name:                  wordsmith.FromSingularPascalCase("Name"),
+							Name:                  wordsmith.FromSingularPascalCase("Details"),
 							Type:                  "string",
 							Pointer:               false,
 							ValidForCreationInput: true,
@@ -36,7 +36,7 @@ var (
 				},
 			},
 		},
-		"discussion": &models.Project{
+		"discussion": {
 			OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
 			Name:       wordsmith.FromSingularPascalCase("Discussion"),
 			DataTypes: []models.DataType{

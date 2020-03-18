@@ -55,7 +55,7 @@ func queryFilterTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("qf").Op(":=").Op("&").ID("QueryFilter").Values(),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("qf").Dot("SetPage").Call(jen.ID("expected")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("qf").Dot("Page")),
 			)),
@@ -184,7 +184,7 @@ func queryFilterTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with zero limit"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleQF").Op(":=").Op("&").ID("QueryFilter").Values(jen.ID("Limit").Op(":").Lit(0), jen.ID("Page").Op(":").Lit(1)),
+				jen.ID("exampleQF").Op(":=").Op("&").ID("QueryFilter").Values(jen.ID("Limit").Op(":").Lit(0), jen.ID("Page").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Lit(`SELECT things FROM stuff WHERE condition = $1 LIMIT 250`),
 				jen.ID("x").Op(":=").ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Op(":=").ID("x").Dot("ToSql").Call(),

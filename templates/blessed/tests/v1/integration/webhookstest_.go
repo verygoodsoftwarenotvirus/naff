@@ -54,7 +54,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("reverse").Params(jen.ID("s").ID("string")).Params(jen.ID("string")).Block(
 			jen.ID("runes").Op(":=").Index().ID("rune").Call(jen.ID("s")),
-			jen.For(jen.List(jen.ID("i"), jen.ID("j")).Op(":=").List(jen.Lit(0), jen.ID("len").Call(jen.ID("runes")).Op("-").Lit(1)), jen.ID("i").Op("<").ID("j"), jen.List(jen.ID("i"), jen.ID("j")).Op("=").List(jen.ID("i").Op("+").Lit(1), jen.ID("j").Op("-").Lit(1))).Block(
+			jen.For(jen.List(jen.ID("i"), jen.ID("j")).Op(":=").List(jen.Lit(0), jen.ID("len").Call(jen.ID("runes")).Op("-").Add(utils.FakeUint64Func())), jen.ID("i").Op("<").ID("j"), jen.List(jen.ID("i"), jen.ID("j")).Op("=").List(jen.ID("i").Op("+").Add(utils.FakeUint64Func()), jen.ID("j").Op("-").Add(utils.FakeUint64Func()))).Block(
 				jen.List(jen.ID("runes").Index(jen.ID("i")), jen.ID("runes").Index(jen.ID("j"))).Op("=").List(jen.ID("runes").Index(jen.ID("j")), jen.ID("runes").Index(jen.ID("i"))),
 			),
 			jen.Return().ID("string").Call(jen.ID("runes")),

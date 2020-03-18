@@ -74,7 +74,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
@@ -105,7 +105,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing unit counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
@@ -136,7 +136,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit(fmt.Sprintf("with error fetching %s count", cn)), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),

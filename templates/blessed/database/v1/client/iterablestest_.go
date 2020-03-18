@@ -43,20 +43,20 @@ func buildRequisiteIDDeclarations(pkg *models.Project, varPrefix string, typ mod
 
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
 		if varPrefix != "" {
-			lines = append(lines, jen.IDf("%s%sID", varPrefix, pt.Name.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.IDf("%s%sID", varPrefix, pt.Name.Singular()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 		} else {
-			lines = append(lines, jen.IDf("%sID", pt.Name.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.IDf("%sID", pt.Name.Singular()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 		}
 	}
 
 	if varPrefix != "" {
-		lines = append(lines, jen.IDf("%s%sID", varPrefix, typ.Name.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+		lines = append(lines, jen.IDf("%s%sID", varPrefix, typ.Name.Singular()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 	} else {
-		lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+		lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 	}
 
 	if typ.BelongsToUser {
-		lines = append(lines, jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+		lines = append(lines, jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 	}
 
 	return lines
@@ -161,7 +161,7 @@ func buildTestClientGetSomethingCount(pkg *models.Project, typ models.DataType) 
 		}
 
 		lines = append(lines,
-			jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(1)),
+			jen.ID("expected").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 			jen.Line(),
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
@@ -198,7 +198,7 @@ func buildTestClientGetAllOfSomethingForUser(pkg *models.Project, typ models.Dat
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 				jen.ID("expected").Assign().Slice().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
 				jen.Line(),

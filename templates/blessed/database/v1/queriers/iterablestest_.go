@@ -22,23 +22,23 @@ func buildRequisiteIDDeclarations(pkg *models.Project, varPrefix string, typ mod
 
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
 		if varPrefix != "" {
-			lines = append(lines, jen.IDf("%s%sID", varPrefix, pt.Name.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.IDf("%s%sID", varPrefix, pt.Name.Singular()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 		} else {
-			lines = append(lines, jen.IDf("%sID", pt.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.IDf("%sID", pt.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 		}
 	}
 
 	if varPrefix != "" {
-		lines = append(lines, jen.IDf("%s%sID", varPrefix, typ.Name.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+		lines = append(lines, jen.IDf("%s%sID", varPrefix, typ.Name.Singular()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 	} else {
-		lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+		lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 	}
 
 	if typ.BelongsToUser {
 		if varPrefix != "" {
-			lines = append(lines, jen.IDf("%sUserID", varPrefix).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.IDf("%sUserID", varPrefix).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 		} else {
-			lines = append(lines, jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 		}
 	}
 
@@ -341,11 +341,11 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 			expectFuncName = "ExpectExec"
 			returnFuncName = "WillReturnResult"
 
-			exRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
+			exRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Add(utils.FakeUint64Func()))
 		}
 
 		lines := []jen.Code{}
-		expectedValues := []jen.Code{jen.ID("ID").Op(":").Lit(123)}
+		expectedValues := []jen.Code{jen.ID("ID").Op(":").Add(utils.FakeUint64Func())}
 		if typ.BelongsToUser {
 			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)))
 			expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").ID("expectedUserID"))
@@ -393,7 +393,7 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 
 		expectQueryArgs := buildExpectQueryArgs("expected", typ)
 		expectedValues := []jen.Code{
-			jen.ID("ID").Op(":").Lit(123),
+			jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 		}
 
 		if typ.BelongsToUser {
@@ -467,13 +467,13 @@ func buildTestDBArchiveSomethingQueryFuncDecl(pkg *models.Project, dbvendor word
 	if typ.BelongsToUser {
 		queryArgCount = 2
 		expectedQuery = fmt.Sprintf("UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to_user = %s AND id = %s%s", tn, getTimeQuery(dbvendor), getTimeQuery(dbvendor), getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), queryTail)
-		expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").Lit(123))
+		expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").Add(utils.FakeUint64Func()))
 		archiveQueryBuildingParams = append(archiveQueryBuildingParams, jen.ID("expected").Dot("BelongsToUser"))
 	}
 	if typ.BelongsToStruct != nil {
 		queryArgCount = 2
 		expectedQuery = fmt.Sprintf("UPDATE %s SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to_%s = %s AND id = %s%s", tn, getTimeQuery(dbvendor), getTimeQuery(dbvendor), typ.BelongsToStruct.RouteName(), getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), queryTail)
-		expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").Lit(123))
+		expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").Add(utils.FakeUint64Func()))
 		archiveQueryBuildingParams = append(archiveQueryBuildingParams, jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 	} else {
 		queryArgCount = 1
@@ -540,7 +540,7 @@ func buildTestDBArchiveSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith
 		}
 
 		expectedValues := []jen.Code{
-			jen.ID("ID").Op(":").Lit(123),
+			jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 		}
 		actualCallArgs := []jen.Code{
 			jen.Qual("context", "Background").Call(),
@@ -603,7 +603,7 @@ func buildTestDBArchiveSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith
 			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-				Dotln("WithArgs").Callln(dbQueryExpectationArgs...).Dot("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1))),
+				Dotln("WithArgs").Callln(dbQueryExpectationArgs...).Dot("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Add(utils.FakeUint64Func()), jen.Add(utils.FakeUint64Func()))),
 			jen.Line(),
 			jen.Err().Op(":=").ID(dbfl).Dotf("Archive%s", sn).Call(actualCallArgs...),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -622,7 +622,7 @@ func buildTestDBArchiveSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith
 
 	buildSubtestTwo := func() []jen.Code {
 		exampleValues := []jen.Code{
-			jen.ID("ID").Op(":").Lit(123),
+			jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 		}
 
 		var dbQueryExpectationArgs []jen.Code
@@ -717,7 +717,7 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 			getIncIndex(dbvendor, uint(len(updateCols)+1)),
 			queryTail,
 		)
-		expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").Lit(123))
+		expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").Add(utils.FakeUint64Func()))
 		varCount = len(updateCols) + 2
 	}
 	if typ.BelongsToStruct != nil {
@@ -730,7 +730,7 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 			getIncIndex(dbvendor, uint(len(updateCols)+1)),
 			queryTail,
 		)
-		expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").Lit(123))
+		expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").Add(utils.FakeUint64Func()))
 		varCount = len(updateCols) + 2
 	} else {
 		expectedQuery = fmt.Sprintf("UPDATE %s SET %s, updated_on = %s WHERE id = %s%s",
@@ -818,7 +818,7 @@ func buildTestDBCreateSomethingQueryFuncDecl(pkg *models.Project, dbvendor words
 			createdOnValueAdd,
 			queryTail,
 		)
-		expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").Lit(123))
+		expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").Add(utils.FakeUint64Func()))
 	}
 	if typ.BelongsToStruct != nil {
 		expectedQuery = fmt.Sprintf("INSERT INTO %s (%s,belongs_to_%s%s) VALUES (%s%s)%s",
@@ -830,7 +830,7 @@ func buildTestDBCreateSomethingQueryFuncDecl(pkg *models.Project, dbvendor words
 			createdOnValueAdd,
 			queryTail,
 		)
-		expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").Lit(123))
+		expectedValues = append(expectedValues, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").Add(utils.FakeUint64Func()))
 	} else {
 		expectedQuery = fmt.Sprintf("INSERT INTO %s (%s%s) VALUES (%s%s)%s",
 			tn,
@@ -951,7 +951,7 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 
 	buildFirstSubtest := func(pkg *models.Project, typ models.DataType) []jen.Code {
 		out := []jen.Code{}
-		expectedValues := []jen.Code{jen.ID("ID").Op(":").Lit(123)}
+		expectedValues := []jen.Code{jen.ID("ID").Op(":").Add(utils.FakeUint64Func())}
 
 		if typ.BelongsToUser {
 			expectedValues = append(expectedValues, jen.ID("BelongsToUser").Op(":").ID("expectedUserID"))
@@ -995,7 +995,7 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 			out = append(out,
 				jen.Line(),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCreationQuery"))).
-					Dotln("WithArgs").Callln(nef...).Dot("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))),
+					Dotln("WithArgs").Callln(nef...).Dot("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Add(utils.FakeUint64Func()))),
 				jen.Line(),
 				jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM %s WHERE id = %s", tn, getIncIndex(dbvendor, 0)),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
@@ -1026,7 +1026,7 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 		}
 		nef := buildNonEssentialFields("expected", typ)
 
-		expectedValues := []jen.Code{jen.ID("ID").Op(":").Lit(123)}
+		expectedValues := []jen.Code{jen.ID("ID").Op(":").Add(utils.FakeUint64Func())}
 
 		out := []jen.Code{}
 		if typ.BelongsToUser {
@@ -1108,7 +1108,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbv
 			jen.ID("expectedListQuery").Op(":=").Lit(expectedQuery),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID(expectedSomethingID).Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID(expectedSomethingID).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.IDf("expected%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(321),
 				),
@@ -1128,7 +1128,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbv
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID(expectedSomethingID).Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID(expectedSomethingID).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
@@ -1144,7 +1144,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbv
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID(expectedSomethingID).Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID(expectedSomethingID).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
@@ -1159,7 +1159,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbv
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID(expectedSomethingID).Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID(expectedSomethingID).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.IDf("example%s", sn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 					jen.ID("ID").Op(":").Lit(321),
 				),
@@ -1212,14 +1212,14 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		}
 
 		if typ.BelongsToUser {
-			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 			expectQueryMock = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn)))
 			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
 		}
 		if typ.BelongsToStruct != nil {
-			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 			expectQueryMock = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
 				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn)))
@@ -1237,7 +1237,7 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 			jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
 				jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-					jen.ID("Page").Op(":").Lit(1),
+					jen.ID("Page").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Limit").Op(":").Lit(20),
 					jen.ID("TotalCount").Op(":").ID("expectedCount"),
 				),
@@ -1272,14 +1272,14 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		}
 
 		if typ.BelongsToUser {
-			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
 			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
 		}
 		if typ.BelongsToStruct != nil {
-			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
 				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
@@ -1314,14 +1314,14 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		}
 
 		if typ.BelongsToUser {
-			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 				Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah")))
 			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
 		}
 		if typ.BelongsToStruct != nil {
-			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
 				Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah")))
@@ -1355,14 +1355,14 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		}
 
 		if typ.BelongsToUser {
-			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 				Dotln("WillReturnRows").Call(jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID("expected")))
 			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
 		}
 		if typ.BelongsToStruct != nil {
-			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
 				Dotln("WillReturnRows").Call(jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID("expected")))
@@ -1399,14 +1399,14 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		}
 
 		if typ.BelongsToUser {
-			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected")))
 			actualCallArgs = append(actualCallArgs, jen.ID("expectedUserID"))
 		}
 		if typ.BelongsToStruct != nil {
-			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+			lines = append(lines, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
 				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.ID("expected")))
@@ -1532,10 +1532,10 @@ func buildRequisitIDExpectations(pkg *models.Project, startIndex int, varPrefix 
 		}
 	}
 
-	lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(123)))
+	lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 
 	if typ.BelongsToUser {
-		lines = append(lines, jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(123)))
+		lines = append(lines, jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())))
 	}
 
 	return lines
@@ -1647,7 +1647,7 @@ func buildTestDBGetSomething(pkg *models.Project, dbvendor wordsmith.SuperPalabr
 	buildFirstSubtestBlock := func(typ models.DataType) []jen.Code {
 		lines := []jen.Code{
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-				jen.ID("ID").Op(":").Lit(123),
+				jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 			),
 		}
 
@@ -1693,7 +1693,7 @@ func buildTestDBGetSomething(pkg *models.Project, dbvendor wordsmith.SuperPalabr
 	buildSecondSubtestBlock := func(typ models.DataType) []jen.Code {
 		lines := []jen.Code{
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-				jen.ID("ID").Op(":").Lit(123),
+				jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 			),
 		}
 

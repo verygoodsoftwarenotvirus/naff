@@ -19,11 +19,11 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
 					jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
+							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 							jen.ID("Name").Op(":").Lit("name"),
 						),
 					),
@@ -61,7 +61,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
@@ -94,7 +94,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching webhooks from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
@@ -128,7 +128,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
 					jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values(),
 				),
@@ -202,9 +202,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -249,9 +249,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid webhook request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -296,7 +296,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("without input attached"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
@@ -321,9 +321,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error creating webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -364,9 +364,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -418,9 +418,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -458,9 +458,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no such webhook in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -492,9 +492,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching webhook from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -525,9 +525,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -570,9 +570,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -643,9 +643,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows fetching webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -686,9 +686,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -729,9 +729,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error updating webhook"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -786,9 +786,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -849,9 +849,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -895,9 +895,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no webhook in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),
@@ -933,9 +933,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(),
-				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("requestingUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 				),
 				jen.Line(),

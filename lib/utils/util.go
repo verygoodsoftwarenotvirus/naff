@@ -114,11 +114,24 @@ func AssertEqual(expected, actual, message *jen.Statement, formatArgs ...*jen.St
 	return buildDoubleValueTestifyFunc(a, "Equal")(expected, actual, message, formatArgs...)
 }
 
+func NilQueryFilter(proj *models.Project) jen.Code {
+	return jen.Call(jen.Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
+}
+
 // FakeSeedFunc builds a consistent fake library seed init function
 func FakeSeedFunc() jen.Code {
 	return jen.Func().ID("init").Params().Block(
 		jen.Qual(FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 	)
+}
+
+func FakeFuncForType(typ string) func() jen.Code {
+	switch typ {
+	case "string":
+		return FakeStringFunc
+	default:
+		panic(fmt.Sprintf("unknown type! %q", typ))
+	}
 }
 
 func FakeNameFunc() jen.Code {

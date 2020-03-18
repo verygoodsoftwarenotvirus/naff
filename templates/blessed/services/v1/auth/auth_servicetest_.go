@@ -27,7 +27,7 @@ func authServiceTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("userDB").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "UserDataManager").Values(),
 			jen.ID("oauth").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("userIDFetcher").Op(":=").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-				jen.Return().Lit(1),
+				jen.Return().Add(utils.FakeUint64Func()),
 			),
 			jen.ID("ed").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "ProvideResponseEncoder").Call(),
 			jen.Line(),

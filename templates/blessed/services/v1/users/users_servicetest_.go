@@ -17,7 +17,7 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("expectedUserCount").Op(":=").ID("uint64").Call(jen.Lit(123)),
+			jen.ID("expectedUserCount").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 			jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 			jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 				jen.Lit("GetUserCount"),

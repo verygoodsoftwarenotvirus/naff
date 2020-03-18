@@ -2,11 +2,10 @@ package client
 
 import (
 	"fmt"
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"path/filepath"
 )
 
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
@@ -14,6 +13,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, ret)
 
+	ret.Add(buildTestV1Client_BuildItemExistsRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_ItemExists(proj, typ)...)
 	ret.Add(buildTestV1Client_BuildGetSomethingRequest(proj, typ)...)
 	ret.Add(buildTestV1Client_GetSomething(proj, typ)...)
 	ret.Add(buildTestV1Client_BuildGetListOfSomethingRequest(proj, typ)...)
@@ -32,9 +33,9 @@ func buildVarDeclarationsOfDependentIDs(pkg *models.Project, typ models.DataType
 	lines := []jen.Code{}
 
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
-		lines = append(lines, jen.IDf("%sID", pt.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(1)))
+		lines = append(lines, jen.IDf("%sID", pt.Name.UnexportedVarName()).Op(":=").Add(utils.FakeUint64Func()))
 	}
-	lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").ID("uint64").Call(jen.Lit(1)))
+	lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").Add(utils.FakeUint64Func()))
 
 	return lines
 }
@@ -45,7 +46,7 @@ func buildVarDeclarationsOfDependentStructs(pkg *models.Project, typ models.Data
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
 		lines = append(lines,
 			jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), pt.Name.Singular()).Valuesln(
-				jen.ID("ID").Op(":").Lit(1),
+				jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				func() jen.Code {
 					if pt.BelongsToStruct != nil {
 						return jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).Op(":").ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID")
@@ -59,7 +60,7 @@ func buildVarDeclarationsOfDependentStructs(pkg *models.Project, typ models.Data
 
 	lines = append(lines,
 		jen.ID(typ.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), typ.Name.Singular()).Valuesln(
-			jen.ID("ID").Op(":").Lit(1),
+			jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
 					return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
@@ -68,6 +69,62 @@ func buildVarDeclarationsOfDependentStructs(pkg *models.Project, typ models.Data
 				}
 			}(),
 		),
+	)
+
+	return lines
+}
+
+func buildCreationVarDeclarationsOfDependentStructs(pkg *models.Project, typ models.DataType) []jen.Code {
+	lines := []jen.Code{}
+
+	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+		values := []jen.Code{
+			jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+		}
+
+		for _, field := range pt.Fields {
+			if field.ValidForCreationInput {
+				values = append(values, jen.ID(field.Name.Singular()).Op(":").Add(utils.FakeFuncForType(field.Type)()))
+			}
+		}
+
+		values = append(values,
+			func() jen.Code {
+				if pt.BelongsToStruct != nil {
+					return jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).Op(":").ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID")
+				} else {
+					return nil
+				}
+			}(),
+		)
+
+		lines = append(lines,
+			jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), pt.Name.Singular()).Valuesln(values...),
+		)
+	}
+
+	values := []jen.Code{
+		jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+	}
+
+	for _, field := range typ.Fields {
+		if field.ValidForCreationInput {
+			values = append(values, jen.ID(field.Name.Singular()).Op(":").Add(utils.FakeFuncForType(field.Type)()))
+		}
+	}
+
+	values = append(values,
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
+			} else {
+				return nil
+			}
+		}(),
+	)
+
+	lines = append(lines,
+		jen.ID(typ.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), typ.Name.Singular()).Valuesln(values...),
 	)
 
 	return lines
@@ -113,6 +170,16 @@ func buildFormatCallArgsForSingleInstanceRoute(pkg *models.Project, typ models.D
 	return callArgs
 }
 
+func buildFormatCallArgsForSingleInstanceRouteWithoutStructs(pkg *models.Project, typ models.DataType) (args []jen.Code) {
+	callArgs := []jen.Code{}
+	for _, pt := range pkg.FindOwnerTypeChain(typ) {
+		callArgs = append(callArgs, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	callArgs = append(callArgs, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	return callArgs
+}
+
 func buildFormatCallArgsForListRoute(pkg *models.Project, typ models.DataType) (args []jen.Code) {
 	callArgs := []jen.Code{}
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
@@ -145,6 +212,137 @@ func buildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(pkg *models
 	callArgs = append(callArgs, jen.ID(typ.Name.UnexportedVarName()).Dot("ID"))
 
 	return callArgs
+}
+
+func buildTestV1Client_BuildItemExistsRequest(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	depVarDecls := buildVarDeclarationsOfDependentIDs(proj, typ)
+
+	subtestLines := []jen.Code{
+		utils.ExpectMethod("expectedMethod", "MethodHead"),
+		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+		jen.Line(),
+		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+	}
+	subtestLines = append(subtestLines, depVarDecls...)
+
+	subtestLines = append(subtestLines,
+		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("Build%sExistsRequest", ts)).Call(
+			buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, true)...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(
+			jen.Err(),
+			jen.Lit("no error should be returned"),
+		),
+		utils.AssertTrue(
+			jen.Qual("strings", "HasSuffix").Call(
+				jen.ID("actual").Dot("URL").Dot("String").Call(),
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit("%d"),
+					jen.IDf("%sID", typ.Name.UnexportedVarName()),
+				),
+			),
+			nil,
+		),
+		utils.AssertEqual(
+			jen.ID("actual").Dot("Method"),
+			jen.ID("expectedMethod"),
+			jen.Lit("request should be a %s request"),
+			jen.ID("expectedMethod"),
+		),
+	)
+
+	lines := []jen.Code{
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Build%sExistsRequest", ts)).Block(
+			utils.ParallelTest(nil),
+			jen.Line(),
+			utils.BuildSubTest("happy path", subtestLines...),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_ItemExists(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+	uvn := typ.Name.UnexportedVarName()
+
+	// routes
+	var subtestLines []jen.Code
+	actualCallArgs := []jen.Code{utils.CtxVar()}
+
+	//for _, pt := range proj.FindOwnerTypeChain(typ) {
+	//	actualCallArgs = append(actualCallArgs, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+	//
+	//	if pt.BelongsToStruct != nil {
+	//		subtestLines = append(subtestLines,
+	//			jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(proj.OutputPath, "models/v1"), pt.Name.Singular()).Valuesln(
+	//				jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+	//				jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).Op(":").ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID"),
+	//			),
+	//		)
+	//	} else {
+	//		subtestLines = append(subtestLines,
+	//			jen.IDf(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(proj.OutputPath, "models/v1"), pt.Name.Singular()).Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
+	//		)
+	//	}
+	//}
+	actualCallArgs = append(actualCallArgs, jen.IDf("%sID", uvn))
+
+	subtestLines = append(subtestLines,
+		jen.IDf("%sID", uvn).Op(":=").Add(utils.FakeUint64Func()),
+		jen.ID("expected").Op(":=").True(),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertTrue(
+				jen.Qual("strings", "HasSuffix").Call(
+					jen.ID("req").Dot("URL").Dot("String").Call(),
+					jen.Qual("strconv", "Itoa").Call(
+						jen.ID("int").Call(
+							jen.IDf("%sID", uvn),
+						),
+					),
+				),
+				nil,
+			),
+			utils.AssertEqual(
+				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.Qual("fmt", "Sprintf").Call(
+					append(
+						[]jen.Code{jen.Lit(buildFormatStringForSingleInstanceRoute(proj, typ))},
+						buildFormatCallArgsForSingleInstanceRouteWithoutStructs(proj, typ)...,
+					)...,
+				),
+				jen.Lit("expected and actual paths don't match"),
+			),
+			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodHead"), nil),
+			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
+		),
+		jen.Line(),
+		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("%sExists", ts)).Call(
+			actualCallArgs...,
+		),
+		jen.Line(),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+	)
+
+	lines := []jen.Code{
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_%sExists", ts)).Block(
+			utils.ParallelTest(nil),
+			jen.Line(),
+			utils.BuildSubTest("happy path", subtestLines...),
+		),
+		jen.Line(),
+	}
+
+	return lines
 }
 
 func buildTestV1Client_BuildGetSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
@@ -214,13 +412,13 @@ func buildTestV1Client_GetSomething(pkg *models.Project, typ models.DataType) []
 		if pt.BelongsToStruct != nil {
 			subtestLines = append(subtestLines,
 				jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), pt.Name.Singular()).Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).Op(":").ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID"),
 				),
 			)
 		} else {
 			subtestLines = append(subtestLines,
-				jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), pt.Name.Singular()).Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), pt.Name.Singular()).Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 			)
 		}
 	}
@@ -228,7 +426,7 @@ func buildTestV1Client_GetSomething(pkg *models.Project, typ models.DataType) []
 
 	subtestLines = append(subtestLines,
 		jen.ID(uvn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
-			jen.ID("ID").Op(":").Lit(1),
+			jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
 					return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
@@ -259,7 +457,7 @@ func buildTestV1Client_GetSomething(pkg *models.Project, typ models.DataType) []
 						buildFormatCallArgsForSingleInstanceRoute(pkg, typ)...,
 					)...,
 				),
-				jen.Lit("expected and actual path don't match"),
+				jen.Lit("expected and actual paths don't match"),
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(uvn)), nil),
@@ -293,7 +491,6 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(pkg *models.Project, typ m
 	structDecls := buildVarDeclarationsOfDependentStructs(pkg, typ)
 	subtestLines := structDecls[:len(structDecls)-1]
 	subtestLines = append(subtestLines,
-		jen.Line(),
 		jen.ID("filter").Op(":=").Call(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
 		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
@@ -330,15 +527,30 @@ func buildTestV1Client_GetListOfSomething(pkg *models.Project, typ models.DataTy
 	ts := typ.Name.Singular() // title singular
 	puvn := typ.Name.PluralUnexportedVarName()
 
+	modelListRoute := buildFormatStringForListRoute(pkg, typ)
+
+	var uriDec *jen.Statement
+	urlFormatArgs := buildFormatCallArgsForListRoute(pkg, typ)
+	if len(urlFormatArgs) > 0 {
+		uriDec = jen.Qual("fmt", "Sprintf").Call(
+			append(
+				[]jen.Code{jen.Lit(modelListRoute)},
+				urlFormatArgs...,
+			)...,
+		)
+	} else {
+		uriDec = jen.Lit(modelListRoute)
+	}
+
 	structDecls := buildVarDeclarationsOfDependentStructs(pkg, typ)
 	subtestLines := structDecls[:len(structDecls)-1]
 	subtestLines = append(subtestLines,
-		jen.ID("input").Op(":=").Call(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
+		jen.ID("filter").Op(":=").Add(utils.NilQueryFilter(pkg)),
 		jen.Line(),
 		jen.ID(puvn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", ts)).Valuesln(
 			jen.ID(tp).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
 				jen.Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 			),
 		),
@@ -347,13 +559,8 @@ func buildTestV1Client_GetListOfSomething(pkg *models.Project, typ models.DataTy
 			"ts",
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
-				jen.Qual("fmt", "Sprintf").Call(
-					append(
-						[]jen.Code{jen.Lit(buildFormatStringForListRoute(pkg, typ))},
-						buildFormatCallArgsForListRoute(pkg, typ)...,
-					)...,
-				),
-				jen.Lit("expected and actual path don't match"),
+				uriDec,
+				jen.Lit("expected and actual paths don't match"),
 			),
 			utils.AssertEqual(
 				jen.ID("req").Dot("Method"),
@@ -372,7 +579,7 @@ func buildTestV1Client_GetListOfSomething(pkg *models.Project, typ models.DataTy
 		),
 		jen.List(jen.ID("actual"), jen.Err()).
 			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
-			buildParamsForMethodThatCreatesADataTypeFromStructs(pkg, typ, true)...,
+			buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(pkg, typ, true)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -398,9 +605,9 @@ func buildTestV1Client_GetListOfSomething(pkg *models.Project, typ models.DataTy
 func buildTestV1Client_BuildCreateSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	cfs := []jen.Code{jen.ID("ID").Op(":").Lit(1)}
+	cfs := []jen.Code{jen.ID("ID").Op(":").Add(utils.FakeUint64Func())}
 	for _, field := range typ.Fields {
-		cfs = append(cfs, jen.ID(field.Name.Singular()).Op(":").Add(utils.ExampleValueForField(field)))
+		cfs = append(cfs, jen.ID(field.Name.Singular()).Op(":").Add(utils.FakeFuncForType(field.Type)()))
 	}
 
 	structDecls := buildVarDeclarationsOfDependentStructs(pkg, typ)
@@ -456,33 +663,38 @@ func buildTestV1Client_CreateSomething(pkg *models.Project, typ models.DataType)
 	// routes
 	modelListRoute := buildFormatStringForSingleInstanceCreationRoute(pkg, typ)
 
-	createCreationInputLines := func() []jen.Code {
-		var lines []jen.Code
-		for _, field := range typ.Fields {
-			if field.ValidForCreationInput {
-				lines = append(lines, jen.ID(field.Name.Singular()).Op(":").ID(uvn).Dot(field.Name.Singular()))
-			}
+	var createCreationInputLines []jen.Code
+	for _, field := range typ.Fields {
+		if field.ValidForCreationInput {
+			createCreationInputLines = append(createCreationInputLines, jen.ID(field.Name.Singular()).Op(":").ID(uvn).Dot(field.Name.Singular()))
 		}
-		return lines
 	}
 
-	subtestLines := buildVarDeclarationsOfDependentStructs(pkg, typ)
+	var uriDec *jen.Statement
+	urlFormatArgs := buildFormatCallArgsForSingleInstanceCreationRoute(pkg, typ)
+	if len(urlFormatArgs) > 0 {
+		uriDec = jen.Qual("fmt", "Sprintf").Call(
+			append(
+				[]jen.Code{jen.Lit(modelListRoute)},
+				urlFormatArgs...,
+			)...,
+		)
+	} else {
+		uriDec = jen.Lit(modelListRoute)
+	}
+
+	subtestLines := buildCreationVarDeclarationsOfDependentStructs(pkg, typ)
 	subtestLines = append(subtestLines,
 		jen.ID("input").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
-			createCreationInputLines()...,
+			createCreationInputLines...,
 		),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
-				jen.Qual("fmt", "Sprintf").Call(
-					append(
-						[]jen.Code{jen.Lit(modelListRoute)},
-						buildFormatCallArgsForSingleInstanceCreationRoute(pkg, typ)...,
-					)...,
-				),
-				jen.Lit("expected and actual path don't match"),
+				uriDec,
+				jen.Lit("expected and actual paths don't match"),
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 			jen.Line(),
@@ -670,7 +882,7 @@ func buildTestV1Client_ArchiveSomething(pkg *models.Project, typ models.DataType
 						buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg, typ)[1:]...,
 					)...,
 				),
-				jen.Lit("expected and actual path don't match"),
+				jen.Lit("expected and actual paths don't match"),
 			),
 			utils.AssertEqual(
 				jen.ID("req").Dot("Method"),

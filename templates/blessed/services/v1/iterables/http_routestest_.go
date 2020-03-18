@@ -36,10 +36,10 @@ func buildOwnerVarName(typ models.DataType) string {
 
 func buildRelevantOwnerVar(pkg *models.Project, typ models.DataType) jen.Code {
 	if typ.BelongsToUser {
-		return jen.ID(buildOwnerVarName(typ)).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1))
+		return jen.ID(buildOwnerVarName(typ)).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func()))
 	}
 	if typ.BelongsToStruct != nil {
-		return jen.ID(buildOwnerVarName(typ)).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.BelongsToStruct.Singular()).Values(jen.ID("ID").Op(":").Lit(1))
+		return jen.ID(buildOwnerVarName(typ)).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.BelongsToStruct.Singular()).Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func()))
 	}
 
 	return nil
@@ -85,7 +85,7 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
 					jen.ID(pn).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
+							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 						),
 					),
 				),
@@ -252,7 +252,7 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
@@ -326,7 +326,7 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				buildRelevantIDFetcher(typ),
@@ -365,7 +365,7 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
@@ -429,7 +429,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				buildRelevantIDFetcher(typ),
@@ -469,7 +469,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				buildRelevantIDFetcher(typ),
@@ -504,7 +504,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				buildRelevantIDFetcher(typ),
@@ -540,7 +540,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				buildRelevantIDFetcher(typ),
@@ -608,7 +608,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
@@ -682,7 +682,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				buildRelevantIDFetcher(typ),
@@ -722,7 +722,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				buildRelevantIDFetcher(typ),
@@ -761,7 +761,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
@@ -815,7 +815,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
@@ -885,7 +885,7 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
@@ -936,7 +936,7 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				buildRelevantIDFetcher(typ),
@@ -971,7 +971,7 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.Line(),
 				buildRelevantOwnerVar(pkg, typ),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				buildRelevantIDFetcher(typ),

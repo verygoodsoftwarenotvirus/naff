@@ -202,7 +202,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(jen.ID("BelongsToUser").Op(":").Lit(1)),
+				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(jen.ID("BelongsToUser").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("BelongsToUser")),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -218,7 +218,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1)),
+				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleUser").Dot("ID")),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -255,7 +255,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleGrant").Op(":=").Qual("gopkg.in/oauth2.v3", "AuthorizationCode"),
 				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").Op(":").Lit("blah"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(),
 				),
@@ -287,7 +287,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("expected").Op(":=").ID("false"),
 				jen.ID("exampleGrant").Op(":=").Qual("gopkg.in/oauth2.v3", "AuthorizationCode"),
 				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(1), jen.ID("ClientID").Op(":").Lit("blah"), jen.ID("Scopes").Op(":").Index().ID("string").Values(),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()), jen.ID("ClientID").Op(":").Lit("blah"), jen.ID("Scopes").Op(":").Index().ID("string").Values(),
 				),
 				jen.ID("stringID").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
@@ -310,7 +310,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleGrant").Op(":=").Qual("gopkg.in/oauth2.v3", "Implicit"),
 				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").Op(":").Lit("blah"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(),
 				),
@@ -342,7 +342,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleScope").Op(":=").Lit("halb"),
 				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").Op(":").Lit("blah"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.ID("exampleScope")),
 				),
@@ -367,7 +367,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleScope").Op(":=").Lit("halb"),
 				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").Op(":").Lit("blah"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.ID("exampleScope")),
 				),
@@ -392,7 +392,7 @@ func implementationTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleScope").Op(":=").Lit("halb"),
 				jen.ID("exampleClient").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").Op(":").Lit("blah"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(),
 				),

@@ -431,6 +431,39 @@ func buildParamsForMethodThatCreatesADataTypeFromStructs(proj *models.Project, t
 	return params
 }
 
+func buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj *models.Project, typ models.DataType, call bool) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{
+		func() jen.Code {
+			if call {
+				return utils.CtxVar()
+			} else {
+				return utils.CtxParam()
+			}
+		}(),
+	}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+		}
+		if !call {
+			params = append(params, jen.List(listParams...).ID("uint64"))
+		} else {
+			params = append(params, listParams...)
+		}
+	}
+
+	if !call {
+		params = append(params, jen.ID("filter").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
+	} else {
+		params = append(params, jen.ID("filter"))
+	}
+
+	return params
+}
+
 func buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj *models.Project, typ models.DataType, call bool) []jen.Code {
 	parents := proj.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
@@ -569,7 +602,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 	block := utils.StartSpan(true, funcName)
 	block = append(block,
 		jen.List(jen.ID("req"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
-			buildParamsForMethodThatRetrievesAListOfADataType(proj, typ, true)...,
+			buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, true)...,
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(jen.ID("nil"),
@@ -593,7 +626,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 	lines := []jen.Code{
 		jen.Commentf("%s retrieves a list of %s", funcName, typ.Name.PluralCommonName()),
 		jen.Line(),
-		newClientMethod(funcName).Params(buildParamsForMethodThatRetrievesAListOfADataType(proj, typ, false)...).Params(
+		newClientMethod(funcName).Params(buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, false)...).Params(
 			jen.ID(pvn).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), fmt.Sprintf("%sList", ts)),
 			jen.Err().ID("error"),
 		).Block(block...,

@@ -69,7 +69,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedClientID").Op(":=").Lit("ClientID"),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
+				jen.ID("expectedArgCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND client_id = %s", getIncIndex(dbvendor, 0)),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientByClientIDQuery").Call(jen.ID("expectedClientID")),
@@ -91,7 +91,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 					jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -130,7 +130,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 					jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -176,7 +176,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 					jen.Valuesln(
-						jen.ID("ID").Op(":").Lit(123),
+						jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 						jen.ID("Name").Op(":").Lit("name"),
 						jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 						jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -225,7 +225,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 					jen.Valuesln(
-						jen.ID("ID").Op(":").Lit(123),
+						jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 						jen.ID("Name").Op(":").Lit("name"),
 						jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 						jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -254,10 +254,10 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
+				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 					jen.Valuesln(
-						jen.ID("ID").Op(":").Lit(123),
+						jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 						jen.ID("Name").Op(":").Lit("name"),
 						jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 						jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -279,7 +279,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
+				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -293,7 +293,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
+				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -308,9 +308,9 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
+				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 					jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -336,7 +336,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedClientID").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expectedClientID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expectedArgCount").Op(":=").Lit(2),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s AND id = %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1)),
@@ -345,7 +345,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedClientID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedClientID"), jen.ID("args").Index(jen.Add(utils.FakeUint64Func())).Assert(jen.ID("uint64"))),
 			)),
 		),
 		jen.Line(),
@@ -360,7 +360,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 					jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -382,7 +382,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 					jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -405,7 +405,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 					jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -433,7 +433,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
+				jen.ID("expectedArgCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", getIncIndex(dbvendor, 0)),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientCountQuery").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
@@ -513,7 +513,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
+				jen.ID("expectedArgCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", getIncIndex(dbvendor, 0)),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientsQuery").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
@@ -536,13 +536,13 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList").Valuesln(
 					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
+						jen.ID("Page").Op(":").Add(utils.FakeUint64Func()),
 						jen.ID("Limit").Op(":").Lit(20),
 						jen.ID("TotalCount").Op(":").Lit(111),
 					),
 					jen.ID("Clients").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
+							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 							jen.ID("Name").Op(":").Lit("name"),
 							jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 							jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -602,13 +602,13 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList").Valuesln(
 					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
+						jen.ID("Page").Op(":").Add(utils.FakeUint64Func()),
 						jen.ID("Limit").Op(":").Lit(20),
 						jen.ID("TotalCount").Op(":").Lit(111),
 					),
 					jen.ID("Clients").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
+							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 							jen.ID("Name").Op(":").Lit("name"),
 							jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 							jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -631,12 +631,12 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList").Valuesln(
 					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
+						jen.ID("Page").Op(":").Add(utils.FakeUint64Func()),
 						jen.ID("Limit").Op(":").Lit(20),
 						jen.ID("TotalCount").Op(":").Lit(0)),
 					jen.ID("Clients").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
+							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 							jen.ID("Name").Op(":").Lit("name"),
 							jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 							jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -690,7 +690,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 					jen.ID("ClientSecret").Op(":").Lit("ClientSecret"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("blah")),
 					jen.ID("RedirectURI").Op(":").Lit("RedirectURI"),
-					jen.ID("BelongsToUser").Op(":").Lit(123),
+					jen.ID("BelongsToUser").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.ID("expectedArgCount").Op(":=").Lit(6),
 				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to_user%s) VALUES (%s,%s,%s,%s,%s,%s%s)%s",
@@ -709,7 +709,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("Name"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("ClientID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("ClientID"), jen.ID("args").Index(jen.Add(utils.FakeUint64Func())).Assert(jen.ID("string"))),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("ClientSecret"), jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("string"))),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("Scopes").Index(jen.Lit(0)), jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("string"))),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("RedirectURI"), jen.ID("args").Index(jen.Lit(4)).Assert(jen.ID("string"))),
@@ -734,7 +734,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 	} else if isSqlite || isMariaDB {
 		happyPathExpectMethodName = "ExpectExec"
 		happyPathReturnMethodName = "WillReturnResult"
-		createOAuth2ClientExampleRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
+		createOAuth2ClientExampleRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Add(utils.FakeUint64Func()))
 		g := &jen.Group{}
 		g.Add(
 			jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM oauth2_clients WHERE id = %s", getIncIndex(dbvendor, 0)), jen.Line(),
@@ -764,7 +764,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 					jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -797,7 +797,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Name").Op(":").Lit("name"),
 					jen.ID("BelongsToUser").Op(":").ID("expectedUserID"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -842,7 +842,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 					jen.ID("ClientSecret").Op(":").Lit("ClientSecret"),
 					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("blah")),
 					jen.ID("RedirectURI").Op(":").Lit("RedirectURI"),
-					jen.ID("BelongsToUser").Op(":").Lit(123),
+					jen.ID("BelongsToUser").Op(":").Add(utils.FakeUint64Func()),
 				),
 				jen.ID("expectedArgCount").Op(":=").Lit(6),
 				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET client_id = %s, client_secret = %s, scopes = %s, redirect_uri = %s, updated_on = %s WHERE belongs_to_user = %s AND id = %s%s",
@@ -860,7 +860,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ClientID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ClientSecret"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ClientSecret"), jen.ID("args").Index(jen.Add(utils.FakeUint64Func())).Assert(jen.ID("string"))),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Scopes").Index(jen.Lit(0)), jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("string"))),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("RedirectURI"), jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("string"))),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("BelongsToUser"), jen.ID("args").Index(jen.Lit(4)).Assert(jen.ID("uint64"))),
@@ -883,7 +883,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 		errFuncExpectMethod = "ExpectQuery"
 	} else if isSqlite || isMariaDB {
 		mockDBExpect = jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-			Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1)))
+			Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Add(utils.FakeUint64Func()), jen.Add(utils.FakeUint64Func())))
 		errFuncExpectMethod = "ExpectExec"
 	}
 
@@ -941,7 +941,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedClientID").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expectedClientID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expectedArgCount").Op(":=").Lit(2),
 				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET updated_on = %s, archived_on = %s WHERE belongs_to_user = %s AND id = %s%s",
@@ -956,7 +956,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedClientID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedClientID"), jen.ID("args").Index(jen.Add(utils.FakeUint64Func())).Assert(jen.ID("uint64"))),
 			)),
 		),
 		jen.Line(),
@@ -976,12 +976,12 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleClientID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID("exampleUserID"), jen.ID("exampleClientID")).
-					Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1))),
+					Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Add(utils.FakeUint64Func()), jen.Add(utils.FakeUint64Func()))),
 				jen.Line(),
 				jen.Err().Op(":=").ID(dbfl).Dot("ArchiveOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleClientID"), jen.ID("exampleUserID")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -991,7 +991,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleClientID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).

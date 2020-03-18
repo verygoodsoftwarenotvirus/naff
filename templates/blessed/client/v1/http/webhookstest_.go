@@ -32,9 +32,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
-				jen.ID("expectedID").Op(":=").ID("uint64").Call(
-					jen.Lit(1),
-				),
+				jen.ID("expectedID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.List(
 					jen.ID("actual"),
 					jen.Err(),
@@ -76,8 +74,8 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
-					jen.ID("Name").Op(":").Lit("example"),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 				),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -182,8 +180,8 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
 					jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(1),
-							jen.ID("Name").Op(":").Lit("example"),
+							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+							jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 						),
 					),
 				),
@@ -240,7 +238,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-					jen.ID("Name").Op(":").Lit("expected name"),
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 				),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
@@ -277,8 +275,8 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
-					jen.ID("Name").Op(":").Lit("example"),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 				),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
 					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
@@ -350,7 +348,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPut"),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("Name").Op(":").Lit("changed name"),
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 				),
 				jen.Line(),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
@@ -389,8 +387,8 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
-					jen.ID("Name").Op(":").Lit("example"),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 				),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -438,9 +436,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodDelete"),
 				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 				jen.Line(),
-				jen.ID("expectedID").Op(":=").ID("uint64").Call(
-					jen.Lit(1),
-				),
+				jen.ID("expectedID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -489,9 +485,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").ID("uint64").Call(
-					jen.Lit(1),
-				),
+				jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",

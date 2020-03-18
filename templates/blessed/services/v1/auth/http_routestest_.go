@@ -25,7 +25,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.Err()).Op(":=").ID("s").Dot("buildAuthCookie").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(
-					jen.ID("ID").Op(":").Lit(1),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Username").Op(":").Lit("username")),
 				),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -110,7 +110,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.Err()).Op(":=").ID("s").Dot("buildAuthCookie").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1), jen.ID("Username").Op(":").Lit("username"))),
+				jen.List(jen.ID("c"), jen.Err()).Op(":=").ID("s").Dot("buildAuthCookie").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func()), jen.ID("Username").Op(":").Lit("username"))),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("c")),
 				jen.Line(),
@@ -144,7 +144,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("expectedUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(
 					jen.ID("ID").Op(":").ID("userID"),
 					jen.ID("Username").Op(":").Lit("username"),
@@ -172,7 +172,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("without cookie"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("expectedUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(
 					jen.ID("ID").Op(":").ID("userID"),
 					jen.ID("Username").Op(":").Lit("username"),
@@ -196,7 +196,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching user"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("expectedUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(
 					jen.ID("ID").Op(":").ID("userID"),
 					jen.ID("Username").Op(":").Lit("username"),
@@ -526,7 +526,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.Err()).Op(":=").ID("s").Dot("buildAuthCookie").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(1), jen.ID("Username").Op(":").Lit("username"))),
+				jen.List(jen.ID("c"), jen.Err()).Op(":=").ID("s").Dot("buildAuthCookie").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func()), jen.ID("Username").Op(":").Lit("username"))),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("c")),
@@ -894,7 +894,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("normal operation"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123), jen.ID("Username").Op(":").Lit("username")),
+				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func()), jen.ID("Username").Op(":").Lit("username")),
 				jen.List(jen.ID("c"), jen.Err()).Op(":=").ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleUser")),
 				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("c")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),

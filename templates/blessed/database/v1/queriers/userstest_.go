@@ -66,8 +66,8 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
+				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
+				jen.ID("expectedArgCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUserQuery").Call(jen.ID("expectedUserID")),
@@ -87,7 +87,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Username").Op(":").Lit("username"),
 				),
 				jen.Line(),
@@ -105,7 +105,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Username").Op(":").Lit("username"),
 				),
 				jen.Line(),
@@ -154,12 +154,12 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Valuesln(
 					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
+						jen.ID("Page").Op(":").Add(utils.FakeUint64Func()),
 						jen.ID("Limit").Op(":").Lit(20),
 						jen.ID("TotalCount").Op(":").ID("expectedCount")),
 					jen.ID("Users").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
+							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 							jen.ID("Username").Op(":").Lit("username"),
 						),
 					),
@@ -210,7 +210,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Valuesln(
 					jen.ID("Users").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
+							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 							jen.ID("Username").Op(":").Lit("username")),
 					),
 				),
@@ -231,13 +231,13 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Valuesln(
 					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
+						jen.ID("Page").Op(":").Add(utils.FakeUint64Func()),
 						jen.ID("Limit").Op(":").Lit(20),
 						jen.ID("TotalCount").Op(":").ID("expectedCount"),
 					),
 					jen.ID("Users").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
+							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 							jen.ID("Username").Op(":").Lit("username"),
 						),
 					),
@@ -270,7 +270,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUsername").Op(":=").Lit("username"),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
+				jen.ID("expectedArgCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = %s", getIncIndex(dbvendor, 0)),
 				jen.Line(),
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUserByUsernameQuery").Call(jen.ID("expectedUsername")),
@@ -290,7 +290,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Username").Op(":").Lit("username"),
 				),
 				jen.Line(),
@@ -308,7 +308,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Username").Op(":").Lit("username"),
 				),
 				jen.Line(),
@@ -327,7 +327,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Username").Op(":").Lit("username"),
 				),
 				jen.Line(),
@@ -371,7 +371,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -456,7 +456,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	if isPostgres {
 		specialSnowflakePGTest = jen.ID("T").Dot("Run").Call(jen.Litf("with %s row exists error", dbvendor.SingularCommonName()), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-				jen.ID("ID").Op(":").Lit(123),
+				jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 				jen.ID("Username").Op(":").Lit("username"),
 				jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 			),
@@ -525,7 +525,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				func() []jen.Code {
 					out := []jen.Code{
 						jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
+							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 							jen.ID("Username").Op(":").Lit("username"),
 							jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 						),
@@ -544,7 +544,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 						returnMethodName = "WillReturnResult"
 						out = append(
 							out,
-							jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1)),
+							jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Add(utils.FakeUint64Func())),
 							jen.Line(),
 						)
 					}
@@ -585,7 +585,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Username").Op(":").Lit("username"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
@@ -664,7 +664,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		if isPostgres {
 			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 		} else if isSqlite || isMariaDB {
-			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
+			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Add(utils.FakeUint64Func()))
 		}
 		return jen.Null()
 	}
@@ -675,7 +675,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Username").Op(":").Lit("username"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
@@ -720,7 +720,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
+				jen.ID("expectedArgCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET updated_on = %s, archived_on = %s WHERE id = %s%s",
 					getTimeQuery(dbvendor),
 					getTimeQuery(dbvendor),
@@ -743,7 +743,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("Username").Op(":").Lit("username"),
 					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
@@ -757,7 +757,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID("expected").Dot("ID")).
-					Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1))),
+					Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Add(utils.FakeUint64Func()), jen.Add(utils.FakeUint64Func()))),
 				jen.Line(),
 				jen.Err().Op(":=").ID(dbfl).Dot("ArchiveUser").Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),

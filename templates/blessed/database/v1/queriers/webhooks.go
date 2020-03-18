@@ -86,13 +86,13 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				jen.Return().List(jen.ID("nil"), jen.Err()),
 			),
 			jen.Line(),
-			jen.If(jen.ID("events").Op(":=").Qual("strings", "Split").Call(jen.ID("eventsStr"), jen.ID("eventsSeparator")), jen.ID("len").Call(jen.ID("events")).Op(">=").Lit(1).Op("&&").ID("events").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
+			jen.If(jen.ID("events").Op(":=").Qual("strings", "Split").Call(jen.ID("eventsStr"), jen.ID("eventsSeparator")), jen.ID("len").Call(jen.ID("events")).Op(">=").Add(utils.FakeUint64Func()).Op("&&").ID("events").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
 				jen.ID("x").Dot("Events").Op("=").ID("events"),
 			),
-			jen.If(jen.ID("dataTypes").Op(":=").Qual("strings", "Split").Call(jen.ID("dataTypesStr"), jen.ID("typesSeparator")), jen.ID("len").Call(jen.ID("dataTypes")).Op(">=").Lit(1).Op("&&").ID("dataTypes").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
+			jen.If(jen.ID("dataTypes").Op(":=").Qual("strings", "Split").Call(jen.ID("dataTypesStr"), jen.ID("typesSeparator")), jen.ID("len").Call(jen.ID("dataTypes")).Op(">=").Add(utils.FakeUint64Func()).Op("&&").ID("dataTypes").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
 				jen.ID("x").Dot("DataTypes").Op("=").ID("dataTypes"),
 			),
-			jen.If(jen.ID("topics").Op(":=").Qual("strings", "Split").Call(jen.ID("topicsStr"), jen.ID("topicsSeparator")), jen.ID("len").Call(jen.ID("topics")).Op(">=").Lit(1).Op("&&").ID("topics").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
+			jen.If(jen.ID("topics").Op(":=").Qual("strings", "Split").Call(jen.ID("topicsStr"), jen.ID("topicsSeparator")), jen.ID("len").Call(jen.ID("topics")).Op(">=").Add(utils.FakeUint64Func()).Op("&&").ID("topics").Index(jen.Lit(0)).Op("!=").Lit("")).Block(
 				jen.ID("x").Dot("Topics").Op("=").ID("topics"),
 			),
 			jen.Line(),
@@ -307,7 +307,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 			jen.Line(),
 			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
 				jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-					jen.ID("Page").Op(":").Lit(1),
+					jen.ID("Page").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("TotalCount").Op(":").ID("count"),
 				),
 				jen.ID("Webhooks").Op(":").ID("list"),

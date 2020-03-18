@@ -34,8 +34,8 @@ func counterDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("Increment satisfies our Counter interface"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("opencensusCounter")).ID("Increment").Params(utils.CtxVar().Qual("context", "Context")).Block(
-			jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot("actualCount"), jen.Lit(1)),
-			jen.Qual("go.opencensus.io/stats", "Record").Call(utils.CtxVar(), jen.ID("c").Dot("count").Dot("M").Call(jen.Lit(1))),
+			jen.Qual("sync/atomic", "AddUint64").Call(jen.Op("&").ID("c").Dot("actualCount"), jen.Add(utils.FakeUint64Func())),
+			jen.Qual("go.opencensus.io/stats", "Record").Call(utils.CtxVar(), jen.ID("c").Dot("count").Dot("M").Call(jen.Add(utils.FakeUint64Func()))),
 		),
 		jen.Line(),
 	)
@@ -67,7 +67,7 @@ func counterDotGo(pkg *models.Project) *jen.File {
 				"count",
 			).Dot(
 				"M",
-			).Call(jen.Op("-").Lit(1))),
+			).Call(jen.Op("-").Add(utils.FakeUint64Func()))),
 		),
 		jen.Line(),
 	)

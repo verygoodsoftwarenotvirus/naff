@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 )
@@ -350,15 +351,48 @@ func TestV1Client_BuildCreateChildRequest(T *testing.T) {
 func Test_buildTestV1Client_CreateSomething(T *testing.T) {
 	T.Parallel()
 
+	item := models.DataType{
+		Name: wordsmith.FromSingularPascalCase("Item"),
+		Fields: []models.DataField{
+			{
+				Name:                  wordsmith.FromSingularPascalCase("Name"),
+				Type:                  "string",
+				Pointer:               false,
+				ValidForCreationInput: true,
+				ValidForUpdateInput:   true,
+			},
+			{
+				Name:                  wordsmith.FromSingularPascalCase("Name"),
+				Type:                  "string",
+				Pointer:               false,
+				ValidForCreationInput: true,
+				ValidForUpdateInput:   true,
+			},
+		},
+		BelongsToNobody: true,
+	}
+
+	todoProj := &models.Project{
+		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
+		Name:       wordsmith.FromSingularPascalCase("Todo"),
+		DataTypes:  []models.DataType{item},
+	}
+
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		proj := &models.Project{
-			DataTypes: []models.DataType{a, b, c},
-		}
+		//proj := &models.Project{
+		//	DataTypes: []models.DataType{a, b, c},
+		//}
+		//
+		//ret := jen.NewFile("farts")
+		//
+		//ret.Add(
+		//	buildTestV1Client_CreateSomething(proj, c)...,
+		//)
 
 		ret := jen.NewFile("farts")
 
 		ret.Add(
-			buildTestV1Client_CreateSomething(proj, c)...,
+			buildTestV1Client_CreateSomething(todoProj, item)...,
 		)
 
 		var b bytes.Buffer

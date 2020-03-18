@@ -48,7 +48,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.Comment("for the service.fetchUserID() call"),
 				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
@@ -79,7 +79,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
@@ -107,7 +107,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
@@ -134,7 +134,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
@@ -161,7 +161,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
@@ -195,7 +195,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("HashedPassword").Op(":").Lit("hashed_pass"),
 					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)),
 					jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET"),
@@ -268,7 +268,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error getting user"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("HashedPassword").Op(":").Lit("hashed_pass"),
 					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)),
 					jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET"),
@@ -305,7 +305,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid credentials"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("HashedPassword").Op(":").Lit("hashed_pass"),
 					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)),
 					jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET"),
@@ -358,7 +358,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating password"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("HashedPassword").Op(":").Lit("hashed_pass"),
 					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)),
 					jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET"),
@@ -413,7 +413,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error creating oauth2 client"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("HashedPassword").Op(":").Lit("hashed_pass"),
 					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)),
 					jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET"),
@@ -468,7 +468,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
 					jen.ID("HashedPassword").Op(":").Lit("hashed_pass"),
 					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit(`blah`)),
 					jen.ID("TwoFactorSecret").Op(":").Lit("SUPER SECRET"),
@@ -537,7 +537,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -569,7 +569,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows found"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -601,7 +601,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching client from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -633,7 +633,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -673,7 +673,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -709,7 +709,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows found"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
@@ -737,7 +737,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error deleting record"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Lit(1)),
+				jen.ID("userID").Op(":=").ID("uint64").Call(jen.Add(utils.FakeUint64Func())),
 				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
