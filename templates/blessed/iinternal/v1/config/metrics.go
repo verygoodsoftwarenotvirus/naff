@@ -95,7 +95,7 @@ func metricsDotGo(pkg *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideTracing").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
 		)).Params(jen.ID("error")).Block(
-			jen.Qual("go.opencensus.io/trace", "ApplyConfig").Call(jen.Qual("go.opencensus.io/trace", "Config").Values(jen.ID("DefaultSampler").Op(":").Qual("go.opencensus.io/trace", "ProbabilitySampler").Call(jen.Add(utils.FakeUint64Func())))),
+			jen.Qual("go.opencensus.io/trace", "ApplyConfig").Call(jen.Qual("go.opencensus.io/trace", "Config").Values(jen.ID("DefaultSampler").Op(":").Qual("go.opencensus.io/trace", "ProbabilitySampler").Call(jen.Lit(1)))),
 			jen.Line(),
 			jen.ID("log").Op(":=").ID("logger").Dot("WithValue").Call(jen.Lit("tracing_provider"), jen.ID("cfg").Dot("Metrics").Dot("TracingProvider")),
 			jen.ID("log").Dot("Info").Call(jen.Lit("setting tracing provider")),

@@ -43,7 +43,7 @@ func mockDotGo(pkg *models.Project) *jen.File {
 				jen.ID("twoFactorCode"),
 				jen.ID("salt"),
 			),
-			jen.Return().List(jen.ID("args").Dot("Bool").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(jen.ID("args").Dot("Bool").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	)
@@ -60,7 +60,7 @@ func mockDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("HashPassword satisfies our authenticator interface"), jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("Authenticator")).ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("password")),
-			jen.Return().List(jen.ID("args").Dot("String").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(jen.ID("args").Dot("String").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	)

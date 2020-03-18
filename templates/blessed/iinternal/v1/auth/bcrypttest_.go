@@ -89,6 +89,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
+				utils.CreateCtx(),
 				jen.Line(),
 				jen.List(jen.ID("code"), jen.Err()).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("exampleTwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err(), jen.Lit("error generating code to validate login")),
@@ -112,6 +113,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with weak hash"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
+				utils.CreateCtx(),
 				jen.Line(),
 				jen.List(jen.ID("code"), jen.Err()).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
 					jen.ID("exampleTwoFactorSecret"),
@@ -133,6 +135,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with non-matching password"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
+				utils.CreateCtx(),
 				jen.Line(),
 				jen.List(jen.ID("code"), jen.Err()).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("exampleTwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err(), jen.Lit("error generating code to validate login")),
@@ -151,6 +154,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid code"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
+				utils.CreateCtx(),
 				jen.Line(),
 				jen.List(jen.ID("valid"), jen.Err()).Op(":=").ID("x").Dot("ValidateLogin").Callln(
 					utils.CtxVar(),

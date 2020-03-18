@@ -16,6 +16,7 @@ func counterTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.List(jen.ID("ct"), jen.Err()).Op(":=").ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
 				jen.ID("c").Op(":=").ID("ct").Assert(jen.Op("*").ID("opencensusCounter")),
 				jen.Line(),
@@ -23,7 +24,7 @@ func counterTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0))),
 				jen.Line(),
 				jen.ID("c").Dot("Increment").Call(utils.CtxVar()),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.Add(utils.FakeUint64Func())),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(1))),
 			)),
 		),
 		jen.Line(),
@@ -34,6 +35,7 @@ func counterTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.List(jen.ID("ct"), jen.Err()).Op(":=").ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
 				jen.ID("c").Op(":=").ID("ct").Assert(jen.Op("*").ID("opencensusCounter")),
 				jen.Line(),
@@ -52,6 +54,7 @@ func counterTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.List(jen.ID("ct"), jen.Err()).Op(":=").ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
 				jen.ID("c").Op(":=").ID("ct").Assert(jen.Op("*").ID("opencensusCounter")),
 				jen.Line(),
@@ -59,7 +62,7 @@ func counterTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0))),
 				jen.Line(),
 				jen.ID("c").Dot("Increment").Call(utils.CtxVar()),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.Add(utils.FakeUint64Func())),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(1))),
 				jen.Line(),
 				jen.ID("c").Dot("Decrement").Call(utils.CtxVar()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0))),

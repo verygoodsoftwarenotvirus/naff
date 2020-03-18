@@ -69,6 +69,16 @@ func mockIterableDataServerDotGo(pkg *models.Project, typ models.DataType) *jen.
 	)
 
 	ret.Add(
+		jen.Comment("ExistenceHandler implements our interface requirements"),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataServer", sn)).ID("ExistenceHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
+		),
+		jen.Line(),
+	)
+
+	ret.Add(
 		jen.Comment("ReadHandler implements our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataServer", sn)).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(

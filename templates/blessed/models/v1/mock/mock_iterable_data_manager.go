@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -28,6 +29,7 @@ func mockIterableDataManagerDotGo(pkg *models.Project, typ models.DataType) *jen
 		jen.Line(),
 	)
 
+	ret.Add(buildSomethingExists(pkg, typ)...)
 	ret.Add(buildGetSomething(pkg, typ)...)
 	ret.Add(buildGetSomethingCount(pkg, typ)...)
 	ret.Add(buildGetAllSomethingsCount(typ)...)
@@ -47,6 +49,27 @@ func mockIterableDataManagerDotGo(pkg *models.Project, typ models.DataType) *jen
 	return ret
 }
 
+func buildSomethingExists(pkg *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	funcName := fmt.Sprintf("%sExists", sn)
+
+	params := typ.BuildGetSomethingParams(pkg)
+	callArgs := typ.BuildGetSomethingArgs(pkg)
+
+	lines := []jen.Code{
+		jen.Commentf("%s is a mock function", funcName),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).ID(funcName).Params(params...).Params(jen.Bool(), jen.ID("error")).Block(
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(callArgs...),
+			jen.Return().List(jen.ID("args").Dot("Bool").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
 func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
@@ -60,7 +83,7 @@ func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Get%s", sn).Params(params...).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
@@ -80,7 +103,7 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Get%sCount", sn).Params(params...).Params(jen.ID("uint64"), jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
@@ -100,7 +123,7 @@ func buildGetAllSomethingsCount(typ models.DataType) []jen.Code {
 			utils.CtxVar().Qual("context", "Context"),
 		).Params(jen.ID("uint64"), jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar()),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
@@ -122,7 +145,7 @@ func buildGetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Cod
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Get%s", pn).Params(params...).Params(jen.Op("*").ID("models").Dotf("%sList", sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dotf("%sList", sn)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dotf("%sList", sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
@@ -145,7 +168,7 @@ func buildGetAllSomethingsForUser(pkg *models.Project, typ models.DataType) []je
 		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("userID")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
@@ -168,7 +191,7 @@ func buildGetAllSomethingsForSomethingElse(pkg *models.Project, typ models.DataT
 		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
@@ -193,7 +216,7 @@ func buildCreateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(
 				args...,
 			),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
