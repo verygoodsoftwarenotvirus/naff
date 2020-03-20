@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 const (
@@ -158,6 +159,10 @@ func FakeStringFunc() jen.Code {
 
 func FakeUUIDFunc() jen.Code {
 	return jen.Qual(FakeLibrary, "UUID").Call()
+}
+
+func FakeUint32Func() jen.Code {
+	return jen.Qual(FakeLibrary, "Uint32").Call()
 }
 
 func FakeUint64Func() jen.Code {

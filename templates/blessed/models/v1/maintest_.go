@@ -11,6 +11,8 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 
 	utils.AddImports(pkg, ret)
 
+	ret.Add(utils.FakeSeedFunc(), jen.Line())
+
 	ret.Add(
 		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),

@@ -173,7 +173,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 		jen.Comment("meeting a given filter's criteria and belonging to a given user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetWebhookCountQuery").Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetWebhookCountQuery").Params(jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
@@ -184,7 +184,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)),
 			jen.Line(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID(utils.FilterVarName).Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
 			),
 			jen.Line(),
@@ -202,9 +202,9 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 		jen.Comment("and belong to a particular user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetWebhookCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetWebhookCount").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetWebhookCountQuery").Call(jen.ID("filter"), jen.ID("userID")),
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetWebhookCountQuery").Call(jen.ID(utils.FilterVarName), jen.ID("userID")),
 			jen.Err().Op("=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("count")),
 			jen.Return().List(jen.ID("count"), jen.Err()),
 		),
@@ -347,7 +347,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("buildGetWebhooksQuery returns a SQL query (and arguments) that would return a"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetWebhooksQuery").Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetWebhooksQuery").Params(jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
@@ -358,7 +358,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				jen.Lit("archived_on").Op(":").ID("nil")),
 			),
 			jen.Line(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID(utils.FilterVarName).Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
 			),
 			jen.Line(),
@@ -374,8 +374,8 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("GetWebhooks fetches a list of webhooks from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetWebhooks").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList"), jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetWebhooksQuery").Call(jen.ID("filter"), jen.ID("userID")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetWebhooks").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList"), jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetWebhooksQuery").Call(jen.ID(utils.FilterVarName), jen.ID("userID")),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
@@ -390,7 +390,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("count"), jen.Err()).Op(":=").ID(dbfl).Dot("GetWebhookCount").Call(utils.CtxVar(), jen.ID("filter"), jen.ID("userID")),
+			jen.List(jen.ID("count"), jen.Err()).Op(":=").ID(dbfl).Dot("GetWebhookCount").Call(utils.CtxVar(), jen.ID(utils.FilterVarName), jen.ID("userID")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching count: %w"), jen.Err())),
 			),

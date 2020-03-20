@@ -134,7 +134,7 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 	}
 
 	block = append(block,
-		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
+		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID(utils.FilterVarName)),
 		jen.Line(),
 	)
 
@@ -201,7 +201,7 @@ func buildGetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Cod
 	}
 
 	block = append(block,
-		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
+		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID(utils.FilterVarName)),
 		jen.Line(),
 	)
 

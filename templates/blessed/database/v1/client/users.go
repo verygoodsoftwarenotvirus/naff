@@ -59,14 +59,14 @@ func usersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetUserCount fetches a count of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUserCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUserCount").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetUserCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID(utils.FilterVarName)),
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("GetUserCount called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetUserCount").Call(utils.CtxVar(), jen.ID("filter")),
+			jen.Return().ID("c").Dot("querier").Dot("GetUserCount").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
 		),
 		jen.Line(),
 	)
@@ -74,14 +74,14 @@ func usersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUsers").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUsers").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList"), jen.ID("error")).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual(utils.TracingLibrary, "StartSpan").Call(utils.CtxVar(), jen.Lit("GetUsers")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
-			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("filter"), jen.ID("filter")).Dot("Debug").Call(jen.Lit("GetUsers called")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID(utils.FilterVarName)),
+			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("filter"), jen.ID(utils.FilterVarName)).Dot("Debug").Call(jen.Lit("GetUsers called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetUsers").Call(utils.CtxVar(), jen.ID("filter")),
+			jen.Return().ID("c").Dot("querier").Dot("GetUsers").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
 		),
 		jen.Line(),
 	)

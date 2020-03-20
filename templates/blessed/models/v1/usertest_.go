@@ -17,12 +17,12 @@ func userTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("actual").Op(":=").ID("User").Valuesln(
-					jen.ID("Username").Op(":").Lit("username"),
+					jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
 					jen.ID("HashedPassword").Op(":").Lit("hashed_pass"),
 					jen.ID("TwoFactorSecret").Op(":").Lit("two factor secret"),
 				),
 				jen.ID("exampleInput").Op(":=").ID("User").Valuesln(
-					jen.ID("Username").Op(":").Lit("newUsername"),
+					jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
 					jen.ID("HashedPassword").Op(":").Lit("updated_hashed_pass"),
 					jen.ID("TwoFactorSecret").Op(":").Lit("new fancy secret"),
 				),

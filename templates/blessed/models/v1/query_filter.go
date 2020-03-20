@@ -49,7 +49,7 @@ func queryFilterDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("DefaultQueryFilter").Params().Params(jen.Op("*").ID("QueryFilter")).Block(
 			jen.Return().Op("&").ID("QueryFilter").Valuesln(
-				jen.ID("Page").Op(":").Add(utils.FakeUint64Func()),
+				jen.ID("Page").Op(":").Lit(1),
 				jen.ID("Limit").Op(":").ID("DefaultLimit"),
 				jen.ID("SortBy").Op(":").ID("SortAscending"),
 			),
@@ -62,7 +62,7 @@ func queryFilterDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("FromParams").Params(jen.ID("params").Qual("net/url", "Values")).Block(
 			jen.If(jen.List(jen.ID("i"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("pageKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
-				jen.ID("qf").Dot("Page").Op("=").ID("uint64").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Add(utils.FakeUint64Func()))),
+				jen.ID("qf").Dot("Page").Op("=").ID("uint64").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(1))),
 			),
 			jen.Line(),
 			jen.If(jen.List(jen.ID("i"), jen.Err()).Op(":=").Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("limitKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
@@ -101,7 +101,7 @@ func queryFilterDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("SetPage sets the current page with certain constraints"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("SetPage").Params(jen.ID("page").ID("uint64")).Block(
-			jen.ID("qf").Dot("Page").Op("=").ID("uint64").Call(jen.Qual("math", "Max").Call(jen.Add(utils.FakeUint64Func()), jen.ID("float64").Call(jen.ID("page")))),
+			jen.ID("qf").Dot("Page").Op("=").ID("uint64").Call(jen.Qual("math", "Max").Call(jen.Lit(1), jen.ID("float64").Call(jen.ID("page")))),
 		),
 		jen.Line(),
 	)
@@ -110,7 +110,7 @@ func queryFilterDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("QueryPage calculates a query page from the current filter values"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("QueryPage").Params().Params(jen.ID("uint64")).Block(
-			jen.Return().ID("qf").Dot("Limit").Op("*").Parens(jen.ID("qf").Dot("Page").Op("-").Add(utils.FakeUint64Func())),
+			jen.Return().ID("qf").Dot("Limit").Op("*").Parens(jen.ID("qf").Dot("Page").Op("-").Lit(1)),
 		),
 		jen.Line(),
 	)

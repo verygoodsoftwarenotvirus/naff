@@ -324,9 +324,9 @@ func buildParamsForMethodThatRetrievesAListOfADataType(proj *models.Project, typ
 	}
 
 	if !call {
-		params = append(params, jen.ID("filter").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
+		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
 	} else {
-		params = append(params, jen.ID("filter"))
+		params = append(params, jen.ID(utils.FilterVarName))
 	}
 
 	return params
@@ -357,9 +357,9 @@ func buildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(proj *models.P
 	}
 
 	if !call {
-		params = append(params, jen.ID("filter").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
+		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
 	} else {
-		params = append(params, jen.ID("filter"))
+		params = append(params, jen.ID(utils.FilterVarName))
 	}
 
 	return params
@@ -456,9 +456,9 @@ func buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj *models.Pro
 	}
 
 	if !call {
-		params = append(params, jen.ID("filter").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
+		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
 	} else {
-		params = append(params, jen.ID("filter"))
+		params = append(params, jen.ID(utils.FilterVarName))
 	}
 
 	return params
@@ -564,7 +564,7 @@ func buildBuildGetListOfSomethingRequestFuncDecl(proj *models.Project, typ model
 
 	urlBuildingParams := buildV1ClientURLBuildingParamsForListOfSomething(
 		proj,
-		jen.ID("filter").Dot("ToValues").Call(),
+		jen.ID(utils.FilterVarName).Dot("ToValues").Call(),
 		typ,
 	)
 

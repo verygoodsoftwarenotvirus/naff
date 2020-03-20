@@ -550,7 +550,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 					),
 				),
 				jen.Line(),
-				jen.ID("filter").Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+				jen.ID(utils.FilterVarName).Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
 				jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", getIncIndex(dbvendor, 0)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -563,7 +563,7 @@ func oauth2ClientsTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra
 					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expected").Dot("TotalCount"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetOAuth2Clients").Call(utils.CtxVar(), jen.ID("filter"), jen.ID("expectedUserID")),
+				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetOAuth2Clients").Call(utils.CtxVar(), jen.ID(utils.FilterVarName), jen.ID("expectedUserID")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),

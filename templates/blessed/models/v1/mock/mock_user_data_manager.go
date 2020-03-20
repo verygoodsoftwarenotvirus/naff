@@ -50,8 +50,8 @@ func mockUserDataManagerDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetUserCount is a mock function"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataManager")).ID("GetUserCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("uint64"), jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("filter")),
+		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataManager")).ID("GetUserCount").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("uint64"), jen.ID("error")).Block(
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -60,9 +60,9 @@ func mockUserDataManagerDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetUsers is a mock function"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataManager")).ID("GetUsers").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList"),
+		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataManager")).ID("GetUsers").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList"),
 			jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("filter")),
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),

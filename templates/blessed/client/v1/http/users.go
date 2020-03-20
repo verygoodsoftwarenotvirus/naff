@@ -121,7 +121,7 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 	block := utils.StartSpan(false, funcName)
 	block = append(block,
 		jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
-			jen.ID("filter").Dot("ToValues").Call(),
+			jen.ID(utils.FilterVarName).Dot("ToValues").Call(),
 			jen.ID("usersBasePath"),
 		),
 		jen.Line(),
@@ -137,7 +137,7 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildGetUsersRequest").Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -161,7 +161,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 			jen.Err(),
 		).Op(":=").ID("c").Dot("BuildGetUsersRequest").Call(
 			utils.CtxVar(),
-			jen.ID("filter"),
+			jen.ID(utils.FilterVarName),
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(
@@ -186,7 +186,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("GetUsers").Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(outPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(outPath, "models/v1"), "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual(filepath.Join(outPath, "models/v1"), "UserList"),
 			jen.ID("error"),

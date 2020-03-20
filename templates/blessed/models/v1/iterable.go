@@ -88,6 +88,7 @@ func buildInterfaceMethods(pkg *models.Project, typ models.DataType) []jen.Code 
 	pn := n.Plural()
 
 	interfaceMethods := []jen.Code{
+		jen.IDf("%sExists", sn).Params(typ.BuildGetSomethingParams(pkg)...).Params(jen.Bool(), jen.ID("error")),
 		jen.IDf("Get%s", sn).Params(typ.BuildGetSomethingParams(pkg)...).Params(jen.Op("*").ID(sn), jen.ID("error")),
 		jen.IDf("Get%sCount", sn).Params(typ.BuildGetListOfSomethingParams(pkg, true)...).Params(jen.ID("uint64"), jen.ID("error")),
 		jen.IDf("GetAll%sCount", pn).Params(utils.CtxParam()).Params(jen.ID("uint64"), jen.ID("error")),
@@ -152,6 +153,7 @@ func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				jen.ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
 				jen.ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
+				jen.ID("ExistenceHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
 				jen.ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
 				jen.ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
 				jen.ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),

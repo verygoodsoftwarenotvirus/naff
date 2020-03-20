@@ -295,19 +295,19 @@ func buildTestClientGetListOfSomething(pkg *models.Project, typ models.DataType)
 		idCallArgs := buildRequisiteIDCallArgs(pkg, varPrefix, typ)
 		idCallArgs = idCallArgs[1:]
 		callArgs := append([]jen.Code{utils.CtxVar()}, idCallArgs...)
-		callArgs = append(callArgs, jen.ID("filter"))
+		callArgs = append(callArgs, jen.ID(utils.FilterVarName))
 
 		mockCalls = append(mockCalls, idCallArgs...)
-		mockCalls = append(mockCalls, jen.ID("filter"))
+		mockCalls = append(mockCalls, jen.ID(utils.FilterVarName))
 
 		lines = append(lines,
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Values(),
 			func() jen.Code {
 				if nilFilter {
-					return jen.ID("filter").Op(":=").Add(utils.NilQueryFilter(pkg))
+					return jen.ID(utils.FilterVarName).Op(":=").Add(utils.NilQueryFilter(pkg))
 				}
-				return jen.ID("filter").Op(":=").Add(utils.DefaultQueryFilter(pkg))
+				return jen.ID(utils.FilterVarName).Op(":=").Add(utils.DefaultQueryFilter(pkg))
 			}(),
 			jen.Line(),
 			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCalls...).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),

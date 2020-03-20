@@ -120,7 +120,7 @@ func buildBuildGetWebhooksRequest(proj *models.Project) []jen.Code {
 	block := utils.StartSpan(false, funcName)
 	block = append(block,
 		jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-			jen.ID("filter").Dot("ToValues").Call(),
+			jen.ID(utils.FilterVarName).Dot("ToValues").Call(),
 			jen.ID("webhooksBasePath"),
 		),
 		jen.Line(),
@@ -136,7 +136,7 @@ func buildBuildGetWebhooksRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"),
 		).Params(
 			jen.Op("*").Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -157,7 +157,7 @@ func buildGetWebhooks(proj *models.Project) []jen.Code {
 			jen.Err(),
 		).Op(":=").ID("c").Dot("BuildGetWebhooksRequest").Call(
 			utils.CtxVar(),
-			jen.ID("filter"),
+			jen.ID(utils.FilterVarName),
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(
@@ -185,7 +185,7 @@ func buildGetWebhooks(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(outPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(outPath, "models/v1"), "QueryFilter"),
 		).Params(
 			jen.ID("webhooks").Op("*").Qual(filepath.Join(outPath, "models/v1"), "WebhookList"),
 			jen.Err().ID("error"),

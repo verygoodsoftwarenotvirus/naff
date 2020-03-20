@@ -16,17 +16,8 @@ func webhookTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("actual").Op(":=").Op("&").ID("Webhook").Valuesln(
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("ContentType").Op(":").Lit("application/json"),
-					jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"),
-					jen.ID("Method").Op(":").Qual("net/http", "MethodPost"),
-					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("things")),
-					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("stuff")),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("blah")),
-				),
-				jen.ID("expected").Op(":=").Op("&").ID("Webhook").Valuesln(
-					jen.ID("Name").Op(":").Lit("new name"),
+				jen.ID("exampleInput").Op(":=").Op("&").ID("WebhookUpdateInput").Valuesln(
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 					jen.ID("ContentType").Op(":").Lit("application/xml"),
 					jen.ID("URL").Op(":").Lit("https://blah.verygoodsoftwarenotvirus.ru"),
 					jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"),
@@ -35,8 +26,17 @@ func webhookTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("blah-blah")),
 				),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").ID("WebhookUpdateInput").Valuesln(
-					jen.ID("Name").Op(":").Lit("new name"),
+				jen.ID("actual").Op(":=").Op("&").ID("Webhook").Valuesln(
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
+					jen.ID("ContentType").Op(":").Lit("application/json"),
+					jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"),
+					jen.ID("Method").Op(":").Qual("net/http", "MethodPost"),
+					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("things")),
+					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("stuff")),
+					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("blah")),
+				),
+				jen.ID("expected").Op(":=").Op("&").ID("Webhook").Valuesln(
+					jen.ID("Name").Op(":").ID("exampleInput").Dot("Name"),
 					jen.ID("ContentType").Op(":").Lit("application/xml"),
 					jen.ID("URL").Op(":").Lit("https://blah.verygoodsoftwarenotvirus.ru"),
 					jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"),

@@ -186,14 +186,14 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 		jen.Line(),
 		jen.Comment("to a given filter's criteria."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetUserCountQuery").Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetUserCountQuery").Params(jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("CountQuery")).
 				Dotln("From").Call(jen.ID("usersTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.Line(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID(utils.FilterVarName).Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
 			),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID("builder").Dot("ToSql").Call(),
@@ -210,8 +210,8 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	ret.Add(
 		jen.Comment("GetUserCount fetches a count of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetUserCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUserCountQuery").Call(jen.ID("filter")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetUserCount").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUserCountQuery").Call(jen.ID(utils.FilterVarName)),
 			jen.Err().Op("=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("count")),
 			jen.Return(),
 		),
@@ -225,14 +225,14 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 		jen.Line(),
 		jen.Comment("to a given filter's criteria."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetUsersQuery").Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetUsersQuery").Params(jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("usersTableColumns").Op("...")).
 				Dotln("From").Call(jen.ID("usersTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.Line(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID(utils.FilterVarName).Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
 			),
 			jen.Line(),
@@ -248,8 +248,8 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	ret.Add(
 		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetUsers").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList"), jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUsersQuery").Call(jen.ID("filter")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetUsers").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList"), jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUsersQuery").Call(jen.ID(utils.FilterVarName)),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
@@ -261,7 +261,7 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("loading response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("count"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUserCount").Call(utils.CtxVar(), jen.ID("filter")),
+			jen.List(jen.ID("count"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUserCount").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.Err())),
 			),

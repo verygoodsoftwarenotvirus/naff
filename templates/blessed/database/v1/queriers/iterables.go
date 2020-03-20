@@ -320,7 +320,7 @@ func buildGetSomethingCountQueryFuncDecl(pkg *models.Project, dbvendor wordsmith
 				Dotln("From").Call(jen.IDf("%sTableName", puvn)).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(vals...)),
 			jen.Line(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID(utils.FilterVarName).Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
 			),
 			jen.Line(),
@@ -548,7 +548,7 @@ func buildGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmit
 				Dotln("From").Call(jen.IDf("%sTableName", puvn)).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(vals...)),
 			jen.Line(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID(utils.FilterVarName).Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
 			),
 			jen.Line(),

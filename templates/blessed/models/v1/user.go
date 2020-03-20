@@ -94,8 +94,8 @@ func userDotGo(pkg *models.Project) *jen.File {
 			jen.ID("UserDataManager").Interface(
 				jen.ID("GetUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("User"), jen.ID("error")),
 				jen.ID("GetUserByUsername").Params(utils.CtxParam(), jen.ID("username").ID("string")).Params(jen.Op("*").ID("User"), jen.ID("error")),
-				jen.ID("GetUserCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").ID("QueryFilter")).Params(jen.ID("uint64"), jen.ID("error")),
-				jen.ID("GetUsers").Params(utils.CtxParam(), jen.ID("filter").Op("*").ID("QueryFilter")).Params(jen.Op("*").ID("UserList"), jen.ID("error")),
+				jen.ID("GetUserCount").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").ID("QueryFilter")).Params(jen.ID("uint64"), jen.ID("error")),
+				jen.ID("GetUsers").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").ID("QueryFilter")).Params(jen.Op("*").ID("UserList"), jen.ID("error")),
 				jen.ID("CreateUser").Params(utils.CtxParam(), jen.ID("input").Op("*").ID("UserInput")).Params(jen.Op("*").ID("User"), jen.ID("error")),
 				jen.ID("UpdateUser").Params(utils.CtxParam(), jen.ID("updated").Op("*").ID("User")).Params(jen.ID("error")),
 				jen.ID("ArchiveUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.ID("error")),

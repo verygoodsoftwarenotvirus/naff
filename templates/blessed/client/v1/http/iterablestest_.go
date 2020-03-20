@@ -2,10 +2,11 @@ package client
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
-	"path/filepath"
 )
 
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
@@ -491,7 +492,7 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(pkg *models.Project, typ m
 	structDecls := buildVarDeclarationsOfDependentStructs(pkg, typ)
 	subtestLines := structDecls[:len(structDecls)-1]
 	subtestLines = append(subtestLines,
-		jen.ID("filter").Op(":=").Call(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
+		jen.ID(utils.FilterVarName).Op(":=").Call(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
 		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
 		jen.Line(),
@@ -545,7 +546,7 @@ func buildTestV1Client_GetListOfSomething(pkg *models.Project, typ models.DataTy
 	structDecls := buildVarDeclarationsOfDependentStructs(pkg, typ)
 	subtestLines := structDecls[:len(structDecls)-1]
 	subtestLines = append(subtestLines,
-		jen.ID("filter").Op(":=").Add(utils.NilQueryFilter(pkg)),
+		jen.ID(utils.FilterVarName).Op(":=").Add(utils.NilQueryFilter(pkg)),
 		jen.Line(),
 		jen.ID(puvn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", ts)).Valuesln(
 			jen.ID(tp).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(

@@ -16,9 +16,9 @@ func webhookDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("WebhookDataManager describes a structure capable of storing webhooks"),
 			jen.ID("WebhookDataManager").Interface(
 				jen.ID("GetWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").ID("Webhook"), jen.ID("error")),
-				jen.ID("GetWebhookCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").ID("QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")),
+				jen.ID("GetWebhookCount").Params(utils.CtxParam(), jen.ID("userID").ID("uint64"), jen.ID(utils.FilterVarName).Op("*").ID("QueryFilter")).Params(jen.ID("uint64"), jen.ID("error")),
 				jen.ID("GetAllWebhooksCount").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")),
-				jen.ID("GetWebhooks").Params(utils.CtxParam(), jen.ID("filter").Op("*").ID("QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("WebhookList"), jen.ID("error")),
+				jen.ID("GetWebhooks").Params(utils.CtxParam(), jen.ID("userID").ID("uint64"), jen.ID(utils.FilterVarName).Op("*").ID("QueryFilter")).Params(jen.Op("*").ID("WebhookList"), jen.ID("error")),
 				jen.ID("GetAllWebhooks").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Op("*").ID("WebhookList"), jen.ID("error")),
 				jen.ID("GetAllWebhooksForUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Index().ID("Webhook"), jen.ID("error")),
 				jen.ID("CreateWebhook").Params(utils.CtxParam(), jen.ID("input").Op("*").ID("WebhookCreationInput")).Params(jen.Op("*").ID("Webhook"), jen.ID("error")),

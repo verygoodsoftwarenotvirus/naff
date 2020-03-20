@@ -292,7 +292,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Line(),
 		jen.Comment("restrictions (if relevant) and belong to a given user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetOAuth2ClientCountQuery").Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetOAuth2ClientCountQuery").Params(jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
@@ -303,7 +303,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)),
 			jen.Line(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID(utils.FilterVarName).Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot(
 					"ApplyToQueryBuilder",
 				).Call(jen.ID("builder")),
@@ -322,9 +322,9 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 	ret.Add(
 		jen.Comment("GetOAuth2ClientCount will get the count of OAuth2 clients that match the given filter and belong to the user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2ClientCount").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2ClientCount").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientCountQuery").Call(jen.ID("filter"), jen.ID("userID")),
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientCountQuery").Call(jen.ID(utils.FilterVarName), jen.ID("userID")),
 			jen.Err().Op("=").ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.Op("&").ID("count")),
 			jen.Return(),
 		),
@@ -385,7 +385,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Line(),
 		jen.Comment("meet the given filter's criteria (if relevant) and belong to a given user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetOAuth2ClientsQuery").Params(jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetOAuth2ClientsQuery").Params(jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Op("...")).
@@ -395,7 +395,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.Lit("archived_on").Op(":").ID("nil"),
 			)),
 			jen.Line(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID(utils.FilterVarName).Op("!=").ID("nil")).Block(
 				jen.ID("builder").Op("=").ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
 			),
 			jen.Line(),
@@ -412,8 +412,8 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 	ret.Add(
 		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2Clients").Params(utils.CtxParam(), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList"), jen.ID("error")).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientsQuery").Call(jen.ID("filter"), jen.ID("userID")),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetOAuth2Clients").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList"), jen.ID("error")).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientsQuery").Call(jen.ID(utils.FilterVarName), jen.ID("userID")),
 			jen.List(jen.ID("rows"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Line(),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
@@ -435,7 +435,7 @@ func oauth2ClientsDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.ID("clients").Index(jen.ID("i")).Op("=").Op("*").ID("t"),
 			),
 			jen.Line(),
-			jen.List(jen.ID("totalCount"), jen.Err()).Op(":=").ID(dbfl).Dot("GetOAuth2ClientCount").Call(utils.CtxVar(), jen.ID("filter"), jen.ID("userID")),
+			jen.List(jen.ID("totalCount"), jen.Err()).Op(":=").ID(dbfl).Dot("GetOAuth2ClientCount").Call(utils.CtxVar(), jen.ID(utils.FilterVarName), jen.ID("userID")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 client count: %w"), jen.Err())),
 			),
