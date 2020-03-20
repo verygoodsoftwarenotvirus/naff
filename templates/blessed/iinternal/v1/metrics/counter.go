@@ -97,10 +97,10 @@ func counterDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.If(jen.Err().Op(":=").Qual("go.opencensus.io/stats/view", "Register").Call(jen.ID("countView")), jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to register views: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to register views: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.Return().List(jen.Op("&").ID("opencensusCounter").Valuesln(jen.ID("name").Op(":").ID("name"), jen.ID("count").Op(":").ID("count"), jen.ID("counter").Op(":").ID("countView")), jen.ID("nil")),
+			jen.Return().List(jen.Op("&").ID("opencensusCounter").Valuesln(jen.ID("name").Op(":").ID("name"), jen.ID("count").Op(":").ID("count"), jen.ID("counter").Op(":").ID("countView")), jen.Nil()),
 		),
 		jen.Line(),
 	)

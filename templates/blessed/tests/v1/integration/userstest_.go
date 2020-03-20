@@ -35,7 +35,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.Lit(""), jen.Err()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.Qual("encoding/base32", "StdEncoding").Dot("EncodeToString").Call(jen.ID("b")), jen.ID("nil")),
+			jen.Return().List(jen.Qual("encoding/base32", "StdEncoding").Dot("EncodeToString").Call(jen.ID("b")), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -212,7 +212,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("Assert user list equality"),
-					jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dot("GetUsers").Call(jen.ID("tctx"), jen.ID("nil")),
+					jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dot("GetUsers").Call(jen.ID("tctx"), jen.Nil()),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Users"))),
 					jen.Line(),

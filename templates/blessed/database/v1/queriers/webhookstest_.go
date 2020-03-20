@@ -88,7 +88,7 @@ func webhooksTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *je
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleWebhookID"), jen.ID("args").Index(jen.Add(utils.FakeUint64Func())).Assert(jen.ID("uint64"))),
+				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleWebhookID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
 			)),
 		),
 		jen.Line(),
@@ -103,9 +103,10 @@ func webhooksTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *je
 			jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to_user FROM webhooks WHERE belongs_to_user = %s AND id = %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
 					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Name").Op(":").Lit("name"),
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("things")),
 					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("things")),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("things")),
@@ -125,8 +126,10 @@ func webhooksTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *je
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()), jen.ID("Name").Op(":").Lit("name"),
+					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("things")),
 					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("things")),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("things")),
@@ -147,9 +150,10 @@ func webhooksTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *je
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
 					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Name").Op(":").Lit("name"),
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 				),
 				jen.ID("expectedUserID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.Line(),
@@ -169,7 +173,7 @@ func webhooksTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *je
 				utils.CreateCtx(),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
 					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Name").Op(":").Lit("name"),
+					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("things")),
 					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("things")),
 					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("things")),
@@ -199,6 +203,7 @@ func webhooksTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *je
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				utils.CreateDefaultQueryFilter(pkg),
 				jen.ID("expectedUserID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("expectedArgCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", getIncIndex(dbvendor, 0)),
@@ -218,7 +223,7 @@ func webhooksTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *je
 		jen.Func().IDf("Test%s_GetWebhookCount", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", getIncIndex(dbvendor, 0)),
+			jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(webhooks.id) FROM webhooks WHERE webhooks.archived_on IS NULL AND webhooks.belongs_to_user = %s LIMIT 20", getIncIndex(dbvendor, 0)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),

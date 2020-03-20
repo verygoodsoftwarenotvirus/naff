@@ -17,7 +17,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("gopkg.in/oauth2.v3/server specific implementations"),
 		jen.Line(),
 		jen.Line(),
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "InternalErrorHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot("OAuth2InternalErrorHandler"),
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "InternalErrorHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()).Dot("OAuth2InternalErrorHandler"),
 		jen.Line(),
 	)
 
@@ -40,7 +40,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot("OAuth2ResponseErrorHandler"),
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()).Dot("OAuth2ResponseErrorHandler"),
 		jen.Line(),
 	)
 
@@ -59,7 +59,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot("AuthorizeScopeHandler"),
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()).Dot("AuthorizeScopeHandler"),
 		jen.Line(),
 	)
 
@@ -79,7 +79,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 				jen.ID("res").Dot(
 					"WriteHeader",
 				).Call(jen.Qual("net/http", "StatusOK")),
-				jen.Return().List(jen.ID("scope"), jen.ID("nil")),
+				jen.Return().List(jen.ID("scope"), jen.Nil()),
 			),
 			jen.Line(),
 			jen.Comment("check to see if the client ID is present instead"),
@@ -103,7 +103,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 					jen.Return().List(jen.Lit(""), jen.Qual("errors", "New").Call(jen.Lit("not authorized for scope"))),
 				),
 				jen.Line(),
-				jen.Return().List(jen.ID("scope"), jen.ID("nil")),
+				jen.Return().List(jen.ID("scope"), jen.Nil()),
 			),
 			jen.Line(),
 			jen.Comment("invalid credentials"),
@@ -114,7 +114,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "UserAuthorizationHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot("UserAuthorizationHandler"),
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "UserAuthorizationHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()).Dot("UserAuthorizationHandler"),
 		jen.Line(),
 	)
 
@@ -138,13 +138,13 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 				jen.ID("uid").Op("=").ID("client").Dot("BelongsToUser"),
 			),
 			jen.Line(),
-			jen.Return().List(jen.Qual("strconv", "FormatUint").Call(jen.ID("uid"), jen.Lit(10)), jen.ID("nil")),
+			jen.Return().List(jen.Qual("strconv", "FormatUint").Call(jen.ID("uid"), jen.Lit(10)), jen.Nil()),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ClientAuthorizedHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot("ClientAuthorizedHandler"),
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ClientAuthorizedHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()).Dot("ClientAuthorizedHandler"),
 		jen.Line(),
 	)
 
@@ -176,13 +176,13 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("client not authorized for implicit grants"))),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("true"), jen.ID("nil")),
+			jen.Return().List(jen.ID("true"), jen.Nil()),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ClientScopeHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")).Dot("ClientScopeHandler"),
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ClientScopeHandler").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()).Dot("ClientScopeHandler"),
 		jen.Line(),
 	)
 
@@ -208,7 +208,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("check for scope"),
 			jen.If(jen.ID("c").Dot("HasScope").Call(jen.ID("scope"))).Block(
-				jen.Return().List(jen.ID("true"), jen.ID("nil")),
+				jen.Return().List(jen.ID("true"), jen.Nil()),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("unauthorized"))),

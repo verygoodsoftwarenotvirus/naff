@@ -109,7 +109,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("Assert webhook list equality"),
-					jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dot("GetWebhooks").Call(jen.ID("tctx"), jen.ID("nil")),
+					jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dot("GetWebhooks").Call(jen.ID("tctx"), jen.Nil()),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Webhooks"))),
 					jen.Line(),

@@ -14,7 +14,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("net/http", "Handler").Op("=").Parens(jen.Op("*").ID("MockHTTPHandler")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual("net/http", "Handler").Op("=").Parens(jen.Op("*").ID("MockHTTPHandler")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -44,7 +44,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("nil")),
+				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
@@ -109,7 +109,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("nil")),
+				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),
@@ -138,7 +138,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetUserCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Add(utils.FakeUint64Func()), jen.ID("nil")),
+				).Dot("Return").Call(jen.Add(utils.FakeUint64Func()), jen.Nil()),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
@@ -182,7 +182,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("nil")),
+				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("mh").Op(":=").Op("&").ID("MockHTTPHandler").Values(),

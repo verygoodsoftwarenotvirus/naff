@@ -49,11 +49,11 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(), jen.ID("nil")),
+				).Dot("Return").Call(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(), jen.Nil()),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2ClientCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expected")).Dot("Return").Call(), jen.Line(),
@@ -61,7 +61,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName"),
 					jen.ID("description").ID("string"),
 				).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"), jen.ID("error")).Block(
-					jen.Return().List(jen.ID("uc"), jen.ID("nil")),
+					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideOAuth2ClientsService").Callln(
@@ -82,11 +82,11 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(), jen.ID("nil")),
+				).Dot("Return").Call(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(), jen.Nil()),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2ClientCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expected")).Dot("Return").Call(), jen.Line(),
@@ -95,7 +95,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("description").ID("string")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
 					jen.ID("error"),
 				).Block(
-					jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideOAuth2ClientsService").Callln(
@@ -130,7 +130,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("description").ID("string")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
 					jen.ID("error"),
 				).Block(
-					jen.Return().List(jen.ID("uc"), jen.ID("nil")),
+					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Op(":=").ID("ProvideOAuth2ClientsService").Callln(
@@ -162,7 +162,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleID"),
-				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(jen.ID("ClientID").Op(":").ID("exampleID")), jen.ID("nil")),
+				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(jen.ID("ClientID").Op(":").ID("exampleID")), jen.Nil()),
 				jen.Line(),
 				jen.ID("c").Op(":=").Op("&").ID("clientStore").Values(jen.ID("database").Op(":").ID("mockDB")),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot("GetByID").Call(jen.ID("exampleID")),
@@ -179,7 +179,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.ID("c").Op(":=").Op("&").ID("clientStore").Values(jen.ID("database").Op(":").ID("mockDB")),
 				jen.List(jen.ID("_"), jen.Err()).Op(":=").ID("c").Dot("GetByID").Call(jen.ID("exampleID")),
@@ -195,7 +195,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.ID("exampleID"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.ID("exampleID"))),
 				jen.Line(),
 				jen.ID("c").Op(":=").Op("&").ID("clientStore").Values(jen.ID("database").Op(":").ID("mockDB")),
 				jen.List(jen.ID("_"), jen.Err()).Op(":=").ID("c").Dot("GetByID").Call(jen.ID("exampleID")),
@@ -218,7 +218,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("HandleAuthorizeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("nil")),
+				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("moah"),
 				jen.List(jen.ID("req"), jen.ID("res")).Op(":=").List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
 				jen.Line(),
@@ -240,7 +240,7 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("HandleTokenRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("nil")),
+				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("moah"),
 				jen.List(jen.ID("req"), jen.ID("res")).Op(":=").List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
 				jen.Line(),

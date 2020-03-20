@@ -37,7 +37,7 @@ func iterableServiceDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", sn)).Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
+			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", sn)).Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -154,18 +154,18 @@ func buildProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen
 		jen.Func().ID(fmt.Sprintf("Provide%sService", pn)).Paramsln(params...).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID(fmt.Sprintf("%sCounter", uvn)), jen.Err()).Op(":=").ID(fmt.Sprintf("%sCounterProvider", uvn)).Call(jen.ID("counterName"), jen.ID("counterDescription")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(serviceValues...),
 			jen.Line(),
 			jen.List(jen.ID(fmt.Sprintf("%sCount", uvn)), jen.Err()).Op(":=").ID("svc").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("GetAll%sCount", pn)).Call(utils.CtxVar()),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("setting current %s count: ", cn)+"%w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("setting current %s count: ", cn)+"%w"), jen.Err())),
 			),
 			jen.ID("svc").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("IncrementBy").Call(utils.CtxVar(), jen.ID(fmt.Sprintf("%sCount", uvn))),
 			jen.Line(),
-			jen.Return().List(jen.ID("svc"), jen.ID("nil")),
+			jen.Return().List(jen.ID("svc"), jen.Nil()),
 		),
 		jen.Line(),
 	}

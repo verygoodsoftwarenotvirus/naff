@@ -27,7 +27,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
 				jen.Line(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -141,7 +141,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
@@ -152,7 +152,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Err(),
 				).Op(":=").ID("c").Dot("BuildGetWebhooksRequest").Call(
 					utils.CtxVar(),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
@@ -213,7 +213,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Err(),
 				).Op(":=").ID("c").Dot("GetWebhooks").Call(
 					utils.CtxVar(),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
@@ -235,7 +235,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
 					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
@@ -351,7 +351,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
 				),
 				jen.Line(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -434,7 +434,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodDelete"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
 				jen.ID("expectedID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(

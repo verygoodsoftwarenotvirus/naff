@@ -102,7 +102,7 @@ func buildTestClientSomethingExists(pkg *models.Project, typ models.DataType) []
 		jen.ID("expected").Op(":=").True(),
 		jen.Line(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("%sExists", sn).Call(callArgs...),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -139,7 +139,7 @@ func buildTestClientGetSomething(pkg *models.Project, typ models.DataType) []jen
 		jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
 		jen.Line(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("Get%s", sn).Call(callArgs...),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -175,7 +175,7 @@ func buildTestClientGetSomethingCount(pkg *models.Project, typ models.DataType) 
 			)
 		} else {
 			lines = append(lines,
-				jen.ID(filterVarName).Op(":=").Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.ID("nil")),
+				jen.ID(filterVarName).Op(":=").Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
 			)
 		}
 
@@ -198,7 +198,7 @@ func buildTestClientGetSomethingCount(pkg *models.Project, typ models.DataType) 
 			jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
 			jen.Line(),
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("Get%sCount", sn).Call(callArgs...),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -237,7 +237,7 @@ func buildTestClientGetAllOfSomethingForUser(pkg *models.Project, typ models.Dat
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
 				jen.ID("expected").Assign().Slice().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
 				jen.Line(),
-				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sForUser", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleUserID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sForUser", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleUserID")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("GetAll%sForUser", pn).Call(utils.CtxVar(), jen.ID("exampleUserID")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -263,7 +263,7 @@ func buildTestClientGetAllOfSomethingCount(pkg *models.Project, typ models.DataT
 				utils.CreateCtx(),
 				jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("GetAll%sCount", pn).Call(utils.CtxVar()),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -310,7 +310,7 @@ func buildTestClientGetListOfSomething(pkg *models.Project, typ models.DataType)
 				return jen.ID(utils.FilterVarName).Op(":=").Add(utils.DefaultQueryFilter(pkg))
 			}(),
 			jen.Line(),
-			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCalls...).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCalls...).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("Get%s", pn).Call(callArgs...),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -373,7 +373,7 @@ func buildTestClientCreateSomething(pkg *models.Project, typ models.DataType) []
 		jen.Line(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(
 			mockCalls...,
-		).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+		).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("Create%s", sn).Call(
 			callArgs...,

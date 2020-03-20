@@ -29,7 +29,7 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
+			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -78,7 +78,7 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("webhookCounter"), jen.Err()).Op(":=").ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.Lit("the number of webhooks managed by the webhooks service")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(
@@ -93,11 +93,11 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.List(jen.ID("webhookCount"), jen.Err()).Op(":=").ID("svc").Dot("webhookDatabase").Dot("GetAllWebhooksCount").Call(utils.CtxVar()),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting current webhook count: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting current webhook count: %w"), jen.Err())),
 			),
 			jen.ID("svc").Dot("webhookCounter").Dot("IncrementBy").Call(utils.CtxVar(), jen.ID("webhookCount")),
 			jen.Line(),
-			jen.Return().List(jen.ID("svc"), jen.ID("nil")),
+			jen.Return().List(jen.ID("svc"), jen.Nil()),
 		),
 		jen.Line(),
 	)

@@ -67,7 +67,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.Lit(""), jen.Err()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.Qual("encoding/base32", "StdEncoding").Dot("EncodeToString").Call(jen.ID("b")), jen.ID("nil")),
+			jen.Return().List(jen.Qual("encoding/base32", "StdEncoding").Dot("EncodeToString").Call(jen.ID("b")), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -90,10 +90,10 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("fetch user data"),
 			jen.List(jen.ID("user"), jen.Err()).Op(":=").ID("s").Dot("database").Dot("GetUser").Call(utils.CtxVar(), jen.ID("userID")),
 			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("net/http", "StatusNotFound")),
+				jen.Return().List(jen.Nil(), jen.Qual("net/http", "StatusNotFound")),
 			).Else().If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error encountered fetching user")),
-				jen.Return().List(jen.ID("nil"), jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Return().List(jen.Nil(), jen.Qual("net/http", "StatusInternalServerError")),
 			),
 			jen.Line(),
 			jen.Comment("validate login"),
@@ -108,10 +108,10 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error encountered generating random TOTP string")),
-				jen.Return().List(jen.ID("nil"), jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Return().List(jen.Nil(), jen.Qual("net/http", "StatusInternalServerError")),
 			).Else().If(jen.Op("!").ID("valid")).Block(
 				jen.ID("logger").Dot("WithValue").Call(jen.Lit("valid"), jen.ID("valid")).Dot("Error").Call(jen.Err(), jen.Lit("invalid attempt to cycle TOTP token")),
-				jen.Return().List(jen.ID("nil"), jen.Qual("net/http", "StatusUnauthorized")),
+				jen.Return().List(jen.Nil(), jen.Qual("net/http", "StatusUnauthorized")),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("user"), jen.Qual("net/http", "StatusOK")),

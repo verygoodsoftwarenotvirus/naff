@@ -14,7 +14,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("net/http", "Handler").Op("=").Parens(jen.Op("*").ID("mockHTTPHandler")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual("net/http", "Handler").Op("=").Parens(jen.Op("*").ID("mockHTTPHandler")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -41,7 +41,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ed").Dot("On").Callln(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("nil")),
+				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
 				jen.Line(),
 				jen.ID("mh").Op(":=").Op("&").ID("mockHTTPHandler").Values(),
@@ -108,7 +108,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.ID("nil")),
+				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("mh"),
 				jen.Line(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
@@ -116,7 +116,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ClientID"),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -134,7 +134,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("mh"),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -154,7 +154,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.ID("nil")),
+				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("mh"),
 				jen.Line(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
@@ -162,7 +162,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ClientID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -183,7 +183,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.ID("nil")),
+				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("mh"),
 				jen.Line(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
@@ -191,7 +191,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ClientID"),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -222,7 +222,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.ID("nil")),
+				).Dot("Return").Call(jen.Op("&").Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").Op(":").ID("expected").Dot("ClientID")), jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("mh"),
 				jen.Line(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
@@ -230,7 +230,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ClientID"),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
@@ -255,7 +255,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("oauth2Handler").Op("=").ID("mh"),
 				jen.Line(),
 				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
@@ -300,7 +300,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected"),
-				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(), jen.ID("nil")),
+				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(), jen.Nil()),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2ClientInfoMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
@@ -328,7 +328,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Call(jen.ID("nil")), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2ClientInfoMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),

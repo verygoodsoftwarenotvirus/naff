@@ -39,11 +39,11 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 			jen.ID("loggerName").Op("=").Lit(rn),
 			jen.IDf("%sDriverName", uvn).Op("=").Litf("wrapped-%s-driver", vendor.KebabName()),
 			jen.Line(),
-			jen.Comment("CountQuery is a generic counter query used in a few query builders"),
-			jen.ID("CountQuery").Op("=").Lit("COUNT(id)"),
+			jen.Comment("countQuery is a generic counter query used in a few query builders"),
+			jen.ID("countQuery").Op("=").Lit("COUNT(id)"),
 			jen.Line(),
-			jen.Commentf("CurrentUnixTimeQuery is the query %s uses to determine the current unix time", cn),
-			jen.ID("CurrentUnixTimeQuery").Op("=").Lit(getTimeQuery(vendor)),
+			jen.Commentf("currentUnixTimeQuery is the query %s uses to determine the current unix time", cn),
+			jen.ID("currentUnixTimeQuery").Op("=").Lit(getTimeQuery(vendor)),
 		),
 		jen.Line(),
 	)
@@ -78,7 +78,7 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database").Op("=").Params(jen.Op("*").ID(sn)).Params(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database").Op("=").Params(jen.Op("*").ID(sn)).Params(jen.Nil()),
 		jen.Line(),
 		jen.Type().Defs(
 			jen.Commentf("%s is our main %s interaction db", sn, sn),

@@ -222,7 +222,7 @@ func buildTestV1Client_BuildItemExistsRequest(proj *models.Project, typ models.D
 
 	subtestLines := []jen.Code{
 		utils.ExpectMethod("expectedMethod", "MethodHead"),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
 		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 	}
@@ -353,7 +353,7 @@ func buildTestV1Client_BuildGetSomethingRequest(pkg *models.Project, typ models.
 
 	subtestLines := []jen.Code{
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
 		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 	}
@@ -494,7 +494,7 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(pkg *models.Project, typ m
 	subtestLines = append(subtestLines,
 		jen.ID(utils.FilterVarName).Op(":=").Call(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
 		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
@@ -616,7 +616,7 @@ func buildTestV1Client_BuildCreateSomethingRequest(pkg *models.Project, typ mode
 	subtestLines = append(subtestLines,
 		jen.Line(),
 		utils.ExpectMethod("expectedMethod", "MethodPost"),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
 		jen.ID("input").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
 			cfs[1:]...,
@@ -740,7 +740,7 @@ func buildTestV1Client_BuildUpdateSomethingRequest(pkg *models.Project, typ mode
 	subtestLines = append(subtestLines,
 		utils.ExpectMethod("expectedMethod", "MethodPut"),
 		jen.Line(),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
 			actualParams...,
@@ -817,7 +817,7 @@ func buildTestV1Client_BuildArchiveSomethingRequest(pkg *models.Project, typ mod
 
 	subtestLines := []jen.Code{
 		utils.ExpectMethod("expectedMethod", "MethodDelete"),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
 	}
 

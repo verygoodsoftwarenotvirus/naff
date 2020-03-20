@@ -66,7 +66,7 @@ func buildFetchRandomSomething(pkg *models.Project, typ models.DataType) []jen.C
 				callArgs...,
 			/*
 				utils.CtxVar(),
-				jen.ID("nil"),
+				jen.Nil(),
 			*/
 			),
 			jen.If(jen.Err().Op("!=").ID("nil").Op("||").IDf("%sRes", puvn).Op("==").ID("nil").Op("||").ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).Op("==").Lit(0)).Block(
@@ -321,7 +321,7 @@ func buildGetSomethingBlock(pkg *models.Project, typ models.DataType) []jen.Code
 			jen.Return().ID("c").Dotf("BuildGet%sRequest", sn).Call(requestBuildingArgs...),
 		),
 		jen.Line(),
-		jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
+		jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
 	)
 
 	return lines
@@ -385,7 +385,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 			ifRandomExistsBlock...,
 		),
 		jen.Line(),
-		jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
+		jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
 	)
 
 	return lines
@@ -420,7 +420,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	//		randomLines...,
 	//	),
 	//	jen.Line(),
-	//	jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
+	//	jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
 	//)
 	//
 	//return lines
@@ -448,7 +448,7 @@ func buildArchiveSomethingBlock(pkg *models.Project, typ models.DataType) []jen.
 			jen.Return().ID("c").Dotf("BuildArchive%sRequest", sn).Call(requestBuildingArgs...),
 		),
 		jen.Line(),
-		jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
+		jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
 	)
 
 	return lines

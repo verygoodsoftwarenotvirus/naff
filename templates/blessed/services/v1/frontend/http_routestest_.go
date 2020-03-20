@@ -20,7 +20,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
 				jen.Qual("net/http", "MethodGet"),
 				jen.Lit("https://verygoodsoftwarenotvirus.ru"),
-				jen.ID("nil"),
+				jen.Nil(),
 			),
 			jen.Line(),
 			jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),

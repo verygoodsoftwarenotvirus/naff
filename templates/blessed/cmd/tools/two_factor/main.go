@@ -156,7 +156,7 @@ and logging in.`)
 				jen.List(jen.ID("token"), jen.Err()).Op("=").ID("reader").Dot("ReadString").Call(jen.ID(`'\n'`)),
 				jen.ID("mustnt").Call(jen.Err()),
 			).Else().Block(
-				jen.ID("token").Op("=").Qual("os", "Args").Index(jen.Add(utils.FakeUint64Func())),
+				jen.ID("token").Op("=").Qual("os", "Args").Index(jen.Lit(1)),
 			),
 			jen.Line(),
 			jen.Return().ID("token"),

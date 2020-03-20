@@ -14,7 +14,7 @@ func clientDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database").Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database").Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -105,11 +105,11 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("migrating querier")),
 			jen.If(jen.Err().Op(":=").ID("c").Dot("querier").Dot("Migrate").Call(utils.CtxVar()), jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("querier migrated!")),
 			jen.Line(),
-			jen.Return().List(jen.ID("c"), jen.ID("nil")),
+			jen.Return().List(jen.ID("c"), jen.Nil()),
 		),
 		jen.Line(),
 	}

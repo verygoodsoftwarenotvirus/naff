@@ -163,6 +163,28 @@ func (typ DataType) BuildCreateSomethingParams(proj *Project, isModelsPackage bo
 	return params
 }
 
+func (typ DataType) BuildCreateSomethingQueryParams(proj *Project, isModelsPackage bool) []jen.Code {
+	params := []jen.Code{ctxParam()}
+
+	lp := []jen.Code{}
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
+		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...).ID("uint64"))
+	}
+
+	sn := typ.Name.Singular()
+	if isModelsPackage {
+		params = append(params, jen.ID(creationObjectVarName).Op("*").ID(sn))
+	} else {
+		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models", "v1"), sn))
+	}
+
+	return params
+}
+
 func (typ DataType) BuildCreateSomethingArgs(proj *Project) []jen.Code {
 	params := []jen.Code{ctxVar()}
 

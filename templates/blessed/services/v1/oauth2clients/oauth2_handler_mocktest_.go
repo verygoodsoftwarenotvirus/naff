@@ -12,7 +12,7 @@ func oauth2HandlerMockTestDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("oauth2Handler").Op("=").Parens(jen.Op("*").ID("mockOauth2Handler")).Call(jen.ID("nil")),
+		jen.Var().ID("_").ID("oauth2Handler").Op("=").Parens(jen.Op("*").ID("mockOauth2Handler")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

@@ -19,7 +19,7 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("fetchRandomOAuth2Client").Params(jen.ID("c").Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
 			"OAuth2Client",
 		)).Block(
-			jen.List(jen.ID("clientsRes"), jen.Err()).Op(":=").ID("c").Dot("GetOAuth2Clients").Call(utils.CtxVar(), jen.ID("nil")),
+			jen.List(jen.ID("clientsRes"), jen.Err()).Op(":=").ID("c").Dot("GetOAuth2Clients").Call(utils.CtxVar(), jen.Nil()),
 			jen.If(jen.Err().Op("!=").ID("nil").Op("||").ID("clientsRes").Op("==").ID("nil").Op("||").ID("len").Call(jen.ID("clientsRes").Dot("Clients")).Op("<=").Add(utils.FakeUint64Func())).Block(jen.Return().ID("nil")),
 			jen.Line(),
 			jen.Var().ID("selectedClient").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
@@ -69,11 +69,11 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 						jen.If(jen.ID("randomOAuth2Client").Op(":=").ID("fetchRandomOAuth2Client").Call(jen.ID("c")), jen.ID("randomOAuth2Client").Op("!=").ID("nil")).Block(
 							jen.Return().ID("c").Dot("BuildGetOAuth2ClientRequest").Call(utils.CtxVar(), jen.ID("randomOAuth2Client").Dot("ID")),
 						),
-						jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
+						jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
 					),
 					jen.ID("Weight").Op(":").Lit(100)), jen.Lit("GetOAuth2Clients").Op(":").Valuesln(
 					jen.ID("Name").Op(":").Lit("GetOAuth2Clients"), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.Return().ID("c").Dot("BuildGetOAuth2ClientsRequest").Call(utils.CtxVar(), jen.ID("nil")),
+						jen.Return().ID("c").Dot("BuildGetOAuth2ClientsRequest").Call(utils.CtxVar(), jen.Nil()),
 					),
 					jen.ID("Weight").Op(":").Lit(100))),
 		),

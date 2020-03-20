@@ -141,7 +141,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 			jen.If(jen.ID("len").Call(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).Op("<").Lit(32)).Block(
 				jen.Err().Op(":=").ID("errors").Dot("New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("cookie secret failure")),
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
 			jen.ID("srv").Op(":=").Op("&").ID("Server").Valuesln(
@@ -149,12 +149,12 @@ func serverDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.If(jen.Err().Op(":=").ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.Err().Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidTracingProvider")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
 			jen.List(jen.ID("ih"), jen.Err()).Op(":=").ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID("logger")),
 			jen.If(jen.Err().Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidMetricsProvider")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.If(jen.ID("ih").Op("!=").ID("nil")).Block(
 				jen.ID("srv").Dot("setupRouter").Call(jen.ID("cfg").Dot("Frontend"), jen.ID("ih")),
@@ -171,7 +171,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 		lines = append(lines,
 			jen.List(jen.ID("allWebhooks"), jen.Err()).Op(":=").ID("db").Dot("GetAllWebhooks").Call(utils.CtxVar()),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Block(
@@ -186,7 +186,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 		// }
 
 		lines = append(lines,
-			jen.Return().List(jen.ID("srv"), jen.ID("nil")),
+			jen.Return().List(jen.ID("srv"), jen.Nil()),
 		)
 
 		return lines

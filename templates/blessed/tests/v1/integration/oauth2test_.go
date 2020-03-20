@@ -191,7 +191,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					),
 					jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("c2"), jen.Err()),
 					jen.Line(),
-					jen.List(jen.ID("_"), jen.Err()).Op("=").ID("c2").Dot("GetOAuth2Clients").Call(jen.ID("tctx"), jen.ID("nil")),
+					jen.List(jen.ID("_"), jen.Err()).Op("=").ID("c2").Dot("GetOAuth2Clients").Call(jen.ID("tctx"), jen.Nil()),
 					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err(), jen.Lit("expected error from what should be an unauthorized client")),
 				)),
 			)),
@@ -215,7 +215,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("Assert oauth2Client list equality"),
-					jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("testClient").Dot("GetOAuth2Clients").Call(jen.ID("tctx"), jen.ID("nil")),
+					jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("testClient").Dot("GetOAuth2Clients").Call(jen.ID("tctx"), jen.Nil()),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.Qual("github.com/stretchr/testify/assert", "True").Callln(
 						jen.ID("t"),

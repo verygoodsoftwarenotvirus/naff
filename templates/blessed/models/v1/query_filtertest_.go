@@ -106,7 +106,7 @@ func queryFilterTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("qf").Op(":=").Parens(jen.Op("*").ID("QueryFilter")).Call(jen.ID("nil")),
+				jen.ID("qf").Op(":=").Parens(jen.Op("*").ID("QueryFilter")).Call(jen.Nil()),
 				jen.ID("expected").Op(":=").ID("DefaultQueryFilter").Call().Dot("ToValues").Call(),
 				jen.ID("actual").Op(":=").ID("qf").Dot("ToValues").Call(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
@@ -157,7 +157,7 @@ func queryFilterTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("returns query builder if query filter is nil"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("expected").Op(":=").Lit(`SELECT things FROM stuff WHERE condition = $1`),
-				jen.ID("x").Op(":=").Parens(jen.Op("*").ID("QueryFilter")).Call(jen.ID("nil")).Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
+				jen.ID("x").Op(":=").Parens(jen.Op("*").ID("QueryFilter")).Call(jen.Nil()).Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Op(":=").ID("x").Dot("ToSql").Call(),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match")),
@@ -221,7 +221,7 @@ func queryFilterTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("sortByKey").Op(":").Index().ID("string").Values(jen.ID("string").Call(jen.ID("expected").Dot("SortBy"))),
 				),
 				jen.Line(),
-				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("nil")),
+				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("https://verygoodsoftwarenotvirus.ru"), jen.Nil()),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Line(),

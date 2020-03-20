@@ -94,7 +94,7 @@ func oauth2ClientDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3", "ClientInfo").Op("=").Parens(jen.Op("*").ID("OAuth2Client")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3", "ClientInfo").Op("=").Parens(jen.Op("*").ID("OAuth2Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

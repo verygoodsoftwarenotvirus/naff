@@ -28,7 +28,7 @@ func bcryptDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").ID("Authenticator").Op("=").Parens(jen.Op("*").ID("BcryptAuthenticator")).Call(jen.ID("nil")),
+			jen.ID("_").ID("Authenticator").Op("=").Parens(jen.Op("*").ID("BcryptAuthenticator")).Call(jen.Nil()),
 			jen.Line(),
 			jen.Comment("ErrCostTooLow indicates that a password has too low a Bcrypt cost"),
 			jen.ID("ErrCostTooLow").Op("=").Qual("errors", "New").Call(jen.Lit("stored password's cost is too low")),
@@ -98,7 +98,7 @@ func bcryptDotGo(pkg *models.Project) *jen.File {
 			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("ValidateLogin")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("passwordMatches").Op("=").ID("b").Dot("PasswordMatches").Call(utils.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.ID("nil")),
+			jen.ID("passwordMatches").Op("=").ID("b").Dot("PasswordMatches").Call(utils.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),
 			jen.ID("tooWeak").Op(":=").ID("b").Dot("hashedPasswordIsTooWeak").Call(jen.ID("hashedPassword")),
 			jen.Line(),
 			jen.If(jen.Op("!").Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("twoFactorCode"), jen.ID("twoFactorSecret"))).Block(
@@ -120,7 +120,7 @@ func bcryptDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.ID("passwordMatches"), jen.ID("ErrCostTooLow")),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("passwordMatches"), jen.ID("nil")),
+			jen.Return().List(jen.ID("passwordMatches"), jen.Nil()),
 		),
 		jen.Line(),
 	)

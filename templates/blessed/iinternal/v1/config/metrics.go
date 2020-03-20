@@ -58,7 +58,7 @@ func metricsDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "InstrumentationHandler"), jen.ID("error")).Block(
 			jen.If(jen.Err().Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "RegisterDefaultViews").Call(), jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("registering default metric views: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("registering default metric views: %w"), jen.Err())),
 			),
 			jen.ID("_").Op("=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "RecordRuntimeStats").Call(jen.Qual("time", "Duration").Callln(
 				jen.Qual("math", "Max").Callln(
@@ -79,11 +79,11 @@ func metricsDotGo(pkg *models.Project) *jen.File {
 						jen.ID("Namespace").Op(":").ID("string").Call(jen.ID("MetricsNamespace")),
 					)),
 					jen.If(jen.Err().Op("!=").ID("nil")).Block(
-						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to create Prometheus exporter: %w"), jen.Err())),
+						jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to create Prometheus exporter: %w"), jen.Err())),
 					),
 					jen.Qual("go.opencensus.io/stats/view", "RegisterExporter").Call(jen.ID("p")), jen.ID("log").Dot("Debug").Call(jen.Lit("metrics provider registered")),
-					jen.Return().List(jen.ID("p"), jen.ID("nil"))),
-				jen.Default().Block(jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidMetricsProvider"))),
+					jen.Return().List(jen.ID("p"), jen.Nil())),
+				jen.Default().Block(jen.Return().List(jen.Nil(), jen.ID("ErrInvalidMetricsProvider"))),
 			),
 		),
 		jen.Line(),

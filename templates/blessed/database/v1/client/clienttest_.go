@@ -36,7 +36,7 @@ func clientTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
 				jen.ID("c").Op(":=").Op("&").ID("Client").Values(jen.ID("querier").Op(":").ID("mockDB")),
 				jen.ID("actual").Op(":=").ID("c").Dot("Migrate").Call(utils.CtxVar()),
@@ -80,11 +80,11 @@ func clientTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("ProvideDatabaseClient").Call(
 					utils.CtxVar(),
-					jen.ID("nil"),
+					jen.Nil(),
 					jen.ID("mockDB"),
 					jen.False(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -101,7 +101,7 @@ func clientTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("x"), jen.ID("actual")).Op(":=").ID("ProvideDatabaseClient").Call(
 					utils.CtxVar(),
-					jen.ID("nil"),
+					jen.Nil(),
 					jen.ID("mockDB"),
 					jen.False(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),

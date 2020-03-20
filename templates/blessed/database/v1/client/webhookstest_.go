@@ -29,7 +29,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleID"),
 					jen.ID("exampleUserID"),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot("GetWebhook").Call(utils.CtxVar(), jen.ID("exampleID"), jen.ID("exampleUserID")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -57,7 +57,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleUserID"),
 					jen.ID(utils.FilterVarName),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot("GetWebhookCount").Call(
 					utils.CtxVar(),
@@ -82,7 +82,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleUserID"),
 					jen.ID(utils.FilterVarName),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot("GetWebhookCount").Call(
 					utils.CtxVar(),
@@ -110,7 +110,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooksCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot("GetAllWebhooksCount").Call(utils.CtxVar()),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -134,7 +134,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot("GetAllWebhooks").Call(utils.CtxVar()),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -162,7 +162,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleUserID"),
 					jen.ID(utils.FilterVarName),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot("GetWebhooks").Call(
 					utils.CtxVar(),
@@ -187,7 +187,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleUserID"),
 					jen.ID(utils.FilterVarName),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot("GetWebhooks").Call(
 					utils.CtxVar(),
@@ -217,7 +217,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("CreateWebhook"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput"),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID("exampleInput")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),

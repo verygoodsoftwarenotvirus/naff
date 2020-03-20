@@ -34,7 +34,7 @@ func buildV1Client_BuildGetOAuth2ClientRequest() []jen.Code {
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
 				jen.Line(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -165,7 +165,7 @@ func buildV1Client_BuildGetOAuth2ClientsRequest() []jen.Code {
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
 				jen.Line(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -175,7 +175,7 @@ func buildV1Client_BuildGetOAuth2ClientsRequest() []jen.Code {
 					jen.Err(),
 				).Op(":=").ID("c").Dot("BuildGetOAuth2ClientsRequest").Call(
 					utils.CtxVar(),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
@@ -249,7 +249,7 @@ func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 					jen.Err(),
 				).Op(":=").ID("c").Dot("GetOAuth2Clients").Call(
 					utils.CtxVar(),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
@@ -276,7 +276,7 @@ func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Co
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -562,7 +562,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 			utils.BuildSubTest(
 				"with no cookie",
 				jen.Line(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -573,8 +573,8 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 					jen.Err(),
 				).Op(":=").ID("c").Dot("CreateOAuth2Client").Call(
 					utils.CtxVar(),
-					jen.ID("nil"),
-					jen.ID("nil"),
+					jen.Nil(),
+					jen.Nil(),
 				),
 				utils.AssertError(
 					jen.Err(),
@@ -596,7 +596,7 @@ func buildV1Client_BuildArchiveOAuth2ClientRequest() []jen.Code {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodDelete"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
 				jen.ID("expectedID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(

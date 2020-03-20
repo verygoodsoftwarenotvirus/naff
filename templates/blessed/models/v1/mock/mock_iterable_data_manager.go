@@ -18,7 +18,7 @@ func mockIterableDataManagerDotGo(pkg *models.Project, typ models.DataType) *jen
 	sn := n.Singular()
 
 	ret.Add(
-		jen.Var().ID("_").ID("models").Dotf("%sDataManager", sn).Op("=").Parens(jen.Op("*").IDf("%sDataManager", sn)).Call(jen.ID("nil")),
+		jen.Var().ID("_").ID("models").Dotf("%sDataManager", sn).Op("=").Parens(jen.Op("*").IDf("%sDataManager", sn)).Call(jen.Nil()),
 		jen.Line(),
 	)
 

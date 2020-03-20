@@ -26,7 +26,7 @@ func usersServiceDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
+			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -68,17 +68,17 @@ func usersServiceDotGo(pkg *models.Project) *jen.File {
 			jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.If(jen.ID("userIDFetcher").Op("==").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("userIDFetcher must be provided"))),
+				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("userIDFetcher must be provided"))),
 			),
 			jen.Line(),
 			jen.List(jen.ID("counter"), jen.Err()).Op(":=").ID("counterProvider").Call(jen.ID("counterName"), jen.Lit("number of users managed by the users service")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("userCount"), jen.Err()).Op(":=").ID("db").Dot("GetUserCount").Call(utils.CtxVar(), jen.ID("nil")),
+			jen.List(jen.ID("userCount"), jen.Err()).Op(":=").ID("db").Dot("GetUserCount").Call(utils.CtxVar(), jen.Nil()),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.Err())),
 			),
 			jen.ID("counter").Dot("IncrementBy").Call(utils.CtxVar(), jen.ID("userCount")),
 			jen.Line(),
@@ -93,7 +93,7 @@ func usersServiceDotGo(pkg *models.Project) *jen.File {
 				jen.ID("reporter").Op(":").ID("reporter"),
 				jen.ID("userCreationEnabled").Op(":").ID("authSettings").Dot("EnableUserSignup"),
 			),
-			jen.Return().List(jen.ID("us"), jen.ID("nil")),
+			jen.Return().List(jen.ID("us"), jen.Nil()),
 		),
 		jen.Line(),
 	)

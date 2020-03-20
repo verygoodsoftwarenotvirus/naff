@@ -16,7 +16,7 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
 			"OAuth2ClientDataManager",
-		).Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
+		).Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -38,10 +38,10 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 			jen.List(jen.ID("client"), jen.Err()).Op(":=").ID("c").Dot("querier").Dot("GetOAuth2Client").Call(utils.CtxVar(), jen.ID("clientID"), jen.ID("userID")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching oauth2 client from the querier")),
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("client"), jen.ID("nil")),
+			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -62,10 +62,10 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 			jen.List(jen.ID("client"), jen.Err()).Op(":=").ID("c").Dot("querier").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("clientID")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching oauth2 client from the querier")),
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("client"), jen.ID("nil")),
+			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -176,12 +176,12 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 			jen.List(jen.ID("client"), jen.Err()).Op(":=").ID("c").Dot("querier").Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("input")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot("WithError").Call(jen.Err()).Dot("Debug").Call(jen.Lit("error writing oauth2 client to the querier")),
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
 			jen.ID("logger").Dot("Debug").Call(jen.Lit("new oauth2 client created successfully")),
 			jen.Line(),
-			jen.Return().List(jen.ID("client"), jen.ID("nil")),
+			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
 	)

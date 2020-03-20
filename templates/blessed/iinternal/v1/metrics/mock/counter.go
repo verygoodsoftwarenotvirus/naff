@@ -14,7 +14,7 @@ func counterDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter").Op("=").Parens(jen.Op("*").ID("UnitCounter")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter").Op("=").Parens(jen.Op("*").ID("UnitCounter")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

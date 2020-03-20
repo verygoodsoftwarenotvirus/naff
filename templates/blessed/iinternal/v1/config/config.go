@@ -271,15 +271,15 @@ func configDotGo(pkg *models.Project) *jen.File {
 			jen.ID("cfg").Dot("SetConfigFile").Call(jen.ID("filename")),
 			jen.Line(),
 			jen.If(jen.Err().Op(":=").ID("cfg").Dot("ReadInConfig").Call(), jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to read the config file: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to read the config file: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Var().ID("serverConfig").Op("*").ID("ServerConfig"),
 			jen.If(jen.Err().Op(":=").ID("cfg").Dot("Unmarshal").Call(jen.Op("&").ID("serverConfig")), jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to unmarshal the config: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to unmarshal the config: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("serverConfig"), jen.ID("nil")),
+			jen.Return().List(jen.ID("serverConfig"), jen.Nil()),
 		),
 		jen.Line(),
 	)

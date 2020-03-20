@@ -14,7 +14,7 @@ func mockOauth2ClientDataServerDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("OAuth2ClientDataServer")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("OAuth2ClientDataServer")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

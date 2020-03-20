@@ -49,7 +49,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with nil",
 				jen.Err().Op(":=").ID("argIsNotPointerOrNil").Call(
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.AssertError(
 					jen.Err(),
@@ -106,7 +106,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("notAPointer"),
 					jen.Err(),
 				).Op(":=").ID("argIsNotPointer").Call(
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.AssertTrue(
 					jen.ID("notAPointer"),
@@ -167,7 +167,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("isNil"),
 					jen.Err(),
 				).Op(":=").ID("argIsNotNil").Call(
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.AssertTrue(
 					jen.ID("isNil"),
@@ -304,8 +304,8 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with nil target variable",
 				jen.Err().Op(":=").ID("unmarshalBody").Call(
-					jen.ID("nil"),
-					jen.ID("nil"),
+					jen.Nil(),
+					jen.Nil(),
 				),
 				utils.AssertError(
 					jen.Err(),

@@ -35,7 +35,7 @@ func buildBuildGetUserRequest() []jen.Code {
 	block := utils.StartSpan(false, funcName)
 	block = append(block,
 		jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
-			jen.ID("nil"),
+			jen.Nil(),
 			jen.ID("usersBasePath"),
 			jen.Qual("strconv", "FormatUint").Call(
 				jen.ID("userID"),
@@ -46,7 +46,7 @@ func buildBuildGetUserRequest() []jen.Code {
 		jen.Return().Qual("net/http", "NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 	)
 
@@ -80,7 +80,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("building request: %w"),
 					jen.Err(),
@@ -128,7 +128,7 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 		jen.Return().Qual("net/http", "NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 	)
 
@@ -165,7 +165,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("building request: %w"),
 					jen.Err(),
@@ -203,7 +203,7 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 	block := utils.StartSpan(false, funcName)
 	block = append(block,
 		jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
-			jen.ID("nil"),
+			jen.Nil(),
 			jen.ID("usersBasePath"),
 		),
 		jen.Line(),
@@ -248,7 +248,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("building request: %w"),
 					jen.Err(),
@@ -286,7 +286,7 @@ func buildBuildArchiveUserRequest() []jen.Code {
 	block := utils.StartSpan(false, funcName)
 	block = append(block,
 		jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
-			jen.ID("nil"),
+			jen.Nil(),
 			jen.ID("usersBasePath"),
 			jen.Qual("strconv", "FormatUint").Call(
 				jen.ID("userID"),
@@ -297,7 +297,7 @@ func buildBuildArchiveUserRequest() []jen.Code {
 		jen.Return().Qual("net/http", "NewRequest").Call(
 			jen.Qual("net/http", "MethodDelete"),
 			jen.ID("uri"),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 	)
 
@@ -339,7 +339,7 @@ func buildArchiveUser() []jen.Code {
 		jen.Return().ID("c").Dot("executeRequest").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 	)
 
@@ -374,7 +374,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("creating body from struct: %w"),
 					jen.Err(),
@@ -383,7 +383,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
-			jen.ID("nil"),
+			jen.Nil(),
 			jen.ID("usersBasePath"),
 			jen.Lit("login"),
 		),
@@ -431,7 +431,7 @@ func buildLogin() []jen.Code {
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Err(),
 			),
 		),
@@ -444,7 +444,7 @@ func buildLogin() []jen.Code {
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("encountered error executing login request: %w"),
 					jen.Err(),
@@ -495,12 +495,12 @@ func buildLogin() []jen.Code {
 			jen.Return().List(jen.ID("cookies").Index(
 				jen.Lit(0),
 			),
-				jen.ID("nil"),
+				jen.Nil(),
 			),
 		),
 		jen.Line(),
 		jen.Return().List(
-			jen.ID("nil"),
+			jen.Nil(),
 			jen.Qual("errors", "New").Call(
 				jen.Lit("no cookies returned from request"),
 			),

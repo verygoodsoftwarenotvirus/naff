@@ -360,7 +360,7 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 		jen.Commentf("Assert %s list equality", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dotf("Get%s", pn).Call(
-			//utils.CtxVar(), jen.ID("nil"),
+			//utils.CtxVar(), jen.Nil(),
 			listArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),

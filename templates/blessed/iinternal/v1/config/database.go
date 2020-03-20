@@ -35,7 +35,7 @@ func databaseDotGo(pkg *models.Project) *jen.File {
 				jen.Case(jen.ID("postgresProviderKey")).Block(
 					jen.List(jen.ID("rawDB"), jen.Err()).Op(":=").ID("postgres").Dot("ProvidePostgresDB").Call(jen.ID("logger"), jen.ID("connectionDetails")),
 					jen.If(jen.Err().Op("!=").ID("nil")).Block(
-						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("establish postgres database connection: %w"), jen.Err())),
+						jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("establish postgres database connection: %w"), jen.Err())),
 					),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RegisterAllViews").Call(),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RecordStats").Call(jen.ID("rawDB"), jen.ID("cfg").Dot("Metrics").Dot("DBMetricsCollectionInterval")),
@@ -46,7 +46,7 @@ func databaseDotGo(pkg *models.Project) *jen.File {
 				jen.Case(jen.ID("mariaDBProviderKey")).Block(
 					jen.List(jen.ID("rawDB"), jen.Err()).Op(":=").ID("mariadb").Dot("ProvideMariaDBConnection").Call(jen.ID("logger"), jen.ID("connectionDetails")),
 					jen.If(jen.Err().Op("!=").ID("nil")).Block(
-						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("establish mariadb database connection: %w"), jen.Err())),
+						jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("establish mariadb database connection: %w"), jen.Err())),
 					),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RegisterAllViews").Call(),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RecordStats").Call(jen.ID("rawDB"), jen.ID("cfg").Dot("Metrics").Dot("DBMetricsCollectionInterval")),
@@ -57,7 +57,7 @@ func databaseDotGo(pkg *models.Project) *jen.File {
 				jen.Case(jen.ID("sqliteProviderKey")).Block(
 					jen.List(jen.ID("rawDB"), jen.Err()).Op(":=").ID("sqlite").Dot("ProvideSqliteDB").Call(jen.ID("logger"), jen.ID("connectionDetails")),
 					jen.If(jen.Err().Op("!=").ID("nil")).Block(
-						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("establish sqlite database connection: %w"), jen.Err())),
+						jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("establish sqlite database connection: %w"), jen.Err())),
 					),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RegisterAllViews").Call(),
 					jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "RecordStats").Call(jen.ID("rawDB"), jen.ID("cfg").Dot("Metrics").Dot("DBMetricsCollectionInterval")),
@@ -65,7 +65,7 @@ func databaseDotGo(pkg *models.Project) *jen.File {
 					jen.ID("sdb").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1/queriers/sqlite"), "ProvideSqlite").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
 					jen.Line(),
 					jen.Return().Qual(filepath.Join(pkg.OutputPath, "database/v1/client"), "ProvideDatabaseClient").Call(utils.CtxVar(), jen.ID("rawDB"), jen.ID("sdb"), jen.ID("debug"), jen.ID("logger"))),
-				jen.Default().Block(jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("invalid database type selected")))),
+				jen.Default().Block(jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("invalid database type selected")))),
 			),
 		),
 		jen.Line(),

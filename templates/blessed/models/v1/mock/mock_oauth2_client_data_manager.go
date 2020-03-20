@@ -14,7 +14,7 @@ func mockOauth2ClientDataManagerDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataManager").Op("=").Parens(jen.Op("*").ID("OAuth2ClientDataManager")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataManager").Op("=").Parens(jen.Op("*").ID("OAuth2ClientDataManager")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

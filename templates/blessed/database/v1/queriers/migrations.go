@@ -618,7 +618,7 @@ func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Func().Params()).Block(
 			jen.Return().Func().Params().Block(
 				jen.ID("driver").Op(":=").Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(jen.ID("db"), jen.Qual("github.com/GuiaBolso/darwin", dialectName).Values()),
-				jen.If(jen.Err().Op(":=").Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.ID("nil")).Dot("Migrate").Call(), jen.Err().Op("!=").ID("nil")).Block(
+				jen.If(jen.Err().Op(":=").Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.Nil()).Dot("Migrate").Call(), jen.Err().Op("!=").ID("nil")).Block(
 					jen.ID("panic").Call(jen.Err()),
 				),
 			),

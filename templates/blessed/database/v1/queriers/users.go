@@ -63,10 +63,10 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 				jen.Op("&").ID("x").Dot("UpdatedOn"),
 				jen.Op("&").ID("x").Dot("ArchivedOn"),
 			), jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("x"), jen.ID("nil")),
+			jen.Return().List(jen.ID("x"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -80,20 +80,20 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
 				jen.List(jen.ID("user"), jen.Err()).Op(":=").ID("scanUser").Call(jen.ID("rows")),
 				jen.If(jen.Err().Op("!=").ID("nil")).Block(
-					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning user result: %w"), jen.Err())),
+					jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning user result: %w"), jen.Err())),
 				),
 				jen.ID("list").Op("=").ID("append").Call(jen.ID("list"), jen.Op("*").ID("user")),
 			),
 			jen.Line(),
 			jen.If(jen.Err().Op(":=").ID("rows").Dot("Err").Call(), jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
 			jen.If(jen.Err().Op(":=").ID("rows").Dot("Close").Call(), jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("closing rows")),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("list"), jen.ID("nil")),
+			jen.Return().List(jen.ID("list"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -129,7 +129,7 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 			jen.List(jen.ID("u"), jen.Err()).Op(":=").ID("scanUser").Call(jen.ID("row")),
 			jen.Line(),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("buildError").Call(jen.Err(), jen.Lit("fetching user from database"))),
+				jen.Return().List(jen.Nil(), jen.ID("buildError").Call(jen.Err(), jen.Lit("fetching user from database"))),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("u"), jen.Err()),
@@ -169,12 +169,12 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 			jen.Line(),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.Return().List(jen.ID("nil"), jen.Err()),
+					jen.Return().List(jen.Nil(), jen.Err()),
 				),
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user from database: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user from database: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("u"), jen.ID("nil")),
+			jen.Return().List(jen.ID("u"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -189,7 +189,7 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetUserCountQuery").Params(jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Op(":=").ID(dbfl).Dot("sqlBuilder").
-				Dotln("Select").Call(jen.ID("CountQuery")).
+				Dotln("Select").Call(jen.ID("countQuery")).
 				Dotln("From").Call(jen.ID("usersTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("archived_on").Op(":").ID("nil"))),
 			jen.Line(),
@@ -253,17 +253,17 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("buildError").Call(jen.Err(), jen.Lit("querying for user"))),
+				jen.Return().List(jen.Nil(), jen.ID("buildError").Call(jen.Err(), jen.Lit("querying for user"))),
 			),
 			jen.Line(),
 			jen.List(jen.ID("userList"), jen.Err()).Op(":=").ID("scanUsers").Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("loading response from database: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("loading response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.List(jen.ID("count"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUserCount").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Valuesln(
@@ -275,7 +275,7 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 				jen.ID("Users").Op(":").ID("userList"),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("x"), jen.ID("nil")),
+			jen.Return().List(jen.ID("x"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -298,7 +298,7 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 
 		if isMariaDB {
 			cols = append(cols, jen.Lit("created_on"))
-			vals = append(vals, jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery")))
+			vals = append(vals, jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery")))
 		}
 
 		q := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID(dbfl).Dot("sqlBuilder").
@@ -364,11 +364,11 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 					jen.Switch(jen.ID("e").Op(":=").ID("err").Assert(jen.Type())).Block(
 						jen.Case(jen.Op("*").Qual("github.com/lib/pq", "Error")).Block(
 							jen.If(jen.ID("e").Dot("Code").Op("==").Qual("github.com/lib/pq", "ErrorCode").Call(jen.Lit("23505"))).Block(
-								jen.Return().List(jen.ID("nil"), jen.Qual(filepath.Join(pkg.OutputPath, "database/v1/client"), "ErrUserExists")),
+								jen.Return().List(jen.Nil(), jen.Qual(filepath.Join(pkg.OutputPath, "database/v1/client"), "ErrUserExists")),
 							),
 						),
 						jen.Default().Block(
-							jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing user creation query: %w"), jen.Err())),
+							jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing user creation query: %w"), jen.Err())),
 						),
 					),
 				),
@@ -378,7 +378,7 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 			out := []jen.Code{
 				jen.List(jen.ID("res"), jen.Err()).Op(":=").ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 				jen.If(jen.Err().Op("!=").ID("nil")).Block(
-					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing user creation query: %w"), jen.Err())),
+					jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing user creation query: %w"), jen.Err())),
 				),
 				jen.Line(),
 				jen.Comment("fetch the last inserted ID"),
@@ -410,7 +410,7 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 		out = append(out, uqb...)
 		out = append(out,
 			jen.Line(),
-			jen.Return().List(jen.ID("x"), jen.ID("nil")),
+			jen.Return().List(jen.ID("x"), jen.Nil()),
 		)
 		return out
 	}
@@ -432,7 +432,7 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 			Dotln("Set").Call(jen.Lit("username"), jen.ID("input").Dot("Username")).
 			Dotln("Set").Call(jen.Lit("hashed_password"), jen.ID("input").Dot("HashedPassword")).
 			Dotln("Set").Call(jen.Lit("two_factor_secret"), jen.ID("input").Dot("TwoFactorSecret")).
-			Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
+			Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("id").Op(":").ID("input").Dot("ID")))
 
 		if isPostgres {
@@ -494,8 +494,8 @@ func usersDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	buildArchiveUserQueryQuery := func() jen.Code {
 		q := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Op("=").ID(dbfl).Dot("sqlBuilder").
 			Dotln("Update").Call(jen.ID("usersTableName")).
-			Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
-			Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("CurrentUnixTimeQuery"))).
+			Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+			Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("id").Op(":").ID("userID")))
 
 		if isPostgres {

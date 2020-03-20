@@ -94,7 +94,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 			jen.Qual("github.com/google/wire", "Build").Callln(
 				buildWireBuildCallArgs()...,
 			),
-			jen.Return().List(jen.ID("nil"), jen.ID("nil")),
+			jen.Return().List(jen.Nil(), jen.Nil()),
 		),
 		jen.Line(),
 	)

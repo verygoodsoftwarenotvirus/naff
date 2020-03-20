@@ -107,7 +107,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -131,7 +131,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -156,7 +156,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				utils.CreateCtx(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.List(
 					jen.ID("c"),
 					jen.Err(),
@@ -189,7 +189,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				utils.CreateCtx(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.List(
 					jen.ID("c"),
 					jen.Err(),
@@ -298,7 +298,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				utils.RequireNoError(jen.Err(), nil),
@@ -350,7 +350,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit(""),
 					jen.ID("u"),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.ID("nil"),
+					jen.Nil(),
 					jen.Index().ID("string").Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
@@ -430,7 +430,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit(""),
 					jen.ID("u"),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.ID("nil"),
+					jen.Nil(),
 					jen.Index().ID("string").Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
@@ -457,7 +457,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
@@ -587,7 +587,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				utils.CreateCtx(),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
@@ -664,7 +664,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				utils.RequireNoError(jen.Err(), nil),
@@ -709,7 +709,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.RequireNotNil(
 					jen.ID("req"),
@@ -936,7 +936,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"with nil as output",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -1020,7 +1020,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				utils.RequireNoError(jen.Err(), nil),
@@ -1038,7 +1038,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with nil passed in",
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Op(":=").ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -1050,7 +1050,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.Qual("net/http", "MethodPost"),
 					jen.ID("ts").Dot("URL"),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				utils.RequireNoError(jen.Err(), nil),
@@ -1058,7 +1058,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				jen.Err().Op("=").ID("c").Dot("retrieve").Call(
 					utils.CtxVar(),
 					jen.ID("req"),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.AssertError(
 					jen.Err(),
@@ -1097,7 +1097,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				utils.RequireNoError(jen.Err(), nil),
@@ -1143,7 +1143,7 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 				).Op(":=").Qual("net/http", "NewRequest").Call(
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
-					jen.ID("nil"),
+					jen.Nil(),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				utils.RequireNoError(jen.Err(), nil),

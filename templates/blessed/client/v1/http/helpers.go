@@ -34,7 +34,7 @@ func helpersDotGo(pkg *models.Project) *jen.File {
 				),
 			),
 			jen.Return().List(jen.ID("false"),
-				jen.ID("nil")),
+				jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -54,7 +54,7 @@ func helpersDotGo(pkg *models.Project) *jen.File {
 				),
 			),
 			jen.Return().List(jen.ID("false"),
-				jen.ID("nil")),
+				jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -160,13 +160,13 @@ func helpersDotGo(pkg *models.Project) *jen.File {
 				jen.ID("in"),
 			),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"),
+				jen.Return().List(jen.Nil(),
 					jen.Err()),
 			),
 			jen.Return().List(jen.Qual("bytes", "NewReader").Call(
 				jen.ID("out"),
 			),
-				jen.ID("nil"),
+				jen.Nil(),
 			),
 		),
 		jen.Line(),

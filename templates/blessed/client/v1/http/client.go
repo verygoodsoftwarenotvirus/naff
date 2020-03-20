@@ -181,7 +181,7 @@ func buildNewClient() []jen.Code {
 				jen.Lit("returning client"),
 			),
 			jen.Return().List(jen.ID("c"),
-				jen.ID("nil")),
+				jen.Nil()),
 		),
 		jen.Line(),
 	}
@@ -219,7 +219,7 @@ func buildbuildOAuthClient() []jen.Code {
 			),
 			jen.Line(),
 			jen.ID("ts").Op(":=").ID("oauth2").Dot("ReuseTokenSource").Call(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.ID("conf").Dot("TokenSource").Call(
 					utils.CtxVar(),
 				),
@@ -350,7 +350,7 @@ func buildexecuteRawRequest() []jen.Code {
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("executing request: %w"),
 					jen.Err(),
@@ -379,7 +379,7 @@ func buildexecuteRawRequest() []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.Return().List(jen.ID("res"), jen.ID("nil")),
+		jen.Return().List(jen.ID("res"), jen.Nil()),
 	)
 
 	lines := []jen.Code{
@@ -413,7 +413,7 @@ func buildBuildURL() []jen.Code {
 				).Dot("String").Call(),
 			),
 			jen.Return().ID("c").Dot("buildURL").Call(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.ID("parts").Op("..."),
 			).Dot("String").Call(),
 		),
@@ -522,7 +522,7 @@ func buildBuildWebsocketURL() []jen.Code {
 			jen.ID("parts").Op("...").ID("string"),
 		).Params(jen.ID("string")).Block(
 			jen.ID("u").Op(":=").ID("c").Dot("buildURL").Call(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.ID("parts").Op("..."),
 			),
 			jen.ID("u").Dot("Scheme").Op("=").Lit("ws"),
@@ -553,7 +553,7 @@ func buildBuildHealthCheckRequest() []jen.Code {
 			jen.Return().Qual("net/http", "NewRequest").Call(
 				jen.Qual("net/http", "MethodGet"),
 				jen.ID("uri"),
-				jen.ID("nil"),
+				jen.Nil(),
 			),
 		),
 		jen.Line(),
@@ -621,7 +621,7 @@ func buildbuildDataRequest() []jen.Code {
 			jen.ID("in"),
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
-			jen.Return().List(jen.ID("nil"), jen.Err()),
+			jen.Return().List(jen.Nil(), jen.Err()),
 		),
 		jen.Line(),
 		jen.List(
@@ -634,7 +634,7 @@ func buildbuildDataRequest() []jen.Code {
 		),
 		jen.If(jen.Err().Op("!=").ID("nil")).Block(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Err(),
 			),
 		),
@@ -643,7 +643,7 @@ func buildbuildDataRequest() []jen.Code {
 			jen.Lit("Content-type"),
 			jen.Lit("application/json"),
 		),
-		jen.Return().List(jen.ID("req"), jen.ID("nil")),
+		jen.Return().List(jen.ID("req"), jen.Nil()),
 	)
 
 	lines := []jen.Code{

@@ -37,8 +37,8 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.ID("nil")),
-			jen.ID("_").Qual("gopkg.in/oauth2.v3", "ClientStore").Op("=").Parens(jen.Op("*").ID("clientStore")).Call(jen.ID("nil")),
+			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual("gopkg.in/oauth2.v3", "ClientStore").Op("=").Parens(jen.Op("*").ID("clientStore")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -99,12 +99,12 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 			jen.List(jen.ID("client"), jen.Err()).Op(":=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("id")),
 			jen.Line(),
 			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("invalid client"))),
+				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("invalid client"))),
 			).Else().If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for client: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for client: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("client"), jen.ID("nil")),
+			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -122,7 +122,7 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("counter"), jen.Err()).Op(":=").ID("counterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.ID("manager").Op(":=").Qual("gopkg.in/oauth2.v3/manage", "NewDefaultManager").Call(),
@@ -149,11 +149,11 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 			jen.ID("initializeOAuth2Handler").Call(jen.ID("s").Dot("oauth2Handler"), jen.ID("s")),
 			jen.List(jen.ID("count"), jen.Err()).Op(":=").ID("s").Dot("database").Dot("GetAllOAuth2ClientCount").Call(utils.CtxVar()),
 			jen.If(jen.Err().Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual("database/sql", "ErrNoRows")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 clients: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 clients: %w"), jen.Err())),
 			),
 			jen.ID("counter").Dot("IncrementBy").Call(utils.CtxVar(), jen.ID("count")),
 			jen.Line(),
-			jen.Return().List(jen.ID("s"), jen.ID("nil")),
+			jen.Return().List(jen.ID("s"), jen.Nil()),
 		),
 		jen.Line(),
 	)

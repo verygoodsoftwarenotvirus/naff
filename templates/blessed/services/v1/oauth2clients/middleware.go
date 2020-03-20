@@ -56,7 +56,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("validate bearer token"),
 			jen.List(jen.ID("token"), jen.Err()).Op(":=").ID("s").Dot("oauth2Handler").Dot("ValidationBearerToken").Call(jen.ID("req")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("validating bearer token: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("validating bearer token: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Comment("fetch client ID"),
@@ -66,7 +66,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("fetch client by client ID"),
 			jen.List(jen.ID("c"), jen.Err()).Op(":=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("clientID")),
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 Client")),
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
 			jen.Comment("determine the scope"),
@@ -76,10 +76,10 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.If(jen.Op("!").ID("hasScope")).Block(
 				jen.ID("logger").Dot("Info").Call(jen.Lit("rejecting client for invalid scope")),
-				jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("client not authorized for scope"))),
+				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("client not authorized for scope"))),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("c"), jen.ID("nil")),
+			jen.Return().List(jen.ID("c"), jen.Nil()),
 		),
 		jen.Line(),
 	)

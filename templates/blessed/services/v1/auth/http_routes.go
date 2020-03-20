@@ -56,13 +56,13 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("decodeErr").Op(":=").ID("s").Dot("cookieManager").Dot("Decode").Call(jen.ID("CookieName"), jen.ID("cookie").Dot("Value"), jen.Op("&").ID("ca")),
 				jen.If(jen.ID("decodeErr").Op("!=").ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("decoding request cookie")),
-					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("decoding request cookie: %w"), jen.ID("decodeErr"))),
+					jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("decoding request cookie: %w"), jen.ID("decodeErr"))),
 				),
 				jen.Line(),
-				jen.Return().List(jen.ID("ca"), jen.ID("nil")),
+				jen.Return().List(jen.ID("ca"), jen.Nil()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("nil"), jen.Qual("net/http", "ErrNoCookie")),
+			jen.Return().List(jen.Nil(), jen.Qual("net/http", "ErrNoCookie")),
 		),
 		jen.Line(),
 	)
@@ -106,17 +106,17 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.List(jen.ID("ca"), jen.ID("decodeErr")).Op(":=").ID("s").Dot("DecodeCookieFromRequest").Call(utils.CtxVar(), jen.ID("req")),
 			jen.If(jen.ID("decodeErr").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching cookie data from request: %w"), jen.ID("decodeErr"))),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching cookie data from request: %w"), jen.ID("decodeErr"))),
 			),
 			jen.Line(),
 			jen.List(jen.ID("user"), jen.ID("userFetchErr")).Op(":=").ID("s").Dot("userDB").Dot("GetUser").Call(jen.ID("req").Dot("Context").Call(), jen.ID("ca").Dot("UserID")),
 			jen.If(jen.ID("userFetchErr").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user from request: %w"), jen.ID("userFetchErr"))),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user from request: %w"), jen.ID("userFetchErr"))),
 			),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("ca").Dot("UserID")),
 			jen.ID("attachUsernameToSpan").Call(jen.ID("span"), jen.ID("ca").Dot("Username")),
 			jen.Line(),
-			jen.Return().List(jen.ID("user"), jen.ID("nil")),
+			jen.Return().List(jen.ID("user"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -243,7 +243,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.List(jen.ID("loginInput"), jen.ID("ok")).Op(":=").ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UserLoginInputMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput")),
 			jen.If(jen.Op("!").ID("ok")).Block(
 				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no UserLoginInput found for /login request")),
-				jen.Return().List(jen.ID("nil"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Valuesln(
+				jen.Return().List(jen.Nil(), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Valuesln(
 					jen.ID("Code").Op(":").Qual("net/http", "StatusUnauthorized")),
 				),
 			),
@@ -257,10 +257,10 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.List(jen.ID("user"), jen.Err()).Op(":=").ID("s").Dot("userDB").Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("username")),
 			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("no matching user")),
-				jen.Return().List(jen.ID("nil"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(jen.ID("Code").Op(":").Qual("net/http", "StatusBadRequest"))),
+				jen.Return().List(jen.Nil(), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(jen.ID("Code").Op(":").Qual("net/http", "StatusBadRequest"))),
 			).Else().If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching user")),
-				jen.Return().List(jen.ID("nil"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(jen.ID("Code").Op(":").Qual("net/http", "StatusInternalServerError"))),
+				jen.Return().List(jen.Nil(), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(jen.ID("Code").Op(":").Qual("net/http", "StatusInternalServerError"))),
 			),
 			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("user").Dot("ID")),
 			jen.Line(),
@@ -269,7 +269,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("user").Op(":").ID("user"),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("ld"), jen.ID("nil")),
+			jen.Return().List(jen.ID("ld"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -318,7 +318,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("validating login: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("loginValid"), jen.ID("nil")),
+			jen.Return().List(jen.ID("loginValid"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -342,10 +342,10 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			jen.If(jen.Err().Op("!=").ID("nil")).Block(
 				jen.Comment("NOTE: these errors should be infrequent, and should cause alarm when they do occur"),
 				jen.ID("s").Dot("logger").Dot("WithName").Call(jen.ID("cookieErrorLogName")).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("user").Dot("ID")).Dot("Error").Call(jen.Err(), jen.Lit("error encoding cookie")),
-				jen.Return().List(jen.ID("nil"), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("s").Dot("buildCookie").Call(jen.ID("encoded")), jen.ID("nil")),
+			jen.Return().List(jen.ID("s").Dot("buildCookie").Call(jen.ID("encoded")), jen.Nil()),
 		),
 		jen.Line(),
 	)

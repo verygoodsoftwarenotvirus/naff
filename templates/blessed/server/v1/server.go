@@ -46,7 +46,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 				jen.ID("httpServer").Op(":").ID("httpServer"),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("srv"), jen.ID("nil")),
+			jen.Return().List(jen.ID("srv"), jen.Nil()),
 		),
 		jen.Line(),
 	)

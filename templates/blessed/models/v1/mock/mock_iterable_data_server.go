@@ -17,7 +17,7 @@ func mockIterableDataServerDotGo(pkg *models.Project, typ models.DataType) *jen.
 	sn := typ.Name.Singular()
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", sn)).Op("=").Parens(jen.Op("*").IDf("%sDataServer", sn)).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", sn)).Op("=").Parens(jen.Op("*").IDf("%sDataServer", sn)).Call(jen.Nil()),
 		jen.Line(),
 	)
 

@@ -14,7 +14,7 @@ func encodingDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder").Op("=").Parens(jen.Op("*").ID("EncoderDecoder")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder").Op("=").Parens(jen.Op("*").ID("EncoderDecoder")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
