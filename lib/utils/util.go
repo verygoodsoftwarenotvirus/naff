@@ -136,8 +136,13 @@ func CreateDefaultQueryFilter(proj *models.Project) jen.Code {
 // FakeSeedFunc builds a consistent fake library seed init function
 func FakeSeedFunc() jen.Code {
 	return jen.Func().ID("init").Params().Block(
-		jen.Qual(FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
+		InlineFakeSeedFunc(),
 	)
+}
+
+// InlineFakeSeedFunc builds a consistent fake library seed init function
+func InlineFakeSeedFunc() jen.Code {
+	return jen.Qual(FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call())
 }
 
 func FakeFuncForType(typ string) func() jen.Code {
@@ -265,6 +270,11 @@ const ContextVarName = "ctx"
 // CreateCtx calls context.Background() and assigns it to a variable called ctx
 func CreateCtx() jen.Code {
 	return CtxVar().Op(":=").Qual("context", "Background").Call()
+}
+
+// InlineCtx calls context.Background() and assigns it to a variable called ctx
+func InlineCtx() jen.Code {
+	return jen.Qual("context", "Background").Call()
 }
 
 // CtxParam is a shorthand for a context param

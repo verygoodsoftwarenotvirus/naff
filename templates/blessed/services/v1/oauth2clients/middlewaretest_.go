@@ -343,6 +343,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("THIS IS A FAKE CLIENT ID"),
@@ -373,6 +374,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").Op(":").Lit("THIS IS A FAKE CLIENT ID"),

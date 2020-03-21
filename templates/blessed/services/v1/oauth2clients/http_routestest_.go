@@ -85,8 +85,8 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2Clients"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("userID"),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList").Values(), jen.Nil()),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
@@ -113,8 +113,8 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2Clients"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("userID"),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
@@ -140,8 +140,8 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2Clients"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("userID"),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
@@ -165,9 +165,10 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
-					jen.Lit("GetOAuth2Clients"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Lit("GetOAuth2Clients"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("userID"),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList").Values(), jen.Nil()),
 				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
 				jen.Line(),
@@ -203,8 +204,8 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
 					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
-						jen.ID("Username").Op(":").Lit("username"),
-						jen.ID("Password").Op(":").Lit("password"),
+						jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
+						jen.ID("Password").Op(":").Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").Op(":").Lit("123456"),
 					),
 				),
@@ -276,8 +277,8 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
 					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
-						jen.ID("Username").Op(":").Lit("username"),
-						jen.ID("Password").Op(":").Lit("password"),
+						jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
+						jen.ID("Password").Op(":").Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").Op(":").Lit("123456")),
 				),
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -313,8 +314,8 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
 					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
-						jen.ID("Username").Op(":").Lit("username"),
-						jen.ID("Password").Op(":").Lit("password"),
+						jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
+						jen.ID("Password").Op(":").Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").Op(":").Lit("123456")),
 				),
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
@@ -366,8 +367,8 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
 					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
-						jen.ID("Username").Op(":").Lit("username"),
-						jen.ID("Password").Op(":").Lit("password"),
+						jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
+						jen.ID("Password").Op(":").Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").Op(":").Lit("123456"),
 					),
 				),
@@ -421,8 +422,8 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
 					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
-						jen.ID("Username").Op(":").Lit("username"),
-						jen.ID("Password").Op(":").Lit("password"),
+						jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
+						jen.ID("Password").Op(":").Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").Op(":").Lit("123456"),
 					),
 				),
@@ -476,8 +477,8 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
 					jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
-						jen.ID("Username").Op(":").Lit("username"),
-						jen.ID("Password").Op(":").Lit("password"),
+						jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
+						jen.ID("Password").Op(":").Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").Op(":").Lit("123456"),
 					),
 				),
@@ -538,7 +539,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("userID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
+				jen.ID("exampleOAuth2ClientID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
@@ -570,7 +571,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows found"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("userID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
+				jen.ID("exampleOAuth2ClientID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
@@ -602,7 +603,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching client from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("userID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
+				jen.ID("exampleOAuth2ClientID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
@@ -634,7 +635,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("userID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
+				jen.ID("exampleOAuth2ClientID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
@@ -674,7 +675,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("userID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
+				jen.ID("exampleOAuth2ClientID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
@@ -710,7 +711,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows found"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("userID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
+				jen.ID("exampleOAuth2ClientID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
@@ -738,7 +739,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error deleting record"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
 				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("userID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("exampleOAuth2ClientID").Op(":=").ID("uint64").Call(jen.Lit(2)),
+				jen.ID("exampleOAuth2ClientID").Op(":=").Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.ID("s").Dot("urlClientIDExtractor").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),

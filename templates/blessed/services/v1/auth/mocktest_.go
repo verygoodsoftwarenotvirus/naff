@@ -26,18 +26,16 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").Op("*").ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
-			"OAuth2Client",
-		),
+		jen.Func().Params(jen.ID("m").Op("*").ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(
+			utils.CtxParam(),
+			jen.ID("req").Op("*").Qual("net/http", "Request"),
+		).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
 			jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot(
-				"Called",
-			).Call(jen.ID("req")),
-			jen.Return().List(jen.ID("args").Dot(
-				"Get",
-			).Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
-				"OAuth2Client",
-			)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("req")),
+			jen.Return().List(
+				jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")),
+				jen.ID("args").Dot("Error").Call(jen.Lit(1)),
+			),
 		),
 		jen.Line(),
 	)
@@ -59,9 +57,10 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("args").Op(":=").ID("m").Dot(
 				"Called",
 			).Call(jen.ID("name"), jen.ID("value")),
-			jen.Return().List(jen.ID("args").Dot(
-				"String",
-			).Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(
+				jen.ID("args").Dot("String").Call(jen.Lit(0)),
+				jen.ID("args").Dot("Error").Call(jen.Lit(1)),
+			),
 		),
 		jen.Line(),
 	)

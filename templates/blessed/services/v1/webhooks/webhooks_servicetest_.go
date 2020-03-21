@@ -13,6 +13,8 @@ func webhooksServiceTestDotGo(pkg *models.Project) *jen.File {
 
 	utils.AddImports(pkg, ret)
 
+	ret.Add(utils.FakeSeedFunc())
+
 	ret.Add(
 		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
 			jen.Return().Op("&").ID("Service").Valuesln(
@@ -33,6 +35,7 @@ func webhooksServiceTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.ID("expectation").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
@@ -61,6 +64,7 @@ func webhooksServiceTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.Var().ID("ucp").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider").Op("=").Func().Paramsln(
 					jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName"),
 					jen.ID("description").ID("string")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
@@ -81,6 +85,7 @@ func webhooksServiceTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error setting count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.ID("expectation").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),

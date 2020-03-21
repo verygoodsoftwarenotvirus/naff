@@ -103,11 +103,10 @@ func oauth2HandlerMockTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("args").Op(":=").ID("m").Dot(
 				"Called",
 			).Call(jen.ID("req")),
-			jen.Return().List(jen.ID("args").Dot(
-				"Get",
-			).Call(jen.Lit(0)).Assert(jen.Qual("gopkg.in/oauth2.v3",
-				"TokenInfo",
-			)), jen.ID("args").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(
+				jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("gopkg.in/oauth2.v3", "TokenInfo")),
+				jen.ID("args").Dot("Error").Call(jen.Lit(1)),
+			),
 		),
 		jen.Line(),
 	)

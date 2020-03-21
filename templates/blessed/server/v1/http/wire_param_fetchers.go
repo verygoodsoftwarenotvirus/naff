@@ -138,8 +138,11 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("UserIDFetcher fetches a user ID from a request routed by chi."),
 		jen.Line(),
-		jen.Func().ID("UserIDFetcher").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-			jen.Return().ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey")).Assert(jen.ID("uint64")),
+		jen.Func().ID("UserIDFetcher").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block( //if userID, ok := req.Context().Value(models.UserIDKey).(uint64); ok {
+			jen.If(jen.List(jen.ID("userID"), jen.ID("ok")).Op(":=").ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey")).Assert(jen.Uint64()), jen.ID("ok")).Block(
+				jen.Return(jen.ID("userID")),
+			),
+			jen.Return(jen.Lit(0)),
 		),
 		jen.Line(),
 	)

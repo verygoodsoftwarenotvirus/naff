@@ -13,6 +13,8 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 
 	utils.AddImports(pkg, ret)
 
+	ret.Add(utils.FakeSeedFunc())
+
 	ret.Add(
 		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
@@ -44,7 +46,8 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
+				utils.CreateCtx(),
+				jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
@@ -77,7 +80,8 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
+				utils.CreateCtx(),
+				jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
@@ -112,7 +116,8 @@ func oauth2ClientsServiceTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching oauth2 clients"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
+				utils.CreateCtx(),
+				jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),

@@ -15,6 +15,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
+			utils.InlineFakeSeedFunc(),
+			jen.Line(),
 			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
 			jen.If(jen.List(jen.ID("_"), jen.Err()).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().Op("!=").ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),

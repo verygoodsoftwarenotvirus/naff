@@ -22,32 +22,6 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("attachWebhookIDToSpan provides a consistent way to attach a webhook ID to a given span"),
-		jen.Line(),
-		jen.Func().ID("attachWebhookIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("webhookID").ID("uint64")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot(
-					"AddAttributes",
-				).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("webhook_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("webhookID"), jen.Lit(10)))),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("attachUserIDToSpan provides a consistent way to attach a user ID to a given span"),
-		jen.Line(),
-		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot(
-					"AddAttributes",
-				).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10)))),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
 		jen.Comment("ListHandler is our list route"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
@@ -56,15 +30,15 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("figure out how specific we need to be"),
-				jen.ID("qf").Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ExtractQueryFilter").Call(jen.ID("req")),
+				jen.ID(utils.FilterVarName).Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ExtractQueryFilter").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("figure out who this is all for"),
 				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("find the webhooks"),
-				jen.List(jen.ID("webhooks"), jen.Err()).Op(":=").ID("s").Dot("webhookDatabase").Dot("GetWebhooks").Call(utils.CtxVar(), jen.ID("qf"), jen.ID("userID")),
+				jen.List(jen.ID("webhooks"), jen.Err()).Op(":=").ID("s").Dot("webhookDatabase").Dot("GetWebhooks").Call(utils.CtxVar(), jen.ID("userID"), jen.ID(utils.FilterVarName)),
 				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("webhooks").Op("=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
 						jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values()),
@@ -130,7 +104,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("figure out who this is all for"),
 				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user"), jen.ID("userID")),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("try to pluck the parsed input from the request context"),
 				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID(utils.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput")),
@@ -157,7 +131,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("notify the relevant parties"),
-				jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("wh").Dot("ID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("wh").Dot("ID")),
 				jen.ID("s").Dot("webhookCounter").Dot("Increment").Call(utils.CtxVar()),
 				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Create")),
@@ -191,8 +165,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("webhookID").Op(":=").ID("s").Dot("webhookIDFetcher").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("document it for posterity"),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
 					jen.Lit("user").Op(":").ID("userID"),
 					jen.Lit("webhook").Op(":").ID("webhookID"),
@@ -232,8 +206,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("webhookID").Op(":=").ID("s").Dot("webhookIDFetcher").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("document it for posterity"),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
 					jen.Lit("user_id").Op(":").ID("userID"),
 					jen.Lit("webhook_id").Op(":").ID("webhookID")),
@@ -298,8 +272,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("webhookID").Op(":=").ID("s").Dot("webhookIDFetcher").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("document it for posterity"),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
 					jen.Lit("webhook_id").Op(":").ID("webhookID"),
 					jen.Lit("user_id").Op(":").ID("userID"),

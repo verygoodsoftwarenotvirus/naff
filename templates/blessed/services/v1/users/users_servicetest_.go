@@ -13,10 +13,13 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 
 	utils.AddImports(pkg, ret)
 
+	ret.Add(utils.FakeSeedFunc())
+
 	ret.Add(
 		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
+			utils.CreateCtx(),
 			jen.ID("expectedUserCount").Op(":=").Add(utils.FakeUint64Func()),
 			jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 			jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -56,7 +59,8 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("mockUserCount").Op(":=").ID("uint64").Call(jen.Lit(0)),
+				utils.CreateCtx(),
+				jen.ID("mockUserCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
@@ -90,7 +94,8 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil userIDFetcher"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("mockUserCount").Op(":=").ID("uint64").Call(jen.Lit(0)),
+				utils.CreateCtx(),
+				jen.ID("mockUserCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
@@ -119,7 +124,8 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error initializing counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("mockUserCount").Op(":=").ID("uint64").Call(jen.Lit(0)),
+				utils.CreateCtx(),
+				jen.ID("mockUserCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
@@ -152,7 +158,8 @@ func usersServiceTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error getting user count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("mockUserCount").Op(":=").ID("uint64").Call(jen.Lit(0)),
+				utils.CreateCtx(),
+				jen.ID("mockUserCount").Op(":=").Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),

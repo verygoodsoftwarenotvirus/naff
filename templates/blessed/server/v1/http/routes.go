@@ -88,8 +88,11 @@ func buildSubRouterDecl(pkg *models.Project, doneMap map[string]bool, routerPref
 
 func buildIterableAPIRoutesBlock(pkg *models.Project, doneMap map[string]bool, routerPrefix string, typ models.DataType) []jen.Code {
 	n := typ.Name
+	puvn := n.PluralUnexportedVarName()
 
 	lines := []jen.Code{}
+
+	singleRouteVar := jen.IDf("single%sRoute", typ.Name.Singular())
 
 	if routerPrefix != "" {
 		lines = append(lines,
@@ -101,12 +104,13 @@ func buildIterableAPIRoutesBlock(pkg *models.Project, doneMap map[string]bool, r
 		)
 	} else {
 		lines = append(lines,
-			jen.IDf("%sRoute", typ.Name.UnexportedVarName()).Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PackageName()), "URIParamKey")),
-			jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("With").Call(jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("CreateHandler").Call()),
-			jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Get").Call(jen.IDf("%sRoute", typ.Name.UnexportedVarName()), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ReadHandler").Call()),
-			jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("With").Call(jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.IDf("%sRoute", typ.Name.UnexportedVarName()), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("UpdateHandler").Call()),
-			jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Delete").Call(jen.IDf("%sRoute", typ.Name.UnexportedVarName()), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ArchiveHandler").Call()),
-			jen.IDf("%sRouter", n.PluralUnexportedVarName()).Dot("Get").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", n.PluralUnexportedVarName()).Dot("ListHandler").Call()),
+			jen.IDf("single%sRoute", typ.Name.Singular()).Op(":=").Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PackageName()), "URIParamKey")),
+			jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", puvn).Dot("CreateHandler").Call()),
+			jen.IDf("%sRouter", puvn).Dot("Get").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler").Call()),
+			jen.IDf("%sRouter", puvn).Dot("Head").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler").Call()),
+			jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("UpdateInputMiddleware")).Dot("Put").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("UpdateHandler").Call()),
+			jen.IDf("%sRouter", puvn).Dot("Delete").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ArchiveHandler").Call()),
+			jen.IDf("%sRouter", puvn).Dot("Get").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", puvn).Dot("ListHandler").Call()),
 		)
 	}
 

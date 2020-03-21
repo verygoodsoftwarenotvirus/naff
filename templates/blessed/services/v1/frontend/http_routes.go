@@ -128,7 +128,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 			tpuvn := typ.Name.PluralUnexportedVarName()
 			lines = append(lines,
 				jen.If(jen.IDf("%sFrontendPathRegex", tpuvn).Dot("MatchString").Call(jen.ID("req").Dot("URL").Dot("Path"))).Block(
-					jen.ID("rl").Dot("Debug").Call(jen.Lit("rerouting request")),
+					jen.ID("rl").Dot("Debug").Call(jen.Litf("rerouting %s request", typ.Name.SingularCommonName())),
 					jen.ID("req").Dot("URL").Dot("Path").Op("=").Lit("/"),
 				),
 			)

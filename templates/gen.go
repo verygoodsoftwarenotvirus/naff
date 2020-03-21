@@ -8,7 +8,6 @@ import (
 	"github.com/gosuri/uiprogress"
 	naffmodels "gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
-	// completed
 	httpclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/client/v1/http"
 	configgen "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/config_gen/v1"
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/server/v1"
@@ -28,6 +27,7 @@ import (
 	encodingmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/metrics"
 	metricsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/metrics/mock"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/tracing"
 	misc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/misc"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1"
 	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1/mock"
@@ -69,6 +69,7 @@ func RenderProject(in *naffmodels.Project) error {
 		{name: "encoding", renderFunc: encoding.RenderPackage, activated: allActive},
 		{name: "encodingmock", renderFunc: encodingmock.RenderPackage, activated: allActive},
 		{name: "metrics", renderFunc: metrics.RenderPackage, activated: allActive},
+		{name: "tracing", renderFunc: tracing.RenderPackage, activated: allActive},
 		{name: "metricsmock", renderFunc: metricsmock.RenderPackage, activated: allActive},
 		{name: "server", renderFunc: server.RenderPackage, activated: allActive},
 		{name: "testutil", renderFunc: testutil.RenderPackage, activated: allActive},

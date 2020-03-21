@@ -24,6 +24,7 @@ func initDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
+			utils.InlineFakeSeedFunc(),
 			jen.ID("urlToUse").Op("=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "DetermineServiceURL").Call(),
 			jen.ID("logger").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.Line(),
@@ -68,7 +69,7 @@ func initDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.List(jen.ID("c"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
-				utils.CtxVar(),
+				utils.InlineCtx(),
 				jen.ID("oa2Client").Dot("ClientID"),
 				jen.ID("oa2Client").Dot("ClientSecret"),
 				jen.ID("uri"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),

@@ -37,7 +37,7 @@ func readerDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("ReadCloser")).ID("Read").Params(jen.ID("b").Index().ID("byte")).Params(jen.ID("i").ID("int"), jen.Err().ID("error")).Block(
 			jen.ID("retVals").Op(":=").ID("m").Dot("Called").Call(jen.ID("b")),
-			jen.Return().List(jen.ID("retVals").Dot("Int").Call(jen.Lit(0)), jen.ID("retVals").Dot("Error").Call(jen.Add(utils.FakeUint64Func()))),
+			jen.Return().List(jen.ID("retVals").Dot("Int").Call(jen.Lit(0)), jen.ID("retVals").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	)
@@ -46,11 +46,7 @@ func readerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("Close implements the Closer part of our ReadCloser"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("ReadCloser")).ID("Close").Params().Params(jen.Err().ID("error")).Block(
-			jen.Return().ID("m").Dot(
-				"Called",
-			).Call().Dot(
-				"Error",
-			).Call(jen.Add(utils.FakeUint64Func())),
+			jen.Return().ID("m").Dot("Called").Call().Dot("Error").Call(jen.Lit(1)),
 		),
 		jen.Line(),
 	)

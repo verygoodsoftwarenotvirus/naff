@@ -34,28 +34,6 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("attachUsernameToSpan provides a consistent way to attach a username to a span"),
-		jen.Line(),
-		jen.Func().ID("attachUsernameToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("username").ID("string")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("username"), jen.ID("username"))),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("attachUserIDToSpan provides a consistent way to attach a user ID to a span"),
-		jen.Line(),
-		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10)))),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
 		jen.Comment("randString produces a random string"),
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
@@ -170,7 +148,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 					utils.WriteXHeader("res", "StatusBadRequest"),
 					jen.Return(),
 				),
-				jen.ID("attachUsernameToSpan").Call(jen.ID("span"), jen.ID("input").Dot("Username")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUsernameToSpan").Call(jen.ID("span"), jen.ID("input").Dot("Username")),
 				jen.Line(),
 				jen.Comment("NOTE: I feel comfortable letting username be in the logger, since"),
 				jen.Comment("the logging statements below are only in the event of errors. If"),
@@ -222,7 +200,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("notify the relevant parties"),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("user").Dot("ID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("user").Dot("ID")),
 				jen.ID("s").Dot("userCounter").Dot("Increment").Call(utils.CtxVar()),
 				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Create")),
@@ -298,7 +276,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("document it for posterity"),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("fetch user data"),
 				jen.List(jen.ID("x"), jen.Err()).Op(":=").ID("s").Dot("database").Dot("GetUser").Call(utils.CtxVar(), jen.ID("userID")),
@@ -364,8 +342,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("document who this is for"),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.ID("attachUsernameToSpan").Call(jen.ID("span"), jen.ID("user").Dot("Username")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUsernameToSpan").Call(jen.ID("span"), jen.ID("user").Dot("Username")),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user"), jen.ID("user").Dot("ID")),
 				jen.Line(),
 				jen.Comment("set the two factor secret"),
@@ -434,8 +412,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("document who this is all for"),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.ID("attachUsernameToSpan").Call(jen.ID("span"), jen.ID("user").Dot("Username")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUsernameToSpan").Call(jen.ID("span"), jen.ID("user").Dot("Username")),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user"), jen.ID("user").Dot("ID")),
 				jen.Line(),
 				jen.Comment("hash the new password"),
@@ -472,7 +450,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("figure out who this is for"),
 				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
 				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("do the deed"),
 				jen.If(jen.Err().Op(":=").ID("s").Dot("database").Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("userID")), jen.Err().Op("!=").ID("nil")).Block(

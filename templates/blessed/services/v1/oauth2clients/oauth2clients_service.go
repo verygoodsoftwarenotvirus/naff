@@ -96,7 +96,7 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("GetByID implements oauth2.ClientStorage"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("clientStore")).ID("GetByID").Params(jen.ID("id").ID("string")).Params(jen.Qual("gopkg.in/oauth2.v3", "ClientInfo"), jen.ID("error")).Block(
-			jen.List(jen.ID("client"), jen.Err()).Op(":=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("id")),
+			jen.List(jen.ID("client"), jen.Err()).Op(":=").ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.InlineCtx(), jen.ID("id")),
 			jen.Line(),
 			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("invalid client"))),

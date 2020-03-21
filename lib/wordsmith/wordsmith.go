@@ -11,7 +11,7 @@ import (
 func FromSingularPascalCase(input string) SuperPalabra {
 	if len(input) > 0 {
 		return &SuperWord{
-			meta:       kace.Pascal(strings.TrimSpace(input)),
+			word:       kace.Pascal(strings.TrimSpace(input)),
 			pluralizer: pluralize.NewClient(),
 		}
 	}
@@ -20,6 +20,8 @@ func FromSingularPascalCase(input string) SuperPalabra {
 
 type SuperPalabra interface {
 	Singular() string
+	Abbreviation() string
+	LowercaseAbbreviation() string
 	Plural() string
 	RouteName() string
 	KebabName() string
@@ -36,42 +38,59 @@ type SuperPalabra interface {
 }
 
 type SuperWord struct {
-	meta       string
+	word       string
 	pluralizer *pluralize.Client
 }
 
 func (s *SuperWord) Singular() string {
-	return kace.Pascal(s.meta)
+	return kace.Pascal(s.word)
+}
+
+func (s *SuperWord) Abbreviation() string {
+	x := kace.Pascal(s.word)
+	out := []string{}
+
+	for _, b := range x {
+		if strings.ToUpper(string(b)) == string(b) {
+			out = append(out, string(b))
+		}
+	}
+
+	return strings.Join(out, "")
+}
+
+func (s *SuperWord) LowercaseAbbreviation() string {
+	return strings.ToLower(s.Abbreviation())
 }
 
 func (s *SuperWord) Plural() string {
-	return s.pluralizer.Plural(s.meta)
+	return s.pluralizer.Plural(s.word)
 }
 
 func (s *SuperWord) RouteName() string {
-	return kace.Snake(s.meta)
+	return kace.Snake(s.word)
 }
 
 func (s *SuperWord) KebabName() string {
-	return kace.Kebab(s.meta)
+	return kace.Kebab(s.word)
 }
 
 func (s *SuperWord) PluralRouteName() string {
-	return kace.Snake(s.pluralizer.Plural(s.meta))
+	return kace.Snake(s.pluralizer.Plural(s.word))
 }
 
 func (s *SuperWord) UnexportedVarName() string {
-	x := strings.ToLower(s.meta)
+	x := strings.ToLower(s.word)
 	switch x {
 	case "case", "chan", "const", "continue", "default", "defer", "else", "fallthrough", "for", "func", "go", "goto", "if", "iota", "import", "interface", "map", "package", "range", "return", "select", "struct", "switch", "type", "var":
-		return kace.Camel(fmt.Sprintf("_%s", s.meta))
+		return kace.Camel(fmt.Sprintf("_%s", s.word))
 	default:
-		return kace.Camel(s.meta)
+		return kace.Camel(s.word)
 	}
 }
 
 func (s *SuperWord) PluralUnexportedVarName() string {
-	return kace.Camel(s.pluralizer.Plural(s.meta))
+	return kace.Camel(s.pluralizer.Plural(s.word))
 }
 
 func (s *SuperWord) PackageName() string {

@@ -204,6 +204,24 @@ func serverDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
+		jen.Comment(`
+func (s *Server) logRoutes() {
+	if err := chi.Walk(s.router, func(method string, route string, _ http.Handler, _ ...func(http.Handler) http.Handler) error {
+		s.logger.WithValues(map[string]interface{}{
+			"method": method,
+			"route":  route,
+		}).Debug("route found")
+
+		return nil
+	}); err != nil {
+		s.logger.Error(err, "logging routes")
+	}
+}
+`),
+		jen.Line(),
+	)
+
+	ret.Add(
 		jen.Comment("Serve serves HTTP traffic"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("Serve").Params().Block(

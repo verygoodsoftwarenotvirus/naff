@@ -46,6 +46,10 @@ func serverTestDotGo(pkg *models.Project) *jen.File {
 	}
 
 	ret.Add(
+		utils.FakeSeedFunc(),
+	)
+
+	ret.Add(
 		jen.Func().ID("buildTestServer").Params().Params(jen.Op("*").ID("Server")).Block(
 			jen.ID("s").Op(":=").Op("&").ID("Server").Valuesln(
 				buildServerLines()...,
@@ -94,6 +98,7 @@ func serverTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.CreateCtx(),
 				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(jen.Lit("GetAllWebhooks"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Values(), jen.Nil()),
 				jen.Line(),

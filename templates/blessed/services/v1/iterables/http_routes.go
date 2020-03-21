@@ -14,10 +14,6 @@ func httpRoutesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	uvn := typ.Name.UnexportedVarName()
 	scn := typ.Name.SingularCommonName()
-	sn := typ.Name.Singular()
-	rn := typ.Name.RouteName()
-
-	xID := fmt.Sprintf("%sID", uvn)
 
 	utils.AddImports(pkg, ret)
 
@@ -29,38 +25,9 @@ func httpRoutesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Func().ID(fmt.Sprintf("attach%sIDToSpan", sn)).Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID(xID).ID("uint64")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit(fmt.Sprintf("%s_id", rn)), jen.Qual("strconv", "FormatUint").Call(jen.ID(xID), jen.Lit(10)))),
-			),
-		),
-		jen.Line(),
-	)
-
-	if typ.BelongsToUser {
-		ret.Add(
-			jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
-				jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-					jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10)))),
-				),
-			),
-			jen.Line(),
-		)
-	}
-	if typ.BelongsToStruct != nil {
-		ret.Add(
-			jen.Func().IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.IDf("%sID", typ.BelongsToStruct.Singular()).ID("uint64")).Block(
-				jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-					jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.Qual("strconv", "FormatUint").Call(jen.IDf("%sID", typ.BelongsToStruct.Singular()), jen.Lit(10)))),
-				),
-			),
-			jen.Line(),
-		)
-	}
-
 	ret.Add(buildListHandlerFuncDecl(pkg, typ)...)
 	ret.Add(buildCreateHandlerFuncDecl(pkg, typ)...)
+	ret.Add(buildExistenceHandlerFuncDecl(pkg, typ)...)
 	ret.Add(buildReadHandlerFuncDecl(pkg, typ)...)
 	ret.Add(buildUpdateHandlerFuncDecl(pkg, typ)...)
 	ret.Add(buildArchiveHandlerFuncDecl(pkg, typ)...)
@@ -77,14 +44,13 @@ func buildListHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.Co
 
 	dbCallArgs := []jen.Code{
 		utils.CtxVar(),
-		jen.ID("qf"),
 	}
 	block := []jen.Code{
 		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ListHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("ensure query filter"),
-		jen.ID("qf").Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ExtractQueryFilter").Call(jen.ID("req")),
+		jen.ID(utils.FilterVarName).Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ExtractQueryFilter").Call(jen.ID("req")),
 		jen.Line(),
 	}
 
@@ -95,7 +61,7 @@ func buildListHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.Co
 			jen.Comment("determine user ID"),
 			jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 		)
 		dbCallArgs = append(dbCallArgs, jen.ID("userID"))
 		elseErrBlock = append(elseErrBlock,
@@ -108,7 +74,7 @@ func buildListHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.Co
 		block = append(block,
 			jen.Commentf("determine %s ID", typ.BelongsToStruct.SingularCommonName()),
 			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Op(":=").ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")),
-			jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 		)
 		dbCallArgs = append(dbCallArgs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
@@ -124,6 +90,8 @@ func buildListHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.Co
 			jen.Return(),
 		)
 	}
+
+	dbCallArgs = append(dbCallArgs, jen.ID(utils.FilterVarName))
 
 	block = append(block,
 		jen.Line(),
@@ -172,7 +140,7 @@ func buildCreateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 			jen.Comment("determine user ID"),
 			jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 		)
 		notOkayBlock = append(notOkayBlock,
 			jen.ID("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
@@ -184,7 +152,7 @@ func buildCreateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 		block = append(block,
 			jen.Commentf("determine %s ID", typ.BelongsToStruct.SingularCommonName()),
 			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Op(":=").ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")),
-			jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 		)
 		notOkayBlock = append(notOkayBlock,
@@ -251,7 +219,7 @@ func buildCreateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 		jen.Line(),
 		jen.Comment("notify relevant parties"),
 		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Increment").Call(utils.CtxVar()),
-		jen.ID(fmt.Sprintf("attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID("x").Dot("ID")),
+		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID("x").Dot("ID")),
 		jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 			jen.ID("Data").Op(":").ID("x"),
 			jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName")),
@@ -269,6 +237,107 @@ func buildCreateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 		jen.Commentf("CreateHandler is our %s creation route", scn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(block...),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildExistenceHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+	uvn := typ.Name.UnexportedVarName()
+	scn := typ.Name.SingularCommonName()
+	scnwp := typ.Name.SingularCommonNameWithPrefix()
+	sn := typ.Name.Singular()
+	rn := typ.Name.RouteName()
+	xID := fmt.Sprintf("%sID", uvn)
+
+	loggerValues := []jen.Code{}
+	dbCallArgs := []jen.Code{
+		utils.CtxVar(),
+		jen.ID(xID),
+	}
+	block := []jen.Code{
+		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ExistenceHandler")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Line(),
+		jen.Comment("determine relevant information"),
+	}
+
+	if typ.BelongsToUser {
+		loggerValues = append(loggerValues,
+			jen.Lit("user_id").Op(":").ID("userID"),
+			jen.Litf("%s_id", rn).Op(":").ID(fmt.Sprintf("%sID", uvn)),
+		)
+		dbCallArgs = append(dbCallArgs, jen.ID("userID"))
+		block = append(block,
+			jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
+			jen.ID(xID).Op(":=").ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
+			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(loggerValues...)),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
+		)
+	}
+	if typ.BelongsToStruct != nil {
+		loggerValues = append(loggerValues,
+			jen.Litf("%s_id", typ.BelongsToStruct.RouteName()).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName()),
+			jen.Litf("%s_id", rn).Op(":").ID(fmt.Sprintf("%sID", uvn)),
+		)
+		dbCallArgs = append(dbCallArgs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+		block = append(block,
+			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Op(":=").ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")),
+			jen.ID(xID).Op(":=").ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
+			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(loggerValues...)),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
+		)
+	} else if typ.BelongsToNobody {
+		block = append(block,
+			jen.ID(xID).Op(":=").ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
+		)
+	}
+
+	elseErrBlock := []jen.Code{}
+	if typ.BelongsToUser {
+		block = append(block, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
+		elseErrBlock = append(elseErrBlock,
+			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
+			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.Return(),
+		)
+	}
+	if typ.BelongsToStruct != nil {
+		block = append(block, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
+		elseErrBlock = append(elseErrBlock,
+			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
+			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.Return(),
+		)
+	} else if typ.BelongsToNobody {
+		elseErrBlock = append(elseErrBlock,
+			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
+			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.Return(),
+		)
+	}
+
+	block = append(block,
+		jen.Line(),
+		jen.Commentf("fetch %s from database", scn),
+		jen.List(jen.ID("exists"), jen.Err()).Op(":=").ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("%sExists", sn).Call(dbCallArgs...),
+		jen.If(jen.Err().Op("!=").ID("nil")).Block(elseErrBlock...),
+		jen.Line(),
+		jen.If(jen.ID("exists")).Block(
+			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
+		).Else().Block(
+			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+		),
+	)
+
+	lines := []jen.Code{
+		jen.Commentf("ExistenceHandler returns a HEAD handler that returns 200 if %s exists, 404 otherwise", scnwp),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ExistenceHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(block...),
 		),
 		jen.Line(),
@@ -307,7 +376,7 @@ func buildReadHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.Co
 			jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
 			jen.ID(xID).Op(":=").ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(loggerValues...)),
-			jen.ID(fmt.Sprintf("attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 		)
 	}
 	if typ.BelongsToStruct != nil {
@@ -320,18 +389,18 @@ func buildReadHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.Co
 			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Op(":=").ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")),
 			jen.ID(xID).Op(":=").ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(loggerValues...)),
-			jen.ID(fmt.Sprintf("attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 		)
 	} else if typ.BelongsToNobody {
 		block = append(block,
 			jen.ID(xID).Op(":=").ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
-			jen.ID(fmt.Sprintf("attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
+			jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 		)
 	}
 
 	elseErrBlock := []jen.Code{}
 	if typ.BelongsToUser {
-		block = append(block, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
+		block = append(block, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 		elseErrBlock = append(elseErrBlock,
 			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error fetching %s from database", scn))),
 			utils.WriteXHeader("res", "StatusInternalServerError"),
@@ -339,7 +408,7 @@ func buildReadHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.Co
 		)
 	}
 	if typ.BelongsToStruct != nil {
-		block = append(block, jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
+		block = append(block, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 		elseErrBlock = append(elseErrBlock,
 			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error fetching %s from database", scn))),
 			utils.WriteXHeader("res", "StatusInternalServerError"),
@@ -423,14 +492,14 @@ func buildUpdateHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 	block = append(block,
 		jen.ID(xID).Op(":=").ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
 		jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(loggerValues...)),
-		jen.ID(fmt.Sprintf("attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
+		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 	)
 
 	if typ.BelongsToUser {
-		block = append(block, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
+		block = append(block, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 	}
 	if typ.BelongsToStruct != nil {
-		block = append(block, jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
+		block = append(block, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	}
 
 	block = append(block,
@@ -515,14 +584,14 @@ func buildArchiveHandlerFuncDecl(pkg *models.Project, typ models.DataType) []jen
 	blockLines = append(blockLines,
 		jen.ID(xID).Op(":=").ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
 		jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(loggerValues...)),
-		jen.ID(fmt.Sprintf("attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
+		jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 	)
 
 	if typ.BelongsToUser {
-		blockLines = append(blockLines, jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
+		blockLines = append(blockLines, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 	}
 	if typ.BelongsToStruct != nil {
-		blockLines = append(blockLines, jen.IDf("attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
+		blockLines = append(blockLines, jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	}
 
 	blockLines = append(blockLines,

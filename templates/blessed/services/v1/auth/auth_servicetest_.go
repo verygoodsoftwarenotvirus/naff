@@ -13,6 +13,8 @@ func authServiceTestDotGo(pkg *models.Project) *jen.File {
 
 	utils.AddImports(pkg, ret)
 
+	ret.Add(utils.FakeSeedFunc())
+
 	ret.Add(
 		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),

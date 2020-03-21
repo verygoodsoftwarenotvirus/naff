@@ -72,6 +72,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("TestOAuth2Clients").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Parallel").Call(),
+			jen.ID("_ctx").Op(":=").Add(utils.InlineCtx()),
 			jen.Line(),
 			jen.Comment("create user"),
 			jen.List(jen.ID("x"), jen.ID("y"), jen.ID("cookie")).Op(":=").ID("buildDummyUser").Call(jen.ID("test")),
@@ -83,11 +84,11 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("y").Dot("Password"),
 				jen.ID("x").Dot("TwoFactorSecret"),
 			),
-			jen.List(jen.ID("premade"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("cookie"), jen.ID("input")),
+			jen.List(jen.ID("premade"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateOAuth2Client").Call(jen.ID("_ctx"), jen.ID("cookie"), jen.ID("input")),
 			jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 			jen.Line(),
 			jen.List(jen.ID("testClient"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
-				utils.CtxVar(),
+				jen.ID("_ctx"),
 				jen.ID("premade").Dot("ClientID"),
 				jen.ID("premade").Dot("ClientSecret"),
 				jen.IDf("%sClient", pkg.Name.UnexportedVarName()).Dot("URL"),
@@ -172,7 +173,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 						jen.ID("createdUserInput").Dot("Password"),
 						jen.ID("createdUser").Dot("TwoFactorSecret"),
 					),
-					jen.List(jen.ID("premade"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("cookie"), jen.ID("input")),
+					jen.List(jen.ID("premade"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateOAuth2Client").Call(jen.ID("tctx"), jen.ID("cookie"), jen.ID("input")),
 					jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 					jen.Line(),
 					jen.Comment("ArchiveHandler oauth2Client"),
@@ -180,7 +181,7 @@ func oauth2TestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 					jen.Line(),
 					jen.List(jen.ID("c2"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
-						utils.CtxVar(),
+						jen.ID("tctx"),
 						jen.ID("premade").Dot("ClientID"),
 						jen.ID("premade").Dot("ClientSecret"),
 						jen.IDf("%sClient", pkg.Name.UnexportedVarName()).Dot("URL"),

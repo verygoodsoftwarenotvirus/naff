@@ -153,7 +153,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientAuthorizedHandler").Params(jen.ID("clientID").ID("string"), jen.ID("grant").Qual("gopkg.in/oauth2.v3", "GrantType")).Params(jen.ID("allowed").ID("bool"), jen.Err().ID("error")).Block(
 			jen.Comment("NOTE: it's a shame the interface we're implementing doesn't have this as its first argument"),
-			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("ClientAuthorizedHandler")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(utils.InlineCtx(), jen.Lit("ClientAuthorizedHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
@@ -191,7 +191,7 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientScopeHandler").Params(jen.List(jen.ID("clientID"), jen.ID("scope")).ID("string")).Params(jen.ID("authed").ID("bool"), jen.Err().ID("error")).Block(
 			jen.Comment("NOTE: it's a shame the interface we're implementing doesn't have this as its first argument"),
-			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("UserAuthorizationHandler")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(utils.InlineCtx(), jen.Lit("UserAuthorizationHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
