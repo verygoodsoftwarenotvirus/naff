@@ -201,6 +201,9 @@ ifndef $(shell command -v gocov 2> /dev/null)
 	$(shell GO111MODULE=off go get -u github.com/axw/gocov/gocov)
 endif
 
+.PHONY: dev-tools
+dev-tools: ensure-wire ensure-gocov
+
 .PHONY: vendor-clean
 vendor-clean:
 	rm -rf vendor go.sum
@@ -277,14 +280,14 @@ coverage-clean:
 .PHONY: coverage
 coverage: coverage-clean $(COVERAGE_OUT)
 
-.PHONY: test
-test:
-	docker build --tag coverage-$(SERVER_DOCKER_IMAGE_NAME):latest --file dockerfiles/coverage.Dockerfile .
-	docker run --rm --volume `+"`"+`pwd`+"`"+`:`+"`"+`pwd`+"`"+` --workdir=`+"`"+`pwd`+"`"+` coverage-$(SERVER_DOCKER_IMAGE_NAME):latest
-
 .PHONY: format
 format:
 	for file in `+"`"+`find $(PWD) -name '*.go'`+"`"+`; do $(GO_FORMAT) $$file; done
+
+.PHONY: check_formatting
+check_formatting:
+	docker build --tag check_formatting:latest --file dockerfiles/formatting.Dockerfile .
+	docker run check_formatting:latest
 
 .PHONY: frontend-tests
 frontend-tests:
@@ -311,11 +314,6 @@ lintegration-tests: integration-tests lint
 		pkgRoot,
 		pkgRoot,
 	)
-
-	f += fmt.Sprintf(`
-.PHONY: integration-tests
-integration-tests: integration-tests-postgres
-`)
 
 	var (
 		integrationTestTargets []string
@@ -365,7 +363,7 @@ integration-coverage:
 
 	f += fmt.Sprintf(`
 .PHONY: load-tests
-load-tests: load-tests-postgres
+load-tests: load-tests-postgres load-tests-sqlite load-tests-mariadb
 `)
 
 	for _, db := range []string{"postgres", "sqlite", "mariadb"} {
