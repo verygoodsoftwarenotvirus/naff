@@ -9,12 +9,86 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+	ret := jen.NewFile("integration")
+
+	utils.AddImports(pkg, ret)
+
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+
+	ret.Add(
+		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
+			buildEqualityCheckLines(typ)...,
+		),
+		jen.Line(),
+	)
+
+	ret.Add(buildBuildDummySomething(pkg, typ)...)
+
+	ret.Add(
+		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Parallel").Call(),
+			jen.Line(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("should be createable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+					buildTestCreating(pkg, typ)...,
+				)),
+			)),
+			jen.Line(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+					buildTestListing(pkg, typ)...,
+				)),
+			)),
+			jen.Line(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to check something that does not exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+					buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg, typ)...,
+				)),
+				jen.Line(),
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should return 200 when the relevant item exists"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+					buildTestExistenceCheckingShouldBeReadable(pkg, typ)...,
+				)),
+			)),
+			jen.Line(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to read something that does not exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+					buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg, typ)...,
+				)),
+				jen.Line(),
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+					buildTestReadingShouldBeReadable(pkg, typ)...,
+				)),
+			)),
+			jen.Line(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to update something that does not exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+					buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg, typ)...,
+				)),
+				jen.Line(),
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should be updatable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+					buildTestUpdatingShouldBeUpdateable(pkg, typ)...,
+				)),
+			)),
+			jen.Line(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be deleted"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+					buildTestDeletingShouldBeAbleToBeDeleted(pkg, typ)...,
+				)),
+			)),
+		),
+		jen.Line(),
+	)
+
+	return ret
+}
+
 func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.Code {
 	var lines []jen.Code
 	sn := typ.Name.Singular()
 
 	const (
-		sourceVarPrefix  = "example"
 		createdVarPrefix = "created"
 	)
 
@@ -25,7 +99,7 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs,
 		jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
-			fieldToExpectedDotField(fmt.Sprintf("%s%s", sourceVarPrefix, typ.Name.Singular()), typ)...,
+			fieldToExpectedDotField(fmt.Sprintf("expected"), typ)...,
 		),
 	)
 
@@ -38,7 +112,49 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("%s%s", sourceVarPrefix, typ.Name.Singular()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
+		jen.IDf("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
+			buildFakeCallForCreationInput(pkg, typ)...,
+		),
+		jen.Line(),
+		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(
+			creationArgs...,
+		),
+		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()),
+		jen.Line(),
+	)
+
+	return lines
+}
+
+func buildRequisiteCreationCodeForUpdateFunction(pkg *models.Project, typ models.DataType) []jen.Code {
+	var lines []jen.Code
+	sn := typ.Name.Singular()
+
+	const (
+		createdVarPrefix = "created"
+	)
+
+	creationArgs := []jen.Code{
+		utils.CtxVar(),
+	}
+	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
+	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
+	creationArgs = append(creationArgs,
+		jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+			buildFakeCallForCreationInput(pkg, typ)...,
+		),
+	)
+
+	if typ.BelongsToStruct != nil {
+		if parentTyp := pkg.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
+			newLines := buildRequisiteCreationCode(pkg, *parentTyp)
+			lines = append(lines, newLines...)
+		}
+	}
+
+	lines = append(lines,
+		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
+		jen.IDf("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.Line(),
@@ -93,69 +209,6 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg *models.
 	return params
 }
 
-func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile("integration")
-
-	utils.AddImports(pkg, ret)
-
-	sn := typ.Name.Singular()
-	pn := typ.Name.Plural()
-
-	ret.Add(
-		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
-			buildEqualityCheckLines(typ)...,
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
-			jen.ID("test").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be createable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					buildTestCreating(pkg, typ)...,
-				)),
-			)),
-			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					buildTestListing(pkg, typ)...,
-				)),
-			)),
-			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to read something that doesn't exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg, typ)...,
-				)),
-				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					buildTestReadingShouldBeReadable(pkg, typ)...,
-				)),
-			)),
-			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to update something that doesn't exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg, typ)...,
-				)),
-				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should be updatable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					buildTestUpdatingShouldBeUpdateable(pkg, typ)...,
-				)),
-			)),
-			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be deleted"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					buildTestDeletingShouldBeAbleToBeDeleted(pkg, typ)...,
-				)),
-			)),
-		),
-		jen.Line(),
-	)
-
-	return ret
-}
-
 func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
@@ -176,12 +229,12 @@ func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Co
 	creationArgs = append(creationArgs, jen.ID("x"))
 
 	blockLines = append(blockLines,
+		utils.CreateCtx(),
 		jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.List(jen.ID("y"), jen.Err()).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(
 			creationArgs...,
-		//	utils.CtxVar(), jen.ID("x"),
 		),
 		jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 		jen.Line(),
@@ -189,7 +242,7 @@ func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Co
 	)
 
 	lines := []jen.Code{
-		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").Op("*").Qual("testing", "T"), utils.CtxParam()).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
+		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
 			blockLines...,
 		),
 		jen.Line(),
@@ -303,7 +356,7 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	lines = append(lines,
 		jen.Commentf("Assert %s equality", scn),
-		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("example%s", typ.Name.Singular()), jen.IDf("created%s", typ.Name.Singular())),
+		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID("expected"), jen.IDf("created%s", typ.Name.Singular())),
 		jen.Line(),
 		jen.Comment("Clean up"),
 		jen.Err().Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(
@@ -315,7 +368,7 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
-		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("created%s", typ.Name.Singular()), jen.ID("actual")),
+		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
 	)
 
@@ -353,14 +406,11 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Commentf("Create %s", pcn),
 		jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 		jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
-			func() []jen.Code {
-				return cc[len(cc)-stopIndex:]
-			}()...,
+			jen.ID("expected").Op("=").Append(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
 		),
 		jen.Line(),
 		jen.Commentf("Assert %s list equality", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dotf("Get%s", pn).Call(
-			//utils.CtxVar(), jen.Nil(),
 			listArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -388,6 +438,128 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 		dc = []jen.Code{}
 	}
 	lines = append(lines, dc...)
+
+	return lines
+}
+
+/*
+
+
+
+	test.Run("ExistenceChecking", func(T *testing.T) {
+		T.Run("it should return an error when trying to read something that does not exist", func(t *testing.T) {
+			tctx := context.Background()
+			ctx, span := trace.StartSpan(tctx, t.Name())
+			defer span.End()
+
+			// Fetch item
+			actual, err := todoClient.ItemExists(ctx, nonexistentID)
+			assert.NoError(t, err)
+			assert.False(t, actual)
+		})
+
+		T.Run("it should return 200 when the relevant item exists", func(t *testing.T) {
+			tctx := context.Background()
+			ctx, span := trace.StartSpan(tctx, t.Name())
+			defer span.End()
+
+			// Create item
+			expected := &models.Item{
+				Name:    fake.Word(),
+				Details: fake.Word(),
+			}
+			premade, err := todoClient.CreateItem(ctx, &models.ItemCreationInput{
+				Name:    expected.Name,
+				Details: expected.Details,
+			})
+			checkValueAndError(t, premade, err)
+
+			// Fetch item
+			actual, err := todoClient.ItemExists(ctx, premade.ID)
+			assert.NoError(t, err)
+			assert.True(t, actual)
+
+			// Clean up
+			err = todoClient.ArchiveItem(ctx, premade.ID)
+			assert.NoError(t, err)
+		})
+	})
+
+
+*/
+
+func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scn := typ.Name.SingularCommonName()
+
+	lines := []jen.Code{
+		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Line(),
+	}
+
+	args := buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(pkg, typ)
+
+	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
+	cc := buildRequisiteCreationCode(pkg, typ)
+	if len(cc) > stopIndex {
+		lines = append(lines, cc[:len(cc)-stopIndex]...)
+	}
+
+	lines = append(lines,
+		jen.Commentf("Attempt to fetch nonexistent %s", scn),
+		jen.List(jen.ID("actual"), jen.Err()).Op(func() string {
+			if typ.BelongsToStruct == nil {
+				return ":="
+			} else {
+				return "="
+			}
+		}()).ID("todoClient").Dotf("%sExists", sn).Call(
+			args...,
+		),
+		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+		jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("actual")),
+	)
+
+	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
+	dc := buildRequisiteCleanupCode(pkg, typ)
+	if len(dc) > ccsi {
+		dc = dc[ccsi:]
+	} else if len(dc) == ccsi {
+		dc = []jen.Code{}
+	}
+
+	lines = append(lines, dc...)
+
+	return lines
+}
+
+func buildTestExistenceCheckingShouldBeReadable(pkg *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scn := typ.Name.SingularCommonName()
+
+	lines := []jen.Code{
+		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Line(),
+	}
+
+	lines = append(lines, buildRequisiteCreationCode(pkg, typ)...)
+
+	lines = append(lines,
+		jen.Line(),
+		jen.Commentf("Fetch %s", scn),
+		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dotf("%sExists", sn).Call(
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
+		),
+		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+		jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Line(),
+	)
+
+	lines = append(lines, buildRequisiteCleanupCode(pkg, typ)...)
 
 	return lines
 }
@@ -460,7 +632,7 @@ func buildTestReadingShouldBeReadable(pkg *models.Project, typ models.DataType) 
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 		jen.Line(),
 		jen.Commentf("Assert %s equality", scn),
-		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("created%s", typ.Name.Singular()), jen.ID("actual")),
+		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		jen.Line(),
 	)
 
@@ -569,19 +741,14 @@ func buildTestUpdatingShouldBeUpdateable(pkg *models.Project, typ models.DataTyp
 		jen.Line(),
 	}
 
-	creationCode := buildRequisiteCreationCode(pkg, typ)
+	creationCode := buildRequisiteCreationCodeForUpdateFunction(pkg, typ)
 	stopIndex := 5 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
 
 	if len(creationCode) > stopIndex {
 		precursorCode := creationCode[:len(creationCode)-stopIndex]
-
-		expectedVar := jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
-			buildFakeCallForCreationInput(pkg, typ)...,
-		)
 		postcursorCode := creationCode[len(creationCode)-stopIndex:]
 
 		lines = append(lines, precursorCode...)
-		lines = append(lines, expectedVar)
 		lines = append(lines, postcursorCode...)
 	} else {
 		lines = append(lines, creationCode...)

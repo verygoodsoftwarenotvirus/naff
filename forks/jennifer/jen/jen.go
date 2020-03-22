@@ -109,8 +109,7 @@ func (f *File) renderImports(source io.Writer) error {
 		return err
 	}
 
-	// We must sort the imports to ensure repeatable
-	// source.
+	// We must sort the imports to ensure repeatable source.
 	paths := []string{}
 	for path := range filtered {
 		paths = append(paths, path)
@@ -124,7 +123,6 @@ func (f *File) renderImports(source io.Writer) error {
 			if _, err := fmt.Fprintf(source, "%s %s\n", def.name, strconv.Quote(path)); err != nil {
 				return err
 			}
-
 		} else {
 			if _, err := fmt.Fprintf(source, "%s\n", strconv.Quote(path)); err != nil {
 				return err

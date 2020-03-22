@@ -437,6 +437,18 @@ before_script:
   - cd /go/src/%s
   - apt-get update -y && apt-get install -y make git gcc musl-dev
 
+formatting:
+  stage: quality
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    GOPATH: "/go"
+  script:
+    - apk add --update --no-cache py-pip openssl python-dev libffi-dev
+      openssl-dev gcc libc-dev make
+    - make check_formatting
+
 coverage:
   stage: quality
   image: golang:stretch
@@ -464,7 +476,7 @@ build-frontend:
   script:
     - npm run build
 
-integration-tests-sqlite:
+integration-tests-postgres:
   stage: integration-testing
   image: docker:latest
   services:
@@ -475,7 +487,7 @@ integration-tests-sqlite:
     - apk add --update --no-cache py-pip openssl python-dev libffi-dev
       openssl-dev gcc libc-dev make
     - pip install docker-compose
-    - make integration-tests-sqlite
+    - make integration-tests-postgres
 
 integration-tests-mariadb:
   stage: integration-testing
@@ -490,7 +502,7 @@ integration-tests-mariadb:
     - pip install docker-compose
     - make integration-tests-mariadb
 
-integration-tests-postgres:
+integration-tests-sqlite:
   stage: integration-testing
   image: docker:latest
   services:
@@ -501,7 +513,7 @@ integration-tests-postgres:
     - apk add --update --no-cache py-pip openssl python-dev libffi-dev
       openssl-dev gcc libc-dev make
     - pip install docker-compose
-    - make integration-tests-postgres
+    - make integration-tests-sqlite
 
 frontend-selenium-tests:
   stage: integration-testing
@@ -529,25 +541,7 @@ load-tests-postgres:
     - apk add --update --no-cache py-pip openssl python-dev libffi-dev
       openssl-dev gcc libc-dev make
     - pip install docker-compose
-    - ls -Al ./deploy/prometheus/local
-    - pwd
     - make load-tests-postgres
-  except:
-    - schedules
-
-load-tests-sqlite:
-  stage: load-testing
-  image: docker:latest
-  services:
-    - docker:dind
-  variables:
-    GOPATH: "/go"
-    LOADTEST_RUN_TIME: "2m30s"
-  script:
-    - apk add --update --no-cache py-pip openssl python-dev libffi-dev
-      openssl-dev gcc libc-dev make
-    - pip install docker-compose
-    - make load-tests-sqlite
   except:
     - schedules
 
@@ -564,6 +558,22 @@ load-tests-mariadb:
       openssl-dev gcc libc-dev make
     - pip install docker-compose
     - make load-tests-mariadb
+  except:
+    - schedules
+
+load-tests-sqlite:
+  stage: load-testing
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    GOPATH: "/go"
+    LOADTEST_RUN_TIME: "2m30s"
+  script:
+    - apk add --update --no-cache py-pip openssl python-dev libffi-dev
+      openssl-dev gcc libc-dev make
+    - pip install docker-compose
+    - make load-tests-sqlite
   except:
     - schedules
 
@@ -826,7 +836,7 @@ linters:
     - goconst # Finds repeated strings that could be replaced by a constant
     - gocyclo # Computes and checks the cyclomatic complexity of functions
     - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
-    # - maligned # Tool to detect Go structs that would take less memory if their fields were sorted
+    - maligned # Tool to detect Go structs that would take less memory if their fields were sorted
     - depguard # Go linter that checks if package imports are in a list of acceptable packages
     - misspell # Finds commonly misspelled English words in comments
     - lll # Reports long lines

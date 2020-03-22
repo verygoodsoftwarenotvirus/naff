@@ -21,60 +21,60 @@ const (
 	MustAssertPkg  = "github.com/stretchr/testify/require"
 	MockPkg        = "github.com/stretchr/testify/mock"
 	FakeLibrary    = "github.com/brianvoe/gofakeit"
-
 	TracingLibrary = "go.opencensus.io/trace"
 )
 
 func AddImports(proj *models.Project, file *jen.File) {
 	pkgRoot := proj.OutputPath
 
-	file.ImportAlias(filepath.Join(pkgRoot, "client/v1/http"), "client")
-	file.ImportAlias(filepath.Join(pkgRoot, "database/v1"), "database")
-	file.ImportName(filepath.Join(pkgRoot, "internal/v1/auth"), "auth")
-	file.ImportAlias(filepath.Join(pkgRoot, "internal/v1/auth/mock"), "mockauth")
-	file.ImportName(filepath.Join(pkgRoot, "internal/v1/config"), "config")
-	file.ImportName(filepath.Join(pkgRoot, "internal/v1/encoding"), "encoding")
-	file.ImportAlias(filepath.Join(pkgRoot, "internal/v1/encoding/mock"), "mockencoding")
-	file.ImportName(filepath.Join(pkgRoot, "internal/v1/metrics"), "metrics")
-	file.ImportAlias(filepath.Join(pkgRoot, "internal/v1/metrics/mock"), "mockmetrics")
-	file.ImportName(filepath.Join(pkgRoot, "internal/v1/tracing"), "tracing")
-	file.ImportAlias(filepath.Join(pkgRoot, "database/v1/client"), "dbclient")
-	file.ImportName(filepath.Join(pkgRoot, "database/v1/queriers/mariadb"), "mariadb")
-	file.ImportName(filepath.Join(pkgRoot, "database/v1/queriers/postgres"), "postgres")
-	file.ImportName(filepath.Join(pkgRoot, "database/v1/queriers/sqlite"), "sqlite")
-	file.ImportAlias(filepath.Join(pkgRoot, "models/v1"), "models")
-	file.ImportAlias(filepath.Join(pkgRoot, "models/v1/mock"), "mockmodels")
-	file.ImportAlias(filepath.Join(pkgRoot, "server/v1"), "server")
-	file.ImportAlias(filepath.Join(pkgRoot, "server/v1/http"), "httpserver")
-	file.ImportName(filepath.Join(pkgRoot, "services/v1/auth"), "auth")
-	file.ImportName(filepath.Join(pkgRoot, "services/v1/frontend"), "frontend")
+	file.ImportAlias(filepath.Join(pkgRoot, "client", "v1", "http"), "client")
+	file.ImportAlias(filepath.Join(pkgRoot, "database", "v1"), "database")
+	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "auth"), "auth")
+	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "auth/mock"), "mockauth")
+	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "config"), "config")
+	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "encoding"), "encoding")
+	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "encoding/mock"), "mockencoding")
+	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "metrics"), "metrics")
+	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "metrics/mock"), "mockmetrics")
+	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "tracing"), "tracing")
+	file.ImportAlias(filepath.Join(pkgRoot, "database", "v1", "client"), "dbclient")
+	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers/mariadb"), "mariadb")
+	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers/postgres"), "postgres")
+	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers/sqlite"), "sqlite")
+	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1"), "models")
+	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1", "mock"), "mockmodels")
+	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1"), "server")
+	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1", "http"), "httpserver")
+	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "auth"), "auth")
+	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "frontend"), "frontend")
 
 	for _, typ := range proj.DataTypes {
 		pn := typ.Name.PackageName()
 		file.ImportName(filepath.Join(pkgRoot, "services/v1", pn), pn)
 	}
 
-	file.ImportName(filepath.Join(pkgRoot, "services/v1/oauth2clients"), "oauth2clients")
-	file.ImportName(filepath.Join(pkgRoot, "services/v1/users"), "users")
-	file.ImportName(filepath.Join(pkgRoot, "services/v1/webhooks"), "webhooks")
-	file.ImportName(filepath.Join(pkgRoot, "tests/v1/frontend"), "frontend")
-	file.ImportName(filepath.Join(pkgRoot, "tests/v1/integration"), "integration")
-	file.ImportName(filepath.Join(pkgRoot, "tests/v1/load"), "load")
-	file.ImportName(filepath.Join(pkgRoot, "tests/v1/testutil"), "testutil")
-	file.ImportAlias(filepath.Join(pkgRoot, "tests/v1/testutil/mock"), "mockutil")
-	file.ImportAlias(filepath.Join(pkgRoot, "tests/v1/testutil/rand/model"), "randmodel")
+	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "oauth2clients"), "oauth2clients")
+	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "users"), "users")
+	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "webhooks"), "webhooks")
+	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "frontend"), "frontend")
+	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "integration"), "integration")
+	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "load"), "load")
+	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "testutil"), "testutil")
+	file.ImportAlias(filepath.Join(pkgRoot, "tests", "v1", "testutil", "mock"), "mockutil")
+	file.ImportAlias(filepath.Join(pkgRoot, "tests", "v1", "testutil", "rand", "model"), "randmodel")
 
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
 
-	file.ImportName("golang.org/x/oauth2", "oauth2")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "logging")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop", "noop")
+	file.ImportName(CoreOAuth2Pkg, "oauth2")
+	file.ImportName(LoggingPkg, "logging")
+	file.ImportName(NoopLoggingPkg, "noop")
 	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "zerolog")
-	file.ImportName("github.com/stretchr/testify/assert", "assert")
-	file.ImportName("github.com/stretchr/testify/require", "require")
-	file.ImportName("github.com/stretchr/testify/mock", "mock")
+	file.ImportName(AssertPkg, "assert")
+	file.ImportName(MustAssertPkg, "require")
+	file.ImportName(MockPkg, "mock")
+	file.ImportName(TracingLibrary, "trace")
+	file.ImportAlias(FakeLibrary, "fake")
 
-	file.ImportName("go.opencensus.io/trace", "trace")
 	file.ImportName("go.opencensus.io/stats", "stats")
 	file.ImportName("go.opencensus.io/stats/view", "view")
 
@@ -83,11 +83,10 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportAlias("gopkg.in/oauth2.v3/server", "oauth2server")
 	file.ImportAlias("gopkg.in/oauth2.v3/store", "oauth2store")
 
+	// databases
 	file.ImportAlias("github.com/lib/pq", "postgres")
 	file.ImportAlias("github.com/mattn/go-sqlite3", "sqlite")
 	file.ImportName("github.com/go-sql-driver/mysql", "mysql")
-
-	file.ImportAlias("github.com/brianvoe/gofakeit", "fake")
 
 	file.ImportNames(map[string]string{
 		"context":           "context",

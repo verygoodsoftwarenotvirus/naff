@@ -499,7 +499,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("x").Dot("TwoFactorSecret"),
 				),
 				jen.ID("input").Dot("Scopes").Op("=").Index().ID("string").Values(jen.Lit("absolutelynevergonnaexistascopelikethis")),
-				jen.List(jen.ID("premade"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateOAuth2Client").Call(jen.ID("tctx"), jen.ID("cookie"), jen.ID("input")),
+				jen.List(jen.ID("premade"), jen.Err()).Op(":=").ID("todoClient").Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("cookie"), jen.ID("input")),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.Err()).Op(":=").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
