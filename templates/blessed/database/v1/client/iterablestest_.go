@@ -40,20 +40,20 @@ func buildRequisiteIDDeclarations(pkg *models.Project, varPrefix string, typ mod
 
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
 		if varPrefix != "" {
-			lines = append(lines, jen.IDf("%s%sID", varPrefix, pt.Name.Singular()).Op(":=").Add(utils.FakeUint64Func()))
+			lines = append(lines, jen.IDf("%s%sID", varPrefix, pt.Name.Singular()).Assign().Add(utils.FakeUint64Func()))
 		} else {
-			lines = append(lines, jen.IDf("%sID", pt.Name.Singular()).Op(":=").Add(utils.FakeUint64Func()))
+			lines = append(lines, jen.IDf("%sID", pt.Name.Singular()).Assign().Add(utils.FakeUint64Func()))
 		}
 	}
 
 	if varPrefix != "" {
-		lines = append(lines, jen.IDf("%s%sID", varPrefix, typ.Name.Singular()).Op(":=").Add(utils.FakeUint64Func()))
+		lines = append(lines, jen.IDf("%s%sID", varPrefix, typ.Name.Singular()).Assign().Add(utils.FakeUint64Func()))
 	} else {
-		lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").Add(utils.FakeUint64Func()))
+		lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Assign().Add(utils.FakeUint64Func()))
 	}
 
 	if typ.BelongsToUser {
-		lines = append(lines, jen.ID("exampleUserID").Op(":=").Add(utils.FakeUint64Func()))
+		lines = append(lines, jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()))
 	}
 
 	return lines
@@ -99,22 +99,22 @@ func buildTestClientSomethingExists(pkg *models.Project, typ models.DataType) []
 	callArgs := append([]jen.Code{utils.CtxVar()}, idCallArgs...)
 
 	block = append(block,
-		jen.ID("expected").Op(":=").True(),
+		jen.ID("expected").Assign().True(),
 		jen.Line(),
-		jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
+		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 		jen.Line(),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("%sExists", sn).Call(callArgs...),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(callArgs...),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		jen.Line(),
 		jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 	)
 
-	return []jen.Code{jen.Func().IDf("TestClient_%sExists", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+	return []jen.Code{jen.Func().IDf("TestClient_%sExists", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(block...)),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...)),
 	),
 		jen.Line(),
 	}
@@ -136,22 +136,22 @@ func buildTestClientGetSomething(pkg *models.Project, typ models.DataType) []jen
 	callArgs := append([]jen.Code{utils.CtxVar()}, idCallArgs...)
 
 	block = append(block,
-		jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
+		jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
 		jen.Line(),
-		jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
+		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 		jen.Line(),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("Get%s", sn).Call(callArgs...),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", sn).Call(callArgs...),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		jen.Line(),
 		jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 	)
 
-	return []jen.Code{jen.Func().IDf("TestClient_Get%s", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+	return []jen.Code{jen.Func().IDf("TestClient_Get%s", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(block...)),
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...)),
 	),
 		jen.Line(),
 	}
@@ -171,11 +171,11 @@ func buildTestClientGetSomethingCount(pkg *models.Project, typ models.DataType) 
 
 		if !nilFilter {
 			lines = append(lines,
-				jen.ID(filterVarName).Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+				jen.ID(filterVarName).Assign().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
 			)
 		} else {
 			lines = append(lines,
-				jen.ID(filterVarName).Op(":=").Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
+				jen.ID(filterVarName).Assign().Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
 			)
 		}
 
@@ -195,12 +195,12 @@ func buildTestClientGetSomethingCount(pkg *models.Project, typ models.DataType) 
 		}
 
 		lines = append(lines,
-			jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
+			jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 			jen.Line(),
-			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
+			jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 			jen.Line(),
-			jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("Get%sCount", sn).Call(callArgs...),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%sCount", sn).Call(callArgs...),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			jen.Line(),
@@ -211,12 +211,12 @@ func buildTestClientGetSomethingCount(pkg *models.Project, typ models.DataType) 
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_Get%sCount", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_Get%sCount", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildSubtest(typ, false)...)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildSubtest(typ, false)...)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildSubtest(typ, true)...)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildSubtest(typ, true)...)),
 		),
 		jen.Line(),
 	}
@@ -228,18 +228,18 @@ func buildTestClientGetAllOfSomethingForUser(pkg *models.Project, typ models.Dat
 	pn := n.Plural()
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_GetAll%sForUser", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_GetAll%sForUser", pn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("exampleUserID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
+				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("expected").Assign().Slice().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
 				jen.Line(),
 				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sForUser", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleUserID")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("GetAll%sForUser", pn).Call(utils.CtxVar(), jen.ID("exampleUserID")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("GetAll%sForUser", pn).Call(utils.CtxVar(), jen.ID("exampleUserID")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
@@ -256,16 +256,16 @@ func buildTestClientGetAllOfSomethingCount(pkg *models.Project, typ models.DataT
 	pn := n.Plural()
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_GetAll%sCount", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_GetAll%sCount", pn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
+				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("GetAll%sCount", pn).Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("GetAll%sCount", pn).Call(utils.CtxVar()),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
@@ -301,18 +301,18 @@ func buildTestClientGetListOfSomething(pkg *models.Project, typ models.DataType)
 		mockCalls = append(mockCalls, jen.ID(utils.FilterVarName))
 
 		lines = append(lines,
-			jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Values(),
+			jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Values(),
 			func() jen.Code {
 				if nilFilter {
-					return jen.ID(utils.FilterVarName).Op(":=").Add(utils.NilQueryFilter(pkg))
+					return jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(pkg))
 				}
-				return jen.ID(utils.FilterVarName).Op(":=").Add(utils.DefaultQueryFilter(pkg))
+				return jen.ID(utils.FilterVarName).Assign().Add(utils.DefaultQueryFilter(pkg))
 			}(),
 			jen.Line(),
 			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCalls...).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 			jen.Line(),
-			jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("Get%s", pn).Call(callArgs...),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(callArgs...),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			jen.Line(),
@@ -323,12 +323,12 @@ func buildTestClientGetListOfSomething(pkg *models.Project, typ models.DataType)
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_Get%s", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_Get%s", pn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildSubtest(false)...)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildSubtest(false)...)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(buildSubtest(true)...)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildSubtest(true)...)),
 		),
 		jen.Line(),
 	}
@@ -367,15 +367,15 @@ func buildTestClientCreateSomething(pkg *models.Project, typ models.DataType) []
 	mockCalls = append(mockCalls, jen.ID(inputVarName))
 
 	lines = append(lines,
-		jen.ID(inputVarName).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Values(),
-		jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-		jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
+		jen.ID(inputVarName).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Values(),
+		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+		jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
 		jen.Line(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(
 			mockCalls...,
 		).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 		jen.Line(),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dotf("Create%s", sn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Create%s", sn).Call(
 			callArgs...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -384,10 +384,10 @@ func buildTestClientCreateSomething(pkg *models.Project, typ models.DataType) []
 		jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 	)
 
-	return []jen.Code{jen.Func().IDf("TestClient_Create%s", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+	return []jen.Code{jen.Func().IDf("TestClient_Create%s", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 			lines...,
 		)),
 	),
@@ -437,25 +437,25 @@ func buildTestClientUpdateSomething(pkg *models.Project, typ models.DataType) []
 	callArgs = append(callArgs, jen.ID(inputVarName))
 
 	lines = append(lines,
-		jen.ID(inputVarName).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
-		jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
+		jen.ID(inputVarName).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
+		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.Var().ID("expected").ID("error"),
 		jen.Line(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(
 			mockArgs...,
 		).Dot("Return").Call(jen.ID("expected")),
 		jen.Line(),
-		jen.Err().Op(":=").ID("c").Dotf("Update%s", sn).Call(
+		jen.Err().Assign().ID("c").Dotf("Update%s", sn).Call(
 			callArgs...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_Update%s", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_Update%s", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				lines...,
 			)),
 		),
@@ -481,18 +481,18 @@ func buildTestClientArchiveSomething(pkg *models.Project, typ models.DataType) [
 	block = append(block,
 		jen.Var().ID("expected").ID("error"),
 		jen.Line(),
-		jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
+		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected")),
 		jen.Line(),
-		jen.Err().Op(":=").ID("c").Dotf("Archive%s", sn).Call(callArgs...),
+		jen.Err().Assign().ID("c").Dotf("Archive%s", sn).Call(callArgs...),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_Archive%s", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_Archive%s", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(block...)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...)),
 		),
 		jen.Line(),
 	}

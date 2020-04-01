@@ -15,7 +15,7 @@ func frontendServiceDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.ID("serviceName").Op("=").Lit("frontend_service"),
+			jen.ID("serviceName").Equals().Lit("frontend_service"),
 		),
 		jen.Line(),
 	)
@@ -35,9 +35,9 @@ func frontendServiceDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection"),
 		jen.Line(),
 		jen.Func().ID("ProvideFrontendService").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("cfg").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "FrontendSettings")).Params(jen.Op("*").ID("Service")).Block(
-			jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(
-				jen.ID("config").Op(":").ID("cfg"),
-				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
+			jen.ID("svc").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("config").MapAssign().ID("cfg"),
+				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
 			),
 			jen.Return().ID("svc"),
 		),

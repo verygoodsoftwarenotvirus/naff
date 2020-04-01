@@ -12,13 +12,13 @@ func runtimeTestDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Func().ID("TestRecordRuntimeStats").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestRecordRuntimeStats").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.Comment("this is sort of an obligatory test for coverage's sake"),
 			jen.Line(),
-			jen.ID("d").Op(":=").Qual("time", "Second"),
-			jen.ID("sf").Op(":=").ID("RecordRuntimeStats").Call(jen.ID("d").Op("/").Lit(5)),
+			jen.ID("d").Assign().Qual("time", "Second"),
+			jen.ID("sf").Assign().ID("RecordRuntimeStats").Call(jen.ID("d").Op("/").Lit(5)),
 			jen.Qual("time", "Sleep").Call(jen.ID("d")),
 			jen.ID("sf").Call(),
 		),

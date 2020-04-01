@@ -18,12 +18,12 @@ func authenticatorDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("ErrInvalidTwoFactorCode indicates that a provided two factor code is invalid"),
-			jen.ID("ErrInvalidTwoFactorCode").Op("=").Qual("errors", "New").Call(jen.Lit("invalid two factor code")),
+			jen.ID("ErrInvalidTwoFactorCode").Equals().Qual("errors", "New").Call(jen.Lit("invalid two factor code")),
 			jen.Comment("ErrPasswordHashTooWeak indicates that a provided password hash is too weak"),
-			jen.ID("ErrPasswordHashTooWeak").Op("=").Qual("errors", "New").Call(jen.Lit("password's hash is too weak")),
+			jen.ID("ErrPasswordHashTooWeak").Equals().Qual("errors", "New").Call(jen.Lit("password's hash is too weak")),
 			jen.Line(),
 			jen.Comment("Providers represents what this package offers to external libraries in the way of constructors"),
-			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet").Callln(jen.ID("ProvideBcryptAuthenticator"), jen.ID("ProvideBcryptHashCost")),
+			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(jen.ID("ProvideBcryptAuthenticator"), jen.ID("ProvideBcryptHashCost")),
 			jen.Line(),
 		),
 	)
@@ -68,8 +68,8 @@ func authenticatorDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("we run this function to ensure that we have no problem reading from crypto/rand"),
 		jen.Line(),
 		jen.Func().ID("init").Params().Block(
-			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
-			jen.If(jen.List(jen.ID("_"), jen.Err()).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().Op("!=").ID("nil")).Block(
+			jen.ID("b").Assign().ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
+			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),

@@ -1,4 +1,4 @@
-package mock
+package client
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -6,13 +6,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func readerDotGo(pkg *models.Project) *jen.File {
-	ret := jen.NewFile("mock")
+func mockReadCloserDotGo(pkg *models.Project) *jen.File {
+	ret := jen.NewFile(packageName)
 
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("io", "ReadCloser").Op("=").Parens(jen.Op("*").ID("ReadCloser")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual("io", "ReadCloser").Equals().Parens(jen.Op("*").ID("ReadCloser")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -24,10 +24,10 @@ func readerDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("NewMockReadCloser returns a new mock io.ReadCloser"),
+		jen.Comment("newMockReadCloser returns a new mock io.ReadCloser"),
 		jen.Line(),
-		jen.Func().ID("NewMockReadCloser").Params().Params(jen.Op("*").ID("ReadCloser")).Block(
-			jen.Return().Op("&").ID("ReadCloser").Values(),
+		jen.Func().ID("newMockReadCloser").Params().Params(jen.Op("*").ID("ReadCloser")).Block(
+			jen.Return().VarPointer().ID("ReadCloser").Values(),
 		),
 		jen.Line(),
 	)
@@ -36,7 +36,7 @@ func readerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ReadHandler implements the ReadHandler part of our ReadCloser"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("ReadCloser")).ID("Read").Params(jen.ID("b").Index().ID("byte")).Params(jen.ID("i").ID("int"), jen.Err().ID("error")).Block(
-			jen.ID("retVals").Op(":=").ID("m").Dot("Called").Call(jen.ID("b")),
+			jen.ID("retVals").Assign().ID("m").Dot("Called").Call(jen.ID("b")),
 			jen.Return().List(jen.ID("retVals").Dot("Int").Call(jen.Lit(0)), jen.ID("retVals").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -46,7 +46,7 @@ func readerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("Close implements the Closer part of our ReadCloser"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("ReadCloser")).ID("Close").Params().Params(jen.Err().ID("error")).Block(
-			jen.Return().ID("m").Dot("Called").Call().Dot("Error").Call(jen.Lit(1)),
+			jen.Return().ID("m").Dot("Called").Call().Dot("Error").Call(jen.Lit(0)),
 		),
 		jen.Line(),
 	)

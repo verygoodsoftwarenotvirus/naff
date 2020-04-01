@@ -17,21 +17,21 @@ func bcryptDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.ID("bcryptCostCompensation").Op("=").Lit(2),
-			jen.ID("defaultMinimumPasswordSize").Op("=").Lit(16),
+			jen.ID("bcryptCostCompensation").Equals().Lit(2),
+			jen.ID("defaultMinimumPasswordSize").Equals().Lit(16),
 			jen.Line(),
 			jen.Comment("DefaultBcryptHashCost is what it says on the tin"),
-			jen.ID("DefaultBcryptHashCost").Op("=").ID("BcryptHashCost").Call(jen.Qual("golang.org/x/crypto/bcrypt", "DefaultCost").Op("+").ID("bcryptCostCompensation")),
+			jen.ID("DefaultBcryptHashCost").Equals().ID("BcryptHashCost").Call(jen.Qual("golang.org/x/crypto/bcrypt", "DefaultCost").Op("+").ID("bcryptCostCompensation")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").ID("Authenticator").Op("=").Parens(jen.Op("*").ID("BcryptAuthenticator")).Call(jen.Nil()),
+			jen.ID("_").ID("Authenticator").Equals().Parens(jen.Op("*").ID("BcryptAuthenticator")).Call(jen.Nil()),
 			jen.Line(),
 			jen.Comment("ErrCostTooLow indicates that a password has too low a Bcrypt cost"),
-			jen.ID("ErrCostTooLow").Op("=").Qual("errors", "New").Call(jen.Lit("stored password's cost is too low")),
+			jen.ID("ErrCostTooLow").Equals().Qual("errors", "New").Call(jen.Lit("stored password's cost is too low")),
 		),
 		jen.Line(),
 	)
@@ -55,10 +55,10 @@ func bcryptDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ProvideBcryptAuthenticator returns a bcrypt powered Authenticator"),
 		jen.Line(),
 		jen.Func().ID("ProvideBcryptAuthenticator").Params(jen.ID("hashCost").ID("BcryptHashCost"), jen.ID("logger").Qual(loggingImport, "Logger")).Params(jen.ID("Authenticator")).Block(
-			jen.ID("ba").Op(":=").Op("&").ID("BcryptAuthenticator").Valuesln(
-				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.Lit("bcrypt")),
-				jen.ID("hashCost").Op(":").ID("uint").Call(jen.Qual("math", "Min").Call(jen.ID("float64").Call(jen.ID("DefaultBcryptHashCost")), jen.ID("float64").Call(jen.ID("hashCost")))),
-				jen.ID("minimumPasswordSize").Op(":").ID("defaultMinimumPasswordSize"),
+			jen.ID("ba").Assign().VarPointer().ID("BcryptAuthenticator").Valuesln(
+				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.Lit("bcrypt")),
+				jen.ID("hashCost").MapAssign().ID("uint").Call(jen.Qual("math", "Min").Call(jen.ID("float64").Call(jen.ID("DefaultBcryptHashCost")), jen.ID("float64").Call(jen.ID("hashCost")))),
+				jen.ID("minimumPasswordSize").MapAssign().ID("defaultMinimumPasswordSize"),
 			),
 			jen.Return().ID("ba"),
 		),
@@ -69,10 +69,10 @@ func bcryptDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("HashPassword takes a password and hashes it using bcrypt"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("HashPassword").Params(jen.ID("c").Qual("context", "Context"), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")).Block(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("c"), jen.Lit("HashPassword")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("c"), jen.Lit("HashPassword")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.List(jen.ID("hashedPass"), jen.Err()).Op(":=").Qual("golang.org/x/crypto/bcrypt", "GenerateFromPassword").Call(jen.Index().ID("byte").Call(jen.ID("password")), jen.ID("int").Call(jen.ID("b").Dot("hashCost"))),
+			jen.List(jen.ID("hashedPass"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "GenerateFromPassword").Call(jen.Index().ID("byte").Call(jen.ID("password")), jen.ID("int").Call(jen.ID("b").Dot("hashCost"))),
 			jen.Return().List(jen.ID("string").Call(jen.ID("hashedPass")), jen.Err()),
 		),
 		jen.Line(),
@@ -95,18 +95,18 @@ func bcryptDotGo(pkg *models.Project) *jen.File {
 				jen.ID("twoFactorCode")).ID("string"),
 			jen.ID("salt").Index().ID("byte"),
 		).Params(jen.ID("passwordMatches").ID("bool"), jen.Err().ID("error")).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("ValidateLogin")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("ValidateLogin")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("passwordMatches").Op("=").ID("b").Dot("PasswordMatches").Call(utils.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),
-			jen.ID("tooWeak").Op(":=").ID("b").Dot("hashedPasswordIsTooWeak").Call(jen.ID("hashedPassword")),
+			jen.ID("passwordMatches").Equals().ID("b").Dot("PasswordMatches").Call(utils.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),
+			jen.ID("tooWeak").Assign().ID("b").Dot("hashedPasswordIsTooWeak").Call(jen.ID("hashedPassword")),
 			jen.Line(),
 			jen.If(jen.Op("!").Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("twoFactorCode"), jen.ID("twoFactorSecret"))).Block(
 				jen.ID("b").Dot("logger").Dot("WithValues").Call(
 					jen.Map(jen.ID("string")).Interface().Valuesln(
-						jen.Lit("password_matches").Op(":").ID("passwordMatches"),
-						jen.Lit("2fa_secret").Op(":").ID("twoFactorSecret"),
-						jen.Lit("provided_code").Op(":").ID("twoFactorCode"),
+						jen.Lit("password_matches").MapAssign().ID("passwordMatches"),
+						jen.Lit("2fa_secret").MapAssign().ID("twoFactorSecret"),
+						jen.Lit("provided_code").MapAssign().ID("twoFactorCode"),
 					),
 				).Dot("Debug").Call(jen.Lit("invalid code provided")),
 				jen.Line(),
@@ -138,9 +138,9 @@ func bcryptDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("hashedPasswordIsTooWeak determines if a given hashed password was hashed with too weak a bcrypt cost"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("hashedPasswordIsTooWeak").Params(jen.ID("hashedPassword").ID("string")).Params(jen.ID("bool")).Block(
-			jen.List(jen.ID("cost"), jen.Err()).Op(":=").Qual("golang.org/x/crypto/bcrypt", "Cost").Call(jen.Index().ID("byte").Call(jen.ID("hashedPassword"))),
+			jen.List(jen.ID("cost"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "Cost").Call(jen.Index().ID("byte").Call(jen.ID("hashedPassword"))),
 			jen.Line(),
-			jen.Return().ID("err").Op("!=").ID("nil").Op("||").ID("uint").Call(jen.ID("cost")).Op("<").ID("b").Dot("hashCost"),
+			jen.Return().ID("err").DoesNotEqual().ID("nil").Op("||").ID("uint").Call(jen.ID("cost")).Op("<").ID("b").Dot("hashCost"),
 		),
 		jen.Line(),
 	)

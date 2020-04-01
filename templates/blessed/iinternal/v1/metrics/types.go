@@ -20,7 +20,7 @@ func typesDotGo(pkg *models.Project) *jen.File {
 			jen.ID("CounterName").ID("string"),
 			jen.Line(),
 			jen.Comment("SpanFormatter formats the name of a span given a request"),
-			jen.ID("SpanFormatter").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("string")),
+			jen.ID("SpanFormatter").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.ID("string")),
 			jen.Line(),
 			jen.Comment("InstrumentationHandler is an obligatory alias"),
 			jen.ID("InstrumentationHandler").Qual("net/http", "Handler"),

@@ -14,11 +14,11 @@ func userDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("UserKey is the non-string type we use for referencing a user in a context"),
-			jen.ID("UserKey").ID("ContextKey").Op("=").Lit("user"),
+			jen.ID("UserKey").ID("ContextKey").Equals().Lit("user"),
 			jen.Comment("UserIDKey is the non-string type we use for referencing a user ID in a context"),
-			jen.ID("UserIDKey").ID("ContextKey").Op("=").Lit("user_id"),
+			jen.ID("UserIDKey").ID("ContextKey").Equals().Lit("user_id"),
 			jen.Comment("UserIsAdminKey is the non-string type we use for referencing a user's admin status in a context"),
-			jen.ID("UserIsAdminKey").ID("ContextKey").Op("=").Lit("is_admin"),
+			jen.ID("UserIsAdminKey").ID("ContextKey").Equals().Lit("is_admin"),
 		),
 		jen.Line(),
 	)
@@ -122,16 +122,16 @@ func userDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("Update accepts a User as input and merges those values if they're set"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("u").Op("*").ID("User")).ID("Update").Params(jen.ID("input").Op("*").ID("User")).Block(
-			jen.If(jen.ID("input").Dot("Username").Op("!=").Lit("").Op("&&").ID("input").Dot("Username").Op("!=").ID("u").Dot("Username")).Block(
-				jen.ID("u").Dot("Username").Op("=").ID("input").Dot("Username"),
+			jen.If(jen.ID("input").Dot("Username").DoesNotEqual().Lit("").Op("&&").ID("input").Dot("Username").DoesNotEqual().ID("u").Dot("Username")).Block(
+				jen.ID("u").Dot("Username").Equals().ID("input").Dot("Username"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("HashedPassword").Op("!=").Lit("").Op("&&").ID("input").Dot("HashedPassword").Op("!=").ID("u").Dot("HashedPassword")).Block(
-				jen.ID("u").Dot("HashedPassword").Op("=").ID("input").Dot("HashedPassword"),
+			jen.If(jen.ID("input").Dot("HashedPassword").DoesNotEqual().Lit("").Op("&&").ID("input").Dot("HashedPassword").DoesNotEqual().ID("u").Dot("HashedPassword")).Block(
+				jen.ID("u").Dot("HashedPassword").Equals().ID("input").Dot("HashedPassword"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("TwoFactorSecret").Op("!=").Lit("").Op("&&").ID("input").Dot("TwoFactorSecret").Op("!=").ID("u").Dot("TwoFactorSecret")).Block(
-				jen.ID("u").Dot("TwoFactorSecret").Op("=").ID("input").Dot("TwoFactorSecret"),
+			jen.If(jen.ID("input").Dot("TwoFactorSecret").DoesNotEqual().Lit("").Op("&&").ID("input").Dot("TwoFactorSecret").DoesNotEqual().ID("u").Dot("TwoFactorSecret")).Block(
+				jen.ID("u").Dot("TwoFactorSecret").Equals().ID("input").Dot("TwoFactorSecret"),
 			),
 		),
 		jen.Line(),

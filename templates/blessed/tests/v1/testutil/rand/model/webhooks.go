@@ -17,11 +17,11 @@ func webhooksDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("RandomWebhookInput creates a random WebhookCreationInput"),
 		jen.Line(),
 		jen.Func().ID("RandomWebhookInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-				jen.ID("Name").Op(":").Qual(utils.FakeLibrary, "Word").Call(),
-				jen.ID("URL").Op(":").Qual(utils.FakeLibrary, "DomainName").Call(),
-				jen.ID("ContentType").Op(":").Lit("application/json"),
-				jen.ID("Method").Op(":").Lit("POST"),
+			jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
+				jen.ID("Name").MapAssign().Qual(utils.FakeLibrary, "Word").Call(),
+				jen.ID("URL").MapAssign().Qual(utils.FakeLibrary, "DomainName").Call(),
+				jen.ID("ContentType").MapAssign().Lit("application/json"),
+				jen.ID("Method").MapAssign().Lit("POST"),
 			),
 			jen.Return().ID("x"),
 		),

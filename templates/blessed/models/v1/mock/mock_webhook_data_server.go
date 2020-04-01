@@ -14,7 +14,7 @@ func mockWebhookDataServerDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer").Op("=").Parens(jen.Op("*").ID("WebhookDataServer")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer").Equals().Parens(jen.Op("*").ID("WebhookDataServer")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -29,7 +29,7 @@ func mockWebhookDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("CreationInputMiddleware implements our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("next")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
@@ -39,7 +39,7 @@ func mockWebhookDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("UpdateInputMiddleware implements our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("next")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
@@ -49,7 +49,7 @@ func mockWebhookDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ListHandler implements our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
@@ -59,7 +59,7 @@ func mockWebhookDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("CreateHandler implements our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
@@ -69,7 +69,7 @@ func mockWebhookDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ReadHandler implements our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
@@ -79,7 +79,7 @@ func mockWebhookDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("UpdateHandler implements our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
@@ -89,7 +89,7 @@ func mockWebhookDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ArchiveHandler implements our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),

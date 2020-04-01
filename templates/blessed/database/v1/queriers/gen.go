@@ -1,6 +1,7 @@
 package queriers
 
 import (
+	"errors"
 	"fmt"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -71,6 +72,11 @@ func renderDatabasePackage(pkg *models.Project, vendor string) error {
 		dbDesc = "MariaDB instances"
 		vendorWord = buildMariaDBWord()
 	}
+
+	if vendorWord == nil {
+		return errors.New("wtf")
+	}
+
 	pn := vendorWord.SingularPackageName()
 
 	files := map[string]*jen.File{

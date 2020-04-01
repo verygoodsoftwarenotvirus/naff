@@ -23,8 +23,8 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	ret.Add(
-		jen.Func().ID("buildMockRowFromUser").Params(jen.ID("user").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
-			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
+		jen.Func().ID("buildMockRowFromUser").Params(jen.ID("user").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
 				jen.ID("user").Dot("ID"),
 				jen.ID("user").Dot("Username"),
 				jen.ID("user").Dot("HashedPassword"),
@@ -42,8 +42,8 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
-			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
+		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
 				jen.ID("user").Dot("ArchivedOn"),
 				jen.ID("user").Dot("ID"),
 				jen.ID("user").Dot("Username"),
@@ -61,16 +61,16 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetUserQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetUserQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedUserID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("expectedArgCount").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expectedArgCount").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expectedQuery").Assign().Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUserQuery").Call(jen.ID("expectedUserID")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUserQuery").Call(jen.ID("expectedUserID")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
@@ -80,41 +80,41 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUser", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
+			jen.ID("expectedQuery").Assign().Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Username").Op(":").Lit("username"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("Username").MapAssign().Lit("username"),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID("expected").Dot("ID")).
 					Dotln("WillReturnRows").Call(jen.ID("buildMockRowFromUser").Call(jen.ID("expected"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUser").Call(utils.CtxVar(), jen.ID("expected").Dot("ID")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUser").Call(utils.CtxVar(), jen.ID("expected").Dot("ID")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Username").Op(":").Lit("username"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("Username").MapAssign().Lit("username"),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID("expected").Dot("ID")).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUser").Call(utils.CtxVar(), jen.ID("expected").Dot("ID")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUser").Call(utils.CtxVar(), jen.ID("expected").Dot("ID")),
 				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.Err()),
@@ -126,16 +126,16 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetUsersQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetUsersQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expectedArgCount").Op(":=").Lit(0),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
+				jen.ID("expectedArgCount").Assign().Lit(0),
+				jen.ID("expectedQuery").Assign().Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUsersQuery").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUsersQuery").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 			)),
@@ -144,49 +144,49 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetUsers", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUsers", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedUsersQuery").Op(":=").Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
+			jen.ID("expectedUsersQuery").Assign().Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
-				jen.ID("expectedCount").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Add(utils.FakeUint64Func()),
-						jen.ID("Limit").Op(":").Lit(20),
-						jen.ID("TotalCount").Op(":").ID("expectedCount")),
-					jen.ID("Users").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expectedCountQuery").Assign().Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
+				jen.ID("expectedCount").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Valuesln(
+					jen.ID("Pagination").MapAssign().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
+						jen.ID("Page").MapAssign().Add(utils.FakeUint64Func()),
+						jen.ID("Limit").MapAssign().Lit(20),
+						jen.ID("TotalCount").MapAssign().ID("expectedCount")),
+					jen.ID("Users").MapAssign().Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-							jen.ID("Username").Op(":").Lit("username"),
+							jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+							jen.ID("Username").MapAssign().Lit("username"),
 						),
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0))),
+					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Lit(0))),
+					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Lit(0))),
+					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Lit(0))),
 				),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.Err()),
@@ -194,65 +194,65 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Valuesln(
-					jen.ID("Users").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Valuesln(
+					jen.ID("Users").MapAssign().Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-							jen.ID("Username").Op(":").Lit("username")),
+							jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+							jen.ID("Username").MapAssign().Lit("username")),
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0)))),
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Lit(0)))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
-				jen.ID("expectedCount").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Add(utils.FakeUint64Func()),
-						jen.ID("Limit").Op(":").Lit(20),
-						jen.ID("TotalCount").Op(":").ID("expectedCount"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expectedCountQuery").Assign().Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
+				jen.ID("expectedCount").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Valuesln(
+					jen.ID("Pagination").MapAssign().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
+						jen.ID("Page").MapAssign().Add(utils.FakeUint64Func()),
+						jen.ID("Limit").MapAssign().Lit(20),
+						jen.ID("TotalCount").MapAssign().ID("expectedCount"),
 					),
-					jen.ID("Users").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("Users").MapAssign().Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
 						jen.Valuesln(
-							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-							jen.ID("Username").Op(":").Lit("username"),
+							jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+							jen.ID("Username").MapAssign().Lit("username"),
 						),
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromUser").Call(jen.Op("&").ID("expected").Dot("Users").Index(jen.Lit(0))),
+					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Lit(0))),
+					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Lit(0))),
+					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Lit(0))),
 				),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Line(),
@@ -263,17 +263,17 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetUserByUsernameQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetUserByUsernameQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expectedUsername").Op(":=").Lit("username"),
-				jen.ID("expectedArgCount").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = %s", getIncIndex(dbvendor, 0)),
+				jen.ID("expectedUsername").Assign().Lit("username"),
+				jen.ID("expectedArgCount").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expectedQuery").Assign().Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = %s", getIncIndex(dbvendor, 0)),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUserByUsernameQuery").Call(jen.ID("expectedUsername")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUserByUsernameQuery").Call(jen.ID("expectedUsername")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedUsername"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
@@ -283,41 +283,41 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetUserByUsername", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUserByUsername", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedQuery").Op(":=").Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = %s", getIncIndex(dbvendor, 0)),
+			jen.ID("expectedQuery").Assign().Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = %s", getIncIndex(dbvendor, 0)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Username").Op(":").Lit("username"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("Username").MapAssign().Lit("username"),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID("expected").Dot("Username")).
 					Dotln("WillReturnRows").Call(jen.ID("buildMockRowFromUser").Call(jen.ID("expected"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("expected").Dot("Username")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("expected").Dot("Username")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Username").Op(":").Lit("username"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("Username").MapAssign().Lit("username"),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID("expected").Dot("Username")).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("expected").Dot("Username")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("expected").Dot("Username")),
 				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.Err()),
@@ -325,18 +325,18 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Username").Op(":").Lit("username"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("Username").MapAssign().Lit("username"),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID("expected").Dot("Username")).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("expected").Dot("Username")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("expected").Dot("Username")),
 				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Line(),
@@ -347,16 +347,16 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetUserCountQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetUserCountQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expectedArgCount").Op(":=").Lit(0),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
+				jen.ID("expectedArgCount").Assign().Lit(0),
+				jen.ID("expectedQuery").Assign().Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetUserCountQuery").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUserCountQuery").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 			)),
@@ -365,31 +365,31 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetUserCount", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUserCount", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
+			jen.ID("expectedQuery").Assign().Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expected"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUserCount").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserCount").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("GetUserCount").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserCount").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Zero").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Line(),
@@ -416,18 +416,18 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildCreateUserQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildCreateUserQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
-					jen.ID("Username").Op(":").Lit("username"),
-					jen.ID("Password").Op(":").Lit("hashed password"),
-					jen.ID("TwoFactorSecret").Op(":").Lit("two factor secret"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.ID("Username").MapAssign().Lit("username"),
+					jen.ID("Password").MapAssign().Lit("hashed password"),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("two factor secret"),
 				),
-				jen.ID("expectedArgCount").Op(":=").Lit(4),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
+				jen.ID("expectedArgCount").Assign().Lit(4),
+				jen.ID("expectedQuery").Assign().Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
 					createdOnCol,
 					getIncIndex(dbvendor, 0),
 					getIncIndex(dbvendor, 1),
@@ -437,7 +437,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 					queryTail,
 				),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildCreateUserQuery").Call(jen.ID("exampleUser")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dot("buildCreateUserQuery").Call(jen.ID("exampleUser")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 			)),
@@ -454,16 +454,16 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 
 	var specialSnowflakePGTest jen.Code
 	if isPostgres {
-		specialSnowflakePGTest = jen.ID("T").Dot("Run").Call(jen.Litf("with %s row exists error", dbvendor.SingularCommonName()), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-				jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-				jen.ID("Username").Op(":").Lit("username"),
-				jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
+		specialSnowflakePGTest = jen.ID("T").Dot("Run").Call(jen.Litf("with %s row exists error", dbvendor.SingularCommonName()), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+				jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+				jen.ID("Username").MapAssign().Lit("username"),
+				jen.ID("CreatedOn").MapAssign().ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 			),
-			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
-				jen.ID("Username").Op(":").ID("expected").Dot("Username"),
+			jen.ID("expectedInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+				jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 			),
-			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
+			jen.ID("expectedQuery").Assign().Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
 				createdOnCol,
 				getIncIndex(dbvendor, 0),
 				getIncIndex(dbvendor, 1),
@@ -473,17 +473,17 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				queryTail,
 			),
 			jen.Line(),
-			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 				jen.ID("expected").Dot("Username"),
 				jen.ID("expected").Dot("HashedPassword"),
 				jen.ID("expected").Dot("TwoFactorSecret"),
 				jen.ID("expected").Dot("IsAdmin"),
-			).Dot("WillReturnError").Call(jen.Op("&").Qual("github.com/lib/pq", "Error").Valuesln(
-				jen.ID("Code").Op(":").Qual("github.com/lib/pq", "ErrorCode").Call(jen.Lit("23505")),
+			).Dot("WillReturnError").Call(jen.VarPointer().Qual("github.com/lib/pq", "Error").Valuesln(
+				jen.ID("Code").MapAssign().Qual("github.com/lib/pq", "ErrorCode").Call(jen.Lit("23505")),
 			)),
 			jen.Line(),
-			jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("CreateUser").Call(utils.CtxVar(), jen.ID("expectedInput")),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(utils.CtxVar(), jen.ID("expectedInput")),
 			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
 			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Err(), jen.Qual(filepath.Join(pkg.OutputPath, "database/v1/client"), "ErrUserExists")),
@@ -509,10 +509,10 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_CreateUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_CreateUser", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
+			jen.ID("expectedQuery").Assign().Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
 				createdOnCol,
 				getIncIndex(dbvendor, 0),
 				getIncIndex(dbvendor, 1),
@@ -521,16 +521,16 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				createdOnVal,
 				queryTail),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				func() []jen.Code {
 					out := []jen.Code{
-						jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-							jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-							jen.ID("Username").Op(":").Lit("username"),
-							jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
+						jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+							jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+							jen.ID("Username").MapAssign().Lit("username"),
+							jen.ID("CreatedOn").MapAssign().ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 						),
-						jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
-							jen.ID("Username").Op(":").ID("expected").Dot("Username"),
+						jen.ID("expectedInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+							jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 						),
 					}
 
@@ -538,19 +538,19 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 					if isPostgres {
 						expectMethodName = "ExpectQuery"
 						returnMethodName = "WillReturnRows"
-						out = append(out, jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call())))
+						out = append(out, jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call())))
 					} else if isSqlite || isMariaDB {
 						expectMethodName = "ExpectExec"
 						returnMethodName = "WillReturnResult"
 						out = append(
 							out,
-							jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Add(utils.FakeUint64Func())),
+							jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Add(utils.FakeUint64Func())),
 							jen.Line(),
 						)
 					}
 
 					out = append(out,
-						jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+						jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 						jen.ID("mockDB").Dot(expectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 							jen.ID("expected").Dot("Username"),
 							jen.ID("expected").Dot("HashedPassword"),
@@ -562,7 +562,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 
 					if isSqlite || isMariaDB {
 						out = append(out,
-							jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
+							jen.ID("expectedTimeQuery").Assign().Litf("SELECT created_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
 							jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
 								Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("CreatedOn"))),
 						)
@@ -570,7 +570,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 
 					out = append(out,
 						jen.Line(),
-						jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("CreateUser").Call(utils.CtxVar(), jen.ID("expectedInput")),
+						jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(utils.CtxVar(), jen.ID("expectedInput")),
 						jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 						jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 						jen.Line(),
@@ -583,17 +583,17 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			specialSnowflakePGTest,
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Username").Op(":").Lit("username"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("Username").MapAssign().Lit("username"),
+					jen.ID("CreatedOn").MapAssign().ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
-				jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
-					jen.ID("Username").Op(":").ID("expected").Dot("Username"),
+				jen.ID("expectedInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(badPathExpectFuncName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 					jen.ID("expected").Dot("Username"),
 					jen.ID("expected").Dot("HashedPassword"),
@@ -601,7 +601,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 					jen.ID("expected").Dot("IsAdmin"),
 				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID(dbfl).Dot("CreateUser").Call(utils.CtxVar(), jen.ID("expectedInput")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(utils.CtxVar(), jen.ID("expectedInput")),
 				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Line(),
@@ -619,18 +619,18 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildUpdateUserQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildUpdateUserQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Lit(321),
-					jen.ID("Username").Op(":").Lit("username"),
-					jen.ID("HashedPassword").Op(":").Lit("hashed password"), jen.ID("TwoFactorSecret").Op(":").Lit("two factor secret"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Lit(321),
+					jen.ID("Username").MapAssign().Lit("username"),
+					jen.ID("HashedPassword").MapAssign().Lit("hashed password"), jen.ID("TwoFactorSecret").MapAssign().Lit("two factor secret"),
 				),
-				jen.ID("expectedArgCount").Op(":=").Lit(4),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET username = %s, hashed_password = %s, two_factor_secret = %s, updated_on = %s WHERE id = %s%s",
+				jen.ID("expectedArgCount").Assign().Lit(4),
+				jen.ID("expectedQuery").Assign().Litf("UPDATE users SET username = %s, hashed_password = %s, two_factor_secret = %s, updated_on = %s WHERE id = %s%s",
 					getIncIndex(dbvendor, 0),
 					getIncIndex(dbvendor, 1),
 					getIncIndex(dbvendor, 2),
@@ -639,7 +639,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 					queryTail,
 				),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("exampleUser")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("exampleUser")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 			)),
@@ -662,25 +662,25 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 
 	buildUpdateUserExampleRows := func() jen.Code {
 		if isPostgres {
-			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
+			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 		} else if isSqlite || isMariaDB {
-			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Add(utils.FakeUint64Func()))
+			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Add(utils.FakeUint64Func()))
 		}
 		return jen.Null()
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_UpdateUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_UpdateUser", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Username").Op(":").Lit("username"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("Username").MapAssign().Lit("username"),
+					jen.ID("CreatedOn").MapAssign().ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
 				buildUpdateUserExampleRows(),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET username = %s, hashed_password = %s, two_factor_secret = %s, updated_on = %s WHERE id = %s%s",
+				jen.ID("expectedQuery").Assign().Litf("UPDATE users SET username = %s, hashed_password = %s, two_factor_secret = %s, updated_on = %s WHERE id = %s%s",
 					getIncIndex(dbvendor, 0),
 					getIncIndex(dbvendor, 1),
 					getIncIndex(dbvendor, 2),
@@ -689,7 +689,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 					queryTail,
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(updateUserExpectMethod).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 					jen.ID("expected").Dot("Username"),
 					jen.ID("expected").Dot("HashedPassword"),
@@ -697,7 +697,7 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 					jen.ID("expected").Dot("ID"),
 				).Dot(updateUserReturnMethod).Call(jen.ID("exampleRows")),
 				jen.Line(),
-				jen.Err().Op(":=").ID(dbfl).Dot("UpdateUser").Call(utils.CtxVar(), jen.ID("expected")),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateUser").Call(utils.CtxVar(), jen.ID("expected")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -714,21 +714,21 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildArchiveUserQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildArchiveUserQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleUserID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("expectedArgCount").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET updated_on = %s, archived_on = %s WHERE id = %s%s",
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expectedArgCount").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expectedQuery").Assign().Litf("UPDATE users SET updated_on = %s, archived_on = %s WHERE id = %s%s",
 					getTimeQuery(dbvendor),
 					getTimeQuery(dbvendor),
 					getIncIndex(dbvendor, 0),
 					queryTail,
 				),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildArchiveUserQuery").Call(jen.ID("exampleUserID")),
+				jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dot("buildArchiveUserQuery").Call(jen.ID("exampleUserID")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
@@ -738,28 +738,28 @@ func usersTestDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_ArchiveUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_ArchiveUser", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("Username").Op(":").Lit("username"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("Username").MapAssign().Lit("username"),
+					jen.ID("CreatedOn").MapAssign().ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE users SET updated_on = %s, archived_on = %s WHERE id = %s%s",
+				jen.ID("expectedQuery").Assign().Litf("UPDATE users SET updated_on = %s, archived_on = %s WHERE id = %s%s",
 					getTimeQuery(dbvendor),
 					getTimeQuery(dbvendor),
 					getIncIndex(dbvendor, 0),
 					queryTail,
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID("expected").Dot("ID")).
 					Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Add(utils.FakeUint64Func()), jen.Add(utils.FakeUint64Func()))),
 				jen.Line(),
-				jen.Err().Op(":=").ID(dbfl).Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("expected").Dot("ID")),
+				jen.Err().Assign().ID(dbfl).Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("expected").Dot("ID")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),

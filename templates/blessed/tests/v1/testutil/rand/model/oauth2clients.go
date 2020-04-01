@@ -18,11 +18,11 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("RandomOAuth2ClientInput").Params(
 			jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).ID("string")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
-				jen.ID("UserLoginInput").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
-					jen.ID("Username").Op(":").ID("username"),
-					jen.ID("Password").Op(":").ID("password"),
-					jen.ID("TOTPToken").Op(":").ID("mustBuildCode").Call(jen.ID("totpToken")),
+			jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
+				jen.ID("UserLoginInput").MapAssign().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
+					jen.ID("Username").MapAssign().ID("username"),
+					jen.ID("Password").MapAssign().ID("password"),
+					jen.ID("TOTPToken").MapAssign().ID("mustBuildCode").Call(jen.ID("totpToken")),
 				),
 			),
 			jen.Line(),

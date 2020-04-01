@@ -14,11 +14,11 @@ func mainTestDotGo(pkg *models.Project) *jen.File {
 	ret.Add(utils.FakeSeedFunc(), jen.Line())
 
 	ret.Add(
-		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").Parens(jen.Op("&").ID("ErrorResponse").Values()).Dot("Error").Call(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("_").Equals().Parens(jen.VarPointer().ID("ErrorResponse").Values()).Dot("Error").Call(),
 			)),
 		),
 		jen.Line(),

@@ -30,7 +30,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is our wire superset of providers this package offers"),
-			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet").Callln(
+			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
 				buildProviderSet()...,
 			),
 		),
@@ -63,21 +63,21 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("provideHTTPServer provides an HTTP httpServer"),
 		jen.Line(),
-		jen.Func().ID("provideHTTPServer").Params().Params(jen.Op("*").Qual("net/http", "Server")).Block(
+		jen.Func().ID("provideHTTPServer").Params().Params(jen.ParamPointer().Qual("net/http", "Server")).Block(
 			jen.Comment("heavily inspired by https://blog.cloudflare.com/exposing-go-on-the-internet/"),
-			jen.ID("srv").Op(":=").Op("&").Qual("net/http", "Server").Valuesln(
-				jen.ID("ReadTimeout").Op(":").Lit(5).Op("*").Qual("time", "Second"),
-				jen.ID("WriteTimeout").Op(":").Lit(10).Op("*").Qual("time", "Second"),
-				jen.ID("IdleTimeout").Op(":").Lit(120).Op("*").Qual("time", "Second"),
-				jen.ID("TLSConfig").Op(":").Op("&").Qual("crypto/tls", "Config").Valuesln(
-					jen.ID("PreferServerCipherSuites").Op(":").ID("true"),
+			jen.ID("srv").Assign().VarPointer().Qual("net/http", "Server").Valuesln(
+				jen.ID("ReadTimeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
+				jen.ID("WriteTimeout").MapAssign().Lit(10).Times().Qual("time", "Second"),
+				jen.ID("IdleTimeout").MapAssign().Lit(120).Times().Qual("time", "Second"),
+				jen.ID("TLSConfig").MapAssign().VarPointer().Qual("crypto/tls", "Config").Valuesln(
+					jen.ID("PreferServerCipherSuites").MapAssign().ID("true"),
 					jen.Comment(`"Only use curves which have assembly implementations"`).Line().
-						ID("CurvePreferences").Op(":").Index().Qual("crypto/tls", "CurveID").Valuesln(
+						ID("CurvePreferences").MapAssign().Index().Qual("crypto/tls", "CurveID").Valuesln(
 						jen.Qual("crypto/tls", "CurveP256"),
 						jen.Qual("crypto/tls", "X25519"),
 					),
-					jen.ID("MinVersion").Op(":").Qual("crypto/tls", "VersionTLS12"),
-					jen.ID("CipherSuites").Op(":").Index().ID("uint16").Valuesln(
+					jen.ID("MinVersion").MapAssign().Qual("crypto/tls", "VersionTLS12"),
+					jen.ID("CipherSuites").MapAssign().Index().ID("uint16").Valuesln(
 						jen.Qual("crypto/tls", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"),
 						jen.Qual("crypto/tls", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"),
 						jen.Qual("crypto/tls", "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305"),

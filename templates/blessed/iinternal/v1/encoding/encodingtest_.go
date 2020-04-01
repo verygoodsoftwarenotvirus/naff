@@ -19,30 +19,30 @@ func encodingTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestServerEncoderDecoder_EncodeResponse").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestServerEncoderDecoder_EncodeResponse").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").Lit("name"),
-				jen.ID("ex").Op(":=").Op("&").ID("example").Values(jen.ID("Name").Op(":").ID("expectation")),
-				jen.ID("ed").Op(":=").ID("ProvideResponseEncoder").Call(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expectation").Assign().Lit("name"),
+				jen.ID("ex").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
+				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
 				jen.Line(),
-				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
-				jen.Err().Op(":=").ID("ed").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("ex")),
+				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
+				jen.Err().Assign().ID("ed").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("ex")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Body").Dot("String").Call(), jen.Qual("fmt", "Sprintf").Call(jen.Lit("{%q:%q}\n"), jen.Lit("name"), jen.ID("ex").Dot("Name"))),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("as XML"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").Lit("name"),
-				jen.ID("ex").Op(":=").Op("&").ID("example").Values(jen.ID("Name").Op(":").ID("expectation")),
-				jen.ID("ed").Op(":=").ID("ProvideResponseEncoder").Call(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("as XML"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expectation").Assign().Lit("name"),
+				jen.ID("ex").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
+				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
 				jen.Line(),
-				jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
+				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.ID("res").Dot("Header").Call().Dot("Set").Call(jen.ID("ContentTypeHeader"), jen.Lit("application/xml")),
 				jen.Line(),
-				jen.Err().Op(":=").ID("ed").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("ex")),
+				jen.Err().Assign().ID("ed").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("ex")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("fmt", "Sprintf").Call(jen.Lit(`<example><name>%s</name></example>`), jen.ID("expectation")), jen.ID("res").Dot("Body").Dot("String").Call()),
 			)),
@@ -51,39 +51,39 @@ func encodingTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestServerEncoderDecoder_DecodeRequest").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestServerEncoderDecoder_DecodeRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").Lit("name"),
-				jen.ID("e").Op(":=").Op("&").ID("example").Values(jen.ID("Name").Op(":").ID("expectation")),
-				jen.ID("ed").Op(":=").ID("ProvideResponseEncoder").Call(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expectation").Assign().Lit("name"),
+				jen.ID("e").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
+				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
 				jen.Line(),
-				jen.List(jen.ID("bs"), jen.Err()).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("e")),
+				jen.List(jen.ID("bs"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("e")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Qual("bytes", "NewReader").Call(jen.ID("bs"))),
+				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Qual("bytes", "NewReader").Call(jen.ID("bs"))),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.Var().ID("x").ID("example"),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("ed").Dot("DecodeRequest").Call(jen.ID("req"), jen.Op("&").ID("x"))),
+				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("ed").Dot("DecodeRequest").Call(jen.ID("req"), jen.VarPointer().ID("x"))),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("x").Dot("Name"), jen.ID("e").Dot("Name")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("as XML"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").Lit("name"),
-				jen.ID("e").Op(":=").Op("&").ID("example").Values(jen.ID("Name").Op(":").ID("expectation")),
-				jen.ID("ed").Op(":=").ID("ProvideResponseEncoder").Call(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("as XML"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("expectation").Assign().Lit("name"),
+				jen.ID("e").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
+				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
 				jen.Line(),
-				jen.List(jen.ID("bs"), jen.Err()).Op(":=").Qual("encoding/xml", "Marshal").Call(jen.ID("e")),
+				jen.List(jen.ID("bs"), jen.Err()).Assign().Qual("encoding/xml", "Marshal").Call(jen.ID("e")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Qual("bytes", "NewReader").Call(jen.ID("bs"))),
+				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Qual("bytes", "NewReader").Call(jen.ID("bs"))),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.ID("req").Dot("Header").Dot("Set").Call(jen.ID("ContentTypeHeader"), jen.ID("XMLContentType")),
 				jen.Line(),
 				jen.Var().ID("x").ID("example"),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("ed").Dot("DecodeRequest").Call(jen.ID("req"), jen.Op("&").ID("x"))),
+				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("ed").Dot("DecodeRequest").Call(jen.ID("req"), jen.VarPointer().ID("x"))),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("x").Dot("Name"), jen.ID("e").Dot("Name")),
 			)),
 		),

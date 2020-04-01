@@ -14,7 +14,7 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("OAuth2ClientValidator").Op("=").Parens(jen.Op("*").ID("mockOAuth2ClientValidator")).Call(jen.Nil()),
+		jen.Var().ID("_").ID("OAuth2ClientValidator").Equals().Parens(jen.Op("*").ID("mockOAuth2ClientValidator")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -28,10 +28,10 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().Params(jen.ID("m").Op("*").ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(
 			utils.CtxParam(),
-			jen.ID("req").Op("*").Qual("net/http", "Request"),
+			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
 		).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
 			jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("req")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("req")),
 			jen.Return().List(
 				jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")),
 				jen.ID("args").Dot("Error").Call(jen.Lit(1)),
@@ -41,7 +41,7 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").ID("cookieEncoderDecoder").Op("=").Parens(jen.Op("*").ID("mockCookieEncoderDecoder")).Call(jen.Nil()),
+		jen.Var().ID("_").ID("cookieEncoderDecoder").Equals().Parens(jen.Op("*").ID("mockCookieEncoderDecoder")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -54,7 +54,7 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().Params(jen.ID("m").Op("*").ID("mockCookieEncoderDecoder")).ID("Encode").Params(jen.ID("name").ID("string"), jen.ID("value").Interface()).Params(jen.ID("string"), jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot(
+			jen.ID("args").Assign().ID("m").Dot(
 				"Called",
 			).Call(jen.ID("name"), jen.ID("value")),
 			jen.Return().List(
@@ -67,7 +67,7 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().Params(jen.ID("m").Op("*").ID("mockCookieEncoderDecoder")).ID("Decode").Params(jen.List(jen.ID("name"), jen.ID("value")).ID("string"), jen.ID("dst").Interface()).Params(jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot(
+			jen.ID("args").Assign().ID("m").Dot(
 				"Called",
 			).Call(jen.ID("name"), jen.ID("value"), jen.ID("dst")),
 			jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
@@ -76,7 +76,7 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("net/http", "Handler").Op("=").Parens(jen.Op("*").ID("MockHTTPHandler")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual("net/http", "Handler").Equals().Parens(jen.Op("*").ID("MockHTTPHandler")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -88,7 +88,7 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").Op("*").ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("m").Op("*").ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("res"), jen.ID("req")),

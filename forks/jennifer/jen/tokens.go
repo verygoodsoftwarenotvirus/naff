@@ -188,6 +188,50 @@ func (s *Statement) Op(op string) *Statement {
 	return s
 }
 
+// And renders the provided operator / token.
+func And() *Statement {
+	return newStatement().And()
+}
+
+// And renders the provided operator / token.
+func (g *Group) And() *Statement {
+	s := And()
+	g.items = append(g.items, s)
+	return s
+}
+
+// And renders the provided operator / token.
+func (s *Statement) And() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "&&",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// PointerTo renders the provided operator / token.
+func PointerTo() *Statement {
+	return newStatement().PointerTo()
+}
+
+// PointerTo renders the provided operator / token.
+func (g *Group) PointerTo() *Statement {
+	s := PointerTo()
+	g.items = append(g.items, s)
+	return s
+}
+
+// PointerTo renders the provided operator / token.
+func (s *Statement) PointerTo() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "*",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // MapAssign renders the provided operator / token.
 func MapAssign() *Statement {
 	return newStatement().MapAssign()
@@ -293,6 +337,28 @@ func (s *Statement) Equals() *Statement {
 	t := token{
 		typ:     operatorToken,
 		content: "=",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Is renders the provided operator / token.
+func Is() *Statement {
+	return newStatement().Equals()
+}
+
+// Is renders the provided operator / token.
+func (g *Group) Is() *Statement {
+	s := Is()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Is renders the provided operator / token.
+func (s *Statement) Is() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "==",
 	}
 	*s = append(*s, t)
 	return s

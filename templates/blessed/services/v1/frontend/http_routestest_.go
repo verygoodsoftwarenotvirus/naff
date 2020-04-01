@@ -19,10 +19,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildRequest").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual("net/http", "Request")).Block(
+		jen.Func().ID("buildRequest").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.ParamPointer().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
+			jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 				jen.Qual("net/http", "MethodGet"),
 				jen.Lit("https://verygoodsoftwarenotvirus.ru"),
 				jen.Nil(),
@@ -38,30 +38,30 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(buildTestService_StaticDir(proj)...)
 
 	ret.Add(
-		jen.Func().ID("TestService_Routes").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_Routes").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.Parens(jen.Op("&").ID("Service").Values()).Dot("Routes").Call()),
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.Parens(jen.VarPointer().ID("Service").Values()).Dot("Routes").Call()),
 			)),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").Op("&").ID("Service").Valuesln(
-					jen.ID("config").Op(":").Qual(filepath.Join(proj.OutputPath, "internal/v1/config"), "FrontendSettings").Valuesln(
-						jen.ID("CacheStaticFiles").Op(":").ID("true"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
+					jen.ID("config").MapAssign().Qual(filepath.Join(proj.OutputPath, "internal/v1/config"), "FrontendSettings").Valuesln(
+						jen.ID("CacheStaticFiles").MapAssign().ID("true"),
 					),
 				),
-				jen.List(jen.ID("cwd"), jen.Err()).Op(":=").Qual("os", "Getwd").Call(),
+				jen.List(jen.ID("cwd"), jen.Err()).Assign().Qual("os", "Getwd").Call(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("s").Dot("buildStaticFileServer").Call(jen.ID("cwd")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("buildStaticFileServer").Call(jen.ID("cwd")),
 				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 			)),
@@ -75,33 +75,33 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("s").Op(":=").Op("&").ID("Service").Values(jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
-			jen.List(jen.ID("cwd"), jen.Err()).Op(":=").Qual("os", "Getwd").Call(),
+			jen.List(jen.ID("cwd"), jen.Err()).Assign().Qual("os", "Getwd").Call(),
 			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.Line(),
-			jen.List(jen.ID("hf"), jen.Err()).Op(":=").ID("s").Dot("StaticDir").Call(jen.ID("cwd")),
+			jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID("cwd")),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("hf")),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.ID("res")).Op(":=").List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
-			jen.ID("req").Dot("URL").Dot("Path").Op("=").Lit("/http_routes_test.go"),
+			jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
+			jen.ID("req").Dot("URL").Dot("Path").Equals().Lit("/http_routes_test.go"),
 			jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
 			jen.Line(),
 			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
 		)),
 		jen.Line(),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with frontend routing path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-			jen.ID("s").Op(":=").Op("&").ID("Service").Values(jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-			jen.ID("exampleDir").Op(":=").Lit("."),
+		jen.ID("T").Dot("Run").Call(jen.Lit("with frontend routing path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("exampleDir").Assign().Lit("."),
 			jen.Line(),
-			jen.List(jen.ID("hf"), jen.Err()).Op(":=").ID("s").Dot("StaticDir").Call(jen.ID("exampleDir")),
+			jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID("exampleDir")),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("hf")),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.ID("res")).Op(":=").List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
-			jen.ID("req").Dot("URL").Dot("Path").Op("=").Lit("/login"),
+			jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
+			jen.ID("req").Dot("URL").Dot("Path").Equals().Lit("/login"),
 			jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
 			jen.Line(),
 			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
@@ -114,16 +114,16 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 
 		block = append(block,
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with frontend %s routing path", tpcn), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").Op("&").ID("Service").Values(jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("exampleDir").Op(":=").Lit("."),
+			jen.ID("T").Dot("Run").Call(jen.Litf("with frontend %s routing path", tpcn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("exampleDir").Assign().Lit("."),
 				jen.Line(),
-				jen.List(jen.ID("hf"), jen.Err()).Op(":=").ID("s").Dot("StaticDir").Call(jen.ID("exampleDir")),
+				jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID("exampleDir")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("hf")),
 				jen.Line(),
-				jen.List(jen.ID("req"), jen.ID("res")).Op(":=").List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
-				jen.ID("req").Dot("URL").Dot("Path").Op("=").Qual("fmt", "Sprintf").Call(jen.Lit(fmt.Sprintf("/%s/", typ.Name.PluralRouteName())+"%d"), utils.FakeUint64Func()),
+				jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
+				jen.ID("req").Dot("URL").Dot("Path").Equals().Qual("fmt", "Sprintf").Call(jen.Lit(fmt.Sprintf("/%s/", typ.Name.PluralRouteName())+"%d"), utils.FakeUint64Func()),
 				jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
@@ -133,7 +133,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Func().ID("TestService_StaticDir").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(block...), jen.Line(),
+		jen.Func().ID("TestService_StaticDir").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(block...), jen.Line(),
 	}
 
 	return lines

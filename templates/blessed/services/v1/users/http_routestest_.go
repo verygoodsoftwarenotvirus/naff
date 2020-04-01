@@ -14,10 +14,10 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Func().ID("buildRequest").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual("net/http", "Request")).Block(
+		jen.Func().ID("buildRequest").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.ParamPointer().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.Err()).Op(":=").Qual("net/http", "NewRequest").Callln(
+			jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 				jen.Qual("net/http", "MethodGet"),
 				jen.Lit("https://verygoodsoftwarenotvirus.ru"),
 				jen.Nil(),
@@ -31,11 +31,11 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_randString").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("Test_randString").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("randString").Call(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("randString").Call(),
 				jen.Qual("github.com/stretchr/testify/assert", "NotEmpty").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 			)),
@@ -44,28 +44,28 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_validateCredentialChangeRequest").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_validateCredentialChangeRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
 				jen.Line(),
-				jen.ID("exampleTOTPToken").Op(":=").Lit("123456"),
-				jen.ID("examplePassword").Op(":=").Lit("password"),
+				jen.ID("exampleTOTPToken").Assign().Lit("123456"),
+				jen.ID("examplePassword").Assign().Lit("password"),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("expected").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -73,9 +73,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("examplePassword"), jen.ID("expected").Dot("TwoFactorSecret"),
 					jen.ID("exampleTOTPToken"), jen.ID("expected").Dot("Salt"),
 				).Dot("Return").Call(jen.ID("true"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("sc")).Op(":=").ID("s").Dot("validateCredentialChangeRequest").Callln(
+				jen.List(jen.ID("actual"), jen.ID("sc")).Assign().ID("s").Dot("validateCredentialChangeRequest").Callln(
 					utils.CtxVar(),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("examplePassword"),
@@ -86,28 +86,28 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("sc")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows found in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows found in database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
-				jen.ID("exampleTOTPToken").Op(":=").Lit("123456"),
-				jen.ID("examplePassword").Op(":=").Lit("password"),
+				jen.ID("exampleTOTPToken").Assign().Lit("123456"),
+				jen.ID("examplePassword").Assign().Lit("password"),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("sc")).Op(":=").ID("s").Dot("validateCredentialChangeRequest").Callln(
+				jen.List(jen.ID("actual"), jen.ID("sc")).Assign().ID("s").Dot("validateCredentialChangeRequest").Callln(
 					utils.CtxVar(),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("examplePassword"),
@@ -118,24 +118,24 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusNotFound"), jen.ID("sc")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
-				jen.ID("exampleTOTPToken").Op(":=").Lit("123456"),
-				jen.ID("examplePassword").Op(":=").Lit("password"),
+				jen.ID("exampleTOTPToken").Assign().Lit("123456"),
+				jen.ID("examplePassword").Assign().Lit("password"),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("expected").Dot("ID")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("sc")).Op(":=").ID("s").Dot("validateCredentialChangeRequest").Callln(
+				jen.List(jen.ID("actual"), jen.ID("sc")).Assign().ID("s").Dot("validateCredentialChangeRequest").Callln(
 					utils.CtxVar(),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("examplePassword"),
@@ -146,24 +146,24 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusInternalServerError"), jen.ID("sc")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
-				jen.ID("exampleTOTPToken").Op(":=").Lit("123456"),
-				jen.ID("examplePassword").Op(":=").Lit("password"),
+				jen.ID("exampleTOTPToken").Assign().Lit("123456"),
+				jen.ID("examplePassword").Assign().Lit("password"),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("expected").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -173,9 +173,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("exampleTOTPToken"),
 					jen.ID("expected").Dot("Salt"),
 				).Dot("Return").Call(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("sc")).Op(":=").ID("s").Dot("validateCredentialChangeRequest").Callln(
+				jen.List(jen.ID("actual"), jen.ID("sc")).Assign().ID("s").Dot("validateCredentialChangeRequest").Callln(
 					utils.CtxVar(),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("examplePassword"),
@@ -186,24 +186,24 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusInternalServerError"), jen.ID("sc")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid login"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
-				jen.ID("exampleTOTPToken").Op(":=").Lit("123456"),
-				jen.ID("examplePassword").Op(":=").Lit("password"),
+				jen.ID("exampleTOTPToken").Assign().Lit("123456"),
+				jen.ID("examplePassword").Assign().Lit("password"),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("expected").Dot("ID")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -211,9 +211,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("examplePassword"), jen.ID("expected").Dot("TwoFactorSecret"),
 					jen.ID("exampleTOTPToken"), jen.ID("expected").Dot("Salt"),
 				).Dot("Return").Call(jen.ID("false"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("sc")).Op(":=").ID("s").Dot("validateCredentialChangeRequest").Callln(
+				jen.List(jen.ID("actual"), jen.ID("sc")).Assign().ID("s").Dot("validateCredentialChangeRequest").Callln(
 					utils.CtxVar(),
 					jen.ID("expected").Dot("ID"),
 					jen.ID("examplePassword"),
@@ -228,68 +228,68 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_List").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_List").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUsers"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(), jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUsers"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(), jen.Nil()),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUsers"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(), jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUsers"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(), jen.Nil()),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
@@ -299,235 +299,235 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_Create").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_Create").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
-					jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
-					jen.ID("Password").Op(":").Add(utils.FakePasswordFunc())),
-				jen.ID("expectedUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("Username").Op(":").ID("exampleInput").Dot("Username"),
-					jen.ID("HashedPassword").Op(":").Lit("blahblah"),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
+					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc())),
+				jen.ID("expectedUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("Username").MapAssign().ID("exampleInput").Dot("Username"),
+					jen.ID("HashedPassword").MapAssign().Lit("blahblah"),
 				),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput").Dot("Password"),
 				).Dot("Return").Call(jen.ID("expectedUser").Dot("HashedPassword"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("db").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("db").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(jen.Lit("CreateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expectedUser"), jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("db"),
+				jen.ID("s").Dot("database").Equals().ID("db"),
 				jen.Line(),
-				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
-				jen.ID("s").Dot("userCounter").Op("=").ID("mc"),
+				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
+				jen.ID("r").Assign().VarPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
-				jen.ID("s").Dot("reporter").Op("=").ID("r"),
+				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
-				jen.ID("s").Dot("userCreationEnabled").Op("=").ID("true"),
+				jen.ID("s").Dot("userCreationEnabled").Equals().ID("true"),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusCreated"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with user creation disabled"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with user creation disabled"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("s").Dot("userCreationEnabled").Op("=").ID("false"),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("s").Dot("userCreationEnabled").Equals().ID("false"),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusForbidden"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with missing input"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with missing input"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("s").Dot("userCreationEnabled").Op("=").ID("true"),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("s").Dot("userCreationEnabled").Equals().ID("true"),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error hashing password"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error hashing password"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
-					jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
-					jen.ID("Password").Op(":").Add(utils.FakePasswordFunc()),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
+					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 				),
-				jen.ID("expectedUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("Username").Op(":").ID("exampleInput").Dot("Username"),
-					jen.ID("HashedPassword").Op(":").Lit("blahblah"),
+				jen.ID("expectedUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("Username").MapAssign().ID("exampleInput").Dot("Username"),
+					jen.ID("HashedPassword").MapAssign().Lit("blahblah"),
 				),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput").Dot("Password"),
 				).Dot("Return").Call(jen.ID("expectedUser").Dot("HashedPassword"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
-				jen.ID("s").Dot("userCreationEnabled").Op("=").ID("true"),
+				jen.ID("s").Dot("userCreationEnabled").Equals().ID("true"),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error creating entry in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error creating entry in database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
-					jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
-					jen.ID("Password").Op(":").Add(utils.FakePasswordFunc()),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
+					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 				),
-				jen.ID("expectedUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("Username").Op(":").ID("exampleInput").Dot("Username"),
-					jen.ID("HashedPassword").Op(":").Lit("blahblah"),
+				jen.ID("expectedUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("Username").MapAssign().ID("exampleInput").Dot("Username"),
+					jen.ID("HashedPassword").MapAssign().Lit("blahblah"),
 				),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput").Dot("Password"),
 				).Dot("Return").Call(jen.ID("expectedUser").Dot("HashedPassword"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("db").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("db").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput"),
 				).Dot("Return").Call(jen.ID("expectedUser"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("database").Op("=").ID("db"),
+				jen.ID("s").Dot("database").Equals().ID("db"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
-				jen.ID("s").Dot("userCreationEnabled").Op("=").ID("true"),
+				jen.ID("s").Dot("userCreationEnabled").Equals().ID("true"),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with pre-existing entry in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with pre-existing entry in database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
-					jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
-					jen.ID("Password").Op(":").Add(utils.FakePasswordFunc()),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
+					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 				),
-				jen.ID("expectedUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("Username").Op(":").ID("exampleInput").Dot("Username"),
-					jen.ID("HashedPassword").Op(":").Lit("blahblah"),
+				jen.ID("expectedUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("Username").MapAssign().ID("exampleInput").Dot("Username"),
+					jen.ID("HashedPassword").MapAssign().Lit("blahblah"),
 				),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput").Dot("Password"),
 				).Dot("Return").Call(jen.ID("expectedUser").Dot("HashedPassword"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("db").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("db").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput"),
 				).Dot("Return").Call(jen.ID("expectedUser"), jen.Qual(filepath.Join(pkg.OutputPath, "database/v1/client"), "ErrUserExists")),
-				jen.ID("s").Dot("database").Op("=").ID("db"),
+				jen.ID("s").Dot("database").Equals().ID("db"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
-				jen.ID("s").Dot("userCreationEnabled").Op("=").ID("true"),
+				jen.ID("s").Dot("userCreationEnabled").Equals().ID("true"),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
-					jen.ID("Username").Op(":").Add(utils.FakeUsernameFunc()),
-					jen.ID("Password").Op(":").Add(utils.FakePasswordFunc()),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
+					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 				),
-				jen.ID("expectedUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("Username").Op(":").ID("exampleInput").Dot("Username"),
-					jen.ID("HashedPassword").Op(":").Lit("blahblah"),
+				jen.ID("expectedUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("Username").MapAssign().ID("exampleInput").Dot("Username"),
+					jen.ID("HashedPassword").MapAssign().Lit("blahblah"),
 				),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput").Dot("Password"),
 				).Dot("Return").Call(jen.ID("expectedUser").Dot("HashedPassword"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("db").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("db").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput"),
 				).Dot("Return").Call(jen.ID("expectedUser"), jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("db"),
+				jen.ID("s").Dot("database").Equals().ID("db"),
 				jen.Line(),
-				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
-				jen.ID("s").Dot("userCounter").Op("=").ID("mc"),
+				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
+				jen.ID("r").Assign().VarPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
-				jen.ID("s").Dot("reporter").Op("=").ID("r"),
+				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
-				jen.ID("s").Dot("userCreationEnabled").Op("=").ID("true"),
+				jen.ID("s").Dot("userCreationEnabled").Equals().ID("true"),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusCreated"), jen.ID("res").Dot("Code")),
@@ -537,87 +537,87 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_Read").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_Read").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(), jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				).Dot("Return").Call(jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(), jen.Nil()),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows found"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows found"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(), jen.Qual("database/sql", "ErrNoRows")),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				).Dot("Return").Call(jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(), jen.Qual("database/sql", "ErrNoRows")),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusNotFound"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				).Dot("Return").Call(jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(), jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				).Dot("Return").Call(jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(), jen.Nil()),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
@@ -627,29 +627,29 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_NewTOTPSecret").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_NewTOTPSecret").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Values(),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Values(),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(),
 						jen.ID("TOTPSecretRefreshMiddlewareCtxKey"),
 						jen.ID("exampleInput"),
 					),
 				),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(),
 						jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
@@ -657,14 +657,14 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleUser").Dot("ID")).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("UpdateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -674,33 +674,33 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("exampleInput").Dot("TOTPToken"),
 					jen.ID("exampleUser").Dot("Salt"),
 				).Dot("Return").Call(jen.ID("true"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("s").Dot("NewTOTPSecretHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusAccepted"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without input attached to request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("without input attached to request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID("s").Dot("NewTOTPSecretHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with input attached but without user information"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with input attached but without user information"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Values(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Values(),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("TOTPSecretRefreshMiddlewareCtxKey"), jen.ID("exampleInput"),
 					),
@@ -711,31 +711,31 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Values(),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Values(),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("TOTPSecretRefreshMiddlewareCtxKey"), jen.ID("exampleInput"),
 					),
 				),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -746,9 +746,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -758,50 +758,50 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("exampleInput").Dot("TOTPToken"),
 					jen.ID("exampleUser").Dot("Salt"),
 				).Dot("Return").Call(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("s").Dot("NewTOTPSecretHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error updating in database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error updating in database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Values(),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Values(),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("TOTPSecretRefreshMiddlewareCtxKey"), jen.ID("exampleInput"),
 					),
 				),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleUser").Dot("ID")).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("UpdateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -811,43 +811,43 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("exampleInput").Dot("TOTPToken"),
 					jen.ID("exampleUser").Dot("Salt"),
 				).Dot("Return").Call(jen.ID("true"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("s").Dot("NewTOTPSecretHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Values(),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Values(),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("TOTPSecretRefreshMiddlewareCtxKey"), jen.ID("exampleInput"),
 					),
 				),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -858,9 +858,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -870,15 +870,15 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("exampleInput").Dot("TOTPToken"),
 					jen.ID("exampleUser").Dot("Salt"),
 				).Dot("Return").Call(jen.ID("true"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("s").Dot("NewTOTPSecretHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -889,45 +889,45 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_UpdatePassword").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_UpdatePassword").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
-					jen.ID("NewPassword").Op(":").Lit("new_password"),
-					jen.ID("CurrentPassword").Op(":").Lit("old_password"),
-					jen.ID("TOTPToken").Op(":").Lit("123456"),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
+					jen.ID("NewPassword").MapAssign().Lit("new_password"),
+					jen.ID("CurrentPassword").MapAssign().Lit("old_password"),
+					jen.ID("TOTPToken").MapAssign().Lit("123456"),
 				),
 				jen.Line(),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("PasswordChangeMiddlewareCtxKey"), jen.ID("exampleInput"),
 					),
 				),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleUser").Dot("ID")).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("UpdateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -941,41 +941,41 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.Lit("HashPassword"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput").Dot("NewPassword")).Dot("Return").Call(jen.Lit("blah"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("s").Dot("UpdatePasswordHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusAccepted"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without input attached to request"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("without input attached to request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID("s").Dot("UpdatePasswordHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with input but without user info"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with input but without user info"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
-					jen.ID("NewPassword").Op(":").Lit("new_password"),
-					jen.ID("CurrentPassword").Op(":").Lit("old_password"),
-					jen.ID("TOTPToken").Op(":").Lit("123456"),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
+					jen.ID("NewPassword").MapAssign().Lit("new_password"),
+					jen.ID("CurrentPassword").MapAssign().Lit("old_password"),
+					jen.ID("TOTPToken").MapAssign().Lit("123456"),
 				),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("PasswordChangeMiddlewareCtxKey"), jen.ID("exampleInput"),
 					),
@@ -986,42 +986,42 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
-					jen.ID("NewPassword").Op(":").Lit("new_password"),
-					jen.ID("CurrentPassword").Op(":").Lit("old_password"),
-					jen.ID("TOTPToken").Op(":").Lit("123456"),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
+					jen.ID("NewPassword").MapAssign().Lit("new_password"),
+					jen.ID("CurrentPassword").MapAssign().Lit("old_password"),
+					jen.ID("TOTPToken").MapAssign().Lit("123456"),
 				),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("PasswordChangeMiddlewareCtxKey"), jen.ID("exampleInput"),
 					),
 				),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleUser").Dot("ID")).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("UpdateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -1031,42 +1031,42 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("exampleInput").Dot("TOTPToken"),
 					jen.ID("exampleUser").Dot("Salt"),
 				).Dot("Return").Call(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
 				jen.ID("s").Dot("UpdatePasswordHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error hashing password"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error hashing password"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
-					jen.ID("NewPassword").Op(":").Lit("new_password"),
-					jen.ID("CurrentPassword").Op(":").Lit("old_password"),
-					jen.ID("TOTPToken").Op(":").Lit("123456"),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
+					jen.ID("NewPassword").MapAssign().Lit("new_password"),
+					jen.ID("CurrentPassword").MapAssign().Lit("old_password"),
+					jen.ID("TOTPToken").MapAssign().Lit("123456"),
 				),
 				jen.Line(),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("PasswordChangeMiddlewareCtxKey"), jen.ID("exampleInput"),
 					),
 				),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleUser").Dot("ID")).Dot("Return").Call(
 					jen.ID("exampleUser"),
@@ -1077,9 +1077,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -1094,47 +1094,47 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput").Dot("NewPassword"),
 				).Dot("Return").Call(jen.Lit("blah"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("s").Dot("UpdatePasswordHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error updating user"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error updating user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.ID("HashedPassword").Op(":").Lit("not really lol"),
-					jen.ID("Salt").Op(":").Index().ID("byte").Call(jen.Lit("nah")),
-					jen.ID("TwoFactorSecret").Op(":").Lit("still no"),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("HashedPassword").MapAssign().Lit("not really lol"),
+					jen.ID("Salt").MapAssign().Index().ID("byte").Call(jen.Lit("nah")),
+					jen.ID("TwoFactorSecret").MapAssign().Lit("still no"),
 				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
-					jen.ID("NewPassword").Op(":").Lit("new_password"),
-					jen.ID("CurrentPassword").Op(":").Lit("old_password"),
-					jen.ID("TOTPToken").Op(":").Lit("123456"),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
+					jen.ID("NewPassword").MapAssign().Lit("new_password"),
+					jen.ID("CurrentPassword").MapAssign().Lit("old_password"),
+					jen.ID("TOTPToken").MapAssign().Lit("123456"),
 				),
 				jen.Line(),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.ID("PasswordChangeMiddlewareCtxKey"), jen.ID("exampleInput"),
 					),
 				),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleUser").Dot("ID")).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -1142,9 +1142,9 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+				jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
 				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -1159,7 +1159,7 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleInput").Dot("NewPassword"),
 				).Dot("Return").Call(jen.Lit("blah"), jen.Nil()),
-				jen.ID("s").Dot("authenticator").Op("=").ID("auth"),
+				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
 				jen.ID("s").Dot("UpdatePasswordHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
@@ -1170,59 +1170,59 @@ func httpRoutesTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_Archive").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_Archive").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expectedUserID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expectedUserID"),
 				),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("ArchiveUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUserID"),
 				).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("r").Op(":=").Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
+				jen.ID("r").Assign().VarPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.Line(),
-				jen.ID("mc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
-				jen.ID("s").Dot("userCounter").Op("=").ID("mc"),
+				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("ed").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Nil()),
-				jen.ID("s").Dot("encoderDecoder").Op("=").ID("ed"),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusNoContent"), jen.ID("res").Dot("Code")),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error updating database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("s").Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("with error updating database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expectedUserID").Op(":=").Add(utils.FakeUint64Func()),
-				jen.ID("s").Dot("userIDFetcher").Op("=").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Return().ID("expectedUserID"),
 				),
-				jen.List(jen.ID("res"), jen.ID("req")).Op(":=").List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
+				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.Line(),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("ArchiveUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUserID")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.ID("s").Dot("database").Op("=").ID("mockDB"),
+				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),

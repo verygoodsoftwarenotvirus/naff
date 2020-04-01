@@ -12,18 +12,18 @@ func metricsTestDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("c").Op(":=").Op("&").ID("ServerConfig").Valuesln(
-					jen.ID("Metrics").Op(":").ID("MetricsSettings").Valuesln(
-						jen.ID("RuntimeMetricsCollectionInterval").Op(":").Qual("time", "Second"),
-						jen.ID("MetricsProvider").Op(":").ID("DefaultMetricsProvider"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("c").Assign().VarPointer().ID("ServerConfig").Valuesln(
+					jen.ID("Metrics").MapAssign().ID("MetricsSettings").Valuesln(
+						jen.ID("RuntimeMetricsCollectionInterval").MapAssign().Qual("time", "Second"),
+						jen.ID("MetricsProvider").MapAssign().ID("DefaultMetricsProvider"),
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID("ih"), jen.Err()).Op(":=").ID("c").Dot("ProvideInstrumentationHandler").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.List(jen.ID("ih"), jen.Err()).Assign().ID("c").Dot("ProvideInstrumentationHandler").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("ih")),
 			)),
@@ -32,13 +32,13 @@ func metricsTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestServerConfig_ProvideTracing").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestServerConfig_ProvideTracing").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("c").Op(":=").Op("&").ID("ServerConfig").Valuesln(
-					jen.ID("Metrics").Op(":").ID("MetricsSettings").Valuesln(
-						jen.ID("TracingProvider").Op(":").ID("DefaultTracingProvider"),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("c").Assign().VarPointer().ID("ServerConfig").Valuesln(
+					jen.ID("Metrics").MapAssign().ID("MetricsSettings").Valuesln(
+						jen.ID("TracingProvider").MapAssign().ID("DefaultTracingProvider"),
 					),
 				),
 				jen.Line(),

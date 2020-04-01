@@ -16,17 +16,17 @@ func usersServiceDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("MiddlewareCtxKey is the context key we search for when interacting with user-related requests"),
-			jen.ID("MiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Op("=").Lit("user_input"),
-			jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName").Op("=").Lit("users"),
-			jen.ID("topicName").Op("=").Lit("users"),
-			jen.ID("serviceName").Op("=").Lit("users_service"),
+			jen.ID("MiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit("user_input"),
+			jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName").Equals().Lit("users"),
+			jen.ID("topicName").Equals().Lit("users"),
+			jen.ID("serviceName").Equals().Lit("users_service"),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataServer").Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -35,7 +35,7 @@ func usersServiceDotGo(pkg *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("RequestValidator validates request"),
 			jen.ID("RequestValidator").Interface(
-				jen.ID("Validate").Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("bool"), jen.ID("error")),
+				jen.ID("Validate").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("bool"), jen.ID("error")),
 			),
 			jen.Line(),
 			jen.Comment("Service handles our users"),
@@ -50,7 +50,7 @@ func usersServiceDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher fetches usernames from requests"),
-			jen.ID("UserIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")),
 		),
 		jen.Line(),
 	)
@@ -71,27 +71,27 @@ func usersServiceDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("userIDFetcher must be provided"))),
 			),
 			jen.Line(),
-			jen.List(jen.ID("counter"), jen.Err()).Op(":=").ID("counterProvider").Call(jen.ID("counterName"), jen.Lit("number of users managed by the users service")),
-			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.List(jen.ID("counter"), jen.Err()).Assign().ID("counterProvider").Call(jen.ID("counterName"), jen.Lit("number of users managed by the users service")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("userCount"), jen.Err()).Op(":=").ID("db").Dot("GetUserCount").Call(utils.CtxVar(), jen.Nil()),
-			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.List(jen.ID("userCount"), jen.Err()).Assign().ID("db").Dot("GetUserCount").Call(utils.CtxVar(), jen.Nil()),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.Err())),
 			),
 			jen.ID("counter").Dot("IncrementBy").Call(utils.CtxVar(), jen.ID("userCount")),
 			jen.Line(),
-			jen.ID("us").Op(":=").Op("&").ID("Service").Valuesln(
-				jen.ID("cookieSecret").Op(":").Index().ID("byte").Call(jen.ID("authSettings").Dot("CookieSecret")),
-				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
-				jen.ID("database").Op(":").ID("db"),
-				jen.ID("authenticator").Op(":").ID("authenticator"),
-				jen.ID("userIDFetcher").Op(":").ID("userIDFetcher"),
-				jen.ID("encoderDecoder").Op(":").ID("encoder"),
-				jen.ID("userCounter").Op(":").ID("counter"),
-				jen.ID("reporter").Op(":").ID("reporter"),
-				jen.ID("userCreationEnabled").Op(":").ID("authSettings").Dot("EnableUserSignup"),
+			jen.ID("us").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("cookieSecret").MapAssign().Index().ID("byte").Call(jen.ID("authSettings").Dot("CookieSecret")),
+				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
+				jen.ID("database").MapAssign().ID("db"),
+				jen.ID("authenticator").MapAssign().ID("authenticator"),
+				jen.ID("userIDFetcher").MapAssign().ID("userIDFetcher"),
+				jen.ID("encoderDecoder").MapAssign().ID("encoder"),
+				jen.ID("userCounter").MapAssign().ID("counter"),
+				jen.ID("reporter").MapAssign().ID("reporter"),
+				jen.ID("userCreationEnabled").MapAssign().ID("authSettings").Dot("EnableUserSignup"),
 			),
 			jen.Return().List(jen.ID("us"), jen.Nil()),
 		),

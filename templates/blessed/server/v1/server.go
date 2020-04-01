@@ -32,7 +32,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is our wire superset of providers this package offers"),
-			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet").Callln(jen.ID("ProvideServer")),
+			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(jen.ID("ProvideServer")),
 		),
 		jen.Line(),
 	)
@@ -41,9 +41,9 @@ func serverDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ProvideServer builds a new Server instance"),
 		jen.Line(),
 		jen.Func().ID("ProvideServer").Params(jen.ID("cfg").Op("*").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig"), jen.ID("httpServer").Op("*").Qual(httpPackage, "Server")).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
-			jen.ID("srv").Op(":=").Op("&").ID("Server").Valuesln(
-				jen.ID("config").Op(":").ID("cfg"),
-				jen.ID("httpServer").Op(":").ID("httpServer"),
+			jen.ID("srv").Assign().VarPointer().ID("Server").Valuesln(
+				jen.ID("config").MapAssign().ID("cfg"),
+				jen.ID("httpServer").MapAssign().ID("httpServer"),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("srv"), jen.Nil()),

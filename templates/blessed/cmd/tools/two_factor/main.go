@@ -33,16 +33,16 @@ and logging in.`)
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.ID("zero").Op("=").Lit("  ___   & / _ \\  &| | | | &| |_| | & \\___/  "),
-			jen.ID("one").Op("=").Lit("    _    &  /_ |   &   | |   &  _| |_  & |_____| "),
-			jen.ID("two").Op("=").Lit(" ____   &|___ \\  &  __) | & / __/  &|_____| "),
-			jen.ID("three").Op("=").Lit("_____   &|___ /  &  |_ \\  & ___) | &|____/  "),
-			jen.ID("four").Op("=").Lit(" _   _   &| | | |  &| |_| |_ &|___   _ &    |_|  "),
-			jen.ID("five").Op("=").Lit(" ____   &| ___|  &|___ \\  & ___) | &|____/  "),
-			jen.ID("six").Op("=").Lit("  __    & / /_   &| '_ \\  &| (_) | & \\___/  "),
-			jen.ID("seven").Op("=").Lit(" _____  &|___  | &   / /  &  / /   & /_/    "),
-			jen.ID("eight").Op("=").Lit("  ___   & ( o )  & /   \\  &|  O  | & \\___/  "),
-			jen.ID("nine").Op("=").Lit("  ___   & /   \\  &| (_) | & \\__, | &   /_/  "),
+			jen.ID("zero").Equals().Lit("  ___   & / _ \\  &| | | | &| |_| | & \\___/  "),
+			jen.ID("one").Equals().Lit("    _    &  /_ |   &   | |   &  _| |_  & |_____| "),
+			jen.ID("two").Equals().Lit(" ____   &|___ \\  &  __) | & / __/  &|_____| "),
+			jen.ID("three").Equals().Lit("_____   &|___ /  &  |_ \\  & ___) | &|____/  "),
+			jen.ID("four").Equals().Lit(" _   _   &| | | |  &| |_| |_ &|___   _ &    |_|  "),
+			jen.ID("five").Equals().Lit(" ____   &| ___|  &|___ \\  & ___) | &|____/  "),
+			jen.ID("six").Equals().Lit("  __    & / /_   &| '_ \\  &| (_) | & \\___/  "),
+			jen.ID("seven").Equals().Lit(" _____  &|___  | &   / /  &  / /   & /_/    "),
+			jen.ID("eight").Equals().Lit("  ___   & ( o )  & /   \\  &|  O  | & \\___/  "),
+			jen.ID("nine").Equals().Lit("  ___   & /   \\  &| (_) | & \\__, | &   /_/  "),
 		),
 		jen.Line(),
 	)
@@ -52,7 +52,7 @@ and logging in.`)
 			jen.ID("lastChange").Qual("time", "Time"),
 			jen.ID("currentCode").ID("string"),
 			jen.Line(),
-			jen.ID("numbers").Op("=").Index(jen.Lit(10)).Index(jen.Lit(5)).ID("string").Valuesln(
+			jen.ID("numbers").Equals().Index(jen.Lit(10)).Index(jen.Lit(5)).ID("string").Valuesln(
 				jen.ID("limitSlice").Call(jen.Qual("strings", "Split").Call(jen.ID("zero"), jen.Lit("&"))),
 				jen.ID("limitSlice").Call(jen.Qual("strings", "Split").Call(jen.ID("one"), jen.Lit("&"))),
 				jen.ID("limitSlice").Call(jen.Qual("strings", "Split").Call(jen.ID("two"), jen.Lit("&"))),
@@ -70,11 +70,11 @@ and logging in.`)
 
 	ret.Add(
 		jen.Func().ID("limitSlice").Params(jen.ID("in").Index().ID("string")).Params(jen.ID("out").Index(jen.Lit(5)).ID("string")).Block(
-			jen.If(jen.ID("len").Call(jen.ID("in")).Op("!=").Lit(5)).Block(
+			jen.If(jen.ID("len").Call(jen.ID("in")).DoesNotEqual().Lit(5)).Block(
 				jen.ID("panic").Call(jen.Lit("wut")),
 			),
-			jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
-				jen.ID("out").Index(jen.ID("i")).Op("=").ID("in").Index(jen.ID("i")),
+			jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+				jen.ID("out").Index(jen.ID("i")).Equals().ID("in").Index(jen.ID("i")),
 			),
 			jen.Return(),
 		),
@@ -82,7 +82,7 @@ and logging in.`)
 	)
 	ret.Add(
 		jen.Func().ID("mustnt").Params(jen.Err().ID("error")).Block(
-			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),
@@ -99,13 +99,13 @@ and logging in.`)
 	ret.Add(
 		jen.Func().ID("buildTheThing").Params(jen.ID("token").ID("string")).Params(jen.ID("string")).Block(
 			jen.Var().ID("out").ID("string"),
-			jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
-				jen.If(jen.ID("i").Op("!=").Lit(0)).Block(
+			jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+				jen.If(jen.ID("i").DoesNotEqual().Lit(0)).Block(
 					jen.ID("out").Op("+=").Lit("\n"),
 				),
-				jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().Qual("strings", "Split").Call(jen.ID("token"), jen.Lit(""))).Block(
-					jen.List(jen.ID("y"), jen.Err()).Op(":=").Qual("strconv", "Atoi").Call(jen.ID("x")),
-					jen.If(jen.Err().Op("!=").ID("nil")).Block(
+				jen.For(jen.List(jen.ID("_"), jen.ID("x")).Assign().Range().Qual("strings", "Split").Call(jen.ID("token"), jen.Lit(""))).Block(
+					jen.List(jen.ID("y"), jen.Err()).Assign().Qual("strconv", "Atoi").Call(jen.ID("x")),
+					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID("panic").Call(jen.Err()),
 					),
 					jen.ID("out").Op("+=").Lit("  "),
@@ -113,7 +113,7 @@ and logging in.`)
 				),
 			),
 			jen.Line(),
-			jen.ID("timeLeft").Op(":=").Parens(jen.Lit(30).Op("*").Qual("time", "Second").Op("-").Qual("time", "Since").Call(jen.ID("lastChange")).Dot("Round").Call(jen.Qual("time", "Second"))).Dot("String").Call(),
+			jen.ID("timeLeft").Assign().Parens(jen.Lit(30).Times().Qual("time", "Second").Op("-").Qual("time", "Since").Call(jen.ID("lastChange")).Dot("Round").Call(jen.Qual("time", "Second"))).Dot("String").Call(),
 			jen.ID("out").Op("+=").Qual("fmt", "Sprintf").Call(jen.Lit("\n\n%s\n"), jen.ID("timeLeft")),
 			jen.Line(),
 			jen.Return().ID("out"),
@@ -123,14 +123,14 @@ and logging in.`)
 
 	ret.Add(
 		jen.Func().ID("doTheThing").Params(jen.ID("secret").ID("string")).Block(
-			jen.ID("t").Op(":=").Qual("strings", "ToUpper").Call(jen.ID("secret")),
-			jen.ID("n").Op(":=").Qual("time", "Now").Call().Dot("UTC").Call(),
-			jen.List(jen.ID("code"), jen.Err()).Op(":=").Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("t"), jen.ID("n")),
+			jen.ID("t").Assign().Qual("strings", "ToUpper").Call(jen.ID("secret")),
+			jen.ID("n").Assign().Qual("time", "Now").Call().Dot("UTC").Call(),
+			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("t"), jen.ID("n")),
 			jen.ID("mustnt").Call(jen.Err()),
 			jen.Line(),
-			jen.If(jen.ID("code").Op("!=").ID("currentCode")).Block(
-				jen.ID("lastChange").Op("=").Qual("time", "Now").Call(),
-				jen.ID("currentCode").Op("=").ID("code"),
+			jen.If(jen.ID("code").DoesNotEqual().ID("currentCode")).Block(
+				jen.ID("lastChange").Equals().Qual("time", "Now").Call(),
+				jen.ID("currentCode").Equals().ID("code"),
 			),
 			jen.Line(),
 			jen.If(jen.Op("!").Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("code"), jen.ID("t"))).Block(
@@ -151,12 +151,12 @@ and logging in.`)
 			),
 			jen.Line(),
 			jen.If(jen.ID("len").Call(jen.Qual("os", "Args")).Op("==").Lit(1)).Block(
-				jen.ID("reader").Op(":=").Qual("bufio", "NewReader").Call(jen.Qual("os", "Stdin")),
+				jen.ID("reader").Assign().Qual("bufio", "NewReader").Call(jen.Qual("os", "Stdin")),
 				jen.Qual("fmt", "Print").Call(jen.Lit("token: ")),
-				jen.List(jen.ID("token"), jen.Err()).Op("=").ID("reader").Dot("ReadString").Call(jen.ID(`'\n'`)),
+				jen.List(jen.ID("token"), jen.Err()).Equals().ID("reader").Dot("ReadString").Call(jen.ID(`'\n'`)),
 				jen.ID("mustnt").Call(jen.Err()),
 			).Else().Block(
-				jen.ID("token").Op("=").Qual("os", "Args").Index(jen.Lit(1)),
+				jen.ID("token").Equals().Qual("os", "Args").Index(jen.Lit(1)),
 			),
 			jen.Line(),
 			jen.Return().ID("token"),
@@ -166,11 +166,11 @@ and logging in.`)
 
 	ret.Add(
 		jen.Func().ID("main").Params().Block(
-			jen.ID("secret").Op(":=").ID("requestTOTPSecret").Call(),
+			jen.ID("secret").Assign().ID("requestTOTPSecret").Call(),
 			jen.ID("clearTheScreen").Call(),
 			jen.ID("doTheThing").Call(jen.ID("secret")),
-			jen.ID("every").Op(":=").Qual("time", "Tick").Call(jen.Lit(1).Op("*").Qual("time", "Second")),
-			jen.ID("lastChange").Op("=").Qual("time", "Now").Call(),
+			jen.ID("every").Assign().Qual("time", "Tick").Call(jen.Lit(1).Times().Qual("time", "Second")),
+			jen.ID("lastChange").Equals().Qual("time", "Now").Call(),
 			jen.Line(),
 			jen.For().Range().ID("every").Block(
 				jen.ID("doTheThing").Call(jen.ID("secret")),

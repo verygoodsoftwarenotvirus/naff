@@ -15,7 +15,7 @@ func authServiceDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.ID("serviceName").Op("=").Lit("auth_service"),
+			jen.ID("serviceName").Equals().Lit("auth_service"),
 		),
 		jen.Line(),
 	)
@@ -25,7 +25,7 @@ func authServiceDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("OAuth2ClientValidator is a stand-in interface, where we needed to abstract"),
 			jen.Comment("a regular structure with an interface for testing purposes"),
 			jen.ID("OAuth2ClientValidator").Interface(
-				jen.ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")),
+				jen.ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")),
 			),
 			jen.Line(),
 			jen.Comment("cookieEncoderDecoder is a stand-in interface for gorilla/securecookie"),
@@ -35,7 +35,7 @@ func authServiceDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
-			jen.ID("UserIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")),
 			jen.Line(),
 			jen.Comment("Service handles authentication service-wide"),
 			jen.ID("Service").Struct(
@@ -64,15 +64,15 @@ func authServiceDotGo(pkg *models.Project) *jen.File {
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 			jen.ID("encoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
 		).Params(jen.Op("*").ID("Service")).Block(
-			jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(
-				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
-				jen.ID("encoderDecoder").Op(":").ID("encoder"),
-				jen.ID("config").Op(":").ID("cfg").Dot("Auth"),
-				jen.ID("userDB").Op(":").ID("database"),
-				jen.ID("oauth2ClientsService").Op(":").ID("oauth2ClientsService"),
-				jen.ID("authenticator").Op(":").ID("authenticator"),
-				jen.ID("userIDFetcher").Op(":").ID("userIDFetcher"),
-				jen.ID("cookieManager").Op(":").Qual("github.com/gorilla/securecookie", "New").Callln(
+			jen.ID("svc").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
+				jen.ID("encoderDecoder").MapAssign().ID("encoder"),
+				jen.ID("config").MapAssign().ID("cfg").Dot("Auth"),
+				jen.ID("userDB").MapAssign().ID("database"),
+				jen.ID("oauth2ClientsService").MapAssign().ID("oauth2ClientsService"),
+				jen.ID("authenticator").MapAssign().ID("authenticator"),
+				jen.ID("userIDFetcher").MapAssign().ID("userIDFetcher"),
+				jen.ID("cookieManager").MapAssign().Qual("github.com/gorilla/securecookie", "New").Callln(
 					jen.Qual("github.com/gorilla/securecookie", "GenerateRandomKey").Call(jen.Lit(64)),
 					jen.Index().ID("byte").Call(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")),
 				),

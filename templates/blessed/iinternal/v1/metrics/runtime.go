@@ -45,23 +45,23 @@ func int64Metric(varName, measurementName, measurementDescription string, count 
 }
 
 func viewDotView(viewName, measurementName, measurementVarName, description string, count bool) jen.Code {
-	agg := jen.ID("Aggregation").Op(":")
+	agg := jen.ID("Aggregation").MapAssign()
 	if count {
 		agg = agg.Qual("go.opencensus.io/stats/view", "Count").Call()
 	} else {
 		agg = agg.Qual("go.opencensus.io/stats/view", "LastValue").Call()
 	}
 
-	return jen.ID(viewName).Op("=").Op("&").Qual("go.opencensus.io/stats/view", "View").Valuesln(
-		jen.ID("Name").Op(":").Lit(measurementName),
-		jen.ID("Measure").Op(":").ID(measurementVarName),
-		jen.ID("Description").Op(":").Lit(description),
+	return jen.ID(viewName).Equals().VarPointer().Qual("go.opencensus.io/stats/view", "View").Valuesln(
+		jen.ID("Name").MapAssign().Lit(measurementName),
+		jen.ID("Measure").MapAssign().ID(measurementVarName),
+		jen.ID("Description").MapAssign().Lit(description),
 		agg,
 	)
 }
 
 func statsDotFloat64(varName, name, description string) jen.Code {
-	return jen.ID(varName).Op("=").Qual("go.opencensus.io/stats", "Float64").Callln(
+	return jen.ID(varName).Equals().Qual("go.opencensus.io/stats", "Float64").Callln(
 		jen.Lit(name),
 		jen.Lit(description),
 		jen.Qual("go.opencensus.io/stats", "UnitDimensionless"),
@@ -69,7 +69,7 @@ func statsDotFloat64(varName, name, description string) jen.Code {
 }
 
 func statsDotInt64(varName, name, description string) jen.Code {
-	return jen.ID(varName).Op("=").Qual("go.opencensus.io/stats", "Int64").Callln(
+	return jen.ID(varName).Equals().Qual("go.opencensus.io/stats", "Int64").Callln(
 		jen.Lit(name),
 		jen.Lit(description),
 		jen.Qual("go.opencensus.io/stats", "UnitDimensionless"),
@@ -111,7 +111,7 @@ func runtimeDotGo(pkg *models.Project) *jen.File {
 	)
 	defs = append(defs,
 		jen.Comment("DefaultRuntimeViews represents the pre-configured views"),
-		jen.ID("DefaultRuntimeViews").Op("=").Index().Op("*").Qual("go.opencensus.io/stats/view", "View").Valuesln(vals...),
+		jen.ID("DefaultRuntimeViews").Equals().Index().ParamPointer().Qual("go.opencensus.io/stats/view", "View").Valuesln(vals...),
 	)
 
 	ret.Add(
@@ -127,16 +127,16 @@ func runtimeDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("RecordRuntimeStats").Params(jen.ID("interval").Qual("time", "Duration")).Params(jen.ID("stopFn").Func().Params()).Block(
 			jen.Var().Defs(
 				jen.ID("closeOnce").Qual("sync", "Once"),
-				jen.ID("ticker").Op("=").Qual("time", "NewTicker").Call(jen.ID("interval")),
-				jen.ID("done").Op("=").ID("make").Call(jen.Chan().Struct()),
+				jen.ID("ticker").Equals().Qual("time", "NewTicker").Call(jen.ID("interval")),
+				jen.ID("done").Equals().ID("make").Call(jen.Chan().Struct()),
 			),
 			jen.Line(),
-			jen.ID("ms").Op(":=").Op("&").Qual("runtime", "MemStats").Values(),
+			jen.ID("ms").Assign().VarPointer().Qual("runtime", "MemStats").Values(),
 			jen.Go().Func().Params().Block(
 				jen.For().Block(
 					jen.Select().Block(
 						jen.Case(jen.Op("<-").ID("ticker").Dot("C")).Block(
-							jen.ID("startTime").Op(":=").Qual("time", "Now").Call(),
+							jen.ID("startTime").Assign().Qual("time", "Now").Call(),
 							utils.CreateCtx(),
 							jen.Line(),
 							jen.Qual("runtime", "ReadMemStats").Call(jen.ID("ms")),

@@ -16,20 +16,20 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("CreateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts"),
-			jen.ID("CreateMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Op("=").Lit("webhook_create_input"),
+			jen.ID("CreateMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit("webhook_create_input"),
 			jen.Comment("UpdateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts"),
-			jen.ID("UpdateMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Op("=").Lit("webhook_update_input"),
+			jen.ID("UpdateMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit("webhook_update_input"),
 			jen.Line(),
-			jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName").Op("=").Lit("webhooks"),
-			jen.ID("topicName").ID("string").Op("=").Lit("webhooks"),
-			jen.ID("serviceName").ID("string").Op("=").Lit("webhooks_service"),
+			jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName").Equals().Lit("webhooks"),
+			jen.ID("topicName").ID("string").Equals().Lit("webhooks"),
+			jen.ID("serviceName").ID("string").Equals().Lit("webhooks_service"),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer").Op("=").Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer").Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -54,10 +54,10 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
-			jen.ID("UserIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")),
 			jen.Line(),
 			jen.Comment("WebhookIDFetcher is a function that fetches webhook IDs"),
-			jen.ID("WebhookIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.ID("WebhookIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")),
 		),
 
 		jen.Line(),
@@ -74,25 +74,25 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 			jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
 			jen.ID("encoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
 			jen.ID("webhookCounterProvider").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider"),
-			jen.ID("em").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
+			jen.ID("em").ParamPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
-			jen.List(jen.ID("webhookCounter"), jen.Err()).Op(":=").ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.Lit("the number of webhooks managed by the webhooks service")),
-			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.List(jen.ID("webhookCounter"), jen.Err()).Assign().ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.Lit("the number of webhooks managed by the webhooks service")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("svc").Op(":=").Op("&").ID("Service").Valuesln(
-				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
-				jen.ID("webhookDatabase").Op(":").ID("webhookDatabase"),
-				jen.ID("encoderDecoder").Op(":").ID("encoder"),
-				jen.ID("webhookCounter").Op(":").ID("webhookCounter"),
-				jen.ID("userIDFetcher").Op(":").ID("userIDFetcher"),
-				jen.ID("webhookIDFetcher").Op(":").ID("webhookIDFetcher"),
-				jen.ID("eventManager").Op(":").ID("em"),
+			jen.ID("svc").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
+				jen.ID("webhookDatabase").MapAssign().ID("webhookDatabase"),
+				jen.ID("encoderDecoder").MapAssign().ID("encoder"),
+				jen.ID("webhookCounter").MapAssign().ID("webhookCounter"),
+				jen.ID("userIDFetcher").MapAssign().ID("userIDFetcher"),
+				jen.ID("webhookIDFetcher").MapAssign().ID("webhookIDFetcher"),
+				jen.ID("eventManager").MapAssign().ID("em"),
 			),
 			jen.Line(),
-			jen.List(jen.ID("webhookCount"), jen.Err()).Op(":=").ID("svc").Dot("webhookDatabase").Dot("GetAllWebhooksCount").Call(utils.CtxVar()),
-			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.List(jen.ID("webhookCount"), jen.Err()).Assign().ID("svc").Dot("webhookDatabase").Dot("GetAllWebhooksCount").Call(utils.CtxVar()),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting current webhook count: %w"), jen.Err())),
 			),
 			jen.ID("svc").Dot("webhookCounter").Dot("IncrementBy").Call(utils.CtxVar(), jen.ID("webhookCount")),

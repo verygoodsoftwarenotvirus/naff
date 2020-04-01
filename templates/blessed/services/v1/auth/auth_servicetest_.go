@@ -16,24 +16,24 @@ func authServiceTestDotGo(pkg *models.Project) *jen.File {
 	ret.Add(utils.FakeSeedFunc())
 
 	ret.Add(
-		jen.Func().ID("buildTestService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("logger").Op(":=").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-			jen.ID("cfg").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig").Valuesln(
-				jen.ID("Auth").Op(":").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Valuesln(
-					jen.ID("CookieSecret").Op(":").Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),
+			jen.ID("logger").Assign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("cfg").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig").Valuesln(
+				jen.ID("Auth").MapAssign().Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Valuesln(
+					jen.ID("CookieSecret").MapAssign().Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),
 				),
 			),
-			jen.ID("auth").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
-			jen.ID("userDB").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "UserDataManager").Values(),
-			jen.ID("oauth").Op(":=").Op("&").ID("mockOAuth2ClientValidator").Values(),
-			jen.ID("userIDFetcher").Op(":=").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+			jen.ID("auth").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth/mock"), "Authenticator").Values(),
+			jen.ID("userDB").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "UserDataManager").Values(),
+			jen.ID("oauth").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
+			jen.ID("userIDFetcher").Assign().Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Return().Add(utils.FakeUint64Func()),
 			),
-			jen.ID("ed").Op(":=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "ProvideResponseEncoder").Call(),
+			jen.ID("ed").Assign().Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "ProvideResponseEncoder").Call(),
 			jen.Line(),
-			jen.ID("service").Op(":=").ID("ProvideAuthService").Callln(
+			jen.ID("service").Assign().ID("ProvideAuthService").Callln(
 				jen.ID("logger"),
 				jen.ID("cfg"),
 				jen.ID("auth"),

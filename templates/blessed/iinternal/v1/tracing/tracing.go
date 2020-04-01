@@ -41,18 +41,18 @@ func buildConstants(proj *models.Project) []jen.Code {
 	lines := []jen.Code{}
 
 	for _, typ := range proj.DataTypes {
-		lines = append(lines, jen.IDf("%sIDSpanAttachmentKey", typ.Name.UnexportedVarName()).Op("=").Litf("%s_id", typ.Name.RouteName()))
+		lines = append(lines, jen.IDf("%sIDSpanAttachmentKey", typ.Name.UnexportedVarName()).Equals().Litf("%s_id", typ.Name.RouteName()))
 	}
 
 	lines = append(lines,
-		jen.ID("userIDSpanAttachmentKey").Op("=").Lit("user_id"),
-		jen.ID("usernameSpanAttachmentKey").Op("=").Lit("username"),
-		jen.ID("filterPageSpanAttachmentKey").Op("=").Lit("filter_page"),
-		jen.ID("filterLimitSpanAttachmentKey").Op("=").Lit("filter_limit"),
-		jen.ID("oauth2ClientDatabaseIDSpanAttachmentKey").Op("=").Lit("oauth2client_id"),
-		jen.ID("oauth2ClientIDSpanAttachmentKey").Op("=").Lit("client_id"),
-		jen.ID("webhookIDSpanAttachmentKey").Op("=").Lit("webhook_id"),
-		jen.ID("requestURISpanAttachmentKey").Op("=").Lit("request_uri"),
+		jen.ID("userIDSpanAttachmentKey").Equals().Lit("user_id"),
+		jen.ID("usernameSpanAttachmentKey").Equals().Lit("username"),
+		jen.ID("filterPageSpanAttachmentKey").Equals().Lit("filter_page"),
+		jen.ID("filterLimitSpanAttachmentKey").Equals().Lit("filter_limit"),
+		jen.ID("oauth2ClientDatabaseIDSpanAttachmentKey").Equals().Lit("oauth2client_id"),
+		jen.ID("oauth2ClientIDSpanAttachmentKey").Equals().Lit("client_id"),
+		jen.ID("webhookIDSpanAttachmentKey").Equals().Lit("webhook_id"),
+		jen.ID("requestURISpanAttachmentKey").Equals().Lit("request_uri"),
 	)
 
 	return lines
@@ -65,7 +65,7 @@ func buildAttachUint64ToSpan() []jen.Code {
 			jen.ID("attachmentKey").String(),
 			jen.ID("id").Uint64(),
 		).Block(
-			jen.If(jen.ID(utils.SpanVarName).Op("!=").Nil()).Block(
+			jen.If(jen.ID(utils.SpanVarName).DoesNotEqual().Nil()).Block(
 				jen.ID(utils.SpanVarName).Dot("AddAttributes").Call(
 					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(
 						jen.ID("attachmentKey"),
@@ -102,7 +102,7 @@ func buildAttachFilterToSpan(proj *models.Project) []jen.Code {
 			jen.ID(utils.SpanVarName).Op("*").Qual(utils.TracingLibrary, "Span"),
 			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"),
 		).Block(
-			jen.If(jen.ID(utils.FilterVarName).Op("!=").Nil().Op("&&").ID(utils.SpanVarName).Op("!=").Nil()).Block(
+			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().Nil().Op("&&").ID(utils.SpanVarName).DoesNotEqual().Nil()).Block(
 				jen.ID(utils.SpanVarName).Dot("AddAttributes").Callln(
 					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(
 						jen.ID("filterPageSpanAttachmentKey"),

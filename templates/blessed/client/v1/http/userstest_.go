@@ -9,7 +9,7 @@ import (
 )
 
 func usersTestDotGo(pkg *models.Project) *jen.File {
-	ret := jen.NewFile("client")
+	ret := jen.NewFile(packageName)
 
 	utils.AddImports(pkg, ret)
 
@@ -21,17 +21,17 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
 				jen.Line(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
-				jen.ID("expectedID").Op(":=").Add(utils.FakeUint64Func()),
+				jen.ID("expectedID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.List(
 					jen.ID("actual"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("BuildGetUserRequest").Call(
+				).Assign().ID("c").Dot("BuildGetUserRequest").Call(
 					utils.CtxVar(),
 					jen.ID("expectedID"),
 				),
@@ -68,8 +68,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -104,14 +104,14 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("GetUser").Call(
+				).Assign().ID("c").Dot("GetUser").Call(
 					utils.CtxVar(),
 					jen.ID("expected").Dot("ID"),
 				),
@@ -141,16 +141,16 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("BuildGetUsersRequest").Call(
+				).Assign().ID("c").Dot("BuildGetUsersRequest").Call(
 					utils.CtxVar(),
 					jen.Nil(),
 				),
@@ -178,9 +178,9 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(
-					jen.ID("Users").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(
-						jen.Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(
+					jen.ID("Users").MapAssign().Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(
+						jen.Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 					),
 				),
 				jen.Line(),
@@ -202,14 +202,14 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("GetUsers").Call(
+				).Assign().ID("c").Dot("GetUsers").Call(
 					utils.CtxVar(),
 					jen.Nil(),
 				),
@@ -233,17 +233,17 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Values(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Values(),
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("BuildCreateUserRequest").Call(
+				).Assign().ID("c").Dot("BuildCreateUserRequest").Call(
 					utils.CtxVar(),
 					jen.ID("exampleInput"),
 				),
@@ -270,8 +270,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse").Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Values(),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -291,7 +291,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 						jen.Qual("encoding/json", "NewDecoder").Call(
 							jen.ID("req").Dot("Body"),
 						).Dot("Decode").Call(
-							jen.Op("&").ID("x"),
+							jen.VarPointer().ID("x"),
 						),
 						nil,
 					),
@@ -307,14 +307,14 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("CreateUser").Call(
+				).Assign().ID("c").Dot("CreateUser").Call(
 					utils.CtxVar(),
 					jen.ID("exampleInput"),
 				),
@@ -341,17 +341,17 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodDelete"),
-				jen.ID("expectedID").Op(":=").Add(utils.FakeUint64Func()),
+				jen.ID("expectedID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("BuildArchiveUserRequest").Call(
+				).Assign().ID("c").Dot("BuildArchiveUserRequest").Call(
 					utils.CtxVar(),
 					jen.ID("expectedID"),
 				),
@@ -389,7 +389,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Add(utils.FakeUint64Func()),
+				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -408,7 +408,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.Err().Op(":=").ID("buildTestClient").Call(
+				jen.Err().Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				).Dot("ArchiveUser").Call(
@@ -430,9 +430,9 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				utils.CreateCtx(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
@@ -440,7 +440,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 				jen.List(
 					jen.ID("req"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("BuildLoginRequest").Call(
+				).Assign().ID("c").Dot("BuildLoginRequest").Call(
 					utils.CtxVar(),
 					utils.FakeUsernameFunc(),
 					utils.FakePasswordFunc(),
@@ -482,12 +482,12 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Qual("net/http", "SetCookie").Call(
 						jen.ID("res"),
-						jen.Op("&").Qual("net/http", "Cookie").Values(
-							jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
+						jen.VarPointer().Qual("net/http", "Cookie").Values(
+							jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 						),
 					),
 				),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
@@ -495,7 +495,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 				jen.List(
 					jen.ID("cookie"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("Login").Call(
+				).Assign().ID("c").Dot("Login").Call(
 					utils.CtxVar(),
 					utils.FakeUsernameFunc(),
 					utils.FakePasswordFunc(),
@@ -523,19 +523,19 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 						nil,
 					),
 					jen.Qual("time", "Sleep").Call(
-						jen.Lit(10).Op("*").Qual("time", "Hour"),
+						jen.Lit(10).Times().Qual("time", "Hour"),
 					),
 				),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
-				jen.ID("c").Dot("plainClient").Dot("Timeout").Op("=").Lit(500).Op("*").Qual("time", "Microsecond"),
+				jen.ID("c").Dot("plainClient").Dot("Timeout").Equals().Lit(500).Times().Qual("time", "Microsecond"),
 				jen.Line(),
 				jen.List(
 					jen.ID("cookie"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("Login").Call(
+				).Assign().ID("c").Dot("Login").Call(
 					utils.CtxVar(),
 					utils.FakeUsernameFunc(),
 					utils.FakePasswordFunc(),
@@ -563,7 +563,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 						nil,
 					),
 				),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
@@ -571,7 +571,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 				jen.List(
 					jen.ID("cookie"),
 					jen.Err(),
-				).Op(":=").ID("c").Dot("Login").Call(
+				).Assign().ID("c").Dot("Login").Call(
 					utils.CtxVar(),
 					utils.FakeUsernameFunc(),
 					utils.FakePasswordFunc(),

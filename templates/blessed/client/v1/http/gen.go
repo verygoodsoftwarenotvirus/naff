@@ -10,6 +10,8 @@ import (
 
 const (
 	v1 = "V1Client"
+
+	packageName = "client"
 )
 
 // RenderPackage renders the package
@@ -23,6 +25,8 @@ func RenderPackage(pkg *models.Project) error {
 		"client/v1/http/users.go":               usersDotGo(pkg),
 		"client/v1/http/users_test.go":          usersTestDotGo(pkg),
 		"client/v1/http/roundtripper.go":        roundtripperDotGo(pkg),
+		"client/v1/http/roundtripper_test.go":   roundtripperTestDotGo(pkg),
+		"client/v1/http/mock_read_closer.go":    mockReadCloserDotGo(pkg),
 		"client/v1/http/webhooks.go":            webhooksDotGo(pkg),
 		"client/v1/http/webhooks_test.go":       webhooksTestDotGo(pkg),
 		"client/v1/http/oauth2_clients.go":      oauth2ClientsDotGo(pkg),

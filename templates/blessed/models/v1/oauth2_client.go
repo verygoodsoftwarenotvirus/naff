@@ -14,7 +14,7 @@ func oauth2ClientDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("OAuth2ClientKey is a ContextKey for use with contexts involving OAuth2 clients"),
-			jen.ID("OAuth2ClientKey").ID("ContextKey").Op("=").Lit("oauth2_client"),
+			jen.ID("OAuth2ClientKey").ID("ContextKey").Equals().Lit("oauth2_client"),
 		),
 		jen.Line(),
 	)
@@ -45,11 +45,11 @@ func oauth2ClientDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("OAuth2ClientInfoMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
-				jen.ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.Op("*").ID("OAuth2Client"), jen.ID("error")),
+				jen.ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").ID("OAuth2Client"), jen.ID("error")),
 				jen.Line(),
 				jen.Comment("wrappers for our implementation library"),
-				jen.ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("error")),
-				jen.ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("error")),
+				jen.ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("error")),
+				jen.ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("error")),
 			),
 			jen.Line(),
 			jen.Comment("OAuth2Client represents a user-authorized API client"),
@@ -94,7 +94,7 @@ func oauth2ClientDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3", "ClientInfo").Op("=").Parens(jen.Op("*").ID("OAuth2Client")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3", "ClientInfo").Equals().Parens(jen.Op("*").ID("OAuth2Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -138,12 +138,12 @@ func oauth2ClientDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("HasScope returns whether or not the provided scope is included in the scope list"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("OAuth2Client")).ID("HasScope").Params(jen.ID("scope").ID("string")).Params(jen.ID("found").ID("bool")).Block(
-			jen.ID("scope").Op("=").Qual("strings", "TrimSpace").Call(jen.ID("scope")),
+			jen.ID("scope").Equals().Qual("strings", "TrimSpace").Call(jen.ID("scope")),
 			jen.If(jen.ID("scope").Op("==").Lit("")).Block(
 				jen.Return().ID("false"),
 			),
-			jen.If(jen.ID("c").Op("!=").ID("nil").Op("&&").ID("c").Dot("Scopes").Op("!=").ID("nil")).Block(
-				jen.For(jen.List(jen.ID("_"), jen.ID("s")).Op(":=").Range().ID("c").Dot("Scopes")).Block(
+			jen.If(jen.ID("c").DoesNotEqual().ID("nil").Op("&&").ID("c").Dot("Scopes").DoesNotEqual().ID("nil")).Block(
+				jen.For(jen.List(jen.ID("_"), jen.ID("s")).Assign().Range().ID("c").Dot("Scopes")).Block(
 					jen.If(jen.Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("s"))).Op("==").Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("scope"))).Op("||").Qual("strings", "TrimSpace").Call(jen.ID("s")).Op("==").Lit("*")).Block(
 						jen.Return().ID("true"),
 					),

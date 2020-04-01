@@ -91,27 +91,27 @@ func webhookDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("Update merges an WebhookCreationInput with an Webhook"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("w").Op("*").ID("Webhook")).ID("Update").Params(jen.ID("input").Op("*").ID("WebhookUpdateInput")).Block(
-			jen.If(jen.ID("input").Dot("Name").Op("!=").Lit("")).Block(
-				jen.ID("w").Dot("Name").Op("=").ID("input").Dot("Name"),
+			jen.If(jen.ID("input").Dot("Name").DoesNotEqual().Lit("")).Block(
+				jen.ID("w").Dot("Name").Equals().ID("input").Dot("Name"),
 			),
-			jen.If(jen.ID("input").Dot("ContentType").Op("!=").Lit("")).Block(
-				jen.ID("w").Dot("ContentType").Op("=").ID("input").Dot("ContentType"),
+			jen.If(jen.ID("input").Dot("ContentType").DoesNotEqual().Lit("")).Block(
+				jen.ID("w").Dot("ContentType").Equals().ID("input").Dot("ContentType"),
 			),
-			jen.If(jen.ID("input").Dot("URL").Op("!=").Lit("")).Block(
-				jen.ID("w").Dot("URL").Op("=").ID("input").Dot("URL"),
+			jen.If(jen.ID("input").Dot("URL").DoesNotEqual().Lit("")).Block(
+				jen.ID("w").Dot("URL").Equals().ID("input").Dot("URL"),
 			),
-			jen.If(jen.ID("input").Dot("Method").Op("!=").Lit("")).Block(
-				jen.ID("w").Dot("Method").Op("=").ID("input").Dot("Method"),
+			jen.If(jen.ID("input").Dot("Method").DoesNotEqual().Lit("")).Block(
+				jen.ID("w").Dot("Method").Equals().ID("input").Dot("Method"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("Events").Op("!=").ID("nil").Op("&&").ID("len").Call(jen.ID("input").Dot("Events")).Op(">").Lit(0)).Block(
-				jen.ID("w").Dot("Events").Op("=").ID("input").Dot("Events"),
+			jen.If(jen.ID("input").Dot("Events").DoesNotEqual().ID("nil").Op("&&").ID("len").Call(jen.ID("input").Dot("Events")).Op(">").Lit(0)).Block(
+				jen.ID("w").Dot("Events").Equals().ID("input").Dot("Events"),
 			),
-			jen.If(jen.ID("input").Dot("DataTypes").Op("!=").ID("nil").Op("&&").ID("len").Call(jen.ID("input").Dot("DataTypes")).Op(">").Lit(0)).Block(
-				jen.ID("w").Dot("DataTypes").Op("=").ID("input").Dot("DataTypes"),
+			jen.If(jen.ID("input").Dot("DataTypes").DoesNotEqual().ID("nil").Op("&&").ID("len").Call(jen.ID("input").Dot("DataTypes")).Op(">").Lit(0)).Block(
+				jen.ID("w").Dot("DataTypes").Equals().ID("input").Dot("DataTypes"),
 			),
-			jen.If(jen.ID("input").Dot("Topics").Op("!=").ID("nil").Op("&&").ID("len").Call(jen.ID("input").Dot("Topics")).Op(">").Lit(0)).Block(
-				jen.ID("w").Dot("Topics").Op("=").ID("input").Dot("Topics"),
+			jen.If(jen.ID("input").Dot("Topics").DoesNotEqual().ID("nil").Op("&&").ID("len").Call(jen.ID("input").Dot("Topics")).Op(">").Lit(0)).Block(
+				jen.ID("w").Dot("Topics").Equals().ID("input").Dot("Topics"),
 			),
 		),
 		jen.Line(),
@@ -121,9 +121,9 @@ func webhookDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("buildErrorLogFunc").Params(jen.ID("w").Op("*").ID("Webhook"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Func().Params(jen.ID("error"))).Block(
 			jen.Return().Func().Params(jen.Err().ID("error")).Block(
 				jen.ID("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-					jen.Lit("url").Op(":").ID("w").Dot("URL"),
-					jen.Lit("method").Op(":").ID("w").Dot("Method"),
-					jen.Lit("content_type").Op(":").ID("w").Dot("ContentType")),
+					jen.Lit("url").MapAssign().ID("w").Dot("URL"),
+					jen.Lit("method").MapAssign().ID("w").Dot("Method"),
+					jen.Lit("content_type").MapAssign().ID("w").Dot("ContentType")),
 				).Dot("Error").Call(jen.Err(), jen.Lit("error executing webhook")),
 			),
 		),
@@ -137,15 +137,15 @@ func webhookDotGo(pkg *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("w").Op("*").ID("Webhook")).ID("ToListener").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Block(
 			jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewWebhookListener").Callln(
 				jen.ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID("logger")),
-				jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebhookConfig").Valuesln(
-					jen.ID("Method").Op(":").ID("w").Dot("Method"),
-					jen.ID("URL").Op(":").ID("w").Dot("URL"),
-					jen.ID("ContentType").Op(":").ID("w").Dot("ContentType"),
+				jen.VarPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebhookConfig").Valuesln(
+					jen.ID("Method").MapAssign().ID("w").Dot("Method"),
+					jen.ID("URL").MapAssign().ID("w").Dot("URL"),
+					jen.ID("ContentType").MapAssign().ID("w").Dot("ContentType"),
 				),
-				jen.Op("&").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "ListenerConfig").Valuesln(
-					jen.ID("Events").Op(":").ID("w").Dot("Events"),
-					jen.ID("DataTypes").Op(":").ID("w").Dot("DataTypes"),
-					jen.ID("Topics").Op(":").ID("w").Dot("Topics"),
+				jen.VarPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "ListenerConfig").Valuesln(
+					jen.ID("Events").MapAssign().ID("w").Dot("Events"),
+					jen.ID("DataTypes").MapAssign().ID("w").Dot("DataTypes"),
+					jen.ID("Topics").MapAssign().ID("w").Dot("Topics"),
 				),
 			),
 		),

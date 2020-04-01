@@ -30,6 +30,7 @@ import (
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/tracing"
 	misc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/misc"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1"
+	fakemodels "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1/fake"
 	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1/mock"
 	server "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/server/v1"
 	httpserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/server/v1/http"
@@ -43,7 +44,6 @@ import (
 	integrationtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/integration"
 	loadtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/load"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil"
-	testutilmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/mock"
 	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/rand/model"
 )
 
@@ -73,7 +73,6 @@ func RenderProject(in *naffmodels.Project) error {
 		{name: "metricsmock", renderFunc: metricsmock.RenderPackage, activated: allActive},
 		{name: "server", renderFunc: server.RenderPackage, activated: allActive},
 		{name: "testutil", renderFunc: testutil.RenderPackage, activated: allActive},
-		{name: "testutilmock", renderFunc: testutilmock.RenderPackage, activated: allActive},
 		{name: "frontendtests", renderFunc: frontendtests.RenderPackage, activated: allActive},
 		{name: "webhooks", renderFunc: webhooks.RenderPackage, activated: allActive},
 		{name: "oauth2clients", renderFunc: oauth2clients.RenderPackage, activated: allActive},
@@ -83,6 +82,7 @@ func RenderProject(in *naffmodels.Project) error {
 		{name: "httpserver", renderFunc: httpserver.RenderPackage, activated: allActive},
 		{name: "modelsmock", renderFunc: modelsmock.RenderPackage, activated: allActive},
 		{name: "models", renderFunc: models.RenderPackage, activated: allActive},
+		{name: "fakemodels", renderFunc: fakemodels.RenderPackage, activated: allActive},
 		{name: "randmodel", renderFunc: randmodel.RenderPackage, activated: allActive},
 		{name: "iterables", renderFunc: iterables.RenderPackage, activated: allActive},
 		{name: "dbclient", renderFunc: dbclient.RenderPackage, activated: allActive},

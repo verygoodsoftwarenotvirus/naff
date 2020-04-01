@@ -16,7 +16,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.ID("maxTimeout").Op("=").Lit(120).Op("*").Qual("time", "Second"),
+			jen.ID("maxTimeout").Equals().Lit(120).Times().Qual("time", "Second"),
 		),
 		jen.Line(),
 	)
@@ -46,15 +46,15 @@ func serverDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("infra things"),
 			jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
 			jen.ID("config").Op("*").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig"),
-			jen.ID("router").Op("*").Qual("github.com/go-chi/chi", "Mux"),
-			jen.ID("httpServer").Op("*").Qual("net/http", "Server"),
+			jen.ID("router").ParamPointer().Qual("github.com/go-chi/chi", "Mux"),
+			jen.ID("httpServer").ParamPointer().Qual("net/http", "Server"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 			jen.ID("encoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
 		)
 
 		// if pkg.EnableNewsman {
 		lines = append(lines,
-			jen.ID("newsManager").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
+			jen.ID("newsManager").ParamPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		)
 		// }
 
@@ -94,7 +94,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 
 		// if pkg.EnableNewsman {
 		lines = append(lines,
-			jen.ID("newsManager").Op("*").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
+			jen.ID("newsManager").ParamPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		)
 		// }
 
@@ -103,35 +103,35 @@ func serverDotGo(pkg *models.Project) *jen.File {
 
 	buildServerDecLines := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("DebugMode").Op(":").ID("cfg").Dot("Server").Dot("Debug"),
+			jen.ID("DebugMode").MapAssign().ID("cfg").Dot("Server").Dot("Debug"),
 			jen.Comment("infra things"),
-			jen.ID("db").Op(":").ID("db"),
-			jen.ID("config").Op(":").ID("cfg"),
-			jen.ID("encoder").Op(":").ID("encoder"),
-			jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(),
-			jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.Lit("api_server")),
+			jen.ID("db").MapAssign().ID("db"),
+			jen.ID("config").MapAssign().ID("cfg"),
+			jen.ID("encoder").MapAssign().ID("encoder"),
+			jen.ID("httpServer").MapAssign().ID("provideHTTPServer").Call(),
+			jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.Lit("api_server")),
 		}
 
 		// if pkg.EnableNewsman {
 		lines = append(lines,
-			jen.ID("newsManager").Op(":").ID("newsManager"),
+			jen.ID("newsManager").MapAssign().ID("newsManager"),
 		)
 		// }
 
 		lines = append(lines,
 			jen.Comment("services"),
-			jen.ID("webhooksService").Op(":").ID("webhooksService"),
-			jen.ID("frontendService").Op(":").ID("frontendService"),
-			jen.ID("usersService").Op(":").ID("usersService"),
-			jen.ID("authService").Op(":").ID("authService"),
+			jen.ID("webhooksService").MapAssign().ID("webhooksService"),
+			jen.ID("frontendService").MapAssign().ID("frontendService"),
+			jen.ID("usersService").MapAssign().ID("usersService"),
+			jen.ID("authService").MapAssign().ID("authService"),
 		)
 
 		for _, typ := range pkg.DataTypes {
 			tpuvn := typ.Name.PluralUnexportedVarName()
-			lines = append(lines, jen.IDf("%sService", tpuvn).Op(":").IDf("%sService", tpuvn))
+			lines = append(lines, jen.IDf("%sService", tpuvn).MapAssign().IDf("%sService", tpuvn))
 		}
 
-		lines = append(lines, jen.ID("oauth2ClientsService").Op(":").ID("oauth2Service"))
+		lines = append(lines, jen.ID("oauth2ClientsService").MapAssign().ID("oauth2Service"))
 
 		return lines
 	}
@@ -139,46 +139,46 @@ func serverDotGo(pkg *models.Project) *jen.File {
 	buildProvideServerLines := func() []jen.Code {
 		lines := []jen.Code{
 			jen.If(jen.ID("len").Call(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).Op("<").Lit(32)).Block(
-				jen.Err().Op(":=").ID("errors").Dot("New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
+				jen.Err().Assign().ID("errors").Dot("New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("cookie secret failure")),
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.ID("srv").Op(":=").Op("&").ID("Server").Valuesln(
+			jen.ID("srv").Assign().VarPointer().ID("Server").Valuesln(
 				buildServerDecLines()...,
 			),
 			jen.Line(),
-			jen.If(jen.Err().Op(":=").ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.Err().Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidTracingProvider")).Block(
+			jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.Err().DoesNotEqual().ID("nil").Op("&&").ID("err").DoesNotEqual().Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidTracingProvider")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("ih"), jen.Err()).Op(":=").ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID("logger")),
-			jen.If(jen.Err().Op("!=").ID("nil").Op("&&").ID("err").Op("!=").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidMetricsProvider")).Block(
+			jen.List(jen.ID("ih"), jen.Err()).Assign().ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID("logger")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Op("&&").ID("err").DoesNotEqual().Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ErrInvalidMetricsProvider")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
-			jen.If(jen.ID("ih").Op("!=").ID("nil")).Block(
+			jen.If(jen.ID("ih").DoesNotEqual().ID("nil")).Block(
 				jen.ID("srv").Dot("setupRouter").Call(jen.ID("cfg").Dot("Frontend"), jen.ID("ih")),
 			),
 			jen.Line(),
-			jen.ID("srv").Dot("httpServer").Dot("Handler").Op("=").Op("&").Qual("go.opencensus.io/plugin/ochttp", "Handler").Valuesln(
-				jen.ID("Handler").Op(":").ID("srv").Dot("router"),
-				jen.ID("FormatSpanName").Op(":").ID("formatSpanNameForRequest"),
+			jen.ID("srv").Dot("httpServer").Dot("Handler").Equals().VarPointer().Qual("go.opencensus.io/plugin/ochttp", "Handler").Valuesln(
+				jen.ID("Handler").MapAssign().ID("srv").Dot("router"),
+				jen.ID("FormatSpanName").MapAssign().ID("formatSpanNameForRequest"),
 			),
 			jen.Line(),
 		}
 
 		// if pkg.EnableNewsman {
 		lines = append(lines,
-			jen.List(jen.ID("allWebhooks"), jen.Err()).Op(":=").ID("db").Dot("GetAllWebhooks").Call(utils.CtxVar()),
-			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.List(jen.ID("allWebhooks"), jen.Err()).Assign().ID("db").Dot("GetAllWebhooks").Call(utils.CtxVar()),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Block(
-				jen.ID("wh").Op(":=").ID("allWebhooks").Dot("Webhooks").Index(jen.ID("i")),
+			jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Block(
+				jen.ID("wh").Assign().ID("allWebhooks").Dot("Webhooks").Index(jen.ID("i")),
 				jen.Comment("NOTE: we must guarantee that whatever is stored in the database is valid, otherwise"),
 				jen.Comment("newsman will try (and fail) to execute requests constantly"),
-				jen.ID("l").Op(":=").ID("wh").Dot("ToListener").Call(jen.ID("srv").Dot("logger")),
+				jen.ID("l").Assign().ID("wh").Dot("ToListener").Call(jen.ID("srv").Dot("logger")),
 				jen.ID("srv").Dot("newsManager").Dot("TuneIn").Call(jen.ID("l")),
 			),
 			jen.Line(),
@@ -225,11 +225,11 @@ func (s *Server) logRoutes() {
 		jen.Comment("Serve serves HTTP traffic"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("Serve").Params().Block(
-			jen.ID("s").Dot("httpServer").Dot("Addr").Op("=").Qual("fmt", "Sprintf").Call(jen.Lit(":%d"), jen.ID("s").Dot("config").Dot("Server").Dot("HTTPPort")),
+			jen.ID("s").Dot("httpServer").Dot("Addr").Equals().Qual("fmt", "Sprintf").Call(jen.Lit(":%d"), jen.ID("s").Dot("config").Dot("Server").Dot("HTTPPort")),
 			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("Listening for HTTP requests on %q"), jen.ID("s").Dot("httpServer").Dot("Addr"))),
 			jen.Line(),
 			jen.Comment("returns ErrServerClosed on graceful close"),
-			jen.If(jen.Err().Op(":=").ID("s").Dot("httpServer").Dot("ListenAndServe").Call(), jen.Err().Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("s").Dot("httpServer").Dot("ListenAndServe").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("server shutting down")),
 				jen.If(jen.Err().Op("==").Qual("net/http", "ErrServerClosed")).Block(
 					jen.Comment("NOTE: there is a chance that next line won't have time to run,"),

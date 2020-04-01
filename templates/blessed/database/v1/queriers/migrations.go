@@ -567,9 +567,9 @@ func makeMigrations(pkg *models.Project, dbVendor wordsmith.SuperPalabra) []jen.
 
 	for i, script := range migrations {
 		out = append(out, jen.Valuesln(
-			jen.ID("Version").Op(":").Lit(i+1),
-			jen.ID("Description").Op(":").Lit(script.description),
-			jen.ID("Script").Op(":").Add(script.script),
+			jen.ID("Version").MapAssign().Lit(i+1),
+			jen.ID("Description").MapAssign().Lit(script.description),
+			jen.ID("Script").MapAssign().Add(script.script),
 		))
 	}
 
@@ -583,7 +583,7 @@ func migrationsDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("migrations").Op("=").Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(makeMigrations(pkg, dbvendor)...),
+			jen.ID("migrations").Equals().Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(makeMigrations(pkg, dbvendor)...),
 		),
 	)
 
@@ -615,10 +615,10 @@ func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Commentf("migrate a %s database", dbcn),
 		jen.Line(),
-		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Func().Params()).Block(
+		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").ParamPointer().Qual("database/sql", "DB")).Params(jen.Func().Params()).Block(
 			jen.Return().Func().Params().Block(
-				jen.ID("driver").Op(":=").Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(jen.ID("db"), jen.Qual("github.com/GuiaBolso/darwin", dialectName).Values()),
-				jen.If(jen.Err().Op(":=").Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.Nil()).Dot("Migrate").Call(), jen.Err().Op("!=").ID("nil")).Block(
+				jen.ID("driver").Assign().Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(jen.ID("db"), jen.Qual("github.com/GuiaBolso/darwin", dialectName).Values()),
+				jen.If(jen.Err().Assign().Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.Nil()).Dot("Migrate").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("panic").Call(jen.Err()),
 				),
 			),

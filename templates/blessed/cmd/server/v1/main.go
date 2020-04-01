@@ -17,36 +17,36 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("main").Params().Block(
 			jen.Comment("initialize our logger of choice"),
-			jen.ID("logger").Op(":=").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
+			jen.ID("logger").Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.Line(),
 			jen.Comment("find and validate our configuration filepath"),
-			jen.ID("configFilepath").Op(":=").Qual("os", "Getenv").Call(jen.Lit("CONFIGURATION_FILEPATH")),
+			jen.ID("configFilepath").Assign().Qual("os", "Getenv").Call(jen.Lit("CONFIGURATION_FILEPATH")),
 			jen.If(jen.ID("configFilepath").Op("==").Lit("")).Block(
 				jen.ID("logger").Dot("Fatal").Call(jen.Qual("errors", "New").Call(jen.Lit("no configuration file provided"))),
 			),
 			jen.Line(),
 			jen.Comment("parse our config file"),
-			jen.List(jen.ID("cfg"), jen.Err()).Op(":=").Qual(internalConfigImp, "ParseConfigFile").Call(jen.ID("configFilepath")),
-			jen.If(jen.Err().Op("!=").ID("nil").Op("||").ID("cfg").Op("==").ID("nil")).Block(
+			jen.List(jen.ID("cfg"), jen.Err()).Assign().Qual(internalConfigImp, "ParseConfigFile").Call(jen.ID("configFilepath")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Op("||").ID("cfg").Op("==").ID("nil")).Block(
 				jen.ID("logger").Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.Comment("only allow initialization to take so long"),
-			jen.List(jen.ID("tctx"), jen.ID("cancel")).Op(":=").Qual("context", "WithTimeout").Call(jen.Qual("context", "Background").Call(), jen.ID("cfg").Dot("Meta").Dot("StartupDeadline")),
-			jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.Lit("initialization")),
+			jen.List(jen.ID("tctx"), jen.ID("cancel")).Assign().Qual("context", "WithTimeout").Call(jen.Qual("context", "Background").Call(), jen.ID("cfg").Dot("Meta").Dot("StartupDeadline")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.Lit("initialization")),
 			jen.Line(),
 			jen.Comment("connect to our database"),
-			jen.List(jen.ID("db"), jen.Err()).Op(":=").ID("cfg").Dot("ProvideDatabase").Call(utils.CtxVar(), jen.ID("logger")),
-			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.List(jen.ID("db"), jen.Err()).Assign().ID("cfg").Dot("ProvideDatabase").Call(utils.CtxVar(), jen.ID("logger")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("logger").Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.Comment("build our server struct"),
-			jen.List(jen.ID("server"), jen.Err()).Op(":=").ID("BuildServer").Call(utils.CtxVar(), jen.ID("cfg"), jen.ID("logger"), jen.ID("db")),
+			jen.List(jen.ID("server"), jen.Err()).Assign().ID("BuildServer").Call(utils.CtxVar(), jen.ID("cfg"), jen.ID("logger"), jen.ID("db")),
 			jen.ID("span").Dot("End").Call(),
 			jen.ID("cancel").Call(),
 			jen.Line(),
-			jen.If(jen.Err().Op("!=").ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Qual("log", "Fatal").Call(jen.Err()),
 			),
 			jen.Line(),

@@ -14,7 +14,7 @@ func encodingDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder").Op("=").Parens(jen.Op("*").ID("EncoderDecoder")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder").Equals().Parens(jen.Op("*").ID("EncoderDecoder")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -37,7 +37,7 @@ func encodingDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("DecodeRequest satisfies our EncoderDecoder interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("EncoderDecoder")).ID("DecodeRequest").Params(jen.ID("req").Op("*").Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("m").Op("*").ID("EncoderDecoder")).ID("DecodeRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.ID("error")).Block(
 			jen.Return().ID("m").Dot("Called").Call(jen.ID("req"), jen.ID("v")).Dot("Error").Call(jen.Lit(0)),
 		),
 		jen.Line(),

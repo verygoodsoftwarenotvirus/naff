@@ -14,7 +14,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataServer").Op("=").Parens(jen.Op("*").ID("UserDataServer")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataServer").Equals().Parens(jen.Op("*").ID("UserDataServer")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -29,7 +29,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("UserLoginInputMiddleware is a mock method to satisfy our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataServer")).ID("UserLoginInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("next")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
@@ -39,7 +39,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("UserInputMiddleware is a mock method to satisfy our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataServer")).ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("next")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
@@ -49,7 +49,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("PasswordUpdateInputMiddleware is a mock method to satisfy our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataServer")).ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("next")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
@@ -59,7 +59,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("TOTPSecretRefreshInputMiddleware is a mock method to satisfy our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataServer")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("next")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
@@ -69,7 +69,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ListHandler is a mock method to satisfy our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataServer")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
@@ -79,7 +79,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("CreateHandler is a mock method to satisfy our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataServer")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
@@ -89,7 +89,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ReadHandler is a mock method to satisfy our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataServer")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
@@ -99,7 +99,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("NewTOTPSecretHandler is a mock method to satisfy our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataServer")).ID("NewTOTPSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
@@ -109,7 +109,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("UpdatePasswordHandler is a mock method to satisfy our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataServer")).ID("UpdatePasswordHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
@@ -119,7 +119,7 @@ func mockUserDataServerDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ArchiveHandler is a mock method to satisfy our interface requirements"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("UserDataServer")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),

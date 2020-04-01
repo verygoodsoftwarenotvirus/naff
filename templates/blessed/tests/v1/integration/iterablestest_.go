@@ -18,7 +18,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	pn := typ.Name.Plural()
 
 	ret.Add(
-		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
+		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
 			buildEqualityCheckLines(typ)...,
 		),
 		jen.Line(),
@@ -27,53 +27,53 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret.Add(buildBuildDummySomething(pkg, typ)...)
 
 	ret.Add(
-		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be createable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("should be createable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 					buildTestCreating(pkg, typ)...,
 				)),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 					buildTestListing(pkg, typ)...,
 				)),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to check something that does not exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to check something that does not exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 					buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg, typ)...,
 				)),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return 200 when the relevant item exists"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should return 200 when the relevant item exists"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 					buildTestExistenceCheckingShouldBeReadable(pkg, typ)...,
 				)),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to read something that does not exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to read something that does not exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 					buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg, typ)...,
 				)),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 					buildTestReadingShouldBeReadable(pkg, typ)...,
 				)),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to update something that does not exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to update something that does not exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 					buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg, typ)...,
 				)),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should be updatable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("it should be updatable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 					buildTestUpdatingShouldBeUpdateable(pkg, typ)...,
 				)),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be deleted"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be deleted"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 					buildTestDeletingShouldBeAbleToBeDeleted(pkg, typ)...,
 				)),
 			)),
@@ -98,7 +98,7 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs,
-		jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			fieldToExpectedDotField(fmt.Sprintf("expected"), typ)...,
 		),
 	)
@@ -112,11 +112,11 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
+		jen.IDf("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.Line(),
-		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(
+		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
 			creationArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()),
@@ -140,7 +140,7 @@ func buildRequisiteCreationCodeForUpdateFunction(pkg *models.Project, typ models
 	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs,
-		jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 	)
@@ -154,11 +154,11 @@ func buildRequisiteCreationCodeForUpdateFunction(pkg *models.Project, typ models
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
+		jen.IDf("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.Line(),
-		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(
+		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
 			creationArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()),
@@ -230,10 +230,10 @@ func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Co
 
 	blockLines = append(blockLines,
 		utils.CreateCtx(),
-		jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
-		jen.List(jen.ID("y"), jen.Err()).Op(":=").ID("todoClient").Dotf("Create%s", sn).Call(
+		jen.List(jen.ID("y"), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
 			creationArgs...,
 		),
 		jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -242,7 +242,7 @@ func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Co
 	)
 
 	lines := []jen.Code{
-		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
+		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
 			blockLines...,
 		),
 		jen.Line(),
@@ -255,7 +255,7 @@ func buildFakeCallForCreationInput(pkg *models.Project, typ models.DataType) []j
 	lines := []jen.Code{}
 
 	for _, field := range typ.Fields {
-		lines = append(lines, jen.ID(field.Name.Singular()).Op(":").Add(utils.FakeCallForField(pkg.OutputPath, field)))
+		lines = append(lines, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeCallForField(pkg.OutputPath, field)))
 	}
 
 	return lines
@@ -266,7 +266,7 @@ func fieldToExpectedDotField(varName string, typ models.DataType) []jen.Code {
 
 	for _, field := range typ.Fields {
 		sn := field.Name.Singular()
-		lines = append(lines, jen.ID(sn).Op(":").ID(varName).Dot(sn))
+		lines = append(lines, jen.ID(sn).MapAssign().ID(varName).Dot(sn))
 	}
 
 	return lines
@@ -343,8 +343,8 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(
+		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(
 			jen.ID("tctx"),
 			jen.ID("t").Dot("Name").Call(),
 		),
@@ -359,12 +359,12 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID("expected"), jen.IDf("created%s", typ.Name.Singular())),
 		jen.Line(),
 		jen.Comment("Clean up"),
-		jen.Err().Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(
+		jen.Err().Equals().ID("todoClient").Dotf("Archive%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 		jen.Line(),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -384,8 +384,8 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 	pcn := typ.Name.PluralCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -400,17 +400,17 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 	if len(cc) > stopIndex {
 		lines = append(lines, cc[:len(cc)-stopIndex]...)
 	}
-	cc = append(cc, jen.ID("expected").Op("=").ID("append").Call(jen.ID("expected"), jen.IDf("created%s", typ.Name.Singular())))
+	cc = append(cc, jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.IDf("created%s", typ.Name.Singular())))
 
 	lines = append(lines,
 		jen.Commentf("Create %s", pcn),
 		jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
-		jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
-			jen.ID("expected").Op("=").Append(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
+		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+			jen.ID("expected").Equals().Append(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
 		),
 		jen.Line(),
 		jen.Commentf("Assert %s list equality", scn),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dotf("Get%s", pn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", pn).Call(
 			listArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -422,8 +422,8 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Line(),
 		jen.Comment("Clean up"),
-		jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Op(":=").Range().ID("actual").Dot(pn)).Block(
-			jen.Err().Op("=").ID("todoClient").Dotf("Archive%s", sn).Call(
+		jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Assign().Range().ID("actual").Dot(pn)).Block(
+			jen.Err().Equals().ID("todoClient").Dotf("Archive%s", sn).Call(
 				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 			),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -493,8 +493,8 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -540,8 +540,8 @@ func buildTestExistenceCheckingShouldBeReadable(pkg *models.Project, typ models.
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -551,7 +551,7 @@ func buildTestExistenceCheckingShouldBeReadable(pkg *models.Project, typ models.
 	lines = append(lines,
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dotf("%sExists", sn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("%sExists", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -569,8 +569,8 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *mo
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -615,8 +615,8 @@ func buildTestReadingShouldBeReadable(pkg *models.Project, typ models.DataType) 
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -626,7 +626,7 @@ func buildTestReadingShouldBeReadable(pkg *models.Project, typ models.DataType) 
 	lines = append(lines,
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -689,7 +689,7 @@ func buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(pkg *mode
 		params = append(params, listParams...)
 	}
 
-	params = append(params, jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(jen.ID("ID").Op(":").ID("nonexistentID")))
+	params = append(params, jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(jen.ID("ID").MapAssign().ID("nonexistentID")))
 
 	return params
 }
@@ -700,8 +700,8 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg 
 	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
 
 	lines := []jen.Code{
-		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -735,8 +735,8 @@ func buildTestUpdatingShouldBeUpdateable(pkg *models.Project, typ models.DataTyp
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -757,13 +757,13 @@ func buildTestUpdatingShouldBeUpdateable(pkg *models.Project, typ models.DataTyp
 	lines = append(lines, jen.Line(),
 		jen.Commentf("Change %s", scn),
 		jen.List(jen.IDf("created%s", sn).Dot("Update").Call(jen.ID("expected").Dot("ToInput").Call())),
-		jen.Err().Op("=").ID("todoClient").Dotf("Update%s", sn).Call(
+		jen.Err().Equals().ID("todoClient").Dotf("Update%s", sn).Call(
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("todoClient").Dotf("Get%s", sn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -781,8 +781,8 @@ func buildTestUpdatingShouldBeUpdateable(pkg *models.Project, typ models.DataTyp
 
 func buildTestDeletingShouldBeAbleToBeDeleted(pkg *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
-		jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(
+		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(
 			jen.ID("tctx"),
 			jen.ID("t").Dot("Name").Call(),
 		),

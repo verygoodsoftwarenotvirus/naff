@@ -12,37 +12,37 @@ func webhookTestDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Func().ID("TestWebhook_Update").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhook_Update").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleInput").Op(":=").Op("&").ID("WebhookUpdateInput").Valuesln(
-					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
-					jen.ID("ContentType").Op(":").Lit("application/xml"),
-					jen.ID("URL").Op(":").Lit("https://blah.verygoodsoftwarenotvirus.ru"),
-					jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"),
-					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("more_things")),
-					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("new_stuff")),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("blah-blah")),
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("exampleInput").Assign().VarPointer().ID("WebhookUpdateInput").Valuesln(
+					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
+					jen.ID("ContentType").MapAssign().Lit("application/xml"),
+					jen.ID("URL").MapAssign().Lit("https://blah.verygoodsoftwarenotvirus.ru"),
+					jen.ID("Method").MapAssign().Qual("net/http", "MethodPatch"),
+					jen.ID("Events").MapAssign().Index().ID("string").Values(jen.Lit("more_things")),
+					jen.ID("DataTypes").MapAssign().Index().ID("string").Values(jen.Lit("new_stuff")),
+					jen.ID("Topics").MapAssign().Index().ID("string").Values(jen.Lit("blah-blah")),
 				),
 				jen.Line(),
-				jen.ID("actual").Op(":=").Op("&").ID("Webhook").Valuesln(
-					jen.ID("Name").Op(":").Add(utils.FakeStringFunc()),
-					jen.ID("ContentType").Op(":").Lit("application/json"),
-					jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"),
-					jen.ID("Method").Op(":").Qual("net/http", "MethodPost"),
-					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("things")),
-					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("stuff")),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("blah")),
+				jen.ID("actual").Assign().VarPointer().ID("Webhook").Valuesln(
+					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
+					jen.ID("ContentType").MapAssign().Lit("application/json"),
+					jen.ID("URL").MapAssign().Lit("https://verygoodsoftwarenotvirus.ru"),
+					jen.ID("Method").MapAssign().Qual("net/http", "MethodPost"),
+					jen.ID("Events").MapAssign().Index().ID("string").Values(jen.Lit("things")),
+					jen.ID("DataTypes").MapAssign().Index().ID("string").Values(jen.Lit("stuff")),
+					jen.ID("Topics").MapAssign().Index().ID("string").Values(jen.Lit("blah")),
 				),
-				jen.ID("expected").Op(":=").Op("&").ID("Webhook").Valuesln(
-					jen.ID("Name").Op(":").ID("exampleInput").Dot("Name"),
-					jen.ID("ContentType").Op(":").Lit("application/xml"),
-					jen.ID("URL").Op(":").Lit("https://blah.verygoodsoftwarenotvirus.ru"),
-					jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"),
-					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("more_things")),
-					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("new_stuff")),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("blah-blah")),
+				jen.ID("expected").Assign().VarPointer().ID("Webhook").Valuesln(
+					jen.ID("Name").MapAssign().ID("exampleInput").Dot("Name"),
+					jen.ID("ContentType").MapAssign().Lit("application/xml"),
+					jen.ID("URL").MapAssign().Lit("https://blah.verygoodsoftwarenotvirus.ru"),
+					jen.ID("Method").MapAssign().Qual("net/http", "MethodPatch"),
+					jen.ID("Events").MapAssign().Index().ID("string").Values(jen.Lit("more_things")),
+					jen.ID("DataTypes").MapAssign().Index().ID("string").Values(jen.Lit("new_stuff")),
+					jen.ID("Topics").MapAssign().Index().ID("string").Values(jen.Lit("blah-blah")),
 				),
 				jen.Line(),
 				jen.ID("actual").Dot("Update").Call(jen.ID("exampleInput")),
@@ -53,11 +53,11 @@ func webhookTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestWebhook_ToListener").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhook_ToListener").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("w").Op(":=").Op("&").ID("Webhook").Values(),
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("w").Assign().VarPointer().ID("Webhook").Values(),
 				jen.ID("w").Dot("ToListener").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			)),
 		),
@@ -65,12 +65,12 @@ func webhookTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_buildErrorLogFunc").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildErrorLogFunc").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("w").Op(":=").Op("&").ID("Webhook").Values(),
-				jen.ID("actual").Op(":=").ID("buildErrorLogFunc").Call(jen.ID("w"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				jen.ID("w").Assign().VarPointer().ID("Webhook").Values(),
+				jen.ID("actual").Assign().ID("buildErrorLogFunc").Call(jen.ID("w"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("actual").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			)),
 		),

@@ -72,7 +72,6 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportName(AssertPkg, "assert")
 	file.ImportName(MustAssertPkg, "require")
 	file.ImportName(MockPkg, "mock")
-	file.ImportName(TracingLibrary, "trace")
 	file.ImportAlias(FakeLibrary, "fake")
 
 	file.ImportName("go.opencensus.io/stats", "stats")

@@ -20,7 +20,7 @@ func databaseMockDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("Database").Op("=").Parens(jen.Op("*").ID("MockDatabase")).Call(jen.Nil()),
+		jen.Var().ID("_").ID("Database").Equals().Parens(jen.Op("*").ID("MockDatabase")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -28,13 +28,13 @@ func databaseMockDotGo(pkg *models.Project) *jen.File {
 		var lines []jen.Code
 
 		for _, typ := range pkg.DataTypes {
-			lines = append(lines, jen.IDf("%sDataManager", typ.Name.Singular()).Op(":").Op("&").Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())).Values())
+			lines = append(lines, jen.IDf("%sDataManager", typ.Name.Singular()).MapAssign().VarPointer().Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())).Values())
 		}
 
 		lines = append(lines,
-			jen.ID("UserDataManager").Op(":").Op("&").Qual(mockModelsImp, "UserDataManager").Values(),
-			jen.ID("OAuth2ClientDataManager").Op(":").Op("&").Qual(mockModelsImp, "OAuth2ClientDataManager").Values(),
-			jen.ID("WebhookDataManager").Op(":").Op("&").Qual(mockModelsImp, "WebhookDataManager").Values(),
+			jen.ID("UserDataManager").MapAssign().VarPointer().Qual(mockModelsImp, "UserDataManager").Values(),
+			jen.ID("OAuth2ClientDataManager").MapAssign().VarPointer().Qual(mockModelsImp, "OAuth2ClientDataManager").Values(),
+			jen.ID("WebhookDataManager").MapAssign().VarPointer().Qual(mockModelsImp, "WebhookDataManager").Values(),
 		)
 
 		return lines
@@ -44,7 +44,7 @@ func databaseMockDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("BuildMockDatabase builds a mock database"),
 		jen.Line(),
 		jen.Func().ID("BuildMockDatabase").Params().Params(jen.Op("*").ID("MockDatabase")).Block(
-			jen.Return().Op("&").ID("MockDatabase").Valuesln(
+			jen.Return().VarPointer().ID("MockDatabase").Valuesln(
 				buildMockDatabaseLines()...,
 			),
 		),
@@ -83,7 +83,7 @@ func databaseMockDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("Migrate satisfies the database.Database interface"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MockDatabase")).ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar()),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
 			jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
 		),
 		jen.Line(),
@@ -93,7 +93,7 @@ func databaseMockDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("IsReady satisfies the database.Database interface"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").ID("MockDatabase")).ID("IsReady").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar()),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
 			jen.Return().ID("args").Dot("Bool").Call(jen.Lit(0)),
 		),
 		jen.Line(),

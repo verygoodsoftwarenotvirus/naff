@@ -14,9 +14,9 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("SortAscending is the pre-determined Ascending sortType for external use"),
-			jen.ID("SortAscending").ID("sortType").Op("=").Lit("asc"),
+			jen.ID("SortAscending").ID("sortType").Equals().Lit("asc"),
 			jen.Comment("SortDescending is the pre-determined Descending sortType for external use"),
-			jen.ID("SortDescending").ID("sortType").Op("=").Lit("desc"),
+			jen.ID("SortDescending").ID("sortType").Equals().Lit("desc"),
 		),
 		jen.Line(),
 	)
@@ -45,7 +45,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").ID("error").Op("=").Parens(jen.Op("*").ID("ErrorResponse")).Call(jen.Nil()),
+		jen.Var().ID("_").ID("error").Equals().Parens(jen.Op("*").ID("ErrorResponse")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

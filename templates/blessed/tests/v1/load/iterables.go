@@ -62,15 +62,15 @@ func buildFetchRandomSomething(pkg *models.Project, typ models.DataType) []jen.C
 		jen.Commentf("fetchRandom%s retrieves a random %s from the list of available %s", sn, scn, pcn),
 		jen.Line(),
 		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
-			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Op(":=").ID("c").Dotf("Get%s", pn).Call(
+			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 				callArgs...,
 			),
-			jen.If(jen.Err().Op("!=").ID("nil").Op("||").IDf("%sRes", puvn).Op("==").ID("nil").Op("||").ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).Op("==").Lit(0)).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Op("||").IDf("%sRes", puvn).Op("==").ID("nil").Op("||").ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).Op("==").Lit(0)).Block(
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),
-			jen.ID("randIndex").Op(":=").Qual("math/rand", "Intn").Call(jen.ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn))),
-			jen.Return().Op("&").IDf("%sRes", puvn).Dot(pn).Index(jen.ID("randIndex")),
+			jen.ID("randIndex").Assign().Qual("math/rand", "Intn").Call(jen.ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn))),
+			jen.Return().VarPointer().IDf("%sRes", puvn).Dot(pn).Index(jen.ID("randIndex")),
 		),
 		jen.Line(),
 	}
@@ -99,7 +99,7 @@ func fieldToExpectedDotField(varName string, typ models.DataType) []jen.Code {
 
 	for _, field := range typ.Fields {
 		sn := field.Name.Singular()
-		lines = append(lines, jen.ID(sn).Op(":").ID(varName).Dot(sn))
+		lines = append(lines, jen.ID(sn).MapAssign().ID(varName).Dot(sn))
 	}
 
 	return lines
@@ -109,7 +109,7 @@ func buildFakeCallForCreationInput(pkg *models.Project, typ models.DataType) []j
 	lines := []jen.Code{}
 
 	for _, field := range typ.Fields {
-		lines = append(lines, jen.ID(field.Name.Singular()).Op(":").Add(utils.FakeCallForField(pkg.OutputPath, field)))
+		lines = append(lines, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeCallForField(pkg.OutputPath, field)))
 	}
 
 	return lines
@@ -130,7 +130,7 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs,
-		jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			fieldToExpectedDotField(fmt.Sprintf("%s%s", sourceVarPrefix, typ.Name.Singular()), typ)...,
 		),
 	)
@@ -144,14 +144,14 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("%s%s", sourceVarPrefix, typ.Name.Singular()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
+		jen.IDf("%s%s", sourceVarPrefix, typ.Name.Singular()).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.Line(),
-		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Op(":=").ID("c").Dotf("Create%s", sn).Call(
+		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Assign().ID("c").Dotf("Create%s", sn).Call(
 			creationArgs...,
 		),
-		jen.If(jen.Err().Op("!=").Nil()).Block(
+		jen.If(jen.Err().DoesNotEqual().Nil()).Block(
 			jen.Return(jen.Nil(), jen.Err()),
 		),
 		jen.Line(),
@@ -206,40 +206,40 @@ func buildRandomActionMap(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	blockLines := []jen.Code{
 		jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(
-			jen.Litf("Create%s", sn).Op(":").Valuesln(
-				jen.ID("Name").Op(":").Litf("Create%s", sn),
-				jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
+			jen.Litf("Create%s", sn).MapAssign().Valuesln(
+				jen.ID("Name").MapAssign().Litf("Create%s", sn),
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
 					buildCreateSomethingBlock(pkg, typ)...,
 				),
-				jen.ID("Weight").Op(":").Lit(100),
+				jen.ID("Weight").MapAssign().Lit(100),
 			),
-			jen.Litf("Get%s", sn).Op(":").Valuesln(
-				jen.ID("Name").Op(":").Litf("Get%s", sn),
-				jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
+			jen.Litf("Get%s", sn).MapAssign().Valuesln(
+				jen.ID("Name").MapAssign().Litf("Get%s", sn),
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
 					buildGetSomethingBlock(pkg, typ)...,
 				),
-				jen.ID("Weight").Op(":").Lit(100),
+				jen.ID("Weight").MapAssign().Lit(100),
 			),
-			jen.Litf("Get%s", pn).Op(":").Valuesln(
-				jen.ID("Name").Op(":").Litf("Get%s", pn),
-				jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
+			jen.Litf("Get%s", pn).MapAssign().Valuesln(
+				jen.ID("Name").MapAssign().Litf("Get%s", pn),
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
 					buildGetListOfSomethingBlock(pkg, typ)...,
 				),
-				jen.ID("Weight").Op(":").Lit(100),
+				jen.ID("Weight").MapAssign().Lit(100),
 			),
-			jen.Litf("Update%s", sn).Op(":").Valuesln(
-				jen.ID("Name").Op(":").Litf("Update%s", sn),
-				jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
+			jen.Litf("Update%s", sn).MapAssign().Valuesln(
+				jen.ID("Name").MapAssign().Litf("Update%s", sn),
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
 					buildUpdateChildBlock(pkg, typ)...,
 				),
-				jen.ID("Weight").Op(":").Lit(100),
+				jen.ID("Weight").MapAssign().Lit(100),
 			),
-			jen.Litf("Archive%s", sn).Op(":").Valuesln(
-				jen.ID("Name").Op(":").Litf("Archive%s", sn),
-				jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
+			jen.Litf("Archive%s", sn).MapAssign().Valuesln(
+				jen.ID("Name").MapAssign().Litf("Archive%s", sn),
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
 					buildArchiveSomethingBlock(pkg, typ)...,
 				),
-				jen.ID("Weight").Op(":").Lit(85),
+				jen.ID("Weight").MapAssign().Lit(85),
 			),
 		),
 	}
@@ -284,7 +284,7 @@ func buildRandomDependentIDFetchers(pkg *models.Project, typ models.DataType) []
 		callArgs = append([]jen.Code{jen.ID("c")}, ca...)
 
 		lines = append(lines,
-			jen.ID(pt.Name.UnexportedVarName()).Op(":=").IDf("fetchRandom%s", pt.Name.Singular()).Call(callArgs...),
+			jen.ID(pt.Name.UnexportedVarName()).Assign().IDf("fetchRandom%s", pt.Name.Singular()).Call(callArgs...),
 		)
 	}
 
@@ -309,7 +309,7 @@ func buildGetSomethingBlock(pkg *models.Project, typ models.DataType) []jen.Code
 			}
 			return nil
 		}(),
-		jen.If(jen.IDf("random%s", sn).Op(":=").IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).Op("!=").ID("nil")).Block(
+		jen.If(jen.IDf("random%s", sn).Assign().IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).DoesNotEqual().ID("nil")).Block(
 			jen.Return().ID("c").Dotf("BuildGet%sRequest", sn).Call(requestBuildingArgs...),
 		),
 		jen.Line(),
@@ -358,7 +358,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	var ifRandomExistsBlock []jen.Code
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
-		ifRandomExistsBlock = append(ifRandomExistsBlock, jen.IDf("random%s", sn).Dot(fsn).Op("=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
+		ifRandomExistsBlock = append(ifRandomExistsBlock, jen.IDf("random%s", sn).Dot(fsn).Equals().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
 	}
 	ifRandomExistsBlock = append(ifRandomExistsBlock,
 		jen.Line(),
@@ -373,7 +373,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	}
 
 	lines = append(lines,
-		jen.If(jen.IDf("random%s", sn).Op(":=").IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).Op("!=").ID("nil")).Block(
+		jen.If(jen.IDf("random%s", sn).Assign().IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).DoesNotEqual().ID("nil")).Block(
 			ifRandomExistsBlock...,
 		),
 		jen.Line(),
@@ -395,7 +395,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	//
 	//for _, field := range typ.Fields {
 	//	fsn := field.Name.Singular()
-	//	randomLines = append(randomLines, jen.IDf("random%s", sn).Dot(fsn).Op("=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
+	//	randomLines = append(randomLines, jen.IDf("random%s", sn).Dot(fsn).Equals().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
 	//}
 	//
 	//randomLines = append(randomLines,
@@ -408,7 +408,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	//lines := buildRandomDependentIDFetchers(pkg, typ)
 	//lines = append(lines,
 	//	jen.Line(),
-	//	jen.If(jen.IDf("random%s", sn).Op(":=").IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).Op("!=").ID("nil")).Block(
+	//	jen.If(jen.IDf("random%s", sn).Assign().IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).DoesNotEqual().ID("nil")).Block(
 	//		randomLines...,
 	//	),
 	//	jen.Line(),
@@ -436,7 +436,7 @@ func buildArchiveSomethingBlock(pkg *models.Project, typ models.DataType) []jen.
 			}
 			return nil
 		}(),
-		jen.If(jen.IDf("random%s", sn).Op(":=").IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).Op("!=").ID("nil")).Block(
+		jen.If(jen.IDf("random%s", sn).Assign().IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).DoesNotEqual().ID("nil")).Block(
 			jen.Return().ID("c").Dotf("BuildArchive%sRequest", sn).Call(requestBuildingArgs...),
 		),
 		jen.Line(),

@@ -18,7 +18,7 @@ func mockIterableDataManagerDotGo(pkg *models.Project, typ models.DataType) *jen
 	sn := n.Singular()
 
 	ret.Add(
-		jen.Var().ID("_").ID("models").Dotf("%sDataManager", sn).Op("=").Parens(jen.Op("*").IDf("%sDataManager", sn)).Call(jen.Nil()),
+		jen.Var().ID("_").ID("models").Dotf("%sDataManager", sn).Equals().Parens(jen.Op("*").IDf("%sDataManager", sn)).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -61,7 +61,7 @@ func buildSomethingExists(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Commentf("%s is a mock function", funcName),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).ID(funcName).Params(params...).Params(jen.Bool(), jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(callArgs...),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 			jen.Return().List(jen.ID("args").Dot("Bool").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -82,7 +82,7 @@ func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Get%s", sn).Params(params...).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(callArgs...),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -102,7 +102,7 @@ func buildGetSomethingCount(pkg *models.Project, typ models.DataType) []jen.Code
 		jen.Commentf("Get%sCount is a mock function", sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Get%sCount", sn).Params(params...).Params(jen.ID("uint64"), jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(callArgs...),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -122,7 +122,7 @@ func buildGetAllSomethingsCount(typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("GetAll%sCount", pn).Params(
 			utils.CtxVar().Qual("context", "Context"),
 		).Params(jen.ID("uint64"), jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar()),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -144,7 +144,7 @@ func buildGetListOfSomething(pkg *models.Project, typ models.DataType) []jen.Cod
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Get%s", pn).Params(params...).Params(jen.Op("*").ID("models").Dotf("%sList", sn),
 			jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(callArgs...),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").ID("models").Dotf("%sList", sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -167,7 +167,7 @@ func buildGetAllSomethingsForUser(pkg *models.Project, typ models.DataType) []je
 			params...,
 		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("userID")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("userID")),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -190,7 +190,7 @@ func buildGetAllSomethingsForSomethingElse(pkg *models.Project, typ models.DataT
 			params...,
 		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(utils.CtxVar(), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
@@ -213,7 +213,7 @@ func buildCreateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 			params...,
 		).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
 			jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(
 				args...,
 			),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),

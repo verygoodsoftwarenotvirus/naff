@@ -21,11 +21,11 @@ func serviceDataEventsDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("Create represents a create event"),
-			jen.ID("Create").ID("ServiceDataEvent").Op("=").Lit("create"),
+			jen.ID("Create").ID("ServiceDataEvent").Equals().Lit("create"),
 			jen.Comment("Update represents an update event"),
-			jen.ID("Update").ID("ServiceDataEvent").Op("=").Lit("update"),
+			jen.ID("Update").ID("ServiceDataEvent").Equals().Lit("update"),
 			jen.Comment("Archive represents an archive event"),
-			jen.ID("Archive").ID("ServiceDataEvent").Op("=").Lit("archive"),
+			jen.ID("Archive").ID("ServiceDataEvent").Equals().Lit("archive"),
 		),
 		jen.Line(),
 	)

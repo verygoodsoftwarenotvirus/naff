@@ -20,7 +20,7 @@ func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 		jen.Commentf("Random%sCreationInput creates a random %sInput", sn, sn),
 		jen.Line(),
 		jen.Func().IDf("Random%sCreationInput", sn).Params().Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))).Block(
-			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(buildFakeCalls(typ.Fields)...),
+			jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(buildFakeCalls(typ.Fields)...),
 			jen.Line(),
 			jen.Return().ID("x"),
 		),
@@ -70,12 +70,12 @@ func buildFakeCalls(fields []models.DataField) []jen.Code {
 			if field.Pointer {
 				out = append(
 					out,
-					jen.ID(sn).Op(":").Func().Params(jen.ID("x").ID(field.Type)).Params(jen.Op("*").ID(field.Type)).SingleLineBlock(jen.Return(jen.Op("&").ID("x"))).Call(numberMethods[typ]),
+					jen.ID(sn).MapAssign().Func().Params(jen.ID("x").ID(field.Type)).Params(jen.Op("*").ID(field.Type)).SingleLineBlock(jen.Return(jen.VarPointer().ID("x"))).Call(numberMethods[typ]),
 				)
 			} else {
 				out = append(
 					out,
-					jen.ID(sn).Op(":").Add(numberMethods[typ]),
+					jen.ID(sn).MapAssign().Add(numberMethods[typ]),
 				)
 			}
 		default:

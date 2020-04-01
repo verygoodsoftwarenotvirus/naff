@@ -19,18 +19,18 @@ func middlewareDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 		jen.Commentf("CreationInputMiddleware is a middleware for fetching, parsing, and attaching an %sInput struct from a request", sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))),
-				jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreationInputMiddleware")),
+			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn))),
+				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreationInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
-				jen.If(jen.Err().Op(":=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("req"), jen.ID("x")), jen.Err().Op("!=").ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("req"), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),
 					utils.WriteXHeader("res", "StatusBadRequest"),
 					jen.Return(),
 				),
 				jen.Line(),
-				utils.CtxVar().Op("=").Qual("context", "WithValue").Call(utils.CtxVar(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("x")),
+				utils.CtxVar().Equals().Qual("context", "WithValue").Call(utils.CtxVar(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("x")),
 				jen.ID("next").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req").Dot("WithContext").Call(utils.CtxVar())),
 			)),
 		),
@@ -43,18 +43,18 @@ func middlewareDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 		jen.Comment("This is the same as the creation one, but that won't always be the case."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.ID("x").Op(":=").ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sUpdateInput", sn))),
-				jen.List(utils.CtxVar(), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateInputMiddleware")),
+			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sUpdateInput", sn))),
+				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
-				jen.If(jen.Err().Op(":=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("req"), jen.ID("x")), jen.Err().Op("!=").ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("req"), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),
 					utils.WriteXHeader("res", "StatusBadRequest"),
 					jen.Return(),
 				),
 				jen.Line(),
-				utils.CtxVar().Op("=").Qual("context", "WithValue").Call(utils.CtxVar(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("x")),
+				utils.CtxVar().Equals().Qual("context", "WithValue").Call(utils.CtxVar(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("x")),
 				jen.ID("next").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req").Dot("WithContext").Call(utils.CtxVar())),
 			)),
 		),

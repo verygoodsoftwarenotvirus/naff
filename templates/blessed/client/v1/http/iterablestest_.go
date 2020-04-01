@@ -10,7 +10,7 @@ import (
 )
 
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile("client")
+	ret := jen.NewFile(packageName)
 
 	utils.AddImports(proj, ret)
 
@@ -34,9 +34,9 @@ func buildVarDeclarationsOfDependentIDs(pkg *models.Project, typ models.DataType
 	lines := []jen.Code{}
 
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
-		lines = append(lines, jen.IDf("%sID", pt.Name.UnexportedVarName()).Op(":=").Add(utils.FakeUint64Func()))
+		lines = append(lines, jen.IDf("%sID", pt.Name.UnexportedVarName()).Assign().Add(utils.FakeUint64Func()))
 	}
-	lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Op(":=").Add(utils.FakeUint64Func()))
+	lines = append(lines, jen.IDf("%sID", typ.Name.UnexportedVarName()).Assign().Add(utils.FakeUint64Func()))
 
 	return lines
 }
@@ -46,11 +46,11 @@ func buildVarDeclarationsOfDependentStructs(pkg *models.Project, typ models.Data
 
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
 		lines = append(lines,
-			jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), pt.Name.Singular()).Valuesln(
-				jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+			jen.ID(pt.Name.UnexportedVarName()).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models", "v1"), pt.Name.Singular()).Valuesln(
+				jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				func() jen.Code {
 					if pt.BelongsToStruct != nil {
-						return jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).Op(":").ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID")
+						return jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).MapAssign().ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID")
 					} else {
 						return nil
 					}
@@ -60,11 +60,11 @@ func buildVarDeclarationsOfDependentStructs(pkg *models.Project, typ models.Data
 	}
 
 	lines = append(lines,
-		jen.ID(typ.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), typ.Name.Singular()).Valuesln(
-			jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+		jen.ID(typ.Name.UnexportedVarName()).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models", "v1"), typ.Name.Singular()).Valuesln(
+			jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
-					return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
+					return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
 				} else {
 					return nil
 				}
@@ -80,19 +80,19 @@ func buildCreationVarDeclarationsOfDependentStructs(pkg *models.Project, typ mod
 
 	for _, pt := range pkg.FindOwnerTypeChain(typ) {
 		values := []jen.Code{
-			jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+			jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 		}
 
 		for _, field := range pt.Fields {
 			if field.ValidForCreationInput {
-				values = append(values, jen.ID(field.Name.Singular()).Op(":").Add(utils.FakeFuncForType(field.Type)()))
+				values = append(values, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
 			}
 		}
 
 		values = append(values,
 			func() jen.Code {
 				if pt.BelongsToStruct != nil {
-					return jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).Op(":").ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID")
+					return jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).MapAssign().ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID")
 				} else {
 					return nil
 				}
@@ -100,24 +100,24 @@ func buildCreationVarDeclarationsOfDependentStructs(pkg *models.Project, typ mod
 		)
 
 		lines = append(lines,
-			jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), pt.Name.Singular()).Valuesln(values...),
+			jen.ID(pt.Name.UnexportedVarName()).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models", "v1"), pt.Name.Singular()).Valuesln(values...),
 		)
 	}
 
 	values := []jen.Code{
-		jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+		jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 	}
 
 	for _, field := range typ.Fields {
 		if field.ValidForCreationInput {
-			values = append(values, jen.ID(field.Name.Singular()).Op(":").Add(utils.FakeFuncForType(field.Type)()))
+			values = append(values, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
 		}
 	}
 
 	values = append(values,
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
-				return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
+				return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
 			} else {
 				return nil
 			}
@@ -125,7 +125,7 @@ func buildCreationVarDeclarationsOfDependentStructs(pkg *models.Project, typ mod
 	)
 
 	lines = append(lines,
-		jen.ID(typ.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models", "v1"), typ.Name.Singular()).Valuesln(values...),
+		jen.ID(typ.Name.UnexportedVarName()).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models", "v1"), typ.Name.Singular()).Valuesln(values...),
 	)
 
 	return lines
@@ -222,14 +222,14 @@ func buildTestV1Client_BuildItemExistsRequest(proj *models.Project, typ models.D
 
 	subtestLines := []jen.Code{
 		utils.ExpectMethod("expectedMethod", "MethodHead"),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
-		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 	}
 	subtestLines = append(subtestLines, depVarDecls...)
 
 	subtestLines = append(subtestLines,
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("Build%sExistsRequest", ts)).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Build%sExistsRequest", ts)).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, true)...,
 		),
 		jen.Line(),
@@ -281,22 +281,22 @@ func buildTestV1Client_ItemExists(proj *models.Project, typ models.DataType) []j
 	//
 	//	if pt.BelongsToStruct != nil {
 	//		subtestLines = append(subtestLines,
-	//			jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(proj.OutputPath, "models/v1"), pt.Name.Singular()).Valuesln(
-	//				jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-	//				jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).Op(":").ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID"),
+	//			jen.ID(pt.Name.UnexportedVarName()).Assign().VarPointer().Qual(filepath.Join(proj.OutputPath, "models/v1"), pt.Name.Singular()).Valuesln(
+	//				jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+	//				jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).MapAssign().ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID"),
 	//			),
 	//		)
 	//	} else {
 	//		subtestLines = append(subtestLines,
-	//			jen.IDf(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(proj.OutputPath, "models/v1"), pt.Name.Singular()).Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
+	//			jen.IDf(pt.Name.UnexportedVarName()).Assign().VarPointer().Qual(filepath.Join(proj.OutputPath, "models/v1"), pt.Name.Singular()).Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 	//		)
 	//	}
 	//}
 	actualCallArgs = append(actualCallArgs, jen.IDf("%sID", uvn))
 
 	subtestLines = append(subtestLines,
-		jen.IDf("%sID", uvn).Op(":=").Add(utils.FakeUint64Func()),
-		jen.ID("expected").Op(":=").True(),
+		jen.IDf("%sID", uvn).Assign().Add(utils.FakeUint64Func()),
+		jen.ID("expected").Assign().True(),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -325,8 +325,8 @@ func buildTestV1Client_ItemExists(proj *models.Project, typ models.DataType) []j
 			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
 		),
 		jen.Line(),
-		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("%sExists", ts)).Call(
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("%sExists", ts)).Call(
 			actualCallArgs...,
 		),
 		jen.Line(),
@@ -353,14 +353,14 @@ func buildTestV1Client_BuildGetSomethingRequest(pkg *models.Project, typ models.
 
 	subtestLines := []jen.Code{
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
-		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 	}
 	subtestLines = append(subtestLines, depVarDecls...)
 
 	subtestLines = append(subtestLines,
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithIDs(pkg, typ, true)...,
 		),
 		jen.Line(),
@@ -412,25 +412,25 @@ func buildTestV1Client_GetSomething(pkg *models.Project, typ models.DataType) []
 
 		if pt.BelongsToStruct != nil {
 			subtestLines = append(subtestLines,
-				jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), pt.Name.Singular()).Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
-					jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).Op(":").ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID"),
+				jen.ID(pt.Name.UnexportedVarName()).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), pt.Name.Singular()).Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).MapAssign().ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID"),
 				),
 			)
 		} else {
 			subtestLines = append(subtestLines,
-				jen.ID(pt.Name.UnexportedVarName()).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), pt.Name.Singular()).Values(jen.ID("ID").Op(":").Add(utils.FakeUint64Func())),
+				jen.ID(pt.Name.UnexportedVarName()).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), pt.Name.Singular()).Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 			)
 		}
 	}
 	actualCallArgs = append(actualCallArgs, jen.ID(uvn).Dot("ID"))
 
 	subtestLines = append(subtestLines,
-		jen.ID(uvn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
-			jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+		jen.ID(uvn).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
+			jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
-					return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Op(":").ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
+					return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
 				} else {
 					return nil
 				}
@@ -464,8 +464,8 @@ func buildTestV1Client_GetSomething(pkg *models.Project, typ models.DataType) []
 			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(uvn)), nil),
 		),
 		jen.Line(),
-		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
 			actualCallArgs...,
 		),
 		jen.Line(),
@@ -492,12 +492,12 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(pkg *models.Project, typ m
 	structDecls := buildVarDeclarationsOfDependentStructs(pkg, typ)
 	subtestLines := structDecls[:len(structDecls)-1]
 	subtestLines = append(subtestLines,
-		jen.ID(utils.FilterVarName).Op(":=").Call(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
+		jen.ID(utils.FilterVarName).Assign().Call(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
-		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
 			buildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(pkg, typ, true)...,
 		),
 		jen.Line(),
@@ -546,12 +546,12 @@ func buildTestV1Client_GetListOfSomething(pkg *models.Project, typ models.DataTy
 	structDecls := buildVarDeclarationsOfDependentStructs(pkg, typ)
 	subtestLines := structDecls[:len(structDecls)-1]
 	subtestLines = append(subtestLines,
-		jen.ID(utils.FilterVarName).Op(":=").Add(utils.NilQueryFilter(pkg)),
+		jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(pkg)),
 		jen.Line(),
-		jen.ID(puvn).Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", ts)).Valuesln(
-			jen.ID(tp).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
+		jen.ID(puvn).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", ts)).Valuesln(
+			jen.ID(tp).MapAssign().Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
 				jen.Valuesln(
-					jen.ID("ID").Op(":").Add(utils.FakeUint64Func()),
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 			),
 		),
@@ -574,7 +574,7 @@ func buildTestV1Client_GetListOfSomething(pkg *models.Project, typ models.DataTy
 			),
 		),
 		jen.Line(),
-		jen.ID("c").Op(":=").ID("buildTestClient").Call(
+		jen.ID("c").Assign().ID("buildTestClient").Call(
 			jen.ID("t"),
 			jen.ID("ts"),
 		),
@@ -606,9 +606,9 @@ func buildTestV1Client_GetListOfSomething(pkg *models.Project, typ models.DataTy
 func buildTestV1Client_BuildCreateSomethingRequest(pkg *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	cfs := []jen.Code{jen.ID("ID").Op(":").Add(utils.FakeUint64Func())}
+	cfs := []jen.Code{jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())}
 	for _, field := range typ.Fields {
-		cfs = append(cfs, jen.ID(field.Name.Singular()).Op(":").Add(utils.FakeFuncForType(field.Type)()))
+		cfs = append(cfs, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
 	}
 
 	structDecls := buildVarDeclarationsOfDependentStructs(pkg, typ)
@@ -616,19 +616,19 @@ func buildTestV1Client_BuildCreateSomethingRequest(pkg *models.Project, typ mode
 	subtestLines = append(subtestLines,
 		jen.Line(),
 		utils.ExpectMethod("expectedMethod", "MethodPost"),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
-		jen.ID("input").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
+		jen.ID("input").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
 			cfs[1:]...,
 		),
-		jen.ID("c").Op(":=").ID("buildTestClient").Call(
+		jen.ID("c").Assign().ID("buildTestClient").Call(
 			jen.ID("t"),
 			jen.ID("ts"),
 		),
 		jen.List(
 			jen.ID("actual"),
 			jen.Err(),
-		).Op(":=").ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
+		).Assign().ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
 			buildParamsForMethodThatCreatesADataTypeFromStructs(pkg, typ, true)...,
 		),
 		jen.Line(),
@@ -667,7 +667,7 @@ func buildTestV1Client_CreateSomething(pkg *models.Project, typ models.DataType)
 	var createCreationInputLines []jen.Code
 	for _, field := range typ.Fields {
 		if field.ValidForCreationInput {
-			createCreationInputLines = append(createCreationInputLines, jen.ID(field.Name.Singular()).Op(":").ID(uvn).Dot(field.Name.Singular()))
+			createCreationInputLines = append(createCreationInputLines, jen.ID(field.Name.Singular()).MapAssign().ID(uvn).Dot(field.Name.Singular()))
 		}
 	}
 
@@ -686,7 +686,7 @@ func buildTestV1Client_CreateSomething(pkg *models.Project, typ models.DataType)
 
 	subtestLines := buildCreationVarDeclarationsOfDependentStructs(pkg, typ)
 	subtestLines = append(subtestLines,
-		jen.ID("input").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
+		jen.ID("input").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
 			createCreationInputLines...,
 		),
 		jen.Line(),
@@ -700,14 +700,14 @@ func buildTestV1Client_CreateSomething(pkg *models.Project, typ models.DataType)
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 			jen.Line(),
 			jen.Var().ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)),
-			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.Op("&").ID("x")), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.VarPointer().ID("x")), nil),
 			utils.AssertEqual(jen.ID("input"), jen.ID("x"), nil),
 			jen.Line(),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(uvn)), nil),
 		),
 		jen.Line(),
-		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
 			buildParamsForMethodThatCreatesADataTypeFromStructs(pkg, typ, true)...,
 		),
 		jen.Line(),
@@ -740,9 +740,9 @@ func buildTestV1Client_BuildUpdateSomethingRequest(pkg *models.Project, typ mode
 	subtestLines = append(subtestLines,
 		utils.ExpectMethod("expectedMethod", "MethodPut"),
 		jen.Line(),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
-		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
 			actualParams...,
 		),
 		jen.Line(),
@@ -794,7 +794,7 @@ func buildTestV1Client_UpdateSomething(pkg *models.Project, typ models.DataType)
 			),
 		),
 		jen.Line(),
-		jen.Err().Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Update%s", ts)).Call(
+		jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Update%s", ts)).Call(
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)...,
 		),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
@@ -817,7 +817,7 @@ func buildTestV1Client_BuildArchiveSomethingRequest(pkg *models.Project, typ mod
 
 	subtestLines := []jen.Code{
 		utils.ExpectMethod("expectedMethod", "MethodDelete"),
-		jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
 	}
 
@@ -825,8 +825,8 @@ func buildTestV1Client_BuildArchiveSomethingRequest(pkg *models.Project, typ mod
 
 	subtestLines = append(subtestLines,
 		jen.Line(),
-		jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg, typ)...,
 		),
 		jen.Line(),
@@ -893,7 +893,7 @@ func buildTestV1Client_ArchiveSomething(pkg *models.Project, typ models.DataType
 			utils.WriteHeader("StatusOK"),
 		),
 		jen.Line(),
-		jen.Err().Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
+		jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg, typ)...,
 		),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),

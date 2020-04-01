@@ -294,22 +294,27 @@ func OuterTestFunc(subjectName string) *jen.Statement {
 
 const SpanVarName = "span"
 
-func StartSpan(saveCtx bool, spanName string) []jen.Code {
+func StartSpan(proj *models.Project, saveCtx bool, spanName string) jen.Code {
 	/*
 		ctx, span := trace.StartSpan(ctx, "UpdateItem")
 		defer span.End()
 	*/
-	lines := []jen.Code{
+	g := &jen.Group{}
+
+	g.Add(
 		jen.List(func() jen.Code {
 			if saveCtx {
 				return CtxVar()
 			}
 			return jen.ID("_")
-		}(), jen.ID(SpanVarName)).Op(":=").Qual(TracingLibrary, "StartSpan").Call(CtxVar(), jen.Lit(spanName)),
+		}(), jen.ID(SpanVarName)).Op(":=").Qual(filepath.Join(proj.OutputPath, "internal", "v1", "tracing"), "StartSpan").Call(CtxVar(), jen.Lit(spanName)),
+		jen.Line(),
 		jen.Defer().ID(SpanVarName).Dot("End").Call(),
-	}
+		jen.Line(),
+		jen.Line(),
+	)
 
-	return lines
+	return g
 }
 
 // RunGoimportsForFile runs the `goimports` binary for a given filename

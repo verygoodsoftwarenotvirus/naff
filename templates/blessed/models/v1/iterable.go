@@ -175,11 +175,11 @@ func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 		for _, typ := range typ.Fields {
 			if typ.ValidForUpdateInput {
 				fsn := typ.Name.Singular()
-				lines = append(lines, jen.ID(fsn).Op(":").ID("x").Dot(fsn))
+				lines = append(lines, jen.ID(fsn).MapAssign().ID("x").Dot(fsn))
 			}
 		}
 
-		return jen.Return(jen.Op("&").IDf("%sUpdateInput", sn).Valuesln(lines...))
+		return jen.Return(jen.VarPointer().IDf("%sUpdateInput", sn).Valuesln(lines...))
 	}
 
 	ret.Add(
@@ -202,15 +202,15 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 			if field.Pointer {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).Op("!=").ID("nil").Op("&&").Op("*").ID("input").Dot(fsn).Op("!=").Lit("").Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Block(
-						jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").Op("&&").Op("*").ID("input").Dot(fsn).DoesNotEqual().Lit("").Op("&&").ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
 			} else {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).Op("!=").Lit("").Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Block(
-						jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().Lit("").Op("&&").ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
 			}
@@ -230,15 +230,15 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 			if field.Pointer {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).Op("!=").ID("nil").Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Block(
-						jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").Op("&&").ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
 			} else {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Block(
-						jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
 			}
