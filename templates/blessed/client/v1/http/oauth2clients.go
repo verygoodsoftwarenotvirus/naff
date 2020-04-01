@@ -45,7 +45,8 @@ func buildBuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.Return().Qual("net/http", "NewRequest").Call(
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			utils.CtxVar(),
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -127,7 +128,8 @@ func buildBuildGetOAuth2ClientsRequest(proj *models.Project) []jen.Code {
 			jen.ID("oauth2ClientsBasePath"),
 		),
 		jen.Line(),
-		jen.Return().Qual("net/http", "NewRequest").Call(
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			utils.CtxVar(),
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -360,7 +362,8 @@ func buildBuildArchiveOAuth2ClientRequest() []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.Return().Qual("net/http", "NewRequest").Call(
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			utils.CtxVar(),
 			jen.Qual("net/http", "MethodDelete"),
 			jen.ID("uri"),
 			jen.Nil(),

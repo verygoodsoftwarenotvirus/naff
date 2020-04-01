@@ -43,7 +43,8 @@ func buildBuildGetUserRequest() []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.Return().Qual("net/http", "NewRequest").Call(
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			utils.CtxVar(),
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -125,7 +126,8 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 			jen.ID("usersBasePath"),
 		),
 		jen.Line(),
-		jen.Return().Qual("net/http", "NewRequest").Call(
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			utils.CtxVar(),
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -256,7 +258,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.Err().Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
+		jen.Err().Op("=").ID("c").Dot("executeUnauthenticatedDataRequest").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
 			jen.Op("&").ID("user"),
@@ -294,7 +296,8 @@ func buildBuildArchiveUserRequest() []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.Return().Qual("net/http", "NewRequest").Call(
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			utils.CtxVar(),
 			jen.Qual("net/http", "MethodDelete"),
 			jen.ID("uri"),
 			jen.Nil(),

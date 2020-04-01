@@ -289,9 +289,7 @@ func CtxVar() *jen.Statement {
 
 // OuterTestFunc does
 func OuterTestFunc(subjectName string) *jen.Statement {
-	return jen.Func().ID(fmt.Sprintf("Test%s", subjectName)).Params(
-		jen.ID(T).Op("*").Qual("testing", T),
-	)
+	return jen.Func().ID(fmt.Sprintf("Test%s", subjectName)).Params(jen.ID(T).Op("*").Qual("testing", T))
 }
 
 const SpanVarName = "span"

@@ -188,6 +188,138 @@ func (s *Statement) Op(op string) *Statement {
 	return s
 }
 
+// MapAssign renders the provided operator / token.
+func MapAssign() *Statement {
+	return newStatement().MapAssign()
+}
+
+// MapAssign renders the provided operator / token.
+func (g *Group) MapAssign() *Statement {
+	s := MapAssign()
+	g.items = append(g.items, s)
+	return s
+}
+
+// MapAssign renders the provided operator / token.
+func (s *Statement) MapAssign() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: ":",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Times renders the provided operator / token.
+func Times() *Statement {
+	return newStatement().Times()
+}
+
+// Times renders the provided operator / token.
+func (g *Group) Times() *Statement {
+	s := Times()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Times renders the provided operator / token.
+func (s *Statement) Times() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "*",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// ParamPointer renders the provided operator / token.
+func ParamPointer() *Statement {
+	return newStatement().ParamPointer()
+}
+
+// ParamPointer renders the provided operator / token.
+func (g *Group) ParamPointer() *Statement {
+	s := ParamPointer()
+	g.items = append(g.items, s)
+	return s
+}
+
+// ParamPointer renders the provided operator / token.
+func (s *Statement) ParamPointer() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "*",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// VarPointer renders the provided operator / token.
+func VarPointer() *Statement {
+	return newStatement().VarPointer()
+}
+
+// VarPointer renders the provided operator / token.
+func (g *Group) VarPointer() *Statement {
+	s := VarPointer()
+	g.items = append(g.items, s)
+	return s
+}
+
+// VarPointer renders the provided operator / token.
+func (s *Statement) VarPointer() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "&",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Equals renders the provided operator / token.
+func Equals() *Statement {
+	return newStatement().Equals()
+}
+
+// Equals renders the provided operator / token.
+func (g *Group) Equals() *Statement {
+	s := Equals()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Equals renders the provided operator / token.
+func (s *Statement) Equals() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "=",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// DoesNotEqual renders the provided operator / token.
+func DoesNotEqual() *Statement {
+	return newStatement().DoesNotEqual()
+}
+
+// DoesNotEqual renders the provided operator / token.
+func (g *Group) DoesNotEqual() *Statement {
+	s := DoesNotEqual()
+	g.items = append(g.items, s)
+	return s
+}
+
+// DoesNotEqual renders the provided operator / token.
+func (s *Statement) DoesNotEqual() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "!=",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // Opln renders the provided operator / token.
 func Opln(op string) *Statement {
 	return newStatement().Opln(op)

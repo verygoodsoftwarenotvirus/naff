@@ -155,7 +155,8 @@ func buildBuildItemExistsRequest(proj *models.Project, typ models.DataType) []je
 		),
 		attachURIToSpanCall(proj),
 		jen.Line(),
-		jen.Return().Qual("net/http", "NewRequest").Call(
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			utils.CtxVar(),
 			jen.Qual("net/http", "MethodHead"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -224,7 +225,8 @@ func buildBuildGetSomethingRequestFuncDecl(proj *models.Project, typ models.Data
 		),
 		attachURIToSpanCall(proj),
 		jen.Line(),
-		jen.Return().Qual("net/http", "NewRequest").Call(
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			utils.CtxVar(),
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -573,7 +575,8 @@ func buildBuildGetListOfSomethingRequestFuncDecl(proj *models.Project, typ model
 		jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Callln(urlBuildingParams...),
 		attachURIToSpanCall(proj),
 		jen.Line(),
-		jen.Return().Qual("net/http", "NewRequest").Call(
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			utils.CtxVar(),
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -823,7 +826,8 @@ func buildBuildArchiveSomethingRequestFuncDecl(proj *models.Project, typ models.
 		),
 		attachURIToSpanCall(proj),
 		jen.Line(),
-		jen.Return().Qual("net/http", "NewRequest").Call(
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			utils.CtxVar(),
 			jen.Qual("net/http", "MethodDelete"),
 			jen.ID("uri"),
 			jen.Nil(),
