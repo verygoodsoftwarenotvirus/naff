@@ -11,7 +11,7 @@ func oauth2ClientsTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, ret)
 
-	ret.Add(buildV1Client_BuildGetOAuth2ClientRequest()...)
+	ret.Add(buildV1Client_BuildGetOAuth2ClientRequest(proj)...)
 	ret.Add(buildV1Client_GetOAuth2Client(proj)...)
 	ret.Add(buildV1Client_BuildGetOAuth2ClientsRequest()...)
 	ret.Add(buildV1Client_GetOAuth2Clients(proj)...)
@@ -23,7 +23,11 @@ func oauth2ClientsTestDotGo(proj *models.Project) *jen.File {
 	return ret
 }
 
-func buildV1Client_BuildGetOAuth2ClientRequest() []jen.Code {
+func fakeOAuth2ClientFunc(proj *models.Project) jen.Code {
+	return jen.Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call()
+}
+
+func buildV1Client_BuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_BuildGetOAuth2ClientRequest").Block(
 			utils.ParallelTest(nil),
@@ -37,7 +41,7 @@ func buildV1Client_BuildGetOAuth2ClientRequest() []jen.Code {
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
-				jen.ID("expectedID").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("exampleOAuth2Client").Assign().Add(fakeOAuth2ClientFunc(proj)),
 				jen.Line(),
 				jen.List(
 					jen.ID("actual"),
