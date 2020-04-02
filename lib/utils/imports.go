@@ -43,6 +43,7 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers/sqlite"), "sqlite")
 	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1"), "models")
 	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1", "mock"), "mockmodels")
+	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1", "fake"), "fakemodels")
 	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1"), "server")
 	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1", "http"), "httpserver")
 	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "auth"), "auth")

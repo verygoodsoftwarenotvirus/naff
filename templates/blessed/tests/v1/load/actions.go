@@ -46,7 +46,7 @@ func actionsDotGo(pkg *models.Project) *jen.File {
 				jen.Lit("CreateUser").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("CreateUser"),
 					jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.ID("ui").Assign().Qual(pkg.RandomModelsPackage(), "RandomUserInput").Call(),
+						jen.ID("ui").Assign().Qual(pkg.FakeModelsPackage(), "RandomUserInput").Call(),
 						jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(utils.CtxVar(), jen.ID("ui")),
 					),
 					jen.ID("Weight").MapAssign().Lit(100),

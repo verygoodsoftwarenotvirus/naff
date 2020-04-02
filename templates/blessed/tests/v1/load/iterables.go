@@ -260,7 +260,7 @@ func buildCreateSomethingBlock(pkg *models.Project, typ models.DataType) []jen.C
 
 	args := buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg, typ)
 	args = args[:len(args)-1]
-	args = append(args, jen.Qual(pkg.RandomModelsPackage(), fmt.Sprintf("Random%sCreationInput", sn)).Call())
+	args = append(args, jen.Qual(pkg.FakeModelsPackage(), fmt.Sprintf("Random%sCreationInput", sn)).Call())
 
 	lines = append(lines,
 		jen.Return(jen.ID("c").Dotf("BuildCreate%sRequest", sn).Call(args...)),
@@ -357,7 +357,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	var ifRandomExistsBlock []jen.Code
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
-		ifRandomExistsBlock = append(ifRandomExistsBlock, jen.IDf("random%s", sn).Dot(fsn).Equals().Qual(pkg.RandomModelsPackage(), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
+		ifRandomExistsBlock = append(ifRandomExistsBlock, jen.IDf("random%s", sn).Dot(fsn).Equals().Qual(pkg.FakeModelsPackage(), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
 	}
 	ifRandomExistsBlock = append(ifRandomExistsBlock,
 		jen.Line(),
@@ -394,7 +394,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	//
 	//for _, field := range typ.Fields {
 	//	fsn := field.Name.Singular()
-	//	randomLines = append(randomLines, jen.IDf("random%s", sn).Dot(fsn).Equals().Qual(pkg.RandomModelsPackage(), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
+	//	randomLines = append(randomLines, jen.IDf("random%s", sn).Dot(fsn).Equals().Qual(pkg.FakeModelsPackage(), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
 	//}
 	//
 	//randomLines = append(randomLines,

@@ -54,44 +54,44 @@ func buildIterableVariableDecs(typ models.DataType) []jen.Code {
 	return vars
 }
 
-func iterablesDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
+func iterablesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(jen.Const().Defs(buildIterableConstants(typ)...), jen.Line())
 	ret.Add(buildIterableVariableDecs(typ)...)
-	ret.Add(buildScanSomethingFuncDecl(pkg, typ)...)
-	ret.Add(buildScanListOfSomethingFuncDecl(pkg, typ)...)
-	ret.Add(buildSomethingExistsQueryFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildSomethingExistsFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildGetSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildGetSomethingFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildGetSomethingCountQueryFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildGetSomethingCountFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildScanSomethingFuncDecl(proj, typ)...)
+	ret.Add(buildScanListOfSomethingFuncDecl(proj, typ)...)
+	ret.Add(buildSomethingExistsQueryFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildSomethingExistsFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildGetSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildGetSomethingFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildGetSomethingCountQueryFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildGetSomethingCountFuncDecl(proj, dbvendor, typ)...)
 	ret.Add(buildSomethingAllCountQueryDecls(dbvendor, typ)...)
 	ret.Add(buildGetAllSomethingCountFuncDecl(dbvendor, typ)...)
-	ret.Add(buildGetListOfSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildGetListOfSomethingFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
 
 	if typ.BelongsToUser {
-		ret.Add(buildGetAllSomethingForUserFuncDecl(pkg, dbvendor, typ)...)
+		ret.Add(buildGetAllSomethingForUserFuncDecl(proj, dbvendor, typ)...)
 	}
 	if typ.BelongsToStruct != nil {
-		ret.Add(buildGetAllSomethingForSomethingElseFuncDecl(pkg, dbvendor, typ)...)
+		ret.Add(buildGetAllSomethingForSomethingElseFuncDecl(proj, dbvendor, typ)...)
 	}
 
-	ret.Add(buildCreateSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 
 	if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		ret.Add(buildSomethingCreationTimeQueryFuncDecl(dbvendor, typ)...)
 	}
 
-	ret.Add(buildCreateSomethingFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildUpdateSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildUpdateSomethingFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildArchiveSomethingQueryFuncDecl(pkg, dbvendor, typ)...)
-	ret.Add(buildArchiveSomethingFuncDecl(pkg, dbvendor, typ)...)
+	ret.Add(buildCreateSomethingFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildArchiveSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	ret.Add(buildArchiveSomethingFuncDecl(proj, dbvendor, typ)...)
 
 	return ret
 }
@@ -146,17 +146,17 @@ func buildScanFields(typ models.DataType) (scanFields []jen.Code) {
 }
 
 // what's the difference between these two things
-func buildScanSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildScanSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pscnwp := typ.Name.ProperSingularCommonNameWithPrefix()
 
 	return []jen.Code{
 		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct", sn, pscnwp),
 		jen.Line(),
-		jen.Func().IDf("scan%s", sn).Params(jen.ID("scan").Qual(pkg.DatabaseV1Package(), "Scanner")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
+		jen.Func().IDf("scan%s", sn).Params(jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner")).Params(jen.Op("*").Qual(proj.ModelsV1Package(), sn), jen.ID("error")).Block(
 			func() []jen.Code {
 				body := []jen.Code{
-					jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Values(),
+					jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Values(),
 					jen.Line(),
 					jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Callln(buildScanFields(typ)...), jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.Return().List(jen.Nil(), jen.Err()),
@@ -176,7 +176,7 @@ func buildScanSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 	}
 }
 
-func buildScanListOfSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildScanListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
@@ -184,8 +184,8 @@ func buildScanListOfSomethingFuncDecl(pkg *models.Project, typ models.DataType) 
 	return []jen.Code{
 		jen.Commentf("scan%s takes a logger and some database rows and turns them into a slice of %s", pn, pcn),
 		jen.Line(),
-		jen.Func().IDf("scan%s", pn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").ParamPointer().Qual("database/sql", "Rows")).Params(jen.Index().Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
-			jen.Var().ID("list").Index().Qual(pkg.ModelsV1Package(), sn),
+		jen.Func().IDf("scan%s", pn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").ParamPointer().Qual("database/sql", "Rows")).Params(jen.Index().Qual(proj.ModelsV1Package(), sn), jen.ID("error")).Block(
+			jen.Var().ID("list").Index().Qual(proj.ModelsV1Package(), sn),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
 				jen.List(jen.ID("x"), jen.Err()).Assign().IDf("scan%s", sn).Call(jen.ID("rows")),
@@ -209,7 +209,7 @@ func buildScanListOfSomethingFuncDecl(pkg *models.Project, typ models.DataType) 
 	}
 }
 
-func buildSomethingExistsQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildSomethingExistsQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	var (
 		comment string
 	)
@@ -222,7 +222,7 @@ func buildSomethingExistsQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.S
 	uvn := n.UnexportedVarName()
 	puvn := n.PluralUnexportedVarName()
 
-	params := typ.BuildGetSomethingParams(pkg)[1:]
+	params := typ.BuildGetSomethingParams(proj)[1:]
 	whereValues := []jen.Code{
 		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.IDf("%sTableName", puvn)).MapAssign().IDf("%sID", uvn),
 	}
@@ -259,7 +259,7 @@ func buildSomethingExistsQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.S
 	}
 }
 
-func buildSomethingExistsFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildSomethingExistsFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 	cn := typ.Name.SingularCommonName()
@@ -267,8 +267,8 @@ func buildSomethingExistsFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 
 	const existenceVarName = "exists"
 
-	params := typ.BuildGetSomethingParams(pkg)
-	buildQueryParams := typ.BuildGetSomethingArgs(pkg)[1:]
+	params := typ.BuildGetSomethingParams(proj)
+	buildQueryParams := typ.BuildGetSomethingArgs(proj)[1:]
 
 	return []jen.Code{
 		jen.Commentf("%sExists queries the database to see if a given %s belonging to a given user exists", sn, cn),
@@ -283,7 +283,7 @@ func buildSomethingExistsFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 	}
 }
 
-func buildGetSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildGetSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	var (
 		comment string
 	)
@@ -296,7 +296,7 @@ func buildGetSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.Supe
 	scnwp := n.SingularCommonNameWithPrefix()
 	puvn := n.PluralUnexportedVarName()
 
-	params := typ.BuildGetSomethingParams(pkg)[1:]
+	params := typ.BuildGetSomethingParams(proj)[1:]
 	whereValues := []jen.Code{
 		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.IDf("%sTableName", puvn)).MapAssign().IDf("%sID", uvn),
 	}
@@ -331,20 +331,20 @@ func buildGetSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.Supe
 	}
 }
 
-func buildGetSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 	sn := typ.Name.Singular()
 
-	params := typ.BuildGetSomethingParams(pkg)
-	buildQueryParams := typ.BuildGetSomethingArgs(pkg)[1:]
+	params := typ.BuildGetSomethingParams(proj)
+	buildQueryParams := typ.BuildGetSomethingArgs(proj)[1:]
 
 	return []jen.Code{
 		jen.Commentf("Get%s fetches %s from the %s database", sn, scnwp, dbvendor.SingularPackageName()),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Get%s", sn).Params(params...).
-			Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
+			Params(jen.Op("*").Qual(proj.ModelsV1Package(), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", sn).Call(buildQueryParams...),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().IDf("scan%s", sn).Call(jen.ID("row")),
@@ -353,7 +353,7 @@ func buildGetSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPala
 	}
 }
 
-func buildGetSomethingCountQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildGetSomethingCountQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 	sn := typ.Name.Singular()
@@ -366,7 +366,7 @@ func buildGetSomethingCountQueryFuncDecl(pkg *models.Project, dbvendor wordsmith
 		commentTwo string
 	)
 
-	params := typ.BuildGetListOfSomethingParams(pkg, false)[1:]
+	params := typ.BuildGetListOfSomethingParams(proj, false)[1:]
 	vals := []jen.Code{
 		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.IDf("%sTableName", puvn)).MapAssign().Nil(),
 	}
@@ -420,15 +420,15 @@ func buildGetSomethingCountQueryFuncDecl(pkg *models.Project, dbvendor wordsmith
 	}
 }
 
-func buildGetSomethingCountFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildGetSomethingCountFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	pcn := typ.Name.PluralCommonName()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
 	var comment string
-	params := typ.BuildGetListOfSomethingParams(pkg, false)
-	queryBuildingParams := typ.BuildGetListOfSomethingArgs(pkg)[1:]
+	params := typ.BuildGetListOfSomethingParams(proj, false)
+	queryBuildingParams := typ.BuildGetListOfSomethingArgs(proj)[1:]
 
 	if typ.BelongsToUser {
 		comment = fmt.Sprintf("Get%sCount will fetch the count of %s from the database that meet a particular filter and belong to a particular user.", sn, pcn)
@@ -508,7 +508,7 @@ func buildGetAllSomethingCountFuncDecl(dbvendor wordsmith.SuperPalabra, typ mode
 	}
 }
 
-func buildGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
@@ -605,7 +605,7 @@ func buildGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmit
 	vals := []jen.Code{
 		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.IDf("%sTableName", puvn)).MapAssign().ID("nil"),
 	}
-	params := typ.BuildGetListOfSomethingParams(pkg, false)[1:]
+	params := typ.BuildGetListOfSomethingParams(proj, false)[1:]
 
 	var firstCommentLine string
 	if typ.BelongsToUser && typ.BelongsToStruct != nil {
@@ -647,7 +647,7 @@ func buildGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmit
 	}
 }
 
-func buildGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	dbvsn := dbvendor.Singular()
@@ -655,16 +655,16 @@ func buildGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.Sup
 	scn := typ.Name.SingularCommonName()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
-	params := typ.BuildGetListOfSomethingParams(pkg, false)
-	queryBuildingParams := typ.BuildGetListOfSomethingArgs(pkg)[1:]
-	countRetrievalParams := typ.BuildGetListOfSomethingArgs(pkg)
+	params := typ.BuildGetListOfSomethingParams(proj, false)
+	queryBuildingParams := typ.BuildGetListOfSomethingArgs(proj)[1:]
+	countRetrievalParams := typ.BuildGetListOfSomethingArgs(proj)
 
 	return []jen.Code{
 		jen.Commentf("Get%s fetches a list of %s from the database that meet a particular filter", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Get%s", pn).Params(
 			params...,
-		).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
+		).Params(jen.Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(queryBuildingParams...),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
@@ -682,8 +682,8 @@ func buildGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.Sup
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("fetching %s count: ", scn)+"%w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
-				jen.ID("Pagination").MapAssign().Qual(pkg.ModelsV1Package(), "Pagination").Valuesln(
+			jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
+				jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().ID("filter").Dot("Page"),
 					jen.ID("Limit").MapAssign().ID("filter").Dot("Limit"),
 					jen.ID("TotalCount").MapAssign().ID("count"),
@@ -697,7 +697,7 @@ func buildGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.Sup
 	}
 }
 
-func buildGetAllSomethingForUserFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildGetAllSomethingForUserFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
@@ -705,10 +705,10 @@ func buildGetAllSomethingForUserFuncDecl(pkg *models.Project, dbvendor wordsmith
 	pcn := typ.Name.PluralCommonName()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
-	params := typ.BuildGetListOfSomethingParams(pkg, false)
+	params := typ.BuildGetListOfSomethingParams(proj, false)
 	params = params[:len(params)-1]
 
-	queryBuildingArgs := typ.BuildGetListOfSomethingArgs(pkg)[1:]
+	queryBuildingArgs := typ.BuildGetListOfSomethingArgs(proj)[1:]
 	queryBuildingArgs = queryBuildingArgs[:len(queryBuildingArgs)-1]
 	queryBuildingArgs = append(queryBuildingArgs, jen.Nil())
 
@@ -717,7 +717,7 @@ func buildGetAllSomethingForUserFuncDecl(pkg *models.Project, dbvendor wordsmith
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("GetAll%sForUser", pn).Params(
 			params...,
-		).Params(jen.Index().Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
+		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(
 				queryBuildingArgs...,
 			),
@@ -738,7 +738,7 @@ func buildGetAllSomethingForUserFuncDecl(pkg *models.Project, dbvendor wordsmith
 	}
 }
 
-func buildGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
@@ -746,15 +746,15 @@ func buildGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbvendor 
 	pcn := typ.Name.PluralCommonName()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
-	params := typ.BuildGetSomethingForSomethingElseParams(pkg)
-	queryBuildingArgs := typ.BuildGetSomethingForSomethingElseArgs(pkg)[1:]
+	params := typ.BuildGetSomethingForSomethingElseParams(proj)
+	queryBuildingArgs := typ.BuildGetSomethingForSomethingElseArgs(proj)[1:]
 
 	return []jen.Code{
 		jen.Commentf("GetAll%sFor%s fetches every %s belonging to %s", pn, typ.BelongsToStruct.Singular(), scn, typ.BelongsToStruct.SingularCommonNameWithPrefix()),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(
 			params...,
-		).Params(jen.Index().Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
+		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(
 				queryBuildingArgs...,
 			),
@@ -846,7 +846,7 @@ func buildSomethingCreationTimeQueryFuncDecl(dbvendor wordsmith.SuperPalabra, ty
 	}
 }
 
-func buildCreateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -864,7 +864,7 @@ func buildCreateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.S
 	}
 	qb.Dotln("ToSql").Call()
 
-	params := typ.BuildCreateSomethingQueryParams(pkg, false)[1:]
+	params := typ.BuildCreateSomethingQueryParams(proj, false)[1:]
 
 	createQueryFuncBody := []jen.Code{
 		jen.Var().ID("err").ID("error"),
@@ -887,7 +887,7 @@ func buildCreateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.S
 	}
 }
 
-func buildCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	dbrn := dbvendor.RouteName()
 	sn := typ.Name.Singular()
@@ -899,8 +899,8 @@ func buildCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 		createInitColumns []jen.Code
 	)
 
-	params := typ.BuildCreateSomethingParams(pkg, false)
-	queryBuildingArgs := typ.BuildCreateSomethingArgs(pkg)[1:]
+	params := typ.BuildCreateSomethingParams(proj, false)
+	queryBuildingArgs := typ.BuildCreateSomethingArgs(proj)[1:]
 	queryBuildingArgs = queryBuildingArgs[:len(queryBuildingArgs)-1]
 	queryBuildingArgs = append(queryBuildingArgs, jen.ID("x"))
 
@@ -917,7 +917,7 @@ func buildCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 	}
 
 	baseCreateFuncBody := []jen.Code{
-		jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(createInitColumns...),
+		jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(createInitColumns...),
 		jen.Line(),
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildCreate%sQuery", sn).Call(
 			queryBuildingArgs...,
@@ -966,14 +966,14 @@ func buildCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Create%s", sn).Params(
 			params...,
-		).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
+		).Params(jen.Op("*").Qual(proj.ModelsV1Package(), sn), jen.ID("error")).Block(
 			baseCreateFuncBody...,
 		),
 		jen.Line(),
 	}
 }
 
-func buildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	puvn := typ.Name.PluralUnexportedVarName()
@@ -981,7 +981,7 @@ func buildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.S
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
 	const inputVarName = "updated"
-	params := typ.BuildUpdateSomethingParams(pkg, inputVarName, false)[1:]
+	params := typ.BuildUpdateSomethingParams(proj, inputVarName, false)[1:]
 
 	vals := []jen.Code{
 		jen.Lit("id").MapAssign().ID(inputVarName).Dot("ID"),
@@ -1029,7 +1029,7 @@ func buildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.S
 	}
 }
 
-func buildUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	n := typ.Name
 	sn := n.Singular()
@@ -1051,8 +1051,8 @@ func buildUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 		finalStatement = _g
 	}
 
-	params := typ.BuildUpdateSomethingParams(pkg, updatedVarName, false)
-	args := typ.BuildUpdateSomethingArgs(pkg, updatedVarName)[1:]
+	params := typ.BuildUpdateSomethingParams(proj, updatedVarName, false)
+	args := typ.BuildUpdateSomethingArgs(proj, updatedVarName)[1:]
 
 	return []jen.Code{
 		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the provided input to have a valid ID.", sn, scn, sn),
@@ -1069,7 +1069,7 @@ func buildUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 	}
 }
 
-func buildArchiveSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -1082,7 +1082,7 @@ func buildArchiveSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.
 		jen.Lit("id").MapAssign().IDf("%sID", uvn),
 		jen.Lit("archived_on").MapAssign().ID("nil"),
 	}
-	paramsList := typ.BuildGetSomethingParams(pkg)[1:]
+	paramsList := typ.BuildGetSomethingParams(proj)[1:]
 
 	if typ.BelongsToUser {
 		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s belonging to a given user as archived.", sn, scn)
@@ -1125,14 +1125,14 @@ func buildArchiveSomethingQueryFuncDecl(pkg *models.Project, dbvendor wordsmith.
 	}
 }
 
-func buildArchiveSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
-	params := typ.BuildGetSomethingParams(pkg)
-	queryBuildingArgs := typ.BuildGetSomethingArgs(pkg)[1:]
+	params := typ.BuildGetSomethingParams(proj)
+	queryBuildingArgs := typ.BuildGetSomethingArgs(proj)[1:]
 
 	return []jen.Code{
 		jen.Commentf("Archive%s marks %s as archived in the database", sn, scnwp),

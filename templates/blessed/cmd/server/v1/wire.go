@@ -8,29 +8,29 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkg *models.Project) *jen.File {
+func wireDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 	ret.HeaderComment("+build wireinject")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	newsmanImp := "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	loggingImp := "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 
-	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", pkg.OutputPath)
-	internalMetricsImp := fmt.Sprintf("%s/internal/v1/metrics", pkg.OutputPath)
-	internalEncodingImp := fmt.Sprintf("%s/internal/v1/encoding", pkg.OutputPath)
-	databaseClientImp := fmt.Sprintf("%s/database/v1", pkg.OutputPath)
-	internalAuthImp := fmt.Sprintf("%s/internal/v1/auth", pkg.OutputPath)
-	authServiceImp := fmt.Sprintf("%s/services/v1/auth", pkg.OutputPath)
-	usersServiceImp := fmt.Sprintf("%s/services/v1/users", pkg.OutputPath)
-	frontendServiceImp := fmt.Sprintf("%s/services/v1/frontend", pkg.OutputPath)
-	webhooksServiceImp := fmt.Sprintf("%s/services/v1/webhooks", pkg.OutputPath)
-	oauth2ClientsServiceImp := fmt.Sprintf("%s/services/v1/oauth2clients", pkg.OutputPath)
-	httpServerImp := fmt.Sprintf("%s/server/v1/http", pkg.OutputPath)
-	serverImp := fmt.Sprintf("%s/server/v1", pkg.OutputPath)
+	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", proj.OutputPath)
+	internalMetricsImp := fmt.Sprintf("%s/internal/v1/metrics", proj.OutputPath)
+	internalEncodingImp := fmt.Sprintf("%s/internal/v1/encoding", proj.OutputPath)
+	databaseClientImp := fmt.Sprintf("%s/database/v1", proj.OutputPath)
+	internalAuthImp := fmt.Sprintf("%s/internal/v1/auth", proj.OutputPath)
+	authServiceImp := fmt.Sprintf("%s/services/v1/auth", proj.OutputPath)
+	usersServiceImp := fmt.Sprintf("%s/services/v1/users", proj.OutputPath)
+	frontendServiceImp := fmt.Sprintf("%s/services/v1/frontend", proj.OutputPath)
+	webhooksServiceImp := fmt.Sprintf("%s/services/v1/webhooks", proj.OutputPath)
+	oauth2ClientsServiceImp := fmt.Sprintf("%s/services/v1/oauth2clients", proj.OutputPath)
+	httpServerImp := fmt.Sprintf("%s/server/v1/http", proj.OutputPath)
+	serverImp := fmt.Sprintf("%s/server/v1", proj.OutputPath)
 
-	// if pkg.EnableNewsman {
+	// if proj.EnableNewsman {
 	ret.Add(
 		jen.Comment("ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day"),
 		jen.Line(),
@@ -54,7 +54,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("external libs"),
 		}
 
-		// if pkg.EnableNewsman {
+		// if proj.EnableNewsman {
 		args = append(args,
 			jen.Qual(newsmanImp, "NewNewsman"),
 		)
@@ -67,9 +67,9 @@ func wireDotGo(pkg *models.Project) *jen.File {
 			jen.Qual(usersServiceImp, "Providers"),
 		)
 
-		for _, typ := range pkg.DataTypes {
+		for _, typ := range proj.DataTypes {
 			args = append(args,
-				jen.Qual(fmt.Sprintf("%s/services/v1/%s", pkg.OutputPath, typ.Name.PackageName()), "Providers"),
+				jen.Qual(fmt.Sprintf("%s/services/v1/%s", proj.OutputPath, typ.Name.PackageName()), "Providers"),
 			)
 		}
 

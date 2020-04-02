@@ -286,15 +286,14 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructs(proj *models.Project, 
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
-			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+			listParams = append(listParams, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
 		}
-		listParams = append(listParams, jen.ID(typ.Name.UnexportedVarName()).Dot("ID"))
+		listParams = append(listParams, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
 
 		params = append(params, listParams...)
 
 	} else {
-		params = append(params, jen.ID(typ.Name.UnexportedVarName()).Dot("ID"))
-
+		params = append(params, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
 	}
 
 	return params

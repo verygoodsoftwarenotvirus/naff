@@ -37,7 +37,7 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 			jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(
 				jen.Lit("CreateOAuth2Client").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("CreateOAuth2Client"), jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.ID("ui").Assign().Qual(pkg.RandomModelsPackage(), "RandomUserInput").Call(),
+						jen.ID("ui").Assign().Qual(pkg.FakeModelsPackage(), "RandomUserInput").Call(),
 						jen.List(jen.ID("u"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(utils.InlineCtx(), jen.ID("ui")),
 						jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 							jen.Return().ID("c").Dot("BuildHealthCheckRequest").Call(),
@@ -54,7 +54,7 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 						jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildCreateOAuth2ClientRequest").Callln(
 							utils.InlineCtx(),
 							jen.ID("cookie"),
-							jen.Qual(pkg.RandomModelsPackage(), "RandomOAuth2ClientInput").Callln(
+							jen.Qual(pkg.FakeModelsPackage(), "RandomOAuth2ClientInput").Callln(
 								jen.ID("u").Dot("Username"),
 								jen.ID("ui").Dot("Password"),
 								jen.ID("u").Dot("TwoFactorSecret"),

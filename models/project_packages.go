@@ -14,7 +14,7 @@ func (p *Project) ModelsV1Package(parts ...string) string {
 	return p.RelativePath(append([]string{"models", "v1"}, parts...)...)
 }
 
-func (p *Project) RandomModelsPackage(parts ...string) string {
+func (p *Project) FakeModelsPackage(parts ...string) string {
 	return p.ModelsV1Package(append([]string{"fake"}, parts...)...)
 }
 
