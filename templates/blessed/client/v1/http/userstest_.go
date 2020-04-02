@@ -24,14 +24,14 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
-				jen.ID("expectedID").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
 				jen.Line(),
 				jen.List(
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildGetUserRequest").Call(
 					utils.CtxVar(),
-					jen.ID("expectedID"),
+					jen.ID("exampleUser").Dot("ID"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
@@ -44,7 +44,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit("%d"),
-							jen.ID("expectedID"),
+							jen.ID("exampleUser").Dot("ID"),
 						),
 					),
 					nil,
@@ -66,9 +66,9 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.Comment("the hashed password is never transmitted over the wire"),
+				jen.ID("exampleUser").Dot("HashedPassword").Equals().Lit(""),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -77,7 +77,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 							jen.ID("req").Dot("URL").Dot("String").Call(),
 							jen.Qual("strconv", "Itoa").Call(
 								jen.ID("int").Call(
-									jen.ID("expected").Dot("ID"),
+									jen.ID("exampleUser").Dot("ID"),
 								),
 							),
 						),
@@ -87,46 +87,42 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit("/users/%d"),
-							jen.ID("expected").Dot("ID"),
+							jen.ID("exampleUser").Dot("ID"),
 						),
 						jen.Lit("expected and actual path don't match"),
 					),
-					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
-						jen.Qual("net/http", "MethodGet"),
-						nil,
-					),
+					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("exampleUser")),
 						nil,
 					),
 				),
 				jen.Line(),
-				jen.ID("c").Assign().ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.Err(),
-				).Assign().ID("c").Dot("GetUser").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUser").Call(
 					utils.CtxVar(),
-					jen.ID("expected").Dot("ID"),
+					jen.ID("exampleUser").Dot("ID"),
 				),
 				jen.Line(),
-				utils.RequireNotNil(
-					jen.ID("actual"),
-					nil,
+				utils.RequireNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+				utils.AssertEqual(jen.ID("exampleUser"), jen.ID("actual"), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleUser").Dot("Salt").Equals().Nil(),
+				jen.ID("exampleUser").Dot("HashedPassword").Equals().Lit(""),
+				jen.Line(),
+				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUser").Call(
+					utils.CtxVar(),
+					jen.ID("exampleUser").Dot("ID"),
 				),
-				utils.AssertNoError(
-					jen.Err(),
-					jen.Lit("no error should be returned"),
-				),
-				utils.AssertEqual(
-					jen.ID("expected"),
-					jen.ID("actual"),
-					nil,
-				),
+				jen.Line(),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
 		jen.Line(),
@@ -176,11 +172,11 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Values(
-					jen.ID("Users").MapAssign().Index().Qual(proj.ModelsV1Package(), "User").Values(
-						jen.Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
-					),
-				),
+				jen.ID("exampleUserList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserList").Call(),
+				jen.Comment("the hashed password is never transmitted over the wire"),
+				jen.ID("exampleUserList").Dot("Users").Index(jen.Lit(0)).Dot("HashedPassword").Equals().Lit(""),
+				jen.ID("exampleUserList").Dot("Users").Index(jen.Lit(1)).Dot("HashedPassword").Equals().Lit(""),
+				jen.ID("exampleUserList").Dot("Users").Index(jen.Lit(2)).Dot("HashedPassword").Equals().Lit(""),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -195,30 +191,32 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						nil,
 					),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("exampleUserList")),
 						nil,
 					),
 				),
 				jen.Line(),
-				jen.ID("c").Assign().ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.Err(),
-				).Assign().ID("c").Dot("GetUsers").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUsers").Call(
 					utils.CtxVar(),
 					jen.Nil(),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.Err(),
-					jen.Lit("no error should be returned"),
+				utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+				utils.AssertEqual(jen.ID("exampleUserList"), jen.ID("actual"), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUsers").Call(
+					utils.CtxVar(),
+					jen.Nil(),
 				),
-				utils.AssertEqual(jen.ID("expected"),
-					jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
 		jen.Line(),
@@ -233,7 +231,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Values(),
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInputFromUser").Call(jen.ID("exampleUser")),
 				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -268,8 +267,9 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Values(),
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInputFromUser").Call(jen.ID("exampleUser")),
+				jen.ID("expected").Assign().Qual(proj.FakeModelsPackage(), "BuildDatabaseCreationResponse").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -284,20 +284,12 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						nil,
 					),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(proj.ModelsV1Package(), "UserInput"),
+					jen.Var().ID("x").Op("*").Qual(proj.ModelsV1Package(), "UserCreationInput"),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewDecoder").Call(
-							jen.ID("req").Dot("Body"),
-						).Dot("Decode").Call(
-							jen.VarPointer().ID("x"),
-						),
+						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.VarPointer().ID("x")),
 						nil,
 					),
-					utils.AssertEqual(
-						jen.ID("exampleInput"),
-						jen.ID("x"),
-						nil,
-					),
+					utils.AssertEqual(jen.ID("exampleInput"), jen.ID("x"), nil),
 					jen.Line(),
 					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
@@ -305,28 +297,30 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("c").Assign().ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.Err(),
-				).Assign().ID("c").Dot("CreateUser").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(
 					utils.CtxVar(),
 					jen.ID("exampleInput"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.Err(),
-					jen.Lit("no error should be returned"),
+				utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInputFromUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
+				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(
+					utils.CtxVar(),
+					jen.ID("exampleInput"),
 				),
-				utils.AssertEqual(
-					jen.ID("expected"),
-					jen.ID("actual"),
-					nil,
-				),
+				jen.Line(),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
 		jen.Line(),
@@ -339,7 +333,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodDelete"),
-				jen.ID("expectedID").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
 				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(
@@ -351,7 +345,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildArchiveUserRequest").Call(
 					utils.CtxVar(),
-					jen.ID("expectedID"),
+					jen.ID("exampleUser").Dot("ID"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
@@ -361,7 +355,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit("%d"),
-							jen.ID("expectedID"),
+							jen.ID("exampleUser").Dot("ID"),
 						),
 					),
 					nil,
@@ -387,7 +381,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -395,7 +389,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit("/users/%d"),
-							jen.ID("expected"),
+							jen.ID("exampleUser").Dot("ID"),
 						),
 						jen.Lit("expected and actual path don't match"),
 					),
@@ -406,17 +400,22 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.Err().Assign().ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				).Dot("ArchiveUser").Call(
+				jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot("ArchiveUser").Call(
 					utils.CtxVar(),
-					jen.ID("expected"),
+					jen.ID("exampleUser").Dot("ID"),
 				),
-				utils.AssertNoError(
-					jen.Err(),
-					jen.Lit("no error should be returned"),
+				utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.Line(),
+				jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("ArchiveUser").Call(
+					utils.CtxVar(),
+					jen.ID("exampleUser").Dot("ID"),
 				),
+				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
 		jen.Line(),
@@ -428,21 +427,16 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				utils.CreateCtx(),
-				jen.ID("c").Assign().ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
-				jen.List(
-					jen.ID("req"),
-					jen.Err(),
-				).Assign().ID("c").Dot("BuildLoginRequest").Call(
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
+				jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(
 					utils.CtxVar(),
-					utils.FakeUsernameFunc(),
-					utils.FakePasswordFunc(),
-					jen.Lit("123456"),
+					jen.ID("exampleInput"),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				utils.AssertEqual(
@@ -450,10 +444,18 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual("net/http", "MethodPost"),
 					nil,
 				),
-				utils.AssertNoError(
-					jen.Err(),
-					nil,
-				),
+				utils.AssertNoError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"with nil input",
+				utils.CreateCtx(),
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.Line(),
+				jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(utils.CtxVar(), jen.Nil()),
+				utils.AssertNil(jen.ID("req"), nil),
+				utils.AssertError(jen.Err(), nil),
 			),
 		),
 		jen.Line(),
@@ -465,6 +467,9 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
@@ -481,33 +486,53 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual("net/http", "SetCookie").Call(
 						jen.ID("res"),
 						jen.VarPointer().Qual("net/http", "Cookie").Values(
-							jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
+							jen.ID("Name").MapAssign().ID("exampleUser").Dot("Username"),
 						),
 					),
 				),
-				jen.ID("c").Assign().ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
-				jen.List(
-					jen.ID("cookie"),
-					jen.Err(),
-				).Assign().ID("c").Dot("Login").Call(
+				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("c").Dot("Login").Call(
 					utils.CtxVar(),
-					utils.FakeUsernameFunc(),
-					utils.FakePasswordFunc(),
-					jen.Lit("123456"),
+					jen.ID("exampleInput"),
 				),
 				utils.RequireNotNil(jen.ID("cookie"), nil),
-				utils.AssertNoError(
-					jen.Err(),
-					nil,
+				utils.AssertNoError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with nil input",
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.Line(),
+				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("c").Dot("Login").Call(
+					utils.CtxVar(),
+					jen.Nil(),
 				),
+				utils.AssertNil(jen.ID("cookie"), nil),
+				utils.AssertError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
+				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+				jen.Line(),
+				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("c").Dot("Login").Call(
+					utils.CtxVar(),
+					jen.ID("exampleInput"),
+				),
+				utils.AssertNil(jen.ID("cookie"), nil),
+				utils.AssertError(jen.Err(), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTest(
 				"with timeout",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
@@ -535,9 +560,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Err(),
 				).Assign().ID("c").Dot("Login").Call(
 					utils.CtxVar(),
-					utils.FakeUsernameFunc(),
-					utils.FakePasswordFunc(),
-					jen.Lit("123456"),
+					jen.ID("exampleInput"),
 				),
 				utils.RequireNil(jen.ID("cookie"), nil),
 				utils.AssertError(
@@ -548,6 +571,9 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with missing cookie",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
@@ -571,9 +597,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Err(),
 				).Assign().ID("c").Dot("Login").Call(
 					utils.CtxVar(),
-					utils.FakeUsernameFunc(),
-					utils.FakePasswordFunc(),
-					jen.Lit("123456"),
+					jen.ID("exampleInput"),
 				),
 				utils.RequireNil(jen.ID("cookie"), nil),
 				utils.AssertError(

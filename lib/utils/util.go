@@ -97,11 +97,17 @@ func AssertNil(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.
 
 // AssertError calls assert.Error
 func AssertError(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
+	//if message == nil {
+	//	message = jen.Lit("error should be returned")
+	//}
 	return buildSingleValueTestifyFunc(a, "Error")(value, message, formatArgs...)
 }
 
 // AssertNoError calls assert.NoError
 func AssertNoError(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
+	//if message == nil {
+	//	message = jen.Lit("no error should be returned")
+	//}
 	return buildSingleValueTestifyFunc(a, "NoError")(value, message, formatArgs...)
 }
 
@@ -112,6 +118,13 @@ func AssertNotEmpty(value, message *jen.Statement, formatArgs ...*jen.Statement)
 
 // AssertEqual calls assert.Equal
 func AssertEqual(expected, actual, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
+	//if message == nil && len(formatArgs) == 0 {
+	//	message = jen.Lit("expected %v to equal %v")
+	//	formatArgs = []*jen.Statement{
+	//		expected,
+	//		actual,
+	//	}
+	//}
 	return buildDoubleValueTestifyFunc(a, "Equal")(expected, actual, message, formatArgs...)
 }
 
