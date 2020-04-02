@@ -45,53 +45,13 @@ func buildCreationVarDeclarationsOfDependentStructs(proj *models.Project, typ mo
 	lines := []jen.Code{}
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		values := []jen.Code{
-			jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-		}
-
-		for _, field := range pt.Fields {
-			if field.ValidForCreationInput {
-				values = append(values, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
-			}
-		}
-
-		values = append(values,
-			func() jen.Code {
-				if pt.BelongsToStruct != nil {
-					return jen.IDf("BelongsTo%s", pt.BelongsToStruct.Singular()).MapAssign().ID(pt.BelongsToStruct.UnexportedVarName()).Dot("ID")
-				} else {
-					return nil
-				}
-			}(),
-		)
-
 		lines = append(lines,
-			jen.ID(pt.Name.UnexportedVarName()).Assign().VarPointer().Qual(proj.ModelsV1Package(), pt.Name.Singular()).Valuesln(values...),
+			jen.IDf("example%s", pt.Name.Singular()).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call(),
 		)
 	}
-
-	values := []jen.Code{
-		jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-	}
-
-	for _, field := range typ.Fields {
-		if field.ValidForCreationInput {
-			values = append(values, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
-		}
-	}
-
-	values = append(values,
-		func() jen.Code {
-			if typ.BelongsToStruct != nil {
-				return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().ID(typ.BelongsToStruct.UnexportedVarName()).Dot("ID")
-			} else {
-				return nil
-			}
-		}(),
-	)
 
 	lines = append(lines,
-		jen.ID(typ.Name.UnexportedVarName()).Assign().VarPointer().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(values...),
+		jen.IDf("example%s", typ.Name.Singular()).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call(),
 	)
 
 	return lines
@@ -161,12 +121,12 @@ func buildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(proj *model
 
 	for i, pt := range owners {
 		if typ.BelongsToStruct != nil && i == len(owners)-1 {
-			callArgs = append(callArgs, jen.ID(typ.Name.UnexportedVarName()).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+			callArgs = append(callArgs, jen.IDf("example%s", typ.Name.Singular()).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 		} else {
-			callArgs = append(callArgs, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+			callArgs = append(callArgs, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
 		}
 	}
-	callArgs = append(callArgs, jen.ID(typ.Name.UnexportedVarName()).Dot("ID"))
+	callArgs = append(callArgs, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
 
 	return callArgs
 }
@@ -351,10 +311,8 @@ func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models
 func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	// routes
-	var happyPathSubtestLines []jen.Code
-	happyPathSubtestLines = append(happyPathSubtestLines, buildVarDeclarationsOfDependentStructs(proj, typ)...)
-	happyPathSubtestLines = append(happyPathSubtestLines,
+	happyPathSubtestLines := append(
+		buildVarDeclarationsOfDependentStructs(proj, typ),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -385,7 +343,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
-			typ.BuildGetSomethingArgs(proj)...,
+			typ.BuildGetSomethingArgs(proj)[:len(typ.BuildGetSomethingArgs(proj))-1]..., // lazy AF
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -393,11 +351,66 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 		utils.AssertEqual(jen.IDf("example%s", ts), jen.ID("actual"), nil),
 	)
 
+	invalidClientURLSubtestLines := append(
+		buildVarDeclarationsOfDependentStructs(proj, typ),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
+			typ.BuildGetSomethingArgs(proj)[:len(typ.BuildGetSomethingArgs(proj))-1]..., // lazy AF
+		),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
+	invalidResponseSubtestLines := append(
+		buildVarDeclarationsOfDependentStructs(proj, typ),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertTrue(
+				jen.Qual("strings", "HasSuffix").Call(
+					jen.ID("req").Dot("URL").Dot("String").Call(),
+					jen.Qual("strconv", "Itoa").Call(
+						jen.ID("int").Call(
+							jen.IDf("example%s", ts).Dot("ID"),
+						),
+					),
+				),
+				nil,
+			),
+			utils.AssertEqual(
+				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.Qual("fmt", "Sprintf").Call(
+					append(
+						[]jen.Code{jen.Lit(buildFormatStringForSingleInstanceRoute(proj, typ))},
+						buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
+					)...,
+				),
+				jen.Lit("expected and actual paths don't match"),
+			),
+			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Lit("BLAH")), nil),
+		),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
+			typ.BuildGetSomethingArgs(proj)[:len(typ.BuildGetSomethingArgs(proj))-1]..., // lazy AF
+		),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", invalidClientURLSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid response", invalidResponseSubtestLines...),
 		),
 		jen.Line(),
 	}
@@ -445,7 +458,6 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(proj *models.Project, typ 
 func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	tp := typ.Name.Plural()   // title plural
 	ts := typ.Name.Singular() // title singular
-	puvn := typ.Name.PluralUnexportedVarName()
 
 	modelListRoute := buildFormatStringForListRoute(proj, typ)
 
@@ -463,17 +475,11 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	}
 
 	structDecls := buildVarDeclarationsOfDependentStructs(proj, typ)
-	subtestLines := structDecls[:len(structDecls)-1]
-	subtestLines = append(subtestLines,
+	happyPathSubtestLines := append(
+		structDecls[:len(structDecls)-1],
 		jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
 		jen.Line(),
-		jen.ID(puvn).Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", ts)).Valuesln(
-			jen.ID(tp).MapAssign().Index().Qual(proj.ModelsV1Package(), ts).Valuesln(
-				jen.Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
-			),
-		),
+		jen.IDf("example%sList", ts).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", ts)).Call(),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -488,33 +494,76 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 				nil,
 			),
 			utils.RequireNoError(
-				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(puvn)),
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.IDf("example%sList", ts)),
 				nil,
 			),
 		),
 		jen.Line(),
-		jen.ID("c").Assign().ID("buildTestClient").Call(
-			jen.ID("t"),
-			jen.ID("ts"),
-		),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).
 			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
 			buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, true)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
-		utils.AssertNoError(
-			jen.Err(),
-			jen.Lit("no error should be returned"),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertEqual(jen.IDf("example%sList", ts), jen.ID("actual"), nil),
+	)
+
+	invalidClientURLSubtestLines := []jen.Code{
+		jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+		jen.List(jen.ID("actual"), jen.Err()).
+			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
+			buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, true)...,
 		),
-		utils.AssertEqual(jen.ID(puvn), jen.ID("actual"), nil),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	}
+
+	invalidResponseSubtestLines := append(
+		structDecls[:len(structDecls)-1],
+		jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertEqual(
+				jen.ID("req").Dot("URL").Dot("Path"),
+				uriDec,
+				jen.Lit("expected and actual paths don't match"),
+			),
+			utils.AssertEqual(
+				jen.ID("req").Dot("Method"),
+				jen.Qual("net/http", "MethodGet"),
+				nil,
+			),
+			utils.RequireNoError(
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Lit("BLAH")),
+				nil,
+			),
+		),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).
+			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
+			buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, true)...,
+		),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 	)
 
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", tp)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest("happy path", subtestLines...),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", invalidClientURLSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid response", invalidResponseSubtestLines...),
 		),
 		jen.Line(),
 	}
@@ -530,24 +579,15 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 		cfs = append(cfs, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
 	}
 
-	structDecls := buildVarDeclarationsOfDependentStructs(proj, typ)
-	subtestLines := structDecls[:len(structDecls)-1]
-	subtestLines = append(subtestLines,
+	subtestLines := append(
+		buildVarDeclarationsOfDependentStructs(proj, typ),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.IDf("example%s", ts)),
 		jen.Line(),
 		utils.ExpectMethod("expectedMethod", "MethodPost"),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
-		jen.ID("input").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
-			cfs[1:]...,
-		),
-		jen.ID("c").Assign().ID("buildTestClient").Call(
-			jen.ID("t"),
-			jen.ID("ts"),
-		),
-		jen.List(
-			jen.ID("actual"),
-			jen.Err(),
-		).Assign().ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
 			buildParamsForMethodThatCreatesADataTypeFromStructs(proj, typ, true)...,
 		),
 		jen.Line(),
@@ -578,17 +618,9 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 
 func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
-	uvn := typ.Name.UnexportedVarName()
 
 	// routes
 	modelListRoute := buildFormatStringForSingleInstanceCreationRoute(proj, typ)
-
-	var createCreationInputLines []jen.Code
-	for _, field := range typ.Fields {
-		if field.ValidForCreationInput {
-			createCreationInputLines = append(createCreationInputLines, jen.ID(field.Name.Singular()).MapAssign().ID(uvn).Dot(field.Name.Singular()))
-		}
-	}
 
 	var uriDec *jen.Statement
 	urlFormatArgs := buildFormatCallArgsForSingleInstanceCreationRoute(proj, typ)
@@ -603,11 +635,15 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 		uriDec = jen.Lit(modelListRoute)
 	}
 
-	subtestLines := buildCreationVarDeclarationsOfDependentStructs(proj, typ)
-	subtestLines = append(subtestLines,
-		jen.ID("input").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
-			createCreationInputLines...,
-		),
+	happyPathSubtestLines := append(
+		buildCreationVarDeclarationsOfDependentStructs(proj, typ),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.IDf("example%s", ts)),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.ID("exampleInput").Dot("BelongsToUser").Equals().Lit(0)
+			}
+			return jen.Null()
+		}(),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -620,9 +656,9 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 			jen.Line(),
 			jen.Var().ID("x").Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.VarPointer().ID("x")), nil),
-			utils.AssertEqual(jen.ID("input"), jen.ID("x"), nil),
+			utils.AssertEqual(jen.ID("exampleInput"), jen.ID("x"), nil),
 			jen.Line(),
-			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(uvn)), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.IDf("example%s", ts)), nil),
 		),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
@@ -632,17 +668,29 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
-		utils.AssertEqual(jen.ID(uvn), jen.ID("actual"), nil),
+		utils.AssertEqual(jen.IDf("example%s", ts), jen.ID("actual"), nil),
+	)
+
+	invalidClientURLSubtestLines := append(
+		buildCreationVarDeclarationsOfDependentStructs(proj, typ),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.IDf("example%s", ts)),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
+			buildParamsForMethodThatCreatesADataTypeFromStructs(proj, typ, true)...,
+		),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 	)
 
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Create%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				subtestLines...,
-			),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", invalidClientURLSubtestLines...),
 		),
 		jen.Line(),
 	}
@@ -689,10 +737,9 @@ func buildTestV1Client_BuildUpdateSomethingRequest(proj *models.Project, typ mod
 
 func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
-	uvn := typ.Name.UnexportedVarName()
 
-	subtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
-	subtestLines = append(subtestLines,
+	happyPathSubtestLines := append(
+		buildVarDeclarationsOfDependentStructs(proj, typ),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -708,7 +755,7 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
 			utils.AssertNoError(
-				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(uvn)),
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.IDf("example%s", ts)),
 				nil,
 			),
 		),
@@ -719,11 +766,22 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	)
 
+	withInvalidClientURLSubtestLines := append(
+		buildVarDeclarationsOfDependentStructs(proj, typ),
+		jen.Line(),
+		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot(fmt.Sprintf("Update%s", ts)).Call(
+			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)...,
+		),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Update%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest("happy path", subtestLines...),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", withInvalidClientURLSubtestLines...),
 		),
 		jen.Line(),
 	}
@@ -756,7 +814,7 @@ func buildTestV1Client_BuildArchiveSomethingRequest(proj *models.Project, typ mo
 				jen.ID("actual").Dot("URL").Dot("String").Call(),
 				jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%d"),
-					jen.ID(typ.Name.UnexportedVarName()).Dot("ID"),
+					jen.IDf("example%s", ts).Dot("ID"),
 				),
 			),
 			nil,
@@ -788,9 +846,8 @@ func buildTestV1Client_BuildArchiveSomethingRequest(proj *models.Project, typ mo
 func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	subtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
-
-	subtestLines = append(subtestLines,
+	happyPathSubtestLines := append(
+		buildVarDeclarationsOfDependentStructs(proj, typ),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -818,14 +875,24 @@ func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataTyp
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	)
 
+	withInvalidClientURLSubtestLines := append(
+		buildVarDeclarationsOfDependentStructs(proj, typ),
+		jen.Line(),
+
+		jen.Line(),
+		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
+			buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)...,
+		),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Archive%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				subtestLines...,
-			),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", withInvalidClientURLSubtestLines...),
 		),
 		jen.Line(),
 	}

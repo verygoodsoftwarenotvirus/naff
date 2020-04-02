@@ -423,9 +423,9 @@ func buildParamsForMethodThatCreatesADataTypeFromStructs(proj *models.Project, t
 	}
 
 	if !call {
-		params = append(params, jen.ID("input").Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+		params = append(params, jen.ID("exampleInput").Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
 	} else {
-		params = append(params, jen.ID("input"))
+		params = append(params, jen.ID("exampleInput"))
 	}
 
 	return params
@@ -508,7 +508,7 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
-			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+			listParams = append(listParams, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
 		}
 		listParams = listParams[:len(listParams)-1]
 
@@ -516,7 +516,7 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj
 			params = append(params, listParams...)
 		}
 	}
-	params = append(params, jen.ID(typ.Name.UnexportedVarName()))
+	params = append(params, jen.IDf("example%s", typ.Name.Singular()))
 
 	return params
 }
