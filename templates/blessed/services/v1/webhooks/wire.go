@@ -1,8 +1,6 @@
 package webhooks
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -28,7 +26,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideWebhookDataManager is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideWebhookDataManager").Params(jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataManager")).Block(
+		jen.Func().ID("ProvideWebhookDataManager").Params(jen.ID("db").Qual(pkg.DatabaseV1Package(), "Database")).Params(jen.Qual(pkg.ModelsV1Package(), "WebhookDataManager")).Block(
 			jen.Return().ID("db"),
 		),
 		jen.Line(),
@@ -37,7 +35,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideWebhookDataServer is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideWebhookDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer")).Block(
+		jen.Func().ID("ProvideWebhookDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(pkg.ModelsV1Package(), "WebhookDataServer")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

@@ -1,8 +1,6 @@
 package config
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -72,7 +70,7 @@ connection_details = "%s"
 					jen.ID("Database").MapAssign().ID("DatabaseSettings").Valuesln(
 						jen.ID("Provider").MapAssign().Lit("postgres"),
 						jen.ID("Debug").MapAssign().ID("true"),
-						jen.ID("ConnectionDetails").MapAssign().Qual(filepath.Join(pkg.OutputPath, "database/v1"), "ConnectionDetails").Call(jen.ID("expected")),
+						jen.ID("ConnectionDetails").MapAssign().Qual(pkg.DatabaseV1Package(), "ConnectionDetails").Call(jen.ID("expected")),
 					),
 				),
 				jen.Line(),

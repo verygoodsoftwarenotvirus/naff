@@ -1,8 +1,6 @@
 package client
 
 import (
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -251,7 +249,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 									jen.ID("bs"),
 									jen.Err(),
 								).Assign().Qual("encoding/json", "Marshal").Call(
-									jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ErrorResponse").Values(),
+									jen.VarPointer().Qual(pkg.ModelsV1Package(), "ErrorResponse").Values(),
 								),
 								utils.RequireNoError(jen.Err(), nil),
 								jen.Return().ID("string").Call(

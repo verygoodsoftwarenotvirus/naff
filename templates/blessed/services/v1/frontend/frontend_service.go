@@ -1,8 +1,6 @@
 package frontend
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -25,7 +23,7 @@ func frontendServiceDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("Service is responsible for serving HTML (and other static resources)"),
 			jen.ID("Service").Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("config").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "FrontendSettings"),
+				jen.ID("config").Qual(pkg.InternalConfigV1Package(), "FrontendSettings"),
 			),
 		),
 		jen.Line(),
@@ -34,7 +32,7 @@ func frontendServiceDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection"),
 		jen.Line(),
-		jen.Func().ID("ProvideFrontendService").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("cfg").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "FrontendSettings")).Params(jen.Op("*").ID("Service")).Block(
+		jen.Func().ID("ProvideFrontendService").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("cfg").Qual(pkg.InternalConfigV1Package(), "FrontendSettings")).Params(jen.Op("*").ID("Service")).Block(
 			jen.ID("svc").Assign().VarPointer().ID("Service").Valuesln(
 				jen.ID("config").MapAssign().ID("cfg"),
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),

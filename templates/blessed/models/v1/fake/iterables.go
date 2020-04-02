@@ -2,10 +2,10 @@ package fake
 
 import (
 	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
-	"path/filepath"
 )
 
 func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
@@ -13,26 +13,13 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(buildBuildFakeSomething(proj, typ)...)
-	ret.Add(buildBuildFakeItemList(proj, typ)...)
-	ret.Add(buildBuildFakeItemUpdateInputFromItem(proj, typ)...)
-	ret.Add(buildBuildFakeItemCreationInput(proj, typ)...)
-	ret.Add(buildBuildFakeItemCreationInputFromItem(proj, typ)...)
+	ret.Add(buildBuildFakeSomethingList(proj, typ)...)
+	ret.Add(buildBuildFakeSomethingUpdateInputFromSomething(proj, typ)...)
+	ret.Add(buildBuildFakeSomethingCreationInput(proj, typ)...)
+	ret.Add(buildBuildFakeSomethingCreationInputFromSomething(proj, typ)...)
 
 	return ret
 }
-
-//
-//// BuildFakeItem builds a faked item
-//func BuildFakeItem() *models.Item {
-//	return &models.Item{
-//		ID:            fake.Uint64(),
-//		Name:          fake.Word(),
-//		Details:       fake.Word(),
-//		CreatedOn:     uint64(uint32(fake.Date().Unix())),
-//		BelongsToUser: fake.Uint64(),
-//	}
-//}
-//
 
 func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
@@ -66,8 +53,8 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 	lines := []jen.Code{
 		jen.Commentf("%s builds a faked %s", funcName, scn),
 		jen.Line(),
-		jen.Func().ID(funcName).Params().Params(jen.ParamPointer().Qual(filepath.Join(proj.OutputPath, "models", "v1"), sn)).Block(
-			jen.Return(jen.VarPointer().Qual(filepath.Join(proj.OutputPath, "models", "v1"), sn).Valuesln(block...)),
+		jen.Func().ID(funcName).Params().Params(jen.ParamPointer().Qual(proj.ModelsV1Package(), sn)).Block(
+			jen.Return(jen.VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(block...)),
 		),
 	}
 
@@ -96,7 +83,7 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 //}
 //
 
-func buildBuildFakeItemList(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	funcName := fmt.Sprintf("BuildFake%sList", sn)
@@ -104,19 +91,19 @@ func buildBuildFakeItemList(proj *models.Project, typ models.DataType) []jen.Cod
 	lines := []jen.Code{
 		jen.Commentf("%s builds a faked %sList", funcName, sn),
 		jen.Line(),
-		jen.Func().ID(funcName).Params().Params(jen.ParamPointer().Qual(filepath.Join(proj.OutputPath, "models", "v1"), fmt.Sprintf("%sList", sn))).Block(
+		jen.Func().ID(funcName).Params().Params(jen.ParamPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Block(
 			jen.IDf("example%s1", sn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.IDf("example%s2", sn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.IDf("example%s3", sn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.Line(),
 			jen.Return(
-				jen.VarPointer().Qual(filepath.Join(proj.OutputPath, "models", "v1"), fmt.Sprintf("%sList", sn)).Valuesln(
-					jen.ID("Pagination").MapAssign().Qual(filepath.Join(proj.OutputPath, "models", "v1"), "Pagination").Valuesln(
+				jen.VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
+					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().Lit(1),
 						jen.ID("Limit").MapAssign().Lit(20),
 						jen.ID("TotalCount").MapAssign().Lit(3),
 					),
-					jen.ID(pn).MapAssign().Index().Qual(filepath.Join(proj.OutputPath, "models", "v1"), sn).Valuesln(
+					jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Valuesln(
 						jen.PointerTo().ID("exampleItem1"),
 						jen.PointerTo().ID("exampleItem2"),
 						jen.PointerTo().ID("exampleItem3"),
@@ -129,99 +116,64 @@ func buildBuildFakeItemList(proj *models.Project, typ models.DataType) []jen.Cod
 	return lines
 }
 
-//
-//// BuildFakeItemUpdateInputFromItem builds a faked ItemUpdateInput from an item
-//func BuildFakeItemUpdateInputFromItem(item *models.Item) *models.ItemUpdateInput {
-//	return &models.ItemUpdateInput{
-//		Name:          item.Name,
-//		Details:       item.Details,
-//		BelongsToUser: item.BelongsToUser,
-//	}
-//}
-//
-
-func buildBuildFakeItemUpdateInputFromItem(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildFakeSomethingUpdateInputFromSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	scn := typ.Name.Singular()
+	scnwp := typ.Name.SingularCommonNameWithPrefix()
+	uvn := typ.Name.UnexportedVarName()
 	funcName := fmt.Sprintf("BuildFakeItemUpdateInputFrom%s", sn)
 
-	block := []jen.Code{
-		jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-	}
-
+	var block []jen.Code
 	for _, field := range typ.Fields {
-		block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
+		fns := field.Name.Singular()
+		if field.ValidForUpdateInput {
+			block = append(block, jen.ID(fns).MapAssign().ID(uvn).Dot(fns))
+		}
 	}
 
 	block = append(block,
-		jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Uint32().Call(jen.Qual(utils.FakeLibrary, "Date").Call().Dot("Unix").Call())),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
-				return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().Add(utils.FakeUint64Func())
+				tns := typ.BelongsToStruct.Singular()
+				return jen.IDf("BelongsTo%s", tns).MapAssign().ID(uvn).Dotf("BelongsTo%s", tns)
 			}
 			return jen.Null()
 		}(),
 		func() jen.Code {
 			if typ.BelongsToUser {
-				return jen.ID("BelongsToUser").MapAssign().Add(utils.FakeUint64Func())
+				return jen.ID("BelongsToUser").MapAssign().ID(uvn).Dot("BelongsToUser")
 			}
 			return jen.Null()
 		}(),
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, scn),
+		jen.Commentf("%s builds a faked %sUpdateInput from %s", funcName, sn, scnwp),
 		jen.Line(),
-		jen.Func().ID(funcName).Params().Block(
-			jen.Return(jen.VarPointer().Qual(filepath.Join(proj.OutputPath, "models", "v1"), sn).Valuesln(block...)),
+		jen.Func().ID(funcName).Params(
+			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), sn),
+		).Params(
+			jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn)),
+		).Block(
+			jen.Return(jen.VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(block...)),
 		),
 	}
 
 	return lines
 }
 
-//
-//// BuildFakeItemCreationInput builds a faked ItemCreationInput
-//func BuildFakeItemCreationInput() *models.ItemCreationInput {
-//	item := BuildFakeItem()
-//	return BuildFakeItemCreationInputFromItem(item)
-//}
-//
-
-func buildBuildFakeItemCreationInput(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildFakeSomethingCreationInput(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	scn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
 	funcName := fmt.Sprintf("BuildFake%sCreationInput", sn)
 
-	block := []jen.Code{
-		jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-	}
-
-	for _, field := range typ.Fields {
-		block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
-	}
-
-	block = append(block,
-		jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Uint32().Call(jen.Qual(utils.FakeLibrary, "Date").Call().Dot("Unix").Call())),
-		func() jen.Code {
-			if typ.BelongsToStruct != nil {
-				return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().Add(utils.FakeUint64Func())
-			}
-			return jen.Null()
-		}(),
-		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID("BelongsToUser").MapAssign().Add(utils.FakeUint64Func())
-			}
-			return jen.Null()
-		}(),
-	)
-
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, scn),
+		jen.Commentf("%s builds a faked %sCreationInput", funcName, sn),
 		jen.Line(),
-		jen.Func().ID(funcName).Params().Block(
-			jen.Return(jen.VarPointer().Qual(filepath.Join(proj.OutputPath, "models", "v1"), sn).Valuesln(block...)),
+		jen.Func().ID(funcName).Params().Params(
+			jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)),
+		).Block(
+			jen.ID(uvn).Assign().IDf("BuildFake%s", sn).Call(),
+			jen.Return(jen.IDf("BuildFake%sCreationInputFrom%s", sn, sn).Call(jen.ID(uvn))),
 		),
 	}
 
@@ -239,40 +191,45 @@ func buildBuildFakeItemCreationInput(proj *models.Project, typ models.DataType) 
 //}
 //
 
-func buildBuildFakeItemCreationInputFromItem(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildFakeSomethingCreationInputFromSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	scn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
+	scnwp := typ.Name.SingularCommonNameWithPrefix()
 	funcName := fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)
 
-	block := []jen.Code{
-		jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-	}
-
+	var block []jen.Code
 	for _, field := range typ.Fields {
-		block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
+		fns := field.Name.Singular()
+		if field.ValidForCreationInput {
+			block = append(block, jen.ID(fns).MapAssign().ID(uvn).Dot(fns))
+		}
 	}
 
 	block = append(block,
-		jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Uint32().Call(jen.Qual(utils.FakeLibrary, "Date").Call().Dot("Unix").Call())),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
-				return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().Add(utils.FakeUint64Func())
+				tns := typ.BelongsToStruct.Singular()
+				return jen.IDf("BelongsTo%s", tns).MapAssign().ID(uvn).Dotf("BelongsTo%s", tns)
 			}
 			return jen.Null()
 		}(),
 		func() jen.Code {
 			if typ.BelongsToUser {
-				return jen.ID("BelongsToUser").MapAssign().Add(utils.FakeUint64Func())
+				return jen.ID("BelongsToUser").MapAssign().ID(uvn).Dot("BelongsToUser")
 			}
 			return jen.Null()
 		}(),
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, scn),
+		jen.Commentf("%s builds a faked %sCreationInput from %s", funcName, sn, scnwp),
 		jen.Line(),
-		jen.Func().ID(funcName).Params().Block(
-			jen.Return(jen.VarPointer().Qual(filepath.Join(proj.OutputPath, "models", "v1"), sn).Valuesln(block...)),
+		jen.Func().ID(funcName).Params(
+			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), sn),
+		).Params(
+			jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)),
+		).Block(
+			jen.Return(jen.VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(block...)),
 		),
 	}
 

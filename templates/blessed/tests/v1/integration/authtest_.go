@@ -1,8 +1,6 @@
 package integration
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -62,7 +60,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 				jen.Line(),
 				jen.Comment("create a user"),
-				jen.ID("ui").Assign().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
+				jen.ID("ui").Assign().Qual(pkg.RandomModelsPackage(), "RandomUserInput").Call(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().ID("todoClient").Dot("BuildCreateUserRequest").Call(jen.ID("tctx"), jen.ID("ui")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("req"), jen.Err()),
 				jen.Line(),
@@ -70,13 +68,13 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.Err()),
 				jen.Line(),
 				jen.Comment("load user response"),
-				jen.ID("ucr").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse").Values(),
+				jen.ID("ucr").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserCreationResponse").Values(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr"))),
 				jen.Line(),
 				jen.Comment("create login request"),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("r").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("r").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
@@ -104,19 +102,19 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to logout"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 				jen.Line(),
-				jen.ID("ui").Assign().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
+				jen.ID("ui").Assign().Qual(pkg.RandomModelsPackage(), "RandomUserInput").Call(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().ID("todoClient").Dot("BuildCreateUserRequest").Call(jen.ID("tctx"), jen.ID("ui")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("req"), jen.Err()),
 				jen.Line(),
 				jen.List(jen.ID("res"), jen.Err()).Assign().ID("todoClient").Dot("PlainClient").Call().Dot("Do").Call(jen.ID("req")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.Err()),
 				jen.Line(),
-				jen.ID("ucr").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse").Values(),
+				jen.ID("ucr").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserCreationResponse").Values(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr"))),
 				jen.Line(),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("r").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("r").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
@@ -175,7 +173,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 				jen.Line(),
 				jen.Comment("create a user"),
-				jen.ID("ui").Assign().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
+				jen.ID("ui").Assign().Qual(pkg.RandomModelsPackage(), "RandomUserInput").Call(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().ID("todoClient").Dot("BuildCreateUserRequest").Call(jen.ID("tctx"), jen.ID("ui")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("req"), jen.Err()),
 				jen.Line(),
@@ -183,7 +181,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.Err()),
 				jen.Line(),
 				jen.Comment("load user response"),
-				jen.ID("ucr").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse").Values(),
+				jen.ID("ucr").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserCreationResponse").Values(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr"))),
 				jen.Line(),
 				jen.Comment("create login request"),
@@ -195,7 +193,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("create login request"),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("r").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("r").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("badPassword"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
@@ -218,14 +216,14 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to login as someone that doesn't exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("ui").Assign().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), "RandomUserInput").Call(),
+				jen.ID("ui").Assign().Qual(pkg.RandomModelsPackage(), "RandomUserInput").Call(),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID("randString").Call(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("s"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("r").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("r").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("ui").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("token")),
@@ -271,7 +269,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("create password update request"),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("r").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput").Valuesln(
+				jen.ID("r").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "PasswordUpdateInput").Valuesln(
 					jen.ID("CurrentPassword").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
 					jen.ID("NewPassword").MapAssign().ID("backwardsPass"),
@@ -310,7 +308,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("create login request"),
 				jen.List(jen.ID("newToken"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("newToken"), jen.Err()),
-				jen.List(jen.ID("l"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.List(jen.ID("l"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.VarPointer().Qual(pkg.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("backwardsPass"),
 					jen.ID("TOTPToken").MapAssign().ID("newToken")),
@@ -343,7 +341,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("create TOTP secret update request"),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("ir").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput").Valuesln(
+				jen.ID("ir").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "TOTPSecretRefreshInput").Valuesln(
 					jen.ID("CurrentPassword").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
 				),
@@ -365,7 +363,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusAccepted"), jen.ID("res").Dot("StatusCode")),
 				jen.Line(),
 				jen.Comment("load user response"),
-				jen.ID("r").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshResponse").Values(),
+				jen.ID("r").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "TOTPSecretRefreshResponse").Values(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("r"))),
 				jen.Qual("github.com/stretchr/testify/require", "NotEqual").Call(jen.ID("t"), jen.ID("user").Dot("TwoFactorSecret"), jen.ID("r").Dot("TwoFactorSecret")),
 				jen.Line(),
@@ -386,7 +384,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("create login request"),
 				jen.List(jen.ID("newToken"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("r").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("newToken"), jen.Err()),
-				jen.List(jen.ID("l"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.List(jen.ID("l"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.VarPointer().Qual(pkg.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("newToken")),
@@ -429,13 +427,13 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 				jen.Line(),
 				jen.Comment("create user and oauth2 client A"),
-				jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
+				jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(pkg.TestutilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userA")),
+				jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(pkg.TestutilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userA")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("clientA"), jen.Err()).Assign().Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
+				jen.List(jen.ID("clientA"), jen.Err()).Assign().Qual(pkg.HTTPClientV1Package(), "NewClient").Callln(
 					jen.ID("tctx"),
 					jen.ID("ca").Dot("ClientID"),
 					jen.ID("ca").Dot("ClientSecret"),
@@ -446,13 +444,13 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.Err()),
 				jen.Line(),
 				jen.Comment("create user and oauth2 client B"),
-				jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
+				jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(pkg.TestutilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userB")),
+				jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(pkg.TestutilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userB")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("clientB"), jen.Err()).Assign().Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
+				jen.List(jen.ID("clientB"), jen.Err()).Assign().Qual(pkg.HTTPClientV1Package(), "NewClient").Callln(
 					jen.ID("tctx"),
 					jen.ID("cb").Dot("ClientID"),
 					jen.ID("cb").Dot("ClientSecret"),
@@ -463,14 +461,14 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.Err()),
 				jen.Line(),
 				jen.Comment("create webhook for user A"),
-				jen.List(jen.ID("webhookA"), jen.Err()).Assign().ID("clientA").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
+				jen.List(jen.ID("webhookA"), jen.Err()).Assign().ID("clientA").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 					jen.ID("Method").MapAssign().Qual("net/http", "MethodPatch"),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 				)),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("webhookA"), jen.Err()),
 				jen.Line(),
 				jen.Comment("create webhook for user B"),
-				jen.List(jen.ID("webhookB"), jen.Err()).Assign().ID("clientB").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
+				jen.List(jen.ID("webhookB"), jen.Err()).Assign().ID("clientB").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 					jen.ID("Method").MapAssign().Qual("net/http", "MethodPatch"),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 				)),
@@ -502,7 +500,7 @@ func authTestDotGo(pkg *models.Project) *jen.File {
 				jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("cookie"), jen.ID("input")),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.Err()).Assign().Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewClient").Callln(
+				jen.List(jen.ID("c"), jen.Err()).Assign().Qual(pkg.HTTPClientV1Package(), "NewClient").Callln(
 					utils.CtxVar(),
 					jen.ID("premade").Dot("ClientID"),
 					jen.ID("premade").Dot("ClientSecret"),

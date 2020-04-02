@@ -154,16 +154,24 @@ func FakeFuncForType(typ string) func() jen.Code {
 	}
 }
 
-func FakeNameFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "Name").Call()
-}
-
 func FakeStringFunc() jen.Code {
 	return jen.Qual(FakeLibrary, "Word").Call()
 }
 
+func FakeContentTypeFunc() jen.Code {
+	return jen.Qual(FakeLibrary, "MimeType").Call()
+}
+
 func FakeUUIDFunc() jen.Code {
 	return jen.Qual(FakeLibrary, "UUID").Call()
+}
+
+func FakeURLFunc() jen.Code {
+	return jen.Qual(FakeLibrary, "URL").Call()
+}
+
+func FakeHTTPMethodFunc() jen.Code {
+	return jen.Qual(FakeLibrary, "HTTPMethod").Call()
 }
 
 func FakeUint32Func() jen.Code {
@@ -176,6 +184,10 @@ func FakeUint64Func() jen.Code {
 
 func FakeUsernameFunc() jen.Code {
 	return jen.Qual(FakeLibrary, "Username").Call()
+}
+
+func FakeUnixTimeFunc() jen.Code {
+	return jen.Uint64().Call(jen.Qual(FakeLibrary, "Date").Call().Dot("Unix").Call())
 }
 
 func FakePasswordFunc() jen.Code {

@@ -2,7 +2,6 @@ package iterables
 
 import (
 	"fmt"
-	"path/filepath"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -23,11 +22,11 @@ func iterableServiceDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Commentf("CreateMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts", cn),
-			jen.ID("CreateMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
+			jen.ID("CreateMiddlewareCtxKey").Qual(pkg.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
 			jen.Commentf("UpdateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts", cn),
-			jen.ID("UpdateMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
+			jen.ID("UpdateMiddlewareCtxKey").Qual(pkg.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
 			jen.Line(),
-			jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName").Equals().Lit(puvn),
+			jen.ID("counterName").Qual(pkg.InternalMetricsV1Package(), "CounterName").Equals().Lit(puvn),
 			jen.ID("counterDescription").Equals().Lit(fmt.Sprintf("the number of %s managed by the %s service", puvn, puvn)),
 			jen.ID("topicName").ID("string").Equals().Lit(prn),
 			jen.ID("serviceName").ID("string").Equals().Lit(fmt.Sprintf("%s_service", prn)),
@@ -37,7 +36,7 @@ func iterableServiceDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -56,8 +55,8 @@ func buildServiceTypeDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	serviceLines := []jen.Code{
 		jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
-		jen.ID(fmt.Sprintf("%sDatabase", uvn)).Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataManager", sn)),
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(pkg.InternalMetricsV1Package(), "UnitCounter"),
+		jen.ID(fmt.Sprintf("%sDatabase", uvn)).Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
 	}
 
 	if typ.BelongsToUser {
@@ -73,7 +72,7 @@ func buildServiceTypeDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	serviceLines = append(serviceLines,
 		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
-		jen.ID("encoderDecoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
+		jen.ID("encoderDecoder").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder"),
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 
@@ -119,7 +118,7 @@ func buildProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen
 	params := []jen.Code{
 		utils.CtxParam(),
 		jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-		jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataManager", sn)),
+		jen.ID("db").Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
 	}
 	serviceValues := []jen.Code{
 		jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
@@ -139,8 +138,8 @@ func buildProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen
 
 	params = append(params,
 		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
-		jen.ID("encoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
-		jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider"),
+		jen.ID("encoder").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder"),
+		jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual(pkg.InternalMetricsV1Package(), "UnitCounterProvider"),
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 	serviceValues = append(serviceValues,

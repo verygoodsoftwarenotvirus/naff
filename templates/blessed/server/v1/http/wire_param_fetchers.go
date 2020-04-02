@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"fmt"
-	"path/filepath"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -63,7 +62,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 			ret.Add(
 				jen.Commentf("Provide%sServiceUserIDFetcher provides a UserIDFetcher", sn),
 				jen.Line(),
-				jen.Func().IDf("Provide%sServiceUserIDFetcher", sn).Params().Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), "UserIDFetcher")).Block(
+				jen.Func().IDf("Provide%sServiceUserIDFetcher", sn).Params().Params(jen.Qual(pkg.ServiceV1Package(pn), "UserIDFetcher")).Block(
 					jen.Return().ID("UserIDFetcher"),
 				),
 				jen.Line(),
@@ -73,7 +72,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 			ret.Add(
 				jen.Commentf("Provide%sService%sIDFetcher provides a %sIDFetcher", sn, typ.BelongsToStruct.Singular(), typ.BelongsToStruct.Singular()),
 				jen.Line(),
-				jen.Func().IDf("Provide%sService%sIDFetcher", sn, typ.BelongsToStruct.Singular()).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), fmt.Sprintf("%sIDFetcher", typ.BelongsToStruct.Singular()))).Block(
+				jen.Func().IDf("Provide%sService%sIDFetcher", sn, typ.BelongsToStruct.Singular()).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(pkg.ServiceV1Package(pn), fmt.Sprintf("%sIDFetcher", typ.BelongsToStruct.Singular()))).Block(
 					jen.Return().IDf("buildChi%sIDFetcher", typ.BelongsToStruct.Singular()).Call(jen.ID("logger")),
 				),
 				jen.Line(),
@@ -83,7 +82,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 		ret.Add(
 			jen.Commentf("Provide%sIDFetcher provides an %sIDFetcher", sn, sn),
 			jen.Line(),
-			jen.Func().IDf("Provide%sIDFetcher", sn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), fmt.Sprintf("%sIDFetcher", sn))).Block(
+			jen.Func().IDf("Provide%sIDFetcher", sn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(pkg.ServiceV1Package(pn), fmt.Sprintf("%sIDFetcher", sn))).Block(
 				jen.Return().IDf("buildChi%sIDFetcher", sn).Call(jen.ID("logger")),
 			),
 			jen.Line(),
@@ -93,7 +92,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideUsernameFetcher provides a UsernameFetcher"),
 		jen.Line(),
-		jen.Func().ID("ProvideUsernameFetcher").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "UserIDFetcher")).Block(
+		jen.Func().ID("ProvideUsernameFetcher").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(pkg.ServiceV1UsersPackage(), "UserIDFetcher")).Block(
 			jen.Return().ID("buildChiUserIDFetcher").Call(jen.ID("logger")),
 		),
 		jen.Line(),
@@ -102,7 +101,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideAuthUserIDFetcher provides a UsernameFetcher"),
 		jen.Line(),
-		jen.Func().ID("ProvideAuthUserIDFetcher").Params().Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/auth"), "UserIDFetcher")).Block(
+		jen.Func().ID("ProvideAuthUserIDFetcher").Params().Params(jen.Qual(pkg.ServiceV1AuthPackage(), "UserIDFetcher")).Block(
 			jen.Return().ID("UserIDFetcher"),
 		),
 		jen.Line(),
@@ -111,7 +110,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideWebhooksUserIDFetcher provides a UserIDFetcher"),
 		jen.Line(),
-		jen.Func().ID("ProvideWebhooksUserIDFetcher").Params().Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "UserIDFetcher")).Block(
+		jen.Func().ID("ProvideWebhooksUserIDFetcher").Params().Params(jen.Qual(pkg.ServiceV1WebhooksPackage(), "UserIDFetcher")).Block(
 			jen.Return().ID("UserIDFetcher"),
 		),
 		jen.Line(),
@@ -120,7 +119,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideWebhookIDFetcher provides an WebhookIDFetcher"),
 		jen.Line(),
-		jen.Func().ID("ProvideWebhookIDFetcher").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "WebhookIDFetcher")).Block(
+		jen.Func().ID("ProvideWebhookIDFetcher").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(pkg.ServiceV1WebhooksPackage(), "WebhookIDFetcher")).Block(
 			jen.Return().ID("buildChiWebhookIDFetcher").Call(jen.ID("logger")),
 		),
 		jen.Line(),
@@ -129,7 +128,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideOAuth2ServiceClientIDFetcher provides a ClientIDFetcher"),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ServiceClientIDFetcher").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "ClientIDFetcher")).Block(
+		jen.Func().ID("ProvideOAuth2ServiceClientIDFetcher").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(pkg.ServiceV1OAuth2ClientsPackage(), "ClientIDFetcher")).Block(
 			jen.Return().ID("buildChiOAuth2ClientIDFetcher").Call(jen.ID("logger")),
 		),
 		jen.Line(),
@@ -139,7 +138,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("UserIDFetcher fetches a user ID from a request routed by chi."),
 		jen.Line(),
 		jen.Func().ID("UserIDFetcher").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block( //if userID, ok := req.Context().Value(models.UserIDKey).(uint64); ok {
-			jen.If(jen.List(jen.ID("userID"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey")).Assert(jen.Uint64()), jen.ID("ok")).Block(
+			jen.If(jen.List(jen.ID("userID"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(pkg.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()), jen.ID("ok")).Block(
 				jen.Return(jen.ID("userID")),
 			),
 			jen.Return(jen.Lit(0)),
@@ -150,9 +149,9 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("buildChiUserIDFetcher builds a function that fetches a Username from a request routed by chi."),
 		jen.Line(),
-		jen.Func().ID("buildChiUserIDFetcher").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "UserIDFetcher")).Block(
+		jen.Func().ID("buildChiUserIDFetcher").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(pkg.ServiceV1UsersPackage(), "UserIDFetcher")).Block(
 			jen.Return().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
-				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(pkg.ServiceV1UsersPackage(), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching user ID from request")),
 				),
@@ -174,7 +173,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 				jen.Return().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 					jen.Comment("we can generally disregard this error only because we should be able to validate"),
 					jen.Comment("that the string only contains numbers via chi's regex url param feature."),
-					jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+					jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(pkg.ServiceV1Package(pn), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("fetching %sID from request", sn)),
 					),
@@ -197,7 +196,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 		// 			jen.Return().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 		// 				jen.Comment("we can generally disregard this error only because we should be able to validate"),
 		// 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
-		// 				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", typ.BelongsToStruct.PackageName()), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+		// 				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(pkg.ServicesV1Package(typ.BelongsToStruct.PackageName()), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 		// 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 		// 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("fetching %sID from request", typ.BelongsToStruct.Singular())),
 		// 				),
@@ -217,7 +216,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 			jen.Return().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Comment("we can generally disregard this error only because we should be able to validate"),
 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
-				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(pkg.ServiceV1WebhooksPackage(), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching WebhookID from request")),
 				),
@@ -234,7 +233,7 @@ func wireParamFetchersDotGo(pkg *models.Project) *jen.File {
 			jen.Return().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
 				jen.Comment("we can generally disregard this error only because we should be able to validate"),
 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
-				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID("req"), jen.Qual(pkg.ServiceV1OAuth2ClientsPackage(), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching OAuth2ClientID from request")),
 				),

@@ -44,7 +44,6 @@ import (
 	integrationtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/integration"
 	loadtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/load"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil"
-	randmodel "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/tests/v1/testutil/rand/model"
 )
 
 type renderHelper struct {
@@ -83,7 +82,6 @@ func RenderProject(in *naffmodels.Project) error {
 		{name: "modelsmock", renderFunc: modelsmock.RenderPackage, activated: allActive},
 		{name: "models", renderFunc: models.RenderPackage, activated: allActive},
 		{name: "fakemodels", renderFunc: fakemodels.RenderPackage, activated: allActive},
-		{name: "randmodel", renderFunc: randmodel.RenderPackage, activated: allActive},
 		{name: "iterables", renderFunc: iterables.RenderPackage, activated: allActive},
 		{name: "dbclient", renderFunc: dbclient.RenderPackage, activated: allActive},
 		{name: "integrationtests", renderFunc: integrationtests.RenderPackage, activated: allActive},

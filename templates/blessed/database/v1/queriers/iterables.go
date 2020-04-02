@@ -2,7 +2,6 @@ package queriers
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -154,10 +153,10 @@ func buildScanSomethingFuncDecl(pkg *models.Project, typ models.DataType) []jen.
 	return []jen.Code{
 		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct", sn, pscnwp),
 		jen.Line(),
-		jen.Func().IDf("scan%s", sn).Params(jen.ID("scan").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Scanner")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
+		jen.Func().IDf("scan%s", sn).Params(jen.ID("scan").Qual(pkg.DatabaseV1Package(), "Scanner")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
 			func() []jen.Code {
 				body := []jen.Code{
-					jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
+					jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Values(),
 					jen.Line(),
 					jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Callln(buildScanFields(typ)...), jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.Return().List(jen.Nil(), jen.Err()),
@@ -185,8 +184,8 @@ func buildScanListOfSomethingFuncDecl(pkg *models.Project, typ models.DataType) 
 	return []jen.Code{
 		jen.Commentf("scan%s takes a logger and some database rows and turns them into a slice of %s", pn, pcn),
 		jen.Line(),
-		jen.Func().IDf("scan%s", pn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").ParamPointer().Qual("database/sql", "Rows")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
-			jen.Var().ID("list").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Func().IDf("scan%s", pn).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").ParamPointer().Qual("database/sql", "Rows")).Params(jen.Index().Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
+			jen.Var().ID("list").Index().Qual(pkg.ModelsV1Package(), sn),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
 				jen.List(jen.ID("x"), jen.Err()).Assign().IDf("scan%s", sn).Call(jen.ID("rows")),
@@ -345,7 +344,7 @@ func buildGetSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperPala
 		jen.Commentf("Get%s fetches %s from the %s database", sn, scnwp, dbvendor.SingularPackageName()),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Get%s", sn).Params(params...).
-			Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
+			Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", sn).Call(buildQueryParams...),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().IDf("scan%s", sn).Call(jen.ID("row")),
@@ -665,7 +664,7 @@ func buildGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.Sup
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Get%s", pn).Params(
 			params...,
-		).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
+		).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sList", sn)), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(queryBuildingParams...),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
@@ -683,8 +682,8 @@ func buildGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.Sup
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("fetching %s count: ", scn)+"%w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
-				jen.ID("Pagination").MapAssign().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
+			jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
+				jen.ID("Pagination").MapAssign().Qual(pkg.ModelsV1Package(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().ID("filter").Dot("Page"),
 					jen.ID("Limit").MapAssign().ID("filter").Dot("Limit"),
 					jen.ID("TotalCount").MapAssign().ID("count"),
@@ -718,7 +717,7 @@ func buildGetAllSomethingForUserFuncDecl(pkg *models.Project, dbvendor wordsmith
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("GetAll%sForUser", pn).Params(
 			params...,
-		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
+		).Params(jen.Index().Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(
 				queryBuildingArgs...,
 			),
@@ -755,7 +754,7 @@ func buildGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbvendor 
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(
 			params...,
-		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
+		).Params(jen.Index().Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(
 				queryBuildingArgs...,
 			),
@@ -918,7 +917,7 @@ func buildCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 	}
 
 	baseCreateFuncBody := []jen.Code{
-		jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(createInitColumns...),
+		jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(createInitColumns...),
 		jen.Line(),
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildCreate%sQuery", sn).Call(
 			queryBuildingArgs...,
@@ -967,7 +966,7 @@ func buildCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.SuperP
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).IDf("Create%s", sn).Params(
 			params...,
-		).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn), jen.ID("error")).Block(
+		).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn), jen.ID("error")).Block(
 			baseCreateFuncBody...,
 		),
 		jen.Line(),

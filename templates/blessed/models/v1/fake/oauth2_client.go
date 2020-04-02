@@ -10,7 +10,105 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile(packageName)
 	utils.AddImports(proj, ret)
 
-	ret.PackageComment("Package fake provides fake model builders\n")
+	ret.Add(buildBuildFakeOAuth2Client(proj)...)
+	ret.Add(buildBuildFakeOAuth2ClientList(proj)...)
+	ret.Add(buildBuildFakeOAuth2ClientCreationInputFromClient(proj)...)
 
 	return ret
+}
+
+func buildBuildFakeOAuth2Client(proj *models.Project) []jen.Code {
+	funcName := "BuildFakeOAuth2Client"
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds a faked OAuth2Client", funcName),
+		jen.Line(),
+		jen.Func().ID(funcName).Params().Params(
+			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+		).Block(
+			jen.Return(
+				jen.VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
+					jen.ID("ClientID").MapAssign().Add(utils.FakeUUIDFunc()),
+					jen.ID("ClientSecret").MapAssign().Add(utils.FakeUUIDFunc()),
+					jen.ID("RedirectURI").MapAssign().Add(utils.FakeURLFunc()),
+					jen.ID("Scopes").MapAssign().Index().String().Valuesln(
+						utils.FakeStringFunc(),
+						utils.FakeStringFunc(),
+						utils.FakeStringFunc(),
+					),
+					jen.ID("ImplicitAllowed").MapAssign().False(),
+					jen.ID("BelongsToUser").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Uint32().Call(jen.Qual(utils.FakeLibrary, "Date").Call().Dot("Unix").Call())),
+				),
+			),
+		),
+	}
+
+	return lines
+}
+
+func buildBuildFakeOAuth2ClientList(proj *models.Project) []jen.Code {
+	funcName := "BuildFakeOAuth2ClientList"
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds a faked OAuth2ClientList", funcName),
+		jen.Line(),
+		jen.Func().ID(funcName).Params().Params(
+			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
+		).Block(
+			jen.ID("exampleOAuth2Client1").Assign().ID("BuildFakeOAuth2Client").Call(),
+			jen.ID("exampleOAuth2Client2").Assign().ID("BuildFakeOAuth2Client").Call(),
+			jen.ID("exampleOAuth2Client3").Assign().ID("BuildFakeOAuth2Client").Call(),
+			jen.Return(
+				jen.VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
+					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
+						jen.ID("Page").MapAssign().Lit(1),
+						jen.ID("Limit").MapAssign().Lit(20),
+						jen.ID("TotalCount").MapAssign().Lit(3),
+					),
+					jen.ID("Clients").MapAssign().Index().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
+						jen.PointerTo().ID("exampleOAuth2Client1"),
+						jen.PointerTo().ID("exampleOAuth2Client2"),
+						jen.PointerTo().ID("exampleOAuth2Client3"),
+					),
+				),
+			),
+		),
+	}
+
+	return lines
+}
+
+func buildBuildFakeOAuth2ClientCreationInputFromClient(proj *models.Project) []jen.Code {
+	funcName := "BuildFakeOAuth2ClientCreationInputFromClient"
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds a faked OAuth2ClientCreationInput", funcName),
+		jen.Line(),
+		jen.Func().ID(funcName).Params(
+			jen.ID("client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+		).Params(
+			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
+		).Block(
+			jen.Return(
+				jen.VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").MapAssign().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+						jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
+						jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
+						jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(utils.FakeLibrary, "Zip").Call()),
+					),
+					jen.ID("Name").MapAssign().ID("client").Dot("Name"),
+					jen.ID("Scopes").MapAssign().ID("client").Dot("Scopes"),
+					jen.ID("ClientID").MapAssign().ID("client").Dot("ClientID"),
+					jen.ID("ClientSecret").MapAssign().ID("client").Dot("ClientSecret"),
+					jen.ID("RedirectURI").MapAssign().ID("client").Dot("RedirectURI"),
+					jen.ID("BelongsToUser").MapAssign().ID("client").Dot("BelongsToUser"),
+				),
+			),
+		),
+	}
+
+	return lines
 }

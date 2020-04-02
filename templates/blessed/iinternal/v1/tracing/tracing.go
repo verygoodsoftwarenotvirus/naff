@@ -4,7 +4,6 @@ import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
-	"path/filepath"
 )
 
 func spanAttachersDotGo(proj *models.Project) *jen.File {
@@ -100,7 +99,7 @@ func buildAttachFilterToSpan(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID("AttachFilterToSpan").Params(
 			jen.ID(utils.SpanVarName).Op("*").Qual(utils.TracingLibrary, "Span"),
-			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Block(
 			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().Nil().Op("&&").ID(utils.SpanVarName).DoesNotEqual().Nil()).Block(
 				jen.ID(utils.SpanVarName).Dot("AddAttributes").Callln(

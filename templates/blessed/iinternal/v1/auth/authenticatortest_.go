@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -18,7 +16,7 @@ func authenticatorTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "ProvideBcryptHashCost").Call(),
+				jen.Qual(pkg.InternalAuthV1Package(), "ProvideBcryptHashCost").Call(),
 			)),
 		),
 		jen.Line(),

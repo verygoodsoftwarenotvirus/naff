@@ -1,8 +1,6 @@
 package integration
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -14,7 +12,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Block(
+		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(pkg.ModelsV1Package(), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
@@ -28,8 +26,8 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput")).Block(
-			jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
+		jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "WebhookCreationInput")).Block(
+			jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 				jen.ID("Name").MapAssign().Qual(utils.FakeLibrary, "Word").Call(),
 				jen.ID("URL").MapAssign().Qual(utils.FakeLibrary, "DomainName").Call(),
 				jen.ID("ContentType").MapAssign().Lit("application/json"),
@@ -41,7 +39,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Block(
+		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.CreateCtx(),
@@ -74,12 +72,12 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
+					jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Valuesln(
 						jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 						jen.ID("URL").MapAssign().ID("input").Dot("URL"),
 						jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
 						jen.ID("Method").MapAssign().ID("input").Dot("Method")),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 						jen.ID("Name").MapAssign().ID("expected").Dot("Name"),
 						jen.ID("ContentType").MapAssign().ID("expected").Dot("ContentType"),
 						jen.ID("URL").MapAssign().ID("expected").Dot("URL"),
@@ -105,7 +103,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 					jen.Line(),
 					jen.Comment("Create webhooks"),
-					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
+					jen.Var().ID("expected").Index().Op("*").Qual(pkg.ModelsV1Package(), "Webhook"),
 					jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.ID("buildDummyWebhook").Call(jen.ID("t"))),
 					),
@@ -137,14 +135,14 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
+					jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Valuesln(
 						jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 						jen.ID("URL").MapAssign().ID("input").Dot("URL"),
 						jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
 						jen.ID("Method").MapAssign().ID("input").Dot("Method")),
 					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(
 						jen.ID("tctx"),
-						jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
+						jen.VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 							jen.ID("Name").MapAssign().ID("expected").Dot("Name"),
 							jen.ID("ContentType").MapAssign().ID("expected").Dot("ContentType"),
 							jen.ID("URL").MapAssign().ID("expected").Dot("URL"),
@@ -170,7 +168,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to update something that doesn't exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 					jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 					jen.Line(),
-					jen.Err().Assign().ID("todoClient").Dot("UpdateWebhook").Call(jen.ID("tctx"), jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values(jen.ID("ID").MapAssign().ID("nonexistentID"))),
+					jen.Err().Assign().ID("todoClient").Dot("UpdateWebhook").Call(jen.ID("tctx"), jen.VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Values(jen.ID("ID").MapAssign().ID("nonexistentID"))),
 					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
 				)),
 				jen.Line(),
@@ -179,14 +177,14 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
+					jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Valuesln(
 						jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 						jen.ID("URL").MapAssign().ID("input").Dot("URL"),
 						jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
 						jen.ID("Method").MapAssign().ID("input").Dot("Method")),
 					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(
 						jen.ID("tctx"),
-						jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
+						jen.VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 							jen.ID("Name").MapAssign().ID("expected").Dot("Name"),
 							jen.ID("ContentType").MapAssign().ID("expected").Dot("ContentType"),
 							jen.ID("URL").MapAssign().ID("expected").Dot("URL"),
@@ -221,13 +219,13 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
+					jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Valuesln(
 						jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 						jen.ID("URL").MapAssign().ID("input").Dot("URL"),
 						jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
 						jen.ID("Method").MapAssign().ID("input").Dot("Method"),
 					),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 						jen.ID("Name").MapAssign().ID("expected").Dot("Name"),
 						jen.ID("ContentType").MapAssign().ID("expected").Dot("ContentType"),
 						jen.ID("URL").MapAssign().ID("expected").Dot("URL"),

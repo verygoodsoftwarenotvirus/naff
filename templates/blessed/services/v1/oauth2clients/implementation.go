@@ -1,8 +1,6 @@
 package oauth2clients
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -127,9 +125,9 @@ func implementationDotGo(pkg *models.Project) *jen.File {
 			jen.Var().ID("uid").ID("uint64"),
 			jen.Line(),
 			jen.Comment("check context for client"),
-			jen.If(jen.List(jen.ID("client"), jen.ID("clientOk")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")), jen.Op("!").ID("clientOk")).Block(
+			jen.If(jen.List(jen.ID("client"), jen.ID("clientOk")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.Qual(pkg.ModelsV1Package(), "OAuth2ClientKey")).Assert(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client")), jen.Op("!").ID("clientOk")).Block(
 				jen.Comment("check for user instead"),
-				jen.List(jen.ID("user"), jen.ID("userOk")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")),
+				jen.List(jen.ID("user"), jen.ID("userOk")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.Qual(pkg.ModelsV1Package(), "UserKey")).Assert(jen.Op("*").Qual(pkg.ModelsV1Package(), "User")),
 				jen.If(jen.Op("!").ID("userOk")).Block(jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no user attached to this request")),
 					jen.Return().List(jen.Lit(""), jen.Qual("errors", "New").Call(jen.Lit("user not found"))),
 				),

@@ -1,8 +1,6 @@
 package webhooks
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -16,11 +14,11 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("CreateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts"),
-			jen.ID("CreateMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit("webhook_create_input"),
+			jen.ID("CreateMiddlewareCtxKey").Qual(pkg.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_create_input"),
 			jen.Comment("UpdateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts"),
-			jen.ID("UpdateMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit("webhook_update_input"),
+			jen.ID("UpdateMiddlewareCtxKey").Qual(pkg.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_update_input"),
 			jen.Line(),
-			jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName").Equals().Lit("webhooks"),
+			jen.ID("counterName").Qual(pkg.InternalMetricsV1Package(), "CounterName").Equals().Lit("webhooks"),
 			jen.ID("topicName").ID("string").Equals().Lit("webhooks"),
 			jen.ID("serviceName").ID("string").Equals().Lit("webhooks_service"),
 		),
@@ -29,7 +27,7 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer").Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual(pkg.ModelsV1Package(), "WebhookDataServer").Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -45,11 +43,11 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("Service handles TODO ListHandler webhooks"),
 			jen.ID("Service").Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("webhookCounter").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
-				jen.ID("webhookDatabase").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataManager"),
+				jen.ID("webhookCounter").Qual(pkg.InternalMetricsV1Package(), "UnitCounter"),
+				jen.ID("webhookDatabase").Qual(pkg.ModelsV1Package(), "WebhookDataManager"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
-				jen.ID("encoderDecoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
+				jen.ID("encoderDecoder").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder"),
 				jen.ID("eventManager").ID("eventManager"),
 			),
 			jen.Line(),
@@ -69,11 +67,11 @@ func webhooksServiceDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("ProvideWebhooksService").Paramsln(
 			utils.CtxParam(),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("webhookDatabase").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataManager"),
+			jen.ID("webhookDatabase").Qual(pkg.ModelsV1Package(), "WebhookDataManager"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 			jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
-			jen.ID("encoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
-			jen.ID("webhookCounterProvider").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider"),
+			jen.ID("encoder").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder"),
+			jen.ID("webhookCounterProvider").Qual(pkg.InternalMetricsV1Package(), "UnitCounterProvider"),
 			jen.ID("em").ParamPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("webhookCounter"), jen.Err()).Assign().ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.Lit("the number of webhooks managed by the webhooks service")),

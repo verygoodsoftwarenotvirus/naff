@@ -1,8 +1,6 @@
 package oauth2clients
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -28,7 +26,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreationInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(pkg.ModelsV1Package(), "OAuth2ClientCreationInput")),
 				jen.Line(),
 				jen.Comment("decode value from request"),
 				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("req"), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -47,7 +45,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ExtractOAuth2ClientFromRequest extracts OAuth2 client data from a request"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client"), jen.ID("error")).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("ExtractOAuth2ClientFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -121,14 +119,14 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("c").Dot("BelongsToUser")),
-				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("c").Dot("ID")),
-				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachOAuth2ClientIDToSpan").Call(jen.ID("span"), jen.ID("c").Dot("ClientID")),
+				jen.Qual(pkg.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("c").Dot("BelongsToUser")),
+				jen.Qual(pkg.InternalTracingV1Package(), "AttachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("c").Dot("ID")),
+				jen.Qual(pkg.InternalTracingV1Package(), "AttachOAuth2ClientIDToSpan").Call(jen.ID("span"), jen.ID("c").Dot("ClientID")),
 				jen.Line(),
 				jen.Comment("attach both the user ID and the client object to the request. it might seem"),
 				jen.Comment("superfluous, but some things should only need to know to look for user IDs"),
-				utils.CtxVar().Equals().Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientKey"), jen.ID("c")),
-				utils.CtxVar().Equals().Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"), jen.ID("c").Dot("BelongsToUser")),
+				utils.CtxVar().Equals().Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(pkg.ModelsV1Package(), "OAuth2ClientKey"), jen.ID("c")),
+				utils.CtxVar().Equals().Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(pkg.ModelsV1Package(), "UserIDKey"), jen.ID("c").Dot("BelongsToUser")),
 				jen.Line(),
 				jen.ID("next").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req").Dot("WithContext").Call(utils.CtxVar())),
 			)),
@@ -154,12 +152,12 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 						jen.Return(),
 					),
 					jen.Line(),
-					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachOAuth2ClientIDToSpan").Call(jen.ID("span"), jen.ID("client").Dot("ClientID")),
-					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("client").Dot("ID")),
-					jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/tracing"), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("client").Dot("BelongsToUser")),
+					jen.Qual(pkg.InternalTracingV1Package(), "AttachOAuth2ClientIDToSpan").Call(jen.ID("span"), jen.ID("client").Dot("ClientID")),
+					jen.Qual(pkg.InternalTracingV1Package(), "AttachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("client").Dot("ID")),
+					jen.Qual(pkg.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("client").Dot("BelongsToUser")),
 					jen.Line(),
-					utils.CtxVar().Equals().Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientKey"), jen.ID("client")),
-					utils.CtxVar().Equals().Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"), jen.ID("client").Dot("BelongsToUser")),
+					utils.CtxVar().Equals().Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(pkg.ModelsV1Package(), "OAuth2ClientKey"), jen.ID("client")),
+					utils.CtxVar().Equals().Qual("context", "WithValue").Call(utils.CtxVar(), jen.Qual(pkg.ModelsV1Package(), "UserIDKey"), jen.ID("client").Dot("BelongsToUser")),
 					jen.Line(),
 					jen.ID("req").Equals().ID("req").Dot("WithContext").Call(utils.CtxVar()),
 				),
@@ -171,8 +169,8 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("fetchOAuth2ClientFromRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Block(
-			jen.List(jen.ID("client"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("fetchOAuth2ClientFromRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client")).Block(
+			jen.List(jen.ID("client"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(pkg.ModelsV1Package(), "OAuth2ClientKey")).Assert(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client")),
 			jen.ID("_").Equals().ID("ok").Comment("we don't really care, but the linters do"),
 			jen.Return().ID("client"),
 		),

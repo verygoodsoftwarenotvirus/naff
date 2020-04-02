@@ -1,8 +1,6 @@
 package users
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -16,13 +14,13 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("UserCreationMiddlewareCtxKey is the context key for creation input"),
-			jen.ID("UserCreationMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit("user_creation_input"),
+			jen.ID("UserCreationMiddlewareCtxKey").Qual(pkg.ModelsV1Package(), "ContextKey").Equals().Lit("user_creation_input"),
 			jen.Line(),
 			jen.Comment("PasswordChangeMiddlewareCtxKey is the context key for password changes"),
-			jen.ID("PasswordChangeMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit("user_password_change"),
+			jen.ID("PasswordChangeMiddlewareCtxKey").Qual(pkg.ModelsV1Package(), "ContextKey").Equals().Lit("user_password_change"),
 			jen.Line(),
 			jen.Comment("TOTPSecretRefreshMiddlewareCtxKey is the context key for TOTP token refreshes"),
-			jen.ID("TOTPSecretRefreshMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit("totp_refresh"),
+			jen.ID("TOTPSecretRefreshMiddlewareCtxKey").Qual(pkg.ModelsV1Package(), "ContextKey").Equals().Lit("totp_refresh"),
 		),
 		jen.Line(),
 	)
@@ -32,7 +30,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(pkg.ModelsV1Package(), "UserInput")),
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
@@ -56,7 +54,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "PasswordUpdateInput")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(pkg.ModelsV1Package(), "PasswordUpdateInput")),
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("PasswordUpdateInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
@@ -80,7 +78,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "TOTPSecretRefreshInput")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(pkg.ModelsV1Package(), "TOTPSecretRefreshInput")),
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("TOTPSecretRefreshInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),

@@ -1,8 +1,6 @@
 package load
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -17,7 +15,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("ServiceAttacker implements hazana's Attacker interface"),
 		jen.Line(),
 		jen.Type().ID("ServiceAttacker").Struct(
-			jen.ID("todoClient").Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client"),
+			jen.ID("todoClient").Op("*").Qual(pkg.HTTPClientV1Package(), "V1Client"),
 		),
 		jen.Line(),
 	)

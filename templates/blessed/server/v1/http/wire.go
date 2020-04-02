@@ -1,8 +1,6 @@
 package httpserver
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -40,7 +38,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideNamespace provides a namespace"),
 		jen.Line(),
-		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "Namespace")).Block(
+		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(pkg.InternalMetricsV1Package(), "Namespace")).Block(
 			jen.Return().Lit("todo-service"),
 		),
 		jen.Line(),

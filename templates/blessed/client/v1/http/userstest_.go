@@ -1,8 +1,6 @@
 package client
 
 import (
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -68,7 +66,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -178,8 +176,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(
-					jen.ID("Users").MapAssign().Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserList").Values(
+					jen.ID("Users").MapAssign().Index().Qual(pkg.ModelsV1Package(), "User").Values(
 						jen.Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 					),
 				),
@@ -235,7 +233,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Values(),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserInput").Values(),
 				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
@@ -270,8 +268,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserCreationResponse").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserInput").Values(),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -286,7 +284,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 						nil,
 					),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput"),
+					jen.Var().ID("x").Op("*").Qual(pkg.ModelsV1Package(), "UserInput"),
 					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(
 							jen.ID("req").Dot("Body"),

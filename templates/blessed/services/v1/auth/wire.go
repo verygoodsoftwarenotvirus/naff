@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -51,7 +49,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideOAuth2ClientValidator converts an oauth2clients.Service to an OAuth2ClientValidator"),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").Op("*").Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "Service")).Params(jen.ID("OAuth2ClientValidator")).Block(
+		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").Op("*").Qual(pkg.ServiceV1OAuth2ClientsPackage(), "Service")).Params(jen.ID("OAuth2ClientValidator")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

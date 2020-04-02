@@ -2,7 +2,6 @@ package v1
 
 import (
 	"fmt"
-	"path/filepath"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -22,7 +21,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("the structure that would contain it and be responsible for calling its"),
 			jen.Comment("serve method"),
 			jen.ID("Server").Struct(
-				jen.ID("config").Op("*").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig"),
+				jen.ID("config").Op("*").Qual(pkg.InternalConfigV1Package(), "ServerConfig"),
 				jen.ID("httpServer").Op("*").Qual(httpPackage, "Server"),
 			),
 		),
@@ -40,7 +39,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideServer builds a new Server instance"),
 		jen.Line(),
-		jen.Func().ID("ProvideServer").Params(jen.ID("cfg").Op("*").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig"), jen.ID("httpServer").Op("*").Qual(httpPackage, "Server")).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
+		jen.Func().ID("ProvideServer").Params(jen.ID("cfg").Op("*").Qual(pkg.InternalConfigV1Package(), "ServerConfig"), jen.ID("httpServer").Op("*").Qual(httpPackage, "Server")).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
 			jen.ID("srv").Assign().VarPointer().ID("Server").Valuesln(
 				jen.ID("config").MapAssign().ID("cfg"),
 				jen.ID("httpServer").MapAssign().ID("httpServer"),

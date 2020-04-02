@@ -2,7 +2,6 @@ package mock
 
 import (
 	"fmt"
-	"path/filepath"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -17,7 +16,7 @@ func mockIterableDataServerDotGo(pkg *models.Project, typ models.DataType) *jen.
 	sn := typ.Name.Singular()
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.Op("*").IDf("%sDataServer", sn)).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.Op("*").IDf("%sDataServer", sn)).Call(jen.Nil()),
 		jen.Line(),
 	)
 

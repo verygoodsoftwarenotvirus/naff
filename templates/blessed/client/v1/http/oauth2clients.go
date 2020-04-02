@@ -1,8 +1,6 @@
 package client
 
 import (
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -109,7 +107,7 @@ func buildGetOAuth2Client(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.ID("oauth2Client").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "OAuth2Client"),
+			jen.ID("oauth2Client").Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Err().ID("error"),
 		).Block(block...),
 		jen.Line(),
@@ -141,7 +139,7 @@ func buildBuildGetOAuth2ClientsRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildGetOAuth2ClientsRequest").Params(
 			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -153,7 +151,6 @@ func buildBuildGetOAuth2ClientsRequest(proj *models.Project) []jen.Code {
 }
 
 func buildGetOAuth2Clients(proj *models.Project) []jen.Code {
-	outPath := proj.OutputPath
 	funcName := "GetOAuth2Clients"
 
 	block := []jen.Code{
@@ -175,7 +172,7 @@ func buildGetOAuth2Clients(proj *models.Project) []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.Var().ID("oauth2Clients").Op("*").Qual(filepath.Join(outPath, "models/v1"), "OAuth2ClientList"),
+		jen.Var().ID("oauth2Clients").Op("*").Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
@@ -192,9 +189,9 @@ func buildGetOAuth2Clients(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("GetOAuth2Clients").Params(
 			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(outPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
-			jen.Op("*").Qual(filepath.Join(outPath, "models/v1"), "OAuth2ClientList"),
+			jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
 			jen.ID("error"),
 		).Block(block...),
 		jen.Line(),
@@ -242,7 +239,7 @@ func buildBuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Code {
 		newClientMethod("BuildCreateOAuth2ClientRequest").Paramsln(
 			utils.CtxParam(),
 			jen.ID("cookie").ParamPointer().Qual("net/http", "Cookie"),
-			jen.ID("body").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "OAuth2ClientCreationInput"),
+			jen.ID("body").Op("*").Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
 		).Params(jen.ParamPointer().Qual("net/http", "Request"),
 			jen.ID("error")).Block(block...),
 		jen.Line(),
@@ -252,12 +249,11 @@ func buildBuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Code {
 }
 
 func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
-	outPath := proj.OutputPath
 	funcName := "CreateOAuth2Client"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
-		jen.Var().ID("oauth2Client").Op("*").Qual(filepath.Join(outPath, "models/v1"), "OAuth2Client"),
+		jen.Var().ID("oauth2Client").Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"),
 		jen.If(jen.ID("cookie").Op("==").ID("nil")).Block(
 			jen.Return().List(
 				jen.Nil(),
@@ -306,9 +302,9 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 		newClientMethod("CreateOAuth2Client").Paramsln(
 			utils.CtxParam(),
 			jen.ID("cookie").ParamPointer().Qual("net/http", "Cookie"),
-			jen.ID("input").Op("*").Qual(filepath.Join(outPath, "models/v1"), "OAuth2ClientCreationInput"),
+			jen.ID("input").Op("*").Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
 		).Params(
-			jen.Op("*").Qual(filepath.Join(outPath, "models/v1"), "OAuth2Client"),
+			jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.ID("error"),
 		).Block(block...,
 		),

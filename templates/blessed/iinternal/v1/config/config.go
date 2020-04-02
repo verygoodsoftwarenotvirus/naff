@@ -1,8 +1,6 @@
 package config
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -146,7 +144,7 @@ func configDotGo(pkg *models.Project) *jen.File {
 					"toml":         "provider,omitempty",
 				}),
 				jen.Comment("ConnectionDetails indicates how our database driver should connect to the instance"),
-				jen.ID("ConnectionDetails").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "ConnectionDetails").Tag(map[string]string{
+				jen.ID("ConnectionDetails").Qual(pkg.DatabaseV1Package(), "ConnectionDetails").Tag(map[string]string{
 					"mapstructure": "connection_details",
 					"json":         "connection_details",
 					"toml":         "connection_details,omitempty",

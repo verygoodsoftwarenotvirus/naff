@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"path/filepath"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -136,7 +135,7 @@ func buildTestClientGetSomething(pkg *models.Project, typ models.DataType) []jen
 	callArgs := append([]jen.Code{utils.CtxVar()}, idCallArgs...)
 
 	block = append(block,
-		jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
+		jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Values(),
 		jen.Line(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
@@ -171,11 +170,11 @@ func buildTestClientGetSomethingCount(pkg *models.Project, typ models.DataType) 
 
 		if !nilFilter {
 			lines = append(lines,
-				jen.ID(filterVarName).Assign().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+				jen.ID(filterVarName).Assign().Qual(pkg.ModelsV1Package(), "DefaultQueryFilter").Call(),
 			)
 		} else {
 			lines = append(lines,
-				jen.ID(filterVarName).Assign().Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil()),
+				jen.ID(filterVarName).Assign().Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
 			)
 		}
 
@@ -235,7 +234,7 @@ func buildTestClientGetAllOfSomethingForUser(pkg *models.Project, typ models.Dat
 				utils.CreateCtx(),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-				jen.ID("expected").Assign().Slice().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
+				jen.ID("expected").Assign().Slice().Qual(pkg.ModelsV1Package(), sn).Values(),
 				jen.Line(),
 				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sForUser", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleUserID")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
@@ -302,7 +301,7 @@ func buildTestClientGetListOfSomething(pkg *models.Project, typ models.DataType)
 
 		lines = append(lines,
 			jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Values(),
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Values(),
 			func() jen.Code {
 				if nilFilter {
 					return jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(pkg))
@@ -367,9 +366,9 @@ func buildTestClientCreateSomething(pkg *models.Project, typ models.DataType) []
 	mockCalls = append(mockCalls, jen.ID(inputVarName))
 
 	lines = append(lines,
-		jen.ID(inputVarName).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Values(),
+		jen.ID(inputVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Values(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-		jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
+		jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Values(),
 		jen.Line(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(
 			mockCalls...,
@@ -437,7 +436,7 @@ func buildTestClientUpdateSomething(pkg *models.Project, typ models.DataType) []
 	callArgs = append(callArgs, jen.ID(inputVarName))
 
 	lines = append(lines,
-		jen.ID(inputVarName).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(),
+		jen.ID(inputVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Values(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.Var().ID("expected").ID("error"),
 		jen.Line(),

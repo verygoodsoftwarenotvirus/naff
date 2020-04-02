@@ -1,8 +1,6 @@
 package client
 
 import (
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -107,7 +105,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("userID").ID("uint64"),
 		).Params(
-			jen.ID("user").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "User"),
+			jen.ID("user").Op("*").Qual(proj.ModelsV1Package(), "User"),
 			jen.Err().ID("error"),
 		).Block(block...),
 		jen.Line(),
@@ -139,7 +137,7 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildGetUsersRequest").Params(
 			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -151,12 +149,11 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 }
 
 func buildGetUsers(proj *models.Project) []jen.Code {
-	outPath := proj.OutputPath
 	funcName := "GetUsers"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
-		jen.ID("users").Assign().VarPointer().Qual(filepath.Join(outPath, "models/v1"), "UserList").Values(),
+		jen.ID("users").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Values(),
 		jen.Line(),
 		jen.List(
 			jen.ID("req"),
@@ -188,9 +185,9 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("GetUsers").Params(
 			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(outPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
-			jen.Op("*").Qual(filepath.Join(outPath, "models/v1"), "UserList"),
+			jen.Op("*").Qual(proj.ModelsV1Package(), "UserList"),
 			jen.ID("error"),
 		).Block(block...),
 		jen.Line(),
@@ -222,7 +219,7 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildCreateUserRequest").Params(
 			utils.CtxParam(),
-			jen.ID("body").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "UserCreationInput"),
+			jen.ID("body").Op("*").Qual(proj.ModelsV1Package(), "UserCreationInput"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -234,12 +231,11 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 }
 
 func buildCreateUser(proj *models.Project) []jen.Code {
-	outPath := proj.OutputPath
 	funcName := "CreateUser"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
-		jen.ID("user").Assign().VarPointer().Qual(filepath.Join(outPath, "models/v1"), "UserCreationResponse").Values(),
+		jen.ID("user").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
 		jen.Line(),
 		jen.List(
 			jen.ID("req"),
@@ -271,9 +267,9 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("CreateUser").Params(
 			utils.CtxParam(),
-			jen.ID("input").Op("*").Qual(filepath.Join(outPath, "models/v1"), "UserCreationInput"),
+			jen.ID("input").Op("*").Qual(proj.ModelsV1Package(), "UserCreationInput"),
 		).Params(
-			jen.Op("*").Qual(filepath.Join(outPath, "models/v1"), "UserCreationResponse"),
+			jen.Op("*").Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 			jen.ID("error"),
 		).Block(block...),
 		jen.Line(),
@@ -398,7 +394,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildLoginRequest").Params(
 			utils.CtxParam(),
-			jen.ID("input").PointerTo().Qual(filepath.Join(proj.OutputPath, "models/v1"), "UserLoginInput"),
+			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
 			jen.ID("error"),
@@ -468,7 +464,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("Login").Params(
 			utils.CtxParam(),
-			jen.ID("input").PointerTo().Qual(filepath.Join(proj.OutputPath, "models/v1"), "UserLoginInput"),
+			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Cookie"),
 			jen.ID("error"),

@@ -1,8 +1,6 @@
 package frontend
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -32,7 +30,7 @@ func initDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("logger").Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
-			jen.Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil"), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
+			jen.Qual(pkg.TestutilV1Package(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
 			jen.Line(),
 			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.Line(),

@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -38,7 +37,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 }
 
 func attachURIToSpanCall(proj *models.Project) jen.Code {
-	return jen.Qual(filepath.Join(proj.OutputPath, "internal/v1/tracing"), "AttachRequestURIToSpan").Call(jen.ID("span"), jen.ID("uri"))
+	return jen.Qual(proj.InternalTracingV1Package(), "AttachRequestURIToSpan").Call(jen.ID("span"), jen.ID("uri"))
 }
 
 func buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj *models.Project, firstVar jen.Code, typVar jen.Code, typ models.DataType) []jen.Code {
@@ -326,7 +325,7 @@ func buildParamsForMethodThatRetrievesAListOfADataType(proj *models.Project, typ
 	}
 
 	if !call {
-		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
+		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"))
 	} else {
 		params = append(params, jen.ID(utils.FilterVarName))
 	}
@@ -359,7 +358,7 @@ func buildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(proj *models.P
 	}
 
 	if !call {
-		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
+		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"))
 	} else {
 		params = append(params, jen.ID(utils.FilterVarName))
 	}
@@ -392,7 +391,7 @@ func buildParamsForMethodThatCreatesADataType(proj *models.Project, typ models.D
 	}
 
 	if !call {
-		params = append(params, jen.ID("input").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+		params = append(params, jen.ID("input").Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
 	} else {
 		params = append(params, jen.ID("input"))
 	}
@@ -425,7 +424,7 @@ func buildParamsForMethodThatCreatesADataTypeFromStructs(proj *models.Project, t
 	}
 
 	if !call {
-		params = append(params, jen.ID("input").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+		params = append(params, jen.ID("input").Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
 	} else {
 		params = append(params, jen.ID("input"))
 	}
@@ -458,7 +457,7 @@ func buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj *models.Pro
 	}
 
 	if !call {
-		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter"))
+		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"))
 	} else {
 		params = append(params, jen.ID(utils.FilterVarName))
 	}
@@ -495,7 +494,7 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj *models.Project,
 	}
 
 	if !call {
-		params = append(params, jen.ID(typ.Name.UnexportedVarName()).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), typ.Name.Singular()))
+		params = append(params, jen.ID(typ.Name.UnexportedVarName()).Op("*").Qual(proj.ModelsV1Package(), typ.Name.Singular()))
 	} else {
 		params = append(params, jen.ID(typ.Name.UnexportedVarName()))
 	}
@@ -549,7 +548,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 		jen.Commentf("%s retrieves %s", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(
-			jen.ID(uvn).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), ts),
+			jen.ID(uvn).Op("*").Qual(proj.ModelsV1Package(), ts),
 			jen.Err().ID("error"),
 		).Block(block...,
 		),
@@ -630,7 +629,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.Commentf("%s retrieves a list of %s", funcName, typ.Name.PluralCommonName()),
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, false)...).Params(
-			jen.ID(pvn).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), fmt.Sprintf("%sList", ts)),
+			jen.ID(pvn).Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", ts)),
 			jen.Err().ID("error"),
 		).Block(block...,
 		),
@@ -722,7 +721,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		newClientMethod(funcName).Params(
 			buildParamsForMethodThatCreatesADataType(proj, typ, false)...,
 		).Params(
-			jen.ID(vn).Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), ts),
+			jen.ID(vn).Op("*").Qual(proj.ModelsV1Package(), ts),
 			jen.Err().ID("error"),
 		).Block(block...,
 		),

@@ -1,8 +1,6 @@
 package client
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -14,7 +12,7 @@ func clientDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(proj.OutputPath, "database/v1"), "Database").Equals().Parens(jen.Op("*").ID("Client")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(proj.DatabaseV1Package(), "Database").Equals().Parens(jen.Op("*").ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -31,7 +29,7 @@ func clientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("the actual database querying is performed."),
 		jen.Line(),
-		jen.Type().ID("Client").Struct(jen.ID("db").ParamPointer().Qual("database/sql", "DB"), jen.ID("querier").Qual(filepath.Join(proj.OutputPath, "database/v1"), "Database"),
+		jen.Type().ID("Client").Struct(jen.ID("db").ParamPointer().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
 			jen.ID("debug").ID("bool"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")),
 		jen.Line(),
 	)
@@ -84,10 +82,10 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 		jen.Func().ID(funcName).Paramsln(
 			utils.CtxParam(),
 			jen.ID("db").ParamPointer().Qual("database/sql", "DB"),
-			jen.ID("querier").Qual(filepath.Join(proj.OutputPath, "database/v1"), "Database"),
+			jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
 			jen.ID("debug").ID("bool"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-		).Params(jen.Qual(filepath.Join(proj.OutputPath, "database/v1"), "Database"), jen.ID("error")).Block(
+		).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.ID("error")).Block(
 			jen.ID("c").Assign().VarPointer().ID("Client").Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("querier").MapAssign().ID("querier"),

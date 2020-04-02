@@ -2,7 +2,6 @@ package load
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -51,7 +50,7 @@ func buildFetchRandomSomething(pkg *models.Project, typ models.DataType) []jen.C
 	x = x[1:]
 	paramArgs := append(
 		[]jen.Code{
-			jen.ID("c").Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client"),
+			jen.ID("c").Op("*").Qual(pkg.HTTPClientV1Package(), "V1Client"),
 		},
 		x...,
 	)
@@ -61,7 +60,7 @@ func buildFetchRandomSomething(pkg *models.Project, typ models.DataType) []jen.C
 	lines := []jen.Code{
 		jen.Commentf("fetchRandom%s retrieves a random %s from the list of available %s", sn, scn, pcn),
 		jen.Line(),
-		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
+		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn)).Block(
 			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 				callArgs...,
 			),
@@ -130,7 +129,7 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs,
-		jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			fieldToExpectedDotField(fmt.Sprintf("%s%s", sourceVarPrefix, typ.Name.Singular()), typ)...,
 		),
 	)
@@ -144,7 +143,7 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("%s%s", sourceVarPrefix, typ.Name.Singular()).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
+		jen.IDf("%s%s", sourceVarPrefix, typ.Name.Singular()).Assign().VarPointer().Qual(pkg.ModelsV1Package(), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.Line(),
@@ -245,7 +244,7 @@ func buildRandomActionMap(pkg *models.Project, typ models.DataType) []jen.Code {
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(blockLines...),
+		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").Op("*").Qual(pkg.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(blockLines...),
 		jen.Line(),
 	}
 }
@@ -261,7 +260,7 @@ func buildCreateSomethingBlock(pkg *models.Project, typ models.DataType) []jen.C
 
 	args := buildParamsForMethodThatHandlesAnInstanceWithStructs(pkg, typ)
 	args = args[:len(args)-1]
-	args = append(args, jen.Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call())
+	args = append(args, jen.Qual(pkg.RandomModelsPackage(), fmt.Sprintf("Random%sCreationInput", sn)).Call())
 
 	lines = append(lines,
 		jen.Return(jen.ID("c").Dotf("BuildCreate%sRequest", sn).Call(args...)),
@@ -358,7 +357,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	var ifRandomExistsBlock []jen.Code
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
-		ifRandomExistsBlock = append(ifRandomExistsBlock, jen.IDf("random%s", sn).Dot(fsn).Equals().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
+		ifRandomExistsBlock = append(ifRandomExistsBlock, jen.IDf("random%s", sn).Dot(fsn).Equals().Qual(pkg.RandomModelsPackage(), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
 	}
 	ifRandomExistsBlock = append(ifRandomExistsBlock,
 		jen.Line(),
@@ -395,7 +394,7 @@ func buildUpdateChildBlock(pkg *models.Project, typ models.DataType) []jen.Code 
 	//
 	//for _, field := range typ.Fields {
 	//	fsn := field.Name.Singular()
-	//	randomLines = append(randomLines, jen.IDf("random%s", sn).Dot(fsn).Equals().Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
+	//	randomLines = append(randomLines, jen.IDf("random%s", sn).Dot(fsn).Equals().Qual(pkg.RandomModelsPackage(), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
 	//}
 	//
 	//randomLines = append(randomLines,

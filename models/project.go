@@ -57,7 +57,7 @@ type Project struct {
 	DataTypes []DataType
 }
 
-func (p *Project) ParseModels(outputPath string) error {
+func (p *Project) ParseModels() error {
 	fullModelsPath := filepath.Join(os.Getenv("GOPATH"), "src", p.sourcePackage)
 
 	packages, err := parser.ParseDir(token.NewFileSet(), fullModelsPath, nil, parser.AllErrors)

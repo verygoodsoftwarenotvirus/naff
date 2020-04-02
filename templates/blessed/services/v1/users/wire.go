@@ -1,8 +1,6 @@
 package users
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -28,7 +26,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideUserDataManager is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideUserDataManager").Params(jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataManager")).Block(
+		jen.Func().ID("ProvideUserDataManager").Params(jen.ID("db").Qual(pkg.DatabaseV1Package(), "Database")).Params(jen.Qual(pkg.ModelsV1Package(), "UserDataManager")).Block(
 			jen.Return().ID("db"),
 		),
 		jen.Line(),
@@ -37,7 +35,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideUserDataServer is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideUserDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserDataServer")).Block(
+		jen.Func().ID("ProvideUserDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(pkg.ModelsV1Package(), "UserDataServer")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

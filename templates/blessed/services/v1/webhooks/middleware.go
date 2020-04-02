@@ -1,8 +1,6 @@
 package webhooks
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -18,7 +16,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(pkg.ModelsV1Package(), "WebhookCreationInput")),
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreationInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
@@ -42,7 +40,7 @@ func middlewareDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookUpdateInput")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(pkg.ModelsV1Package(), "WebhookUpdateInput")),
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),

@@ -10,7 +10,7 @@ func docDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile(packageName)
 	utils.AddImports(proj, ret)
 
-	ret.PackageComment("Package fake provides fake model builders\n")
+	ret.PackageCommentf("Package %s provides fake model builders\n", packageName)
 
 	return ret
 }

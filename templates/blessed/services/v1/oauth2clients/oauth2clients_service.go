@@ -1,8 +1,6 @@
 package oauth2clients
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -26,9 +24,9 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("CreationMiddlewareCtxKey is a string alias for referring to OAuth2 client creation data"),
-			jen.ID("CreationMiddlewareCtxKey").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ContextKey").Equals().Lit("create_oauth2_client"),
+			jen.ID("CreationMiddlewareCtxKey").Qual(pkg.ModelsV1Package(), "ContextKey").Equals().Lit("create_oauth2_client"),
 			jen.Line(),
-			jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName").Equals().Lit("oauth2_clients"),
+			jen.ID("counterName").Qual(pkg.InternalMetricsV1Package(), "CounterName").Equals().Lit("oauth2_clients"),
 			jen.ID("counterDescription").ID("string").Equals().Lit("number of oauth2 clients managed by the oauth2 client service"),
 			jen.ID("serviceName").ID("string").Equals().Lit("oauth2_clients_service"),
 		),
@@ -37,7 +35,7 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer").Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual(pkg.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
 			jen.ID("_").Qual("gopkg.in/oauth2.v3", "ClientStore").Equals().Parens(jen.Op("*").ID("clientStore")).Call(jen.Nil()),
 		),
 		jen.Line(),
@@ -65,26 +63,26 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("Service manages our OAuth2 clients via HTTP"),
 			jen.ID("Service").Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("database").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
-				jen.ID("authenticator").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "Authenticator"),
-				jen.ID("encoderDecoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
+				jen.ID("database").Qual(pkg.DatabaseV1Package(), "Database"),
+				jen.ID("authenticator").Qual(pkg.InternalAuthV1Package(), "Authenticator"),
+				jen.ID("encoderDecoder").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder"),
 				jen.ID("urlClientIDExtractor").Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")),
 				jen.Line(),
 				jen.ID("tokenStore").Qual("gopkg.in/oauth2.v3", "TokenStore"),
 				jen.ID("oauth2Handler").ID("oauth2Handler"),
-				jen.ID("oauth2ClientCounter").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
+				jen.ID("oauth2ClientCounter").Qual(pkg.InternalMetricsV1Package(), "UnitCounter"),
 			),
 
 			jen.Line(),
 			jen.ID("clientStore").Struct(
-				jen.ID("database").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
+				jen.ID("database").Qual(pkg.DatabaseV1Package(), "Database"),
 			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database")).Params(jen.Op("*").ID("clientStore")).Block(
+		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(pkg.DatabaseV1Package(), "Database")).Params(jen.Op("*").ID("clientStore")).Block(
 			jen.ID("cs").Assign().VarPointer().ID("clientStore").Valuesln(
 				jen.ID("database").MapAssign().ID("db")),
 			jen.Return().ID("cs"),
@@ -115,10 +113,10 @@ func oauth2ClientsServiceDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("ProvideOAuth2ClientsService").Paramsln(
 			utils.CtxParam(),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("db").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
-			jen.ID("authenticator").Qual(filepath.Join(pkg.OutputPath, "internal/v1/auth"), "Authenticator"),
-			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding"), "EncoderDecoder"),
-			jen.ID("counterProvider").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider"),
+			jen.ID("db").Qual(pkg.DatabaseV1Package(), "Database"),
+			jen.ID("authenticator").Qual(pkg.InternalAuthV1Package(), "Authenticator"),
+			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder"),
+			jen.ID("counterProvider").Qual(pkg.InternalMetricsV1Package(), "UnitCounterProvider"),
 		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
 			jen.List(jen.ID("counter"), jen.Err()).Assign().ID("counterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(

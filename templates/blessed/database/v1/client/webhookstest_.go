@@ -1,8 +1,6 @@
 package client
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -21,7 +19,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				utils.CreateCtx(),
 				jen.ID("exampleID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Values(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -128,7 +126,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Values(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -153,7 +151,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Values(),
 				utils.CreateDefaultQueryFilter(pkg),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -178,7 +176,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Values(),
 				utils.CreateNilQueryFilter(pkg),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -209,8 +207,8 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Values(),
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values(),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Values(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -235,7 +233,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values(),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Values(),
 				jen.Var().ID("expected").ID("error"),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),

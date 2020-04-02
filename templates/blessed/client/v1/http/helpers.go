@@ -1,8 +1,6 @@
 package client
 
 import (
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -111,7 +109,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.If(jen.ID("res").Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(
-				jen.ID("apiErr").Assign().VarPointer().Qual(filepath.Join(proj.OutputPath, "models/v1"), "ErrorResponse").Values(),
+				jen.ID("apiErr").Assign().VarPointer().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
 				jen.If(jen.Err().Equals().Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),
 					jen.VarPointer().ID("apiErr"),

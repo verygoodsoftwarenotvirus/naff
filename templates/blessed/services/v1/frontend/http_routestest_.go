@@ -2,8 +2,6 @@ package frontend
 
 import (
 	"fmt"
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -54,7 +52,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
-					jen.ID("config").MapAssign().Qual(filepath.Join(proj.OutputPath, "internal/v1/config"), "FrontendSettings").Valuesln(
+					jen.ID("config").MapAssign().Qual(proj.InternalConfigV1Package(), "FrontendSettings").Valuesln(
 						jen.ID("CacheStaticFiles").MapAssign().ID("true"),
 					),
 				),

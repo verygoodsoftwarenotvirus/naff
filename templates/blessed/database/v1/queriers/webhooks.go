@@ -1,7 +1,6 @@
 package queriers
 
 import (
-	"path/filepath"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -59,9 +58,9 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("scanWebhook is a consistent way to turn a *sql.Row into a webhook struct"),
 		jen.Line(),
-		jen.Func().ID("scanWebhook").Params(jen.ID("scan").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Scanner")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"), jen.ID("error")).Block(
+		jen.Func().ID("scanWebhook").Params(jen.ID("scan").Qual(pkg.DatabaseV1Package(), "Scanner")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "Webhook"), jen.ID("error")).Block(
 			jen.Var().Defs(
-				jen.ID("x").Equals().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values(),
+				jen.ID("x").Equals().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Values(),
 				jen.Listln(
 					jen.ID("eventsStr"),
 					jen.ID("dataTypesStr"),
@@ -105,8 +104,8 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("scanWebhooks provides a consistent way to turn sql rows into a slice of webhooks"),
 		jen.Line(),
-		jen.Func().ID("scanWebhooks").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").ParamPointer().Qual("database/sql", "Rows")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"), jen.ID("error")).Block(
-			jen.Var().ID("list").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
+		jen.Func().ID("scanWebhooks").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").ParamPointer().Qual("database/sql", "Rows")).Params(jen.Index().Qual(pkg.ModelsV1Package(), "Webhook"), jen.ID("error")).Block(
+			jen.Var().ID("list").Index().Qual(pkg.ModelsV1Package(), "Webhook"),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
 				jen.List(jen.ID("webhook"), jen.Err()).Assign().ID("scanWebhook").Call(jen.ID("rows")),
@@ -152,7 +151,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("GetWebhook fetches a webhook from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "Webhook"),
 			jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetWebhookQuery").Call(jen.ID("webhookID"), jen.ID("userID")),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
@@ -175,7 +174,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetWebhookCountQuery").Params(
 			jen.ID("userID").ID("uint64"),
-			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(pkg.ModelsV1Package(), "QueryFilter"),
 		).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Assign().ID(dbfl).Dot("sqlBuilder").
@@ -207,7 +206,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetWebhookCount").Params(
 			utils.CtxParam(),
 			jen.ID("userID").ID("uint64"),
-			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(pkg.ModelsV1Package(), "QueryFilter"),
 		).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetWebhookCountQuery").Call(jen.ID("userID"), jen.ID(utils.FilterVarName)),
 			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")).Dot("Scan").Call(jen.VarPointer().ID("count")),
@@ -291,7 +290,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("GetAllWebhooks fetches a list of all webhooks from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllWebhooks").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllWebhooks").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "WebhookList"), jen.ID("error")).Block(
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID(dbfl).Dot("buildGetAllWebhooksQuery").Call()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
@@ -310,8 +309,8 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching webhook count: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
-				jen.ID("Pagination").MapAssign().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
+			jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Valuesln(
+				jen.ID("Pagination").MapAssign().Qual(pkg.ModelsV1Package(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().Lit(1),
 					jen.ID("TotalCount").MapAssign().ID("count"),
 				),
@@ -327,7 +326,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("GetAllWebhooksForUser fetches a list of all webhooks from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllWebhooksForUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetAllWebhooksForUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Index().Qual(pkg.ModelsV1Package(), "Webhook"), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetWebhooksQuery").Call(jen.ID("userID"), jen.Nil()),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
@@ -354,7 +353,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildGetWebhooksQuery").Params(
 			jen.ID("userID").ID("uint64"),
-			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
+			jen.ID(utils.FilterVarName).Op("*").Qual(pkg.ModelsV1Package(), "QueryFilter"),
 		).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			jen.ID("builder").Assign().ID(dbfl).Dot("sqlBuilder").
@@ -384,8 +383,8 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("GetWebhooks").Params(
 			utils.CtxParam(),
 			jen.ID("userID").ID("uint64"),
-			jen.ID(utils.FilterVarName).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-		).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList"), jen.ID("error")).Block(
+			jen.ID(utils.FilterVarName).Op("*").Qual(pkg.ModelsV1Package(), "QueryFilter"),
+		).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "WebhookList"), jen.ID("error")).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetWebhooksQuery").Call(jen.ID("userID"), jen.ID(utils.FilterVarName)),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
@@ -406,8 +405,8 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching count: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
-				jen.ID("Pagination").MapAssign().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
+			jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Valuesln(
+				jen.ID("Pagination").MapAssign().Qual(pkg.ModelsV1Package(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().ID("filter").Dot("Page"),
 					jen.ID("TotalCount").MapAssign().ID("count"),
 					jen.ID("Limit").MapAssign().ID("filter").Dot("Limit"),
@@ -464,7 +463,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("buildWebhookCreationQuery returns a SQL query (and arguments) that would create a given webhook"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildWebhookCreationQuery").Params(jen.ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildWebhookCreationQuery").Params(jen.ID("x").Op("*").Qual(pkg.ModelsV1Package(), "Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			buildWebhookCreationQueryQuery(),
 			jen.Line(),
@@ -501,7 +500,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 
 	buildCreateWebhookQuery := func() []jen.Code {
 		out := []jen.Code{
-			jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
+			jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Valuesln(
 				jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 				jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
 				jen.ID("URL").MapAssign().ID("input").Dot("URL"),
@@ -549,7 +548,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("CreateWebhook creates a webhook in the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("CreateWebhook").Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("CreateWebhook").Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(pkg.ModelsV1Package(), "WebhookCreationInput")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "Webhook"), jen.ID("error")).Block(
 			buildCreateWebhookQuery()...,
 		),
 		jen.Line(),
@@ -584,7 +583,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("buildUpdateWebhookQuery takes a given webhook and returns a SQL query to update"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildUpdateWebhookQuery").Params(jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("buildUpdateWebhookQuery").Params(jen.ID("input").Op("*").Qual(pkg.ModelsV1Package(), "Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Block(
 			jen.Var().ID("err").ID("error"),
 			buildUpdateWebhookQueryQuery(),
 			jen.Line(),
@@ -615,7 +614,7 @@ func webhooksDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Comment("UpdateWebhook updates a particular webhook. Note that UpdateWebhook expects the provided input to have a valid ID."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("UpdateWebhook").Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("UpdateWebhook").Params(utils.CtxParam(), jen.ID("input").Op("*").Qual(pkg.ModelsV1Package(), "Webhook")).Params(jen.ID("error")).Block(
 			buildUpdateWebhookBody()...,
 		),
 		jen.Line(),

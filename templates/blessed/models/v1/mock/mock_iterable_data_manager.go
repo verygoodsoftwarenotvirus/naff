@@ -2,7 +2,6 @@ package mock
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -80,10 +79,10 @@ func buildGetSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("Get%s is a mock function", sn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Get%s", sn).Params(params...).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Get%s", sn).Params(params...).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(pkg.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
@@ -165,10 +164,10 @@ func buildGetAllSomethingsForUser(pkg *models.Project, typ models.DataType) []je
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("GetAll%sForUser", pn).Params(
 			params...,
-		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		).Params(jen.Index().Qual(pkg.ModelsV1Package(), sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("userID")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(pkg.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
@@ -188,10 +187,10 @@ func buildGetAllSomethingsForSomethingElse(pkg *models.Project, typ models.DataT
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(
 			params...,
-		).Params(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		).Params(jen.Index().Qual(pkg.ModelsV1Package(), sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(pkg.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
@@ -211,12 +210,12 @@ func buildCreateSomething(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").Op("*").IDf("%sDataManager", sn)).IDf("Create%s", sn).Params(
 			params...,
-		).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn),
 			jen.ID("error")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(
 				args...,
 			),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(pkg.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}

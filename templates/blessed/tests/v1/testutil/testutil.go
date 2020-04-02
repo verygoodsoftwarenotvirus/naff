@@ -1,8 +1,6 @@
 package testutil
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -93,7 +91,7 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("CreateObligatoryUser creates a user for the sake of having an OAuth2 client"),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").ID("string"), jen.ID("debug").ID("bool")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
+		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").ID("string"), jen.ID("debug").ID("bool")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(),
 			"User",
 		), jen.ID("error")).Block(
 			jen.List(jen.ID("tu"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
@@ -101,7 +99,7 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("c"), jen.Err()).Assign().Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "NewSimpleClient").Call(utils.InlineCtx(), jen.ID("tu"), jen.ID("debug")),
+			jen.List(jen.ID("c"), jen.Err()).Assign().Qual(pkg.HTTPClientV1Package(), "NewSimpleClient").Call(utils.InlineCtx(), jen.ID("tu"), jen.ID("debug")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
@@ -109,7 +107,7 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("I had difficulty ensuring these values were unique, even when fake.Seed was called. Could've been fake's fault,"),
 			jen.Comment("could've been docker's fault. In either case, it wasn't worth the time to investigate and determine the culprit"),
 			jen.ID("username").Assign().Qual(utils.FakeLibrary, "Username").Call().Op("+").Qual(utils.FakeLibrary, "HexColor").Call().Op("+").Qual(utils.FakeLibrary, "Country").Call(),
-			jen.ID("in").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+			jen.ID("in").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserInput").Valuesln(
 				jen.ID("Username").MapAssign().ID("username"),
 				jen.ID("Password").MapAssign().Qual(utils.FakeLibrary, "Password").Call(jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.Lit(64)),
 			),
@@ -121,7 +119,7 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.ID("errors").Dot("New").Call(jen.Lit("something happened"))),
 			),
 			jen.Line(),
-			jen.ID("u").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Valuesln(
+			jen.ID("u").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Valuesln(
 				jen.ID("ID").MapAssign().ID("ucr").Dot("ID"),
 				jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
 				jen.Comment("this is a dirty trick to reuse most of this model"),
@@ -156,7 +154,7 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
+		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").Qual(pkg.ModelsV1Package(),
 			"User",
 		)).Params(jen.ParamPointer().Qual("net/http", "Cookie"), jen.ID("error")).Block(
 			jen.ID("uri").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("users"), jen.Lit("login")),
@@ -207,7 +205,7 @@ func testutilDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests"),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
+		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").Qual(pkg.ModelsV1Package(), "User")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client"), jen.ID("error")).Block(
 			jen.ID("firstOAuth2ClientURI").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("oauth2"), jen.Lit("client")),
 			jen.Line(),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Callln(
@@ -250,7 +248,7 @@ cookie problems!
 	`), jen.ID("cookie").Op("==").ID("nil"), jen.Err()),
 			),
 			jen.ID("req").Dot("AddCookie").Call(jen.ID("cookie")),
-			jen.Var().ID("o").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
+			jen.Var().ID("o").Qual(pkg.ModelsV1Package(), "OAuth2Client"),
 			jen.Line(),
 			jen.Var().ID("command").Qual("fmt", "Stringer"),
 			jen.If(jen.List(jen.ID("command"), jen.Err()).Equals().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID("req")), jen.Err().Op("==").ID("nil")).Block(

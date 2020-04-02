@@ -2,7 +2,6 @@ package integration
 
 import (
 	"fmt"
-	"path/filepath"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -18,7 +17,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	pn := typ.Name.Plural()
 
 	ret.Add(
-		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
+		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(pkg.ModelsV1Package(), sn)).Block(
 			buildEqualityCheckLines(typ)...,
 		),
 		jen.Line(),
@@ -98,7 +97,7 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs,
-		jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			fieldToExpectedDotField(fmt.Sprintf("expected"), typ)...,
 		),
 	)
@@ -112,7 +111,7 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
+		jen.IDf("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.Line(),
@@ -140,7 +139,7 @@ func buildRequisiteCreationCodeForUpdateFunction(pkg *models.Project, typ models
 	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs,
-		jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 	)
@@ -154,7 +153,7 @@ func buildRequisiteCreationCodeForUpdateFunction(pkg *models.Project, typ models
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), typ.Name.Singular()).Valuesln(
+		jen.IDf("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.Line(),
@@ -230,7 +229,7 @@ func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Co
 
 	blockLines = append(blockLines,
 		utils.CreateCtx(),
-		jen.ID("x").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			buildFakeCallForCreationInput(pkg, typ)...,
 		),
 		jen.List(jen.ID("y"), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
@@ -242,7 +241,7 @@ func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Co
 	)
 
 	lines := []jen.Code{
-		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
+		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn)).Block(
 			blockLines...,
 		),
 		jen.Line(),
@@ -404,7 +403,7 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	lines = append(lines,
 		jen.Commentf("Create %s", pcn),
-		jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn),
+		jen.Var().ID("expected").Index().Op("*").Qual(pkg.ModelsV1Package(), sn),
 		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 			jen.ID("expected").Equals().Append(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
 		),
@@ -689,7 +688,7 @@ func buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(pkg *mode
 		params = append(params, listParams...)
 	}
 
-	params = append(params, jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(jen.ID("ID").MapAssign().ID("nonexistentID")))
+	params = append(params, jen.VarPointer().Qual(pkg.ModelsV1Package(), sn).Values(jen.ID("ID").MapAssign().ID("nonexistentID")))
 
 	return params
 }

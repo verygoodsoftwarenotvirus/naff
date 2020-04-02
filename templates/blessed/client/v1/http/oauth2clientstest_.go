@@ -1,8 +1,6 @@
 package client
 
 import (
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -85,7 +83,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(proj.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").MapAssign().Add(utils.FakeStringFunc()),
 					jen.ID("ClientSecret").MapAssign().Lit("blah"),
@@ -198,16 +196,14 @@ func buildV1Client_BuildGetOAuth2ClientsRequest() []jen.Code {
 }
 
 func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
-	outPath := proj.OutputPath
-
 	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_GetOAuth2Clients").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(outPath, "models/v1"), "OAuth2ClientList").Valuesln(
-					jen.ID("Clients").MapAssign().Index().Qual(filepath.Join(outPath, "models/v1"), "OAuth2Client").Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
+					jen.ID("Clients").MapAssign().Index().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 							jen.ID("ClientID").MapAssign().Add(utils.FakeStringFunc()),
@@ -268,8 +264,6 @@ func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 }
 
 func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Code {
-	outPath := proj.OutputPath
-
 	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_BuildCreateOAuth2ClientRequest").Block(
 			utils.ParallelTest(nil),
@@ -282,8 +276,8 @@ func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Co
 					jen.ID("ts"),
 				),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(outPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").MapAssign().Qual(filepath.Join(outPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").MapAssign().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 						jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 						jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").MapAssign().Lit("123456"),
@@ -317,23 +311,21 @@ func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Co
 }
 
 func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
-	outPath := proj.OutputPath
-
 	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_CreateOAuth2Client").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(outPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").MapAssign().Qual(filepath.Join(outPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").MapAssign().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 						jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 						jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").MapAssign().Lit("123456"),
 					),
 				),
 				jen.Line(),
-				jen.ID("exampleOutput").Assign().VarPointer().Qual(filepath.Join(outPath, "models/v1"), "OAuth2Client").Valuesln(
+				jen.ID("exampleOutput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("EXAMPLECLIENTID"),
 					jen.ID("ClientSecret").MapAssign().Lit("EXAMPLECLIENTSECRET"),
 				),
@@ -386,8 +378,8 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with invalid body",
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(outPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").MapAssign().Qual(filepath.Join(outPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").MapAssign().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 						jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 						jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").MapAssign().Lit("123456"),
@@ -450,8 +442,8 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with timeout",
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(outPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").MapAssign().Qual(filepath.Join(outPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").MapAssign().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 						jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 						jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").MapAssign().Lit("123456"),
@@ -506,8 +498,8 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with 404",
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(outPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").MapAssign().Qual(filepath.Join(outPath, "models/v1"), "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").MapAssign().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 						jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 						jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").MapAssign().Lit("123456"),

@@ -1,8 +1,6 @@
 package integration
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -43,11 +41,11 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput")).Block(
+		jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "UserInput")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
-			jen.ID("userInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+			jen.ID("userInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserInput").Valuesln(
 				jen.ID("Username").MapAssign().Qual(utils.FakeLibrary, "Username").Call(),
 				jen.ID("Password").MapAssign().Qual(utils.FakeLibrary, "Password").Call(jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.Lit(64)),
 			),
@@ -58,7 +56,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyUser").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse"), jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput"), jen.ParamPointer().Qual("net/http", "Cookie")).Block(
+		jen.Func().ID("buildDummyUser").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "UserCreationResponse"), jen.Op("*").Qual(pkg.ModelsV1Package(), "UserInput"), jen.ParamPointer().Qual("net/http", "Cookie")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			utils.CreateCtx(),
 			jen.Line(),
@@ -87,7 +85,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("expected").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput"), jen.ID("actual").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse")).Block(
+		jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("expected").Op("*").Qual(pkg.ModelsV1Package(), "UserInput"), jen.ID("actual").Op("*").Qual(pkg.ModelsV1Package(), "UserCreationResponse")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
@@ -105,7 +103,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("checkUserEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("expected").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput"), jen.ID("actual").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User")).Block(
+		jen.Func().ID("checkUserEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("expected").Op("*").Qual(pkg.ModelsV1Package(), "UserInput"), jen.ID("actual").Op("*").Qual(pkg.ModelsV1Package(), "User")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
@@ -131,7 +129,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("expected").Assign().ID("buildDummyUserInput").Call(jen.ID("t")),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.VarPointer().Qual(pkg.ModelsV1Package(), "UserInput").Valuesln(
 						jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 						jen.ID("Password").MapAssign().ID("expected").Dot("Password"))),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -159,7 +157,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("expected").Assign().ID("buildDummyUserInput").Call(jen.ID("t")),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Valuesln(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(jen.ID("tctx"), jen.VarPointer().Qual(pkg.ModelsV1Package(), "UserInput").Valuesln(
 						jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 						jen.ID("Password").MapAssign().ID("expected").Dot("Password"))),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
@@ -206,7 +204,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 					jen.Line(),
 					jen.Comment("Create users"),
-					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse"),
+					jen.Var().ID("expected").Index().Op("*").Qual(pkg.ModelsV1Package(), "UserCreationResponse"),
 					jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.List(jen.ID("user"), jen.ID("_"), jen.ID("c")).Assign().ID("buildDummyUser").Call(jen.ID("t")),
 						jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("c")),

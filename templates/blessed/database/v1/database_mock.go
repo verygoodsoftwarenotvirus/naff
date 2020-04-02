@@ -2,7 +2,6 @@ package v1
 
 import (
 	"fmt"
-	"path/filepath"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -16,7 +15,7 @@ const (
 func databaseMockDotGo(pkg *models.Project) *jen.File {
 	ret := jen.NewFile("database")
 
-	mockModelsImp := filepath.Join(pkg.OutputPath, "models/v1/mock")
+	mockModelsImp := pkg.ModelsV1Package("mock")
 	utils.AddImports(pkg, ret)
 
 	ret.Add(

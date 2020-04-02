@@ -1,8 +1,6 @@
 package mock
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -14,7 +12,7 @@ func mockOauth2ClientDataServerDotGo(pkg *models.Project) *jen.File {
 	utils.AddImports(pkg, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientDataServer").Equals().Parens(jen.Op("*").ID("OAuth2ClientDataServer")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(pkg.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.Op("*").ID("OAuth2ClientDataServer")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -88,10 +86,10 @@ func mockOauth2ClientDataServerDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ExtractOAuth2ClientFromRequest is the obligatory implementation for our interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
+		jen.Func().Params(jen.ID("m").Op("*").ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client"),
 			jen.ID("error")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("req")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	)

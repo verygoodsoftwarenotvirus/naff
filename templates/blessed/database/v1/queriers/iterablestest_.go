@@ -2,7 +2,6 @@ package queriers
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -81,7 +80,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 	gFields := buildGeneralFields("x", typ)
 
 	ret.Add(
-		jen.Func().IDf("buildMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), sn)).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().IDf("buildMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(proj.ModelsV1Package(), sn)).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(gFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -92,7 +91,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 	badFields := buildBadFields("x", typ)
 
 	ret.Add(
-		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), sn)).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(proj.ModelsV1Package(), sn)).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(badFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -357,7 +356,7 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 		expectedValues = append(expectedValues, jen.ID("CreatedOn").MapAssign().ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 
 		lines = append(lines,
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(expectedValues...),
 			exRows,
 			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -412,7 +411,7 @@ func buildTestDBUpdateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 		)
 
 		out = append(out,
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(expectedValues...),
 			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(expectFuncName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -482,7 +481,7 @@ func buildTestDBArchiveSomethingQueryFuncDecl(pkg *models.Project, dbvendor word
 
 	testLines := []jen.Code{
 		jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
+		jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(expectedValues...),
 		jen.ID("expectedArgCount").Assign().Lit(queryArgCount),
 		jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildArchive%sQuery", sn).Call(archiveQueryBuildingParams...),
@@ -599,7 +598,7 @@ func buildTestDBArchiveSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith
 		dbQueryExpectationArgs = append(dbQueryExpectationArgs, jen.ID("expected").Dot("ID"))
 
 		block = append(block,
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(expectedValues...),
 			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -649,7 +648,7 @@ func buildTestDBArchiveSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith
 		exampleValues = append(exampleValues, jen.ID("CreatedOn").MapAssign().ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 
 		block = append(block,
-			jen.ID("example").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(exampleValues...),
+			jen.ID("example").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(exampleValues...),
 			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -745,7 +744,7 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 
 	testBuildUpdateQueryBody := []jen.Code{
 		jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
+		jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(expectedValues...),
 		jen.ID("expectedArgCount").Assign().Lit(varCount), // +2 because of ID and BelongsTo
 		jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildUpdate%sQuery", sn).Call(jen.ID("expected")),
@@ -845,7 +844,7 @@ func buildTestDBCreateSomethingQueryFuncDecl(pkg *models.Project, dbvendor words
 	creationEqualityExpectations := buildCreationEqualityExpectations("expected", typ)
 	createQueryTestBody := []jen.Code{
 		jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
+		jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(expectedValues...),
 		jen.ID("expectedArgCount").Assign().Lit(1 + thisFuncExpectedArgCount),
 		jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildCreate%sQuery", sn).Call(jen.ID("expected")),
@@ -964,8 +963,8 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 		expectedValues = append(expectedValues, jen.ID("CreatedOn").MapAssign().ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 
 		out = append(out,
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
-			jen.ID("expectedInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(expectedInputFields...),
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(expectedValues...),
+			jen.ID("expectedInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(expectedInputFields...),
 		)
 
 		if isPostgres(dbvendor) {
@@ -1040,8 +1039,8 @@ func buildTestDBCreateSomethingFuncDecl(pkg *models.Project, dbvendor wordsmith.
 		expectedValues = append(expectedValues, jen.ID("CreatedOn").MapAssign().ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 
 		out = append(out,
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(expectedValues...),
-			jen.ID("expectedInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", sn)).Valuesln(expectedInputFields...),
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(expectedValues...),
+			jen.ID("expectedInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(expectedInputFields...),
 			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			jen.ID("mockDB").Dot(expectFuncName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCreationQuery"))).
@@ -1109,7 +1108,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbv
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID(expectedSomethingID).Assign().Add(utils.FakeUint64Func()),
-				jen.IDf("expected%s", sn).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+				jen.IDf("expected%s", sn).Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Lit(321),
 				),
 				jen.Line(),
@@ -1118,7 +1117,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbv
 					Dotln("WithArgs").Call(jen.ID(expectedSomethingID)).
 					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn))),
 				jen.Line(),
-				jen.ID("expected").Assign().Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Values(jen.Op("*").IDf("expected%s", sn)),
+				jen.ID("expected").Assign().Index().Qual(pkg.ModelsV1Package(), sn).Values(jen.Op("*").IDf("expected%s", sn)),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot(baseFuncName).Call(utils.CtxVar(), jen.ID(expectedSomethingID)),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
@@ -1160,7 +1159,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(pkg *models.Project, dbv
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID(expectedSomethingID).Assign().Add(utils.FakeUint64Func()),
-				jen.IDf("example%s", sn).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+				jen.IDf("example%s", sn).Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Lit(321),
 				),
 				jen.Line(),
@@ -1208,7 +1207,7 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		var expectQueryMock jen.Code
 		actualCallArgs := []jen.Code{
 			utils.CtxVar(),
-			jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+			jen.Qual(pkg.ModelsV1Package(), "DefaultQueryFilter").Call(),
 		}
 
 		if typ.BelongsToUser {
@@ -1231,17 +1230,17 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 
 		lines = append(lines,
 			jen.ID("expectedCountQuery").Assign().Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
-			jen.IDf("expected%s", sn).Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+			jen.IDf("expected%s", sn).Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
 				jen.ID("ID").MapAssign().Lit(321),
 			),
 			jen.ID("expectedCount").Assign().ID("uint64").Call(jen.Lit(666)),
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", sn)).Valuesln(
-				jen.ID("Pagination").MapAssign().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
+				jen.ID("Pagination").MapAssign().Qual(pkg.ModelsV1Package(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Limit").MapAssign().Lit(20),
 					jen.ID("TotalCount").MapAssign().ID("expectedCount"),
 				),
-				jen.ID(pn).MapAssign().Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+				jen.ID(pn).MapAssign().Index().Qual(pkg.ModelsV1Package(), sn).Valuesln(
 					jen.Op("*").IDf("expected%s", sn),
 				),
 			),
@@ -1268,7 +1267,7 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		var mockDBCall jen.Code
 		actualCallArgs := []jen.Code{
 			utils.CtxVar(),
-			jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+			jen.Qual(pkg.ModelsV1Package(), "DefaultQueryFilter").Call(),
 		}
 
 		if typ.BelongsToUser {
@@ -1310,7 +1309,7 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		var mockDBCall jen.Code
 		actualCallArgs := []jen.Code{
 			utils.CtxVar(),
-			jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+			jen.Qual(pkg.ModelsV1Package(), "DefaultQueryFilter").Call(),
 		}
 
 		if typ.BelongsToUser {
@@ -1351,7 +1350,7 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		var mockDBCall jen.Code
 		actualCallArgs := []jen.Code{
 			utils.CtxVar(),
-			jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+			jen.Qual(pkg.ModelsV1Package(), "DefaultQueryFilter").Call(),
 		}
 
 		if typ.BelongsToUser {
@@ -1373,7 +1372,7 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		}
 
 		lines = append(lines,
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
 				jen.ID("ID").MapAssign().Lit(321),
 			),
 			jen.Line(),
@@ -1395,7 +1394,7 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		var mockDBCall jen.Code
 		actualCallArgs := []jen.Code{
 			utils.CtxVar(),
-			jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+			jen.Qual(pkg.ModelsV1Package(), "DefaultQueryFilter").Call(),
 		}
 
 		if typ.BelongsToUser {
@@ -1417,7 +1416,7 @@ func buildTestDBGetListOfSomethingFuncDecl(pkg *models.Project, dbvendor wordsmi
 		}
 
 		lines = append(lines,
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
 				jen.ID("ID").MapAssign().Lit(321),
 			),
 			jen.ID("expectedCountQuery").Assign().Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
@@ -1495,7 +1494,7 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(pkg *models.Project, dbvendor wo
 		jen.Line(),
 		jen.ID("expectedArgCount").Assign().Lit(expectedArgCount),
 		jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-		jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID(expectedOwnerID)),
+		jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.Qual(pkg.ModelsV1Package(), "DefaultQueryFilter").Call(), jen.ID(expectedOwnerID)),
 		jen.Line(),
 		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
@@ -1646,7 +1645,7 @@ func buildTestDBGetSomething(pkg *models.Project, dbvendor wordsmith.SuperPalabr
 
 	buildFirstSubtestBlock := func(typ models.DataType) []jen.Code {
 		lines := []jen.Code{
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
 				jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 			),
 		}
@@ -1692,7 +1691,7 @@ func buildTestDBGetSomething(pkg *models.Project, dbvendor wordsmith.SuperPalabr
 
 	buildSecondSubtestBlock := func(typ models.DataType) []jen.Code {
 		lines := []jen.Code{
-			jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn).Valuesln(
+			jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
 				jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 			),
 		}
@@ -1768,7 +1767,7 @@ func buildTestDBBuildGetSomethingCountQuery(pkg *models.Project, dbvendor wordsm
 		jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 	}
 	actualCallArgs := []jen.Code{
-		jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+		jen.Qual(pkg.ModelsV1Package(), "DefaultQueryFilter").Call(),
 	}
 
 	if typ.BelongsToUser {
@@ -1829,7 +1828,7 @@ func buildTestDBGetSomethingCount(pkg *models.Project, dbvendor wordsmith.SuperP
 	block := []jen.Code{}
 
 	callArgs := []jen.Code{
-		utils.CtxVar(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
+		utils.CtxVar(), jen.Qual(pkg.ModelsV1Package(), "DefaultQueryFilter").Call(),
 	}
 
 	if typ.BelongsToUser {

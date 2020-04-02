@@ -1,7 +1,6 @@
 package queriers
 
 import (
-	"path/filepath"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -78,7 +77,7 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database").Equals().Params(jen.Op("*").ID(sn)).Params(jen.Nil()),
+		jen.Var().ID("_").Qual(pkg.DatabaseV1Package(), "Database").Equals().Params(jen.Op("*").ID(sn)).Params(jen.Nil()),
 		jen.Line(),
 		jen.Type().Defs(
 			jen.Commentf("%s is our main %s interaction db", sn, sn),
@@ -114,7 +113,7 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Commentf("Provide%s%s provides an instrumented %s db", sn, dbTrail, cn),
 		jen.Line(),
-		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "ConnectionDetails")).Params(jen.ParamPointer().Qual("database/sql", "DB"), jen.ID("error")).Block(
+		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(pkg.DatabaseV1Package(), "ConnectionDetails")).Params(jen.ParamPointer().Qual("database/sql", "DB"), jen.ID("error")).Block(
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
 			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.ID("string").Call(jen.ID("connectionDetails"))),
 		),
@@ -130,7 +129,7 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Commentf("Provide%s provides a %s%s controller", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").ID("bool"), jen.ID("db").ParamPointer().Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database")).Block(
+		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").ID("bool"), jen.ID("db").ParamPointer().Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(pkg.DatabaseV1Package(), "Database")).Block(
 			jen.Return().VarPointer().IDf(sn).Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("debug").MapAssign().ID("debug"),

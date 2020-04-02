@@ -1,8 +1,6 @@
 package client
 
 import (
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -73,7 +71,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 				),
@@ -177,8 +175,8 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
-					jen.ID("Webhooks").MapAssign().Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Valuesln(
+					jen.ID("Webhooks").MapAssign().Index().Qual(pkg.ModelsV1Package(), "Webhook").Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 							jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
@@ -237,7 +235,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 				),
 				jen.ID("c").Assign().ID("buildTestClient").Call(
@@ -274,11 +272,11 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 				),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 					jen.ID("Name").MapAssign().ID("expected").Dot("Name"),
 				),
 				jen.Line(),
@@ -295,7 +293,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 						nil,
 					),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput"),
+					jen.Var().ID("x").Op("*").Qual(pkg.ModelsV1Package(), "WebhookCreationInput"),
 					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(
 							jen.ID("req").Dot("Body"),
@@ -347,7 +345,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPut"),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 				),
 				jen.Line(),
@@ -386,7 +384,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 				),
@@ -407,7 +405,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 						nil,
 					),
 					utils.AssertNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.VarPointer().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values()),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Values()),
 						nil),
 				),
 				jen.Line(),

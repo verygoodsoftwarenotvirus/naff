@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -29,11 +27,11 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("m").Op("*").ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(
 			utils.CtxParam(),
 			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
-		).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"),
+		).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client"),
 			jen.ID("error")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("req")),
 			jen.Return().List(
-				jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")),
+				jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client")),
 				jen.ID("args").Dot("Error").Call(jen.Lit(1)),
 			),
 		),
