@@ -61,12 +61,15 @@ func (typ DataType) BuildGetSomethingArgs(proj *Project) []jen.Code {
 	params := []jen.Code{ctxVar()}
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		params = append(params, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
 	}
-	params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+	params = append(params, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
 
+	if typ.BelongsToStruct != nil {
+		params = append(params, jen.IDf("example%s", typ.Name.Singular()).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
 	if typ.BelongsToUser {
-		params = append(params, jen.ID("userID"))
+		params = append(params, jen.IDf("example%s", typ.Name.Singular()).Dot("BelongsToUser"))
 	}
 
 	return params
