@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mainTestDotGo(pkg *models.Project) *jen.File {
+func mainTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(utils.FakeSeedFunc(), jen.Line())
 

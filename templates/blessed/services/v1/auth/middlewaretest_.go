@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func middlewareTestDotGo(pkg *models.Project) *jen.File {
+func middlewareTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Func().ID("TestService_CookieAuthenticationMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
@@ -17,9 +17,9 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleUser").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
 				jen.Line(),
-				jen.ID("md").Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), "UserDataManager").Values(),
+				jen.ID("md").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
 				jen.ID("md").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("md"),
 				jen.Line(),
@@ -43,9 +43,9 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleUser").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("md").Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), "UserDataManager").Values(),
-				jen.ID("md").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Nil()),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
+				jen.ID("md").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
+				jen.ID("md").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("md"),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Nil()),
@@ -92,8 +92,8 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleUser").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
-				jen.ID("exampleClient").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "OAuth2Client").Valuesln(
+				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
+				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("PRETEND_THIS_IS_A_REAL_CLIENT_ID"),
 					jen.ID("ClientSecret").MapAssign().Lit("PRETEND_THIS_IS_A_REAL_CLIENT_SECRET"),
 					jen.ID("BelongsToUser").MapAssign().ID("exampleUser").Dot("ID"),
@@ -103,7 +103,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(pkg.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleClient").Dot("BelongsToUser")).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
@@ -123,8 +123,8 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path without allowing cookies"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleUser").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
-				jen.ID("exampleClient").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "OAuth2Client").Valuesln(
+				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
+				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("PRETEND_THIS_IS_A_REAL_CLIENT_ID"),
 					jen.ID("ClientSecret").MapAssign().Lit("PRETEND_THIS_IS_A_REAL_CLIENT_SECRET"),
 					jen.ID("BelongsToUser").MapAssign().ID("exampleUser").Dot("ID"),
@@ -134,7 +134,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(pkg.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleClient").Dot("BelongsToUser")).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
@@ -154,9 +154,9 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching client but able to use cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleUser").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
+				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
 				jen.ID("ocv").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
-				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
 				jen.Line(),
 				jen.ID("h").Assign().VarPointer().ID("MockHTTPHandler").Values(),
@@ -171,7 +171,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("c")),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(pkg.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleUser").Dot("ID")).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
@@ -181,8 +181,8 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("able to use cookies but error fetching user info"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleUser").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("exampleClient").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "OAuth2Client").Valuesln(
+				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
+				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("PRETEND_THIS_IS_A_REAL_CLIENT_ID"),
 					jen.ID("ClientSecret").MapAssign().Lit("PRETEND_THIS_IS_A_REAL_CLIENT_SECRET"),
 					jen.ID("BelongsToUser").MapAssign().ID("exampleUser").Dot("ID"),
@@ -192,8 +192,8 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(pkg.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleClient").Dot("BelongsToUser")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleClient").Dot("BelongsToUser")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("h").Assign().VarPointer().ID("MockHTTPHandler").Values(),
@@ -216,8 +216,8 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("no cookies allowed, with error fetching user info"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleUser").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
-				jen.ID("exampleClient").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "OAuth2Client").Valuesln(
+				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
+				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("PRETEND_THIS_IS_A_REAL_CLIENT_ID"),
 					jen.ID("ClientSecret").MapAssign().Lit("PRETEND_THIS_IS_A_REAL_CLIENT_SECRET"),
 					jen.ID("BelongsToUser").MapAssign().ID("exampleUser").Dot("ID"),
@@ -227,8 +227,8 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(pkg.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleClient").Dot("BelongsToUser")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleClient").Dot("BelongsToUser")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("h").Assign().VarPointer().ID("MockHTTPHandler").Values(),
@@ -248,7 +248,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("ocv").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
-				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
 				jen.Line(),
 				jen.ID("h").Assign().VarPointer().ID("MockHTTPHandler").Values(),
@@ -259,7 +259,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()))),
+				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()))),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("c")),
 				jen.Line(),
@@ -274,7 +274,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("ocv").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
-				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Nil()),
+				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Nil()),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
 				jen.Line(),
 				jen.ID("h").Assign().VarPointer().ID("MockHTTPHandler").Values(),
@@ -293,8 +293,8 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("nightmare path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("exampleUser").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
-				jen.ID("exampleClient").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "OAuth2Client").Valuesln(
+				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
+				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("PRETEND_THIS_IS_A_REAL_CLIENT_ID"),
 					jen.ID("ClientSecret").MapAssign().Lit("PRETEND_THIS_IS_A_REAL_CLIENT_SECRET"),
 					jen.ID("BelongsToUser").MapAssign().ID("exampleUser").Dot("ID"),
@@ -304,8 +304,8 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("ocv").Dot("On").Call(jen.Lit("ExtractOAuth2ClientFromRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(pkg.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleClient").Dot("BelongsToUser")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Nil()),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleClient").Dot("BelongsToUser")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("h").Assign().VarPointer().ID("MockHTTPHandler").Values(),
@@ -333,7 +333,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Lit("123456"),
@@ -370,7 +370,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Lit("1233456"),
@@ -395,7 +395,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Lit("1233456"),
@@ -410,7 +410,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.Line(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -422,7 +422,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request but valid value attached to form"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Lit("1233456"),
@@ -445,7 +445,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("req").Dot("Header").Dot("Set").Call(jen.Lit("Content-type"), jen.Lit("application/x-www-form-urlencoded")),
 				jen.Line(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -474,8 +474,8 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(),
-						jen.Qual(pkg.ModelsV1Package(), "UserKey"),
-						jen.VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("IsAdmin").MapAssign().ID("true")),
+						jen.Qual(proj.ModelsV1Package(), "UserKey"),
+						jen.VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("IsAdmin").MapAssign().ID("true")),
 					),
 				),
 				jen.Line(),
@@ -515,8 +515,8 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(),
-						jen.Qual(pkg.ModelsV1Package(), "UserKey"),
-						jen.VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("IsAdmin").MapAssign().ID("false")),
+						jen.Qual(proj.ModelsV1Package(), "UserKey"),
+						jen.VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("IsAdmin").MapAssign().ID("false")),
 					),
 				),
 				jen.Line(),

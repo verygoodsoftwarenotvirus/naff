@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func usersTestDotGo(pkg *models.Project) *jen.File {
+func usersTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Func().ID("TestClient_GetUser").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
@@ -18,7 +18,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("exampleID").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleID")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
@@ -40,7 +40,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("exampleUsername").Assign().Lit("username"),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUserByUsername"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleUsername")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
@@ -62,7 +62,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
-				utils.CreateDefaultQueryFilter(pkg),
+				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -84,7 +84,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
-				utils.CreateNilQueryFilter(pkg),
+				utils.CreateNilQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -112,8 +112,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserList").Values(),
-				utils.CreateDefaultQueryFilter(pkg),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Values(),
+				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -134,8 +134,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserList").Values(),
-				utils.CreateNilQueryFilter(pkg),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Values(),
+				utils.CreateNilQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -163,8 +163,8 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "UserInput").Values(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("CreateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
@@ -185,7 +185,7 @@ func usersTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				jen.Var().ID("expected").ID("error"),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),

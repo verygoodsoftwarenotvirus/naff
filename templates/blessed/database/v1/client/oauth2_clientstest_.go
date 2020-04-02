@@ -6,20 +6,20 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientsTestDotGo(pkg *models.Project) *jen.File {
+func oauth2ClientsTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
-	ret.Add(buildTestClient_GetOAuth2Client(pkg)...)
-	ret.Add(buildTestClient_GetOAuth2ClientByClientID(pkg)...)
-	ret.Add(buildTestClient_GetOAuth2ClientCount(pkg)...)
-	ret.Add(buildTestClient_GetAllOAuth2ClientCount(pkg)...)
-	ret.Add(buildTestClient_GetAllOAuth2Clients(pkg)...)
-	ret.Add(buildTestClient_GetOAuth2Clients(pkg)...)
-	ret.Add(buildTestClient_CreateOAuth2Client(pkg)...)
-	ret.Add(buildTestClient_UpdateOAuth2Client(pkg)...)
-	ret.Add(buildTestClient_ArchiveOAuth2Client(pkg)...)
+	ret.Add(buildTestClient_GetOAuth2Client(proj)...)
+	ret.Add(buildTestClient_GetOAuth2ClientByClientID(proj)...)
+	ret.Add(buildTestClient_GetOAuth2ClientCount(proj)...)
+	ret.Add(buildTestClient_GetAllOAuth2ClientCount(proj)...)
+	ret.Add(buildTestClient_GetAllOAuth2Clients(proj)...)
+	ret.Add(buildTestClient_GetOAuth2Clients(proj)...)
+	ret.Add(buildTestClient_CreateOAuth2Client(proj)...)
+	ret.Add(buildTestClient_UpdateOAuth2Client(proj)...)
+	ret.Add(buildTestClient_ArchiveOAuth2Client(proj)...)
 
 	return ret
 }

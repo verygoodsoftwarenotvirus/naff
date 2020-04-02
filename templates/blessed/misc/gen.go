@@ -175,7 +175,7 @@ frontend/v1/public/bundle.*
 *.profile`)
 }
 
-func makefile(pkgRoot string, projectNameKebab string) func() []byte {
+func makefile(projRoot string, projectNameKebab string) func() []byte {
 	f := fmt.Sprintf(`PWD           := $(shell pwd)
 GOPATH        := $(GOPATH)
 ARTIFACTS_DIR := artifacts
@@ -253,8 +253,8 @@ lint:
 $(COVERAGE_OUT): $(ARTIFACTS_DIR) ensure-gocov
 	set -ex; \
 	echo "mode: set" > $(COVERAGE_OUT);
-	for pkg in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
-		go test -coverprofile=profile.out -v -count 5 -race -failfast $$pkg; \
+	for proj in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
+		go test -coverprofile=profile.out -v -count 5 -race -failfast $$proj; \
 		if [ $$? -ne 0 ]; then exit 1; fi; \
 		cat profile.out | grep -v "mode: atomic" >> $(COVERAGE_OUT); \
 	rm -f profile.out; \
@@ -265,8 +265,8 @@ $(COVERAGE_OUT): $(ARTIFACTS_DIR) ensure-gocov
 quicktest: $(ARTIFACTS_DIR) ensure-gocov
 	@set -ex; \
 	echo "mode: set" > $(COVERAGE_OUT);
-	for pkg in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
-		go test -coverprofile=profile.out -race -failfast $$pkg; \
+	for proj in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
+		go test -coverprofile=profile.out -race -failfast $$proj; \
 		if [ $$? -ne 0 ]; then exit 1; fi; \
 		cat profile.out | grep -v "mode: atomic" >> $(COVERAGE_OUT); \
 	rm -f profile.out; \
@@ -310,9 +310,9 @@ gamut: revendor rewire config_files quicktest lint integration-tests-postgres in
 lintegration-tests: integration-tests lint
 `,
 		projectNameKebab,
-		pkgRoot,
-		pkgRoot,
-		pkgRoot,
+		projRoot,
+		projRoot,
+		projRoot,
 	)
 
 	var (
@@ -416,11 +416,11 @@ run:
 	return func() []byte { return []byte(f) }
 }
 
-func gitlabCIDotYAML(pkgRoot string) func() []byte {
-	pkgParts := strings.Split(pkgRoot, "/")
+func gitlabCIDotYAML(projRoot string) func() []byte {
+	projParts := strings.Split(projRoot, "/")
 
-	ciPath := strings.Join([]string{pkgParts[0], pkgParts[1]}, "/")
-	ciBuildPath := strings.Join([]string{pkgParts[1], pkgParts[2]}, "/")
+	ciPath := strings.Join([]string{projParts[0], projParts[1]}, "/")
+	ciBuildPath := strings.Join([]string{projParts[1], projParts[2]}, "/")
 
 	f := fmt.Sprintf(`stages:
   - quality
@@ -638,12 +638,12 @@ gitlabcr:
     - docker push registry.%s:latest
   only:
     - master
-`, ciPath, ciBuildPath, ciPath, pkgRoot, pkgRoot, pkgRoot)
+`, ciPath, ciBuildPath, ciPath, projRoot, projRoot, projRoot)
 
 	return func() []byte { return []byte(f) }
 }
 
-func golancCILintDotYAML(pkgRoot string) func() []byte {
+func golancCILintDotYAML(projRoot string) func() []byte {
 	f := fmt.Sprintf(`# options for analysis running
 run:
   # timeout for analysis, e.g. 30s, 5m, default is 1m
@@ -722,10 +722,10 @@ linters-settings:
     settings:
       printf: # analyzer name, run `+"`"+`go tool vet help`+"`"+` to see all analyzers
         funcs: # run `+"`"+`go tool vet help printf`+"`"+` to see available settings for `+"`"+`printf`+"`"+` analyzer
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+          - (github.com/golangci/golangci-lint/proj/logutils.Log).Infof
+          - (github.com/golangci/golangci-lint/proj/logutils.Log).Warnf
+          - (github.com/golangci/golangci-lint/proj/logutils.Log).Errorf
+          - (github.com/golangci/golangci-lint/proj/logutils.Log).Fatalf
     # enable or disable analyzers by name
     enable-all: true
 
@@ -955,7 +955,7 @@ issues:
 
   # Show only new issues created in git patch with set file path.
   new-from-patch: path/to/patch/file
-`, pkgRoot)
+`, projRoot)
 
 	return func() []byte { return []byte(f) }
 }

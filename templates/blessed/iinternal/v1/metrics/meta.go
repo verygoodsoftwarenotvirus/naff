@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func metaDotGo(pkg *models.Project) *jen.File {
+func metaDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().Defs(

@@ -6,13 +6,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockWebhookDataServerDotGo(pkg *models.Project) *jen.File {
+func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(pkg.ModelsV1Package(), "WebhookDataServer").Equals().Parens(jen.Op("*").ID("WebhookDataServer")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(proj.ModelsV1Package(), "WebhookDataServer").Equals().Parens(jen.Op("*").ID("WebhookDataServer")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

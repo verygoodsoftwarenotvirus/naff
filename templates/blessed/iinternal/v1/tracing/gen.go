@@ -7,14 +7,14 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkg *models.Project) error {
+func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
 		"internal/v1/tracing/doc.go":            docDotGo(),
-		"internal/v1/tracing/span_attachers.go": spanAttachersDotGo(pkg),
+		"internal/v1/tracing/span_attachers.go": spanAttachersDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkg, path, file); err != nil {
+		if err := utils.RenderGoFile(proj, path, file); err != nil {
 			return err
 		}
 	}

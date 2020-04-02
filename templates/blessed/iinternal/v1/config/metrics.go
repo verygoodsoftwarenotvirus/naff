@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func metricsDotGo(pkg *models.Project) *jen.File {
+func metricsDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("config")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -54,11 +54,11 @@ func metricsDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(pkg.InternalMetricsV1Package(), "InstrumentationHandler"), jen.ID("error")).Block(
-			jen.If(jen.Err().Assign().Qual(pkg.InternalMetricsV1Package(), "RegisterDefaultViews").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(proj.InternalMetricsV1Package(), "InstrumentationHandler"), jen.ID("error")).Block(
+			jen.If(jen.Err().Assign().Qual(proj.InternalMetricsV1Package(), "RegisterDefaultViews").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("registering default metric views: %w"), jen.Err())),
 			),
-			jen.ID("_").Equals().Qual(pkg.InternalMetricsV1Package(), "RecordRuntimeStats").Call(jen.Qual("time", "Duration").Callln(
+			jen.ID("_").Equals().Qual(proj.InternalMetricsV1Package(), "RecordRuntimeStats").Call(jen.Qual("time", "Duration").Callln(
 				jen.Qual("math", "Max").Callln(
 					jen.ID("float64").Call(jen.ID("MinimumRuntimeCollectionInterval")),
 					jen.ID("float64").Call(jen.ID("cfg").Dot("Metrics").Dot("RuntimeMetricsCollectionInterval")),

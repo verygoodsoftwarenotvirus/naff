@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func initDotGo(pkg *models.Project) *jen.File {
+func initDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("frontend")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().ID("urlToUse").ID("string"),
@@ -30,7 +30,7 @@ func initDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("logger").Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
-			jen.Qual(pkg.TestutilV1Package(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
+			jen.Qual(proj.TestutilV1Package(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
 			jen.Line(),
 			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.Line(),

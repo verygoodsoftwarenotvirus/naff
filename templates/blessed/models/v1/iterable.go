@@ -82,17 +82,17 @@ func buildCreateModelStructFields(typ models.DataType) []jen.Code {
 	return out
 }
 
-func buildInterfaceMethods(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
 	pn := n.Plural()
 
 	interfaceMethods := []jen.Code{
-		jen.IDf("%sExists", sn).Params(typ.BuildGetSomethingParams(pkg)...).Params(jen.Bool(), jen.ID("error")),
-		jen.IDf("Get%s", sn).Params(typ.BuildGetSomethingParams(pkg)...).Params(jen.Op("*").ID(sn), jen.ID("error")),
-		jen.IDf("Get%sCount", sn).Params(typ.BuildGetListOfSomethingParams(pkg, true)...).Params(jen.ID("uint64"), jen.ID("error")),
+		jen.IDf("%sExists", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.Bool(), jen.ID("error")),
+		jen.IDf("Get%s", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.Op("*").ID(sn), jen.ID("error")),
+		jen.IDf("Get%sCount", sn).Params(typ.BuildGetListOfSomethingParams(proj, true)...).Params(jen.ID("uint64"), jen.ID("error")),
 		jen.IDf("GetAll%sCount", pn).Params(utils.CtxParam()).Params(jen.ID("uint64"), jen.ID("error")),
-		jen.IDf("Get%s", pn).Params(typ.BuildGetListOfSomethingParams(pkg, true)...).Params(jen.Op("*").IDf("%sList", sn), jen.ID("error")),
+		jen.IDf("Get%s", pn).Params(typ.BuildGetListOfSomethingParams(proj, true)...).Params(jen.Op("*").IDf("%sList", sn), jen.ID("error")),
 	}
 
 	if typ.BelongsToUser {
@@ -103,22 +103,22 @@ func buildInterfaceMethods(pkg *models.Project, typ models.DataType) []jen.Code 
 	}
 	if typ.BelongsToStruct != nil {
 		interfaceMethods = append(interfaceMethods,
-			jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(typ.BuildGetSomethingForSomethingElseParamsForModelsPackage(pkg)...).Params(jen.Index().ID(sn), jen.ID("error")))
+			jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(typ.BuildGetSomethingForSomethingElseParamsForModelsPackage(proj)...).Params(jen.Index().ID(sn), jen.ID("error")))
 	}
 
 	interfaceMethods = append(interfaceMethods,
-		jen.IDf("Create%s", sn).Params(typ.BuildCreateSomethingParams(pkg, true)...).Params(jen.Op("*").ID(sn), jen.ID("error")),
-		jen.IDf("Update%s", sn).Params(typ.BuildUpdateSomethingParams(pkg, "updated", true)...).Params(jen.ID("error")),
-		jen.IDf("Archive%s", sn).Params(typ.BuildGetSomethingParams(pkg)...).Params(jen.ID("error")),
+		jen.IDf("Create%s", sn).Params(typ.BuildCreateSomethingParams(proj, true)...).Params(jen.Op("*").ID(sn), jen.ID("error")),
+		jen.IDf("Update%s", sn).Params(typ.BuildUpdateSomethingParams(proj, "updated", true)...).Params(jen.ID("error")),
+		jen.IDf("Archive%s", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.ID("error")),
 	)
 
 	return interfaceMethods
 }
 
-func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 	n := typ.Name
 	sn := n.Singular()
 	pn := n.Plural()
@@ -144,7 +144,7 @@ func iterableDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.IDf("%sUpdateInput", sn).Struct(buildUpdateModelStructFields(typ)...),
 			jen.Line(),
 			jen.Commentf("%sDataManager describes a structure capable of storing %s permanently", sn, pcn),
-			jen.IDf("%sDataManager", sn).Interface(buildInterfaceMethods(pkg, typ)...),
+			jen.IDf("%sDataManager", sn).Interface(buildInterfaceMethods(proj, typ)...),
 			jen.Line(),
 			jen.Commentf("%sDataServer describes a structure capable of serving traffic related to %s", sn, pcn),
 			jen.IDf("%sDataServer", sn).Interface(

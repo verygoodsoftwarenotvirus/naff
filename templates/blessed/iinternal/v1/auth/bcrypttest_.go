@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func bcryptTestDotGo(pkg *models.Project) *jen.File {
+func bcryptTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("auth_test")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -24,7 +24,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("TestBcrypt_HashPassword").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Assign().Qual(pkg.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(pkg.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -42,7 +42,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("TestBcrypt_PasswordMatches").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Assign().Qual(pkg.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(pkg.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("normal usage"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -67,7 +67,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("TestBcrypt_PasswordIsAcceptable").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Assign().Qual(pkg.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(pkg.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -83,7 +83,7 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().ID("TestBcrypt_ValidateLogin").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("x").Assign().Qual(pkg.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(pkg.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("t").Dot("Parallel").Call(),
@@ -174,8 +174,8 @@ func bcryptTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				jen.Qual(pkg.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(
-					jen.Qual(pkg.InternalAuthV1Package(), "DefaultBcryptHashCost"),
+				jen.Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(
+					jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 			)),

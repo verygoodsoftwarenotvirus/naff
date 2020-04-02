@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkg *models.Project) *jen.File {
+func wireDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().Defs(

@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func webhookTestDotGo(pkg *models.Project) *jen.File {
+func webhookTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Func().ID("TestWebhook_Update").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(

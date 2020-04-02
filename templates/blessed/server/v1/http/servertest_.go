@@ -8,37 +8,37 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func serverTestDotGo(pkg *models.Project) *jen.File {
+func serverTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	buildServerLines := func() []jen.Code {
 		lines := []jen.Code{
 			jen.ID("DebugMode").MapAssign().ID("true"),
-			jen.ID("db").MapAssign().Qual(pkg.DatabaseV1Package(), "BuildMockDatabase").Call(),
-			jen.ID("config").MapAssign().VarPointer().Qual(pkg.InternalConfigV1Package(), "ServerConfig").Values(),
-			jen.ID("encoder").MapAssign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+			jen.ID("db").MapAssign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+			jen.ID("config").MapAssign().VarPointer().Qual(proj.InternalConfigV1Package(), "ServerConfig").Values(),
+			jen.ID("encoder").MapAssign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 			jen.ID("httpServer").MapAssign().ID("provideHTTPServer").Call(),
 			jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-			jen.ID("frontendService").MapAssign().Qual(pkg.ServiceV1FrontendPackage(), "ProvideFrontendService").Callln(
+			jen.ID("frontendService").MapAssign().Qual(proj.ServiceV1FrontendPackage(), "ProvideFrontendService").Callln(
 				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-				jen.Qual(pkg.InternalConfigV1Package(), "FrontendSettings").Values(),
+				jen.Qual(proj.InternalConfigV1Package(), "FrontendSettings").Values(),
 			),
-			jen.ID("webhooksService").MapAssign().VarPointer().Qual(pkg.ModelsV1Package("mock"), "WebhookDataServer").Values(),
-			jen.ID("usersService").MapAssign().VarPointer().Qual(pkg.ModelsV1Package("mock"), "UserDataServer").Values(),
-			jen.ID("authService").MapAssign().VarPointer().Qual(pkg.ServiceV1AuthPackage(), "Service").Values(),
+			jen.ID("webhooksService").MapAssign().VarPointer().Qual(proj.ModelsV1Package("mock"), "WebhookDataServer").Values(),
+			jen.ID("usersService").MapAssign().VarPointer().Qual(proj.ModelsV1Package("mock"), "UserDataServer").Values(),
+			jen.ID("authService").MapAssign().VarPointer().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
 		}
-		for _, typ := range pkg.DataTypes {
+		for _, typ := range proj.DataTypes {
 			tpuvn := typ.Name.PluralUnexportedVarName()
 			tsn := typ.Name.Singular()
 			lines = append(lines,
-				jen.IDf("%sService", tpuvn).MapAssign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataServer", tsn)).Values(),
+				jen.IDf("%sService", tpuvn).MapAssign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataServer", tsn)).Values(),
 			)
 		}
 
 		lines = append(lines,
-			jen.ID("oauth2ClientsService").MapAssign().VarPointer().Qual(pkg.ModelsV1Package("mock"), "OAuth2ClientDataServer").Values(),
+			jen.ID("oauth2ClientsService").MapAssign().VarPointer().Qual(proj.ModelsV1Package("mock"), "OAuth2ClientDataServer").Values(),
 		)
 
 		return lines
@@ -61,29 +61,29 @@ func serverTestDotGo(pkg *models.Project) *jen.File {
 	buildProvideServerArgs := func() []jen.Code {
 		args := []jen.Code{
 			utils.CtxVar(),
-			jen.VarPointer().Qual(pkg.InternalConfigV1Package(), "ServerConfig").Valuesln(
-				jen.ID("Auth").MapAssign().Qual(pkg.InternalConfigV1Package(), "AuthSettings").Valuesln(
+			jen.VarPointer().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
+				jen.ID("Auth").MapAssign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
 					jen.ID("CookieSecret").MapAssign().Lit("THISISAVERYLONGSTRINGFORTESTPURPOSES"),
 				),
 			),
-			jen.VarPointer().Qual(pkg.ServiceV1AuthPackage(), "Service").Values(),
-			jen.VarPointer().Qual(pkg.ServiceV1FrontendPackage(), "Service").Values(),
+			jen.VarPointer().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
+			jen.VarPointer().Qual(proj.ServiceV1FrontendPackage(), "Service").Values(),
 		}
 
-		for _, typ := range pkg.DataTypes {
+		for _, typ := range proj.DataTypes {
 			pn := typ.Name.PackageName()
-			args = append(args, jen.VarPointer().Qual(pkg.ServiceV1Package(pn), "Service").Values())
+			args = append(args, jen.VarPointer().Qual(proj.ServiceV1Package(pn), "Service").Values())
 		}
 
 		args = append(args,
-			jen.VarPointer().Qual(pkg.ServiceV1UsersPackage(), "Service").Values(),
-			jen.VarPointer().Qual(pkg.ServiceV1OAuth2ClientsPackage(), "Service").Values(),
-			jen.VarPointer().Qual(pkg.ServiceV1WebhooksPackage(), "Service").Values(),
+			jen.VarPointer().Qual(proj.ServiceV1UsersPackage(), "Service").Values(),
+			jen.VarPointer().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service").Values(),
+			jen.VarPointer().Qual(proj.ServiceV1WebhooksPackage(), "Service").Values(),
 			jen.ID("mockDB"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-			jen.VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+			jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 		)
 
-		// if pkg.EnableNewsman {
+		// if proj.EnableNewsman {
 		args = append(args,
 			jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil()),
 		)
@@ -98,8 +98,8 @@ func serverTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("mockDB").Assign().Qual(pkg.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(jen.Lit("GetAllWebhooks"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Values(), jen.Nil()),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(jen.Lit("GetAllWebhooks"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Values(), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideServer").Callln(
 					buildProvideServerArgs()...,

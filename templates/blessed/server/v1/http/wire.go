@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkg *models.Project) *jen.File {
+func wireDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	buildProviderSet := func() []jen.Code {
 		lines := []jen.Code{
@@ -18,7 +18,7 @@ func wireDotGo(pkg *models.Project) *jen.File {
 			jen.ID("ProvideNamespace"),
 		}
 
-		// if pkg.EnableNewsman {
+		// if proj.EnableNewsman {
 		lines = append(lines, jen.ID("ProvideNewsmanTypeNameManipulationFunc"))
 		// }
 
@@ -38,13 +38,13 @@ func wireDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideNamespace provides a namespace"),
 		jen.Line(),
-		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(pkg.InternalMetricsV1Package(), "Namespace")).Block(
+		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(proj.InternalMetricsV1Package(), "Namespace")).Block(
 			jen.Return().Lit("todo-service"),
 		),
 		jen.Line(),
 	)
 
-	// if pkg.EnableNewsman {
+	// if proj.EnableNewsman {
 	ret.Add(
 		jen.Comment("ProvideNewsmanTypeNameManipulationFunc provides an WebhookIDFetcher"),
 		jen.Line(),

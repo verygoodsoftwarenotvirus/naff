@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mainDotGo(pkg *models.Project) *jen.File {
+func mainDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -153,7 +153,7 @@ func mainDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("buildIntegrationTestForDBImplementation").Params(jen.List(jen.ID("dbprov"), jen.ID("dbDeet")).ID("string")).Params(jen.ID("configFunc")).Block(
 			jen.Return().Func().Params(jen.ID("filepath").ID("string")).Params(jen.ID("error")).Block(
-				jen.ID("cfg").Assign().Qual(pkg.InternalConfigV1Package(), "BuildConfig").Call(),
+				jen.ID("cfg").Assign().Qual(proj.InternalConfigV1Package(), "BuildConfig").Call(),
 				jen.Line(),
 				jen.ID("cfg").Dot("Set").Call(jen.ID("metaDebug"), jen.ID("false")),
 				jen.ID("cfg").Dot("Set").Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),

@@ -8,35 +8,35 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	n := typ.Name
 	sn := n.Singular()
 
 	ret.Add(
-		jen.Var().ID("_").Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.Op("*").ID("Client")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.Op("*").ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
-	ret.Add(buildSomethingExists(pkg, typ)...)
-	ret.Add(buildGetSomething(pkg, typ)...)
-	ret.Add(buildGetSomethingCount(pkg, typ)...)
-	ret.Add(buildGetAllSomethingCount(pkg, typ)...)
-	ret.Add(buildGetListOfSomething(pkg, typ)...)
+	ret.Add(buildSomethingExists(proj, typ)...)
+	ret.Add(buildGetSomething(proj, typ)...)
+	ret.Add(buildGetSomethingCount(proj, typ)...)
+	ret.Add(buildGetAllSomethingCount(proj, typ)...)
+	ret.Add(buildGetListOfSomething(proj, typ)...)
 
 	if typ.BelongsToUser {
-		ret.Add(buildGetAllSomethingForUser(pkg, typ)...)
+		ret.Add(buildGetAllSomethingForUser(proj, typ)...)
 	}
 	if typ.BelongsToStruct != nil {
-		ret.Add(buildGetAllSomethingForSomethingElse(pkg, typ)...)
+		ret.Add(buildGetAllSomethingForSomethingElse(proj, typ)...)
 	}
 
-	ret.Add(buildCreateSomething(pkg, typ)...)
-	ret.Add(buildUpdateSomething(pkg, typ)...)
-	ret.Add(buildArchiveSomething(pkg, typ)...)
+	ret.Add(buildCreateSomething(proj, typ)...)
+	ret.Add(buildUpdateSomething(proj, typ)...)
+	ret.Add(buildArchiveSomething(proj, typ)...)
 
 	return ret
 }

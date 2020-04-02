@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientDotGo(pkg *models.Project) *jen.File {
+func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -94,7 +94,7 @@ func oauth2ClientDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3", "ClientInfo").Equals().Parens(jen.Op("*").ID("OAuth2Client")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual("goproj.in/oauth2.v3", "ClientInfo").Equals().Parens(jen.Op("*").ID("OAuth2Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

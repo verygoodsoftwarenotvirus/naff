@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func metaTestDotGo(pkg *models.Project) *jen.File {
+func metaTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Func().ID("TestRegisterDefaultViews").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(

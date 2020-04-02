@@ -6,13 +6,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func counterDotGo(pkg *models.Project) *jen.File {
+func counterDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(pkg.InternalMetricsV1Package(), "UnitCounter").Equals().Parens(jen.Op("*").ID("UnitCounter")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(proj.InternalMetricsV1Package(), "UnitCounter").Equals().Parens(jen.Op("*").ID("UnitCounter")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

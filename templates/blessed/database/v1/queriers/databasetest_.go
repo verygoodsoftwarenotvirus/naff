@@ -9,10 +9,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func databaseTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
+func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 	sn := vendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 

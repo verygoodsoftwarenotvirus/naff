@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func configTestDotGo(pkg *models.Project) *jen.File {
+func configTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("config")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Func().ID("Test_randString").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -70,7 +70,7 @@ connection_details = "%s"
 					jen.ID("Database").MapAssign().ID("DatabaseSettings").Valuesln(
 						jen.ID("Provider").MapAssign().Lit("postgres"),
 						jen.ID("Debug").MapAssign().ID("true"),
-						jen.ID("ConnectionDetails").MapAssign().Qual(pkg.DatabaseV1Package(), "ConnectionDetails").Call(jen.ID("expected")),
+						jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabaseV1Package(), "ConnectionDetails").Call(jen.ID("expected")),
 					),
 				),
 				jen.Line(),

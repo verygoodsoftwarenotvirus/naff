@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func serverDotGo(pkg *models.Project) *jen.File {
+func serverDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -26,32 +26,32 @@ func serverDotGo(pkg *models.Project) *jen.File {
 			jen.ID("DebugMode").ID("bool"),
 			jen.Line(),
 			jen.Comment("Services"),
-			jen.ID("authService").Op("*").Qual(pkg.ServiceV1AuthPackage(), "Service"),
-			jen.ID("frontendService").Op("*").Qual(pkg.ServiceV1FrontendPackage(), "Service"),
-			jen.ID("usersService").Qual(pkg.ModelsV1Package(), "UserDataServer"),
-			jen.ID("oauth2ClientsService").Qual(pkg.ModelsV1Package(), "OAuth2ClientDataServer"),
-			jen.ID("webhooksService").Qual(pkg.ModelsV1Package(), "WebhookDataServer"),
+			jen.ID("authService").Op("*").Qual(proj.ServiceV1AuthPackage(), "Service"),
+			jen.ID("frontendService").Op("*").Qual(proj.ServiceV1FrontendPackage(), "Service"),
+			jen.ID("usersService").Qual(proj.ModelsV1Package(), "UserDataServer"),
+			jen.ID("oauth2ClientsService").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer"),
+			jen.ID("webhooksService").Qual(proj.ModelsV1Package(), "WebhookDataServer"),
 		}
 
-		for _, typ := range pkg.DataTypes {
+		for _, typ := range proj.DataTypes {
 			tsn := typ.Name.Singular()
 			tpuvn := typ.Name.PluralUnexportedVarName()
 			lines = append(lines,
-				jen.IDf("%sService", tpuvn).Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sDataServer", tsn)))
+				jen.IDf("%sService", tpuvn).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", tsn)))
 		}
 
 		lines = append(lines,
 			jen.Line(),
 			jen.Comment("infra things"),
-			jen.ID("db").Qual(pkg.DatabaseV1Package(), "Database"),
-			jen.ID("config").Op("*").Qual(pkg.InternalConfigV1Package(), "ServerConfig"),
+			jen.ID("db").Qual(proj.DatabaseV1Package(), "Database"),
+			jen.ID("config").Op("*").Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 			jen.ID("router").ParamPointer().Qual("github.com/go-chi/chi", "Mux"),
 			jen.ID("httpServer").ParamPointer().Qual("net/http", "Server"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("encoder").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder"),
+			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		)
 
-		// if pkg.EnableNewsman {
+		// if proj.EnableNewsman {
 		lines = append(lines,
 			jen.ID("newsManager").ParamPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		)
@@ -73,25 +73,25 @@ func serverDotGo(pkg *models.Project) *jen.File {
 	buildProvideServerParams := func() []jen.Code {
 		lines := []jen.Code{
 			utils.CtxParam(),
-			jen.ID("cfg").Op("*").Qual(pkg.InternalConfigV1Package(), "ServerConfig"),
-			jen.ID("authService").Op("*").Qual(pkg.ServiceV1AuthPackage(), "Service"),
-			jen.ID("frontendService").Op("*").Qual(pkg.ServiceV1FrontendPackage(), "Service"),
+			jen.ID("cfg").Op("*").Qual(proj.InternalConfigV1Package(), "ServerConfig"),
+			jen.ID("authService").Op("*").Qual(proj.ServiceV1AuthPackage(), "Service"),
+			jen.ID("frontendService").Op("*").Qual(proj.ServiceV1FrontendPackage(), "Service"),
 		}
 
-		for _, typ := range pkg.DataTypes {
-			lines = append(lines, jen.IDf("%sService", typ.Name.PluralUnexportedVarName()).Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sDataServer", typ.Name.Singular())))
+		for _, typ := range proj.DataTypes {
+			lines = append(lines, jen.IDf("%sService", typ.Name.PluralUnexportedVarName()).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", typ.Name.Singular())))
 		}
 
 		lines = append(lines,
-			jen.ID("usersService").Qual(pkg.ModelsV1Package(), "UserDataServer"),
-			jen.ID("oauth2Service").Qual(pkg.ModelsV1Package(), "OAuth2ClientDataServer"),
-			jen.ID("webhooksService").Qual(pkg.ModelsV1Package(), "WebhookDataServer"),
-			jen.ID("db").Qual(pkg.DatabaseV1Package(), "Database"),
+			jen.ID("usersService").Qual(proj.ModelsV1Package(), "UserDataServer"),
+			jen.ID("oauth2Service").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer"),
+			jen.ID("webhooksService").Qual(proj.ModelsV1Package(), "WebhookDataServer"),
+			jen.ID("db").Qual(proj.DatabaseV1Package(), "Database"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("encoder").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder"),
+			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		)
 
-		// if pkg.EnableNewsman {
+		// if proj.EnableNewsman {
 		lines = append(lines,
 			jen.ID("newsManager").ParamPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		)
@@ -111,7 +111,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 			jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.Lit("api_server")),
 		}
 
-		// if pkg.EnableNewsman {
+		// if proj.EnableNewsman {
 		lines = append(lines,
 			jen.ID("newsManager").MapAssign().ID("newsManager"),
 		)
@@ -125,7 +125,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 			jen.ID("authService").MapAssign().ID("authService"),
 		)
 
-		for _, typ := range pkg.DataTypes {
+		for _, typ := range proj.DataTypes {
 			tpuvn := typ.Name.PluralUnexportedVarName()
 			lines = append(lines, jen.IDf("%sService", tpuvn).MapAssign().IDf("%sService", tpuvn))
 		}
@@ -147,12 +147,12 @@ func serverDotGo(pkg *models.Project) *jen.File {
 				buildServerDecLines()...,
 			),
 			jen.Line(),
-			jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.Err().DoesNotEqual().ID("nil").Op("&&").ID("err").DoesNotEqual().Qual(pkg.InternalConfigV1Package(), "ErrInvalidTracingProvider")).Block(
+			jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.Err().DoesNotEqual().ID("nil").Op("&&").ID("err").DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidTracingProvider")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
 			jen.List(jen.ID("ih"), jen.Err()).Assign().ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID("logger")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Op("&&").ID("err").DoesNotEqual().Qual(pkg.InternalConfigV1Package(), "ErrInvalidMetricsProvider")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Op("&&").ID("err").DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidMetricsProvider")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.If(jen.ID("ih").DoesNotEqual().ID("nil")).Block(
@@ -166,7 +166,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 		}
 
-		// if pkg.EnableNewsman {
+		// if proj.EnableNewsman {
 		lines = append(lines,
 			jen.List(jen.ID("allWebhooks"), jen.Err()).Assign().ID("db").Dot("GetAllWebhooks").Call(utils.CtxVar()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(

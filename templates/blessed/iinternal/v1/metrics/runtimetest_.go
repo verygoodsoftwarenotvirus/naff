@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func runtimeTestDotGo(pkg *models.Project) *jen.File {
+func runtimeTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Func().ID("TestRecordRuntimeStats").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(

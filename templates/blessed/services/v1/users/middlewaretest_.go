@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func middlewareTestDotGo(pkg *models.Project) *jen.File {
+func middlewareTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("users")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().ID("_").Qual("net/http", "Handler").Equals().Parens(jen.Op("*").ID("MockHTTPHandler")).Call(jen.Nil()),
@@ -37,7 +37,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -66,7 +66,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -102,7 +102,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -131,7 +131,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(pkg.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -139,7 +139,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 				).Dot("Return").Call(jen.Add(utils.FakeUint64Func()), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -175,7 +175,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -204,7 +204,7 @@ func middlewareTestDotGo(pkg *models.Project) *jen.File {
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),

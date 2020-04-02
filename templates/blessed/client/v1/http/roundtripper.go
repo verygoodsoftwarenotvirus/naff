@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func roundtripperDotGo(pkg *models.Project) *jen.File {
+func roundtripperDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile(packageName)
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(jen.Const().Defs(
 		jen.ID("userAgentHeader").Equals().Lit("User-Agent"),

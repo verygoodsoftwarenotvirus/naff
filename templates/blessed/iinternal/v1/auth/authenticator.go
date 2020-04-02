@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func authenticatorDotGo(pkg *models.Project) *jen.File {
+func authenticatorDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(jen.Null(),
 

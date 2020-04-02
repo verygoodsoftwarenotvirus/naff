@@ -8,16 +8,16 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func httpRoutesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func httpRoutesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
-	ret.Add(buildTestServiceListFuncDecl(pkg, typ)...)
-	ret.Add(buildTestServiceCreateFuncDecl(pkg, typ)...)
-	ret.Add(buildTestServiceReadFuncDecl(pkg, typ)...)
-	ret.Add(buildTestServiceUpdateFuncDecl(pkg, typ)...)
-	ret.Add(buildTestServiceArchiveFuncDecl(pkg, typ)...)
+	ret.Add(buildTestServiceListFuncDecl(proj, typ)...)
+	ret.Add(buildTestServiceCreateFuncDecl(proj, typ)...)
+	ret.Add(buildTestServiceReadFuncDecl(proj, typ)...)
+	ret.Add(buildTestServiceUpdateFuncDecl(proj, typ)...)
+	ret.Add(buildTestServiceArchiveFuncDecl(proj, typ)...)
 
 	return ret
 }
@@ -32,11 +32,11 @@ func buildOwnerVarName(typ models.DataType) string {
 	return ""
 }
 
-func buildRelevantOwnerVar(pkg *models.Project, typ models.DataType) jen.Code {
+func buildRelevantOwnerVar(proj *models.Project, typ models.DataType) jen.Code {
 	if typ.BelongsToUser {
-		return jen.ID(buildOwnerVarName(typ)).Assign().VarPointer().Qual(pkg.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()))
+		return jen.ID(buildOwnerVarName(typ)).Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()))
 	} else if typ.BelongsToStruct != nil {
-		return jen.ID(buildOwnerVarName(typ)).Assign().VarPointer().Qual(pkg.ModelsV1Package(), typ.BelongsToStruct.Singular()).Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()))
+		return jen.ID(buildOwnerVarName(typ)).Assign().VarPointer().Qual(proj.ModelsV1Package(), typ.BelongsToStruct.Singular()).Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()))
 	}
 
 	return nil
@@ -79,7 +79,7 @@ func buildRelevantIDFetcher(typ models.DataType) jen.Code {
 	return nil
 }
 
-func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
@@ -91,7 +91,7 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 		jen.Func().ID(fmt.Sprintf("Test%sService_List", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			buildRelevantOwnerVar(pkg, typ),
+			buildRelevantOwnerVar(proj, typ),
 			buildRelevantIDFetcher(typ),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -99,15 +99,15 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
-					jen.ID(pn).MapAssign().Index().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
+					jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 						),
 					),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					buildDBCallOwnerVar(typ),
@@ -115,7 +115,7 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -138,15 +138,15 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					buildDBCallOwnerVar(typ),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -169,15 +169,15 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					buildDBCallOwnerVar(typ),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -201,11 +201,11 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
-					jen.ID(pn).MapAssign().Index().Qual(pkg.ModelsV1Package(), sn).Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
+					jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Values(),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					buildDBCallOwnerVar(typ),
@@ -213,7 +213,7 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -237,7 +237,7 @@ func buildTestServiceListFuncDecl(pkg *models.Project, typ models.DataType) []je
 	return lines
 }
 
-func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scn := typ.Name.SingularCommonName()
@@ -262,7 +262,7 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 		jen.Func().ID(fmt.Sprintf("Test%sService_Create", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			buildRelevantOwnerVar(pkg, typ),
+			buildRelevantOwnerVar(proj, typ),
 			buildRelevantIDFetcher(typ),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -270,11 +270,11 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("mc").Assign().VarPointer().Qual(pkg.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				),
@@ -284,12 +284,12 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -318,7 +318,7 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -342,16 +342,16 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -380,11 +380,11 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("mc").Assign().VarPointer().Qual(pkg.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
 				jen.Line(),
@@ -392,12 +392,12 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -427,7 +427,7 @@ func buildTestServiceCreateFuncDecl(pkg *models.Project, typ models.DataType) []
 	return lines
 }
 
-func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scn := typ.Name.SingularCommonName()
@@ -440,7 +440,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 		jen.Func().ID(fmt.Sprintf("Test%sService_Read", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			buildRelevantOwnerVar(pkg, typ),
+			buildRelevantOwnerVar(proj, typ),
 			buildRelevantIDFetcher(typ),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -448,7 +448,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -456,7 +456,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
@@ -464,7 +464,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -487,7 +487,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -495,11 +495,11 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					buildDBCallOwnerVar(typ),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -521,7 +521,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -529,12 +529,12 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					buildDBCallOwnerVar(typ),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -556,7 +556,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -564,13 +564,13 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -595,7 +595,7 @@ func buildTestServiceReadFuncDecl(pkg *models.Project, typ models.DataType) []je
 	return lines
 }
 
-func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scn := typ.Name.SingularCommonName()
@@ -620,7 +620,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 		jen.Func().ID(fmt.Sprintf("Test%sService_Update", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			buildRelevantOwnerVar(pkg, typ),
+			buildRelevantOwnerVar(proj, typ),
 			buildRelevantIDFetcher(typ),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -628,7 +628,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -636,7 +636,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mc").Assign().VarPointer().Qual(pkg.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				),
@@ -649,7 +649,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
@@ -657,7 +657,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -703,7 +703,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -711,11 +711,11 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					buildDBCallOwnerVar(typ),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -742,7 +742,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -750,10 +750,10 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
-					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(pkg.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -780,7 +780,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -788,7 +788,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mc").Assign().VarPointer().Qual(pkg.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
 				jen.Line(),
@@ -796,7 +796,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
@@ -804,7 +804,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -833,7 +833,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -841,7 +841,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mc").Assign().VarPointer().Qual(pkg.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
 				jen.Line(),
@@ -849,7 +849,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
@@ -857,7 +857,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -887,7 +887,7 @@ func buildTestServiceUpdateFuncDecl(pkg *models.Project, typ models.DataType) []
 	return lines
 }
 
-func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scn := typ.Name.SingularCommonName()
@@ -899,7 +899,7 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 		jen.Func().ID(fmt.Sprintf("Test%sService_Archive", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			buildRelevantOwnerVar(pkg, typ),
+			buildRelevantOwnerVar(proj, typ),
 			buildRelevantIDFetcher(typ),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -907,7 +907,7 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -919,18 +919,18 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID("mc").Assign().VarPointer().Qual(pkg.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement")).Dot("Return").Call(),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -957,7 +957,7 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -965,7 +965,7 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					buildDBCallOwnerVar(typ),
@@ -991,7 +991,7 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), sn).Valuesln(
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
@@ -999,7 +999,7 @@ func buildTestServiceArchiveFuncDecl(pkg *models.Project, typ models.DataType) [
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ID"),
 					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),

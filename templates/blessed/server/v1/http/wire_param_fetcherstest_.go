@@ -6,12 +6,12 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
+func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
-	for _, typ := range pkg.DataTypes {
+	for _, typ := range proj.DataTypes {
 		n := typ.Name
 
 		if typ.BelongsToUser {
@@ -117,7 +117,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(),
-						jen.Qual(pkg.ModelsV1Package(), "UserIDKey"),
+						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
 						jen.ID("expected"),
 					),
 				),
@@ -144,7 +144,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(pkg.ServiceV1UsersPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
@@ -167,7 +167,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(pkg.ServiceV1UsersPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Lit("expected")),
 							),
 						),
@@ -181,7 +181,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	for _, typ := range pkg.DataTypes {
+	for _, typ := range proj.DataTypes {
 		n := typ.Name
 		ret.Add(
 			jen.Func().IDf("Test_buildChi%sIDFetcher", n.Singular()).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
@@ -198,7 +198,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 							jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 							jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 								jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-									jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(pkg.ServiceV1Package(n.PackageName()), "URIParamKey")),
+									jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
 									jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 								),
 							),
@@ -220,7 +220,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 							jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 							jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 								jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-									jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(pkg.ServiceV1Package(n.PackageName()), "URIParamKey")),
+									jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
 									jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Lit("expected")),
 								),
 							),
@@ -250,7 +250,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(pkg.ServiceV1WebhooksPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
@@ -273,7 +273,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(pkg.ServiceV1WebhooksPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Lit("expected")),
 							),
 						),
@@ -301,7 +301,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 						jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(pkg.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
@@ -324,7 +324,7 @@ func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(pkg.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Lit("expected")),
 							),
 						),

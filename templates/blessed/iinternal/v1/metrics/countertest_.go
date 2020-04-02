@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func counterTestDotGo(pkg *models.Project) *jen.File {
+func counterTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Func().ID("Test_opencensusCounter_Increment").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(

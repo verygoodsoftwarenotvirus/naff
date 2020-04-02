@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockReadCloserDotGo(pkg *models.Project) *jen.File {
+func mockReadCloserDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile(packageName)
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().ID("_").Qual("io", "ReadCloser").Equals().Parens(jen.Op("*").ID("ReadCloser")).Call(jen.Nil()),

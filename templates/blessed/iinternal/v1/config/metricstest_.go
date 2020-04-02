@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func metricsTestDotGo(pkg *models.Project) *jen.File {
+func metricsTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("config")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(

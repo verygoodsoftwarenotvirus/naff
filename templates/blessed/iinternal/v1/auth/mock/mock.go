@@ -6,13 +6,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockDotGo(pkg *models.Project) *jen.File {
+func mockDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(pkg.InternalAuthV1Package(), "Authenticator").Equals().Parens(jen.Op("*").ID("Authenticator")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(proj.InternalAuthV1Package(), "Authenticator").Equals().Parens(jen.Op("*").ID("Authenticator")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

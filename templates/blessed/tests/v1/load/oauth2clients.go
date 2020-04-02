@@ -6,21 +6,21 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
+func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Comment("fetchRandomOAuth2Client retrieves a random client from the list of available clients"),
 		jen.Line(),
-		jen.Func().ID("fetchRandomOAuth2Client").Params(jen.ID("c").Op("*").Qual(pkg.HTTPClientV1Package(), "V1Client")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(),
+		jen.Func().ID("fetchRandomOAuth2Client").Params(jen.ID("c").Op("*").Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Op("*").Qual(proj.ModelsV1Package(),
 			"OAuth2Client",
 		)).Block(
 			jen.List(jen.ID("clientsRes"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(utils.InlineCtx(), jen.Nil()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil").Op("||").ID("clientsRes").Op("==").ID("nil").Op("||").ID("len").Call(jen.ID("clientsRes").Dot("Clients")).Op("<=").Lit(1)).Block(jen.Return().ID("nil")),
 			jen.Line(),
-			jen.Var().ID("selectedClient").Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client"),
+			jen.Var().ID("selectedClient").Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.For(jen.ID("selectedClient").Op("==").ID("nil")).Block(
 				jen.ID("ri").Assign().Qual("math/rand", "Intn").Call(jen.ID("len").Call(jen.ID("clientsRes").Dot("Clients"))),
 				jen.ID("c").Assign().VarPointer().ID("clientsRes").Dot("Clients").Index(jen.ID("ri")),
@@ -33,11 +33,11 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildOAuth2ClientActions").Params(jen.ID("c").Op("*").Qual(pkg.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
+		jen.Func().ID("buildOAuth2ClientActions").Params(jen.ID("c").Op("*").Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
 			jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(
 				jen.Lit("CreateOAuth2Client").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("CreateOAuth2Client"), jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.ID("ui").Assign().Qual(pkg.FakeModelsPackage(), "RandomUserInput").Call(),
+						jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "RandomUserInput").Call(),
 						jen.List(jen.ID("u"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(utils.InlineCtx(), jen.ID("ui")),
 						jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 							jen.Return().ID("c").Dot("BuildHealthCheckRequest").Call(),
@@ -54,7 +54,7 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 						jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildCreateOAuth2ClientRequest").Callln(
 							utils.InlineCtx(),
 							jen.ID("cookie"),
-							jen.Qual(pkg.FakeModelsPackage(), "RandomOAuth2ClientInput").Callln(
+							jen.Qual(proj.FakeModelsPackage(), "RandomOAuth2ClientInput").Callln(
 								jen.ID("u").Dot("Username"),
 								jen.ID("ui").Dot("Password"),
 								jen.ID("u").Dot("TwoFactorSecret"),

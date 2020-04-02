@@ -8,11 +8,11 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func serverDotGo(pkg *models.Project) *jen.File {
+func serverDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("server")
 
-	httpPackage := fmt.Sprintf("%s/server/v1/http", pkg.OutputPath)
-	utils.AddImports(pkg, ret)
+	httpPackage := fmt.Sprintf("%s/server/v1/http", proj.OutputPath)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Type().Defs(
@@ -21,7 +21,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 			jen.Comment("the structure that would contain it and be responsible for calling its"),
 			jen.Comment("serve method"),
 			jen.ID("Server").Struct(
-				jen.ID("config").Op("*").Qual(pkg.InternalConfigV1Package(), "ServerConfig"),
+				jen.ID("config").Op("*").Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 				jen.ID("httpServer").Op("*").Qual(httpPackage, "Server"),
 			),
 		),
@@ -39,7 +39,7 @@ func serverDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideServer builds a new Server instance"),
 		jen.Line(),
-		jen.Func().ID("ProvideServer").Params(jen.ID("cfg").Op("*").Qual(pkg.InternalConfigV1Package(), "ServerConfig"), jen.ID("httpServer").Op("*").Qual(httpPackage, "Server")).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
+		jen.Func().ID("ProvideServer").Params(jen.ID("cfg").Op("*").Qual(proj.InternalConfigV1Package(), "ServerConfig"), jen.ID("httpServer").Op("*").Qual(httpPackage, "Server")).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
 			jen.ID("srv").Assign().VarPointer().ID("Server").Valuesln(
 				jen.ID("config").MapAssign().ID("cfg"),
 				jen.ID("httpServer").MapAssign().ID("httpServer"),

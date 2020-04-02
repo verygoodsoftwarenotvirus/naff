@@ -6,16 +6,16 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func initDotGo(pkg *models.Project) *jen.File {
+func initDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().Defs(
 			jen.ID("debug").ID("bool"),
 			jen.ID("urlToUse").ID("string"),
-			jen.ID("oa2Client").Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client"),
+			jen.ID("oa2Client").Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"),
 		),
 		jen.Line(),
 	)
@@ -23,20 +23,20 @@ func initDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
 			utils.InlineFakeSeedFunc(),
-			jen.ID("urlToUse").Equals().Qual(pkg.TestutilV1Package(), "DetermineServiceURL").Call(),
+			jen.ID("urlToUse").Equals().Qual(proj.TestutilV1Package(), "DetermineServiceURL").Call(),
 			jen.ID("logger").Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.Line(),
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
-			jen.Qual(pkg.TestutilV1Package(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
+			jen.Qual(proj.TestutilV1Package(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
 			jen.Line(),
 			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.Line(),
-			jen.List(jen.ID("u"), jen.Err()).Assign().Qual(pkg.TestutilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
+			jen.List(jen.ID("u"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("logger").Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("oa2Client"), jen.Err()).Equals().Qual(pkg.TestutilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("u")),
+			jen.List(jen.ID("oa2Client"), jen.Err()).Equals().Qual(proj.TestutilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("u")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("logger").Dot("Fatal").Call(jen.Err()),
 			),
@@ -60,13 +60,13 @@ func initDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client")).Params(jen.Op("*").Qual(pkg.HTTPClientV1Package(), "V1Client")).Block(
+		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.Op("*").Qual(proj.HTTPClientV1Package(), "V1Client")).Block(
 			jen.List(jen.ID("uri"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("urlToUse")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("c"), jen.Err()).Assign().Qual(pkg.HTTPClientV1Package(), "NewClient").Callln(
+			jen.List(jen.ID("c"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
 				utils.InlineCtx(),
 				jen.ID("oa2Client").Dot("ClientID"),
 				jen.ID("oa2Client").Dot("ClientSecret"),

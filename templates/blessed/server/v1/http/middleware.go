@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func middlewareDotGo(pkg *models.Project) *jen.File {
+func middlewareDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().Defs(

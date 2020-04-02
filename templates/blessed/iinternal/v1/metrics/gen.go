@@ -7,21 +7,21 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkg *models.Project) error {
+func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"internal/v1/metrics/runtime.go":      runtimeDotGo(pkg),
-		"internal/v1/metrics/types.go":        typesDotGo(pkg),
-		"internal/v1/metrics/counter_test.go": counterTestDotGo(pkg),
+		"internal/v1/metrics/runtime.go":      runtimeDotGo(proj),
+		"internal/v1/metrics/types.go":        typesDotGo(proj),
+		"internal/v1/metrics/counter_test.go": counterTestDotGo(proj),
 		"internal/v1/metrics/doc.go":          docDotGo(),
-		"internal/v1/metrics/meta_test.go":    metaTestDotGo(pkg),
-		"internal/v1/metrics/wire.go":         wireDotGo(pkg),
-		"internal/v1/metrics/counter.go":      counterDotGo(pkg),
-		"internal/v1/metrics/meta.go":         metaDotGo(pkg),
-		"internal/v1/metrics/runtime_test.go": runtimeTestDotGo(pkg),
+		"internal/v1/metrics/meta_test.go":    metaTestDotGo(proj),
+		"internal/v1/metrics/wire.go":         wireDotGo(proj),
+		"internal/v1/metrics/counter.go":      counterDotGo(proj),
+		"internal/v1/metrics/meta.go":         metaDotGo(proj),
+		"internal/v1/metrics/runtime_test.go": runtimeTestDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkg, path, file); err != nil {
+		if err := utils.RenderGoFile(proj, path, file); err != nil {
 			return err
 		}
 	}

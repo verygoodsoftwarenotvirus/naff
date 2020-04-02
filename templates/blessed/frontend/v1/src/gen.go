@@ -11,7 +11,7 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkg *models.Project) error {
+func RenderPackage(proj *models.Project) error {
 	files := map[string]func() []byte{
 		"frontend/v1/src/main.js":                     mainDotJS,
 		"frontend/v1/public/index.html":               indexDotHTML,
@@ -23,14 +23,14 @@ func RenderPackage(pkg *models.Project) error {
 		"frontend/v1/src/components/Table.svelte":     tableDotSvelte,
 	}
 
-	for _, typ := range pkg.DataTypes {
+	for _, typ := range proj.DataTypes {
 		files[fmt.Sprintf("frontend/v1/src/pages/%s/List.svelte", typ.Name.PluralRouteName())] = listDotSvelte(typ)
 		files[fmt.Sprintf("frontend/v1/src/pages/%s/Create.svelte", typ.Name.PluralRouteName())] = createDotSvelte(typ)
 		files[fmt.Sprintf("frontend/v1/src/pages/%s/Read.svelte", typ.Name.PluralRouteName())] = readDotSvelte(typ)
 	}
 
 	for filename, file := range files {
-		fname := utils.BuildTemplatePath(pkg.OutputPath, filename)
+		fname := utils.BuildTemplatePath(proj.OutputPath, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)

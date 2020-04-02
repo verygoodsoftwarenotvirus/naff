@@ -7,10 +7,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
+func wireDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(vendor.SingularPackageName())
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 	sn := vendor.Singular()
 
 	isMariaDB := vendor.RouteName() == "mariadb" || vendor.RouteName() == "maria_db"

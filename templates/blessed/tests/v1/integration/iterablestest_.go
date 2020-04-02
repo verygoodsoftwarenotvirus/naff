@@ -8,22 +8,22 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("integration")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 
 	ret.Add(
-		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(pkg.ModelsV1Package(), sn)).Block(
+		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(proj.ModelsV1Package(), sn)).Block(
 			buildEqualityCheckLines(typ)...,
 		),
 		jen.Line(),
 	)
 
-	ret.Add(buildBuildDummySomething(pkg, typ)...)
+	ret.Add(buildBuildDummySomething(proj, typ)...)
 
 	ret.Add(
 		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").ParamPointer().Qual("testing", "T")).Block(
@@ -31,49 +31,49 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Run").Call(jen.Lit("should be createable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-					buildTestCreating(pkg, typ)...,
+					buildTestCreating(proj, typ)...,
 				)),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-					buildTestListing(pkg, typ)...,
+					buildTestListing(proj, typ)...,
 				)),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to check something that does not exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-					buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg, typ)...,
+					buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should return 200 when the relevant item exists"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-					buildTestExistenceCheckingShouldBeReadable(pkg, typ)...,
+					buildTestExistenceCheckingShouldBeReadable(proj, typ)...,
 				)),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to read something that does not exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-					buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg, typ)...,
+					buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-					buildTestReadingShouldBeReadable(pkg, typ)...,
+					buildTestReadingShouldBeReadable(proj, typ)...,
 				)),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to update something that does not exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-					buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg, typ)...,
+					buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, typ)...,
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should be updatable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-					buildTestUpdatingShouldBeUpdateable(pkg, typ)...,
+					buildTestUpdatingShouldBeUpdateable(proj, typ)...,
 				)),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be deleted"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-					buildTestDeletingShouldBeAbleToBeDeleted(pkg, typ)...,
+					buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)...,
 				)),
 			)),
 		),
@@ -83,7 +83,7 @@ func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	return ret
 }
 
-func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen.Code {
 	var lines []jen.Code
 	sn := typ.Name.Singular()
 
@@ -94,25 +94,25 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 	creationArgs := []jen.Code{
 		utils.CtxVar(),
 	}
-	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
+	ca := buildCreationArguments(proj, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs,
-		jen.VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			fieldToExpectedDotField(fmt.Sprintf("expected"), typ)...,
 		),
 	)
 
 	if typ.BelongsToStruct != nil {
-		if parentTyp := pkg.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
-			newLines := buildRequisiteCreationCode(pkg, *parentTyp)
+		if parentTyp := proj.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
+			newLines := buildRequisiteCreationCode(proj, *parentTyp)
 			lines = append(lines, newLines...)
 		}
 	}
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), typ.Name.Singular()).Valuesln(
-			buildFakeCallForCreationInput(pkg, typ)...,
+		jen.IDf("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(
+			buildFakeCallForCreationInput(proj, typ)...,
 		),
 		jen.Line(),
 		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
@@ -125,7 +125,7 @@ func buildRequisiteCreationCode(pkg *models.Project, typ models.DataType) []jen.
 	return lines
 }
 
-func buildRequisiteCreationCodeForUpdateFunction(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildRequisiteCreationCodeForUpdateFunction(proj *models.Project, typ models.DataType) []jen.Code {
 	var lines []jen.Code
 	sn := typ.Name.Singular()
 
@@ -136,25 +136,25 @@ func buildRequisiteCreationCodeForUpdateFunction(pkg *models.Project, typ models
 	creationArgs := []jen.Code{
 		utils.CtxVar(),
 	}
-	ca := buildCreationArguments(pkg, createdVarPrefix, typ)
+	ca := buildCreationArguments(proj, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs,
-		jen.VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
-			buildFakeCallForCreationInput(pkg, typ)...,
+		jen.VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+			buildFakeCallForCreationInput(proj, typ)...,
 		),
 	)
 
 	if typ.BelongsToStruct != nil {
-		if parentTyp := pkg.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
-			newLines := buildRequisiteCreationCode(pkg, *parentTyp)
+		if parentTyp := proj.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
+			newLines := buildRequisiteCreationCode(proj, *parentTyp)
 			lines = append(lines, newLines...)
 		}
 	}
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), typ.Name.Singular()).Valuesln(
-			buildFakeCallForCreationInput(pkg, typ)...,
+		jen.IDf("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(
+			buildFakeCallForCreationInput(proj, typ)...,
 		),
 		jen.Line(),
 		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
@@ -167,21 +167,21 @@ func buildRequisiteCreationCodeForUpdateFunction(pkg *models.Project, typ models
 	return lines
 }
 
-func buildRequisiteCleanupCode(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildRequisiteCleanupCode(proj *models.Project, typ models.DataType) []jen.Code {
 	var lines []jen.Code
 	sn := typ.Name.Singular()
 
 	lines = append(lines,
 		jen.Line(),
 		jen.Commentf("Clean up %s", typ.Name.SingularCommonName()),
-		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.IDf("%sClient", pkg.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
+		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		)),
 	)
 
 	if typ.BelongsToStruct != nil {
-		if parentTyp := pkg.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
-			newLines := buildRequisiteCleanupCode(pkg, *parentTyp)
+		if parentTyp := proj.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
+			newLines := buildRequisiteCleanupCode(proj, *parentTyp)
 			lines = append(lines, newLines...)
 		}
 	}
@@ -189,8 +189,8 @@ func buildRequisiteCleanupCode(pkg *models.Project, typ models.DataType) []jen.C
 	return lines
 }
 
-func buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg *models.Project, typ models.DataType) []jen.Code {
-	parents := pkg.FindOwnerTypeChain(typ)
+func buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj *models.Project, typ models.DataType) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
 	params := []jen.Code{utils.CtxVar()}
 
@@ -208,7 +208,7 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg *models.
 	return params
 }
 
-func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildBuildDummySomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
 	blockLines := []jen.Code{
@@ -217,20 +217,20 @@ func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Co
 	}
 
 	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
-	cc := buildRequisiteCreationCode(pkg, typ)
+	cc := buildRequisiteCreationCode(proj, typ)
 	if len(cc) > stopIndex {
 		blockLines = append(blockLines, cc[:len(cc)-stopIndex]...)
 	}
 
 	creationArgs := []jen.Code{utils.CtxVar()}
-	ca := buildCreationArguments(pkg, "created", typ)
+	ca := buildCreationArguments(proj, "created", typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs, jen.ID("x"))
 
 	blockLines = append(blockLines,
 		utils.CreateCtx(),
-		jen.ID("x").Assign().VarPointer().Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
-			buildFakeCallForCreationInput(pkg, typ)...,
+		jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+			buildFakeCallForCreationInput(proj, typ)...,
 		),
 		jen.List(jen.ID("y"), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
 			creationArgs...,
@@ -241,7 +241,7 @@ func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Co
 	)
 
 	lines := []jen.Code{
-		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), sn)).Block(
+		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(proj.ModelsV1Package(), sn)).Block(
 			blockLines...,
 		),
 		jen.Line(),
@@ -250,11 +250,11 @@ func buildBuildDummySomething(pkg *models.Project, typ models.DataType) []jen.Co
 	return lines
 }
 
-func buildFakeCallForCreationInput(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildFakeCallForCreationInput(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{}
 
 	for _, field := range typ.Fields {
-		lines = append(lines, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeCallForField(pkg.OutputPath, field)))
+		lines = append(lines, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeCallForField(proj.OutputPath, field)))
 	}
 
 	return lines
@@ -271,8 +271,8 @@ func fieldToExpectedDotField(varName string, typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg *models.Project, typ models.DataType) []jen.Code {
-	parents := pkg.FindOwnerTypeChain(typ)
+func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj *models.Project, typ models.DataType) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
 	params := []jen.Code{utils.CtxVar()}
 
@@ -321,13 +321,13 @@ func buildEqualityCheckLines(typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildCreationArguments(pkg *models.Project, varPrefix string, typ models.DataType) []jen.Code {
+func buildCreationArguments(proj *models.Project, varPrefix string, typ models.DataType) []jen.Code {
 	creationArgs := []jen.Code{}
 
 	if typ.BelongsToStruct != nil {
-		parentTyp := pkg.FindType(typ.BelongsToStruct.Singular())
+		parentTyp := proj.FindType(typ.BelongsToStruct.Singular())
 		if parentTyp != nil {
-			nca := buildCreationArguments(pkg, varPrefix, *parentTyp)
+			nca := buildCreationArguments(proj, varPrefix, *parentTyp)
 			creationArgs = append(creationArgs, nca...)
 		}
 	}
@@ -337,7 +337,7 @@ func buildCreationArguments(pkg *models.Project, varPrefix string, typ models.Da
 	return creationArgs
 }
 
-func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
@@ -351,7 +351,7 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 	}
 
-	lines = append(lines, buildRequisiteCreationCode(pkg, typ)...)
+	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
 	lines = append(lines,
 		jen.Commentf("Assert %s equality", scn),
@@ -359,24 +359,24 @@ func buildTestCreating(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 		jen.Comment("Clean up"),
 		jen.Err().Equals().ID("todoClient").Dotf("Archive%s", sn).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 		jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
 	)
 
-	lines = append(lines, buildRequisiteCleanupCode(pkg, typ)[3:]...)
+	lines = append(lines, buildRequisiteCleanupCode(proj, typ)[3:]...)
 
 	return lines
 }
 
-func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 	pn := typ.Name.Plural()
@@ -390,12 +390,12 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 	}
 
 	listArgs := []jen.Code{utils.CtxVar()}
-	ca := buildCreationArguments(pkg, "created", typ)
+	ca := buildCreationArguments(proj, "created", typ)
 	listArgs = append(listArgs, ca[:len(ca)-1]...)
 	listArgs = append(listArgs, jen.Nil())
 
 	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
-	cc := buildRequisiteCreationCode(pkg, typ)
+	cc := buildRequisiteCreationCode(proj, typ)
 	if len(cc) > stopIndex {
 		lines = append(lines, cc[:len(cc)-stopIndex]...)
 	}
@@ -403,7 +403,7 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	lines = append(lines,
 		jen.Commentf("Create %s", pcn),
-		jen.Var().ID("expected").Index().Op("*").Qual(pkg.ModelsV1Package(), sn),
+		jen.Var().ID("expected").Index().Op("*").Qual(proj.ModelsV1Package(), sn),
 		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 			jen.ID("expected").Equals().Append(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
 		),
@@ -423,14 +423,14 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 		jen.Comment("Clean up"),
 		jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Assign().Range().ID("actual").Dot(pn)).Block(
 			jen.Err().Equals().ID("todoClient").Dotf("Archive%s", sn).Call(
-				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
+				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 			),
 			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 		),
 	)
 
 	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
-	dc := buildRequisiteCleanupCode(pkg, typ)
+	dc := buildRequisiteCleanupCode(proj, typ)
 	if len(dc) > ccsi {
 		dc = dc[ccsi:]
 	} else if len(dc) == ccsi {
@@ -487,7 +487,7 @@ func buildTestListing(pkg *models.Project, typ models.DataType) []jen.Code {
 
 */
 
-func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
@@ -498,10 +498,10 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 		jen.Line(),
 	}
 
-	args := buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(pkg, typ)
+	args := buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(proj, typ)
 
 	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
-	cc := buildRequisiteCreationCode(pkg, typ)
+	cc := buildRequisiteCreationCode(proj, typ)
 	if len(cc) > stopIndex {
 		lines = append(lines, cc[:len(cc)-stopIndex]...)
 	}
@@ -522,7 +522,7 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 	)
 
 	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
-	dc := buildRequisiteCleanupCode(pkg, typ)
+	dc := buildRequisiteCleanupCode(proj, typ)
 	if len(dc) > ccsi {
 		dc = dc[ccsi:]
 	} else if len(dc) == ccsi {
@@ -534,7 +534,7 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 	return lines
 }
 
-func buildTestExistenceCheckingShouldBeReadable(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestExistenceCheckingShouldBeReadable(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
@@ -545,25 +545,25 @@ func buildTestExistenceCheckingShouldBeReadable(pkg *models.Project, typ models.
 		jen.Line(),
 	}
 
-	lines = append(lines, buildRequisiteCreationCode(pkg, typ)...)
+	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
 	lines = append(lines,
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("%sExists", sn).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 		jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("actual")),
 		jen.Line(),
 	)
 
-	lines = append(lines, buildRequisiteCleanupCode(pkg, typ)...)
+	lines = append(lines, buildRequisiteCleanupCode(proj, typ)...)
 
 	return lines
 }
 
-func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
@@ -574,10 +574,10 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *mo
 		jen.Line(),
 	}
 
-	args := buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(pkg, typ)
+	args := buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(proj, typ)
 
 	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
-	cc := buildRequisiteCreationCode(pkg, typ)
+	cc := buildRequisiteCreationCode(proj, typ)
 	if len(cc) > stopIndex {
 		lines = append(lines, cc[:len(cc)-stopIndex]...)
 	}
@@ -597,7 +597,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *mo
 	)
 
 	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
-	dc := buildRequisiteCleanupCode(pkg, typ)
+	dc := buildRequisiteCleanupCode(proj, typ)
 	if len(dc) > ccsi {
 		dc = dc[ccsi:]
 	} else if len(dc) == ccsi {
@@ -609,7 +609,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(pkg *mo
 	return lines
 }
 
-func buildTestReadingShouldBeReadable(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestReadingShouldBeReadable(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
@@ -620,13 +620,13 @@ func buildTestReadingShouldBeReadable(pkg *models.Project, typ models.DataType) 
 		jen.Line(),
 	}
 
-	lines = append(lines, buildRequisiteCreationCode(pkg, typ)...)
+	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
 	lines = append(lines,
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 		jen.Line(),
@@ -635,13 +635,13 @@ func buildTestReadingShouldBeReadable(pkg *models.Project, typ models.DataType) 
 		jen.Line(),
 	)
 
-	lines = append(lines, buildRequisiteCleanupCode(pkg, typ)...)
+	lines = append(lines, buildRequisiteCleanupCode(proj, typ)...)
 
 	return lines
 }
 
-func buildParamsForCheckingATypeThatDoesNotExist(pkg *models.Project, typ models.DataType) []jen.Code {
-	parents := pkg.FindOwnerTypeChain(typ)
+func buildParamsForCheckingATypeThatDoesNotExist(proj *models.Project, typ models.DataType) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
 	params := []jen.Code{utils.CtxVar()}
 
 	for i, pt := range parents {
@@ -659,8 +659,8 @@ func buildParamsForCheckingATypeThatDoesNotExist(pkg *models.Project, typ models
 	return params
 }
 
-func buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(pkg *models.Project, typ models.DataType) []jen.Code {
-	parents := pkg.FindOwnerTypeChain(typ)
+func buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(proj *models.Project, typ models.DataType) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
 	params := []jen.Code{utils.CtxVar()}
 
 	for _, pt := range parents {
@@ -672,8 +672,8 @@ func buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(pkg *mo
 	return params
 }
 
-func buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(pkg *models.Project, typ models.DataType) []jen.Code {
-	parents := pkg.FindOwnerTypeChain(typ)
+func buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(proj *models.Project, typ models.DataType) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
 	sn := typ.Name.Singular()
 	listParams := []jen.Code{}
 	params := []jen.Code{utils.CtxVar()}
@@ -688,12 +688,12 @@ func buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(pkg *mode
 		params = append(params, listParams...)
 	}
 
-	params = append(params, jen.VarPointer().Qual(pkg.ModelsV1Package(), sn).Values(jen.ID("ID").MapAssign().ID("nonexistentID")))
+	params = append(params, jen.VarPointer().Qual(proj.ModelsV1Package(), sn).Values(jen.ID("ID").MapAssign().ID("nonexistentID")))
 
 	return params
 }
 
-func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
 	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
@@ -705,19 +705,19 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg 
 		jen.Line(),
 	}
 
-	args := buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(pkg, typ)
-	cc := buildRequisiteCreationCode(pkg, typ)
+	args := buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(proj, typ)
+	cc := buildRequisiteCreationCode(proj, typ)
 
 	if len(cc) > stopIndex {
 		lines = append(lines, cc[:len(cc)-stopIndex]...)
 	}
 
 	lines = append(lines,
-		jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.IDf("%sClient", pkg.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(args...)),
+		jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(args...)),
 	)
 
 	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
-	dc := buildRequisiteCleanupCode(pkg, typ)
+	dc := buildRequisiteCleanupCode(proj, typ)
 	if len(dc) > ccsi {
 		dc = dc[ccsi:]
 	} else if len(dc) == ccsi {
@@ -729,7 +729,7 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(pkg 
 	return lines
 }
 
-func buildTestUpdatingShouldBeUpdateable(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestUpdatingShouldBeUpdateable(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
@@ -740,7 +740,7 @@ func buildTestUpdatingShouldBeUpdateable(pkg *models.Project, typ models.DataTyp
 		jen.Line(),
 	}
 
-	creationCode := buildRequisiteCreationCodeForUpdateFunction(pkg, typ)
+	creationCode := buildRequisiteCreationCodeForUpdateFunction(proj, typ)
 	stopIndex := 5 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
 
 	if len(creationCode) > stopIndex {
@@ -757,13 +757,13 @@ func buildTestUpdatingShouldBeUpdateable(pkg *models.Project, typ models.DataTyp
 		jen.Commentf("Change %s", scn),
 		jen.List(jen.IDf("created%s", sn).Dot("Update").Call(jen.ID("expected").Dot("ToInput").Call())),
 		jen.Err().Equals().ID("todoClient").Dotf("Update%s", sn).Call(
-			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(pkg, typ)...,
+			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)...,
 		),
 		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(pkg, typ)...,
+			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 		jen.Line(),
@@ -773,12 +773,12 @@ func buildTestUpdatingShouldBeUpdateable(pkg *models.Project, typ models.DataTyp
 		jen.Line(),
 	)
 
-	lines = append(lines, buildRequisiteCleanupCode(pkg, typ)...)
+	lines = append(lines, buildRequisiteCleanupCode(proj, typ)...)
 
 	return lines
 }
 
-func buildTestDeletingShouldBeAbleToBeDeleted(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestDeletingShouldBeAbleToBeDeleted(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(
@@ -789,8 +789,8 @@ func buildTestDeletingShouldBeAbleToBeDeleted(pkg *models.Project, typ models.Da
 		jen.Line(),
 	}
 
-	lines = append(lines, buildRequisiteCreationCode(pkg, typ)...)
-	lines = append(lines, buildRequisiteCleanupCode(pkg, typ)...)
+	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
+	lines = append(lines, buildRequisiteCleanupCode(proj, typ)...)
 
 	return lines
 }

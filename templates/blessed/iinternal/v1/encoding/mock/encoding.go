@@ -6,13 +6,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func encodingDotGo(pkg *models.Project) *jen.File {
+func encodingDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder").Equals().Parens(jen.Op("*").ID("EncoderDecoder")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder").Equals().Parens(jen.Op("*").ID("EncoderDecoder")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

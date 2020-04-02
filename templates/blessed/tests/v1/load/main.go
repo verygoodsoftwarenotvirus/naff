@@ -6,16 +6,16 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mainDotGo(pkg *models.Project) *jen.File {
+func mainDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Comment("ServiceAttacker implements hazana's Attacker interface"),
 		jen.Line(),
 		jen.Type().ID("ServiceAttacker").Struct(
-			jen.ID("todoClient").Op("*").Qual(pkg.HTTPClientV1Package(), "V1Client"),
+			jen.ID("todoClient").Op("*").Qual(proj.HTTPClientV1Package(), "V1Client"),
 		),
 		jen.Line(),
 	)

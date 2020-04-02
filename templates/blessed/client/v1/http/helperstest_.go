@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func helpersTestDotGo(pkg *models.Project) *jen.File {
+func helpersTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile(packageName)
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Type().ID("testingType").Struct(
@@ -249,7 +249,7 @@ func helpersTestDotGo(pkg *models.Project) *jen.File {
 									jen.ID("bs"),
 									jen.Err(),
 								).Assign().Qual("encoding/json", "Marshal").Call(
-									jen.VarPointer().Qual(pkg.ModelsV1Package(), "ErrorResponse").Values(),
+									jen.VarPointer().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
 								),
 								utils.RequireNoError(jen.Err(), nil),
 								jen.Return().ID("string").Call(

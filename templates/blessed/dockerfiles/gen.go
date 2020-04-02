@@ -12,7 +12,7 @@ import (
 
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
-	files := map[string]func(pkgRoot, binaryName string) []byte{
+	files := map[string]func(projRoot, binaryName string) []byte{
 		"dockerfiles/development.Dockerfile":                 developmentDotDockerfile,
 		"dockerfiles/frontend-tests.Dockerfile":              frontendTestDotDockerfile,
 		"dockerfiles/integration-coverage-server.Dockerfile": integrationCoverageServerDotDockerfile,
@@ -44,7 +44,7 @@ func RenderPackage(project *models.Project) error {
 
 	return nil
 }
-func developmentDotDockerfile(pkgRoot, binaryName string) []byte {
+func developmentDotDockerfile(projRoot, binaryName string) []byte {
 	return []byte(fmt.Sprintf(`# frontend-build-stage
 FROM node:latest AS frontend-build-stage
 
@@ -76,10 +76,10 @@ USER appuser
 
 ENV DOCKER=true
 
-ENTRYPOINT ["/%s"]`, pkgRoot, binaryName, pkgRoot, binaryName, binaryName, binaryName))
+ENTRYPOINT ["/%s"]`, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName))
 }
 
-func frontendTestDotDockerfile(pkgRoot, binaryName string) []byte {
+func frontendTestDotDockerfile(projRoot, binaryName string) []byte {
 	return []byte(fmt.Sprintf(`FROM golang:stretch
 
 WORKDIR /go/src/%s
@@ -89,10 +89,10 @@ RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 ADD . .
 
 ENTRYPOINT [ "go", "test", "-v", "-failfast", "-parallel=1", "%s/tests/v1/frontend" ]
-`, pkgRoot, pkgRoot))
+`, projRoot, projRoot))
 }
 
-func integrationCoverageServerDotDockerfile(pkgRoot, binaryName string) []byte {
+func integrationCoverageServerDotDockerfile(projRoot, binaryName string) []byte {
 	return []byte(fmt.Sprintf(`# build stage
 FROM golang:stretch AS build-stage
 
@@ -102,7 +102,7 @@ RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
 ADD . .
 
-RUN go test -o /%s -c -coverpkg \
+RUN go test -o /%s -c -coverproj \
 	%s/internal/..., \
 	%s/database/v1/..., \
 	%s/services/v1/..., \
@@ -128,10 +128,10 @@ EXPOSE 80
 
 ENTRYPOINT ["/%s", "-test.coverprofile=/home/integration-coverage.out"]
 
-`, pkgRoot, binaryName, pkgRoot, pkgRoot, pkgRoot, pkgRoot, pkgRoot, binaryName, binaryName, binaryName))
+`, projRoot, binaryName, projRoot, projRoot, projRoot, projRoot, projRoot, binaryName, binaryName, binaryName))
 }
 
-func integrationServerDotDockerfile(pkgRoot, binaryName string) []byte {
+func integrationServerDotDockerfile(projRoot, binaryName string) []byte {
 	return []byte(fmt.Sprintf(`# build stage
 FROM golang:stretch AS build-stage
 
@@ -164,10 +164,10 @@ COPY --from=build-stage /%s /%s
 COPY --from=frontend-build-stage /app/public /frontend
 
 ENTRYPOINT ["/%s"]
-`, pkgRoot, binaryName, pkgRoot, binaryName, binaryName, binaryName))
+`, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName))
 }
 
-func integrationTestsDotDockerfile(pkgRoot, binaryName string) []byte {
+func integrationTestsDotDockerfile(projRoot, binaryName string) []byte {
 	return []byte(fmt.Sprintf(`FROM golang:stretch
 
 RUN apt-get update -y && apt-get install -y make git gcc musl-dev
@@ -180,10 +180,10 @@ ENTRYPOINT [ "go", "test", "-v", "-failfast", "%s/tests/v1/integration" ]
 
 # for a more specific test:
 # ENTRYPOINT [ "go", "test", "-v", "%s/tests/v1/integration", "-run", "TestExport/Exporting/should_be_exportable" ]
-`, pkgRoot, pkgRoot, pkgRoot))
+`, projRoot, projRoot, projRoot))
 }
 
-func loadTestsDotDockerfile(pkgRoot, binaryName string) []byte {
+func loadTestsDotDockerfile(projRoot, binaryName string) []byte {
 	return []byte(fmt.Sprintf(`# build stage
 FROM golang:stretch AS build-stage
 
@@ -203,10 +203,10 @@ COPY --from=build-stage /loadtester /loadtester
 ENV DOCKER=true
 
 ENTRYPOINT ["/loadtester"]
-`, pkgRoot, pkgRoot))
+`, projRoot, projRoot))
 }
 
-func serverDotDockerfile(pkgRoot, binaryName string) []byte {
+func serverDotDockerfile(projRoot, binaryName string) []byte {
 	return []byte(fmt.Sprintf(`# build stage
 FROM golang:stretch AS build-stage
 
@@ -241,5 +241,5 @@ COPY --from=frontend-build-stage /app/public /frontend
 ENV DOCKER=true
 
 ENTRYPOINT ["/%s"]
-`, pkgRoot, binaryName, pkgRoot, binaryName, binaryName, binaryName))
+`, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName))
 }

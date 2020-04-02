@@ -8,27 +8,27 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterableServiceTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func iterableServiceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(utils.FakeSeedFunc())
 
-	ret.Add(buildbuildTestServiceFuncDecl(pkg, typ)...)
-	ret.Add(buildTestProvideServiceFuncDecl(pkg, typ)...)
+	ret.Add(buildbuildTestServiceFuncDecl(proj, typ)...)
+	ret.Add(buildTestProvideServiceFuncDecl(proj, typ)...)
 
 	return ret
 }
 
-func buildbuildTestServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	uvn := typ.Name.UnexportedVarName()
 
 	serviceValues := []jen.Code{
 		jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().VarPointer().Qual(pkg.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-		jen.ID(fmt.Sprintf("%sDatabase", uvn)).MapAssign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+		jen.ID(fmt.Sprintf("%sDatabase", uvn)).MapAssign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 	}
 
 	if typ.BelongsToUser {
@@ -44,7 +44,7 @@ func buildbuildTestServiceFuncDecl(pkg *models.Project, typ models.DataType) []j
 
 	serviceValues = append(serviceValues,
 		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).MapAssign().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-		jen.ID("encoderDecoder").MapAssign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+		jen.ID("encoderDecoder").MapAssign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 		jen.ID("reporter").MapAssign().ID("nil"),
 	)
 
@@ -65,7 +65,7 @@ func relevantIDFetcherParam(typ models.DataType) jen.Code {
 	return nil
 }
 
-func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	cn := typ.Name.SingularCommonName()
@@ -77,18 +77,18 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("uc").Assign().VarPointer().Qual(pkg.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
-				jen.Var().ID("ucp").Qual(pkg.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
-					jen.ID("counterName").Qual(pkg.InternalMetricsV1Package(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
+					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string"),
-				).Params(jen.Qual(pkg.InternalMetricsV1Package(), "UnitCounter"),
+				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.ID("error")).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
 				jen.Line(),
-				jen.ID("idm").Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("idm").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
@@ -97,7 +97,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					relevantIDFetcherParam(typ),
-					jen.VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 					jen.Nil(),
 				),
@@ -109,18 +109,18 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing unit counter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("uc").Assign().VarPointer().Qual(pkg.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
-				jen.Var().ID("ucp").Qual(pkg.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
-					jen.ID("counterName").Qual(pkg.InternalMetricsV1Package(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
+					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string"),
-				).Params(jen.Qual(pkg.InternalMetricsV1Package(), "UnitCounter"),
+				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.ID("error")).Block(
 					jen.Return().List(jen.ID("uc"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				),
 				jen.Line(),
-				jen.ID("idm").Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("idm").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
@@ -129,7 +129,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					relevantIDFetcherParam(typ),
-					jen.VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 					jen.Nil(),
 				),
@@ -141,18 +141,18 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 			jen.ID("T").Dot("Run").Call(jen.Lit(fmt.Sprintf("with error fetching %s count", cn)), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("uc").Assign().VarPointer().Qual(pkg.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
-				jen.Var().ID("ucp").Qual(pkg.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
-					jen.ID("counterName").Qual(pkg.InternalMetricsV1Package(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
+					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string"),
-				).Params(jen.Qual(pkg.InternalMetricsV1Package(), "UnitCounter"),
+				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.ID("error")).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
 				jen.Line(),
-				jen.ID("idm").Assign().VarPointer().Qual(pkg.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID("idm").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
@@ -161,7 +161,7 @@ func buildTestProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) [
 					jen.ID("idm"),
 					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					relevantIDFetcherParam(typ),
-					jen.VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 					jen.Nil(),
 				),

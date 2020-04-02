@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientTestDotGo(pkg *models.Project) *jen.File {
+func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Func().ID("TestOAuth2Client_GetID").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(

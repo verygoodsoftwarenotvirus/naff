@@ -34,10 +34,10 @@ func buildCORSHandlerDef() []jen.Code {
 	}
 }
 
-func routesDotGo(pkg *models.Project) *jen.File {
+func routesDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -47,24 +47,24 @@ func routesDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(buildSetupRouterFuncDef(pkg)...)
+	ret.Add(buildSetupRouterFuncDef(proj)...)
 
 	return ret
 }
 
-func buildIterableAPIRoutes(pkg *models.Project) jen.Code {
+func buildIterableAPIRoutes(proj *models.Project) jen.Code {
 	g := &jen.Group{}
 
 	generatedTypes := map[string]bool{}
 
-	for _, typ := range pkg.DataTypes {
+	for _, typ := range proj.DataTypes {
 		n := typ.Name
 
 		if _, ok := generatedTypes[n.Singular()]; !ok {
 			g.Add(
 				jen.Comment(n.Plural()),
 				jen.Line(),
-				buildSubRouterDecl(pkg, generatedTypes, "v1", typ),
+				buildSubRouterDecl(proj, generatedTypes, "v1", typ),
 				jen.Line(),
 			)
 		}
@@ -74,9 +74,9 @@ func buildIterableAPIRoutes(pkg *models.Project) jen.Code {
 	return g
 }
 
-func buildSubRouterDecl(pkg *models.Project, doneMap map[string]bool, routerPrefix string, typ models.DataType) jen.Code {
+func buildSubRouterDecl(proj *models.Project, doneMap map[string]bool, routerPrefix string, typ models.DataType) jen.Code {
 	x := jen.IDf("%sRouter", routerPrefix).Dot("Route").Call(jen.Litf("/%s", typ.Name.PluralRouteName()), jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual("github.com/go-chi/chi", "Router")).Block(
-		buildIterableAPIRoutesBlock(pkg, doneMap, "", typ)...,
+		buildIterableAPIRoutesBlock(proj, doneMap, "", typ)...,
 	))
 
 	doneMap[typ.Name.Singular()] = true
@@ -84,7 +84,7 @@ func buildSubRouterDecl(pkg *models.Project, doneMap map[string]bool, routerPref
 	return x
 }
 
-func buildIterableAPIRoutesBlock(pkg *models.Project, doneMap map[string]bool, routerPrefix string, typ models.DataType) []jen.Code {
+func buildIterableAPIRoutesBlock(proj *models.Project, doneMap map[string]bool, routerPrefix string, typ models.DataType) []jen.Code {
 	n := typ.Name
 	puvn := n.PluralUnexportedVarName()
 
@@ -97,12 +97,12 @@ func buildIterableAPIRoutesBlock(pkg *models.Project, doneMap map[string]bool, r
 			jen.Line(),
 			jen.Comment(n.Plural()),
 			jen.Line(),
-			buildSubRouterDecl(pkg, doneMap, routerPrefix, typ),
+			buildSubRouterDecl(proj, doneMap, routerPrefix, typ),
 			jen.Line(),
 		)
 	} else {
 		lines = append(lines,
-			jen.IDf("single%sRoute", typ.Name.Singular()).Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(pkg.ServiceV1Package(n.PackageName()), "URIParamKey")),
+			jen.IDf("single%sRoute", typ.Name.Singular()).Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
 			jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dotf("%sService", puvn).Dot("CreateHandler").Call()),
 			jen.IDf("%sRouter", puvn).Dot("Get").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler").Call()),
 			jen.IDf("%sRouter", puvn).Dot("Head").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler").Call()),
@@ -112,10 +112,10 @@ func buildIterableAPIRoutesBlock(pkg *models.Project, doneMap map[string]bool, r
 		)
 	}
 
-	deps := pkg.FindDependentsOfType(typ)
+	deps := proj.FindDependentsOfType(typ)
 	for _, dep := range deps {
 		if _, ok := doneMap[n.Singular()]; !ok {
-			furtherLines := buildIterableAPIRoutesBlock(pkg, doneMap, typ.Name.PluralUnexportedVarName(), dep)
+			furtherLines := buildIterableAPIRoutesBlock(proj, doneMap, typ.Name.PluralUnexportedVarName(), dep)
 			lines = append(lines, jen.Line())
 			lines = append(lines, furtherLines...)
 		}
@@ -126,7 +126,7 @@ func buildIterableAPIRoutesBlock(pkg *models.Project, doneMap map[string]bool, r
 	return lines
 }
 
-func buildSetupRouterFuncDef(pkg *models.Project) []jen.Code {
+func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		jen.ID("router").Assign().Qual("github.com/go-chi/chi", "NewRouter").Call(),
 		jen.Line(),
@@ -182,7 +182,7 @@ func buildSetupRouterFuncDef(pkg *models.Project) []jen.Code {
 			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("UserLoginInputMiddleware")).Dot("Post").Call(jen.Lit("/login"), jen.ID("s").Dot("authService").Dot("LoginHandler").Call()),
 			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware")).Dot("Post").Call(jen.Lit("/logout"), jen.ID("s").Dot("authService").Dot("LogoutHandler").Call()),
 			jen.Line(),
-			jen.ID("userIDPattern").Assign().Qual("fmt", "Sprintf").Call(jen.ID("oauth2IDPattern"), jen.Qual(pkg.ServiceV1UsersPackage(), "URIParamKey")),
+			jen.ID("userIDPattern").Assign().Qual("fmt", "Sprintf").Call(jen.ID("oauth2IDPattern"), jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
 			jen.Line(),
 			jen.ID("userRouter").Dot("Get").Call(jen.Lit("/"), jen.ID("s").Dot("usersService").Dot("ListHandler").Call()),
 			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("usersService").Dot("UserInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dot("usersService").Dot("CreateHandler").Call()),
@@ -222,31 +222,31 @@ func buildSetupRouterFuncDef(pkg *models.Project) []jen.Code {
 		)),
 		jen.Line(),
 		jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.ID("true"))).Dot("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual("github.com/go-chi/chi", "Router")).Block(
-			buildIterableAPIRoutes(pkg),
+			buildIterableAPIRoutes(proj),
 			jen.Line(),
-			buildWebhookAPIRoutes(pkg),
+			buildWebhookAPIRoutes(proj),
 			jen.Line(),
-			buildOAuth2ClientsAPIRoutes(pkg),
+			buildOAuth2ClientsAPIRoutes(proj),
 		)),
 		jen.Line(),
 		jen.ID("s").Dot("router").Equals().ID("router"),
 	)
 
 	return []jen.Code{
-		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(pkg.InternalConfigV1Package(), "FrontendSettings"),
-			jen.ID("metricsHandler").Qual(pkg.InternalMetricsV1Package(), "Handler")).Block(block...),
+		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(proj.InternalConfigV1Package(), "FrontendSettings"),
+			jen.ID("metricsHandler").Qual(proj.InternalMetricsV1Package(), "Handler")).Block(block...),
 		jen.Line(),
 	}
 }
 
-func buildWebhookAPIRoutes(pkg *models.Project) jen.Code {
+func buildWebhookAPIRoutes(proj *models.Project) jen.Code {
 	g := &jen.Group{}
 
 	g.Add(
 		jen.Comment("Webhooks"),
 		jen.Line(),
 		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/webhooks"), jen.Func().Params(jen.ID("webhookRouter").Qual("github.com/go-chi/chi", "Router")).Block(
-			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(pkg.ServiceV1WebhooksPackage(), "URIParamKey")),
+			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
 			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("CreationInputMiddleware")).Dot("Post").Call(jen.Lit("/"), jen.ID("s").Dot("webhooksService").Dot("CreateHandler").Call()),
 			jen.ID("webhookRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("ReadHandler").Call()),
 			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("UpdateHandler").Call()),
@@ -258,14 +258,14 @@ func buildWebhookAPIRoutes(pkg *models.Project) jen.Code {
 	return g
 }
 
-func buildOAuth2ClientsAPIRoutes(pkg *models.Project) jen.Code {
+func buildOAuth2ClientsAPIRoutes(proj *models.Project) jen.Code {
 	g := &jen.Group{}
 
 	g.Add(
 		jen.Comment("OAuth2 Clients"),
 		jen.Line(),
 		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/oauth2/clients"), jen.Func().Params(jen.ID("clientRouter").Qual("github.com/go-chi/chi", "Router")).Block(
-			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(pkg.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
+			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
 			jen.Comment("CreateHandler is not bound to an OAuth2 authentication token"),
 			jen.Comment("UpdateHandler not supported for OAuth2 clients."),
 			jen.ID("clientRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("oauth2ClientsService").Dot("ReadHandler").Call()),

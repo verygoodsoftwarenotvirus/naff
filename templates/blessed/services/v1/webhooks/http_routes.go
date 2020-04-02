@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func httpRoutesDotGo(pkg *models.Project) *jen.File {
+func httpRoutesDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("webhooks")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Const().Defs(
@@ -28,18 +28,18 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("figure out how specific we need to be"),
-				jen.ID(utils.FilterVarName).Assign().Qual(pkg.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID("req")),
+				jen.ID(utils.FilterVarName).Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("figure out who this is all for"),
 				jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
 				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
-				jen.Qual(pkg.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("find the webhooks"),
 				jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("s").Dot("webhookDatabase").Dot("GetWebhooks").Call(utils.CtxVar(), jen.ID("userID"), jen.ID(utils.FilterVarName)),
 				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("webhooks").Equals().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Valuesln(
-						jen.ID("Webhooks").MapAssign().Index().Qual(pkg.ModelsV1Package(), "Webhook").Values()),
+					jen.ID("webhooks").Equals().VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
+						jen.ID("Webhooks").MapAssign().Index().Qual(proj.ModelsV1Package(), "Webhook").Values()),
 				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error encountered fetching webhooks")),
 					utils.WriteXHeader("res", "StatusInternalServerError"),
@@ -58,7 +58,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("validateWebhook does some validation on a WebhookCreationInput and returns an error if anything runs foul"),
 		jen.Line(),
-		jen.Func().ID("validateWebhook").Params(jen.ID("input").Op("*").Qual(pkg.ModelsV1Package(),
+		jen.Func().ID("validateWebhook").Params(jen.ID("input").Op("*").Qual(proj.ModelsV1Package(),
 			"WebhookCreationInput",
 		)).Params(jen.ID("error")).Block(
 			jen.List(jen.ID("_"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("input").Dot("URL")),
@@ -102,10 +102,10 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("figure out who this is all for"),
 				jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
 				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user"), jen.ID("userID")),
-				jen.Qual(pkg.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("try to pluck the parsed input from the request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(pkg.ModelsV1Package(), "WebhookCreationInput")),
+				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(proj.ModelsV1Package(), "WebhookCreationInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
 					utils.WriteXHeader("res", "StatusBadRequest"),
@@ -129,10 +129,10 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("notify the relevant parties"),
-				jen.Qual(pkg.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("wh").Dot("ID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("wh").Dot("ID")),
 				jen.ID("s").Dot("webhookCounter").Dot("Increment").Call(utils.CtxVar()),
 				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-					jen.ID("EventType").MapAssign().ID("string").Call(jen.Qual(pkg.ModelsV1Package(), "Create")),
+					jen.ID("EventType").MapAssign().ID("string").Call(jen.Qual(proj.ModelsV1Package(), "Create")),
 					jen.ID("Data").MapAssign().ID("wh"),
 					jen.ID("Topics").MapAssign().Index().ID("string").Values(jen.ID("topicName"))),
 				),
@@ -163,8 +163,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("webhookID").Assign().ID("s").Dot("webhookIDFetcher").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("document it for posterity"),
-				jen.Qual(pkg.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.Qual(pkg.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
 				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
 					jen.Lit("user").MapAssign().ID("userID"),
 					jen.Lit("webhook").MapAssign().ID("webhookID"),
@@ -204,15 +204,15 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("webhookID").Assign().ID("s").Dot("webhookIDFetcher").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("document it for posterity"),
-				jen.Qual(pkg.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.Qual(pkg.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
 				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
 					jen.Lit("user_id").MapAssign().ID("userID"),
 					jen.Lit("webhook_id").MapAssign().ID("webhookID")),
 				),
 				jen.Line(),
 				jen.Comment("fetch parsed creation input from request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(pkg.ModelsV1Package(), "WebhookUpdateInput")),
+				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(proj.ModelsV1Package(), "WebhookUpdateInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
 					utils.WriteXHeader("res", "StatusBadRequest"),
@@ -243,7 +243,7 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("notify the relevant parties"),
 				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-					jen.ID("EventType").MapAssign().ID("string").Call(jen.Qual(pkg.ModelsV1Package(), "Update")),
+					jen.ID("EventType").MapAssign().ID("string").Call(jen.Qual(proj.ModelsV1Package(), "Update")),
 					jen.ID("Data").MapAssign().ID("wh"),
 					jen.ID("Topics").MapAssign().Index().ID("string").Values(jen.ID("topicName"))),
 				),
@@ -270,8 +270,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.ID("webhookID").Assign().ID("s").Dot("webhookIDFetcher").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Comment("document it for posterity"),
-				jen.Qual(pkg.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.Qual(pkg.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
 				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
 					jen.Lit("webhook_id").MapAssign().ID("webhookID"),
 					jen.Lit("user_id").MapAssign().ID("userID"),
@@ -293,8 +293,8 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 				jen.Comment("let the interested parties know"),
 				jen.ID("s").Dot("webhookCounter").Dot("Decrement").Call(utils.CtxVar()),
 				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-					jen.ID("EventType").MapAssign().ID("string").Call(jen.Qual(pkg.ModelsV1Package(), "Archive")),
-					jen.ID("Data").MapAssign().Qual(pkg.ModelsV1Package(), "Webhook").Values(jen.ID("ID").MapAssign().ID("webhookID")),
+					jen.ID("EventType").MapAssign().ID("string").Call(jen.Qual(proj.ModelsV1Package(), "Archive")),
+					jen.ID("Data").MapAssign().Qual(proj.ModelsV1Package(), "Webhook").Values(jen.ID("ID").MapAssign().ID("webhookID")),
 					jen.ID("Topics").MapAssign().Index().ID("string").Values(jen.ID("topicName"))),
 				),
 				jen.Line(),

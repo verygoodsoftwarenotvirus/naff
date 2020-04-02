@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func middlewareTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func middlewareTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().ID("_").Qual("net/http", "Handler").Equals().Parens(jen.Op("*").ID("mockHTTPHandler")).Call(jen.Nil()),
@@ -35,7 +35,7 @@ func middlewareTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -61,7 +61,7 @@ func middlewareTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -94,7 +94,7 @@ func middlewareTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
@@ -117,7 +117,7 @@ func middlewareTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(pkg.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),

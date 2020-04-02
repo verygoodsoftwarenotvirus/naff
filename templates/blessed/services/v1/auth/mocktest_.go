@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockTestDotGo(pkg *models.Project) *jen.File {
+func mockTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().ID("_").ID("OAuth2ClientValidator").Equals().Parens(jen.Op("*").ID("mockOAuth2ClientValidator")).Call(jen.Nil()),
@@ -27,11 +27,11 @@ func mockTestDotGo(pkg *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("m").Op("*").ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(
 			utils.CtxParam(),
 			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
-		).Params(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client"),
+		).Params(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.ID("error")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("req")),
 			jen.Return().List(
-				jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(pkg.ModelsV1Package(), "OAuth2Client")),
+				jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client")),
 				jen.ID("args").Dot("Error").Call(jen.Lit(1)),
 			),
 		),

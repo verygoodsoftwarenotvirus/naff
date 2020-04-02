@@ -8,10 +8,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterableServiceDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	sn := typ.Name.Singular()
 	cn := typ.Name.SingularCommonName()
@@ -22,11 +22,11 @@ func iterableServiceDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.Commentf("CreateMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts", cn),
-			jen.ID("CreateMiddlewareCtxKey").Qual(pkg.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
+			jen.ID("CreateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
 			jen.Commentf("UpdateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts", cn),
-			jen.ID("UpdateMiddlewareCtxKey").Qual(pkg.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
+			jen.ID("UpdateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
 			jen.Line(),
-			jen.ID("counterName").Qual(pkg.InternalMetricsV1Package(), "CounterName").Equals().Lit(puvn),
+			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit(puvn),
 			jen.ID("counterDescription").Equals().Lit(fmt.Sprintf("the number of %s managed by the %s service", puvn, puvn)),
 			jen.ID("topicName").ID("string").Equals().Lit(prn),
 			jen.ID("serviceName").ID("string").Equals().Lit(fmt.Sprintf("%s_service", prn)),
@@ -36,18 +36,18 @@ func iterableServiceDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(buildServiceTypeDecl(pkg, typ)...)
-	ret.Add(buildProvideServiceFuncDecl(pkg, typ)...)
+	ret.Add(buildServiceTypeDecl(proj, typ)...)
+	ret.Add(buildProvideServiceFuncDecl(proj, typ)...)
 
 	return ret
 }
 
-func buildServiceTypeDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	cn := typ.Name.SingularCommonName()
 	pcn := typ.Name.PluralCommonName()
@@ -55,8 +55,8 @@ func buildServiceTypeDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	serviceLines := []jen.Code{
 		jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(pkg.InternalMetricsV1Package(), "UnitCounter"),
-		jen.ID(fmt.Sprintf("%sDatabase", uvn)).Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+		jen.ID(fmt.Sprintf("%sDatabase", uvn)).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
 	}
 
 	if typ.BelongsToUser {
@@ -72,7 +72,7 @@ func buildServiceTypeDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 
 	serviceLines = append(serviceLines,
 		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
-		jen.ID("encoderDecoder").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder"),
+		jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 
@@ -109,7 +109,7 @@ func buildServiceTypeDecl(pkg *models.Project, typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen.Code {
+func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	cn := typ.Name.SingularCommonName()
@@ -118,7 +118,7 @@ func buildProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen
 	params := []jen.Code{
 		utils.CtxParam(),
 		jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-		jen.ID("db").Qual(pkg.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
+		jen.ID("db").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
 	}
 	serviceValues := []jen.Code{
 		jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
@@ -138,8 +138,8 @@ func buildProvideServiceFuncDecl(pkg *models.Project, typ models.DataType) []jen
 
 	params = append(params,
 		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
-		jen.ID("encoder").Qual(pkg.InternalEncodingV1Package(), "EncoderDecoder"),
-		jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual(pkg.InternalMetricsV1Package(), "UnitCounterProvider"),
+		jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
+		jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 	serviceValues = append(serviceValues,

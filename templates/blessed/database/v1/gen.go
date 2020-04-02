@@ -7,15 +7,15 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkg *models.Project) error {
+func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"database/v1/database.go":      databaseDotGo(pkg),
-		"database/v1/database_mock.go": databaseMockDotGo(pkg),
+		"database/v1/database.go":      databaseDotGo(proj),
+		"database/v1/database_mock.go": databaseMockDotGo(proj),
 		"database/v1/doc.go":           docDotGo(),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkg, path, file); err != nil {
+		if err := utils.RenderGoFile(proj, path, file); err != nil {
 			return err
 		}
 	}

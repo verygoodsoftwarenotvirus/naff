@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func webhooksTestDotGo(pkg *models.Project) *jen.File {
+func webhooksTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Func().ID("TestClient_GetWebhook").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
@@ -19,7 +19,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				utils.CreateCtx(),
 				jen.ID("exampleID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Values(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -47,7 +47,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				utils.CreateCtx(),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
-				utils.CreateDefaultQueryFilter(pkg),
+				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -72,7 +72,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				utils.CreateCtx(),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
-				utils.CreateNilQueryFilter(pkg),
+				utils.CreateNilQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -126,7 +126,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Values(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -151,8 +151,8 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Values(),
-				utils.CreateDefaultQueryFilter(pkg),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Values(),
+				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -176,8 +176,8 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookList").Values(),
-				utils.CreateNilQueryFilter(pkg),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Values(),
+				utils.CreateNilQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -207,8 +207,8 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "WebhookCreationInput").Values(),
-				jen.ID("expected").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Values(),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Values(),
+				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Values(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -233,7 +233,7 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("exampleInput").Assign().VarPointer().Qual(pkg.ModelsV1Package(), "Webhook").Values(),
+				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Values(),
 				jen.Var().ID("expected").ID("error"),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),

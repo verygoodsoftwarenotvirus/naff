@@ -10,10 +10,10 @@ const (
 	loggingImport = "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 )
 
-func bcryptDotGo(pkg *models.Project) *jen.File {
+func bcryptDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Const().Defs(

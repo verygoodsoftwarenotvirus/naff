@@ -135,7 +135,7 @@ type migration struct {
 	script      jen.Code
 }
 
-func makePostgresMigrations(pkg *models.Project) []migration {
+func makePostgresMigrations(proj *models.Project) []migration {
 	migrations := []migration{
 		{
 			description: "create users table",
@@ -192,7 +192,7 @@ func makePostgresMigrations(pkg *models.Project) []migration {
 		},
 	}
 
-	for _, typ := range pkg.DataTypes {
+	for _, typ := range proj.DataTypes {
 		pcn := typ.Name.PluralCommonName()
 
 		scriptParts := []string{
@@ -250,7 +250,7 @@ func makePostgresMigrations(pkg *models.Project) []migration {
 	return migrations
 }
 
-func makeMariaDBMigrations(pkg *models.Project) []migration {
+func makeMariaDBMigrations(proj *models.Project) []migration {
 	migrations := []migration{
 		{
 			description: "create users table",
@@ -349,7 +349,7 @@ func makeMariaDBMigrations(pkg *models.Project) []migration {
 		},
 	}
 
-	for _, typ := range pkg.DataTypes {
+	for _, typ := range proj.DataTypes {
 		pcn := typ.Name.PluralCommonName()
 		tableName := typ.Name.PluralRouteName()
 
@@ -433,7 +433,7 @@ func makeMariaDBMigrations(pkg *models.Project) []migration {
 	return migrations
 }
 
-func makeSqliteMigrations(pkg *models.Project) []migration {
+func makeSqliteMigrations(proj *models.Project) []migration {
 	migrations := []migration{
 		{
 			description: "create users table",
@@ -493,7 +493,7 @@ func makeSqliteMigrations(pkg *models.Project) []migration {
 	idType := "INTEGER"
 	idAddendum := " AUTOINCREMENT"
 
-	for _, typ := range pkg.DataTypes {
+	for _, typ := range proj.DataTypes {
 		pcn := typ.Name.PluralCommonName()
 
 		scriptParts := []string{
@@ -548,7 +548,7 @@ func makeSqliteMigrations(pkg *models.Project) []migration {
 	return migrations
 }
 
-func makeMigrations(pkg *models.Project, dbVendor wordsmith.SuperPalabra) []jen.Code {
+func makeMigrations(proj *models.Project, dbVendor wordsmith.SuperPalabra) []jen.Code {
 	var (
 		out        []jen.Code
 		migrations []migration
@@ -558,11 +558,11 @@ func makeMigrations(pkg *models.Project, dbVendor wordsmith.SuperPalabra) []jen.
 
 	switch dbrn {
 	case "postgres":
-		migrations = makePostgresMigrations(pkg)
+		migrations = makePostgresMigrations(proj)
 	case "sqlite":
-		migrations = makeSqliteMigrations(pkg)
+		migrations = makeSqliteMigrations(proj)
 	case "mariadb", "maria_db":
-		migrations = makeMariaDBMigrations(pkg)
+		migrations = makeMariaDBMigrations(proj)
 	}
 
 	for i, script := range migrations {
@@ -576,14 +576,14 @@ func makeMigrations(pkg *models.Project, dbVendor wordsmith.SuperPalabra) []jen.
 	return out
 }
 
-func migrationsDotGo(pkg *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("migrations").Equals().Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(makeMigrations(pkg, dbvendor)...),
+			jen.ID("migrations").Equals().Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(makeMigrations(proj, dbvendor)...),
 		),
 	)
 

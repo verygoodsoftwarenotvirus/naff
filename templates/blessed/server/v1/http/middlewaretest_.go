@@ -6,10 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func middlewareTestDotGo(pkg *models.Project) *jen.File {
+func middlewareTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().ID("_").Qual("net/http", "Handler").Equals().Parens(jen.Op("*").ID("mockHTTPHandler")).Call(jen.Nil()),
