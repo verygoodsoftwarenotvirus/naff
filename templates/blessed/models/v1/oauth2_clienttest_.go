@@ -81,7 +81,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("Scopes").MapAssign().Index().ID("string").Values(jen.Lit("things"), jen.Lit("and"), jen.Lit("stuff")),
 				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("oac").Dot("HasScope").Call(jen.ID("oac").Dot("Scopes").Index(jen.Lit(0)))),
+				utils.AssertTrue(jen.ID("oac").Dot("HasScope").Call(jen.ID("oac").Dot("Scopes").Index(jen.Lit(0))), nil),
 				jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("oac").Dot("HasScope").Call(jen.Lit("blah"))),
 				jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("oac").Dot("HasScope").Call(jen.Lit(""))),
 			)),

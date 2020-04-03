@@ -12,10 +12,6 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		utils.FakeSeedFunc(),
-	)
-
-	ret.Add(
 		jen.Func().ID("buildTestClient").Params().Params(jen.Op("*").ID("Client"), jen.Op("*").Qual(proj.DatabaseV1Package(), "MockDatabase")).Block(
 			jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 			jen.ID("c").Assign().VarPointer().ID("Client").Valuesln(
@@ -38,7 +34,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("actual")),
+				utils.AssertNoError(jen.ID("actual"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("bubbles up errors"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -88,7 +84,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error migrating querier"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(

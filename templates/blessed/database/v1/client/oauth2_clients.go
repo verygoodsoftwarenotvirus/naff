@@ -70,27 +70,6 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetOAuth2ClientCount gets the count of OAuth2 clients in the database that match the current filter"),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2ClientCount").Params(
-			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
-			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
-		).Params(jen.ID("uint64"), jen.ID("error")).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetOAuth2ClientCount")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID(utils.FilterVarName)),
-			jen.Line(),
-			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetOAuth2ClientCount called")),
-			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetOAuth2ClientCount").Call(utils.CtxVar(), jen.ID("userID"), jen.ID(utils.FilterVarName)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
 		jen.Comment("GetAllOAuth2ClientCount gets the count of OAuth2 clients that match the current filter"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllOAuth2ClientCount").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Block(

@@ -59,6 +59,25 @@ func (typ DataType) BuildGetSomethingParams(proj *Project) []jen.Code {
 
 func (typ DataType) BuildGetSomethingArgs(proj *Project) []jen.Code {
 	params := []jen.Code{ctxVar()}
+	uvn := typ.Name.UnexportedVarName()
+
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
+		params = append(params, jen.IDf("%s", pt.Name.UnexportedVarName()))
+	}
+	params = append(params, jen.IDf("%sID", uvn))
+
+	if typ.BelongsToStruct != nil {
+		params = append(params, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	}
+	if typ.BelongsToUser {
+		params = append(params, jen.ID("userID"))
+	}
+
+	return params
+}
+
+func (typ DataType) BuildGetSomethingArgsWithExampleVariables(proj *Project) []jen.Code {
+	params := []jen.Code{ctxVar()}
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		params = append(params, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))

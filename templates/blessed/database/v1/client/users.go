@@ -55,16 +55,16 @@ func usersDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetUserCount fetches a count of users from the database that meet a particular filter"),
+		jen.Comment("GetAllUserCount fetches a count of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetUserCount").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllUserCount").Params(utils.CtxParam()).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetUserCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID(utils.FilterVarName)),
-			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("GetUserCount called")),
+			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("GetAllUserCount called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetUserCount").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
+			jen.Return().ID("c").Dot("querier").Dot("GetAllUserCount").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
 		),
 		jen.Line(),
 	)

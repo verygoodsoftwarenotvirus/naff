@@ -311,6 +311,9 @@ func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models
 func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
+	args := typ.BuildGetSomethingArgsWithExampleVariables(proj)
+	args = args[:len(args)-1]
+
 	happyPathSubtestLines := append(
 		buildVarDeclarationsOfDependentStructs(proj, typ),
 		jen.Line(),
@@ -342,9 +345,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 		),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
-			typ.BuildGetSomethingArgs(proj)[:len(typ.BuildGetSomethingArgs(proj))-1]..., // lazy AF
-		),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(args...),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
@@ -355,9 +356,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 		buildVarDeclarationsOfDependentStructs(proj, typ),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
-		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
-			typ.BuildGetSomethingArgs(proj)[:len(typ.BuildGetSomethingArgs(proj))-1]..., // lazy AF
-		),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(args...),
 		jen.Line(),
 		utils.AssertNil(jen.ID("actual"), nil),
 		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
@@ -395,7 +394,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
-			typ.BuildGetSomethingArgs(proj)[:len(typ.BuildGetSomethingArgs(proj))-1]..., // lazy AF
+			typ.BuildGetSomethingArgsWithExampleVariables(proj)[:len(typ.BuildGetSomethingArgsWithExampleVariables(proj))-1]..., // lazy AF
 		),
 		jen.Line(),
 		utils.AssertNil(jen.ID("actual"), nil),

@@ -23,13 +23,9 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(buildSomethingExists(proj, typ)...)
 	ret.Add(buildGetSomething(proj, typ)...)
-	ret.Add(buildGetSomethingCount(proj, typ)...)
 	ret.Add(buildGetAllSomethingCount(proj, typ)...)
 	ret.Add(buildGetListOfSomething(proj, typ)...)
 
-	if typ.BelongsToUser {
-		ret.Add(buildGetAllSomethingForUser(proj, typ)...)
-	}
 	if typ.BelongsToStruct != nil {
 		ret.Add(buildGetAllSomethingForSomethingElse(proj, typ)...)
 	}
@@ -50,7 +46,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	args := typ.BuildGetSomethingArgs(proj)
 
 	block := []jen.Code{
-		utils.StartSpan(proj, false, funcName),
+		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
 		jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 		jen.Qual(proj.InternalTracingV1Package(), "AttachItemIDToSpan").Call(jen.ID("span"), jen.ID("itemID")),
@@ -108,47 +104,6 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Commentf("Get%s fetches %s from the database", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%s", sn).Params(params...).Params(jen.Op("*").Qual(proj.ModelsV1Package(), sn), jen.ID("error")).Block(block...),
-		jen.Line(),
-	}
-}
-
-func buildGetSomethingCount(proj *models.Project, typ models.DataType) []jen.Code {
-	n := typ.Name
-	sn := n.Singular()
-	pcn := n.PluralCommonName()
-	params := typ.BuildGetListOfSomethingParams(proj, false)
-	args := typ.BuildGetListOfSomethingArgs(proj)
-
-	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Litf("Get%sCount", sn)),
-		jen.Defer().ID("span").Dot("End").Call(),
-		jen.Line(),
-	}
-
-	if typ.BelongsToUser {
-		block = append(block, jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
-	}
-	if typ.BelongsToStruct != nil {
-		block = append(block, jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
-	}
-
-	block = append(block,
-		jen.Qual(proj.InternalTracingV1Package(), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID(utils.FilterVarName)),
-		jen.Line(),
-	)
-
-	loggerValues := typ.BuildGetListOfSomethingLogValues(proj)
-	block = append(block, jen.ID("c").Dot("logger").Dot("WithValues").Call(loggerValues).Dot("Debug").Call(jen.Litf("Get%sCount called", sn)))
-
-	block = append(block,
-		jen.Line(),
-		jen.Return().ID("c").Dot("querier").Dotf("Get%sCount", sn).Call(args...),
-	)
-
-	return []jen.Code{
-		jen.Commentf("Get%sCount fetches the count of %s from the database that meet a particular filter", sn, pcn),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%sCount", sn).Params(params...).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(block...),
 		jen.Line(),
 	}
 }

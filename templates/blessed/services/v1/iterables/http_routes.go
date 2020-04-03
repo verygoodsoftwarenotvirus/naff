@@ -45,7 +45,7 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		utils.CtxVar(),
 	}
 	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ListHandler")),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ListHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("ensure query filter"),
@@ -127,7 +127,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	sn := typ.Name.Singular()
 
 	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreateHandler")),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreateHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -258,7 +258,7 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 		jen.ID(xID),
 	}
 	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ExistenceHandler")),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ExistenceHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("determine relevant information"),
@@ -359,7 +359,7 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		jen.ID(xID),
 	}
 	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ReadHandler")),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ReadHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("determine relevant information"),
@@ -457,7 +457,7 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	xID := fmt.Sprintf("%sID", uvn)
 
 	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateHandler")),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("check for parsed input attached to request context"),
@@ -558,7 +558,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 	xID := fmt.Sprintf("%sID", uvn)
 
 	blockLines := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ArchiveHandler")),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ArchiveHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("determine relevant information"),

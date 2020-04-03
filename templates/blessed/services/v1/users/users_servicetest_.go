@@ -87,7 +87,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ucp"),
 					jen.Nil(),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("service")),
 			)),
 			jen.Line(),

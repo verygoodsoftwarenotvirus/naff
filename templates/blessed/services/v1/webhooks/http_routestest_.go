@@ -174,7 +174,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("URL").MapAssign().Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("validateWebhook").Call(jen.ID("exampleInput"))),
+				utils.AssertNoError(jen.ID("validateWebhook").Call(jen.ID("exampleInput")), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid method"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(

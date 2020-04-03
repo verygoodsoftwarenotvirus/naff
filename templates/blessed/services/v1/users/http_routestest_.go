@@ -22,7 +22,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+			utils.AssertNoError(jen.Err(), nil),
 			jen.Return().ID("req"),
 		),
 		jen.Line(),
@@ -35,7 +35,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("randString").Call(),
 				jen.Qual("github.com/stretchr/testify/assert", "NotEmpty").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 			)),
 		),
 		jen.Line(),

@@ -24,7 +24,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleID")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUser").Call(utils.CtxVar(), jen.ID("exampleID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
@@ -46,7 +46,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUserByUsername"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleUsername")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("exampleUsername")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
@@ -56,7 +56,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestClient_GetUserCount").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetAllUserCount").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -66,16 +66,16 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
-					jen.Lit("GetUserCount"),
+					jen.Lit("GetAllUserCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID(utils.FilterVarName),
 				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUserCount").Call(
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetAllUserCount").Call(
 					utils.CtxVar(),
 					jen.ID(utils.FilterVarName),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
@@ -88,16 +88,16 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
-					jen.Lit("GetUserCount"),
+					jen.Lit("GetAllUserCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID(utils.FilterVarName),
 				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUserCount").Call(
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetAllUserCount").Call(
 					utils.CtxVar(),
 					jen.ID(utils.FilterVarName),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
@@ -126,7 +126,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.CtxVar(),
 					jen.ID(utils.FilterVarName),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
@@ -148,7 +148,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.CtxVar(),
 					jen.ID(utils.FilterVarName),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
@@ -170,7 +170,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("CreateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(utils.CtxVar(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
@@ -192,7 +192,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("UpdateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.Err().Assign().ID("c").Dot("UpdateUser").Call(utils.CtxVar(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
@@ -213,7 +213,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("ArchiveUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.Err().Assign().ID("c").Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),

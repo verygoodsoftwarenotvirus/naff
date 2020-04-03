@@ -483,10 +483,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.Err().Assign().ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				).Dot("ArchiveWebhook").Call(
+				jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot("ArchiveWebhook").Call(
 					utils.CtxVar(),
 					jen.ID("exampleWebhook").Dot("ID"),
 				),

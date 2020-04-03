@@ -88,30 +88,6 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetWebhookCount fetches the count of webhooks from the database that meet a particular filter"),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetWebhookCount").Params(
-			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
-			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
-		).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetWebhookCount")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID(utils.FilterVarName)),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-			jen.Line(),
-			jen.ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-				jen.Lit("filter").MapAssign().ID("filter"),
-				jen.Lit("user_id").MapAssign().ID("userID"),
-			)).Dot("Debug").Call(jen.Lit("GetWebhookCount called")),
-			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetWebhookCount").Call(utils.CtxVar(), jen.ID("userID"), jen.ID(utils.FilterVarName)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
 		jen.Comment("GetAllWebhooksCount fetches the count of webhooks from the database that meet a particular filter"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllWebhooksCount").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(

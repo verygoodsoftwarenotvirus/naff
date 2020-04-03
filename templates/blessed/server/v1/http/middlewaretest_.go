@@ -41,7 +41,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
-			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+			utils.AssertNoError(jen.Err(), nil),
 			jen.Line(),
 			jen.Return().ID("req"),
 		),

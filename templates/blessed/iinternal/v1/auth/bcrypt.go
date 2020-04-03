@@ -69,7 +69,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Comment("HashPassword takes a password and hashes it using bcrypt"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("HashPassword").Params(jen.ID("c").Qual("context", "Context"), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")).Block(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("c"), jen.Lit("HashPassword")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("c"), jen.Lit("HashPassword")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.List(jen.ID("hashedPass"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "GenerateFromPassword").Call(jen.Index().ID("byte").Call(jen.ID("password")), jen.ID("int").Call(jen.ID("b").Dot("hashCost"))),
@@ -95,7 +95,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 				jen.ID("twoFactorCode")).ID("string"),
 			jen.ID("salt").Index().ID("byte"),
 		).Params(jen.ID("passwordMatches").ID("bool"), jen.Err().ID("error")).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("ValidateLogin")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("ValidateLogin")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("passwordMatches").Equals().ID("b").Dot("PasswordMatches").Call(utils.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),

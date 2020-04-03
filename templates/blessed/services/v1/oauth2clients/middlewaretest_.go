@@ -121,7 +121,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Dot("URL").Dot("Path").Equals().Lit("/api/v1/things"),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ExtractOAuth2ClientFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
 			)),
 			jen.Line(),

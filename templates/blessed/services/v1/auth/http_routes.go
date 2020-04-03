@@ -24,7 +24,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("DecodeCookieFromRequest takes a request object and fetches the cookie data if it is present"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("DecodeCookieFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("ca").Op("*").Qual(proj.ModelsV1Package(), "CookieAuth"), jen.Err().ID("error")).Block(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("DecodeCookieFromRequest")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("DecodeCookieFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("req").Dot("Cookie").Call(jen.ID("CookieName")),
@@ -48,7 +48,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("WebsocketAuthFunction is provided to Newsman to determine if a user has access to websockets"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("WebsocketAuthFunction").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("bool")).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("WebsocketAuthFunction")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("WebsocketAuthFunction")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.Comment("First we check to see if there is an OAuth2 token for a valid client attached to the request."),
@@ -77,7 +77,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("FetchUserFromRequest takes a request object and fetches the cookie, and then the user for that cookie"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("FetchUserFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").Qual(proj.ModelsV1Package(), "User"), jen.ID("error")).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("FetchUserFromRequest")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("FetchUserFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.List(jen.ID("ca"), jen.ID("decodeErr")).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(utils.CtxVar(), jen.ID("req")),
@@ -102,7 +102,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("LoginHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
-				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("LoginHandler")),
+				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("LoginHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.List(jen.ID("loginData"), jen.ID("errRes")).Assign().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
@@ -164,7 +164,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("LogoutHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("LogoutHandler")),
+				jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("LogoutHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.If(jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("req").Dot("Cookie").Call(jen.ID("CookieName")), jen.Err().Op("==").ID("nil").Op("&&").ID("cookie").DoesNotEqual().ID("nil")).Block(
@@ -188,7 +188,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CycleSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("cycling cookie secret!")),
-				jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CycleSecretHandler")),
+				jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CycleSecretHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.ID("s").Dot("cookieManager").Equals().Qual("github.com/gorilla/securecookie", "New").Callln(
@@ -213,7 +213,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("returns a helper struct with the relevant login information"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("fetchLoginDataFromRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").ID("loginData"), jen.Op("*").Qual(proj.ModelsV1Package(), "ErrorResponse")).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("fetchLoginDataFromRequest")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("fetchLoginDataFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.List(jen.ID("loginInput"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UserLoginInputMiddlewareCtxKey")).Assert(jen.Op("*").Qual(proj.ModelsV1Package(), "UserLoginInput")),
@@ -256,7 +256,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("In the event that there's an error, this function will return false and the error."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("validateLogin").Params(utils.CtxParam(), jen.ID("loginInfo").ID("loginData")).Params(jen.ID("bool"), jen.ID("error")).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(utils.CtxVar(), jen.Lit("validateLogin")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("validateLogin")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.Comment("alias the relevant data"),

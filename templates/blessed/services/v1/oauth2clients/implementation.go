@@ -65,7 +65,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AuthorizeScopeHandler satisfies the oauth2server AuthorizeScopeHandler interface"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("AuthorizeScopeHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("scope").ID("string"), jen.Err().ID("error")).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AuthorizeScopeHandler")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AuthorizeScopeHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("scope").Equals().ID("determineScope").Call(jen.ID("req")),
@@ -120,7 +120,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Comment("UserAuthorizationHandler satisfies the oauth2server UserAuthorizationHandler interface"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UserAuthorizationHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("userID").ID("string"), jen.Err().ID("error")).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserAuthorizationHandler")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserAuthorizationHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Var().ID("uid").ID("uint64"),
 			jen.Line(),
@@ -151,7 +151,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientAuthorizedHandler").Params(jen.ID("clientID").ID("string"), jen.ID("grant").Qual("goproj.in/oauth2.v3", "GrantType")).Params(jen.ID("allowed").ID("bool"), jen.Err().ID("error")).Block(
 			jen.Comment("NOTE: it's a shame the interface we're implementing doesn't have this as its first argument"),
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(utils.InlineCtx(), jen.Lit("ClientAuthorizedHandler")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.InlineCtx(), jen.Lit("ClientAuthorizedHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
@@ -189,7 +189,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ClientScopeHandler").Params(jen.List(jen.ID("clientID"), jen.ID("scope")).ID("string")).Params(jen.ID("authed").ID("bool"), jen.Err().ID("error")).Block(
 			jen.Comment("NOTE: it's a shame the interface we're implementing doesn't have this as its first argument"),
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(utils.InlineCtx(), jen.Lit("UserAuthorizationHandler")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.InlineCtx(), jen.Lit("UserAuthorizationHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(

@@ -106,7 +106,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNoError(jen.Err(), nil),
 			)),
 		),
 		jen.Line(),

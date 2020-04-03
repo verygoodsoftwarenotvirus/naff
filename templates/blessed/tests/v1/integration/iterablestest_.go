@@ -174,9 +174,12 @@ func buildRequisiteCleanupCode(proj *models.Project, typ models.DataType) []jen.
 	lines = append(lines,
 		jen.Line(),
 		jen.Commentf("Clean up %s", typ.Name.SingularCommonName()),
-		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
-		)),
+		utils.AssertNoError(
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
+				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
+			),
+			nil,
+		),
 	)
 
 	if typ.BelongsToStruct != nil {
@@ -342,9 +345,9 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(
-			jen.ID("tctx"),
+		utils.CreateCtx(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(
+			utils.CtxVar(),
 			jen.ID("t").Dot("Name").Call(),
 		),
 		jen.Defer().ID("span").Dot("End").Call(),
@@ -361,7 +364,7 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Err().Equals().ID("todoClient").Dotf("Archive%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
-		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+		utils.AssertNoError(jen.Err(), nil),
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
@@ -383,8 +386,8 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 	pcn := typ.Name.PluralCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		utils.CreateCtx(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -425,7 +428,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Err().Equals().ID("todoClient").Dotf("Archive%s", sn).Call(
 				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 			),
-			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+			utils.AssertNoError(jen.Err(), nil),
 		),
 	)
 
@@ -492,8 +495,8 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		utils.CreateCtx(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -517,7 +520,7 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 		}()).ID("todoClient").Dotf("%sExists", sn).Call(
 			args...,
 		),
-		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+		utils.AssertNoError(jen.Err(), nil),
 		jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("actual")),
 	)
 
@@ -539,8 +542,8 @@ func buildTestExistenceCheckingShouldBeReadable(proj *models.Project, typ models
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		utils.CreateCtx(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -553,8 +556,8 @@ func buildTestExistenceCheckingShouldBeReadable(proj *models.Project, typ models
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("%sExists", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
-		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
-		jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("actual")),
+		utils.AssertNoError(jen.Err(), nil),
+		utils.AssertTrue(jen.ID("actual"), nil),
 		jen.Line(),
 	)
 
@@ -568,8 +571,8 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *m
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		utils.CreateCtx(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -614,8 +617,8 @@ func buildTestReadingShouldBeReadable(proj *models.Project, typ models.DataType)
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		utils.CreateCtx(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -699,8 +702,8 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj
 	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
 
 	lines := []jen.Code{
-		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		utils.CreateCtx(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -734,8 +737,8 @@ func buildTestUpdatingShouldBeUpdateable(proj *models.Project, typ models.DataTy
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("tctx"), jen.ID("t").Dot("Name").Call()),
+		utils.CreateCtx(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -759,7 +762,7 @@ func buildTestUpdatingShouldBeUpdateable(proj *models.Project, typ models.DataTy
 		jen.Err().Equals().ID("todoClient").Dotf("Update%s", sn).Call(
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)...,
 		),
-		jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.Err()),
+		utils.AssertNoError(jen.Err(), nil),
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
@@ -780,9 +783,9 @@ func buildTestUpdatingShouldBeUpdateable(proj *models.Project, typ models.DataTy
 
 func buildTestDeletingShouldBeAbleToBeDeleted(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
-		jen.ID("tctx").Assign().Qual("context", "Background").Call(),
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual("go.opencensus.io/trace", "StartSpan").Call(
-			jen.ID("tctx"),
+		utils.CreateCtx(),
+		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(
+			utils.CtxVar(),
 			jen.ID("t").Dot("Name").Call(),
 		),
 		jen.Defer().ID("span").Dot("End").Call(),
