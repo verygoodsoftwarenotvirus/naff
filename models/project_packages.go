@@ -67,7 +67,7 @@ func (p *Project) ServiceV1UsersPackage(parts ...string) string {
 }
 
 func (p *Project) ServiceV1WebhooksPackage(parts ...string) string {
-	return p.ServiceV1Package(append([]string{""}, parts...)...)
+	return p.ServiceV1Package(append([]string{"webhooks"}, parts...)...)
 }
 
 func (p *Project) TestutilV1Package(parts ...string) string {
