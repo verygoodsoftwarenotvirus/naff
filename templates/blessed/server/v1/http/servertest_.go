@@ -45,10 +45,6 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		utils.FakeSeedFunc(),
-	)
-
-	ret.Add(
 		jen.Func().ID("buildTestServer").Params().Params(jen.PointerTo().ID("Server")).Block(
 			jen.ID("s").Assign().VarPointer().ID("Server").Valuesln(
 				buildServerLines()...,
@@ -58,12 +54,12 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	buildProvideServerArgs := func() []jen.Code {
+	buildProvideServerArgs := func(cookieSecret string) []jen.Code {
 		args := []jen.Code{
 			utils.CtxVar(),
 			jen.VarPointer().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
 				jen.ID("Auth").MapAssign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
-					jen.ID("CookieSecret").MapAssign().Lit("THISISAVERYLONGSTRINGFORTESTPURPOSES"),
+					jen.ID("CookieSecret").MapAssign().Lit(cookieSecret),
 				),
 			),
 			jen.VarPointer().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
@@ -98,15 +94,61 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
+				jen.ID("exampleWebhookList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookList").Call(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(jen.Lit("GetAllWebhooks"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Values(), jen.Nil()),
+				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
+					jen.Lit("GetAllWebhooks"),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				).Dot("Return").Call(
+					jen.ID("exampleWebhookList"),
+					jen.Nil(),
+				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideServer").Callln(
-					buildProvideServerArgs()...,
+					buildProvideServerArgs("THISISAVERYLONGSTRINGFORTESTPURPOSES")...,
 				),
 				jen.Line(),
 				utils.AssertNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid cookie secret",
+				jen.ID("exampleWebhookList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookList").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
+					jen.Lit("GetAllWebhooks"),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				).Dot("Return").Call(
+					jen.ID("exampleWebhookList"),
+					jen.Nil(),
+				),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideServer").Callln(
+					buildProvideServerArgs("THISSTRINGISNTLONGENOUGH:(")...,
+				),
+				jen.Line(),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with error fetching webhooks",
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
+					jen.Lit("GetAllWebhooks"),
+					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				).Dot("Return").Call(
+					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList")).Call(jen.Nil()),
+					jen.Qual("errors", "New").Call(jen.Lit("blah")),
+				),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideServer").Callln(
+					buildProvideServerArgs("THISISAVERYLONGSTRINGFORTESTPURPOSES")...,
+				),
+				jen.Line(),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), nil),
 			),
 		),
 		jen.Line(),

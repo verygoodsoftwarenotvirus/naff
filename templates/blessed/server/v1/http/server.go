@@ -16,6 +16,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.ID("maxTimeout").Equals().Lit(120).Times().Qual("time", "Second"),
+			jen.ID("serverNamespace").Equals().Lit("todo-service"),
 		),
 		jen.Line(),
 	)
@@ -239,5 +240,38 @@ func (s *Server) logRoutes() {
 		),
 		jen.Line(),
 	)
+
+	ret.Add(
+		jen.Comment("provideHTTPServer provides an HTTP httpServer"),
+		jen.Line(),
+		jen.Func().ID("provideHTTPServer").Params().Params(jen.ParamPointer().Qual("net/http", "Server")).Block(
+			jen.Comment("heavily inspired by https://blog.cloudflare.com/exposing-go-on-the-internet/"),
+			jen.ID("srv").Assign().VarPointer().Qual("net/http", "Server").Valuesln(
+				jen.ID("ReadTimeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
+				jen.ID("WriteTimeout").MapAssign().Lit(10).Times().Qual("time", "Second"),
+				jen.ID("IdleTimeout").MapAssign().Lit(120).Times().Qual("time", "Second"),
+				jen.ID("TLSConfig").MapAssign().VarPointer().Qual("crypto/tls", "Config").Valuesln(
+					jen.ID("PreferServerCipherSuites").MapAssign().ID("true"),
+					jen.Comment(`"Only use curves which have assembly implementations"`).Line().
+						ID("CurvePreferences").MapAssign().Index().Qual("crypto/tls", "CurveID").Valuesln(
+						jen.Qual("crypto/tls", "CurveP256"),
+						jen.Qual("crypto/tls", "X25519"),
+					),
+					jen.ID("MinVersion").MapAssign().Qual("crypto/tls", "VersionTLS12"),
+					jen.ID("CipherSuites").MapAssign().Index().ID("uint16").Valuesln(
+						jen.Qual("crypto/tls", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"),
+						jen.Qual("crypto/tls", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"),
+						jen.Qual("crypto/tls", "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305"),
+						jen.Qual("crypto/tls", "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"),
+						jen.Qual("crypto/tls", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"),
+						jen.Qual("crypto/tls", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"),
+					),
+				),
+			),
+			jen.Return().ID("srv"),
+		),
+		jen.Line(),
+	)
+
 	return ret
 }
