@@ -43,8 +43,9 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideOAuth2ClientsService").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
+
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
@@ -75,9 +76,10 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertNotNil(jen.ID("service"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing counter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error providing counter",
 				utils.CreateCtx(),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -111,9 +113,10 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("service"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching oauth2 clients"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error fetching oauth2 clients",
 				utils.CreateCtx(),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -148,7 +151,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("service"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -157,7 +160,8 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_clientStore_GetByID").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("exampleID").Assign().Lit("blah"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -172,9 +176,10 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID("exampleID"), jen.ID("actual").Dot("GetID").Call(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with no rows",
 				jen.ID("exampleID").Assign().Lit("blah"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -188,9 +193,10 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("_"), jen.Err()).Assign().ID("c").Dot("GetByID").Call(jen.ID("exampleID")),
 				jen.Line(),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error reading from database",
 				jen.ID("exampleID").Assign().Lit("blah"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -204,7 +210,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("_"), jen.Err()).Assign().ID("c").Dot("GetByID").Call(jen.ID("exampleID")),
 				jen.Line(),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -213,7 +219,8 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_HandleAuthorizeRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("moah").Assign().VarPointer().ID("mockOauth2Handler").Values(),
@@ -226,7 +233,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("s").Dot("HandleAuthorizeRequest").Call(jen.ID("res"), jen.ID("req")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -235,7 +242,8 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_HandleTokenRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("moah").Assign().VarPointer().ID("mockOauth2Handler").Values(),
@@ -248,7 +256,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("s").Dot("HandleTokenRequest").Call(jen.ID("res"), jen.ID("req")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

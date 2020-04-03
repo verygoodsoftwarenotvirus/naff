@@ -15,13 +15,14 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestOAuth2Client_GetID").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expected").Assign().Lit("uint64(123)"),
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().ID("expected"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetID").Call(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -30,13 +31,14 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestOAuth2Client_GetSecret").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expected").Assign().Lit("uint64(123)"),
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("ClientSecret").MapAssign().ID("expected"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetSecret").Call(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -45,13 +47,14 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestOAuth2Client_GetDomain").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expected").Assign().Lit("uint64(123)"),
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("RedirectURI").MapAssign().ID("expected"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetDomain").Call(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -60,14 +63,15 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestOAuth2Client_GetUserID").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expectation")),
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("BelongsToUser").MapAssign().ID("expectation"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetUserID").Call(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -76,7 +80,8 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestOAuth2Client_HasScope").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("Scopes").MapAssign().Index().ID("string").Values(jen.Lit("things"), jen.Lit("and"), jen.Lit("stuff")),
 				),
@@ -84,7 +89,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertTrue(jen.ID("oac").Dot("HasScope").Call(jen.ID("oac").Dot("Scopes").Index(jen.Lit(0))), nil),
 				utils.AssertFalse(jen.ID("oac").Dot("HasScope").Call(jen.Lit("blah")), nil),
 				utils.AssertFalse(jen.ID("oac").Dot("HasScope").Call(jen.Lit("")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

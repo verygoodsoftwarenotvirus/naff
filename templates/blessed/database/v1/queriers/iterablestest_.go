@@ -432,11 +432,11 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildFirstSubTest(typ)...)),
+			utils.BuildSubTestWithoutContext("happy path", buildFirstSubTest(typ)...),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildSecondSubtest(proj, dbvendor, typ)...)),
+			utils.BuildSubTestWithoutContext("with error writing to database", buildSecondSubtest(proj, dbvendor, typ)...),
+			jen.Line(),
 		),
-		jen.Line(),
 	}
 }
 
@@ -514,7 +514,8 @@ func buildTestDBArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wor
 		jen.Func().IDf("Test%s_buildArchive%sQuery", dbvsn, sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(testLines...)),
+			utils.BuildSubTestWithoutContext(
+				"happy path", testLines...),
 		),
 		jen.Line(),
 	}
@@ -615,7 +616,8 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(dbQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...)),
+			utils.BuildSubTestWithoutContext(
+				"happy path", block...),
 		}
 	}
 
@@ -665,7 +667,8 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 		)
 
 		return []jen.Code{
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...)),
+			utils.BuildSubTestWithoutContext(
+				"with error writing to database", block...),
 		}
 	}
 
@@ -761,9 +764,10 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 		jen.Func().IDf("Test%s_buildUpdate%sQuery", dbvsn, sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				testBuildUpdateQueryBody...,
-			)),
+			),
 		),
 		jen.Line(),
 	}
@@ -857,7 +861,8 @@ func buildTestDBCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor word
 		jen.Func().IDf("Test%s_buildCreate%sQuery", dbvsn, sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(createQueryTestBody...)),
+			utils.BuildSubTestWithoutContext(
+				"happy path", createQueryTestBody...),
 		),
 		jen.Line(),
 	}
@@ -1061,9 +1066,11 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			jen.Line(),
 			jen.ID("expectedCreationQuery").Assign().Lit(expectedCreationQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildFirstSubtest(proj, typ)...)),
+			utils.BuildSubTestWithoutContext(
+				"happy path", buildFirstSubtest(proj, typ)...),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildSecondSubtest()...)),
+			utils.BuildSubTestWithoutContext(
+				"with error writing to database", buildSecondSubtest()...),
 		),
 		jen.Line(),
 	}
@@ -1105,7 +1112,8 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 			jen.Line(),
 			jen.ID("expectedListQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID(expectedSomethingID).Assign().Add(utils.FakeUint64Func()),
 				jen.IDf("expected%s", sn).Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Lit(321),
@@ -1123,9 +1131,10 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"surfaces sql.ErrNoRows",
 				jen.ID(expectedSomethingID).Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -1139,9 +1148,10 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error querying database",
 				jen.ID(expectedSomethingID).Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -1154,9 +1164,10 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with unscannable response",
 				jen.ID(expectedSomethingID).Assign().Add(utils.FakeUint64Func()),
 				jen.IDf("example%s", sn).Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Lit(321),
@@ -1172,7 +1183,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	}
@@ -1441,15 +1452,15 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			jen.Line(),
 			jen.ID("expectedListQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildFirstSubtest()...)),
+			utils.BuildSubTestWithoutContext("happy path", buildFirstSubtest()...),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildSecondSubtest()...)),
+			utils.BuildSubTestWithoutContext("surfaces sql.ErrNoRows", buildSecondSubtest()...),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error executing read query"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildThirdSubtest()...)),
+			utils.BuildSubTestWithoutContext("with error executing read query", buildThirdSubtest()...),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with error scanning %s", scn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildFourthSubtest()...)),
+			utils.BuildSubTestWithoutContext(fmt.Sprintf("with error scanning %s", scn), buildFourthSubtest()...),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying for count"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildFifthSubtest()...)),
+			utils.BuildSubTestWithoutContext("with error querying for count", buildFifthSubtest()...),
 		),
 		jen.Line(),
 	}
@@ -1507,7 +1518,8 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 		jen.Func().IDf("Test%s_buildGet%sQuery", dbvsn, pn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(bodyBlock...)),
+			utils.BuildSubTestWithoutContext(
+				"happy path", bodyBlock...),
 		),
 		jen.Line(),
 	}
@@ -1616,7 +1628,8 @@ func buildTestDBBuildGetSomethingQuery(proj *models.Project, dbvendor wordsmith.
 		jen.Func().IDf("Test%s_buildGet%sQuery", dbvsn, sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...)),
+			utils.BuildSubTestWithoutContext(
+				"happy path", block...),
 		),
 		jen.Line(),
 	}
@@ -1740,9 +1753,11 @@ func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalab
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(query),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildFirstSubtestBlock(typ)...)),
+			utils.BuildSubTestWithoutContext(
+				"happy path", buildFirstSubtestBlock(typ)...),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildSecondSubtestBlock(typ)...)),
+			utils.BuildSubTestWithoutContext(
+				"surfaces sql.ErrNoRows", buildSecondSubtestBlock(typ)...),
 		),
 		jen.Line(),
 	}
@@ -1805,7 +1820,8 @@ func buildTestDBBuildGetSomethingCountQuery(proj *models.Project, dbvendor words
 		jen.Func().IDf("Test%s_buildGet%sCountQuery", dbvsn, sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...)),
+			utils.BuildSubTestWithoutContext(
+				"happy path", block...),
 		),
 		jen.Line(),
 	}
@@ -1869,7 +1885,8 @@ func buildTestDBGetSomethingCount(proj *models.Project, dbvendor wordsmith.Super
 		jen.Func().IDf("Test%s_Get%sCount", dbvsn, sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...)),
+			utils.BuildSubTestWithoutContext(
+				"happy path", block...),
 		),
 		jen.Line(),
 	}
@@ -1888,13 +1905,14 @@ func buildTestDBBuildGetAllSomethingCountQuery(proj *models.Project, dbvendor wo
 		jen.Func().IDf("Test%s_buildGetAll%sCountQuery", dbvsn, pn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedQuery").Assign().Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
 				jen.Line(),
 				jen.ID("actualQuery").Assign().ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call(),
 				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	}
@@ -1913,7 +1931,8 @@ func buildTestDBGetAllSomethingCount(proj *models.Project, dbvendor wordsmith.Su
 		jen.Func().IDf("Test%s_GetAll%sCount", dbvsn, pn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectedQuery").Assign().Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
 				jen.ID("expectedCount").Assign().ID("uint64").Call(jen.Lit(666)),
 				jen.Line(),
@@ -1926,7 +1945,7 @@ func buildTestDBGetAllSomethingCount(proj *models.Project, dbvendor wordsmith.Su
 				utils.AssertEqual(jen.ID("expectedCount"), jen.ID("actualCount"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	}

@@ -65,7 +65,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_buildGetOAuth2ClientByClientIDQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedClientID").Assign().Lit("ClientID"),
 				jen.ID("expectedArgCount").Assign().Add(utils.FakeUint64Func()),
@@ -75,7 +76,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 				utils.AssertEqual(jen.ID("expectedClientID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -86,7 +87,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND client_id = %s", getIncIndex(dbvendor, 0)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("exampleClientID").Assign().Lit("EXAMPLE"),
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
@@ -107,9 +109,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"surfaces sql.ErrNoRows",
 				jen.ID("exampleClientID").Assign().Lit("EXAMPLE"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -123,9 +126,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous row"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with erroneous row",
 				jen.ID("exampleClientID").Assign().Lit("EXAMPLE"),
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
@@ -145,7 +149,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -154,13 +158,14 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_buildGetAllOAuth2ClientsQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedQuery").Assign().Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.ID("actualQuery").Assign().ID(dbfl).Dot("buildGetAllOAuth2ClientsQuery").Call(),
 				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -171,7 +176,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.Valuesln(
@@ -194,9 +200,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"surfaces sql.ErrNoRows",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
@@ -206,9 +213,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error executing query"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error executing query",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -218,9 +226,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with erroneous response from database",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.Valuesln(
@@ -240,7 +249,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -251,7 +260,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 				jen.ID("expected").Assign().Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
@@ -275,9 +285,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"surfaces sql.ErrNoRows",
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -289,9 +300,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with erroneous response from database",
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -303,9 +315,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with unscannable response",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
@@ -324,7 +337,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -333,7 +346,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_buildGetOAuth2ClientQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
@@ -345,7 +359,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 				utils.AssertEqual(jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil),
 				utils.AssertEqual(jen.ID("expectedClientID"), jen.ID("args").Index(jen.Add(utils.FakeUint64Func())).Assert(jen.ID("uint64")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -356,7 +370,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s AND id = %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -376,9 +391,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"surfaces sql.ErrNoRows",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -399,9 +415,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with erroneous response from database",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -420,7 +437,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -429,7 +446,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_buildGetOAuth2ClientCountQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedArgCount").Assign().Add(utils.FakeUint64Func()),
@@ -439,7 +457,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 				utils.AssertEqual(jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -448,7 +466,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_GetOAuth2ClientCount", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedQuery").Assign().Litf("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to_user = %s LIMIT 20", getIncIndex(dbvendor, 0)),
 				jen.ID("expectedCount").Assign().ID("uint64").Call(jen.Lit(666)),
@@ -463,7 +482,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expectedCount"), jen.ID("actualCount"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -472,13 +491,14 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_buildGetAllOAuth2ClientCountQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().Lit("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.ID("actual").Assign().ID(dbfl).Dot("buildGetAllOAuth2ClientCountQuery").Call(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -487,7 +507,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_GetAllOAuth2ClientCount", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectedQuery").Assign().Lit("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.ID("expectedCount").Assign().ID("uint64").Call(jen.Lit(666)),
 				jen.Line(),
@@ -500,7 +521,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expectedCount"), jen.ID("actualCount"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -509,7 +530,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_buildGetOAuth2ClientsQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedArgCount").Assign().Add(utils.FakeUint64Func()),
@@ -519,7 +541,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 				utils.AssertEqual(jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -530,8 +552,9 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 			jen.Line(),
 			jen.ID("expectedListQuery").Assign().Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to_user FROM oauth2_clients WHERE archived_on IS NULL"),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
+
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
@@ -567,9 +590,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with no rows returned from database",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -581,9 +605,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error reading from database",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -595,9 +620,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with erroneous response",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
@@ -624,9 +650,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error fetching count",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
@@ -659,7 +686,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -682,7 +709,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_buildCreateOAuth2ClientQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("ClientID"),
@@ -713,7 +741,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("exampleInput").Dot("Scopes").Index(jen.Lit(0)), jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("string")), nil),
 				utils.AssertEqual(jen.ID("exampleInput").Dot("RedirectURI"), jen.ID("args").Index(jen.Lit(4)).Assert(jen.ID("string")), nil),
 				utils.AssertEqual(jen.ID("exampleInput").Dot("BelongsToUser"), jen.ID("args").Index(jen.Lit(5)).Assert(jen.ID("uint64")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -760,7 +788,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				queryTail,
 			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -791,9 +820,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error writing to database",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -820,7 +850,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -834,7 +864,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_buildUpdateOAuth2ClientQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("ClientID"),
@@ -864,7 +895,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertEqual(jen.ID("expected").Dot("RedirectURI"), jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("string")), nil),
 				utils.AssertEqual(jen.ID("expected").Dot("BelongsToUser"), jen.ID("args").Index(jen.Lit(4)).Assert(jen.ID("uint64")), nil),
 				utils.AssertEqual(jen.ID("expected").Dot("ID"), jen.ID("args").Index(jen.Lit(5)).Assert(jen.ID("uint64")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -901,7 +932,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				queryTail,
 			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -911,9 +943,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error writing to database",
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -924,7 +957,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -938,7 +971,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Func().IDf("Test%s_buildArchiveOAuth2ClientQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expectedClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
@@ -956,7 +990,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 				utils.AssertEqual(jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil),
 				utils.AssertEqual(jen.ID("expectedClientID"), jen.ID("args").Index(jen.Add(utils.FakeUint64Func())).Assert(jen.ID("uint64")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -973,7 +1007,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				queryTail,
 			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("exampleClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
@@ -986,9 +1021,10 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error writing to database",
 				jen.ID("exampleClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
@@ -1001,7 +1037,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.AssertError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)

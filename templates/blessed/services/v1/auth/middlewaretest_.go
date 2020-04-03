@@ -15,7 +15,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_CookieAuthenticationMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
 				jen.Line(),
@@ -38,9 +39,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("h").Assign().ID("s").Dot("CookieAuthenticationMiddleware").Call(jen.ID("ms")),
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with nil user",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -65,9 +67,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without user attached"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without user attached",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Nil()),
@@ -80,7 +83,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("h").Assign().ID("s").Dot("CookieAuthenticationMiddleware").Call(jen.ID("ms")),
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -89,7 +92,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_AuthenticationMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
@@ -118,9 +122,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.ID("true")).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path without allowing cookies"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path without allowing cookies",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
@@ -149,9 +154,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.ID("false")).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching client but able to use cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error fetching client but able to use cookie",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -176,9 +182,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.ID("true")).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("able to use cookies but error fetching user info"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"able to use cookies but error fetching user info",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -211,9 +218,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.ID("true")).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("no cookies allowed, with error fetching user info"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"no cookies allowed, with error fetching user info",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
@@ -242,9 +250,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.ID("false")).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching client but able to use cookie but unable to decode cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error fetching client but able to use cookie but unable to decode cookie",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("ocv").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
@@ -268,9 +277,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("cookieManager").Equals().ID("cb"),
 				jen.Line(),
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.ID("true")).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid authentication"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid authentication",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("ocv").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
@@ -288,9 +298,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.ID("false")).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("nightmare path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"nightmare path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
@@ -319,7 +330,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.ID("false")).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -328,7 +339,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_parseLoginInputFromForm").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Nil()),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
@@ -348,9 +360,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Assign().ID("parseLoginInputFromForm").Call(jen.ID("req")),
 				utils.AssertNotNil(jen.ID("actual"), nil),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("returns nil with error parsing form"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"returns nil with error parsing form",
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Nil()),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
@@ -360,7 +373,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("parseLoginInputFromForm").Call(jen.ID("req")),
 				utils.AssertNil(jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -369,7 +382,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_UserLoginInputMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
@@ -392,9 +406,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.ID("ms").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error decoding request",
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
@@ -419,9 +434,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.ID("ms").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request but valid value attached to form"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error decoding request but valid value attached to form",
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
@@ -456,7 +472,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.ID("ms").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -465,7 +481,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_AdminMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Nil()),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
@@ -488,9 +505,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("ms").Dot("AssertExpectations").Call(jen.ID("t")),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without user attached"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without user attached",
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Nil()),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
@@ -504,9 +522,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("ms").Dot("AssertExpectations").Call(jen.ID("t")),
 				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with non-admin user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with non-admin user",
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"), jen.Nil()),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
@@ -528,7 +547,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("ms").Dot("AssertExpectations").Call(jen.ID("t")),
 				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

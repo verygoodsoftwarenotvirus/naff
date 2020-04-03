@@ -39,9 +39,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_Routes").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				utils.AssertNotNil(jen.Parens(jen.VarPointer().ID("Service").Values()).Dot("Routes").Call(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -50,7 +51,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
 					jen.ID("config").MapAssign().Qual(proj.InternalConfigV1Package(), "FrontendSettings").Valuesln(
 						jen.ID("CacheStaticFiles").MapAssign().ID("true"),
@@ -62,7 +64,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("buildStaticFileServer").Call(jen.ID("cwd")),
 				utils.AssertNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -73,7 +75,8 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
-		jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+		utils.BuildSubTestWithoutContext(
+			"happy path",
 			jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.List(jen.ID("cwd"), jen.Err()).Assign().Qual("os", "Getwd").Call(),
@@ -88,9 +91,10 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 			jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
 			jen.Line(),
 			utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
-		)),
+		),
 		jen.Line(),
-		jen.ID("T").Dot("Run").Call(jen.Lit("with frontend routing path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+		utils.BuildSubTestWithoutContext(
+			"with frontend routing path",
 			jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.ID("exampleDir").Assign().Lit("."),
 			jen.Line(),
@@ -103,7 +107,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 			jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
 			jen.Line(),
 			utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
-		)),
+		),
 		jen.Line(),
 	}
 
@@ -112,7 +116,8 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 
 		block = append(block,
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with frontend %s routing path", tpcn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTest(
+				fmt.Sprintf("with frontend %s routing path", tpcn),
 				jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("exampleDir").Assign().Lit("."),
 				jen.Line(),
@@ -125,7 +130,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 				jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 			jen.Line(),
 		)
 	}

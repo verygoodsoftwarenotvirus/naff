@@ -22,13 +22,14 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_OAuth2InternalErrorHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().Qual("errors", "New").Call(jen.Lit("blah")),
 				jen.Line(),
 				jen.ID("actual").Assign().ID("s").Dot("OAuth2InternalErrorHandler").Call(jen.ID("expected")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual").Dot("Error"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -37,10 +38,11 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_OAuth2ResponseErrorHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("exampleInput").Assign().VarPointer().Qual("goproj.in/oauth2.v3/errors", "Response").Values(),
 				jen.ID("buildTestService").Call(jen.ID("t")).Dot("OAuth2ResponseErrorHandler").Call(jen.ID("exampleInput")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -49,7 +51,8 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_AuthorizeScopeHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().Lit("blah"),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
@@ -68,9 +71,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request but with client ID attached"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without client attached to request but with client ID attached",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().Lit("blah"),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
@@ -97,9 +101,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request and now rows found fetching client info"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without client attached to request and now rows found fetching client info",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().Lit("blah,flarg"),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
@@ -124,9 +129,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID("res").Dot("Code"), nil),
 				utils.AssertEmpty(jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request and error fetching client info"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without client attached to request and error fetching client info",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().Lit("blah,flarg"),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
@@ -151,9 +157,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 				utils.AssertEmpty(jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without client attached to request",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -162,9 +169,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code"), nil),
 				utils.AssertEmpty(jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid scope & client ID but no client"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid scope & client ID but no client",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("blargh"), jen.ID("Scopes").MapAssign().Index().ID("string").Values(),
@@ -189,7 +197,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code"), nil),
 				utils.AssertEmpty(jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -198,7 +206,8 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_UserAuthorizationHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(jen.ID("BelongsToUser").MapAssign().Add(utils.FakeUint64Func())),
 				jen.ID("expected").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("BelongsToUser")),
@@ -212,9 +221,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("UserAuthorizationHandler").Call(jen.ID("res"), jen.ID("req")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID("actual"), jen.ID("expected"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without client attached to request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without client attached to request",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 				jen.ID("expected").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleUser").Dot("ID")),
@@ -228,9 +238,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("UserAuthorizationHandler").Call(jen.ID("res"), jen.ID("req")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID("actual"), jen.ID("expected"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with no user info attached"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with no user info attached",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -238,7 +249,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("UserAuthorizationHandler").Call(jen.ID("res"), jen.ID("req")),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertEmpty(jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -247,7 +258,8 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_ClientAuthorizedHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("true"),
 				jen.Line(),
@@ -268,9 +280,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ClientAuthorizedHandler").Call(jen.ID("stringID"), jen.ID("exampleGrant")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with password credentials grant"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with password credentials grant",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("false"),
 				jen.ID("exampleGrant").Assign().Qual("goproj.in/oauth2.v3", "PasswordCredentials"),
@@ -278,9 +291,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ClientAuthorizedHandler").Call(jen.Lit("ID"), jen.ID("exampleGrant")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error reading from database",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("false"),
 				jen.ID("exampleGrant").Assign().Qual("goproj.in/oauth2.v3", "AuthorizationCode"),
@@ -300,9 +314,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ClientAuthorizedHandler").Call(jen.ID("stringID"), jen.ID("exampleGrant")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with disallowed implicit"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with disallowed implicit",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("false"),
 				jen.Line(),
@@ -325,7 +340,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ClientAuthorizedHandler").Call(jen.ID("stringID"), jen.ID("exampleGrant")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -334,7 +349,8 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_ClientScopeHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("true"),
 				jen.Line(),
@@ -357,9 +373,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ClientScopeHandler").Call(jen.ID("stringID"), jen.ID("exampleScope")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error reading from database",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("false"),
 				jen.Line(),
@@ -382,9 +399,10 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ClientScopeHandler").Call(jen.ID("stringID"), jen.ID("exampleScope")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without valid scope"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without valid scope",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("false"),
 				jen.Line(),
@@ -407,7 +425,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ClientScopeHandler").Call(jen.ID("stringID"), jen.ID("exampleScope")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

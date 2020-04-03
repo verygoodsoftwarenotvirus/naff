@@ -15,9 +15,10 @@ func frontendServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideFrontendService").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("ProvideFrontendService").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.Qual(proj.InternalConfigV1Package(), "FrontendSettings").Values()),
-			)),
+			),
 		),
 		jen.Line(),
 	)

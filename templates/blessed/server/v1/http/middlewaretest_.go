@@ -52,7 +52,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_formatSpanNameForRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("req").Dot("Method").Equals().Qual("net/http", "MethodPatch"),
 				jen.ID("req").Dot("URL").Dot("Path").Equals().Lit("/blah"),
@@ -61,7 +62,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Assign().ID("formatSpanNameForRequest").Call(jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -70,7 +71,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestServer_loggingMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestServer").Call(),
 				jen.Line(),
 				jen.ID("mh").Assign().VarPointer().ID("mockHTTPHandler").Values(),
@@ -84,7 +86,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("loggingMiddleware").Call(jen.ID("mh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

@@ -32,8 +32,8 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideWebhooksService").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
@@ -59,9 +59,10 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing counter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error providing counter",
 				utils.CreateCtx(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
@@ -80,9 +81,10 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil())),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error setting count"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error setting count",
 				utils.CreateCtx(),
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -108,7 +110,7 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

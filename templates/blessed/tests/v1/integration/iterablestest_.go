@@ -30,54 +30,62 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("test").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be createable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be createable",
 					buildTestCreating(proj, typ)...,
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be able to be read in a list",
 					buildTestListing(proj, typ)...,
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to check something that does not exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should return an error when trying to check something that does not exist",
 					buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
-				)),
+				),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return 200 when the relevant item exists"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should return 200 when the relevant item exists",
 					buildTestExistenceCheckingShouldBeReadable(proj, typ)...,
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to read something that does not exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should return an error when trying to read something that does not exist",
 					buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
-				)),
+				),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should be readable",
 					buildTestReadingShouldBeReadable(proj, typ)...,
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to update something that does not exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should return an error when trying to update something that does not exist",
 					buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, typ)...,
-				)),
+				),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should be updatable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should be updatable",
 					buildTestUpdatingShouldBeUpdateable(proj, typ)...,
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be deleted"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be able to be deleted",
 					buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)...,
-				)),
+				),
 			)),
 		),
-		jen.Line(),
 	)
 
 	return ret

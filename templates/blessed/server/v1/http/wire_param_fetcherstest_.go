@@ -19,9 +19,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Singular()).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 					jen.ID("T").Dot("Parallel").Call(),
 					jen.Line(),
-					jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+					utils.BuildSubTestWithoutContext(
+						"obligatory",
 						jen.ID("_").Equals().IDf("Provide%sServiceUserIDFetcher", n.Singular()).Call(),
-					)),
+					),
 				),
 				jen.Line(),
 			)
@@ -31,9 +32,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 					jen.ID("T").Dot("Parallel").Call(),
 					jen.Line(),
-					jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+					utils.BuildSubTestWithoutContext(
+						"obligatory",
 						jen.ID("_").Equals().IDf("Provide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-					)),
+					),
 				),
 				jen.Line(),
 			)
@@ -43,9 +45,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			jen.Func().IDf("TestProvide%sIDFetcher", n.Singular()).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"obligatory",
 					jen.ID("_").Equals().IDf("Provide%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				)),
+				),
 			),
 			jen.Line(),
 		)
@@ -55,9 +58,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideUsernameFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("_").Equals().ID("ProvideUsernameFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -66,9 +70,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideAuthUserIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("_").Equals().ID("ProvideAuthUserIDFetcher").Call(),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -77,9 +82,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideWebhooksUserIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("_").Equals().ID("ProvideWebhooksUserIDFetcher").Call(),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -88,9 +94,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideWebhookIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("_").Equals().ID("ProvideWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -99,9 +106,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideOAuth2ServiceClientIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("_").Equals().ID("ProvideOAuth2ServiceClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -110,7 +118,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestUserIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -124,7 +133,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("UserIDFetcher").Call(jen.ID("req")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -133,7 +142,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_buildChiUserIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("fn").Assign().ID("buildChiUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
@@ -153,9 +163,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
 				jen.ID("fn").Assign().ID("buildChiUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().ID("uint64").Call(jen.Lit(0)),
@@ -176,7 +187,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -187,7 +198,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			jen.Func().IDf("Test_buildChi%sIDFetcher", n.Singular()).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"happy path",
 					jen.ID("fn").Assign().IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 					jen.Line(),
@@ -207,9 +219,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
 					utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-				)),
+				),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"with invalid value somehow",
 					jen.Comment("NOTE: This will probably never happen in dev or production"),
 					jen.ID("fn").Assign().IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					jen.ID("expected").Assign().ID("uint64").Call(jen.Lit(0)),
@@ -229,7 +242,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
 					utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-				)),
+				),
 			),
 			jen.Line(),
 		)
@@ -239,7 +252,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_buildChiWebhookIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("fn").Assign().ID("buildChiWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
@@ -259,9 +273,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
 				jen.ID("fn").Assign().ID("buildChiWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().ID("uint64").Call(jen.Lit(0)),
@@ -282,7 +297,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -291,7 +306,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_buildChiOAuth2ClientIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("fn").Assign().ID("buildChiOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
@@ -310,9 +326,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
 				jen.ID("fn").Assign().ID("buildChiOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().ID("uint64").Call(jen.Lit(0)),
@@ -333,7 +350,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

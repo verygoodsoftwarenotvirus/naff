@@ -27,34 +27,35 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestMigrate").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
 				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
 				utils.AssertNoError(jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("bubbles up errors"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"bubbles up errors",
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
 				utils.AssertError(jen.ID("actual"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().ID("TestIsReady").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				utils.CreateCtx(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("IsReady"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.True()),
@@ -62,7 +63,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("c").Dot("IsReady").Call(utils.CtxVar()),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -71,8 +72,8 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideDatabaseClient").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
@@ -85,9 +86,10 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error migrating querier"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error migrating querier",
 				utils.CreateCtx(),
 				jen.ID("expected").Assign().Qual("errors", "New").Call(jen.Lit("blah")),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -103,9 +105,9 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNil(jen.ID("x"), nil),
 				utils.AssertError(jen.ID("actual"), nil),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 	return ret
 }

@@ -124,7 +124,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be creatable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be creatable",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create user"),
@@ -139,20 +140,22 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Clean up"),
 					utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("actual").Dot("ID")), nil),
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to read something that doesn't exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should return an error when trying to read something that doesn't exist",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Fetch user"),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUser").Call(utils.CtxVar(), jen.ID("nonexistentID")),
 					utils.AssertNil(jen.ID("actual"), nil),
 					utils.AssertError(jen.Err(), nil),
-				)),
+				),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should be readable",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create user"),
@@ -175,11 +178,12 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Clean up"),
 					utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("actual").Dot("ID")), nil),
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be deleted"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be able to be deleted",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create user"),
@@ -196,11 +200,12 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Execute"),
 					jen.Err().Equals().ID("todoClient").Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("u").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be able to be read in a list",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create users"),
@@ -221,7 +226,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						jen.Err().Equals().ID("todoClient").Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("user").Dot("ID")),
 						utils.AssertNoError(jen.Err(), nil),
 					),
-				)),
+				),
 			)),
 		),
 		jen.Line(),

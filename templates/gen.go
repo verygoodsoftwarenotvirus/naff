@@ -52,6 +52,8 @@ type renderHelper struct {
 	activated  bool
 }
 
+const async = true
+
 // RenderProject renders a project
 func RenderProject(in *naffmodels.Project) error {
 	allActive := true
@@ -104,14 +106,22 @@ func RenderProject(in *naffmodels.Project) error {
 		for _, x := range packageRenderers {
 			if x.activated {
 				wg.Add(1)
-				go func(taskName string, renderer renderHelper) {
+				if async {
+					go func(taskName string, renderer renderHelper) {
+						start := time.Now()
+						if err := renderer.renderFunc(in); err != nil {
+							log.Fatalf("error rendering %q after %s: %v\n", taskName, time.Since(start), err)
+						}
+						progressBar.Incr()
+					}(x.name, x)
+				} else {
 					start := time.Now()
-					if err := renderer.renderFunc(in); err != nil {
-						log.Fatalf("error rendering %q after %s: %v\n", taskName, time.Since(start), err)
+					if err := x.renderFunc(in); err != nil {
+						log.Fatalf("error rendering %q after %s: %v\n", x.name, time.Since(start), err)
 					}
 					progressBar.Incr()
-					wg.Done()
-				}(x.name, x)
+				}
+				wg.Done()
 			}
 		}
 	}

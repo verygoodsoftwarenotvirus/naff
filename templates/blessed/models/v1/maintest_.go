@@ -17,9 +17,10 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("_").Equals().Parens(jen.VarPointer().ID("ErrorResponse").Values()).Dot("Error").Call(),
-			)),
+			),
 		),
 		jen.Line(),
 	)

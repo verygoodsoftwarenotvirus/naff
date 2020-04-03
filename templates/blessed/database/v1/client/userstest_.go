@@ -15,8 +15,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestClient_GetUser").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("exampleID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				jen.Line(),
@@ -28,7 +28,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -37,8 +37,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestClient_GetUserByUsername").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("exampleUsername").Assign().Lit("username"),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				jen.Line(),
@@ -50,7 +50,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -59,8 +59,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestClient_GetAllUserCount").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
@@ -79,9 +79,10 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with nil filter",
 				utils.CreateCtx(),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				utils.CreateNilQueryFilter(proj),
@@ -101,7 +102,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -110,8 +111,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestClient_GetUsers").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Values(),
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
@@ -130,9 +131,10 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with nil filter",
 				utils.CreateCtx(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Values(),
 				utils.CreateNilQueryFilter(proj),
@@ -152,7 +154,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -161,8 +163,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestClient_CreateUser").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Values(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				jen.Line(),
@@ -174,7 +176,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -183,8 +185,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestClient_UpdateUser").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				jen.Var().ID("expected").ID("error"),
 				jen.Line(),
@@ -195,7 +197,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -204,8 +206,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestClient_ArchiveUser").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("exampleInput").Assign().Add(utils.FakeUint64Func()),
 				jen.Var().ID("expected").ID("error"),
 				jen.Line(),
@@ -216,7 +218,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	)

@@ -96,8 +96,8 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideServer").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(jen.Lit("GetAllWebhooks"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Values(), jen.Nil()),
 				jen.Line(),
@@ -107,7 +107,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

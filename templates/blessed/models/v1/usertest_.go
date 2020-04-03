@@ -15,7 +15,8 @@ func userTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestUser_Update").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("actual").Assign().ID("User").Valuesln(
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.ID("HashedPassword").MapAssign().Lit("hashed_pass"),
@@ -29,7 +30,7 @@ func userTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Dot("Update").Call(jen.VarPointer().ID("exampleInput")),
 				utils.AssertEqual(jen.ID("exampleInput"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

@@ -22,7 +22,8 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestServerEncoderDecoder_EncodeResponse").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectation").Assign().Lit("name"),
 				jen.ID("ex").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
 				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
@@ -32,9 +33,10 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID("res").Dot("Body").Dot("String").Call(), jen.Qual("fmt", "Sprintf").Call(jen.Lit("{%q:%q}\n"), jen.Lit("name"), jen.ID("ex").Dot("Name")), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("as XML"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"as XML",
 				jen.ID("expectation").Assign().Lit("name"),
 				jen.ID("ex").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
 				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
@@ -45,7 +47,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 				jen.Err().Assign().ID("ed").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("ex")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.Qual("fmt", "Sprintf").Call(jen.Lit(`<example><name>%s</name></example>`), jen.ID("expectation")), jen.ID("res").Dot("Body").Dot("String").Call(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -54,7 +56,8 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestServerEncoderDecoder_DecodeRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectation").Assign().Lit("name"),
 				jen.ID("e").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
 				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
@@ -68,9 +71,10 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("x").ID("example"),
 				utils.AssertNoError(jen.ID("ed").Dot("DecodeRequest").Call(jen.ID("req"), jen.VarPointer().ID("x")), nil),
 				utils.AssertEqual(jen.ID("x").Dot("Name"), jen.ID("e").Dot("Name"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("as XML"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"as XML",
 				jen.ID("expectation").Assign().Lit("name"),
 				jen.ID("e").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
 				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
@@ -85,7 +89,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("x").ID("example"),
 				utils.AssertNoError(jen.ID("ed").Dot("DecodeRequest").Call(jen.ID("req"), jen.VarPointer().ID("x")), nil),
 				utils.AssertEqual(jen.ID("x").Dot("Name"), jen.ID("e").Dot("Name"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

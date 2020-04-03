@@ -110,8 +110,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 		jen.Func().IDf("TestClient_%sExists", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...)),
-		),
+			utils.BuildSubTestWithoutContext("obligatory", block...)),
 		jen.Line(),
 	}
 }
@@ -120,7 +119,6 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 	n := typ.Name
 	sn := n.Singular()
 
-	block := append([]jen.Code{utils.CreateCtx()}, buildRequisiteIDDeclarations(proj, typ)...)
 	mockCallArgs := []jen.Code{
 		jen.Litf("Get%s", sn),
 		jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -129,7 +127,8 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 	mockCallArgs = append(mockCallArgs, idCallArgs...)
 	callArgs := append([]jen.Code{utils.CtxVar()}, idCallArgs...)
 
-	block = append(block,
+	block := append(
+		buildRequisiteIDDeclarations(proj, typ),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 		jen.Line(),
@@ -144,9 +143,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 		jen.Func().IDf("TestClient_Get%s", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"),
-				jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...),
-			),
+			utils.BuildSubTest("obligatory", block...),
 		),
 		jen.Line(),
 	}
@@ -161,8 +158,8 @@ func buildTestClientGetAllOfSomethingForUser(proj *models.Project, typ models.Da
 		jen.Func().IDf("TestClient_GetAll%sForUser", pn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"obligatory",
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("expected").Assign().Slice().Qual(proj.ModelsV1Package(), sn).Values(),
@@ -174,7 +171,7 @@ func buildTestClientGetAllOfSomethingForUser(proj *models.Project, typ models.Da
 				utils.AssertTrue(jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	}
@@ -189,8 +186,8 @@ func buildTestClientGetAllOfSomethingCount(proj *models.Project, typ models.Data
 		jen.Func().IDf("TestClient_GetAll%sCount", pn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"obligatory",
 				jen.ID("exampleCount").Assign().Uint64().Call(jen.Lit(123)),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("exampleCount"), jen.Nil()),
@@ -200,7 +197,7 @@ func buildTestClientGetAllOfSomethingCount(proj *models.Project, typ models.Data
 				utils.AssertEqual(jen.ID("exampleCount"), jen.ID("actual"), nil, nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	}
@@ -316,9 +313,7 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 		jen.Func().IDf("TestClient_Create%s", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				lines...,
-			)),
+			utils.BuildSubTestWithoutContext("obligatory", lines...),
 		),
 		jen.Line(),
 	}
@@ -378,9 +373,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 		jen.Func().IDf("TestClient_Update%s", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				lines...,
-			)),
+			utils.BuildSubTestWithoutContext("obligatory", lines...),
 		),
 		jen.Line(),
 	}
@@ -413,8 +406,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 		jen.Func().IDf("TestClient_Archive%s", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(block...)),
-		),
+			utils.BuildSubTestWithoutContext("obligatory", block...)),
 		jen.Line(),
 	}
 }

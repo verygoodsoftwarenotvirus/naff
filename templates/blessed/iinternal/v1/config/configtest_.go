@@ -38,7 +38,8 @@ func configTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestParseConfigFile").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID("tf"), jen.Err()).Assign().Qual("io/ioutil", "TempFile").Call(jen.Qual("os", "TempDir").Call(), jen.Lit("*.toml")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.ID("expected").Assign().Lit("thisisatest"),
@@ -84,15 +85,16 @@ connection_details = "%s"
 				utils.AssertEqual(jen.ID("expectedConfig").Dot("Database").Dot("ConnectionDetails"), jen.ID("cfg").Dot("Database").Dot("ConnectionDetails"), nil),
 				jen.Line(),
 				jen.Qual("os", "Remove").Call(jen.ID("tf").Dot("Name").Call()),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nonexistent file"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with nonexistent file",
 				jen.List(jen.ID("cfg"), jen.Err()).Assign().ID("ParseConfigFile").Call(jen.Lit("/this/doesn't/even/exist/lol")),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("cfg"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 	return ret
 }

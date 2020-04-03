@@ -56,8 +56,8 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideUsersService").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("mockUserCount").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -89,9 +89,10 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertNotNil(jen.ID("service"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil userIDFetcher"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with nil userIDFetcher",
 				utils.CreateCtx(),
 				jen.ID("mockUserCount").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -119,10 +120,10 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					).Call(), jen.ID("mockDB"), jen.VarPointer().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(), jen.Nil(), jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.Nil()),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("service"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error initializing counter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"with error initializing counter",
 				jen.ID("mockUserCount").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -153,10 +154,10 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("service"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error getting user count"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"with error getting user count",
 				jen.ID("mockUserCount").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -186,7 +187,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("service"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

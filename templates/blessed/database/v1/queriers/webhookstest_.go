@@ -75,7 +75,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Func().IDf("Test%s_buildGetWebhookQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleWebhookID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
@@ -88,7 +89,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 				utils.AssertEqual(jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil),
 				utils.AssertEqual(jen.ID("exampleWebhookID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -101,8 +102,9 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to_user FROM webhooks WHERE belongs_to_user = %s AND id = %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
+
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
@@ -122,9 +124,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"surfaces sql.ErrNoRows",
 				utils.CreateCtx(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -146,9 +149,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error from database",
 				utils.CreateCtx(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -166,9 +170,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid response from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid response from database",
 				utils.CreateCtx(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -189,7 +194,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -200,7 +205,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Func().IDf("Test%s_buildGetWebhookCountQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				utils.CreateDefaultQueryFilter(proj),
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
@@ -211,7 +217,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 				utils.AssertEqual(jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -224,7 +230,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("SELECT COUNT(webhooks.id) FROM webhooks WHERE webhooks.archived_on IS NULL AND webhooks.belongs_to_user = %s LIMIT 20", getIncIndex(dbvendor, 0)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
@@ -238,9 +245,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error from database",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -253,7 +261,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertZero(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -264,13 +272,14 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Func().IDf("Test%s_buildGetAllWebhooksCountQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.ID("actual").Assign().ID(dbfl).Dot("buildGetAllWebhooksCountQuery").Call(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -283,7 +292,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -295,9 +305,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error from database",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -307,7 +318,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertZero(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -318,13 +329,14 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Func().IDf("Test%s_buildGetAllWebhooksQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to_user FROM webhooks WHERE archived_on IS NULL"),
 				jen.Line(),
 				jen.ID("actual").Assign().ID(dbfl).Dot("buildGetAllWebhooksQuery").Call(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -337,7 +349,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 			jen.Line(),
 			jen.ID("expectedListQuery").Assign().Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to_user FROM webhooks WHERE archived_on IS NULL"),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expectedCount").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedCountQuery").Assign().Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
@@ -364,9 +377,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"surfaces sql.ErrNoRows",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
@@ -377,9 +391,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error querying database",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -389,9 +404,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error from database",
 				jen.ID("example").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Name").MapAssign().Lit("name"),
@@ -406,9 +422,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error fetching count",
 				jen.ID("expectedCount").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedCountQuery").Assign().Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
@@ -436,7 +453,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -449,7 +466,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 			jen.Line(),
 			jen.ID("expectedListQuery").Assign().Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to_user FROM webhooks WHERE archived_on IS NULL"),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 				jen.ID("expected").Assign().Index().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.Valuesln(
@@ -470,9 +488,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"surfaces sql.ErrNoRows",
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -485,9 +504,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error querying database",
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -499,9 +519,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with erroneous response from database",
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())),
 				jen.ID("expected").Assign().Index().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.Valuesln(
@@ -519,7 +540,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -530,7 +551,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Func().IDf("Test%s_buildGetWebhooksQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
@@ -541,7 +563,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 				utils.AssertEqual(jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -554,7 +576,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 			jen.Line(),
 			jen.ID("expectedListQuery").Assign().Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to_user FROM webhooks WHERE archived_on IS NULL"),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedCount").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedCountQuery").Assign().Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
@@ -586,9 +609,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"surfaces sql.ErrNoRows",
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -601,9 +625,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error querying database",
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -615,9 +640,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with erroneous response from database",
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -633,9 +659,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error fetching count",
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedCount").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expectedCountQuery").Assign().Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
@@ -667,7 +694,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -692,7 +719,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Func().IDf("Test%s_buildWebhookCreationQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("Name").MapAssign().Lit("name"),
@@ -722,7 +750,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dot("buildWebhookCreationQuery").Call(jen.ID("exampleInput")),
 				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -767,7 +795,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				queryTail,
 			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				func() []jen.Code {
 					out := []jen.Code{
 						jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
@@ -816,9 +845,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 
 					return out
 				}()...,
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error interacting with database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error interacting with database",
 				jen.ID("expectedUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -847,7 +877,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -863,7 +893,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Func().IDf("Test%s_buildUpdateWebhookQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("Name").MapAssign().Lit("name"),
@@ -893,7 +924,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateWebhookQuery").Call(jen.ID("exampleInput")),
 				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -938,7 +969,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				queryTail,
 			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("Name").MapAssign().Lit("name"),
@@ -968,9 +1000,10 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error from database",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("Name").MapAssign().Lit("name"), jen.ID("ContentType").MapAssign().Lit("application/json"), jen.ID("URL").MapAssign().Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").MapAssign().Qual("net/http", "MethodPatch"), jen.ID("Events").MapAssign().Index().ID("string").Values(), jen.ID("DataTypes").MapAssign().Index().ID("string").Values(), jen.ID("Topics").MapAssign().Index().ID("string").Values(), jen.ID("BelongsToUser").MapAssign().Add(utils.FakeUint64Func())),
@@ -991,7 +1024,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -1007,7 +1040,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Func().IDf("Test%s_buildArchiveWebhookQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleWebhookID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
@@ -1025,7 +1059,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 				utils.AssertEqual(jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil),
 				utils.AssertEqual(jen.ID("exampleWebhookID"), jen.ID("args").Index(jen.Add(utils.FakeUint64Func())).Assert(jen.ID("uint64")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -1041,7 +1075,8 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Func().IDf("Test%s_ArchiveWebhook", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Name").MapAssign().Lit("name"),
@@ -1066,7 +1101,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			),
 		),
 		jen.Line(),
 	)

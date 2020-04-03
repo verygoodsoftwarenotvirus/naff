@@ -17,9 +17,10 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_buildDefaultTransport").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("_").Equals().ID("buildDefaultTransport").Call(),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -28,7 +29,8 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_defaultRoundTripper_RoundTrip").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("transport").Assign().ID("newDefaultRoundTripper").Call(),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(
@@ -42,7 +44,7 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("_"), jen.Err()).Equals().ID("transport").Dot("RoundTrip").Call(jen.ID("req")),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -51,9 +53,10 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_newDefaultRoundTripper").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("_").Equals().ID("newDefaultRoundTripper").Call(),
-			)),
+			),
 		),
 		jen.Line(),
 	)

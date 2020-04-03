@@ -34,7 +34,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_CreationInputMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -53,9 +54,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error decoding request",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -74,7 +76,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -83,7 +85,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_UpdateInputMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -102,9 +105,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error decoding request",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -123,7 +127,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

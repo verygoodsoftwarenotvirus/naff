@@ -94,7 +94,8 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 			buildRelevantOwnerVar(proj, typ),
 			buildRelevantIDFetcher(typ),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -131,9 +132,10 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with no rows returned",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -162,9 +164,10 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s from database", pcn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with error fetching %s from database", pcn),
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -194,9 +197,10 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error encoding response",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -229,9 +233,9 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	}
 
 	return lines
@@ -265,7 +269,8 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			buildRelevantOwnerVar(proj, typ),
 			buildRelevantIDFetcher(typ),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -311,9 +316,10 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusCreated"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without input attached"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without input attached",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -335,9 +341,10 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with error creating %s", scn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with error creating %s", scn),
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -373,9 +380,10 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error encoding response",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -419,9 +427,9 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusCreated"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	}
 
 	return lines
@@ -443,7 +451,8 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 			buildRelevantOwnerVar(proj, typ),
 			buildRelevantIDFetcher(typ),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -480,9 +489,10 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with no such %s in database", scn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with no such %s in database", scn),
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -514,9 +524,10 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s from database", scn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with error fetching %s from database", scn),
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -549,9 +560,10 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error encoding response",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -587,7 +599,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	}
@@ -623,7 +635,8 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			buildRelevantOwnerVar(proj, typ),
 			buildRelevantIDFetcher(typ),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -678,9 +691,10 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without update input"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without update input",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				//includeOwnerFetcher(typ),
 				jen.Line(),
@@ -696,9 +710,10 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with no rows fetching %s", scn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with no rows fetching %s", scn),
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -735,9 +750,10 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with error fetching %s", scn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with error fetching %s", scn),
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -773,9 +789,10 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with error updating %s", scn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with error updating %s", scn),
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -826,9 +843,10 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error encoding response",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -879,7 +897,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	}
@@ -902,7 +920,8 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 			buildRelevantOwnerVar(proj, typ),
 			buildRelevantIDFetcher(typ),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -950,9 +969,10 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNoContent"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Litf("with no %s in database", scn), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with no %s in database", scn),
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -984,9 +1004,10 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error reading from database",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
@@ -1017,9 +1038,9 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	}
 
 	return lines

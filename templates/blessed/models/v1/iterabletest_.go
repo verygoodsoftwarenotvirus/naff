@@ -40,8 +40,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildHappyPathBlock()...)),
-		),
+			utils.BuildSubTestWithoutContext("happy path", buildHappyPathBlock()...)),
 		jen.Line(),
 	)
 	return ret

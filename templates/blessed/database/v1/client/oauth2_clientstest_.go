@@ -28,8 +28,8 @@ func buildTestClient_GetOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Func().ID("TestClient_GetOAuth2Client").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("exampleClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
@@ -42,9 +42,10 @@ func buildTestClient_GetOAuth2Client(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error returned from querier"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error returned from querier",
 				utils.CreateCtx(),
 				jen.ID("exampleClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
@@ -58,9 +59,9 @@ func buildTestClient_GetOAuth2Client(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	}
 
 	return lines
@@ -71,8 +72,8 @@ func buildTestClient_GetOAuth2ClientByClientID(proj *models.Project) []jen.Code 
 		jen.Func().ID("TestClient_GetOAuth2ClientByClientID").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("exampleClientID").Assign().Lit("CLIENT_ID"),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
@@ -84,9 +85,10 @@ func buildTestClient_GetOAuth2ClientByClientID(proj *models.Project) []jen.Code 
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error returned from querier"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error returned from querier",
 				utils.CreateCtx(),
 				jen.ID("exampleClientID").Assign().Lit("CLIENT_ID"),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -99,9 +101,9 @@ func buildTestClient_GetOAuth2ClientByClientID(proj *models.Project) []jen.Code 
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	}
 
 	return lines
@@ -112,8 +114,8 @@ func buildTestClient_GetOAuth2ClientCount(proj *models.Project) []jen.Code {
 		jen.Func().ID("TestClient_GetOAuth2ClientCount").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -135,54 +137,55 @@ func buildTestClient_GetOAuth2ClientCount(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
+		jen.Line(),
+		utils.BuildSubTestWithoutContext(
+			"with nil filter",
+			utils.CreateCtx(),
+			jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
+			jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
+			jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+			utils.CreateNilQueryFilter(proj),
+			jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
+				jen.Lit("GetOAuth2ClientCount"),
+				jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("exampleUserID"),
+				jen.ID(utils.FilterVarName),
+			).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
-				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-				utils.CreateNilQueryFilter(proj),
-				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
-					jen.Lit("GetOAuth2ClientCount"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.ID("exampleUserID"),
-					jen.ID(utils.FilterVarName),
-				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2ClientCount").Call(
-					utils.CtxVar(),
-					jen.ID("exampleUserID"),
-					jen.ID(utils.FilterVarName),
-				),
-				utils.AssertNoError(jen.Err(), nil),
-				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2ClientCount").Call(
+				utils.CtxVar(),
+				jen.ID("exampleUserID"),
+				jen.ID(utils.FilterVarName),
+			),
+			utils.AssertNoError(jen.Err(), nil),
+			utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error returned from querier"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
-				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-				utils.CreateDefaultQueryFilter(proj),
-				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
-					jen.Lit("GetOAuth2ClientCount"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.ID("exampleUserID"),
-					jen.ID(utils.FilterVarName),
-				).Dot("Return").Call(jen.ID("expected"), jen.ID("errors").Dot("New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2ClientCount").Call(
-					utils.CtxVar(),
-					jen.ID("exampleUserID"),
-					jen.ID(utils.FilterVarName),
-				),
-				utils.AssertError(jen.Err(), nil),
-				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
+		),
+		jen.Line(),
+		utils.BuildSubTestWithoutContext(
+			"with error returned from querier",
+			utils.CreateCtx(),
+			jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
+			jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
+			jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+			utils.CreateDefaultQueryFilter(proj),
+			jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
+				jen.Lit("GetOAuth2ClientCount"),
+				jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.ID("exampleUserID"),
+				jen.ID(utils.FilterVarName),
+			).Dot("Return").Call(jen.ID("expected"), jen.ID("errors").Dot("New").Call(jen.Lit("blah"))),
+			jen.Line(),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2ClientCount").Call(
+				utils.CtxVar(),
+				jen.ID("exampleUserID"),
+				jen.ID(utils.FilterVarName),
+			),
+			utils.AssertError(jen.Err(), nil),
+			utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			jen.Line(),
+			jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 		),
 		jen.Line(),
 	}
@@ -195,8 +198,8 @@ func buildTestClient_GetAllOAuth2ClientCount(proj *models.Project) []jen.Code {
 		jen.Func().ID("TestClient_GetAllOAuth2ClientCount").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(jen.Lit("GetAllOAuth2ClientCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
@@ -206,7 +209,7 @@ func buildTestClient_GetAllOAuth2ClientCount(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	}
@@ -219,8 +222,8 @@ func buildTestClient_GetAllOAuth2Clients(proj *models.Project) []jen.Code {
 		jen.Func().ID("TestClient_GetAllOAuth2Clients").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(jen.Lit("GetAllOAuth2Clients"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
@@ -230,7 +233,7 @@ func buildTestClient_GetAllOAuth2Clients(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	}
@@ -243,8 +246,8 @@ func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
 		jen.Func().ID("TestClient_GetOAuth2Clients").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Values(),
@@ -265,9 +268,10 @@ func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with nil filter",
 				utils.CreateCtx(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
@@ -289,9 +293,10 @@ func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error returned from querier"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error returned from querier",
 				utils.CreateCtx(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
@@ -313,9 +318,9 @@ func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	}
 
 	return lines
@@ -326,8 +331,8 @@ func buildTestClient_CreateOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Func().ID("TestClient_CreateOAuth2Client").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Values(),
@@ -338,9 +343,10 @@ func buildTestClient_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error returned from querier"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error returned from querier",
 				utils.CreateCtx(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("expected").Assign().Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
@@ -352,9 +358,9 @@ func buildTestClient_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	}
 
 	return lines
@@ -365,8 +371,8 @@ func buildTestClient_UpdateOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Func().ID("TestClient_UpdateOAuth2Client").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("example").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
 				jen.Var().ID("expected").ID("error"),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -377,7 +383,7 @@ func buildTestClient_UpdateOAuth2Client(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	}
@@ -390,8 +396,8 @@ func buildTestClient_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Func().ID("TestClient_ArchiveOAuth2Client").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("exampleClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
 				jen.Var().ID("expected").ID("error"),
@@ -403,9 +409,10 @@ func buildTestClient_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error returned from querier"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error returned from querier",
 				utils.CreateCtx(),
 				jen.ID("exampleClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
@@ -418,9 +425,9 @@ func buildTestClient_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	}
 
 	return lines

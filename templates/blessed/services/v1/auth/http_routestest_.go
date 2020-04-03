@@ -15,7 +15,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_DecodeCookieFromRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/api/v1/something"), jen.Nil()),
@@ -32,9 +33,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertNotNil(jen.ID("cookie"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid cookie",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/api/v1/something"), jen.Nil()),
@@ -56,9 +58,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("cookie"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without cookie",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/api/v1/something"), jen.Nil()),
@@ -69,16 +72,17 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertEqual(jen.Err(), jen.Qual("net/http", "ErrNoCookie"), nil),
 				utils.AssertNil(jen.ID("cookie"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().ID("TestService_WebsocketAuthFunction").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with valid oauth2 client"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with valid oauth2 client",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
@@ -93,9 +97,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("s").Dot("WebsocketAuthFunction").Call(jen.ID("req")),
 				utils.AssertTrue(jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with valid cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with valid cookie",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("oac").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
@@ -114,9 +119,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("s").Dot("WebsocketAuthFunction").Call(jen.ID("req")),
 				utils.AssertTrue(jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nothing"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with nothing",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("oac").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
@@ -131,7 +137,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("s").Dot("WebsocketAuthFunction").Call(jen.ID("req")),
 				utils.AssertFalse(jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -140,7 +146,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_FetchUserFromRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("userID").Assign().Add(utils.FakeUint64Func()),
@@ -166,9 +173,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actualUser"), jen.Err()).Assign().ID("s").Dot("FetchUserFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				utils.AssertEqual(jen.ID("expectedUser"), jen.ID("actualUser"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without cookie",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("userID").Assign().Add(utils.FakeUint64Func()),
@@ -190,9 +198,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actualUser"), jen.Err()).Assign().ID("s").Dot("FetchUserFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				utils.AssertNil(jen.ID("actualUser"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error fetching user",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("userID").Assign().Add(utils.FakeUint64Func()),
@@ -219,7 +228,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actualUser"), jen.Err()).Assign().ID("s").Dot("FetchUserFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				utils.AssertNil(jen.ID("actualUser"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -228,7 +237,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_Login").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -265,9 +275,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNoContent"), nil),
 				utils.AssertNotEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching login data from request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error fetching login data from request",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -294,9 +305,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized"), nil),
 				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding error fetching login data"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error encoding error fetching login data",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -331,9 +343,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized"), nil),
 				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid login",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -370,9 +383,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized"), nil),
 				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error validating login",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -409,9 +423,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized"), nil),
 				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error building cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error building cookie",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("cb").Assign().VarPointer().ID("mockCookieEncoderDecoder").Values(),
@@ -455,9 +470,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
 				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error building cookie and error encoding cookie response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error building cookie and error encoding cookie response",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("cb").Assign().VarPointer().ID("mockCookieEncoderDecoder").Values(),
@@ -509,7 +525,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
 				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -518,7 +534,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_Logout").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
@@ -535,9 +552,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actualCookie").Assign().ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")),
 				utils.AssertContains(jen.ID("actualCookie"), jen.Lit("Max-Age=0"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without cookie",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
@@ -546,7 +564,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.ID("s").Dot("LogoutHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -555,7 +573,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_fetchLoginDataFromRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -581,9 +600,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("loginData")),
 				utils.AssertEqual(jen.ID("loginData").Dot("user"), jen.ID("expectedUser"), nil),
 				utils.AssertNil(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without login data attached to request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without login data attached to request",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
@@ -592,9 +612,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("_"), jen.Err()).Equals().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with DB error fetching user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with DB error fetching user",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -617,9 +638,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UserLoginInputMiddlewareCtxKey"), jen.ID("exampleLoginData"))),
 				jen.List(jen.ID("_"), jen.Err()).Equals().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error fetching user",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -642,7 +664,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UserLoginInputMiddlewareCtxKey"), jen.ID("exampleLoginData"))),
 				jen.List(jen.ID("_"), jen.Err()).Equals().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -651,7 +673,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_validateLogin").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().ID("true"),
@@ -678,9 +701,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with too weak a password hash"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with too weak a password hash",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().ID("true"),
@@ -717,9 +741,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with too weak a password hash and error hashing the password"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with too weak a password hash and error hashing the password",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().ID("false"),
@@ -751,9 +776,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with too weak a password hash and error updating user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with too weak a password hash and error updating user",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().ID("false"),
@@ -790,9 +816,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error validating login",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.CreateCtx(),
@@ -820,9 +847,10 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid login",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().ID("false"),
@@ -849,7 +877,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -858,16 +886,18 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_buildCookie").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleInput")),
 				utils.AssertNotNil(jen.ID("cookie"), nil),
 				utils.AssertNoError(jen.Err(), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error encoding",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("cb").Assign().VarPointer().ID("mockCookieEncoderDecoder").Values(),
@@ -881,16 +911,17 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleInput")),
 				utils.AssertNil(jen.ID("cookie"), nil),
 				utils.AssertError(jen.Err(), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().ID("TestService_CycleSecret").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("normal operation"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"normal operation",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
@@ -911,7 +942,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("decodeErr2").Assign().ID("s").Dot("cookieManager").Dot("Decode").Call(jen.ID("CookieName"), jen.ID("c").Dot("Value"), jen.VarPointer().ID("ca")),
 				utils.AssertError(jen.ID("decodeErr2"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

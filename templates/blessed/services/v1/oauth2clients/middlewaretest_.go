@@ -32,7 +32,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_CreationInputMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -61,9 +62,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error decoding request",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -86,16 +88,17 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().ID("TestService_RequestIsAuthenticated").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("THIS IS A FAKE CLIENT ID"),
@@ -123,9 +126,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating token"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error validating token",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("mh").Assign().VarPointer().ID("mockOauth2Handler").Values(),
@@ -140,9 +144,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error fetching from database",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("THIS IS A FAKE CLIENT ID"),
@@ -168,9 +173,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid scope"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid scope",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("THIS IS A FAKE CLIENT ID"),
@@ -198,9 +204,9 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 
 	ret.Add(
@@ -209,7 +215,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("These tests have a lot of overlap to those of ExtractOAuth2ClientFromRequest, which is deliberate"),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("THIS IS A FAKE CLIENT ID"),
@@ -244,9 +251,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2TokenAuthenticationMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error authenticating request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error authenticating request",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("mh").Assign().VarPointer().ID("mockOauth2Handler").Values(),
@@ -268,16 +276,17 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2TokenAuthenticationMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().ID("TestService_OAuth2ClientInfoMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().Lit("blah"),
 				jen.Line(),
@@ -303,9 +312,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2ClientInfoMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error reading from database",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().Lit("blah"),
 				jen.Line(),
@@ -331,17 +341,17 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2ClientInfoMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code"), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().ID("TestService_fetchOAuth2ClientFromRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("THIS IS A FAKE CLIENT ID"),
@@ -357,22 +367,23 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("s").Dot("fetchOAuth2ClientFromRequest").Call(jen.ID("req")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without value present"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without value present",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				utils.AssertNil(jen.ID("s").Dot("fetchOAuth2ClientFromRequest").Call(jen.ID("buildRequest").Call(jen.ID("t"))), nil),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Func().ID("TestService_fetchOAuth2ClientIDFromRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("THIS IS A FAKE CLIENT ID"),
@@ -388,18 +399,19 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("s").Dot("fetchOAuth2ClientIDFromRequest").Call(jen.ID("req")),
 				utils.AssertEqual(jen.ID("expected").Dot("ClientID"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("without value present"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"without value present",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Qual("github.com/stretchr/testify/assert",
 					"Empty",
 				).Call(jen.ID("t"), jen.ID("s").Dot(
 					"fetchOAuth2ClientIDFromRequest",
 				).Call(jen.ID("buildRequest").Call(jen.ID("t")))),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	)
 	return ret
 }

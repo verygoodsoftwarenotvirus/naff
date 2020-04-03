@@ -74,8 +74,8 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.Func().ID(fmt.Sprintf("TestProvide%sService", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
@@ -104,9 +104,10 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("s")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing unit counter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with error providing unit counter",
 				utils.CreateCtx(),
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -136,9 +137,10 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "Nil").Call(jen.ID("t"), jen.ID("s")),
 				jen.Qual("github.com/stretchr/testify/require", "Error").Call(jen.ID("t"), jen.Err()),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit(fmt.Sprintf("with error fetching %s count", cn)), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with error fetching %s count", cn),
 				utils.CreateCtx(),
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -168,9 +170,9 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "Nil").Call(jen.ID("t"), jen.ID("s")),
 				jen.Qual("github.com/stretchr/testify/require", "Error").Call(jen.ID("t"), jen.Err()),
-			)),
+			),
+			jen.Line(),
 		),
-		jen.Line(),
 	}
 
 	return lines

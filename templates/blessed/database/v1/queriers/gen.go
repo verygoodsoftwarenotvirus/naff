@@ -18,7 +18,7 @@ const (
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
-	for _, vendor := range []string{postgres, sqlite, mariadb} {
+	for _, vendor := range []string{postgres /*, sqlite, mariadb*/} {
 		if err := renderDatabasePackage(proj, vendor); err != nil {
 			return err
 		}

@@ -55,9 +55,10 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Func().IDf("TestProvide%s", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.ID("buildTestService").Call(jen.ID("t")),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -66,10 +67,11 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Func().IDf("Test%s_IsReady", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				utils.AssertTrue(jen.ID(dbfl).Dot("IsReady").Call(utils.CtxVar()), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -78,10 +80,11 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 		jen.Func().IDf("Test%s_logQueryBuildingError", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.List(jen.ID(dbfl), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Qual("errors", "New").Call(jen.Lit(""))),
-			)),
+			),
 		),
 		jen.Line(),
 	)

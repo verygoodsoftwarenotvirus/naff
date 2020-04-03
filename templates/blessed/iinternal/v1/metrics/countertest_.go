@@ -15,8 +15,8 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_opencensusCounter_Increment").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.List(jen.ID("ct"), jen.Err()).Assign().ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
 				jen.ID("c").Assign().ID("ct").Assert(jen.PointerTo().ID("opencensusCounter")),
 				jen.Line(),
@@ -25,7 +25,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Dot("Increment").Call(utils.CtxVar()),
 				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(1)), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -34,8 +34,8 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_opencensusCounter_IncrementBy").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.List(jen.ID("ct"), jen.Err()).Assign().ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
 				jen.ID("c").Assign().ID("ct").Assert(jen.PointerTo().ID("opencensusCounter")),
 				jen.Line(),
@@ -44,7 +44,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Dot("IncrementBy").Call(utils.CtxVar(), jen.Lit(666)),
 				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(666)), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -53,8 +53,8 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_opencensusCounter_Decrement").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+			utils.BuildSubTest(
+				"happy path",
 				jen.List(jen.ID("ct"), jen.Err()).Assign().ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
 				jen.ID("c").Assign().ID("ct").Assert(jen.PointerTo().ID("opencensusCounter")),
 				jen.Line(),
@@ -66,7 +66,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Dot("Decrement").Call(utils.CtxVar()),
 				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0)), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

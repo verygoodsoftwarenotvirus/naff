@@ -98,7 +98,8 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("test"), jen.Err(), jen.Lit("error setting up auxiliary client")),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be creatable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be creatable",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create oauth2Client"),
@@ -111,19 +112,21 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Clean up"),
 					jen.Err().Equals().ID("testClient").Dot("ArchiveOAuth2Client").Call(utils.CtxVar(), jen.ID("actual").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to read one that doesn't exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should return an error when trying to read one that doesn't exist",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Fetch oauth2Client"),
 					jen.List(jen.ID("_"), jen.Err()).Assign().ID("testClient").Dot("GetOAuth2Client").Call(utils.CtxVar(), jen.ID("nonexistentID")),
 					utils.AssertError(jen.Err(), nil),
-				)),
+				),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should be readable",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create oauth2Client"),
@@ -141,11 +144,12 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Clean up"),
 					jen.Err().Equals().ID("testClient").Dot("ArchiveOAuth2Client").Call(utils.CtxVar(), jen.ID("actual").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be deleted"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be able to be deleted",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create oauth2Client"),
@@ -156,9 +160,10 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Clean up"),
 					jen.Err().Equals().ID("testClient").Dot("ArchiveOAuth2Client").Call(utils.CtxVar(), jen.ID("premade").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
-				)),
+				),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be unable to authorize after being deleted"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be unable to authorize after being deleted",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("create user"),
@@ -192,11 +197,12 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.List(jen.ID("_"), jen.Err()).Equals().ID("c2").Dot("GetOAuth2Clients").Call(utils.CtxVar(), jen.Nil()),
 					utils.AssertError(jen.Err(), jen.Lit("expected error from what should be an unauthorized client")),
-				)),
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be able to be read in a list",
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create oauth2Clients"),
@@ -244,7 +250,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 							jen.Err(),
 						),
 					),
-				)),
+				),
 			)),
 		),
 		jen.Line(),

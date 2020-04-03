@@ -26,14 +26,15 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("x").Dot("HashPassword").Call(jen.ID("tctx"), jen.Lit("password")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertNotEmpty(jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -44,21 +45,23 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("normal usage"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"normal usage",
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 				jen.Line(),
 				jen.ID("actual").Assign().ID("x").Dot("PasswordMatches").Call(jen.ID("tctx"), jen.ID("hashedExamplePassword"), jen.ID("examplePassword"), jen.Nil()),
 				utils.AssertTrue(jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("when passwords don't match"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"when passwords don't match",
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.ID("tctx").Assign().Qual("context", "Background").Call(),
 				jen.Line(),
 				jen.ID("actual").Assign().ID("x").Dot("PasswordMatches").Call(jen.ID("tctx"), jen.ID("hashedExamplePassword"), jen.Lit("password"), jen.Nil()),
 				utils.AssertFalse(jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -69,12 +72,13 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Line(),
 				utils.AssertTrue(jen.ID("x").Dot("PasswordIsAcceptable").Call(jen.ID("examplePassword")), nil),
 				utils.AssertFalse(jen.ID("x").Dot("PasswordIsAcceptable").Call(jen.Lit("hi there")), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -85,7 +89,8 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("t").Dot("Parallel").Call(),
 				utils.CreateCtx(),
 				jen.Line(),
@@ -106,9 +111,10 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 					jen.Err(),
 				),
 				utils.AssertTrue(jen.ID("valid"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with weak hash"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with weak hash",
 				jen.ID("t").Dot("Parallel").Call(),
 				utils.CreateCtx(),
 				jen.Line(),
@@ -128,9 +134,10 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertError(jen.Err(), jen.Lit("unexpected error encountered validating login: %v"), jen.Err()),
 				utils.AssertTrue(jen.ID("valid"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with non-matching password"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with non-matching password",
 				jen.ID("t").Dot("Parallel").Call(),
 				utils.CreateCtx(),
 				jen.Line(),
@@ -147,9 +154,10 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertNoError(jen.Err(), jen.Lit("unexpected error encountered validating login: %v"), jen.Err()),
 				utils.AssertFalse(jen.ID("valid"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid code"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid code",
 				jen.ID("t").Dot("Parallel").Call(),
 				utils.CreateCtx(),
 				jen.Line(),
@@ -163,7 +171,7 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertError(jen.Err(), jen.Lit("unexpected error encountered validating login: %v"), jen.Err()),
 				utils.AssertTrue(jen.ID("valid"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -172,12 +180,13 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideBcrypt").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
 				jen.Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(
 					jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
-			)),
+			),
 		),
 
 		jen.Line(),

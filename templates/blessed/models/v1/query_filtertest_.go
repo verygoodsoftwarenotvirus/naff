@@ -15,7 +15,8 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestFromParams").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("actual").Assign().VarPointer().ID("QueryFilter").Values(),
 				jen.ID("expected").Assign().VarPointer().ID("QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(100),
@@ -44,7 +45,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Dot("FromParams").Call(jen.ID("exampleInput")),
 				utils.AssertEqual(jen.ID("SortAscending"), jen.ID("actual").Dot("SortBy"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -53,12 +54,13 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestQueryFilter_SetPage").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("qf").Assign().VarPointer().ID("QueryFilter").Values(),
 				jen.ID("expected").Assign().ID("uint64").Call(utils.FakeUint32Func()),
 				jen.ID("qf").Dot("SetPage").Call(jen.ID("expected")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("qf").Dot("Page"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -67,12 +69,13 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestQueryFilter_QueryPage").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("qf").Assign().VarPointer().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(10), jen.ID("Page").MapAssign().Lit(11)),
 				jen.ID("expected").Assign().ID("uint64").Call(jen.Lit(100)),
 				jen.ID("actual").Assign().ID("qf").Dot("QueryPage").Call(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -81,7 +84,8 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestQueryFilter_ToValues").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("qf").Assign().VarPointer().ID("QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(100),
 					jen.ID("Limit").MapAssign().Lit(50),
@@ -103,14 +107,15 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("actual").Assign().ID("qf").Dot("ToValues").Call(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with nil",
 				jen.ID("qf").Assign().Parens(jen.PointerTo().ID("QueryFilter")).Call(jen.Nil()),
 				jen.ID("expected").Assign().ID("DefaultQueryFilter").Call().Dot("ToValues").Call(),
 				jen.ID("actual").Assign().ID("qf").Dot("ToValues").Call(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -124,7 +129,8 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				Dotln("From").Call(jen.Lit("stuff")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("condition").MapAssign().ID("true"))),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("qf").Assign().VarPointer().ID("QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(100),
 					jen.ID("Limit").MapAssign().Lit(50),
@@ -142,9 +148,10 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("basic usecase"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"basic usecase",
 				jen.ID("exampleQF").Assign().VarPointer().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(15), jen.ID("Page").MapAssign().Lit(2)),
 				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE condition = $1 LIMIT 15 OFFSET 15`),
 				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
@@ -153,9 +160,10 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
 				utils.AssertNil(jen.Err(), nil),
 				utils.AssertNotEmpty(jen.ID("args"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("returns query builder if query filter is nil"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"returns query builder if query filter is nil",
 				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE condition = $1`),
 				jen.ID("x").Assign().Parens(jen.PointerTo().ID("QueryFilter")).Call(jen.Nil()).Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
@@ -163,9 +171,10 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
 				utils.AssertNil(jen.Err(), nil),
 				utils.AssertNotEmpty(jen.ID("args"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("whole kit and kaboodle"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"whole kit and kaboodle",
 				jen.ID("exampleQF").Assign().VarPointer().ID("QueryFilter").Valuesln(
 					jen.ID("Limit").MapAssign().Lit(20), jen.ID("Page").MapAssign().Lit(6),
 					jen.ID("CreatedAfter").MapAssign().ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -181,9 +190,10 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
 				utils.AssertNil(jen.Err(), nil),
 				utils.AssertNotEmpty(jen.ID("args"), nil),
-			)),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with zero limit"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with zero limit",
 				jen.ID("exampleQF").Assign().VarPointer().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(0), jen.ID("Page").MapAssign().Lit(1)),
 				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE condition = $1 LIMIT 250`),
 				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
@@ -192,7 +202,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
 				utils.AssertNil(jen.Err(), nil),
 				utils.AssertNotEmpty(jen.ID("args"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -201,7 +211,8 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestExtractQueryFilter").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("expected").Assign().VarPointer().ID("QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(100),
 					jen.ID("Limit").MapAssign().ID("MaxLimit"),
@@ -228,7 +239,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Dot("URL").Dot("RawQuery").Equals().ID("exampleInput").Dot("Encode").Call(),
 				jen.ID("actual").Assign().ID("ExtractQueryFilter").Call(jen.ID("req")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)

@@ -15,7 +15,8 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("c").Assign().VarPointer().ID("ServerConfig").Valuesln(
 					jen.ID("Metrics").MapAssign().ID("MetricsSettings").Valuesln(
 						jen.ID("RuntimeMetricsCollectionInterval").MapAssign().Qual("time", "Second"),
@@ -26,7 +27,7 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("ih"), jen.Err()).Assign().ID("c").Dot("ProvideInstrumentationHandler").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertNotNil(jen.ID("ih"), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
@@ -35,7 +36,8 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestServerConfig_ProvideTracing").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"happy path",
 				jen.ID("c").Assign().VarPointer().ID("ServerConfig").Valuesln(
 					jen.ID("Metrics").MapAssign().ID("MetricsSettings").Valuesln(
 						jen.ID("TracingProvider").MapAssign().ID("DefaultTracingProvider"),
@@ -43,7 +45,7 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("c").Dot("ProvideTracing").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()), nil),
-			)),
+			),
 		),
 		jen.Line(),
 	)
