@@ -142,8 +142,8 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			),
-			jen.Line(),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(

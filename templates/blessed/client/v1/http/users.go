@@ -414,6 +414,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 		jen.If(jen.ID("input").Is().Nil()).Block(
 			jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil input provided!"))),
 		),
+		jen.Line(),
 		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(utils.CtxVar(), jen.ID("input")),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(

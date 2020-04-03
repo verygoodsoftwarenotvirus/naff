@@ -13,10 +13,6 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		utils.FakeSeedFunc(),
-	)
-
-	ret.Add(
 		jen.Func().ID("buildRequest").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.ParamPointer().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -116,7 +112,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 
 		block = append(block,
 			jen.Line(),
-			utils.BuildSubTest(
+			utils.BuildSubTestWithoutContext(
 				fmt.Sprintf("with frontend %s routing path", tpcn),
 				jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("exampleDir").Assign().Lit("."),
@@ -126,7 +122,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 				utils.AssertNotNil(jen.ID("hf"), nil),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
-				jen.ID("req").Dot("URL").Dot("Path").Equals().Qual("fmt", "Sprintf").Call(jen.Lit(fmt.Sprintf("/%s/", typ.Name.PluralRouteName())+"%d"), utils.FakeUint64Func()),
+				jen.ID("req").Dot("URL").Dot("Path").Equals().Lit(fmt.Sprintf("/%s/123", typ.Name.PluralRouteName())),
 				jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),

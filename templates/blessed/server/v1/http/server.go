@@ -139,7 +139,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 	buildProvideServerLines := func() []jen.Code {
 		lines := []jen.Code{
 			jen.If(jen.ID("len").Call(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).Op("<").Lit(32)).Block(
-				jen.Err().Assign().ID("errors").Dot("New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
+				jen.Err().Assign().Qual("errors", "New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("cookie secret failure")),
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),

@@ -61,6 +61,7 @@ func buildBuildFakeOAuth2ClientList(proj *models.Project) []jen.Code {
 			jen.ID("exampleOAuth2Client1").Assign().ID("BuildFakeOAuth2Client").Call(),
 			jen.ID("exampleOAuth2Client2").Assign().ID("BuildFakeOAuth2Client").Call(),
 			jen.ID("exampleOAuth2Client3").Assign().ID("BuildFakeOAuth2Client").Call(),
+			jen.Line(),
 			jen.Return(
 				jen.VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(

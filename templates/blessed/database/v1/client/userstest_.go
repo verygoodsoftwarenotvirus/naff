@@ -54,7 +54,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.ID("exampleUsername"),
+					jen.ID("exampleUser").Dot("Username"),
 				).Dot("Return").Call(
 					jen.ID("exampleUser"), jen.Nil(),
 				),

@@ -46,8 +46,8 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
 				utils.AssertError(jen.ID("actual"), nil),
 			),
-			jen.Line(),
 		),
+		jen.Line(),
 	)
 
 	ret.Add(
@@ -104,8 +104,9 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.ID("actual"), nil),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
-			jen.Line(),
 		),
+		jen.Line(),
 	)
+
 	return ret
 }

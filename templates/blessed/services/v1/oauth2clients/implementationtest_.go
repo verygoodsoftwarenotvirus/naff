@@ -40,7 +40,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("exampleInput").Assign().VarPointer().Qual("goproj.in/oauth2.v3/errors", "Response").Values(),
+				jen.ID("exampleInput").Assign().VarPointer().Qual("gopkg.in/oauth2.v3/errors", "Response").Values(),
 				jen.ID("buildTestService").Call(jen.ID("t")).Dot("OAuth2ResponseErrorHandler").Call(jen.ID("exampleInput")),
 			),
 		),
@@ -263,7 +263,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("true"),
 				jen.Line(),
-				jen.ID("exampleGrant").Assign().Qual("goproj.in/oauth2.v3", "AuthorizationCode"),
+				jen.ID("exampleGrant").Assign().Qual("gopkg.in/oauth2.v3", "AuthorizationCode"),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").MapAssign().Lit("blah"),
@@ -286,7 +286,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				"with password credentials grant",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("false"),
-				jen.ID("exampleGrant").Assign().Qual("goproj.in/oauth2.v3", "PasswordCredentials"),
+				jen.ID("exampleGrant").Assign().Qual("gopkg.in/oauth2.v3", "PasswordCredentials"),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ClientAuthorizedHandler").Call(jen.Lit("ID"), jen.ID("exampleGrant")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
@@ -297,7 +297,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				"with error reading from database",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("false"),
-				jen.ID("exampleGrant").Assign().Qual("goproj.in/oauth2.v3", "AuthorizationCode"),
+				jen.ID("exampleGrant").Assign().Qual("gopkg.in/oauth2.v3", "AuthorizationCode"),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("ClientID").MapAssign().Lit("blah"), jen.ID("Scopes").MapAssign().Index().String().Values(),
 				),
@@ -321,7 +321,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().ID("false"),
 				jen.Line(),
-				jen.ID("exampleGrant").Assign().Qual("goproj.in/oauth2.v3", "Implicit"),
+				jen.ID("exampleGrant").Assign().Qual("gopkg.in/oauth2.v3", "Implicit"),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").MapAssign().Lit("blah"),

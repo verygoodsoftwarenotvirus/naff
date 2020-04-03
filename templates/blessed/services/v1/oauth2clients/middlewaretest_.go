@@ -109,7 +109,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.VarPointer().Qual("goproj.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").MapAssign().ID("expected").Dot("ClientID")), jen.Nil()),
+				).Dot("Return").Call(jen.VarPointer().Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").MapAssign().ID("expected").Dot("ClientID")), jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("mh"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -136,7 +136,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Parens(jen.ParamPointer().Qual("goproj.in/oauth2.v3/models", "Token")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.ParamPointer().Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("mh"),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -157,7 +157,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.VarPointer().Qual("goproj.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").MapAssign().ID("expected").Dot("ClientID")), jen.Nil()),
+				).Dot("Return").Call(jen.VarPointer().Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").MapAssign().ID("expected").Dot("ClientID")), jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("mh"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -187,7 +187,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.VarPointer().Qual("goproj.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").MapAssign().ID("expected").Dot("ClientID")), jen.Nil()),
+				).Dot("Return").Call(jen.VarPointer().Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").MapAssign().ID("expected").Dot("ClientID")), jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("mh"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -227,7 +227,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.VarPointer().Qual("goproj.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").MapAssign().ID("expected").Dot("ClientID")), jen.Nil()),
+				).Dot("Return").Call(jen.VarPointer().Qual("gopkg.in/oauth2.v3/models", "Token").Values(jen.ID("ClientID").MapAssign().ID("expected").Dot("ClientID")), jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("mh"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -261,7 +261,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual("github.com/stretchr/testify/mock", "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Parens(jen.ParamPointer().Qual("goproj.in/oauth2.v3/models", "Token")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.ParamPointer().Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("mh"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),

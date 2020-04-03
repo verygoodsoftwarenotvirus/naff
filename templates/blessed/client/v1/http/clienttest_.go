@@ -229,10 +229,8 @@ func buildTestV1Client_TokenSource() []jen.Code {
 			utils.BuildSubTest(
 				"obligatory",
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
-				jen.List(
-					jen.ID("c"),
-					jen.Err(),
-				).Assign().ID("NewClient").Callln(
+				jen.Line(),
+				jen.List(jen.ID("c"), jen.Err()).Assign().ID("NewClient").Callln(
 					utils.CtxVar(),
 					jen.Lit(""),
 					jen.Lit(""),
@@ -265,10 +263,8 @@ func buildTestNewClient() []jen.Code {
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
-				jen.List(
-					jen.ID("c"),
-					jen.Err(),
-				).Assign().ID("NewClient").Callln(
+				jen.Line(),
+				jen.List(jen.ID("c"), jen.Err()).Assign().ID("NewClient").Callln(
 					utils.CtxVar(),
 					jen.Lit(""),
 					jen.Lit(""),
@@ -396,12 +392,10 @@ func buildTestBuildURL() []jen.Code {
 				"various urls",
 				utils.ParallelTest(testVar()),
 				jen.Line(),
-				jen.List(
-					jen.ID("u"),
-					jen.Underscore(),
-				).Assign().Qual("net/url", "Parse").Call(
+				jen.List(jen.ID("u"), jen.Underscore()).Assign().Qual("net/url", "Parse").Call(
 					jen.ID("exampleURI"),
 				),
+				jen.Line(),
 				jen.List(
 					jen.ID("c"),
 					jen.Err(),
@@ -499,12 +493,10 @@ func buildTestBuildVersionlessURL() []jen.Code {
 				"various urls",
 				utils.ParallelTest(testVar()),
 				jen.Line(),
-				jen.List(
-					jen.ID("u"),
-					jen.Underscore(),
-				).Assign().Qual("net/url", "Parse").Call(
+				jen.List(jen.ID("u"), jen.Underscore()).Assign().Qual("net/url", "Parse").Call(
 					jen.ID("exampleURI"),
 				),
+				jen.Line(),
 				jen.List(
 					jen.ID("c"),
 					jen.Err(),
@@ -602,6 +594,7 @@ func buildTestV1Client_BuildWebsocketURL() []jen.Code {
 				).Assign().Qual("net/url", "Parse").Call(
 					jen.ID("exampleURI"),
 				),
+				jen.Line(),
 				jen.List(
 					jen.ID("c"),
 					jen.Err(),
@@ -963,8 +956,8 @@ func buildTestV1Client_checkExistence() []jen.Code {
 				utils.AssertFalse(jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
 			),
-			jen.Line(),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -1152,6 +1145,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 				),
 			),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -1167,6 +1161,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
@@ -1261,6 +1256,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 				),
 				utils.AssertError(jen.Err(), nil),
 			),
+			jen.Line(),
 			utils.BuildSubTest(
 				"with 401",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
@@ -1356,6 +1352,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 			utils.BuildSubTest(
 				"with unreadable response",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
@@ -1402,7 +1399,6 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					nil,
 				),
 			),
-			jen.Line(),
 		),
 		jen.Line(),
 	}
@@ -1484,6 +1480,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"),
@@ -1549,6 +1546,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 			utils.BuildSubTest(
 				"with 401",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
@@ -1610,9 +1608,11 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 				utils.AssertEqual(jen.ID("ErrUnauthorized"),
 					jen.Err(), nil),
 			),
+			jen.Line(),
 			utils.BuildSubTest(
 				"with 404",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
@@ -1678,6 +1678,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 			utils.BuildSubTest(
 				"with timeout",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
@@ -1743,6 +1744,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 			utils.BuildSubTest(
 				"with nil as output",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
@@ -1786,6 +1788,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 			utils.BuildSubTest(
 				"with unreadable response",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
+				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"),

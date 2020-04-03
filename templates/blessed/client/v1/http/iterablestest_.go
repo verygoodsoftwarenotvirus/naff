@@ -14,7 +14,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(buildTestV1Client_BuildItemExistsRequest(proj, typ)...)
-	ret.Add(buildTestV1Client_ItemExists(proj, typ)...)
+	ret.Add(buildTestV1Client_SomethingExists(proj, typ)...)
 	ret.Add(buildTestV1Client_BuildGetSomethingRequest(proj, typ)...)
 	ret.Add(buildTestV1Client_GetSomething(proj, typ)...)
 	ret.Add(buildTestV1Client_BuildGetListOfSomethingRequest(proj, typ)...)
@@ -184,7 +184,7 @@ func buildTestV1Client_BuildItemExistsRequest(proj *models.Project, typ models.D
 	return lines
 }
 
-func buildTestV1Client_ItemExists(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
 	// routes

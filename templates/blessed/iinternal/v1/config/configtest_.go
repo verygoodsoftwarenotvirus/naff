@@ -93,8 +93,8 @@ connection_details = "%s"
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("cfg"), nil),
 			),
-			jen.Line(),
 		),
+		jen.Line(),
 	)
 	return ret
 }

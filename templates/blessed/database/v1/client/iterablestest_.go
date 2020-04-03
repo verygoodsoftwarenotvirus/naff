@@ -96,6 +96,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 	callArgs := append([]jen.Code{utils.CtxVar()}, idCallArgs...)
 
 	block = append(block,
+		jen.Line(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.True(), jen.Nil()),
 		jen.Line(),
@@ -129,6 +130,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 
 	block := append(
 		buildRequisiteIDDeclarations(proj, typ),
+		jen.Line(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 		jen.Line(),
@@ -189,6 +191,7 @@ func buildTestClientGetAllOfSomethingCount(proj *models.Project, typ models.Data
 			utils.BuildSubTest(
 				"obligatory",
 				jen.ID("exampleCount").Assign().Uint64().Call(jen.Lit(123)),
+				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("exampleCount"), jen.Nil()),
 				jen.Line(),

@@ -285,7 +285,6 @@ func buildNewSimpleClient() []jen.Code {
 		jen.Line(),
 		jen.Comment("is a route that doesn't require authentication)"),
 		jen.Line(),
-		jen.Line(),
 		jen.Func().ID("NewSimpleClient").Params(
 			utils.CtxParam(),
 			jen.ID("address").ParamPointer().Qual("net/url", "URL"),

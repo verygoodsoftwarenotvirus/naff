@@ -116,7 +116,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			).Else().If(jen.ID("ucr").Op("==").ID("nil")).Block(
-				jen.Return().List(jen.Nil(), jen.ID("errors").Dot("New").Call(jen.Lit("something happened"))),
+				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("something happened"))),
 			),
 			jen.Line(),
 			jen.ID("u").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
@@ -197,7 +197,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.ID("cookies").Index(jen.Lit(0)), jen.Nil()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.Nil(), jen.ID("errors").Dot("New").Call(jen.Lit("no cookie found :("))),
+			jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("no cookie found :("))),
 		),
 		jen.Line(),
 	)

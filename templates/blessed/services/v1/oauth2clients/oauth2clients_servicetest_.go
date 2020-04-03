@@ -17,11 +17,11 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("buildTestService").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("manager").Assign().Qual("goproj.in/oauth2.v3/manage", "NewDefaultManager").Call(),
-			jen.List(jen.ID("tokenStore"), jen.Err()).Assign().Qual("goproj.in/oauth2.v3/store", "NewMemoryTokenStore").Call(),
+			jen.ID("manager").Assign().Qual("gopkg.in/oauth2.v3/manage", "NewDefaultManager").Call(),
+			jen.List(jen.ID("tokenStore"), jen.Err()).Assign().Qual("gopkg.in/oauth2.v3/store", "NewMemoryTokenStore").Call(),
 			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.ID("manager").Dot("MustTokenStorage").Call(jen.ID("tokenStore"), jen.Err()),
-			jen.ID("server").Assign().Qual("goproj.in/oauth2.v3/server", "NewDefaultServer").Call(jen.ID("manager")),
+			jen.ID("server").Assign().Qual("gopkg.in/oauth2.v3/server", "NewDefaultServer").Call(jen.ID("manager")),
 			jen.Line(),
 			jen.ID("service").Assign().VarPointer().ID("Service").Valuesln(
 				jen.ID("database").MapAssign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),

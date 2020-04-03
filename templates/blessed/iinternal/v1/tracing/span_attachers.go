@@ -73,6 +73,7 @@ func buildAttachUint64ToSpan() []jen.Code {
 				),
 			),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -88,6 +89,7 @@ func buildAttachStringToSpan() []jen.Code {
 				jen.ID(utils.SpanVarName).Dot("AddAttributes").Call(jen.Qual(utils.TracingLibrary, "StringAttribute").Call(jen.ID("key"), jen.ID("str"))),
 			),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -114,6 +116,7 @@ func buildAttachFilterToSpan(proj *models.Project) []jen.Code {
 				),
 			),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -133,6 +136,7 @@ func buildAttachSomethingIDToSpan(typ models.DataType) []jen.Code {
 		).Block(
 			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.IDf("%sIDSpanAttachmentKey", uvn), jen.IDf("%sID", uvn)),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -148,6 +152,7 @@ func buildAttachUserIDToSpan() []jen.Code {
 		).Block(
 			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("userIDSpanAttachmentKey"), jen.ID("userID")),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -163,6 +168,7 @@ func buildAttachOAuth2ClientDatabaseIDToSpan() []jen.Code {
 		).Block(
 			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("oauth2ClientDatabaseIDSpanAttachmentKey"), jen.ID("oauth2ClientID")),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -178,6 +184,7 @@ func buildAttachOAuth2ClientIDToSpan() []jen.Code {
 		).Block(
 			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("oauth2ClientIDSpanAttachmentKey"), jen.ID("clientID")),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -193,6 +200,7 @@ func buildAttachUsernameToSpan() []jen.Code {
 		).Block(
 			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("usernameSpanAttachmentKey"), jen.ID("username")),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -208,6 +216,7 @@ func buildAttachWebhookIDToSpan() []jen.Code {
 		).Block(
 			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("webhookIDSpanAttachmentKey"), jen.ID("webhookID")),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -223,6 +232,7 @@ func buildAttachRequestURIToSpan() []jen.Code {
 		).Block(
 			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("requestURISpanAttachmentKey"), jen.ID("uri")),
 		),
+		jen.Line(),
 	}
 
 	return lines

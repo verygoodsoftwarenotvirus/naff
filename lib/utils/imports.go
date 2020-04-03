@@ -28,7 +28,9 @@ func AddImports(proj *models.Project, file *jen.File) {
 	pkgRoot := proj.OutputPath
 
 	file.ImportAlias(filepath.Join(pkgRoot, "client", "v1", "http"), "client")
+
 	file.ImportAlias(filepath.Join(pkgRoot, "database", "v1"), "database")
+
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "auth"), "auth")
 	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "auth/mock"), "mockauth")
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "config"), "config")
@@ -37,26 +39,30 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "metrics"), "metrics")
 	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "metrics/mock"), "mockmetrics")
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "tracing"), "tracing")
+
 	file.ImportAlias(filepath.Join(pkgRoot, "database", "v1", "client"), "dbclient")
 	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers/mariadb"), "mariadb")
 	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers/postgres"), "postgres")
 	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers/sqlite"), "sqlite")
+
 	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1"), "models")
 	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1", "mock"), "mockmodels")
 	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1", "fake"), "fakemodels")
+
 	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1"), "server")
 	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1", "http"), "httpserver")
-	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "auth"), "auth")
-	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "frontend"), "frontend")
+
+	file.ImportAlias(filepath.Join(pkgRoot, "services", "v1", "auth"), "authservice")
+	file.ImportAlias(filepath.Join(pkgRoot, "services", "v1", "frontend"), "frontendservice")
+	file.ImportAlias(filepath.Join(pkgRoot, "services", "v1", "oauth2clients"), "oauth2clientsservice")
+	file.ImportAlias(filepath.Join(pkgRoot, "services", "v1", "users"), "usersservice")
+	file.ImportAlias(filepath.Join(pkgRoot, "services", "v1", "webhooks"), "webhooksservice")
 
 	for _, typ := range proj.DataTypes {
 		pn := typ.Name.PackageName()
-		file.ImportName(filepath.Join(pkgRoot, "services/v1", pn), pn)
+		file.ImportAlias(filepath.Join(pkgRoot, "services/v1", pn), fmt.Sprintf("%sservice", pn))
 	}
 
-	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "oauth2clients"), "oauth2clients")
-	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "users"), "users")
-	file.ImportName(filepath.Join(pkgRoot, "services", "v1", "webhooks"), "webhooks")
 	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "frontend"), "frontend")
 	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "integration"), "integration")
 	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "load"), "load")
@@ -74,14 +80,18 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportName(MustAssertPkg, "require")
 	file.ImportName(MockPkg, "mock")
 	file.ImportAlias(FakeLibrary, "fake")
+	file.ImportName(TracingLibrary, "trace")
 
 	file.ImportName("go.opencensus.io/stats", "stats")
 	file.ImportName("go.opencensus.io/stats/view", "view")
 
+	file.ImportAlias("gopkg.in/oauth2.v3", "oauth2")
 	file.ImportAlias("gopkg.in/oauth2.v3/models", "oauth2models")
 	file.ImportAlias("gopkg.in/oauth2.v3/errors", "oauth2errors")
 	file.ImportAlias("gopkg.in/oauth2.v3/server", "oauth2server")
 	file.ImportAlias("gopkg.in/oauth2.v3/store", "oauth2store")
+
+	file.ImportName("golang.org/x/crypto/bcrypt", "bcrypt")
 
 	// databases
 	file.ImportAlias("github.com/lib/pq", "postgres")
@@ -113,6 +123,7 @@ func AddImports(proj *models.Project, file *jen.File) {
 		"github.com/boombuler/barcode":                 "barcode",
 		"github.com/emicklei/hazana":                   "hazana",
 		"github.com/go-chi/chi":                        "chi",
+		"github.com/go-chi/middleware":                 "middleware",
 		"github.com/go-chi/cors":                       "cors",
 		"github.com/google/wire":                       "wire",
 		"github.com/gorilla/securecookie":              "securecookie",
@@ -125,7 +136,6 @@ func AddImports(proj *models.Project, file *jen.File) {
 		"gitlab.com/verygoodsoftwarenotvirus/newsman":  "newsman",
 		"go.opencensus.io":                             "opencensus",
 		"golang.org/x/crypto":                          "crypto",
-		"gopkg.in/oauth2.v3":                           "oauth2",
 		"go.opencensus.io/plugin/ochttp":               "ochttp",
 		"github.com/pquerna/otp/totp":                  "totp",
 		"golang.org/x/oauth2/clientcredentials":        "clientcredentials",
