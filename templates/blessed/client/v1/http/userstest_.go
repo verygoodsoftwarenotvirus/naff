@@ -89,7 +89,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 							jen.Lit("/users/%d"),
 							jen.ID("exampleUser").Dot("ID"),
 						),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
 					utils.RequireNoError(
@@ -183,7 +183,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Lit("/users"),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
@@ -276,7 +276,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Lit("/users"),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
@@ -391,7 +391,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 							jen.Lit("/users/%d"),
 							jen.ID("exampleUser").Dot("ID"),
 						),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
@@ -475,7 +475,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Lit("/users/login"),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
@@ -538,7 +538,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Lit("/users/login"),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
@@ -579,7 +579,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Lit("/users/login"),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),

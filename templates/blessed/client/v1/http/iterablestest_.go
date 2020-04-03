@@ -214,7 +214,7 @@ func buildTestV1Client_ItemExists(proj *models.Project, typ models.DataType) []j
 						buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
 					)...,
 				),
-				jen.Lit("expected and actual paths don't match"),
+				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodHead"), nil),
 			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
@@ -335,7 +335,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 						buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
 					)...,
 				),
-				jen.Lit("expected and actual paths don't match"),
+				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.IDf("example%s", ts)), nil),
@@ -387,7 +387,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 						buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
 					)...,
 				),
-				jen.Lit("expected and actual paths don't match"),
+				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Lit("BLAH")), nil),
@@ -486,7 +486,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				uriDec,
-				jen.Lit("expected and actual paths don't match"),
+				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(
 				jen.ID("req").Dot("Method"),
@@ -532,7 +532,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				uriDec,
-				jen.Lit("expected and actual paths don't match"),
+				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(
 				jen.ID("req").Dot("Method"),
@@ -650,7 +650,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				uriDec,
-				jen.Lit("expected and actual paths don't match"),
+				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 			jen.Line(),
@@ -751,7 +751,7 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 						buildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(proj, typ)...,
 					)...,
 				),
-				jen.Lit("expected and actual paths don't match"),
+				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
 			utils.AssertNoError(
@@ -859,7 +859,7 @@ func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataTyp
 						buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)[1:]...,
 					)...,
 				),
-				jen.Lit("expected and actual paths don't match"),
+				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(
 				jen.ID("req").Dot("Method"),

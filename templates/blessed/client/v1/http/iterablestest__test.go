@@ -121,7 +121,7 @@ func TestV1Client_GetChild(T *testing.T) {
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
 					assert.True(t, strings.HasSuffix(req.URL.String(), strconv.Itoa(int(child.ID))))
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children/%d", grandparent.ID, parent.ID, child.ID), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children/%d", grandparent.ID, parent.ID, child.ID), "expected and actual paths do not match")
 					assert.Equal(t, req.Method, http.MethodGet)
 					require.NoError(t, json.NewEncoder(res).Encode(child))
 				},
@@ -262,7 +262,7 @@ func TestV1Client_GetChildren(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children", grandparent.ID, parent.ID), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children", grandparent.ID, parent.ID), "expected and actual paths do not match")
 					assert.Equal(t, req.Method, http.MethodGet)
 					require.NoError(t, json.NewEncoder(res).Encode(children))
 				},
@@ -436,7 +436,7 @@ func TestV1Client_CreateChild(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children", grandparent.ID, parent.ID), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children", grandparent.ID, parent.ID), "expected and actual paths do not match")
 					assert.Equal(t, req.Method, http.MethodPost)
 
 					var x *v1.ChildCreationInput
@@ -686,7 +686,7 @@ func TestV1Client_UpdateChild(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children/%d", grandparent.ID, child.BelongsToParent, child.ID), "expected and actual paths don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children/%d", grandparent.ID, child.BelongsToParent, child.ID), "expected and actual paths do not match")
 					assert.Equal(t, req.Method, http.MethodPut)
 					assert.NoError(t, json.NewEncoder(res).Encode(child))
 				},
@@ -823,7 +823,7 @@ func TestV1Client_ArchiveChild(T *testing.T) {
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
 				func(res http.ResponseWriter, req *http.Request) {
-					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children/%d", grandparent.ID, parent.ID, child.ID), "expected and actual path don't match")
+					assert.Equal(t, req.URL.Path, fmt.Sprintf("/api/v1/grandparents/%d/parents/%d/children/%d", grandparent.ID, parent.ID, child.ID), "expected and actual paths do not match")
 					assert.Equal(t, req.Method, http.MethodDelete)
 					res.WriteHeader(http.StatusOK)
 				},

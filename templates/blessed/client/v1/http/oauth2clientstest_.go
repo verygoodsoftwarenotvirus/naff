@@ -104,7 +104,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 							jen.ID("exampleOAuth2Client").Dot("ID"),
 						),
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
@@ -211,7 +211,7 @@ func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
 						jen.Lit("/api/v1/oauth2/clients"),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
@@ -333,7 +333,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 							utils.AssertEqual(
 								jen.Lit("/oauth2/client"),
 								jen.ID("req").Dot("URL").Dot("Path"),
-								jen.Lit("expected and actual path don't match"),
+								jen.Lit("expected and actual paths do not match"),
 							),
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -388,7 +388,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 							utils.AssertEqual(
 								jen.ID("req").Dot("URL").Dot("Path"),
 								jen.Lit("/oauth2/client"),
-								jen.Lit("expected and actual path don't match"),
+								jen.Lit("expected and actual paths do not match"),
 							),
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -497,7 +497,7 @@ func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 							jen.Lit("/api/v1/oauth2/clients/%d"),
 							jen.ID("exampleOAuth2Client").Dot("ID"),
 						),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("Method"),
