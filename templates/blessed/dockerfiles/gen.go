@@ -14,6 +14,7 @@ import (
 func RenderPackage(project *models.Project) error {
 	files := map[string]func(projRoot, binaryName string) []byte{
 		"dockerfiles/development.Dockerfile":                 developmentDotDockerfile,
+		"dockerfiles/formatting.Dockerfile":                  formattingDotDockerfile,
 		"dockerfiles/frontend-tests.Dockerfile":              frontendTestDotDockerfile,
 		"dockerfiles/integration-coverage-server.Dockerfile": integrationCoverageServerDotDockerfile,
 		"dockerfiles/integration-server.Dockerfile":          integrationServerDotDockerfile,
@@ -44,6 +45,20 @@ func RenderPackage(project *models.Project) error {
 
 	return nil
 }
+
+func formattingDotDockerfile(projRoot, binaryName string) []byte {
+	return []byte(fmt.Sprintf(`FROM golang:stretch
+
+WORKDIR /go/src/%s
+
+RUN apt-get update -y && apt-get install -y make git gcc musl-dev
+
+ADD . .
+
+CMD if [ $(gofmt -l . | grep -Ev '^vendor\/' | head -c1 | wc -c) -ne 0 ]; then exit 1; fi
+`, projRoot))
+}
+
 func developmentDotDockerfile(projRoot, binaryName string) []byte {
 	return []byte(fmt.Sprintf(`# frontend-build-stage
 FROM node:latest AS frontend-build-stage

@@ -91,7 +91,7 @@ func grafanaLocalProvisioningDashboardsAllDotYAML(project *models.Project) []byt
 func grafanLocalProvisioningDataSourcesAllDotYAML(project *models.Project) []byte {
 	return []byte(`apiVersion: 1
 
-# Gracias a https://ops.tips/blog/initialize-grafana-with-preconfigured-dashboards/#configuring-grafana
+# Thanks to https://ops.tips/blog/initialize-grafana-with-preconfigured-dashboards/#configuring-grafana
 datasources:
   - access: 'proxy' # make grafana perform the requests
     version: 1 # well, versioning
