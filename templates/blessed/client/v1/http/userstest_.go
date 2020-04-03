@@ -425,9 +425,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		utils.OuterTestFunc("V1Client_BuildLoginRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"happy path",
-				utils.CreateCtx(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
@@ -447,9 +446,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.Err(), nil),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with nil input",
-				utils.CreateCtx(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),

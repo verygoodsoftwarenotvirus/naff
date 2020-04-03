@@ -54,9 +54,8 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestIsReady").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"obligatory",
-				utils.CreateCtx(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("IsReady"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.True()),
 				jen.Line(),
@@ -88,9 +87,8 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.Err(), nil),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with error migrating querier",
-				utils.CreateCtx(),
 				jen.ID("expected").Assign().Qual("errors", "New").Call(jen.Lit("blah")),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected")),

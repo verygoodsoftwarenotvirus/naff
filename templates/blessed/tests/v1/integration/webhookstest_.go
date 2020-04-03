@@ -67,9 +67,8 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
+				utils.BuildSubTest(
 					"should be createable",
-					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),
@@ -100,9 +99,8 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
+				utils.BuildSubTest(
 					"should be able to be read in a list",
-					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create webhooks"),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
@@ -124,18 +122,16 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
+				utils.BuildSubTest(
 					"it should return an error when trying to read something that doesn't exist",
-					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Fetch webhook"),
 					jen.List(jen.ID("_"), jen.Err()).Assign().ID("todoClient").Dot("GetWebhook").Call(utils.CtxVar(), jen.ID("nonexistentID")),
 					utils.AssertError(jen.Err(), nil),
 				),
 				jen.Line(),
-				utils.BuildSubTestWithoutContext(
+				utils.BuildSubTest(
 					"it should be readable",
-					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),
@@ -218,9 +214,8 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
+				utils.BuildSubTest(
 					"should be able to be deleted",
-					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),

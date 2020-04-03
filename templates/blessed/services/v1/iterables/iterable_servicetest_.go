@@ -106,9 +106,8 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with error providing unit counter",
-				utils.CreateCtx(),
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),

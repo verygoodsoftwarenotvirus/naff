@@ -91,9 +91,8 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNotNil(jen.ID("service"), nil),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with nil userIDFetcher",
-				utils.CreateCtx(),
 				jen.ID("mockUserCount").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(

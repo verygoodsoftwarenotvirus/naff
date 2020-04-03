@@ -61,9 +61,8 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.Err(), nil),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with error providing counter",
-				utils.CreateCtx(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
@@ -83,9 +82,8 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), nil),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with error setting count",
-				utils.CreateCtx(),
 				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),

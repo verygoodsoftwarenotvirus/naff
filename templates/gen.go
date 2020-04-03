@@ -55,7 +55,7 @@ type renderHelper struct {
 const async = true
 
 // RenderProject renders a project
-func RenderProject(in *naffmodels.Project) error {
+func RenderProject(proj *naffmodels.Project) error {
 	allActive := true
 
 	packageRenderers := []renderHelper{
@@ -102,31 +102,33 @@ func RenderProject(in *naffmodels.Project) error {
 	uiprogress.Start()
 	progressBar := uiprogress.AddBar(len(packageRenderers)).PrependElapsed().AppendCompleted()
 
-	if in != nil {
+	wg.Add(1)
+	if proj != nil {
 		for _, x := range packageRenderers {
 			if x.activated {
-				wg.Add(1)
 				if async {
-					go func(taskName string, renderer renderHelper) {
-						start := time.Now()
-						if err := renderer.renderFunc(in); err != nil {
-							log.Fatalf("error rendering %q after %s: %v\n", taskName, time.Since(start), err)
-						}
-						progressBar.Incr()
-					}(x.name, x)
+					go renderTask(proj, &wg, x, progressBar)
 				} else {
-					start := time.Now()
-					if err := x.renderFunc(in); err != nil {
-						log.Fatalf("error rendering %q after %s: %v\n", x.name, time.Since(start), err)
-					}
-					progressBar.Incr()
+					renderTask(proj, &wg, x, progressBar)
 				}
-				wg.Done()
 			}
 		}
 	}
 
+	// probably unnecessary?
+	time.Sleep(2 * time.Second)
+	wg.Done()
 	wg.Wait()
 
 	return nil
+}
+
+func renderTask(proj *naffmodels.Project, wg *sync.WaitGroup, renderer renderHelper, progressBar *uiprogress.Bar) {
+	wg.Add(1)
+	start := time.Now()
+	if err := renderer.renderFunc(proj); err != nil {
+		log.Fatalf("error rendering %q after %s: %v\n", renderer.name, time.Since(start), err)
+	}
+	progressBar.Incr()
+	wg.Done()
 }

@@ -119,9 +119,8 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with nil filter",
-				utils.CreateCtx(),
 				jen.ID("exampleWebhookList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookList").Call(),
 				utils.CreateNilQueryFilter(proj),
 				jen.Line(),

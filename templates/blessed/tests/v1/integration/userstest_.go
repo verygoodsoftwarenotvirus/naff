@@ -124,9 +124,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
+				utils.BuildSubTest(
 					"should be creatable",
-					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("expected").Assign().ID("buildDummyUserInput").Call(jen.ID("t")),
@@ -144,9 +143,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
+				utils.BuildSubTest(
 					"it should return an error when trying to read something that doesn't exist",
-					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Fetch user"),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUser").Call(utils.CtxVar(), jen.ID("nonexistentID")),
@@ -154,9 +152,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertError(jen.Err(), nil),
 				),
 				jen.Line(),
-				utils.BuildSubTestWithoutContext(
+				utils.BuildSubTest(
 					"it should be readable",
-					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("expected").Assign().ID("buildDummyUserInput").Call(jen.ID("t")),
@@ -182,9 +179,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
+				utils.BuildSubTest(
 					"should be able to be deleted",
-					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("y").Assign().ID("buildDummyUserInput").Call(jen.ID("t")),
@@ -204,9 +200,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
+				utils.BuildSubTest(
 					"should be able to be read in a list",
-					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create users"),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),

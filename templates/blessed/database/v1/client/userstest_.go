@@ -81,9 +81,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with nil filter",
-				utils.CreateCtx(),
 				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
 				utils.CreateNilQueryFilter(proj),
 				jen.Line(),
@@ -133,9 +132,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with nil filter",
-				utils.CreateCtx(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Values(),
 				utils.CreateNilQueryFilter(proj),
 				jen.Line(),

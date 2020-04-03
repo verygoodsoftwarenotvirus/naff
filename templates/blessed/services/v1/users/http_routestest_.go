@@ -85,9 +85,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("sc"), nil),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with no rows found in database",
-				utils.CreateCtx(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
@@ -118,9 +117,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID("sc"), nil),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with error fetching from database",
-				utils.CreateCtx(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
@@ -147,9 +145,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("sc"), nil),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with error validating login",
-				utils.CreateCtx(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
@@ -188,9 +185,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("sc"), nil),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with invalid login",
-				utils.CreateCtx(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(

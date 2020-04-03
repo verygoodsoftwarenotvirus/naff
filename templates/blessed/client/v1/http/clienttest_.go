@@ -226,9 +226,8 @@ func buildTestV1Client_TokenSource() []jen.Code {
 		utils.OuterTestFunc("V1Client_TokenSource").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"obligatory",
-				utils.CreateCtx(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.List(
 					jen.ID("c"),
@@ -263,9 +262,8 @@ func buildTestNewClient() []jen.Code {
 		utils.OuterTestFunc("NewClient").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"happy path",
-				utils.CreateCtx(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.List(
 					jen.ID("c"),
@@ -287,9 +285,8 @@ func buildTestNewClient() []jen.Code {
 				utils.RequireNoError(jen.Err(), nil),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with client but invalid timeout",
-				utils.CreateCtx(),
 				jen.Line(),
 				jen.List(
 					jen.ID("c"),
@@ -329,9 +326,8 @@ func buildTestNewSimpleClient() []jen.Code {
 		utils.OuterTestFunc("NewSimpleClient").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"obligatory",
-				utils.CreateCtx(),
 				jen.Line(),
 				jen.List(
 					jen.ID("c"),
@@ -356,9 +352,8 @@ func buildTestV1Client_CloseRequestBody() []jen.Code {
 		utils.OuterTestFunc("V1Client_CloseRequestBody").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"with error",
-				utils.CreateCtx(),
 				jen.Line(),
 				jen.ID("rc").Assign().ID("newMockReadCloser").Call(),
 				jen.ID("rc").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -599,9 +594,8 @@ func buildTestV1Client_BuildWebsocketURL() []jen.Code {
 		utils.OuterTestFunc("V1Client_BuildWebsocketURL").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				"happy path",
-				utils.CreateCtx(),
 				jen.List(
 					jen.ID("u"),
 					jen.ID("_"),
