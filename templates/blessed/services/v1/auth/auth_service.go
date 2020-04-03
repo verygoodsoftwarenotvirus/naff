@@ -23,13 +23,13 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			jen.Comment("OAuth2ClientValidator is a stand-in interface, where we needed to abstract"),
 			jen.Comment("a regular structure with an interface for testing purposes"),
 			jen.ID("OAuth2ClientValidator").Interface(
-				jen.ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.ID("error")),
+				jen.ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("cookieEncoderDecoder is a stand-in interface for gorilla/securecookie"),
 			jen.ID("cookieEncoderDecoder").Interface(
-				jen.ID("Encode").Params(jen.ID("name").ID("string"), jen.ID("value").Interface()).Params(jen.ID("string"), jen.ID("error")),
-				jen.ID("Decode").Params(jen.List(jen.ID("name"), jen.ID("value")).ID("string"), jen.ID("dst").Interface()).Params(jen.ID("error")),
+				jen.ID("Encode").Params(jen.ID("name").ID("string"), jen.ID("value").Interface()).Params(jen.ID("string"), jen.Error()),
+				jen.ID("Decode").Params(jen.List(jen.ID("name"), jen.ID("value")).ID("string"), jen.ID("dst").Interface()).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
@@ -55,13 +55,13 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideAuthService").Paramsln(
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("cfg").Op("*").Qual(proj.InternalConfigV1Package(), "ServerConfig"),
+			jen.ID("cfg").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 			jen.ID("database").Qual(proj.ModelsV1Package(), "UserDataManager"),
 			jen.ID("oauth2ClientsService").ID("OAuth2ClientValidator"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
-		).Params(jen.Op("*").ID("Service")).Block(
+		).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("svc").Assign().VarPointer().ID("Service").Valuesln(
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("encoderDecoder").MapAssign().ID("encoder"),

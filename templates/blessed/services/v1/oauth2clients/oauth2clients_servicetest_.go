@@ -14,7 +14,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(utils.FakeSeedFunc())
 
 	ret.Add(
-		jen.Func().ID("buildTestService").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("manager").Assign().Qual("goproj.in/oauth2.v3/manage", "NewDefaultManager").Call(),
@@ -50,7 +50,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Index().Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Nil()),
+				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Nil()),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2ClientCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -61,7 +61,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string"),
-				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.ID("error")).Block(
+				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
 				jen.Line(),
@@ -74,7 +74,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ucp"),
 				),
 				utils.AssertNoError(jen.Err(), nil),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("service")),
+				utils.AssertNotNil(jen.ID("service"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing counter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -84,7 +84,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Index().Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Nil()),
+				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Nil()),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2ClientCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -95,7 +95,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-					jen.ID("error"),
+					jen.Error(),
 				).Block(
 					jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				),
@@ -109,8 +109,8 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("service"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching oauth2 clients"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -120,7 +120,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				).Dot("Return").Call(jen.Index().Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2ClientCount"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -131,7 +131,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-					jen.ID("error"),
+					jen.Error(),
 				).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
@@ -146,8 +146,8 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ucp"),
 				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("service"), nil),
 			)),
 		),
 		jen.Line(),
@@ -171,7 +171,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetByID").Call(jen.ID("exampleID")),
 				jen.Line(),
 				utils.AssertNoError(jen.Err(), nil),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleID"), jen.ID("actual").Dot("GetID").Call()),
+				utils.AssertEqual(jen.ID("exampleID"), jen.ID("actual").Dot("GetID").Call(), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -182,12 +182,12 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.ID("c").Assign().VarPointer().ID("clientStore").Values(jen.ID("database").MapAssign().ID("mockDB")),
 				jen.List(jen.ID("_"), jen.Err()).Assign().ID("c").Dot("GetByID").Call(jen.ID("exampleID")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertError(jen.Err(), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -198,12 +198,12 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("exampleID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.ID("exampleID"))),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.ID("exampleID"))),
 				jen.Line(),
 				jen.ID("c").Assign().VarPointer().ID("clientStore").Values(jen.ID("database").MapAssign().ID("mockDB")),
 				jen.List(jen.ID("_"), jen.Err()).Assign().ID("c").Dot("GetByID").Call(jen.ID("exampleID")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertError(jen.Err(), nil),
 			)),
 		),
 		jen.Line(),

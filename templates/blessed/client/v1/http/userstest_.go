@@ -284,7 +284,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						nil,
 					),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(proj.ModelsV1Package(), "UserCreationInput"),
+					jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.VarPointer().ID("x")),
 						nil,

@@ -28,7 +28,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
 		jen.Line(),
-		jen.Func().ID("randString").Params().Params(jen.ID("string"), jen.ID("error")).Block(
+		jen.Func().ID("randString").Params().Params(jen.ID("string"), jen.Error()).Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
 			jen.Comment("Note that err == nil only if we read len(b) bytes"),
 			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -41,7 +41,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(proj.ModelsV1Package(), "UserInput")).Block(
+		jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserInput")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
@@ -56,14 +56,14 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyUser").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(proj.ModelsV1Package(), "UserCreationResponse"), jen.Op("*").Qual(proj.ModelsV1Package(), "UserInput"), jen.ParamPointer().Qual("net/http", "Cookie")).Block(
+		jen.Func().ID("buildDummyUser").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"), jen.PointerTo().Qual(proj.ModelsV1Package(), "UserInput"), jen.ParamPointer().Qual("net/http", "Cookie")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			utils.CreateCtx(),
 			jen.Line(),
 			jen.Comment("build user creation route input"),
 			jen.ID("userInput").Assign().ID("buildDummyUserInput").Call(jen.ID("t")),
 			jen.List(jen.ID("user"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(utils.CtxVar(), jen.ID("userInput")),
-			jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("user")),
+			utils.AssertNotNil(jen.ID("user"), nil),
 			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.Line(),
 			jen.If(jen.ID("user").Op("==").ID("nil").Op("||").ID("err").DoesNotEqual().ID("nil")).Block(
@@ -85,36 +85,36 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("expected").Op("*").Qual(proj.ModelsV1Package(), "UserInput"), jen.ID("actual").Op("*").Qual(proj.ModelsV1Package(), "UserCreationResponse")).Block(
+		jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserInput"), jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(
-				jen.ID("t"),
+			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
+			utils.AssertEqual(
 				jen.ID("expected").Dot("Username"),
 				jen.ID("actual").Dot("Username"),
+				nil,
 			),
-			jen.Qual("github.com/stretchr/testify/assert", "NotEmpty").Call(jen.ID("t"), jen.ID("actual").Dot("TwoFactorSecret")),
-			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("CreatedOn")),
-			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual").Dot("UpdatedOn")),
-			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
+			utils.AssertNotEmpty(jen.ID("actual").Dot("TwoFactorSecret"), nil),
+			utils.AssertNotZero(jen.ID("actual").Dot("CreatedOn"), nil),
+			utils.AssertNil(jen.ID("actual").Dot("UpdatedOn"), nil),
+			utils.AssertNil(jen.ID("actual").Dot("ArchivedOn"), nil),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("checkUserEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("expected").Op("*").Qual(proj.ModelsV1Package(), "UserInput"), jen.ID("actual").Op("*").Qual(proj.ModelsV1Package(), "User")).Block(
+		jen.Func().ID("checkUserEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserInput"), jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "User")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(
-				jen.ID("t"),
+			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
+			utils.AssertEqual(
 				jen.ID("expected").Dot("Username"),
 				jen.ID("actual").Dot("Username"),
+				nil,
 			),
-			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("CreatedOn")),
-			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual").Dot("UpdatedOn")),
-			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
+			utils.AssertNotZero(jen.ID("actual").Dot("CreatedOn"), nil),
+			utils.AssertNil(jen.ID("actual").Dot("UpdatedOn"), nil),
+			utils.AssertNil(jen.ID("actual").Dot("ArchivedOn"), nil),
 		),
 		jen.Line(),
 	)
@@ -148,8 +148,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Fetch user"),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUser").Call(utils.CtxVar(), jen.ID("nonexistentID")),
-					jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+					utils.AssertNil(jen.ID("actual"), nil),
+					utils.AssertError(jen.Err(), nil),
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -161,7 +161,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 						jen.ID("Password").MapAssign().ID("expected").Dot("Password"))),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
-					jen.Qual("github.com/stretchr/testify/assert", "NotEmpty").Call(jen.ID("t"), jen.ID("premade").Dot("TwoFactorSecret")),
+					utils.AssertNotEmpty(jen.ID("premade").Dot("TwoFactorSecret"), nil),
 					jen.Line(),
 					jen.Comment("Fetch user"),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUser").Call(utils.CtxVar(), jen.ID("premade").Dot("ID")),
@@ -186,7 +186,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("y").Assign().ID("buildDummyUserInput").Call(jen.ID("t")),
 					jen.List(jen.ID("u"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(utils.CtxVar(), jen.ID("y")),
 					utils.AssertNoError(jen.Err(), nil),
-					jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("u")),
+					utils.AssertNotNil(jen.ID("u"), nil),
 					jen.Line(),
 					jen.If(jen.ID("u").Op("==").ID("nil").Op("||").ID("err").DoesNotEqual().ID("nil")).Block(
 						jen.ID("t").Dot("Log").Call(jen.Lit("something has gone awry, user returned is nil")),
@@ -204,10 +204,10 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create users"),
-					jen.Var().ID("expected").Index().Op("*").Qual(proj.ModelsV1Package(), "UserCreationResponse"),
+					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 					jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.List(jen.ID("user"), jen.ID("_"), jen.ID("c")).Assign().ID("buildDummyUser").Call(jen.ID("t")),
-						jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("c")),
+						utils.AssertNotNil(jen.ID("c"), nil),
 						jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.ID("user")),
 					),
 					jen.Line(),

@@ -80,7 +80,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 	gFields := buildGeneralFields("x", typ)
 
 	ret.Add(
-		jen.Func().IDf("buildMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(proj.ModelsV1Package(), sn)).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().IDf("buildMockRowFrom%s", sn).Params(jen.ID("x").PointerTo().Qual(proj.ModelsV1Package(), sn)).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(gFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -91,7 +91,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 	badFields := buildBadFields("x", typ)
 
 	ret.Add(
-		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(jen.ID("x").Op("*").Qual(proj.ModelsV1Package(), sn)).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(jen.ID("x").PointerTo().Qual(proj.ModelsV1Package(), sn)).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(badFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -234,23 +234,23 @@ func buildCreationEqualityExpectations(varName string, typ models.DataType) []je
 	for i, field := range typ.Fields {
 		if field.Pointer {
 			out = append(out,
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID(varName).Dot(field.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.Op("*").ID(field.Type))),
+				utils.AssertEqual(jen.ID(varName).Dot(field.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.PointerTo().ID(field.Type)), nil),
 			)
 		} else {
 			out = append(out,
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID(varName).Dot(field.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID(field.Type))),
+				utils.AssertEqual(jen.ID(varName).Dot(field.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID(field.Type)), nil),
 			)
 		}
 	}
 
 	if typ.BelongsToUser {
 		out = append(out,
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("BelongsToUser"), jen.ID("args").Index(jen.Lit(len(out))).Assert(jen.ID("uint64"))),
+			utils.AssertEqual(jen.ID("expected").Dot("BelongsToUser"), jen.ID("args").Index(jen.Lit(len(out))).Assert(jen.ID("uint64")), nil),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		out = append(out,
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(len(out))).Assert(jen.ID("uint64"))),
+			utils.AssertEqual(jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(len(out))).Assert(jen.ID("uint64")), nil),
 		)
 	}
 
@@ -418,7 +418,7 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 				Dotln("WithArgs").Callln(expectQueryArgs...).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.Line(),
 			jen.Err().Assign().ID(dbfl).Dotf("Update%s", sn).Call(utils.CtxVar(), jen.ID("expected")),
-			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+			utils.AssertError(jen.Err(), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
@@ -486,28 +486,28 @@ func buildTestDBArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wor
 		jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildArchive%sQuery", sn).Call(archiveQueryBuildingParams...),
 		jen.Line(),
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
+		utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
+		utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 	}
 
 	var assertIndesx int
 	if typ.BelongsToUser {
 		assertIndesx = 1
 		testLines = append(testLines,
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("BelongsToUser"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
+			utils.AssertEqual(jen.ID("expected").Dot("BelongsToUser"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		assertIndesx = 1
 		testLines = append(testLines,
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
+			utils.AssertEqual(jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil),
 		)
 	} else if typ.BelongsToNobody {
 		assertIndesx = 0
 	}
 
 	testLines = append(testLines,
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ID"), jen.ID("args").Index(jen.Lit(assertIndesx)).Assert(jen.ID("uint64"))),
+		utils.AssertEqual(jen.ID("expected").Dot("ID"), jen.ID("args").Index(jen.Lit(assertIndesx)).Assert(jen.ID("uint64")), nil),
 	)
 
 	return []jen.Code{
@@ -656,10 +656,9 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 				Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.Line(),
 			jen.Err().Assign().ID(dbfl).Dotf("Archive%s", sn).Call(actualCallArgs...),
-			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+			utils.AssertError(jen.Err(), nil),
 			jen.Line(),
-			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(
-				jen.ID("t"),
+			utils.AssertNoError(
 				jen.ID("mockDB").Dot("ExpectationsWereMet").Call(),
 				jen.Lit("not all database expectations were met"),
 			),
@@ -749,13 +748,13 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 		jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildUpdate%sQuery", sn).Call(jen.ID("expected")),
 		jen.Line(),
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
+		utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
+		utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 	}
 
 	testBuildUpdateQueryBody = append(testBuildUpdateQueryBody, creationEqualityExpectations...)
 	testBuildUpdateQueryBody = append(testBuildUpdateQueryBody,
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ID"), jen.ID("args").Index(jen.Lit(len(creationEqualityExpectations))).Assert(jen.ID("uint64"))),
+		utils.AssertEqual(jen.ID("expected").Dot("ID"), jen.ID("args").Index(jen.Lit(len(creationEqualityExpectations))).Assert(jen.ID("uint64")), nil),
 	)
 
 	return []jen.Code{
@@ -849,8 +848,8 @@ func buildTestDBCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor word
 		jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildCreate%sQuery", sn).Call(jen.ID("expected")),
 		jen.Line(),
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
+		utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
+		utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 	}
 	createQueryTestBody = append(createQueryTestBody, creationEqualityExpectations...)
 
@@ -1008,7 +1007,7 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Create%s", sn).Call(utils.CtxVar(), jen.ID("expectedInput")),
 			utils.AssertNoError(jen.Err(), nil),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
@@ -1047,8 +1046,8 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 				Dotln("WithArgs").Callln(nef...).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Create%s", sn).Call(utils.CtxVar(), jen.ID("expectedInput")),
-			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			utils.AssertError(jen.Err(), nil),
+			utils.AssertNil(jen.ID("actual"), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
@@ -1117,11 +1116,11 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 					Dotln("WithArgs").Call(jen.ID(expectedSomethingID)).
 					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowFrom%s", sn).Call(jen.IDf("expected%s", sn))),
 				jen.Line(),
-				jen.ID("expected").Assign().Index().Qual(proj.ModelsV1Package(), sn).Values(jen.Op("*").IDf("expected%s", sn)),
+				jen.ID("expected").Assign().Index().Qual(proj.ModelsV1Package(), sn).Values(jen.PointerTo().IDf("expected%s", sn)),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot(baseFuncName).Call(utils.CtxVar(), jen.ID(expectedSomethingID)),
 				jen.Line(),
 				utils.AssertNoError(jen.Err(), nil),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -1135,9 +1134,9 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot(baseFuncName).Call(utils.CtxVar(), jen.ID(expectedSomethingID)),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.Err()),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -1151,8 +1150,8 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot(baseFuncName).Call(utils.CtxVar(), jen.ID(expectedSomethingID)),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -1169,8 +1168,8 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 					Dotln("WillReturnRows").Call(jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.IDf("example%s", sn))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot(baseFuncName).Call(utils.CtxVar(), jen.ID(expectedSomethingID)),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),
@@ -1241,7 +1240,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 					jen.ID("TotalCount").MapAssign().ID("expectedCount"),
 				),
 				jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.Op("*").IDf("expected%s", sn),
+					jen.PointerTo().IDf("expected%s", sn),
 				),
 			),
 			jen.Line(),
@@ -1254,7 +1253,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Get%s", pn).Call(actualCallArgs...),
 			jen.Line(),
 			utils.AssertNoError(jen.Err(), nil),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
@@ -1294,9 +1293,9 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			mockDBCall,
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Get%s", pn).Call(actualCallArgs...),
-			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.Err()),
+			utils.AssertError(jen.Err(), nil),
+			utils.AssertNil(jen.ID("actual"), nil),
+			utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
@@ -1336,8 +1335,8 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			mockDBCall,
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Get%s", pn).Call(actualCallArgs...),
-			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			utils.AssertError(jen.Err(), nil),
+			utils.AssertNil(jen.ID("actual"), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
@@ -1380,8 +1379,8 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			mockDBCall,
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Get%s", pn).Call(actualCallArgs...),
-			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			utils.AssertError(jen.Err(), nil),
+			utils.AssertNil(jen.ID("actual"), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
@@ -1427,8 +1426,8 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 				Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Get%s", pn).Call(actualCallArgs...),
-			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			utils.AssertError(jen.Err(), nil),
+			utils.AssertNil(jen.ID("actual"), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
@@ -1496,12 +1495,12 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 		jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(jen.Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call(), jen.ID(expectedOwnerID)),
 		jen.Line(),
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
+		utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
+		utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 	)
 
 	if typ.BelongsToUser || typ.BelongsToStruct != nil {
-		bodyBlock = append(bodyBlock, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID(expectedOwnerID), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+		bodyBlock = append(bodyBlock, utils.AssertEqual(jen.ID(expectedOwnerID), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil))
 	}
 
 	lines := []jen.Code{
@@ -1523,10 +1522,10 @@ func buildRequisitIDExpectations(proj *models.Project, startIndex int, varPrefix
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		if varPrefix != "" {
-			lines = append(lines, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("%s%sID", varPrefix, pt.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID("uint64"))))
+			lines = append(lines, utils.AssertEqual(jen.IDf("%s%sID", varPrefix, pt.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID("uint64")), nil))
 			i += i
 		} else {
-			lines = append(lines, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("%sID", pt.Name.UnexportedVarName()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID("uint64"))))
+			lines = append(lines, utils.AssertEqual(jen.IDf("%sID", pt.Name.UnexportedVarName()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID("uint64")), nil))
 			i += i
 		}
 	}
@@ -1593,24 +1592,24 @@ func buildTestDBBuildGetSomethingQuery(proj *models.Project, dbvendor wordsmith.
 
 	block = append(block,
 		jen.Line(),
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
+		utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
+		utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 	)
 
 	var argIndex int
 	if typ.BelongsToUser {
 		argIndex = 1
-		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("%sUserID", varPrefix), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+		block = append(block, utils.AssertEqual(jen.IDf("%sUserID", varPrefix), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil))
 	}
 	if typ.BelongsToStruct != nil {
 		argIndex = 1
-		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+		block = append(block, utils.AssertEqual(jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil))
 	} else if typ.BelongsToNobody {
 		argIndex = 0
 	}
 
 	block = append(block,
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("%s%sID", varPrefix, sn), jen.ID("args").Index(jen.Lit(argIndex)).Assert(jen.ID("uint64"))),
+		utils.AssertEqual(jen.IDf("%s%sID", varPrefix, sn), jen.ID("args").Index(jen.Lit(argIndex)).Assert(jen.ID("uint64")), nil),
 	)
 
 	lines := []jen.Code{
@@ -1681,7 +1680,7 @@ func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalab
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Get%s", sn).Call(actualCallArgs...),
 			utils.AssertNoError(jen.Err(), nil),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
@@ -1725,9 +1724,9 @@ func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalab
 			mockDBCall,
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Get%s", sn).Call(actualCallArgs...),
-			jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-			jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.Err()),
+			utils.AssertError(jen.Err(), nil),
+			utils.AssertNil(jen.ID("actual"), nil),
+			utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
@@ -1791,15 +1790,15 @@ func buildTestDBBuildGetSomethingCountQuery(proj *models.Project, dbvendor words
 		jen.ID("expectedQuery").Assign().Lit(query),
 		jen.Line(),
 		jen.List(jen.ID("actualQuery"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sCountQuery", sn).Call(actualCallArgs...),
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-		jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
+		utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
+		utils.AssertLength(jen.ID("args"), jen.ID("expectedArgCount"), nil),
 	)
 
 	if typ.BelongsToUser {
-		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+		block = append(block, utils.AssertEqual(jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil))
 	}
 	if typ.BelongsToStruct != nil {
-		block = append(block, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.IDf("example%sID", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))))
+		block = append(block, utils.AssertEqual(jen.IDf("example%sID", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64")), nil))
 	}
 
 	lines := []jen.Code{
@@ -1861,7 +1860,7 @@ func buildTestDBGetSomethingCount(proj *models.Project, dbvendor wordsmith.Super
 		jen.Line(),
 		jen.List(jen.ID("actualCount"), jen.Err()).Assign().ID(dbfl).Dotf("Get%sCount", sn).Call(callArgs...),
 		utils.AssertNoError(jen.Err(), nil),
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
+		utils.AssertEqual(jen.ID("expectedCount"), jen.ID("actualCount"), nil),
 		jen.Line(),
 		utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 	)
@@ -1894,7 +1893,7 @@ func buildTestDBBuildGetAllSomethingCountQuery(proj *models.Project, dbvendor wo
 				jen.ID("expectedQuery").Assign().Litf("SELECT COUNT(id) FROM %s WHERE archived_on IS NULL", tn),
 				jen.Line(),
 				jen.ID("actualQuery").Assign().ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
+				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
 			)),
 		),
 		jen.Line(),
@@ -1924,7 +1923,7 @@ func buildTestDBGetAllSomethingCount(proj *models.Project, dbvendor wordsmith.Su
 				jen.Line(),
 				jen.List(jen.ID("actualCount"), jen.Err()).Assign().ID(dbfl).Dotf("GetAll%sCount", pn).Call(utils.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
+				utils.AssertEqual(jen.ID("expectedCount"), jen.ID("actualCount"), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			)),

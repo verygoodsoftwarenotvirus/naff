@@ -17,11 +17,11 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	ret.Add(
-		jen.Func().ID("buildTestService").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").ID(sn), jen.Qual("github.com/DATA-DOG/go-sqlmock", "Sqlmock")).Block(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().ID(sn), jen.Qual("github.com/DATA-DOG/go-sqlmock", "Sqlmock")).Block(
 			jen.List(jen.ID("db"), jen.ID("mock"), jen.Err()).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "New").Call(),
 			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 			jen.ID(dbfl).Assign().IDf("Provide%s", sn).Call(jen.ID("true"), jen.ID("db"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-			jen.Return().List(jen.ID(dbfl).Assert(jen.Op("*").ID(sn)), jen.ID("mock")),
+			jen.Return().List(jen.ID(dbfl).Assert(jen.PointerTo().ID(sn)), jen.ID("mock")),
 		),
 		jen.Line(),
 	)

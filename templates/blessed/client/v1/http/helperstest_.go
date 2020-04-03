@@ -260,7 +260,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.ID("StatusCode").MapAssign().Qual("net/http", "StatusBadRequest"),
 				),
-				jen.Var().ID("out").Op("*").ID("testingType"),
+				jen.Var().ID("out").PointerTo().ID("testingType"),
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					utils.CtxVar(),
@@ -285,7 +285,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.ID("StatusCode").MapAssign().Qual("net/http", "StatusBadRequest"),
 				),
-				jen.Var().ID("out").Op("*").ID("testingType"),
+				jen.Var().ID("out").PointerTo().ID("testingType"),
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					utils.CtxVar(),

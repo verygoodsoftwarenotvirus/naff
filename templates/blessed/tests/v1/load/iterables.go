@@ -50,7 +50,7 @@ func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.
 	x = x[1:]
 	paramArgs := append(
 		[]jen.Code{
-			jen.ID("c").Op("*").Qual(proj.HTTPClientV1Package(), "V1Client"),
+			jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
 		},
 		x...,
 	)
@@ -60,7 +60,7 @@ func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.
 	lines := []jen.Code{
 		jen.Commentf("fetchRandom%s retrieves a random %s from the list of available %s", sn, scn, pcn),
 		jen.Line(),
-		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.Op("*").Qual(proj.ModelsV1Package(), sn)).Block(
+		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
 			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 				callArgs...,
 			),
@@ -204,38 +204,38 @@ func buildRandomActionMap(proj *models.Project, typ models.DataType) []jen.Code 
 	pn := typ.Name.Plural()
 
 	blockLines := []jen.Code{
-		jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(
+		jen.Return().Map(jen.ID("string")).PointerTo().ID("Action").Valuesln(
 			jen.Litf("Create%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Create%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
 					buildCreateSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Get%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Get%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
 					buildGetSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Get%s", pn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Get%s", pn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
 					buildGetListOfSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Update%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Update%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
 					buildUpdateChildBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Archive%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Archive%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
 					buildArchiveSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(85),
@@ -244,7 +244,7 @@ func buildRandomActionMap(proj *models.Project, typ models.DataType) []jen.Code 
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").Op("*").Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(blockLines...),
+		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.ID("string")).PointerTo().ID("Action")).Block(blockLines...),
 		jen.Line(),
 	}
 }

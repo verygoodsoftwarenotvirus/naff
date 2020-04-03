@@ -12,7 +12,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("net/http", "Handler").Equals().Parens(jen.Op("*").ID("mockHTTPHandler")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual("net/http", "Handler").Equals().Parens(jen.PointerTo().ID("mockHTTPHandler")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -22,7 +22,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").Op("*").ID("mockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 			jen.ID("m").Dot("Called").Call(jen.ID("res"), jen.ID("req")),
 		),
 		jen.Line(),
@@ -60,7 +60,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Dot("Body").Equals().Qual("io/ioutil", "NopCloser").Call(jen.Qual("bytes", "NewReader").Call(jen.ID("bs"))),
 				jen.Line(),
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -85,7 +85,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.Line(),
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code")),
+				utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code"), nil),
 			)),
 		),
 		jen.Line(),
@@ -122,7 +122,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ExtractOAuth2ClientFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				jen.Line(),
 				utils.AssertNoError(jen.Err(), nil),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating token"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -138,8 +138,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ExtractOAuth2ClientFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -160,14 +160,14 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected").Dot("ClientID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ExtractOAuth2ClientFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid scope"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -196,8 +196,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Dot("URL").Dot("Path").Equals().Lit("/api/v1/stuff"),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("ExtractOAuth2ClientFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 			)),
 		),
 		jen.Line(),
@@ -243,7 +243,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(),
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2TokenAuthenticationMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error authenticating request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -267,7 +267,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(),
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2TokenAuthenticationMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code")),
+				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code"), nil),
 			)),
 		),
 		jen.Line(),
@@ -302,7 +302,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2ClientInfoMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code")),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -326,11 +326,11 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expected"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("s").Dot("OAuth2ClientInfoMiddleware").Call(jen.ID("mhh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code")),
+				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("Code"), nil),
 			)),
 		),
 		jen.Line(),
@@ -356,12 +356,12 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("actual").Assign().ID("s").Dot("fetchOAuth2ClientFromRequest").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("without value present"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("s").Dot("fetchOAuth2ClientFromRequest").Call(jen.ID("buildRequest").Call(jen.ID("t")))),
+				utils.AssertNil(jen.ID("s").Dot("fetchOAuth2ClientFromRequest").Call(jen.ID("buildRequest").Call(jen.ID("t"))), nil),
 			)),
 		),
 		jen.Line(),
@@ -387,7 +387,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("actual").Assign().ID("s").Dot("fetchOAuth2ClientIDFromRequest").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ClientID"), jen.ID("actual")),
+				utils.AssertEqual(jen.ID("expected").Dot("ClientID"), jen.ID("actual"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("without value present"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(

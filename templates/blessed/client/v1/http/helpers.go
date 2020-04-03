@@ -63,7 +63,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		"before decoding an HTTP response, for instance",
 	)...)
 	ret.Add(
-		jen.Func().ID("argIsNotPointerOrNil").Params(jen.ID("i").Interface()).Params(jen.ID("error")).Block(
+		jen.Func().ID("argIsNotPointerOrNil").Params(jen.ID("i").Interface()).Params(jen.Error()).Block(
 			jen.If(
 				jen.List(jen.ID("nn"), jen.Err()).Assign().ID("argIsNotNil").Call(jen.ID("i")),
 				jen.ID("nn").Op("||").ID("err").DoesNotEqual().ID("nil"),
@@ -92,7 +92,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			jen.ID("res").ParamPointer().Qual("net/http", "Response"),
 			jen.ID("dest").Interface(),
 		).Params(
-			jen.ID("error"),
+			jen.Error(),
 		).Block(
 			utils.StartSpan(proj, false, "unmarshalBody"),
 			jen.If(jen.Err().Assign().ID("argIsNotPointerOrNil").Call(jen.ID("dest")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -151,7 +151,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			jen.ID("in").Interface(),
 		).Params(
 			jen.Qual("io", "Reader"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(
 			jen.List(
 				jen.ID("out"),

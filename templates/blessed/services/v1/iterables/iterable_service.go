@@ -36,7 +36,7 @@ func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -150,7 +150,7 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	lines := []jen.Code{
 		jen.Commentf("Provide%sService builds a new %sService", pn, pn),
 		jen.Line(),
-		jen.Func().ID(fmt.Sprintf("Provide%sService", pn)).Paramsln(params...).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
+		jen.Func().ID(fmt.Sprintf("Provide%sService", pn)).Paramsln(params...).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
 			jen.List(jen.ID(fmt.Sprintf("%sCounter", uvn)), jen.Err()).Assign().ID(fmt.Sprintf("%sCounterProvider", uvn)).Call(jen.ID("counterName"), jen.ID("counterDescription")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),

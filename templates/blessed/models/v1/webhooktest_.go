@@ -46,7 +46,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("actual").Dot("Update").Call(jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			)),
 		),
 		jen.Line(),

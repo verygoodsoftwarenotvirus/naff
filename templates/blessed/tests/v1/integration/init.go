@@ -22,7 +22,7 @@ func initDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.ID("urlToUse").ID("string"),
-			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Op("*").Qual(proj.HTTPClientV1Package(), "V1Client"),
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
 		),
 		jen.Line(),
 	)
@@ -68,7 +68,7 @@ func initDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.Op("*").Qual(proj.HTTPClientV1Package(), "V1Client")).Block(
+		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Block(
 			jen.List(jen.ID("uri"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("urlToUse")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),

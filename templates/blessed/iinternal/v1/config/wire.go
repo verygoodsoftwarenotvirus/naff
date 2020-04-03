@@ -22,7 +22,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
-		jen.Func().ID("ProvideConfigServerSettings").Params(jen.ID("c").Op("*").ID("ServerConfig")).Params(jen.ID("ServerSettings")).Block(
+		jen.Func().ID("ProvideConfigServerSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("ServerSettings")).Block(
 			jen.Return().ID("c").Dot(
 				"Server",
 			),
@@ -35,7 +35,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
-		jen.Func().ID("ProvideConfigAuthSettings").Params(jen.ID("c").Op("*").ID("ServerConfig")).Params(jen.ID("AuthSettings")).Block(
+		jen.Func().ID("ProvideConfigAuthSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("AuthSettings")).Block(
 			jen.Return().ID("c").Dot(
 				"Auth",
 			),
@@ -48,7 +48,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
-		jen.Func().ID("ProvideConfigDatabaseSettings").Params(jen.ID("c").Op("*").ID("ServerConfig")).Params(jen.ID("DatabaseSettings")).Block(
+		jen.Func().ID("ProvideConfigDatabaseSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("DatabaseSettings")).Block(
 			jen.Return().ID("c").Dot(
 				"Database",
 			),
@@ -61,7 +61,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
-		jen.Func().ID("ProvideConfigFrontendSettings").Params(jen.ID("c").Op("*").ID("ServerConfig")).Params(jen.ID("FrontendSettings")).Block(
+		jen.Func().ID("ProvideConfigFrontendSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("FrontendSettings")).Block(
 			jen.Return().ID("c").Dot(
 				"Frontend",
 			),

@@ -20,7 +20,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().ID("expected"),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("oac").Dot("GetID").Call()),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetID").Call(), nil),
 			)),
 		),
 		jen.Line(),
@@ -35,7 +35,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("ClientSecret").MapAssign().ID("expected"),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("oac").Dot("GetSecret").Call()),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetSecret").Call(), nil),
 			)),
 		),
 		jen.Line(),
@@ -50,7 +50,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("RedirectURI").MapAssign().ID("expected"),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("oac").Dot("GetDomain").Call()),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetDomain").Call(), nil),
 			)),
 		),
 		jen.Line(),
@@ -66,7 +66,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("BelongsToUser").MapAssign().ID("expectation"),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("oac").Dot("GetUserID").Call()),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetUserID").Call(), nil),
 			)),
 		),
 		jen.Line(),
@@ -82,8 +82,8 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				utils.AssertTrue(jen.ID("oac").Dot("HasScope").Call(jen.ID("oac").Dot("Scopes").Index(jen.Lit(0))), nil),
-				jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("oac").Dot("HasScope").Call(jen.Lit("blah"))),
-				jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("oac").Dot("HasScope").Call(jen.Lit(""))),
+				utils.AssertFalse(jen.ID("oac").Dot("HasScope").Call(jen.Lit("blah")), nil),
+				utils.AssertFalse(jen.ID("oac").Dot("HasScope").Call(jen.Lit("")), nil),
 			)),
 		),
 		jen.Line(),

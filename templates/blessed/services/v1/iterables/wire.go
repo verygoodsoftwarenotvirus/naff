@@ -39,7 +39,7 @@ func wireDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("Provide%sDataServer is an arbitrary function for dependency injection's sake", sn),
 		jen.Line(),
-		jen.Func().ID(fmt.Sprintf("Provide%sDataServer", sn)).Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn))).Block(
+		jen.Func().ID(fmt.Sprintf("Provide%sDataServer", sn)).Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn))).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

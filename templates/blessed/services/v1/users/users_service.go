@@ -24,7 +24,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.ModelsV1Package(), "UserDataServer").Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual(proj.ModelsV1Package(), "UserDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -33,7 +33,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("RequestValidator validates request"),
 			jen.ID("RequestValidator").Interface(
-				jen.ID("Validate").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("bool"), jen.ID("error")),
+				jen.ID("Validate").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("bool"), jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("Service handles our users"),
@@ -64,7 +64,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 			jen.ID("counterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
 			jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
-		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
+		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
 			jen.If(jen.ID("userIDFetcher").Op("==").ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("userIDFetcher must be provided"))),
 			),

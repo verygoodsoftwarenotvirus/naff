@@ -29,7 +29,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("CookieAuthenticationMiddleware checks every request for a user cookie"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CookieAuthenticationMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CookieAuthenticationMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CookieAuthenticationMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
@@ -64,14 +64,14 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("AuthenticationMiddleware authenticates based on either an oauth2 token or a cookie"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("AuthenticationMiddleware").Params(jen.ID("allowValidCookieInLieuOfAValidToken").ID("bool")).Params(jen.Func().Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler"))).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("AuthenticationMiddleware").Params(jen.ID("allowValidCookieInLieuOfAValidToken").ID("bool")).Params(jen.Func().Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler"))).Block(
 			jen.Return().Func().Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 				jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 					jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AuthenticationMiddleware")),
 					jen.Defer().ID("span").Dot("End").Call(),
 					jen.Line(),
 					jen.Comment("let's figure out who the user is"),
-					jen.Var().ID("user").Op("*").Qual(proj.ModelsV1Package(), "User"),
+					jen.Var().ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
 					jen.Line(),
 					jen.Comment("check for a cookie first if we can"),
 					jen.If(jen.ID("allowValidCookieInLieuOfAValidToken")).Block(
@@ -131,13 +131,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("AdminMiddleware restricts requests to admin users only"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("AdminMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("AdminMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AdminMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-				jen.List(jen.ID("user"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserKey")).Assert(jen.Op("*").Qual(proj.ModelsV1Package(), "User")),
+				jen.List(jen.ID("user"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")),
 				jen.Line(),
 				jen.If(jen.Op("!").ID("ok").Op("||").ID("user").Op("==").ID("nil")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("AdminMiddleware called without user attached to context")),
@@ -160,7 +160,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("parseLoginInputFromForm checks a request for a login form, and returns the parsed login data if relevant"),
 		jen.Line(),
-		jen.Func().ID("parseLoginInputFromForm").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").Qual(proj.ModelsV1Package(), "UserLoginInput")).Block(
+		jen.Func().ID("parseLoginInputFromForm").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput")).Block(
 			jen.If(jen.Err().Assign().ID("req").Dot("ParseForm").Call(), jen.Err().Op("==").ID("nil")).Block(
 				jen.ID("uli").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("req").Dot("FormValue").Call(jen.ID("UsernameFormKey")),
@@ -180,7 +180,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("UserLoginInputMiddleware fetches user login input from requests"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UserLoginInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UserLoginInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserLoginInputMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),

@@ -25,7 +25,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideOAuth2ClientDataServer is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer")).Block(
+		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

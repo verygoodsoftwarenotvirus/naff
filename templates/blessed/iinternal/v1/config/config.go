@@ -215,7 +215,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("MarshalFunc is a function that can marshal a config"),
-			jen.ID("MarshalFunc").Func().Params(jen.ID("v").Interface()).Params(jen.Index().ID("byte"), jen.ID("error")),
+			jen.ID("MarshalFunc").Func().Params(jen.ID("v").Interface()).Params(jen.Index().ID("byte"), jen.Error()),
 			jen.Line(),
 		),
 	)
@@ -223,8 +223,8 @@ func configDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("EncodeToFile renders your config to a file given your favorite encoder"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("EncodeToFile").Params(jen.ID("path").ID("string"), jen.ID("marshaler").ID("MarshalFunc")).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("byteSlice"), jen.Err()).Assign().ID("marshaler").Call(jen.Op("*").ID("cfg")),
+		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("EncodeToFile").Params(jen.ID("path").ID("string"), jen.ID("marshaler").ID("MarshalFunc")).Params(jen.Error()).Block(
+			jen.List(jen.ID("byteSlice"), jen.Err()).Assign().ID("marshaler").Call(jen.PointerTo().ID("cfg")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().ID("err"),
 			),
@@ -264,7 +264,7 @@ func configDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ParseConfigFile parses a configuration file"),
 		jen.Line(),
-		jen.Func().ID("ParseConfigFile").Params(jen.ID("filename").ID("string")).Params(jen.Op("*").ID("ServerConfig"), jen.ID("error")).Block(
+		jen.Func().ID("ParseConfigFile").Params(jen.ID("filename").ID("string")).Params(jen.PointerTo().ID("ServerConfig"), jen.Error()).Block(
 			jen.ID("cfg").Assign().ID("BuildConfig").Call(),
 			jen.ID("cfg").Dot("SetConfigFile").Call(jen.ID("filename")),
 			jen.Line(),
@@ -272,7 +272,7 @@ func configDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to read the config file: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.Var().ID("serverConfig").Op("*").ID("ServerConfig"),
+			jen.Var().ID("serverConfig").PointerTo().ID("ServerConfig"),
 			jen.If(jen.Err().Assign().ID("cfg").Dot("Unmarshal").Call(jen.VarPointer().ID("serverConfig")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to unmarshal the config: %w"), jen.Err())),
 			),

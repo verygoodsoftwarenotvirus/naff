@@ -12,7 +12,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.InternalMetricsV1Package(), "UnitCounter").Equals().Parens(jen.Op("*").ID("UnitCounter")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(proj.InternalMetricsV1Package(), "UnitCounter").Equals().Parens(jen.PointerTo().ID("UnitCounter")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -26,7 +26,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Increment implements our UnitCounter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("Increment").Params(utils.CtxVar().Qual("context", "Context")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Increment").Params(utils.CtxVar().Qual("context", "Context")).Block(
 			jen.ID("m").Dot("Called").Call(),
 		),
 		jen.Line(),
@@ -35,7 +35,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("IncrementBy implements our UnitCounter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").ID("uint64")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").ID("uint64")).Block(
 			jen.ID("m").Dot("Called").Call(jen.ID("val")),
 		),
 		jen.Line(),
@@ -44,7 +44,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Decrement implements our UnitCounter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("Decrement").Params(utils.CtxVar().Qual("context", "Context")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Decrement").Params(utils.CtxVar().Qual("context", "Context")).Block(
 			jen.ID("m").Dot("Called").Call(),
 		),
 		jen.Line(),

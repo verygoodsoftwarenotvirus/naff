@@ -17,7 +17,7 @@ func metaTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.If(jen.Qual("os", "Getenv").Call(jen.Lit("WAIT_FOR_COVERAGE")).Op("==").Lit("yes")).Block(
 				jen.Comment("snooze for a year"),
-				jen.Qual("time", "Sleep").Call(jen.Qual("time", "Hour").Op("*").Lit(24).Op("*").Lit(365)),
+				jen.Qual("time", "Sleep").Call(jen.Qual("time", "Hour").Times().Lit(24).Times().Lit(365)),
 			),
 		),
 		jen.Line(),

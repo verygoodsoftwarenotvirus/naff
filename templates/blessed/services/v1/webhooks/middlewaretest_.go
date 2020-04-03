@@ -12,7 +12,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("net/http", "Handler").Equals().Parens(jen.Op("*").ID("MockHTTPHandler")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual("net/http", "Handler").Equals().Parens(jen.PointerTo().ID("MockHTTPHandler")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -22,7 +22,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").Op("*").ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("res"), jen.ID("req")),
@@ -52,7 +52,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Assign().ID("s").Dot("CreationInputMiddleware").Call(jen.ID("mh")),
 				jen.ID("actual").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -73,7 +73,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Assign().ID("s").Dot("CreationInputMiddleware").Call(jen.ID("mh")),
 				jen.ID("actual").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest")),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
 			)),
 		),
 		jen.Line(),
@@ -101,7 +101,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Assign().ID("s").Dot("UpdateInputMiddleware").Call(jen.ID("mh")),
 				jen.ID("actual").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK")),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error decoding request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -122,7 +122,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("actual").Assign().ID("s").Dot("UpdateInputMiddleware").Call(jen.ID("mh")),
 				jen.ID("actual").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest")),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
 			)),
 		),
 		jen.Line(),

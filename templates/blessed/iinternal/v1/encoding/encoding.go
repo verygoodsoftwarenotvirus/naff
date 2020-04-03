@@ -39,19 +39,19 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("EncoderDecoder is an interface that allows for multiple implementations of HTTP response formats"),
 			jen.ID("EncoderDecoder").Interface(
-				jen.ID("EncodeResponse").Params(jen.Qual("net/http", "ResponseWriter"), jen.Interface()).Params(jen.ID("error")),
-				jen.ID("DecodeRequest").Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Interface()).Params(jen.ID("error")),
+				jen.ID("EncodeResponse").Params(jen.Qual("net/http", "ResponseWriter"), jen.Interface()).Params(jen.Error()),
+				jen.ID("DecodeRequest").Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Interface()).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("ServerEncoderDecoder is our concrete implementation of EncoderDecoder"),
 			jen.ID("ServerEncoderDecoder").Struct(),
 			jen.Line(),
 			jen.ID("encoder").Interface(
-				jen.ID("Encode").Params(jen.ID("v").Interface()).Params(jen.ID("error")),
+				jen.ID("Encode").Params(jen.ID("v").Interface()).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.ID("decoder").Interface(
-				jen.ID("Decode").Params(jen.ID("v").Interface()).Params(jen.ID("error")),
+				jen.ID("Decode").Params(jen.ID("v").Interface()).Params(jen.Error()),
 			),
 		),
 		jen.Line(),
@@ -60,7 +60,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("EncodeResponse encodes responses"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("ed").Op("*").ID("ServerEncoderDecoder")).ID("EncodeResponse").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("EncodeResponse").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.Error()).Block(
 			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.ID("ContentTypeHeader"))),
 			jen.If(jen.ID("ct").Op("==").Lit("")).Block(
 				jen.ID("ct").Equals().ID("DefaultContentType"),
@@ -81,7 +81,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("DecodeRequest decodes responses"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("ed").Op("*").ID("ServerEncoderDecoder")).ID("DecodeRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("DecodeRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
 			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID("req").Dot("Header").Dot("Get").Call(jen.ID("ContentTypeHeader"))),
 			jen.If(jen.ID("ct").Op("==").Lit("")).Block(
 				jen.ID("ct").Equals().ID("DefaultContentType"),

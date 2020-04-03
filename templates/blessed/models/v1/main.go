@@ -45,7 +45,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").ID("error").Equals().Parens(jen.Op("*").ID("ErrorResponse")).Call(jen.Nil()),
+		jen.Var().ID("_").ID("error").Equals().Parens(jen.PointerTo().ID("ErrorResponse")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -60,7 +60,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("er").Op("*").ID("ErrorResponse")).ID("Error").Params().Params(jen.ID("string")).Block(
+		jen.Func().Params(jen.ID("er").PointerTo().ID("ErrorResponse")).ID("Error").Params().Params(jen.ID("string")).Block(
 			jen.Return().Qual("fmt", "Sprintf").Call(jen.Lit("%d: %s"), jen.ID("er").Dot("Code"), jen.ID("er").Dot("Message")),
 		),
 		jen.Line(),

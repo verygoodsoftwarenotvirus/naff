@@ -423,7 +423,7 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(proj *models.Project, typ 
 	structDecls := buildVarDeclarationsOfDependentStructs(proj, typ)
 	subtestLines := structDecls[:len(structDecls)-1]
 	subtestLines = append(subtestLines,
-		jen.ID(utils.FilterVarName).Assign().Call(jen.Op("*").Qual(proj.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
+		jen.ID(utils.FilterVarName).Assign().Call(jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
@@ -653,7 +653,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 			jen.Line(),
-			jen.Var().ID("x").Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)),
+			jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.VarPointer().ID("x")), nil),
 			utils.AssertEqual(jen.ID("exampleInput"), jen.ID("x"), nil),
 			jen.Line(),

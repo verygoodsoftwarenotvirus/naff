@@ -91,9 +91,9 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("CreateObligatoryUser creates a user for the sake of having an OAuth2 client"),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").ID("string"), jen.ID("debug").ID("bool")).Params(jen.Op("*").Qual(proj.ModelsV1Package(),
+		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").ID("string"), jen.ID("debug").ID("bool")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
-		), jen.ID("error")).Block(
+		), jen.Error()).Block(
 			jen.List(jen.ID("tu"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
@@ -154,9 +154,9 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").Qual(proj.ModelsV1Package(),
+		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
-		)).Params(jen.ParamPointer().Qual("net/http", "Cookie"), jen.ID("error")).Block(
+		)).Params(jen.ParamPointer().Qual("net/http", "Cookie"), jen.Error()).Block(
 			jen.ID("uri").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("users"), jen.Lit("login")),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.Qual("strings", "ToUpper").Call(jen.ID("u").Dot("TwoFactorSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -205,7 +205,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests"),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").Op("*").Qual(proj.ModelsV1Package(), "User")).Params(jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.ID("error")).Block(
+		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
 			jen.ID("firstOAuth2ClientURI").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("oauth2"), jen.Lit("client")),
 			jen.Line(),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Callln(

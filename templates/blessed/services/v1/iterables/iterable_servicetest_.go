@@ -49,7 +49,7 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
+		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Block(
 			jen.Return().VarPointer().ID("Service").Valuesln(serviceValues...),
 		),
 		jen.Line(),
@@ -84,7 +84,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string"),
 				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-					jen.ID("error")).Block(
+					jen.Error()).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
 				jen.Line(),
@@ -116,7 +116,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string"),
 				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-					jen.ID("error")).Block(
+					jen.Error()).Block(
 					jen.Return().List(jen.ID("uc"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				),
 				jen.Line(),
@@ -148,7 +148,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string"),
 				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-					jen.ID("error")).Block(
+					jen.Error()).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
 				jen.Line(),

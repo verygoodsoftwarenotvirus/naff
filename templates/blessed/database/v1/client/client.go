@@ -12,7 +12,7 @@ func clientDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.DatabaseV1Package(), "Database").Equals().Parens(jen.Op("*").ID("Client")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(proj.DatabaseV1Package(), "Database").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -47,7 +47,7 @@ func buildMigrate(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("%s is a simple wrapper around the core querier %s call", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID(funcName).Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Error()).Block(
 			utils.StartSpan(proj, true, funcName),
 			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(utils.CtxVar()),
 		),
@@ -63,7 +63,7 @@ func buildIsReady(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("%s is a simple wrapper around the core querier %s call", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID(funcName).Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
 			utils.StartSpan(proj, true, funcName),
 			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(utils.CtxVar()),
 		),
@@ -85,7 +85,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
 			jen.ID("debug").ID("bool"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-		).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.ID("error")).Block(
+		).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.Error()).Block(
 			jen.ID("c").Assign().VarPointer().ID("Client").Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("querier").MapAssign().ID("querier"),

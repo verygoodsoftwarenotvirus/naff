@@ -18,9 +18,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret.Add(buildTestClientGetAllOfSomethingCount(proj, typ)...)
 	ret.Add(buildTestClientGetListOfSomething(proj, typ)...)
 
-	if typ.BelongsToUser {
-		ret.Add(buildTestClientGetAllOfSomethingForUser(proj, typ)...)
-	}
+	//if typ.BelongsToUser {
+	//	ret.Add(buildTestClientGetAllOfSomethingForUser(proj, typ)...)
+	//}
 
 	ret.Add(buildTestClientCreateSomething(proj, typ)...)
 	ret.Add(buildTestClientUpdateSomething(proj, typ)...)
@@ -56,6 +56,27 @@ func buildRequisiteIDCallArgs(proj *models.Project, typ models.DataType) []jen.C
 
 	if typ.BelongsToUser {
 		lines = append(lines, jen.IDf("example%s", sn).Dot("BelongsToUser"))
+	}
+
+	return lines
+}
+
+func buildRequisiteIDCallArgsWithPreCreatedUser(proj *models.Project, typ models.DataType) []jen.Code {
+	lines := []jen.Code{}
+	sn := typ.Name.Singular()
+
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
+		lines = append(lines, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
+
+	}
+	lines = append(lines, jen.IDf("example%s", sn).Dot("ID"))
+
+	if typ.BelongsToStruct != nil {
+		lines = append(lines, jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+
+	if typ.BelongsToUser {
+		lines = append(lines, jen.ID("exampleUser").Dot("ID"))
 	}
 
 	return lines
@@ -114,7 +135,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", sn).Call(callArgs...),
 		utils.AssertNoError(jen.Err(), nil),
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+		utils.AssertEqual(jen.IDf("example%s", sn), jen.ID("actual"), nil),
 		jen.Line(),
 		jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 	)
@@ -170,13 +191,13 @@ func buildTestClientGetAllOfSomethingCount(proj *models.Project, typ models.Data
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
-				jen.ID("expected").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("exampleCount").Assign().Uint64().Call(jen.Lit(123)),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("exampleCount"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("GetAll%sCount", pn).Call(utils.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				utils.AssertEqual(jen.ID("exampleCount"), jen.ID("actual"), nil, nil),
 				jen.Line(),
 				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 			)),
@@ -197,10 +218,9 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 		}
 
 		idDeclarations := buildRequisiteIDDeclarations(proj, typ)
-		idDeclarations = idDeclarations[1:]
-		lines := append([]jen.Code{utils.CreateCtx()}, idDeclarations...)
+		lines := idDeclarations[1:]
 
-		idCallArgs := buildRequisiteIDCallArgs(proj, typ)
+		idCallArgs := buildRequisiteIDCallArgsWithPreCreatedUser(proj, typ)
 		idCallArgs = idCallArgs[1:]
 		callArgs := append([]jen.Code{utils.CtxVar()}, idCallArgs...)
 		callArgs = append(callArgs, jen.ID(utils.FilterVarName))
@@ -209,20 +229,20 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 		mockCalls = append(mockCalls, jen.ID(utils.FilterVarName))
 
 		lines = append(lines,
-			jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-			jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Values(),
 			func() jen.Code {
 				if nilFilter {
 					return jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(proj))
 				}
 				return jen.ID(utils.FilterVarName).Assign().Add(utils.DefaultQueryFilter(proj))
 			}(),
+			jen.IDf("example%sList", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 			jen.Line(),
-			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCalls...).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+			jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCalls...).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(callArgs...),
 			utils.AssertNoError(jen.Err(), nil),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+			utils.AssertEqual(jen.IDf("example%sList", sn), jen.ID("actual"), nil),
 			jen.Line(),
 			jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 		)
@@ -234,9 +254,11 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 		jen.Func().IDf("TestClient_Get%s", pn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildSubtest(false)...)),
+			jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(buildSubtest(true)...)),
+			utils.BuildSubTest("obligatory", buildSubtest(false)...),
+			jen.Line(),
+			utils.BuildSubTest("with nil filter", buildSubtest(true)...),
 		),
 		jen.Line(),
 	}
@@ -273,19 +295,19 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 	mockCalls = append(mockCalls, jen.ID(inputVarName))
 
 	lines = append(lines,
-		jen.ID(inputVarName).Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Values(),
-		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-		jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Values(),
+		jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(inputVarName).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.Line(),
+		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(
 			mockCalls...,
-		).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+		).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Create%s", sn).Call(
 			callArgs...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
-		jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+		utils.AssertEqual(jen.IDf("example%s", sn), jen.ID("actual"), nil),
 		jen.Line(),
 		jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
 	)
@@ -306,9 +328,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 	n := typ.Name
 	sn := n.Singular()
 
-	const (
-		inputVarName = "exampleInput"
-	)
+	inputVarName := fmt.Sprintf("example%s", sn)
 
 	mockArgs := []jen.Code{
 		jen.Litf("Update%s", sn),
@@ -316,7 +336,6 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 	}
 
 	idDeclarations := buildRequisiteIDDeclarations(proj, typ)
-	idDeclarations = idDeclarations[:len(idDeclarations)-1]
 
 	if typ.BelongsToStruct != nil {
 		idDeclarations = idDeclarations[:len(idDeclarations)-1]
@@ -342,7 +361,6 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 	callArgs = append(callArgs, jen.ID(inputVarName))
 
 	lines = append(lines,
-		jen.ID(inputVarName).Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Values(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.Var().ID("expected").ID("error"),
 		jen.Line(),

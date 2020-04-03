@@ -43,7 +43,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("configFunc").Func().Params(jen.ID("filepath").ID("string")).Params(jen.ID("error")),
+		jen.Type().ID("configFunc").Func().Params(jen.ID("filepath").ID("string")).Params(jen.Error()),
 		jen.Line(),
 	)
 
@@ -61,7 +61,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("developmentConfig").Params(jen.ID("filepath").ID("string")).Params(jen.ID("error")).Block(
+		jen.Func().ID("developmentConfig").Params(jen.ID("filepath").ID("string")).Params(jen.Error()).Block(
 			jen.ID("cfg").Assign().ID("config").Dot("BuildConfig").Call(),
 			jen.Line(),
 			jen.ID("cfg").Dot("Set").Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),
@@ -94,7 +94,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("coverageConfig").Params(jen.ID("filepath").ID("string")).Params(jen.ID("error")).Block(
+		jen.Func().ID("coverageConfig").Params(jen.ID("filepath").ID("string")).Params(jen.Error()).Block(
 			jen.ID("cfg").Assign().ID("config").Dot("BuildConfig").Call(),
 			jen.Line(),
 			jen.ID("cfg").Dot("Set").Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
@@ -116,7 +116,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 	ret.Add(
-		jen.Func().ID("productionConfig").Params(jen.ID("filepath").ID("string")).Params(jen.ID("error")).Block(
+		jen.Func().ID("productionConfig").Params(jen.ID("filepath").ID("string")).Params(jen.Error()).Block(
 			jen.ID("cfg").Assign().ID("config").Dot("BuildConfig").Call(),
 			jen.Line(),
 			jen.ID("cfg").Dot("Set").Call(jen.ID("metaDebug"), jen.ID("false")),
@@ -152,7 +152,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("buildIntegrationTestForDBImplementation").Params(jen.List(jen.ID("dbprov"), jen.ID("dbDeet")).ID("string")).Params(jen.ID("configFunc")).Block(
-			jen.Return().Func().Params(jen.ID("filepath").ID("string")).Params(jen.ID("error")).Block(
+			jen.Return().Func().Params(jen.ID("filepath").ID("string")).Params(jen.Error()).Block(
 				jen.ID("cfg").Assign().Qual(proj.InternalConfigV1Package(), "BuildConfig").Call(),
 				jen.Line(),
 				jen.ID("cfg").Dot("Set").Call(jen.ID("metaDebug"), jen.ID("false")),

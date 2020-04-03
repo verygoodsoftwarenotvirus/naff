@@ -35,7 +35,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideWebhookDataServer is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideWebhookDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), "WebhookDataServer")).Block(
+		jen.Func().ID("ProvideWebhookDataServer").Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), "WebhookDataServer")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

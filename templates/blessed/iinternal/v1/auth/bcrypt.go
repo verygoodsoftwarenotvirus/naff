@@ -28,7 +28,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").ID("Authenticator").Equals().Parens(jen.Op("*").ID("BcryptAuthenticator")).Call(jen.Nil()),
+			jen.ID("_").ID("Authenticator").Equals().Parens(jen.PointerTo().ID("BcryptAuthenticator")).Call(jen.Nil()),
 			jen.Line(),
 			jen.Comment("ErrCostTooLow indicates that a password has too low a Bcrypt cost"),
 			jen.ID("ErrCostTooLow").Equals().Qual("errors", "New").Call(jen.Lit("stored password's cost is too low")),
@@ -68,7 +68,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("HashPassword takes a password and hashes it using bcrypt"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("HashPassword").Params(jen.ID("c").Qual("context", "Context"), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("HashPassword").Params(jen.ID("c").Qual("context", "Context"), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.Error()).Block(
 			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("c"), jen.Lit("HashPassword")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -87,7 +87,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("3. checking that the provided hashed password isn't too weak, and returning an error otherwise"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("ValidateLogin").Paramsln(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("ValidateLogin").Paramsln(
 			utils.CtxParam(),
 			jen.Listln(jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
@@ -128,7 +128,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("PasswordMatches validates whether or not a bcrypt-hashed password matches a provided password"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("_").Index().ID("byte")).Params(jen.ID("bool")).Block(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("_").Index().ID("byte")).Params(jen.ID("bool")).Block(
 			jen.Return().Qual("golang.org/x/crypto/bcrypt", "CompareHashAndPassword").Call(jen.Index().ID("byte").Call(jen.ID("hashedPassword")), jen.Index().ID("byte").Call(jen.ID("providedPassword"))).Op("==").ID("nil"),
 		),
 		jen.Line(),
@@ -137,7 +137,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("hashedPasswordIsTooWeak determines if a given hashed password was hashed with too weak a bcrypt cost"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("hashedPasswordIsTooWeak").Params(jen.ID("hashedPassword").ID("string")).Params(jen.ID("bool")).Block(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("hashedPasswordIsTooWeak").Params(jen.ID("hashedPassword").ID("string")).Params(jen.ID("bool")).Block(
 			jen.List(jen.ID("cost"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "Cost").Call(jen.Index().ID("byte").Call(jen.ID("hashedPassword"))),
 			jen.Line(),
 			jen.Return().ID("err").DoesNotEqual().ID("nil").Op("||").ID("uint").Call(jen.ID("cost")).Op("<").ID("b").Dot("hashCost"),
@@ -148,7 +148,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("PasswordIsAcceptable takes a password and returns whether or not it satisfies the authenticator"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("BcryptAuthenticator")).ID("PasswordIsAcceptable").Params(jen.ID("pass").ID("string")).Params(jen.ID("bool")).Block(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordIsAcceptable").Params(jen.ID("pass").ID("string")).Params(jen.ID("bool")).Block(
 			jen.Return().ID("uint").Call(jen.ID("len").Call(jen.ID("pass"))).Op(">=").ID("b").Dot("minimumPasswordSize"),
 		),
 		jen.Line(),

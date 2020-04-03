@@ -28,7 +28,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("UserInputMiddleware fetches user input from requests"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "UserInput")),
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserInputMiddleware")),
@@ -52,7 +52,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("PasswordUpdateInputMiddleware fetches password update input from requests"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "PasswordUpdateInput")),
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("PasswordUpdateInputMiddleware")),
@@ -76,7 +76,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("TOTPSecretRefreshInputMiddleware fetches 2FA update input from requests"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "TOTPSecretRefreshInput")),
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("TOTPSecretRefreshInputMiddleware")),

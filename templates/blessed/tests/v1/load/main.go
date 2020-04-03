@@ -15,7 +15,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ServiceAttacker implements hazana's Attacker interface"),
 		jen.Line(),
 		jen.Type().ID("ServiceAttacker").Struct(
-			jen.ID("todoClient").Op("*").Qual(proj.HTTPClientV1Package(), "V1Client"),
+			jen.ID("todoClient").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
 		),
 		jen.Line(),
 	)
@@ -23,7 +23,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Setup implement's hazana's Attacker interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Setup").Params(jen.ID("c").Qual("github.com/emicklei/hazana", "Config")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Setup").Params(jen.ID("c").Qual("github.com/emicklei/hazana", "Config")).Params(jen.Error()).Block(
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
@@ -32,7 +32,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Do implement's hazana's Attacker interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Do").Params(utils.CtxParam()).Params(jen.Qual("github.com/emicklei/hazana", "DoResult")).Block(
+		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Do").Params(utils.CtxParam()).Params(jen.Qual("github.com/emicklei/hazana", "DoResult")).Block(
 			jen.Comment("Do performs one request and is executed in a separate goroutine."),
 			jen.Comment("The context is used to cancel the request on timeout."),
 			jen.ID("act").Assign().ID("RandomAction").Call(jen.ID("a").Dot("todoClient")),
@@ -82,7 +82,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Teardown implements hazana's Attacker interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Teardown").Params().Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Teardown").Params().Params(jen.Error()).Block(
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
@@ -91,7 +91,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Clone implements hazana's Attacker interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").Op("*").ID("ServiceAttacker")).ID("Clone").Params().Params(jen.Qual("github.com/emicklei/hazana", "Attack")).Block(
+		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Clone").Params().Params(jen.Qual("github.com/emicklei/hazana", "Attack")).Block(
 			jen.Return().ID("a"),
 		),
 		jen.Line(),

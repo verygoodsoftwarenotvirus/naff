@@ -167,7 +167,7 @@ func buildBuildItemExistsRequest(proj *models.Project, typ models.DataType) []je
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 		jen.Line(),
 	}
@@ -237,7 +237,7 @@ func buildBuildGetSomethingRequestFuncDecl(proj *models.Project, typ models.Data
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 		jen.Line(),
 	}
@@ -324,7 +324,7 @@ func buildParamsForMethodThatRetrievesAListOfADataType(proj *models.Project, typ
 	}
 
 	if !call {
-		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"))
+		params = append(params, jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"))
 	} else {
 		params = append(params, jen.ID(utils.FilterVarName))
 	}
@@ -357,7 +357,7 @@ func buildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(proj *models.P
 	}
 
 	if !call {
-		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"))
+		params = append(params, jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"))
 	} else {
 		params = append(params, jen.ID(utils.FilterVarName))
 	}
@@ -390,7 +390,7 @@ func buildParamsForMethodThatCreatesADataType(proj *models.Project, typ models.D
 	}
 
 	if !call {
-		params = append(params, jen.ID("input").Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+		params = append(params, jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
 	} else {
 		params = append(params, jen.ID("input"))
 	}
@@ -423,7 +423,7 @@ func buildParamsForMethodThatCreatesADataTypeFromStructs(proj *models.Project, t
 	}
 
 	if !call {
-		params = append(params, jen.ID("exampleInput").Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+		params = append(params, jen.ID("exampleInput").PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
 	} else {
 		params = append(params, jen.ID("exampleInput"))
 	}
@@ -456,7 +456,7 @@ func buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj *models.Pro
 	}
 
 	if !call {
-		params = append(params, jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"))
+		params = append(params, jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"))
 	} else {
 		params = append(params, jen.ID(utils.FilterVarName))
 	}
@@ -493,7 +493,7 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj *models.Project,
 	}
 
 	if !call {
-		params = append(params, jen.ID(typ.Name.UnexportedVarName()).Op("*").Qual(proj.ModelsV1Package(), typ.Name.Singular()))
+		params = append(params, jen.ID(typ.Name.UnexportedVarName()).PointerTo().Qual(proj.ModelsV1Package(), typ.Name.Singular()))
 	} else {
 		params = append(params, jen.ID(typ.Name.UnexportedVarName()))
 	}
@@ -547,7 +547,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 		jen.Commentf("%s retrieves %s", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(
-			jen.ID(uvn).Op("*").Qual(proj.ModelsV1Package(), ts),
+			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), ts),
 			jen.Err().ID("error"),
 		).Block(block...,
 		),
@@ -586,7 +586,7 @@ func buildBuildGetListOfSomethingRequestFuncDecl(proj *models.Project, typ model
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatRetrievesAListOfADataType(proj, typ, false)...).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 		jen.Line(),
 	}
@@ -628,7 +628,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.Commentf("%s retrieves a list of %s", funcName, typ.Name.PluralCommonName()),
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, false)...).Params(
-			jen.ID(pvn).Op("*").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", ts)),
+			jen.ID(pvn).PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", ts)),
 			jen.Err().ID("error"),
 		).Block(block...,
 		),
@@ -669,7 +669,7 @@ func buildBuildCreateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 			buildParamsForMethodThatCreatesADataType(proj, typ, false)...,
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(
 			block...,
 		),
@@ -720,7 +720,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		newClientMethod(funcName).Params(
 			buildParamsForMethodThatCreatesADataType(proj, typ, false)...,
 		).Params(
-			jen.ID(vn).Op("*").Qual(proj.ModelsV1Package(), ts),
+			jen.ID(vn).PointerTo().Qual(proj.ModelsV1Package(), ts),
 			jen.Err().ID("error"),
 		).Block(block...,
 		),
@@ -757,7 +757,7 @@ func buildBuildUpdateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, typ, false)...,
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...,
 		),
 		jen.Line(),
@@ -799,7 +799,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, typ, false)...,
-		).Params(jen.ID("error")).Block(block...),
+		).Params(jen.Error()).Block(block...),
 		jen.Line(),
 	}
 
@@ -839,7 +839,7 @@ func buildBuildArchiveSomethingRequestFuncDecl(proj *models.Project, typ models.
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 		jen.Line(),
 	}
@@ -878,7 +878,7 @@ func buildArchiveSomethingFuncDecl(proj *models.Project, typ models.DataType) []
 	lines := []jen.Code{
 		jen.Commentf("%s archives %s", funcName, commonNameWithPrefix),
 		jen.Line(),
-		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(jen.ID("error")).Block(block...),
+		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(jen.Error()).Block(block...),
 	}
 
 	return lines

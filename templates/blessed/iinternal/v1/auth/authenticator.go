@@ -42,7 +42,7 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 			jen.Comment("PasswordHasher hashes passwords"),
 			jen.ID("PasswordHasher").Interface(
 				jen.ID("PasswordIsAcceptable").Params(jen.ID("password").ID("string")).Params(jen.ID("bool")),
-				jen.ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")),
+				jen.ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.Error()),
 				jen.ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("salt").Index().ID("byte")).Params(jen.ID("bool")),
 			),
 			jen.Line(),

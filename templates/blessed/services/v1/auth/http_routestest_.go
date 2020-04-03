@@ -31,7 +31,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
 				utils.AssertNoError(jen.Err(), nil),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("cookie")),
+				utils.AssertNotNil(jen.ID("cookie"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -54,8 +54,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("c")),
 				jen.Line(),
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("cookie")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("cookie"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("without cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -66,9 +66,9 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Err(), jen.Qual("net/http", "ErrNoCookie")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("cookie")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertEqual(jen.Err(), jen.Qual("net/http", "ErrNoCookie"), nil),
+				utils.AssertNil(jen.ID("cookie"), nil),
 			)),
 		),
 		jen.Line(),
@@ -82,7 +82,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
-				jen.ID("s").Dot("oauth2ClientsService").Assert(jen.Op("*").ID("mockOAuth2ClientValidator")).Dot("On").Callln(
+				jen.ID("s").Dot("oauth2ClientsService").Assert(jen.PointerTo().ID("mockOAuth2ClientValidator")).Dot("On").Callln(
 					jen.Lit("ExtractOAuth2ClientFromRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
@@ -99,7 +99,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("oac").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
-				jen.ID("s").Dot("oauth2ClientsService").Assert(jen.Op("*").ID("mockOAuth2ClientValidator")).Dot("On").Callln(
+				jen.ID("s").Dot("oauth2ClientsService").Assert(jen.PointerTo().ID("mockOAuth2ClientValidator")).Dot("On").Callln(
 					jen.Lit("ExtractOAuth2ClientFromRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.ID("oac"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -120,7 +120,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("oac").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
-				jen.ID("s").Dot("oauth2ClientsService").Assert(jen.Op("*").ID("mockOAuth2ClientValidator")).Dot("On").Callln(
+				jen.ID("s").Dot("oauth2ClientsService").Assert(jen.PointerTo().ID("mockOAuth2ClientValidator")).Dot("On").Callln(
 					jen.Lit("ExtractOAuth2ClientFromRequest"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.ID("oac"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -130,7 +130,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("actual").Assign().ID("s").Dot("WebsocketAuthFunction").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("actual")),
+				utils.AssertFalse(jen.ID("actual"), nil),
 			)),
 		),
 		jen.Line(),
@@ -157,14 +157,14 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("c")),
 				jen.Line(),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("userID"),
 				).Dot("Return").Call(jen.ID("expectedUser"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actualUser"), jen.Err()).Assign().ID("s").Dot("FetchUserFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedUser"), jen.ID("actualUser")),
+				utils.AssertEqual(jen.ID("expectedUser"), jen.ID("actualUser"), nil),
 				utils.AssertNoError(jen.Err(), nil),
 			)),
 			jen.Line(),
@@ -181,15 +181,15 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("userID"),
 				).Dot("Return").Call(jen.ID("expectedUser"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actualUser"), jen.Err()).Assign().ID("s").Dot("FetchUserFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actualUser")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNil(jen.ID("actualUser"), nil),
+				utils.AssertError(jen.Err(), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -210,15 +210,15 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("c")),
 				jen.Line(),
 				jen.ID("expectedError").Assign().Qual("errors", "New").Call(jen.Lit("blah")),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUser"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("userID"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.ID("expectedError")),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.ID("expectedError")),
 				jen.Line(),
 				jen.List(jen.ID("actualUser"), jen.Err()).Assign().ID("s").Dot("FetchUserFromRequest").Call(jen.ID("req").Dot("Context").Call(), jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actualUser")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNil(jen.ID("actualUser"), nil),
+				utils.AssertError(jen.Err(), nil),
 			)),
 		),
 		jen.Line(),
@@ -232,13 +232,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUser").Dot("Username"),
 				).Dot("Return").Call(jen.ID("expectedUser"), jen.Nil()),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -263,15 +263,15 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("LoginHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNoContent")),
-				jen.Qual("github.com/stretchr/testify/assert", "NotEmpty").Call(jen.ID("t"), jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie"))),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNoContent"), nil),
+				utils.AssertNotEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching login data from request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUser").Dot("Username"),
@@ -292,8 +292,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("LoginHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized")),
-				jen.Qual("github.com/stretchr/testify/assert", "Empty").Call(jen.ID("t"), jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie"))),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized"), nil),
+				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error encoding error fetching login data"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -308,7 +308,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUser").Dot("Username"),
@@ -329,21 +329,21 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("LoginHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized")),
-				jen.Qual("github.com/stretchr/testify/assert", "Empty").Call(jen.ID("t"), jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie"))),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized"), nil),
+				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUser").Dot("Username"),
 				).Dot("Return").Call(jen.ID("expectedUser"), jen.Nil()),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -368,21 +368,21 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("LoginHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized")),
-				jen.Qual("github.com/stretchr/testify/assert", "Empty").Call(jen.ID("t"), jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie"))),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized"), nil),
+				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUser").Dot("Username"),
 				).Dot("Return").Call(jen.ID("expectedUser"), jen.Nil()),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -407,8 +407,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("LoginHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized")),
-				jen.Qual("github.com/stretchr/testify/assert", "Empty").Call(jen.ID("t"), jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie"))),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusUnauthorized"), nil),
+				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error building cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -422,13 +422,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("cookieManager").Equals().ID("cb"),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUser").Dot("Username"),
 				).Dot("Return").Call(jen.ID("expectedUser"), jen.Nil()),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -453,8 +453,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("LoginHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
-				jen.Qual("github.com/stretchr/testify/assert", "Empty").Call(jen.ID("t"), jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie"))),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error building cookie and error encoding cookie response"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -476,13 +476,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUser").Dot("Username"),
 				).Dot("Return").Call(jen.ID("expectedUser"), jen.Nil()),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -507,8 +507,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("s").Dot("LoginHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError")),
-				jen.Qual("github.com/stretchr/testify/assert", "Empty").Call(jen.ID("t"), jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie"))),
+				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEmpty(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")), nil),
 			)),
 		),
 		jen.Line(),
@@ -534,7 +534,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("LogoutHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.ID("actualCookie").Assign().ID("res").Dot("Header").Call().Dot("Get").Call(jen.Lit("Set-Cookie")),
-				jen.Qual("github.com/stretchr/testify/assert", "Contains").Call(jen.ID("t"), jen.ID("actualCookie"), jen.Lit("Max-Age=0")),
+				utils.AssertContains(jen.ID("actualCookie"), jen.Lit("Max-Age=0"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("without cookie"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -559,7 +559,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUser").Dot("Username"),
@@ -579,8 +579,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("loginData"), jen.Err()).Assign().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("loginData")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("loginData").Dot("user"), jen.ID("expectedUser")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.Err()),
+				utils.AssertEqual(jen.ID("loginData").Dot("user"), jen.ID("expectedUser"), nil),
+				utils.AssertNil(jen.Err(), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("without login data attached to request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -591,18 +591,18 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.List(jen.ID("_"), jen.Err()).Equals().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertError(jen.Err(), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with DB error fetching user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUser").Dot("Username"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
@@ -616,18 +616,18 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UserLoginInputMiddlewareCtxKey"), jen.ID("exampleLoginData"))),
 				jen.List(jen.ID("_"), jen.Err()).Equals().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertError(jen.Err(), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expectedUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.ID("expectedUser").Dot("Username"),
-				).Dot("Return").Call(jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
@@ -641,7 +641,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UserLoginInputMiddlewareCtxKey"), jen.ID("exampleLoginData"))),
 				jen.List(jen.ID("_"), jen.Err()).Equals().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertError(jen.Err(), nil),
 			)),
 		),
 		jen.Line(),
@@ -665,7 +665,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("user").MapAssign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -676,7 +676,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
 			)),
 			jen.Line(),
@@ -694,7 +694,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("user").MapAssign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -704,18 +704,18 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.ID("expected"), jen.Qual(proj.InternalAuthV1Package(), "ErrPasswordHashTooWeak")),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("HashPassword"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Lit("blah"), jen.Nil()),
 				jen.Line(),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("UpdateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
 			)),
 			jen.Line(),
@@ -734,7 +734,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("user").MapAssign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -743,14 +743,14 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.ID("true"), jen.Qual(proj.InternalAuthV1Package(), "ErrPasswordHashTooWeak")),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("HashPassword"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Lit(""), jen.ID("expectedErr")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with too weak a password hash and error updating user"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -768,7 +768,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("user").MapAssign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -777,19 +777,19 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.ID("true"), jen.Qual(proj.InternalAuthV1Package(), "ErrPasswordHashTooWeak")),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("HashPassword"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.Lit("blah"), jen.Nil()),
 				jen.Line(),
-				jen.ID("s").Dot("userDB").Assert(jen.Op("*").Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
+				jen.ID("s").Dot("userDB").Assert(jen.PointerTo().Qual(proj.ModelsV1Package("mock"), "UserDataManager")).Dot("On").Callln(
 					jen.Lit("UpdateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 				).Dot("Return").Call(jen.ID("expectedErr")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error validating login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -807,7 +807,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("user").MapAssign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -818,15 +818,15 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.ID("expected"), jen.ID("expectedErr")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("expected").Assign().ID("false"),
-				jen.ID("s").Dot("authenticator").Assert(jen.Op("*").Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
+				jen.ID("s").Dot("authenticator").Assert(jen.PointerTo().Qual(proj.InternalAuthV1Package("mock"), "Authenticator")).Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
 					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
@@ -847,7 +847,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(utils.CtxVar(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
 			)),
 		),
@@ -863,7 +863,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("cookie")),
+				utils.AssertNotNil(jen.ID("cookie"), nil),
 				utils.AssertNoError(jen.Err(), nil),
 			)),
 			jen.Line(),
@@ -879,8 +879,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("cookie")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+				utils.AssertNil(jen.ID("cookie"), nil),
+				utils.AssertError(jen.Err(), nil),
 			)),
 		),
 		jen.Line(),
@@ -895,7 +895,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc())),
 				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleUser")),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("c")),
+				utils.AssertNotNil(jen.ID("c"), nil),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.Var().ID("ca").Qual(proj.ModelsV1Package(), "CookieAuth"),
@@ -910,7 +910,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("CycleSecretHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				jen.ID("decodeErr2").Assign().ID("s").Dot("cookieManager").Dot("Decode").Call(jen.ID("CookieName"), jen.ID("c").Dot("Value"), jen.VarPointer().ID("ca")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("decodeErr2")),
+				utils.AssertError(jen.ID("decodeErr2"), nil),
 			)),
 		),
 		jen.Line(),

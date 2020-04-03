@@ -32,7 +32,7 @@ func frontendServiceDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection"),
 		jen.Line(),
-		jen.Func().ID("ProvideFrontendService").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("cfg").Qual(proj.InternalConfigV1Package(), "FrontendSettings")).Params(jen.Op("*").ID("Service")).Block(
+		jen.Func().ID("ProvideFrontendService").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("cfg").Qual(proj.InternalConfigV1Package(), "FrontendSettings")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("svc").Assign().VarPointer().ID("Service").Valuesln(
 				jen.ID("config").MapAssign().ID("cfg"),
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),

@@ -59,7 +59,7 @@ func buildBuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code {
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 		jen.Line(),
 	}
@@ -107,7 +107,7 @@ func buildGetOAuth2Client(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.ID("oauth2Client").Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.ID("oauth2Client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Err().ID("error"),
 		).Block(block...),
 		jen.Line(),
@@ -139,10 +139,10 @@ func buildBuildGetOAuth2ClientsRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildGetOAuth2ClientsRequest").Params(
 			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 		jen.Line(),
 	}
@@ -172,7 +172,7 @@ func buildGetOAuth2Clients(proj *models.Project) []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.Var().ID("oauth2Clients").Op("*").Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
+		jen.Var().ID("oauth2Clients").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
@@ -189,10 +189,10 @@ func buildGetOAuth2Clients(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("GetOAuth2Clients").Params(
 			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
-			jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
-			jen.ID("error"),
+			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
+			jen.Error(),
 		).Block(block...),
 		jen.Line(),
 	}
@@ -239,9 +239,9 @@ func buildBuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Code {
 		newClientMethod("BuildCreateOAuth2ClientRequest").Paramsln(
 			utils.CtxParam(),
 			jen.ID("cookie").ParamPointer().Qual("net/http", "Cookie"),
-			jen.ID("body").Op("*").Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
+			jen.ID("body").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
 		).Params(jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error")).Block(block...),
+			jen.Error()).Block(block...),
 		jen.Line(),
 	}
 
@@ -253,7 +253,7 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
-		jen.Var().ID("oauth2Client").Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"),
+		jen.Var().ID("oauth2Client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 		jen.If(jen.ID("cookie").Op("==").ID("nil")).Block(
 			jen.Return().List(
 				jen.Nil(),
@@ -302,10 +302,10 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 		newClientMethod("CreateOAuth2Client").Paramsln(
 			utils.CtxParam(),
 			jen.ID("cookie").ParamPointer().Qual("net/http", "Cookie"),
-			jen.ID("input").Op("*").Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
+			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
 		).Params(
-			jen.Op("*").Qual(proj.ModelsV1Package(), "OAuth2Client"),
-			jen.ID("error"),
+			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.Error(),
 		).Block(block...,
 		),
 		jen.Line(),
@@ -341,7 +341,7 @@ func buildBuildArchiveOAuth2ClientRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildArchiveOAuth2ClientRequest").Params(utils.CtxParam(), jen.ID("id").ID("uint64")).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 		jen.Line(),
 	}
@@ -378,7 +378,7 @@ func buildArchiveOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client"),
 		jen.Line(),
-		newClientMethod("ArchiveOAuth2Client").Params(utils.CtxParam(), jen.ID("id").ID("uint64")).Params(jen.ID("error")).Block(block...),
+		newClientMethod("ArchiveOAuth2Client").Params(utils.CtxParam(), jen.ID("id").ID("uint64")).Params(jen.Error()).Block(block...),
 		jen.Line(),
 	}
 

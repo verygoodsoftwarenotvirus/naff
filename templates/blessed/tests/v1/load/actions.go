@@ -22,7 +22,7 @@ func actionsDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Type().Defs(
 			jen.Comment("actionFunc represents a thing you can do"),
-			jen.ID("actionFunc").Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")),
+			jen.ID("actionFunc").Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()),
 			jen.Line(),
 			jen.Comment("Action is a wrapper struct around some important values"),
 			jen.ID("Action").Struct(
@@ -37,7 +37,7 @@ func actionsDotGo(proj *models.Project) *jen.File {
 	buildRandomActionLines := func() []jen.Code {
 		lines := []jen.Code{
 			utils.CreateCtx(),
-			jen.ID("allActions").Assign().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(
+			jen.ID("allActions").Assign().Map(jen.ID("string")).PointerTo().ID("Action").Valuesln(
 				jen.Lit("GetHealthCheck").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("GetHealthCheck"),
 					jen.ID("Action").MapAssign().ID("c").Dot("BuildHealthCheckRequest"),
@@ -45,7 +45,7 @@ func actionsDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Lit("CreateUser").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("CreateUser"),
-					jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(
+					jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
 						jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "RandomUserInput").Call(),
 						jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(utils.CtxVar(), jen.ID("ui")),
 					),
@@ -97,7 +97,7 @@ func actionsDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("RandomAction takes a client and returns a closure which is an action"),
 		jen.Line(),
-		jen.Func().ID("RandomAction").Params(jen.ID("c").Op("*").Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Op("*").ID("Action")).Block(
+		jen.Func().ID("RandomAction").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().ID("Action")).Block(
 			buildRandomActionLines()...,
 		),
 		jen.Line(),

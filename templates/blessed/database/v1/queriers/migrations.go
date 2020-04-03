@@ -636,7 +636,7 @@ func buildMigrate(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Comment("safe (as in idempotent, though not necessarily recommended) to call this function multiple times."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(dbvsn)).ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Error()).Block(
 			jen.ID(dbfl).Dot("logger").Dot("Info").Call(jen.Lit("migrating db")),
 			jen.If(jen.Op("!").ID(dbfl).Dot("IsReady").Call(utils.CtxVar())).Block(
 				jen.Return().ID("errors").Dot("New").Call(jen.Lit("db is not ready yet")),

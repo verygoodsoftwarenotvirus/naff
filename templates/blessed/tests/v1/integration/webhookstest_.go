@@ -12,21 +12,21 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(proj.ModelsV1Package(), "Webhook")).Block(
+		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Name"), jen.ID("actual").Dot("Name")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ContentType"), jen.ID("actual").Dot("ContentType")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("URL"), jen.ID("actual").Dot("URL")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Method"), jen.ID("actual").Dot("Method")),
-			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("CreatedOn")),
+			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
+			utils.AssertEqual(jen.ID("expected").Dot("Name"), jen.ID("actual").Dot("Name"), nil),
+			utils.AssertEqual(jen.ID("expected").Dot("ContentType"), jen.ID("actual").Dot("ContentType"), nil),
+			utils.AssertEqual(jen.ID("expected").Dot("URL"), jen.ID("actual").Dot("URL"), nil),
+			utils.AssertEqual(jen.ID("expected").Dot("Method"), jen.ID("actual").Dot("Method"), nil),
+			utils.AssertNotZero(jen.ID("actual").Dot("CreatedOn"), nil),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.Op("*").Qual(proj.ModelsV1Package(), "WebhookCreationInput")).Block(
+		jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput")).Block(
 			jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 				jen.ID("Name").MapAssign().Qual(utils.FakeLibrary, "Word").Call(),
 				jen.ID("URL").MapAssign().Qual(utils.FakeLibrary, "DomainName").Call(),
@@ -39,7 +39,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(proj.ModelsV1Package(), "Webhook")).Block(
+		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.CreateCtx(),
@@ -94,7 +94,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetWebhook").Call(utils.CtxVar(), jen.ID("premade").Dot("ID")),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-					jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
+					utils.AssertNotZero(jen.ID("actual").Dot("ArchivedOn"), nil),
 				)),
 			)),
 			jen.Line(),
@@ -103,7 +103,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Comment("Create webhooks"),
-					jen.Var().ID("expected").Index().Op("*").Qual(proj.ModelsV1Package(), "Webhook"),
+					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 					jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.ID("buildDummyWebhook").Call(jen.ID("t"))),
 					),
@@ -127,7 +127,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Fetch webhook"),
 					jen.List(jen.ID("_"), jen.Err()).Assign().ID("todoClient").Dot("GetWebhook").Call(utils.CtxVar(), jen.ID("nonexistentID")),
-					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+					utils.AssertError(jen.Err(), nil),
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -169,7 +169,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					utils.CreateCtx(),
 					jen.Line(),
 					jen.Err().Assign().ID("todoClient").Dot("UpdateWebhook").Call(utils.CtxVar(), jen.VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Values(jen.ID("ID").MapAssign().ID("nonexistentID"))),
-					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+					utils.AssertError(jen.Err(), nil),
 				)),
 				jen.Line(),
 				jen.ID("T").Dot("Run").Call(jen.Lit("it should be updatable"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -205,7 +205,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Assert webhook equality"),
 					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-					jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual").Dot("UpdatedOn")),
+					utils.AssertNotNil(jen.ID("actual").Dot("UpdatedOn"), nil),
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.Err().Equals().ID("todoClient").Dot("ArchiveWebhook").Call(utils.CtxVar(), jen.ID("actual").Dot("ID")),

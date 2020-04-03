@@ -14,7 +14,7 @@ func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 
 	for _, field := range typ.Fields {
 		if field.Pointer {
-			out = append(out, jen.ID(field.Name.Singular()).Op("*").ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+			out = append(out, jen.ID(field.Name.Singular()).PointerTo().ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
 		} else {
 			out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
 		}
@@ -22,8 +22,8 @@ func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 
 	out = append(out,
 		jen.ID("CreatedOn").ID("uint64").Tag(jsonTag("created_on")),
-		jen.ID("UpdatedOn").Op("*").ID("uint64").Tag(jsonTag("updated_on")),
-		jen.ID("ArchivedOn").Op("*").ID("uint64").Tag(jsonTag("archived_on")),
+		jen.ID("UpdatedOn").PointerTo().ID("uint64").Tag(jsonTag("updated_on")),
+		jen.ID("ArchivedOn").PointerTo().ID("uint64").Tag(jsonTag("archived_on")),
 	)
 
 	if typ.BelongsToUser {
@@ -42,7 +42,7 @@ func buildUpdateModelStructFields(typ models.DataType) []jen.Code {
 	for _, field := range typ.Fields {
 		if field.ValidForUpdateInput {
 			if field.Pointer {
-				out = append(out, jen.ID(field.Name.Singular()).Op("*").ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+				out = append(out, jen.ID(field.Name.Singular()).PointerTo().ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
 			} else {
 				out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
 			}
@@ -65,7 +65,7 @@ func buildCreateModelStructFields(typ models.DataType) []jen.Code {
 	for _, field := range typ.Fields {
 		if field.ValidForCreationInput {
 			if field.Pointer {
-				out = append(out, jen.ID(field.Name.Singular()).Op("*").ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+				out = append(out, jen.ID(field.Name.Singular()).PointerTo().ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
 			} else {
 				out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
 			}
@@ -88,28 +88,28 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	pn := n.Plural()
 
 	interfaceMethods := []jen.Code{
-		jen.IDf("%sExists", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.Bool(), jen.ID("error")),
-		jen.IDf("Get%s", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.Op("*").ID(sn), jen.ID("error")),
-		jen.IDf("Get%sCount", sn).Params(typ.BuildGetListOfSomethingParams(proj, true)...).Params(jen.ID("uint64"), jen.ID("error")),
-		jen.IDf("GetAll%sCount", pn).Params(utils.CtxParam()).Params(jen.ID("uint64"), jen.ID("error")),
-		jen.IDf("Get%s", pn).Params(typ.BuildGetListOfSomethingParams(proj, true)...).Params(jen.Op("*").IDf("%sList", sn), jen.ID("error")),
+		jen.IDf("%sExists", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.Bool(), jen.Error()),
+		jen.IDf("Get%s", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
+		jen.IDf("Get%sCount", sn).Params(typ.BuildGetListOfSomethingParams(proj, true)...).Params(jen.ID("uint64"), jen.Error()),
+		jen.IDf("GetAll%sCount", pn).Params(utils.CtxParam()).Params(jen.ID("uint64"), jen.Error()),
+		jen.IDf("Get%s", pn).Params(typ.BuildGetListOfSomethingParams(proj, true)...).Params(jen.PointerTo().IDf("%sList", sn), jen.Error()),
 	}
 
 	if typ.BelongsToUser {
 		interfaceMethods = append(interfaceMethods,
 			jen.IDf("GetAll%sForUser", pn).Params(
 				utils.CtxParam(), jen.ID("userID").ID("uint64"),
-			).Params(jen.Index().ID(sn), jen.ID("error")))
+			).Params(jen.Index().ID(sn), jen.Error()))
 	}
 	if typ.BelongsToStruct != nil {
 		interfaceMethods = append(interfaceMethods,
-			jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(typ.BuildGetSomethingForSomethingElseParamsForModelsPackage(proj)...).Params(jen.Index().ID(sn), jen.ID("error")))
+			jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(typ.BuildGetSomethingForSomethingElseParamsForModelsPackage(proj)...).Params(jen.Index().ID(sn), jen.Error()))
 	}
 
 	interfaceMethods = append(interfaceMethods,
-		jen.IDf("Create%s", sn).Params(typ.BuildCreateSomethingParams(proj, true)...).Params(jen.Op("*").ID(sn), jen.ID("error")),
-		jen.IDf("Update%s", sn).Params(typ.BuildUpdateSomethingParams(proj, "updated", true)...).Params(jen.ID("error")),
-		jen.IDf("Archive%s", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.ID("error")),
+		jen.IDf("Create%s", sn).Params(typ.BuildCreateSomethingParams(proj, true)...).Params(jen.PointerTo().ID(sn), jen.Error()),
+		jen.IDf("Update%s", sn).Params(typ.BuildUpdateSomethingParams(proj, "updated", true)...).Params(jen.Error()),
+		jen.IDf("Archive%s", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.Error()),
 	)
 
 	return interfaceMethods
@@ -165,7 +165,7 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("Update merges an %sInput with %s", sn, cnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("x").Op("*").ID(sn)).ID("Update").Params(jen.ID("input").Op("*").IDf("%sUpdateInput", sn)).Block(buildUpdateFunctionLogic(typ.Fields)...),
+		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Block(buildUpdateFunctionLogic(typ.Fields)...),
 		jen.Line(),
 	)
 
@@ -185,7 +185,7 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("ToInput creates a %sUpdateInput struct for %s", sn, cnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("x").Op("*").ID(sn)).ID("ToInput").Params().Params(jen.Op("*").IDf("%sUpdateInput", sn)).Block(buildToUpdateInput()),
+		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToInput").Params().Params(jen.PointerTo().IDf("%sUpdateInput", sn)).Block(buildToUpdateInput()),
 		jen.Line(),
 	)
 
@@ -202,7 +202,7 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 			if field.Pointer {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").Op("&&").Op("*").ID("input").Dot(fsn).DoesNotEqual().Lit("").Op("&&").ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").Op("&&").PointerTo().ID("input").Dot(fsn).DoesNotEqual().Lit("").Op("&&").ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
 						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)

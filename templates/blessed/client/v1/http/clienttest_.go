@@ -115,7 +115,7 @@ func buildBuildTestClient() []jen.Code {
 			jen.ID("t").ParamPointer().Qual("testing", "T"),
 			jen.ID("ts").ParamPointer().Qual("net/http/httptest", "Server"),
 		).Params(
-			jen.Op("*").ID(v1),
+			jen.PointerTo().ID(v1),
 		).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -141,7 +141,7 @@ func buildBuildTestClient() []jen.Code {
 
 func buildBuildTestClientWithInvalidURL() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildTestClientWithInvalidURL").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").ID(v1)).Block(
+		jen.Func().ID("buildTestClientWithInvalidURL").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().ID(v1)).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("l").Assign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),

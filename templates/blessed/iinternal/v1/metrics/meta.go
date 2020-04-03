@@ -34,7 +34,7 @@ func metaDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("RegisterDefaultViews registers default runtime views"),
 		jen.Line(),
-		jen.Func().ID("RegisterDefaultViews").Params().Params(jen.ID("error")).Block(
+		jen.Func().ID("RegisterDefaultViews").Params().Params(jen.Error()).Block(
 			jen.Return().Qual("go.opencensus.io/stats/view",
 				"Register",
 			).Call(jen.ID("DefaultRuntimeViews").Op("...")),

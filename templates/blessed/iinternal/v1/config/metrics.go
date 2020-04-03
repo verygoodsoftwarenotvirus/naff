@@ -54,7 +54,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(proj.InternalMetricsV1Package(), "InstrumentationHandler"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(proj.InternalMetricsV1Package(), "InstrumentationHandler"), jen.Error()).Block(
 			jen.If(jen.Err().Assign().Qual(proj.InternalMetricsV1Package(), "RegisterDefaultViews").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("registering default metric views: %w"), jen.Err())),
 			),
@@ -90,9 +90,9 @@ func metricsDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideTracing provides an instrumentation handler"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("ServerConfig")).ID("ProvideTracing").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
+		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideTracing").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
 			"Logger",
-		)).Params(jen.ID("error")).Block(
+		)).Params(jen.Error()).Block(
 			jen.Qual("go.opencensus.io/trace", "ApplyConfig").Call(jen.Qual("go.opencensus.io/trace", "Config").Values(jen.ID("DefaultSampler").MapAssign().Qual("go.opencensus.io/trace", "ProbabilitySampler").Call(jen.Lit(1)))),
 			jen.Line(),
 			jen.ID("log").Assign().ID("logger").Dot("WithValue").Call(jen.Lit("tracing_provider"), jen.ID("cfg").Dot("Metrics").Dot("TracingProvider")),

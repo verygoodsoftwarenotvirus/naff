@@ -12,7 +12,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("buildTestClient").Params().Params(jen.Op("*").ID("Client"), jen.Op("*").Qual(proj.DatabaseV1Package(), "MockDatabase")).Block(
+		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabaseV1Package(), "MockDatabase")).Block(
 			jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 			jen.ID("c").Assign().VarPointer().ID("Client").Valuesln(
 				jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -44,7 +44,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("actual")),
+				utils.AssertError(jen.ID("actual"), nil),
 			)),
 		),
 		jen.Line(),
@@ -83,7 +83,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 					jen.False(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual")),
+				utils.AssertNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
 			)),
 			jen.Line(),
@@ -100,9 +100,9 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 					jen.False(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("x")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				utils.AssertNil(jen.ID("x"), nil),
+				utils.AssertError(jen.ID("actual"), nil),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			)),
 		),
 		jen.Line(),

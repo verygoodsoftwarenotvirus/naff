@@ -58,7 +58,7 @@ func buildBuildGetWebhookRequest(proj *models.Project) []jen.Code {
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...,
 		),
 	}
@@ -105,7 +105,7 @@ func buildGetWebhook(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.ID("webhook").Op("*").Qual(proj.ModelsV1Package(), "Webhook"),
+			jen.ID("webhook").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 			jen.Err().ID("error"),
 		).Block(block...),
 	}
@@ -136,10 +136,10 @@ func buildBuildGetWebhooksRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 	}
 
@@ -184,9 +184,9 @@ func buildGetWebhooks(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).Op("*").Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
-			jen.ID("webhooks").Op("*").Qual(proj.ModelsV1Package(), "WebhookList"),
+			jen.ID("webhooks").PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"),
 			jen.Err().ID("error"),
 		).Block(block...),
 	}
@@ -217,10 +217,10 @@ func buildBuildCreateWebhookRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID("body").Op("*").Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
+			jen.ID("body").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 	}
 
@@ -265,9 +265,9 @@ func buildCreateWebhook(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID("input").Op("*").Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
+			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
 		).Params(
-			jen.ID("webhook").Op("*").Qual(proj.ModelsV1Package(), "Webhook"),
+			jen.ID("webhook").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 			jen.Err().ID("error"),
 		).Block(block...),
 	}
@@ -302,10 +302,10 @@ func buildBuildUpdateWebhookRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID("updated").Op("*").Qual(proj.ModelsV1Package(), "Webhook"),
+			jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 	}
 
@@ -342,9 +342,9 @@ func buildUpdateWebhook(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID("updated").Op("*").Qual(proj.ModelsV1Package(), "Webhook"),
+			jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 		).Params(
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 	}
 
@@ -380,7 +380,7 @@ func buildBuildArchiveWebhookRequest(proj *models.Project) []jen.Code {
 			jen.ID("id").ID("uint64"),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...),
 	}
 
@@ -420,7 +420,7 @@ func buildArchiveWebhook(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("id").ID("uint64"),
 		).Params(
-			jen.ID("error"),
+			jen.Error(),
 		).Block(block...,
 		),
 	}

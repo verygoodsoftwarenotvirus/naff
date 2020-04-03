@@ -35,8 +35,8 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
-			jen.ID("_").Qual("goproj.in/oauth2.v3", "ClientStore").Equals().Parens(jen.Op("*").ID("clientStore")).Call(jen.Nil()),
+			jen.ID("_").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual("goproj.in/oauth2.v3", "ClientStore").Equals().Parens(jen.PointerTo().ID("clientStore")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -52,9 +52,9 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("SetAuthorizeScopeHandler").Params(jen.ID("handler").Qual("goproj.in/oauth2.v3/server", "AuthorizeScopeHandler")),
 				jen.ID("SetResponseErrorHandler").Params(jen.ID("handler").Qual("goproj.in/oauth2.v3/server", "ResponseErrorHandler")),
 				jen.ID("SetInternalErrorHandler").Params(jen.ID("handler").Qual("goproj.in/oauth2.v3/server", "InternalErrorHandler")),
-				jen.ID("ValidationBearerToken").Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Qual("goproj.in/oauth2.v3", "TokenInfo"), jen.ID("error")),
-				jen.ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("error")),
-				jen.ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("error")),
+				jen.ID("ValidationBearerToken").Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Qual("goproj.in/oauth2.v3", "TokenInfo"), jen.Error()),
+				jen.ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Error()),
+				jen.ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("ClientIDFetcher is a function for fetching client IDs out of requests"),
@@ -82,7 +82,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "Database")).Params(jen.Op("*").ID("clientStore")).Block(
+		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "Database")).Params(jen.PointerTo().ID("clientStore")).Block(
 			jen.ID("cs").Assign().VarPointer().ID("clientStore").Valuesln(
 				jen.ID("database").MapAssign().ID("db")),
 			jen.Return().ID("cs"),
@@ -93,7 +93,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetByID implements oauth2.ClientStorage"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("clientStore")).ID("GetByID").Params(jen.ID("id").ID("string")).Params(jen.Qual("goproj.in/oauth2.v3", "ClientInfo"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("clientStore")).ID("GetByID").Params(jen.ID("id").ID("string")).Params(jen.Qual("goproj.in/oauth2.v3", "ClientInfo"), jen.Error()).Block(
 			jen.List(jen.ID("client"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.InlineCtx(), jen.ID("id")),
 			jen.Line(),
 			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
@@ -117,7 +117,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 			jen.ID("counterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
-		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
+		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
 			jen.List(jen.ID("counter"), jen.Err()).Assign().ID("counterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
@@ -159,7 +159,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("initializeOAuth2Handler"),
 		jen.Line(),
-		jen.Func().ID("initializeOAuth2Handler").Params(jen.ID("handler").ID("oauth2Handler"), jen.ID("s").Op("*").ID("Service")).Block(
+		jen.Func().ID("initializeOAuth2Handler").Params(jen.ID("handler").ID("oauth2Handler"), jen.ID("s").PointerTo().ID("Service")).Block(
 			jen.ID("handler").Dot("SetAllowGetAccessRequest").Call(jen.ID("true")),
 			jen.ID("handler").Dot("SetClientAuthorizedHandler").Call(jen.ID("s").Dot("ClientAuthorizedHandler")),
 			jen.ID("handler").Dot("SetClientScopeHandler").Call(jen.ID("s").Dot("ClientScopeHandler")),
@@ -185,7 +185,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("HandleAuthorizeRequest is a simple wrapper around the internal server's HandleAuthorizeRequest"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.Return().ID("s").Dot(
 				"oauth2Handler",
 			).Dot(
@@ -198,7 +198,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("HandleTokenRequest is a simple wrapper around the internal server's HandleTokenRequest"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.Return().ID("s").Dot(
 				"oauth2Handler",
 			).Dot(

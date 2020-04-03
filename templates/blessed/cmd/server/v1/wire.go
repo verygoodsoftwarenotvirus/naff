@@ -34,7 +34,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day"),
 		jen.Line(),
-		jen.Func().ID("ProvideReporter").Params(jen.ID("n").Op("*").Qual(newsmanImp, "Newsman")).Params(jen.Qual(newsmanImp, "Reporter")).Block(
+		jen.Func().ID("ProvideReporter").Params(jen.ID("n").PointerTo().Qual(newsmanImp, "Newsman")).Params(jen.Qual(newsmanImp, "Reporter")).Block(
 			jen.Return().ID("n"),
 		),
 		jen.Line(),
@@ -87,10 +87,10 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("BuildServer").Paramsln(
 			utils.CtxParam(),
-			jen.ID("cfg").Op("*").Qual(internalConfigImp, "ServerConfig"),
+			jen.ID("cfg").PointerTo().Qual(internalConfigImp, "ServerConfig"),
 			jen.ID("logger").Qual(loggingImp, "Logger"),
 			jen.ID("database").Qual(databaseClientImp, "Database")).
-			Params(jen.Op("*").Qual(serverImp, "Server"), jen.ID("error")).Block(
+			Params(jen.PointerTo().Qual(serverImp, "Server"), jen.Error()).Block(
 			jen.Qual("github.com/google/wire", "Build").Callln(
 				buildWireBuildCallArgs()...,
 			),

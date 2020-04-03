@@ -17,7 +17,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	pn := typ.Name.Plural()
 
 	ret.Add(
-		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(proj.ModelsV1Package(), sn)).Block(
+		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
 			buildEqualityCheckLines(typ)...,
 		),
 		jen.Line(),
@@ -244,7 +244,7 @@ func buildBuildDummySomething(proj *models.Project, typ models.DataType) []jen.C
 	)
 
 	lines := []jen.Code{
-		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").Qual(proj.ModelsV1Package(), sn)).Block(
+		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
 			blockLines...,
 		),
 		jen.Line(),
@@ -298,28 +298,31 @@ func buildEqualityCheckLines(typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.ID("t").Dot("Helper").Call(),
 		jen.Line(),
-		jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
+		utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
 	}
 
 	for _, field := range typ.Fields {
 		sn := field.Name.Singular()
 		if !field.Pointer {
-			lines = append(lines, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(
-				jen.ID("t"),
+			lines = append(lines, utils.AssertEqual(
 				jen.ID("expected").Dot(sn),
 				jen.ID("actual").Dot(sn),
-				jen.Lit("expected "+sn+" for ID %d to be %v, but it was %v "), jen.ID("expected").Dot("ID"), jen.ID("expected").Dot(sn), jen.ID("actual").Dot(sn),
+				jen.Lit("expected "+sn+" for ID %d to be %v, but it was %v "),
+				jen.ID("expected").Dot("ID"),
+				jen.ID("expected").Dot(sn),
+				jen.ID("actual").Dot(sn),
 			))
 		} else {
-			lines = append(lines, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(
-				jen.ID("t"),
-				jen.Op("*").ID("expected").Dot(sn),
-				jen.Op("*").ID("actual").Dot(sn),
-				jen.Lit("expected "+sn+" to be %v, but it was %v "), jen.ID("expected").Dot(sn), jen.ID("actual").Dot(sn),
+			lines = append(lines, utils.AssertEqual(
+				jen.PointerTo().ID("expected").Dot(sn),
+				jen.PointerTo().ID("actual").Dot(sn),
+				jen.Lit("expected "+sn+" to be %v, but it was %v "),
+				jen.ID("expected").Dot(sn),
+				jen.ID("actual").Dot(sn),
 			))
 		}
 	}
-	lines = append(lines, jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("CreatedOn")))
+	lines = append(lines, utils.AssertNotZero(jen.ID("actual").Dot("CreatedOn"), nil))
 
 	return lines
 }
@@ -371,7 +374,7 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-		jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
+		utils.AssertNotZero(jen.ID("actual").Dot("ArchivedOn"), nil),
 	)
 
 	lines = append(lines, buildRequisiteCleanupCode(proj, typ)[3:]...)
@@ -406,7 +409,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 
 	lines = append(lines,
 		jen.Commentf("Create %s", pcn),
-		jen.Var().ID("expected").Index().Op("*").Qual(proj.ModelsV1Package(), sn),
+		jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
 		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 			jen.ID("expected").Equals().Append(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
 		),
@@ -416,8 +419,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 			listArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
-		jen.Qual("github.com/stretchr/testify/assert", "True").Callln(
-			jen.ID("t"),
+		utils.AssertTrue(
 			jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot(pn)),
 			jen.Lit("expected %d to be <= %d"), jen.ID("len").Call(jen.ID("expected")),
 			jen.ID("len").Call(jen.ID("actual").Dot(pn)),
@@ -521,7 +523,7 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 			args...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
-		jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("actual")),
+		utils.AssertFalse(jen.ID("actual"), nil),
 	)
 
 	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
@@ -596,7 +598,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *m
 		}()).ID("todoClient").Dotf("Get%s", sn).Call(
 			args...,
 		),
-		jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
+		utils.AssertError(jen.Err(), nil),
 	)
 
 	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
@@ -716,7 +718,7 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj
 	}
 
 	lines = append(lines,
-		jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(args...)),
+		utils.AssertError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(args...), nil),
 	)
 
 	ccsi := 3 // cleanupCodeStopIndex: the number of `jen.Line`s we need to skip some irrelevant bits of cleanup code
@@ -772,7 +774,7 @@ func buildTestUpdatingShouldBeUpdateable(proj *models.Project, typ models.DataTy
 		jen.Line(),
 		jen.Commentf("Assert %s equality", scn),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-		jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual").Dot("UpdatedOn")),
+		utils.AssertNotNil(jen.ID("actual").Dot("UpdatedOn"), nil),
 		jen.Line(),
 	)
 

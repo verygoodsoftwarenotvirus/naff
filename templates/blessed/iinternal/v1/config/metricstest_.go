@@ -25,7 +25,7 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("ih"), jen.Err()).Assign().ID("c").Dot("ProvideInstrumentationHandler").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				utils.AssertNoError(jen.Err(), nil),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("ih")),
+				utils.AssertNotNil(jen.ID("ih"), nil),
 			)),
 		),
 		jen.Line(),

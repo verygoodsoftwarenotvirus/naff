@@ -47,7 +47,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("DefaultQueryFilter builds the default query filter"),
 		jen.Line(),
-		jen.Func().ID("DefaultQueryFilter").Params().Params(jen.Op("*").ID("QueryFilter")).Block(
+		jen.Func().ID("DefaultQueryFilter").Params().Params(jen.PointerTo().ID("QueryFilter")).Block(
 			jen.Return().VarPointer().ID("QueryFilter").Valuesln(
 				jen.ID("Page").MapAssign().Lit(1),
 				jen.ID("Limit").MapAssign().ID("DefaultLimit"),
@@ -60,7 +60,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("FromParams overrides the core QueryFilter values with values retrieved from url.Params"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("FromParams").Params(jen.ID("params").Qual("net/url", "Values")).Block(
+		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("FromParams").Params(jen.ID("params").Qual("net/url", "Values")).Block(
 			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("pageKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
 				jen.ID("qf").Dot("Page").Equals().ID("uint64").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(1))),
 			),
@@ -100,7 +100,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("SetPage sets the current page with certain constraints"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("SetPage").Params(jen.ID("page").ID("uint64")).Block(
+		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("SetPage").Params(jen.ID("page").ID("uint64")).Block(
 			jen.ID("qf").Dot("Page").Equals().ID("uint64").Call(jen.Qual("math", "Max").Call(jen.Lit(1), jen.ID("float64").Call(jen.ID("page")))),
 		),
 		jen.Line(),
@@ -109,8 +109,8 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("QueryPage calculates a query page from the current filter values"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("QueryPage").Params().Params(jen.ID("uint64")).Block(
-			jen.Return().ID("qf").Dot("Limit").Op("*").Parens(jen.ID("qf").Dot("Page").Op("-").Lit(1)),
+		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("QueryPage").Params().Params(jen.ID("uint64")).Block(
+			jen.Return().ID("qf").Dot("Limit").Times().Parens(jen.ID("qf").Dot("Page").Op("-").Lit(1)),
 		),
 		jen.Line(),
 	)
@@ -118,7 +118,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ToValues returns a url.Values from a QueryFilter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("ToValues").Params().Params(jen.Qual("net/url", "Values")).Block(
+		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("ToValues").Params().Params(jen.Qual("net/url", "Values")).Block(
 			jen.If(jen.ID("qf").Op("==").ID("nil")).Block(
 				jen.Return().ID("DefaultQueryFilter").Call().Dot("ToValues").Call(),
 			),
@@ -154,7 +154,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ApplyToQueryBuilder applies the query filter to a query builder"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").Op("*").ID("QueryFilter")).ID("ApplyToQueryBuilder").Params(jen.ID("queryBuilder").Qual("github.com/Masterminds/squirrel", "SelectBuilder")).Params(jen.Qual("github.com/Masterminds/squirrel", "SelectBuilder")).Block(
+		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("ApplyToQueryBuilder").Params(jen.ID("queryBuilder").Qual("github.com/Masterminds/squirrel", "SelectBuilder")).Params(jen.Qual("github.com/Masterminds/squirrel", "SelectBuilder")).Block(
 			jen.If(jen.ID("qf").Op("==").ID("nil")).Block(
 				jen.Return().ID("queryBuilder"),
 			),
@@ -194,7 +194,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ExtractQueryFilter can extract a QueryFilter from a request"),
 		jen.Line(),
-		jen.Func().ID("ExtractQueryFilter").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Op("*").ID("QueryFilter")).Block(
+		jen.Func().ID("ExtractQueryFilter").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.PointerTo().ID("QueryFilter")).Block(
 			jen.ID("qf").Assign().VarPointer().ID("QueryFilter").Values(),
 			jen.ID("qf").Dot("FromParams").Call(jen.ID("req").Dot("URL").Dot("Query").Call()),
 			jen.Return().ID("qf"),

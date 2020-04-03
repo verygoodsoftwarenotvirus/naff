@@ -40,7 +40,7 @@ func typesDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("UnitCounterProvider is a function that provides a UnitCounter and an error"),
-			jen.ID("UnitCounterProvider").Func().Params(jen.ID("counterName").ID("CounterName"), jen.ID("description").ID("string")).Params(jen.ID("UnitCounter"), jen.ID("error")),
+			jen.ID("UnitCounterProvider").Func().Params(jen.ID("counterName").ID("CounterName"), jen.ID("description").ID("string")).Params(jen.ID("UnitCounter"), jen.Error()),
 			jen.Line(),
 		),
 	)

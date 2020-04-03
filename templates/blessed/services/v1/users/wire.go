@@ -35,7 +35,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideUserDataServer is an arbitrary function for dependency injection's sake"),
 		jen.Line(),
-		jen.Func().ID("ProvideUserDataServer").Params(jen.ID("s").Op("*").ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), "UserDataServer")).Block(
+		jen.Func().ID("ProvideUserDataServer").Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), "UserDataServer")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

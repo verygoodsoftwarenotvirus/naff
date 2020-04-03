@@ -49,7 +49,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildTestServer").Params().Params(jen.Op("*").ID("Server")).Block(
+		jen.Func().ID("buildTestServer").Params().Params(jen.PointerTo().ID("Server")).Block(
 			jen.ID("s").Assign().VarPointer().ID("Server").Valuesln(
 				buildServerLines()...,
 			),
@@ -105,7 +105,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 					buildProvideServerArgs()...,
 				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual")),
+				utils.AssertNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
 			)),
 		),

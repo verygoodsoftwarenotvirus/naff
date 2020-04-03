@@ -26,7 +26,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 
 	buildInterfaceLines := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("error")),
+			jen.ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Error()),
 			jen.ID("IsReady").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")),
 			jen.Line(),
 		}
@@ -50,13 +50,13 @@ func databaseDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("Scanner represents any database response (i.e. sql.Row[s])"),
 			jen.ID("Scanner").Interface(
-				jen.ID("Scan").Params(jen.ID("dest").Op("...").Interface()).Params(jen.ID("error")),
+				jen.ID("Scan").Params(jen.ID("dest").Op("...").Interface()).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx} objects"),
 			jen.ID("Querier").Interface(
-				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("query").ID("string"), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.ID("error")),
-				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("query").ID("string"), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.ID("error")),
+				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("query").ID("string"), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
+				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("query").ID("string"), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.Error()),
 				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("query").ID("string"), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Row")),
 			),
 			jen.Line(),

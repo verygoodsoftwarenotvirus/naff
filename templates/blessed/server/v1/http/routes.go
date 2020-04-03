@@ -233,7 +233,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 	)
 
 	return []jen.Code{
-		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(proj.InternalConfigV1Package(), "FrontendSettings"),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(proj.InternalConfigV1Package(), "FrontendSettings"),
 			jen.ID("metricsHandler").Qual(proj.InternalMetricsV1Package(), "Handler")).Block(block...),
 		jen.Line(),
 	}

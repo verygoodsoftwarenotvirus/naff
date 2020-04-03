@@ -26,8 +26,8 @@ func serverDotGo(proj *models.Project) *jen.File {
 			jen.ID("DebugMode").ID("bool"),
 			jen.Line(),
 			jen.Comment("Services"),
-			jen.ID("authService").Op("*").Qual(proj.ServiceV1AuthPackage(), "Service"),
-			jen.ID("frontendService").Op("*").Qual(proj.ServiceV1FrontendPackage(), "Service"),
+			jen.ID("authService").PointerTo().Qual(proj.ServiceV1AuthPackage(), "Service"),
+			jen.ID("frontendService").PointerTo().Qual(proj.ServiceV1FrontendPackage(), "Service"),
 			jen.ID("usersService").Qual(proj.ModelsV1Package(), "UserDataServer"),
 			jen.ID("oauth2ClientsService").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer"),
 			jen.ID("webhooksService").Qual(proj.ModelsV1Package(), "WebhookDataServer"),
@@ -44,7 +44,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("infra things"),
 			jen.ID("db").Qual(proj.DatabaseV1Package(), "Database"),
-			jen.ID("config").Op("*").Qual(proj.InternalConfigV1Package(), "ServerConfig"),
+			jen.ID("config").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 			jen.ID("router").ParamPointer().Qual("github.com/go-chi/chi", "Mux"),
 			jen.ID("httpServer").ParamPointer().Qual("net/http", "Server"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
@@ -73,9 +73,9 @@ func serverDotGo(proj *models.Project) *jen.File {
 	buildProvideServerParams := func() []jen.Code {
 		lines := []jen.Code{
 			utils.CtxParam(),
-			jen.ID("cfg").Op("*").Qual(proj.InternalConfigV1Package(), "ServerConfig"),
-			jen.ID("authService").Op("*").Qual(proj.ServiceV1AuthPackage(), "Service"),
-			jen.ID("frontendService").Op("*").Qual(proj.ServiceV1FrontendPackage(), "Service"),
+			jen.ID("cfg").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
+			jen.ID("authService").PointerTo().Qual(proj.ServiceV1AuthPackage(), "Service"),
+			jen.ID("frontendService").PointerTo().Qual(proj.ServiceV1FrontendPackage(), "Service"),
 		}
 
 		for _, typ := range proj.DataTypes {
@@ -196,7 +196,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideServer").Paramsln(
 			buildProvideServerParams()...,
-		).Params(jen.Op("*").ID("Server"), jen.ID("error")).Block(
+		).Params(jen.PointerTo().ID("Server"), jen.Error()).Block(
 			buildProvideServerLines()...,
 		),
 		jen.Line(),
@@ -223,7 +223,7 @@ func (s *Server) logRoutes() {
 	ret.Add(
 		jen.Comment("Serve serves HTTP traffic"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Server")).ID("Serve").Params().Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("Serve").Params().Block(
 			jen.ID("s").Dot("httpServer").Dot("Addr").Equals().Qual("fmt", "Sprintf").Call(jen.Lit(":%d"), jen.ID("s").Dot("config").Dot("Server").Dot("HTTPPort")),
 			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("Listening for HTTP requests on %q"), jen.ID("s").Dot("httpServer").Dot("Addr"))),
 			jen.Line(),

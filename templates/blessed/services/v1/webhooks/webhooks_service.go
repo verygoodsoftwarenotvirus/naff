@@ -27,7 +27,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.ModelsV1Package(), "WebhookDataServer").Equals().Parens(jen.Op("*").ID("Service")).Call(jen.Nil()),
+			jen.ID("_").Qual(proj.ModelsV1Package(), "WebhookDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -73,7 +73,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 			jen.ID("webhookCounterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
 			jen.ID("em").ParamPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
-		).Params(jen.Op("*").ID("Service"), jen.ID("error")).Block(
+		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
 			jen.List(jen.ID("webhookCounter"), jen.Err()).Assign().ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.Lit("the number of webhooks managed by the webhooks service")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),

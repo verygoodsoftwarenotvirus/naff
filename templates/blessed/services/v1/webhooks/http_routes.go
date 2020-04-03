@@ -22,7 +22,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ListHandler is our list route"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ListHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
@@ -58,9 +58,9 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("validateWebhook does some validation on a WebhookCreationInput and returns an error if anything runs foul"),
 		jen.Line(),
-		jen.Func().ID("validateWebhook").Params(jen.ID("input").Op("*").Qual(proj.ModelsV1Package(),
+		jen.Func().ID("validateWebhook").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(),
 			"WebhookCreationInput",
-		)).Params(jen.ID("error")).Block(
+		)).Params(jen.Error()).Block(
 			jen.List(jen.ID("_"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("input").Dot("URL")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("invalid URL provided: %w"), jen.Err()),
@@ -94,7 +94,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("CreateHandler is our webhook creation route"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreateHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
@@ -105,7 +105,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("try to pluck the parsed input from the request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(proj.ModelsV1Package(), "WebhookCreationInput")),
+				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
 					utils.WriteXHeader("res", "StatusBadRequest"),
@@ -153,7 +153,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ReadHandler returns a GET handler that returns an webhook"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ReadHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
@@ -194,7 +194,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("UpdateHandler returns a handler that updates an webhook"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
@@ -212,7 +212,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("fetch parsed creation input from request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(proj.ModelsV1Package(), "WebhookUpdateInput")),
+				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookUpdateInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
 					utils.WriteXHeader("res", "StatusBadRequest"),
@@ -260,7 +260,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ArchiveHandler returns a handler that archives an webhook"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("delete_route")),
 				jen.Defer().ID("span").Dot("End").Call(),

@@ -14,7 +14,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(utils.FakeSeedFunc())
 
 	ret.Add(
-		jen.Func().ID("buildTestService").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.Op("*").ID("Service")).Block(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.CreateCtx(),
@@ -23,7 +23,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 				jen.Lit("GetUserCount"),
 				jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-				jen.Parens(jen.Op("*").Qual(proj.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
+				jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
 			).Dot("Return").Call(jen.ID("expectedUserCount"), jen.Nil()),
 			jen.Line(),
 			jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -31,7 +31,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 				jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 				jen.ID("description").ID("string"),
-			).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.ID("error")).SingleLineBlock(
+			).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).SingleLineBlock(
 				jen.Return().List(jen.ID("uc"), jen.Nil()),
 			),
 			jen.Line(),
@@ -72,7 +72,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-					jen.ID("error"),
+					jen.Error(),
 				).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
@@ -88,7 +88,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Nil(),
 				),
 				utils.AssertNoError(jen.Err(), nil),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("service")),
+				utils.AssertNotNil(jen.ID("service"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with nil userIDFetcher"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -107,7 +107,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-					jen.ID("error")).Block(
+					jen.Error()).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
 				jen.Line(),
@@ -117,8 +117,8 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					).Values(), jen.ID("noop").Dot(
 						"ProvideNoopLogger",
 					).Call(), jen.ID("mockDB"), jen.VarPointer().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(), jen.Nil(), jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.Nil()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("service"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error initializing counter"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -137,7 +137,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-					jen.ID("error"),
+					jen.Error(),
 				).Block(
 					jen.Return().List(jen.ID("uc"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				),
@@ -151,8 +151,8 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
 					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.Nil(),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("service"), nil),
 			)),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("with error getting user count"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
@@ -169,7 +169,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-					jen.ID("error"),
+					jen.Error(),
 				).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
@@ -184,8 +184,8 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.Nil(),
 				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.Err()),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("service")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("service"), nil),
 			)),
 		),
 		jen.Line(),

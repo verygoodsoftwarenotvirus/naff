@@ -77,7 +77,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.DatabaseV1Package(), "Database").Equals().Params(jen.Op("*").ID(sn)).Params(jen.Nil()),
+		jen.Var().ID("_").Qual(proj.DatabaseV1Package(), "Database").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
 		jen.Line(),
 		jen.Type().Defs(
 			jen.Commentf("%s is our main %s interaction db", sn, sn),
@@ -92,8 +92,8 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			jen.Line(),
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx|Stmt} objects"),
 			jen.ID("Querier").Interface(
-				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.ID("error")),
-				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.ID("error")),
+				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
+				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.Error()),
 				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Row")),
 			),
 		),
@@ -113,7 +113,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	ret.Add(
 		jen.Commentf("Provide%s%s provides an instrumented %s db", sn, dbTrail, cn),
 		jen.Line(),
-		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.ParamPointer().Qual("database/sql", "DB"), jen.ID("error")).Block(
+		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.ParamPointer().Qual("database/sql", "DB"), jen.Error()).Block(
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
 			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.ID("string").Call(jen.ID("connectionDetails"))),
 		),
@@ -202,7 +202,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	ret.Add(
 		jen.Comment("IsReady reports whether or not the db is ready"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("IsReady").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("IsReady").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
 			buildIsReadyBody()...,
 		),
 		jen.Line(),
@@ -219,7 +219,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 		jen.Line(),
 		jen.Comment("with the utmost priority."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("logQueryBuildingError").Params(jen.Err().ID("error")).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logQueryBuildingError").Params(jen.Err().ID("error")).Block(
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID(dbfl).Dot("logger").Dot("WithName").Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.Err(), jen.Lit("building query")),
 			),
@@ -239,7 +239,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			jen.Line(),
 			jen.Comment("with the utmost priority."),
 			jen.Line(),
-			jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("logCreationTimeRetrievalError").Params(jen.Err().ID("error")).Block(
+			jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logCreationTimeRetrievalError").Params(jen.Err().ID("error")).Block(
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(dbfl).Dot("logger").Dot("WithName").Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot("Error").Call(jen.Err(), jen.Lit("retrieving creation time")),
 				),
@@ -253,7 +253,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 		jen.Line(),
 		jen.Comment("IS NOT sql.ErrNoRows, which we want to preserve and surface to the services."),
 		jen.Line(),
-		jen.Func().ID("buildError").Params(jen.Err().ID("error"), jen.ID("msg").ID("string")).Params(jen.ID("error")).Block(
+		jen.Func().ID("buildError").Params(jen.Err().ID("error"), jen.ID("msg").ID("string")).Params(jen.Error()).Block(
 			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
 				jen.Return().ID("err"),
 			),

@@ -28,7 +28,7 @@ func userTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("actual").Dot("Update").Call(jen.VarPointer().ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput"), jen.ID("actual")),
+				utils.AssertEqual(jen.ID("exampleInput"), jen.ID("actual"), nil),
 			)),
 		),
 		jen.Line(),

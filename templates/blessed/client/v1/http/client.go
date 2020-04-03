@@ -9,7 +9,7 @@ import (
 )
 
 func newClientMethod(name string) *jen.Statement {
-	return jen.Func().Params(jen.ID("c").Op("*").ID(v1)).ID(name)
+	return jen.Func().Params(jen.ID("c").PointerTo().ID(v1)).ID(name)
 }
 
 func mainDotGo(proj *models.Project) *jen.File {
@@ -132,8 +132,8 @@ func buildNewClient() []jen.Code {
 			jen.ID("scopes").Index().ID("string"),
 			jen.ID("debug").ID("bool"),
 		).Params(
-			jen.Op("*").ID(v1),
-			jen.ID("error"),
+			jen.PointerTo().ID(v1),
+			jen.Error(),
 		).Block(
 			jen.Var().ID("client").Equals().ID("hclient"),
 			jen.If(jen.ID("client").Op("==").ID("nil")).Block(
@@ -255,7 +255,7 @@ func buildTokenEndpoint() []jen.Code {
 			jen.List(
 				jen.ID("tu"),
 				jen.ID("au"),
-			).Assign().List(jen.Op("*").ID("baseURL"), jen.Op("*").ID("baseURL")),
+			).Assign().List(jen.PointerTo().ID("baseURL"), jen.PointerTo().ID("baseURL")),
 			jen.List(
 				jen.ID("tu").Dot("Path"),
 				jen.ID("au").Dot("Path"),
@@ -291,8 +291,8 @@ func buildNewSimpleClient() []jen.Code {
 			jen.ID("address").ParamPointer().Qual("net/url", "URL"),
 			jen.ID("debug").ID("bool"),
 		).Params(
-			jen.Op("*").ID(v1),
-			jen.ID("error"),
+			jen.PointerTo().ID(v1),
+			jen.Error(),
 		).Block(
 			jen.Return().ID("NewClient").Callln(
 				utils.CtxVar(),
@@ -408,7 +408,7 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("client").ParamPointer().Qual("net/http", "Client"),
 			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
-		).Params(jen.ParamPointer().Qual("net/http", "Response"), jen.ID("error")).Block(block...),
+		).Params(jen.ParamPointer().Qual("net/http", "Response"), jen.Error()).Block(block...),
 		jen.Line(),
 	}
 
@@ -452,7 +452,7 @@ func buildUnexportedBuildURL() []jen.Code {
 			jen.ID("queryParams").Qual("net/url", "Values"),
 			jen.ID("parts").Op("...").ID("string"),
 		).Params(jen.ParamPointer().Qual("net/url", "URL")).Block(
-			jen.ID("tu").Assign().Op("*").ID("c").Dot("URL"),
+			jen.ID("tu").Assign().PointerTo().ID("c").Dot("URL"),
 			jen.Line(),
 			jen.ID("parts").Equals().ID("append").Call(
 				jen.Index().ID("string").Values(jen.Lit("api"), jen.Lit("v1")),
@@ -496,7 +496,7 @@ func buildBuildVersionlessURL() []jen.Code {
 			jen.ID("qp").Qual("net/url", "Values"),
 			jen.ID("parts").Op("...").ID("string"),
 		).Params(jen.ID("string")).Block(
-			jen.ID("tu").Assign().Op("*").ID("c").Dot("URL"),
+			jen.ID("tu").Assign().PointerTo().ID("c").Dot("URL"),
 			jen.Line(),
 			jen.List(
 				jen.ID("u"),
@@ -552,9 +552,9 @@ func buildBuildHealthCheckRequest() []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildHealthCheckRequest").Params(utils.CtxParam()).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
-			jen.ID("error"),
+			jen.Error(),
 		).Block(
-			jen.ID("u").Assign().Op("*").ID("c").Dot("URL"),
+			jen.ID("u").Assign().PointerTo().ID("c").Dot("URL"),
 			jen.ID("uri").Assign().Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s://%s/_meta_/ready"),
 				jen.ID("u").Dot("Scheme"),
@@ -660,7 +660,7 @@ func buildBuildDataRequest(proj *models.Project) []jen.Code {
 				jen.ID("uri"),
 			).ID("string"),
 			jen.ID("in").Interface(),
-		).Params(jen.ParamPointer().Qual("net/http", "Request"), jen.ID("error")).Block(block...),
+		).Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(block...),
 		jen.Line(),
 	}
 
@@ -737,7 +737,7 @@ func buildRetrieve(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
 			jen.ID("obj").Interface(),
-		).Params(jen.ID("error")).Block(block...),
+		).Params(jen.Error()).Block(block...),
 		jen.Line(),
 	}
 
@@ -797,7 +797,7 @@ func buildExecuteRequest(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
 			jen.ID("out").Interface(),
-		).Params(jen.ID("error")).Block(block...,
+		).Params(jen.Error()).Block(block...,
 		),
 		jen.Line(),
 	}
@@ -857,7 +857,7 @@ func buildExecuteUnauthenticatedDataRequest(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
 			jen.ID("out").Interface(),
-		).Params(jen.ID("error")).Block(block...),
+		).Params(jen.Error()).Block(block...),
 		jen.Line(),
 	}
 

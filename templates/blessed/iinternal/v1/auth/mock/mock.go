@@ -12,7 +12,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.InternalAuthV1Package(), "Authenticator").Equals().Parens(jen.Op("*").ID("Authenticator")).Call(jen.Nil()),
+		jen.Var().ID("_").Qual(proj.InternalAuthV1Package(), "Authenticator").Equals().Parens(jen.PointerTo().ID("Authenticator")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -26,7 +26,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Comment("ValidateLogin satisfies our authenticator interface"), jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("Authenticator")).ID("ValidateLogin").Paramsln(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("ValidateLogin").Paramsln(
 			utils.CtxParam(),
 			jen.Listln(jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
@@ -48,7 +48,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Comment("PasswordIsAcceptable satisfies our authenticator interface"), jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("Authenticator")).ID("PasswordIsAcceptable").Params(jen.ID("password").ID("string")).Params(jen.ID("bool")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("PasswordIsAcceptable").Params(jen.ID("password").ID("string")).Params(jen.ID("bool")).Block(
 			jen.Return().ID("m").Dot("Called").Call(jen.ID("password")).Dot("Bool").Call(jen.Lit(0)),
 		),
 		jen.Line(),
@@ -56,7 +56,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Comment("HashPassword satisfies our authenticator interface"), jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("Authenticator")).ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("password")),
 			jen.Return().List(jen.ID("args").Dot("String").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
@@ -65,7 +65,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Comment("PasswordMatches satisfies our authenticator interface"), jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("Authenticator")).ID("PasswordMatches").Paramsln(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("PasswordMatches").Paramsln(
 			utils.CtxParam(),
 			jen.Listln(jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),

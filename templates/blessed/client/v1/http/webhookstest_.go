@@ -293,7 +293,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertEqual(jen.ID("req").Dot("URL").Dot("Path"), jen.Lit(webhooksListRoute), jen.Lit("expected and actual paths do not match")),
 					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
+					jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
 					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(
 							jen.VarPointer().ID("x"),
