@@ -24,7 +24,7 @@ func usersDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetUser fetches a user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUser").Params(utils.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
 		),
 			jen.Error()).Block(
@@ -42,7 +42,7 @@ func usersDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetUserByUsername fetches a user by their username"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUserByUsername").Params(utils.CtxParam(), jen.ID("username").ID("string")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUserByUsername").Params(utils.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetUserByUsername")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -57,7 +57,7 @@ func usersDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetAllUserCount fetches a count of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllUserCount").Params(utils.CtxParam()).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllUserCount").Params(utils.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetAllUserCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -124,7 +124,7 @@ func usersDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ArchiveUser archives a user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveUser").Params(utils.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("ArchiveUser")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),

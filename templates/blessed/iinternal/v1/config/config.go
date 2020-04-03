@@ -24,7 +24,7 @@ func configDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
-			jen.ID("b").Assign().ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
+			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
@@ -38,7 +38,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.ID("MetaSettings").Struct(
 				jen.Comment("Debug enables debug mode service-wide"),
 				jen.Comment("NOTE: this debug should override all other debugs, which is to say, if this is enabled, all of them are enabled."),
-				jen.ID("Debug").ID("bool").Tag(map[string]string{
+				jen.ID("Debug").Bool().Tag(map[string]string{
 					"mapstructure": "debug",
 					"json":         "debug",
 					"toml":         "debug,omitempty",
@@ -54,7 +54,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.Comment("ServerSettings describes the settings pertinent to the HTTP serving portion of the service"),
 			jen.ID("ServerSettings").Struct(
 				jen.Comment("Debug determines if debug logging or other development conditions are active"),
-				jen.ID("Debug").ID("bool").Tag(map[string]string{
+				jen.ID("Debug").Bool().Tag(map[string]string{
 					"mapstructure": "debug",
 					"json":         "debug",
 					"toml":         "debug,omitempty",
@@ -70,19 +70,19 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.Comment("FrontendSettings describes the settings pertinent to the frontend"),
 			jen.ID("FrontendSettings").Struct(
 				jen.Comment("StaticFilesDirectory indicates which directory contains our static files for the frontend (i.e. CSS/JS/HTML files)"),
-				jen.ID("StaticFilesDirectory").ID("string").Tag(map[string]string{
+				jen.ID("StaticFilesDirectory").String().Tag(map[string]string{
 					"mapstructure": "static_files_directory",
 					"json":         "static_files_directory",
 					"toml":         "static_files_directory,omitempty",
 				}),
 				jen.Comment("Debug determines if debug logging or other development conditions are active"),
-				jen.ID("Debug").ID("bool").Tag(map[string]string{
+				jen.ID("Debug").Bool().Tag(map[string]string{
 					"mapstructure": "debug",
 					"json":         "debug",
 					"toml":         "debug,omitempty",
 				}),
 				jen.Comment("CacheStaticFiles indicates whether or not to load the static files directory into memory via afero's MemMapFs"),
-				jen.ID("CacheStaticFiles").ID("bool").Tag(map[string]string{
+				jen.ID("CacheStaticFiles").Bool().Tag(map[string]string{
 					"mapstructure": "cache_static_files",
 					"json":         "cache_static_files",
 					"toml":         "cache_static_files,omitempty",
@@ -92,13 +92,13 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.Comment("AuthSettings represents our authentication configuration"),
 			jen.ID("AuthSettings").Struct(
 				jen.Comment("CookieDomain indicates what domain the cookies will have set for them"),
-				jen.ID("CookieDomain").ID("string").Tag(map[string]string{
+				jen.ID("CookieDomain").String().Tag(map[string]string{
 					"mapstructure": "cookie_domain",
 					"json":         "cookie_domain",
 					"toml":         "cookie_domain,omitempty",
 				}),
 				jen.Comment("CookieSecret indicates the secret the cookie builder should use"),
-				jen.ID("CookieSecret").ID("string").Tag(map[string]string{
+				jen.ID("CookieSecret").String().Tag(map[string]string{
 					"mapstructure": "cookie_secret",
 					"json":         "cookie_secret",
 					"toml":         "cookie_secret,omitempty",
@@ -110,19 +110,19 @@ func configDotGo(proj *models.Project) *jen.File {
 					"toml":         "cookie_lifetime,omitempty",
 				}),
 				jen.Comment("Debug determines if debug logging or other development conditions are active"),
-				jen.ID("Debug").ID("bool").Tag(map[string]string{
+				jen.ID("Debug").Bool().Tag(map[string]string{
 					"mapstructure": "debug",
 					"json":         "debug",
 					"toml":         "debug,omitempty",
 				}),
 				jen.Comment("SecureCookiesOnly indicates if the cookies built should be marked as HTTPS only"),
-				jen.ID("SecureCookiesOnly").ID("bool").Tag(map[string]string{
+				jen.ID("SecureCookiesOnly").Bool().Tag(map[string]string{
 					"mapstructure": "secure_cookies_only",
 					"json":         "secure_cookies_only",
 					"toml":         "secure_cookies_only,omitempty",
 				}),
 				jen.Comment("EnableUserSignup enables user signups"),
-				jen.ID("EnableUserSignup").ID("bool").Tag(map[string]string{
+				jen.ID("EnableUserSignup").Bool().Tag(map[string]string{
 					"mapstructure": "enable_user_signup",
 					"json":         "enable_user_signup",
 					"toml":         "enable_user_signup,omitempty",
@@ -132,13 +132,13 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.Comment("DatabaseSettings represents our database configuration"),
 			jen.ID("DatabaseSettings").Struct(
 				jen.Comment("Debug determines if debug logging or other development conditions are active"),
-				jen.ID("Debug").ID("bool").Tag(map[string]string{
+				jen.ID("Debug").Bool().Tag(map[string]string{
 					"mapstructure": "debug",
 					"json":         "debug",
 					"toml":         "debug,omitempty",
 				}),
 				jen.Comment("Provider indicates what database we'll connect to (postgres, mysql, etc.)"),
-				jen.ID("Provider").ID("string").Tag(map[string]string{
+				jen.ID("Provider").String().Tag(map[string]string{
 					"mapstructure": "provider",
 					"json":         "provider",
 					"toml":         "provider,omitempty",
@@ -215,7 +215,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("MarshalFunc is a function that can marshal a config"),
-			jen.ID("MarshalFunc").Func().Params(jen.ID("v").Interface()).Params(jen.Index().ID("byte"), jen.Error()),
+			jen.ID("MarshalFunc").Func().Params(jen.ID("v").Interface()).Params(jen.Index().Byte(), jen.Error()),
 			jen.Line(),
 		),
 	)
@@ -223,7 +223,7 @@ func configDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("EncodeToFile renders your config to a file given your favorite encoder"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("EncodeToFile").Params(jen.ID("path").ID("string"), jen.ID("marshaler").ID("MarshalFunc")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("EncodeToFile").Params(jen.ID("path").String(), jen.ID("marshaler").ID("MarshalFunc")).Params(jen.Error()).Block(
 			jen.List(jen.ID("byteSlice"), jen.Err()).Assign().ID("marshaler").Call(jen.PointerTo().ID("cfg")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().ID("err"),
@@ -264,7 +264,7 @@ func configDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ParseConfigFile parses a configuration file"),
 		jen.Line(),
-		jen.Func().ID("ParseConfigFile").Params(jen.ID("filename").ID("string")).Params(jen.PointerTo().ID("ServerConfig"), jen.Error()).Block(
+		jen.Func().ID("ParseConfigFile").Params(jen.ID("filename").String()).Params(jen.PointerTo().ID("ServerConfig"), jen.Error()).Block(
 			jen.ID("cfg").Assign().ID("BuildConfig").Call(),
 			jen.ID("cfg").Dot("SetConfigFile").Call(jen.ID("filename")),
 			jen.Line(),
@@ -287,8 +287,8 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
 		jen.Line(),
-		jen.Func().ID("randString").Params().Params(jen.ID("string")).Block(
-			jen.ID("b").Assign().ID("make").Call(jen.Index().ID("byte"), jen.ID("randStringSize")),
+		jen.Func().ID("randString").Params().Params(jen.String()).Block(
+			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.ID("randStringSize")),
 			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),

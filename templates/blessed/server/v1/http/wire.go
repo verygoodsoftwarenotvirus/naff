@@ -49,7 +49,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ProvideNewsmanTypeNameManipulationFunc provides an WebhookIDFetcher"),
 		jen.Line(),
 		jen.Func().ID("ProvideNewsmanTypeNameManipulationFunc").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "TypeNameManipulationFunc")).Block(
-			jen.Return().Func().Params(jen.ID("s").ID("string")).Params(jen.ID("string")).Block(
+			jen.Return().Func().Params(jen.ID("s").String()).Params(jen.String()).Block(
 				jen.ID("logger").Dot("WithName").Call(jen.Lit("events")).Dot("WithValue").Call(jen.Lit("type_name"), jen.ID("s")).Dot("Info").Call(jen.Lit("event occurred")),
 				jen.Return().ID("s"),
 			),

@@ -51,7 +51,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Var().Defs(
 				jen.ID("sc").ID("int"),
 				jen.ID("bo").ID("int64"),
-				jen.ID("bi").Index().ID("byte"),
+				jen.ID("bi").Index().Byte(),
 			),
 			jen.If(jen.ID("req").Dot("Body").DoesNotEqual().ID("nil")).Block(
 				jen.List(jen.ID("bi"), jen.Err()).Equals().Qual("io/ioutil", "ReadAll").Call(jen.ID("req").Dot("Body")),

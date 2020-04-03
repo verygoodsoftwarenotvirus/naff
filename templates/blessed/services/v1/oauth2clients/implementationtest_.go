@@ -175,7 +175,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				"with invalid scope & client ID but no client",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
-					jen.ID("ClientID").MapAssign().Lit("blargh"), jen.ID("Scopes").MapAssign().Index().ID("string").Values(),
+					jen.ID("ClientID").MapAssign().Lit("blargh"), jen.ID("Scopes").MapAssign().Index().String().Values(),
 				),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
@@ -267,7 +267,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").MapAssign().Lit("blah"),
-					jen.ID("Scopes").MapAssign().Index().ID("string").Values(),
+					jen.ID("Scopes").MapAssign().Index().String().Values(),
 				),
 				jen.ID("stringID").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
@@ -299,7 +299,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("expected").Assign().ID("false"),
 				jen.ID("exampleGrant").Assign().Qual("goproj.in/oauth2.v3", "AuthorizationCode"),
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("ClientID").MapAssign().Lit("blah"), jen.ID("Scopes").MapAssign().Index().ID("string").Values(),
+					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()), jen.ID("ClientID").MapAssign().Lit("blah"), jen.ID("Scopes").MapAssign().Index().String().Values(),
 				),
 				jen.ID("stringID").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
@@ -325,7 +325,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").MapAssign().Lit("blah"),
-					jen.ID("Scopes").MapAssign().Index().ID("string").Values(),
+					jen.ID("Scopes").MapAssign().Index().String().Values(),
 				),
 				jen.ID("stringID").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
@@ -358,7 +358,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").MapAssign().Lit("blah"),
-					jen.ID("Scopes").MapAssign().Index().ID("string").Values(jen.ID("exampleScope")),
+					jen.ID("Scopes").MapAssign().Index().String().Values(jen.ID("exampleScope")),
 				),
 				jen.ID("stringID").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
@@ -384,7 +384,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").MapAssign().Lit("blah"),
-					jen.ID("Scopes").MapAssign().Index().ID("string").Values(jen.ID("exampleScope")),
+					jen.ID("Scopes").MapAssign().Index().String().Values(jen.ID("exampleScope")),
 				),
 				jen.ID("stringID").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),
@@ -410,7 +410,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("exampleClient").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("ClientID").MapAssign().Lit("blah"),
-					jen.ID("Scopes").MapAssign().Index().ID("string").Values(),
+					jen.ID("Scopes").MapAssign().Index().String().Values(),
 				),
 				jen.ID("stringID").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("exampleClient").Dot("ID")),
 				jen.Line(),

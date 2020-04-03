@@ -10,7 +10,7 @@ import (
 )
 
 func buildBaseModelStructFields(typ models.DataType) []jen.Code {
-	out := []jen.Code{jen.ID("ID").ID("uint64").Tag(jsonTag("id"))}
+	out := []jen.Code{jen.ID("ID").Uint64().Tag(jsonTag("id"))}
 
 	for _, field := range typ.Fields {
 		if field.Pointer {
@@ -21,16 +21,16 @@ func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 	}
 
 	out = append(out,
-		jen.ID("CreatedOn").ID("uint64").Tag(jsonTag("created_on")),
-		jen.ID("UpdatedOn").PointerTo().ID("uint64").Tag(jsonTag("updated_on")),
-		jen.ID("ArchivedOn").PointerTo().ID("uint64").Tag(jsonTag("archived_on")),
+		jen.ID("CreatedOn").Uint64().Tag(jsonTag("created_on")),
+		jen.ID("UpdatedOn").PointerTo().Uint64().Tag(jsonTag("updated_on")),
+		jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archived_on")),
 	)
 
 	if typ.BelongsToUser {
-		out = append(out, jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("belongs_to_user")))
+		out = append(out, jen.ID("BelongsToUser").Uint64().Tag(jsonTag("belongs_to_user")))
 	}
 	if typ.BelongsToStruct != nil {
-		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).ID("uint64").Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
 	}
 
 	return out
@@ -50,10 +50,10 @@ func buildUpdateModelStructFields(typ models.DataType) []jen.Code {
 	}
 
 	if typ.BelongsToUser {
-		out = append(out, jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("-")))
+		out = append(out, jen.ID("BelongsToUser").Uint64().Tag(jsonTag("-")))
 	}
 	if typ.BelongsToStruct != nil {
-		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).ID("uint64").Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
 	}
 
 	return out
@@ -73,10 +73,10 @@ func buildCreateModelStructFields(typ models.DataType) []jen.Code {
 	}
 
 	if typ.BelongsToStruct != nil {
-		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).ID("uint64").Tag(jsonTag("-")))
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag("-")))
 	}
 	if typ.BelongsToUser {
-		out = append(out, jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("-")))
+		out = append(out, jen.ID("BelongsToUser").Uint64().Tag(jsonTag("-")))
 	}
 
 	return out
@@ -90,17 +90,16 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	interfaceMethods := []jen.Code{
 		jen.IDf("%sExists", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.Bool(), jen.Error()),
 		jen.IDf("Get%s", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
-		jen.IDf("Get%sCount", sn).Params(typ.BuildGetListOfSomethingParams(proj, true)...).Params(jen.ID("uint64"), jen.Error()),
-		jen.IDf("GetAll%sCount", pn).Params(utils.CtxParam()).Params(jen.ID("uint64"), jen.Error()),
+		jen.IDf("GetAll%sCount", pn).Params(utils.CtxParam()).Params(jen.Uint64(), jen.Error()),
 		jen.IDf("Get%s", pn).Params(typ.BuildGetListOfSomethingParams(proj, true)...).Params(jen.PointerTo().IDf("%sList", sn), jen.Error()),
 	}
 
-	if typ.BelongsToUser {
-		interfaceMethods = append(interfaceMethods,
-			jen.IDf("GetAll%sForUser", pn).Params(
-				utils.CtxParam(), jen.ID("userID").ID("uint64"),
-			).Params(jen.Index().ID(sn), jen.Error()))
-	}
+	//if typ.BelongsToUser {
+	//	interfaceMethods = append(interfaceMethods,
+	//		jen.IDf("GetAll%sForUser", pn).Params(
+	//			utils.CtxParam(), jen.ID("userID").Uint64(),
+	//		).Params(jen.Index().ID(sn), jen.Error()))
+	//}
 	if typ.BelongsToStruct != nil {
 		interfaceMethods = append(interfaceMethods,
 			jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(typ.BuildGetSomethingForSomethingElseParamsForModelsPackage(proj)...).Params(jen.Index().ID(sn), jen.Error()))
@@ -183,9 +182,9 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	ret.Add(
-		jen.Commentf("ToInput creates a %sUpdateInput struct for %s", sn, cnwp),
+		jen.Commentf("ToUpdateInput creates a %sUpdateInput struct for %s", sn, cnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToInput").Params().Params(jen.PointerTo().IDf("%sUpdateInput", sn)).Block(buildToUpdateInput()),
+		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToUpdateInput").Params().Params(jen.PointerTo().IDf("%sUpdateInput", sn)).Block(buildToUpdateInput()),
 		jen.Line(),
 	)
 

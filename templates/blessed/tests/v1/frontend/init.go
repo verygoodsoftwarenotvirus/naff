@@ -12,7 +12,7 @@ func initDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("urlToUse").ID("string"),
+		jen.Var().ID("urlToUse").String(),
 		jen.Line(),
 	)
 

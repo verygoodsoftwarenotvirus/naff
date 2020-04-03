@@ -67,11 +67,11 @@ func buildDBCallOwnerVar(typ models.DataType) jen.Code {
 
 func buildRelevantIDFetcher(typ models.DataType) jen.Code {
 	if typ.BelongsToUser {
-		return jen.ID("userIDFetcher").Assign().Func().Params(jen.ID("_").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+		return jen.ID("userIDFetcher").Assign().Func().Params(jen.Underscore().ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 			jen.Return().ID(buildOwnerVarName(typ)).Dot("ID"),
 		)
 	} else if typ.BelongsToStruct != nil {
-		return jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Assign().Func().Params(jen.ID("_").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+		return jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Assign().Func().Params(jen.Underscore().ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 			jen.Return().ID(buildOwnerVarName(typ)).Dot("ID"),
 		)
 	}
@@ -461,7 +461,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -501,7 +501,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -536,7 +536,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -572,7 +572,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -645,7 +645,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -722,7 +722,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -762,7 +762,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -801,7 +801,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -855,7 +855,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -930,7 +930,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -981,7 +981,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),
@@ -1016,7 +1016,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				),
 				jen.Line(),
-				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("expected").Dot("ID"),
 				),
 				jen.Line(),

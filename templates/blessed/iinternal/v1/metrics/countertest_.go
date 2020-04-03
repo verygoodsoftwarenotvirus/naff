@@ -21,10 +21,10 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("c").Assign().ID("ct").Assert(jen.PointerTo().ID("opencensusCounter")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
-				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0)), nil),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Lit(0)), nil),
 				jen.Line(),
 				jen.ID("c").Dot("Increment").Call(utils.CtxVar()),
-				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(1)), nil),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Lit(1)), nil),
 			),
 		),
 		jen.Line(),
@@ -40,10 +40,10 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("c").Assign().ID("ct").Assert(jen.PointerTo().ID("opencensusCounter")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
-				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0)), nil),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Lit(0)), nil),
 				jen.Line(),
 				jen.ID("c").Dot("IncrementBy").Call(utils.CtxVar(), jen.Lit(666)),
-				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(666)), nil),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Lit(666)), nil),
 			),
 		),
 		jen.Line(),
@@ -59,20 +59,20 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("c").Assign().ID("ct").Assert(jen.PointerTo().ID("opencensusCounter")),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
-				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0)), nil),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Lit(0)), nil),
 				jen.Line(),
 				jen.ID("c").Dot("Increment").Call(utils.CtxVar()),
-				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(1)), nil),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Lit(1)), nil),
 				jen.Line(),
 				jen.ID("c").Dot("Decrement").Call(utils.CtxVar()),
-				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0)), nil),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Lit(0)), nil),
 			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideUnitCounterProvider").Params(jen.ID("t").ParamPointer().Qual("testing", "t")).Block(
+		jen.Func().ID("TestProvideUnitCounterProvider").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.Comment("obligatory"),
@@ -80,5 +80,6 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

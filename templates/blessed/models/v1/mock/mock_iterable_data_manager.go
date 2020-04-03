@@ -30,13 +30,13 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 
 	ret.Add(buildSomethingExists(proj, typ)...)
 	ret.Add(buildGetSomething(proj, typ)...)
-	ret.Add(buildGetSomethingCount(proj, typ)...)
+	//ret.Add(buildGetSomethingCount(proj, typ)...)
 	ret.Add(buildGetAllSomethingsCount(typ)...)
 	ret.Add(buildGetListOfSomething(proj, typ)...)
 
-	if typ.BelongsToUser {
-		ret.Add(buildGetAllSomethingsForUser(proj, typ)...)
-	}
+	//if typ.BelongsToUser {
+	//	ret.Add(buildGetAllSomethingsForUser(proj, typ)...)
+	//}
 	if typ.BelongsToStruct != nil {
 		ret.Add(buildGetAllSomethingsForSomethingElse(proj, typ)...)
 	}
@@ -100,9 +100,9 @@ func buildGetSomethingCount(proj *models.Project, typ models.DataType) []jen.Cod
 	lines := []jen.Code{
 		jen.Commentf("Get%sCount is a mock function", sn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%sCount", sn).Params(params...).Params(jen.ID("uint64"), jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%sCount", sn).Params(params...).Params(jen.Uint64(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}
@@ -119,10 +119,10 @@ func buildGetAllSomethingsCount(typ models.DataType) []jen.Code {
 		jen.Commentf("GetAll%sCount is a mock function", pn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%sCount", pn).Params(
-			utils.CtxVar().Qual("context", "Context"),
-		).Params(jen.ID("uint64"), jen.Error()).Block(
+			utils.CtxParam(),
+		).Params(jen.Uint64(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.ID("uint64")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
 		),
 		jen.Line(),
 	}

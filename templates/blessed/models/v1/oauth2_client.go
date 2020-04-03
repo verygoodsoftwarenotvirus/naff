@@ -23,16 +23,13 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("OAuth2ClientDataManager handles OAuth2 clients"),
 			jen.ID("OAuth2ClientDataManager").Interface(
-				jen.ID("GetOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
-				jen.ID("GetOAuth2ClientByClientID").Params(utils.CtxParam(), jen.ID("clientID").ID("string")).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
-				jen.ID("GetAllOAuth2ClientCount").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("uint64"), jen.Error()),
-				jen.ID("GetOAuth2ClientCount").Params(utils.CtxParam(), jen.ID("userID").ID("uint64"), jen.ID(utils.FilterVarName).PointerTo().ID("QueryFilter")).Params(jen.ID("uint64"), jen.Error()),
-				jen.ID("GetOAuth2Clients").Params(utils.CtxParam(), jen.ID("userID").ID("uint64"), jen.ID(utils.FilterVarName).PointerTo().ID("QueryFilter")).Params(jen.PointerTo().ID("OAuth2ClientList"), jen.Error()),
-				jen.ID("GetAllOAuth2Clients").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Index().PointerTo().ID("OAuth2Client"), jen.Error()),
-				jen.ID("GetAllOAuth2ClientsForUser").Params(utils.CtxParam(), jen.ID("userID").ID("uint64")).Params(jen.Index().PointerTo().ID("OAuth2Client"), jen.Error()),
+				jen.ID("GetOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
+				jen.ID("GetOAuth2ClientByClientID").Params(utils.CtxParam(), jen.ID("clientID").String()).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
+				jen.ID("GetAllOAuth2ClientCount").Params(utils.CtxParam()).Params(jen.Uint64(), jen.Error()),
+				jen.ID("GetOAuth2Clients").Params(utils.CtxParam(), jen.ID("userID").Uint64(), utils.QueryFilterParam()).Params(jen.PointerTo().ID("OAuth2ClientList"), jen.Error()),
 				jen.ID("CreateOAuth2Client").Params(utils.CtxParam(), jen.ID("input").PointerTo().ID("OAuth2ClientCreationInput")).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
 				jen.ID("UpdateOAuth2Client").Params(utils.CtxParam(), jen.ID("updated").PointerTo().ID("OAuth2Client")).Params(jen.Error()),
-				jen.ID("ArchiveOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.Error()),
+				jen.ID("ArchiveOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("OAuth2ClientDataServer describes a structure capable of serving traffic related to oauth2 clients"),
@@ -54,17 +51,17 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("OAuth2Client represents a user-authorized API client"),
 			jen.ID("OAuth2Client").Struct(
-				jen.ID("ID").ID("uint64").Tag(jsonTag("id")),
-				jen.ID("Name").ID("string").Tag(jsonTag("name")),
-				jen.ID("ClientID").ID("string").Tag(jsonTag("client_id")),
-				jen.ID("ClientSecret").ID("string").Tag(jsonTag("client_secret")),
-				jen.ID("RedirectURI").ID("string").Tag(jsonTag("redirect_uri")),
-				jen.ID("Scopes").Index().ID("string").Tag(jsonTag("scopes")),
-				jen.ID("ImplicitAllowed").ID("bool").Tag(jsonTag("implicit_allowed")),
-				jen.ID("CreatedOn").ID("uint64").Tag(jsonTag("created_on")),
-				jen.ID("UpdatedOn").PointerTo().ID("uint64").Tag(jsonTag("updated_on")),
-				jen.ID("ArchivedOn").PointerTo().ID("uint64").Tag(jsonTag("archived_on")),
-				jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("belongs_to_user")),
+				jen.ID("ID").Uint64().Tag(jsonTag("id")),
+				jen.ID("Name").String().Tag(jsonTag("name")),
+				jen.ID("ClientID").String().Tag(jsonTag("client_id")),
+				jen.ID("ClientSecret").String().Tag(jsonTag("client_secret")),
+				jen.ID("RedirectURI").String().Tag(jsonTag("redirect_uri")),
+				jen.ID("Scopes").Index().String().Tag(jsonTag("scopes")),
+				jen.ID("ImplicitAllowed").Bool().Tag(jsonTag("implicit_allowed")),
+				jen.ID("CreatedOn").Uint64().Tag(jsonTag("created_on")),
+				jen.ID("UpdatedOn").PointerTo().Uint64().Tag(jsonTag("updated_on")),
+				jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archived_on")),
+				jen.ID("BelongsToUser").Uint64().Tag(jsonTag("belongs_to_user")),
 			),
 			jen.Line(),
 			jen.Comment("OAuth2ClientList is a response struct containing a list of OAuth2Clients"),
@@ -76,18 +73,18 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 			jen.Comment("OAuth2ClientCreationInput is a struct for use when creating OAuth2 clients."),
 			jen.ID("OAuth2ClientCreationInput").Struct(
 				jen.ID("UserLoginInput"),
-				jen.ID("Name").ID("string").Tag(jsonTag("name")),
-				jen.ID("ClientID").ID("string").Tag(jsonTag("-")),
-				jen.ID("ClientSecret").ID("string").Tag(jsonTag("-")),
-				jen.ID("RedirectURI").ID("string").Tag(jsonTag("redirect_uri")),
-				jen.ID("BelongsToUser").ID("uint64").Tag(jsonTag("-")),
-				jen.ID("Scopes").Index().ID("string").Tag(jsonTag("scopes")),
+				jen.ID("Name").String().Tag(jsonTag("name")),
+				jen.ID("ClientID").String().Tag(jsonTag("-")),
+				jen.ID("ClientSecret").String().Tag(jsonTag("-")),
+				jen.ID("RedirectURI").String().Tag(jsonTag("redirect_uri")),
+				jen.ID("BelongsToUser").Uint64().Tag(jsonTag("-")),
+				jen.ID("Scopes").Index().String().Tag(jsonTag("scopes")),
 			),
 			jen.Line(),
 			jen.Comment("OAuth2ClientUpdateInput is a struct for use when updating OAuth2 clients"),
 			jen.ID("OAuth2ClientUpdateInput").Struct(
-				jen.ID("RedirectURI").ID("string").Tag(jsonTag("redirect_uri")),
-				jen.ID("Scopes").Index().ID("string").Tag(jsonTag("scopes")),
+				jen.ID("RedirectURI").String().Tag(jsonTag("redirect_uri")),
+				jen.ID("Scopes").Index().String().Tag(jsonTag("scopes")),
 			),
 		),
 		jen.Line(),
@@ -101,7 +98,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetID returns the client ID. NOTE: I believe this is implemented for the above interface spec (oauth2.ClientInfo)"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetID").Params().Params(jen.ID("string")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetID").Params().Params(jen.String()).Block(
 			jen.Return().ID("c").Dot("ClientID"),
 		),
 		jen.Line(),
@@ -110,7 +107,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetSecret returns the ClientSecret"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetSecret").Params().Params(jen.ID("string")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetSecret").Params().Params(jen.String()).Block(
 			jen.Return().ID("c").Dot("ClientSecret"),
 		),
 		jen.Line(),
@@ -119,7 +116,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetDomain returns the client's domain"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetDomain").Params().Params(jen.ID("string")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetDomain").Params().Params(jen.String()).Block(
 			jen.Return().ID("c").Dot("RedirectURI"),
 		),
 		jen.Line(),
@@ -128,7 +125,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetUserID returns the client's UserID"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetUserID").Params().Params(jen.ID("string")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetUserID").Params().Params(jen.String()).Block(
 			jen.Return().Qual("strconv", "FormatUint").Call(jen.ID("c").Dot("BelongsToUser"), jen.Lit(10)),
 		),
 		jen.Line(),
@@ -137,7 +134,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("HasScope returns whether or not the provided scope is included in the scope list"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("HasScope").Params(jen.ID("scope").ID("string")).Params(jen.ID("found").ID("bool")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("HasScope").Params(jen.ID("scope").String()).Params(jen.ID("found").Bool()).Block(
 			jen.ID("scope").Equals().Qual("strings", "TrimSpace").Call(jen.ID("scope")),
 			jen.If(jen.ID("scope").Op("==").Lit("")).Block(
 				jen.Return().ID("false"),

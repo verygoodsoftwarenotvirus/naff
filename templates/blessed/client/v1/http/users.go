@@ -54,7 +54,7 @@ func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildGetUserRequest").Params(
 			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
+			jen.ID("userID").Uint64(),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
 			jen.Error(),
@@ -103,10 +103,10 @@ func buildGetUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("GetUser").Params(
 			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
+			jen.ID("userID").Uint64(),
 		).Params(
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
-			jen.Err().ID("error"),
+			jen.Err().Error(),
 		).Block(block...),
 		jen.Line(),
 	}
@@ -305,7 +305,7 @@ func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildArchiveUserRequest").Params(
 			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
+			jen.ID("userID").Uint64(),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Request"),
 			jen.Error(),
@@ -347,7 +347,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("ArchiveUser").Params(
 			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
+			jen.ID("userID").Uint64(),
 		).Params(jen.Error()).Block(block...),
 		jen.Line(),
 	}

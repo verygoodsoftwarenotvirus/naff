@@ -33,22 +33,22 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("RequestValidator validates request"),
 			jen.ID("RequestValidator").Interface(
-				jen.ID("Validate").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("bool"), jen.Error()),
+				jen.ID("Validate").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Bool(), jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("Service handles our users"),
 			jen.ID("Service").Struct(
-				jen.ID("cookieSecret").Index().ID("byte"), jen.ID("database").Qual(proj.DatabaseV1Package(), "Database"),
+				jen.ID("cookieSecret").Index().Byte(), jen.ID("database").Qual(proj.DatabaseV1Package(), "Database"),
 				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 				jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("userCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 				jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
-				jen.ID("userCreationEnabled").ID("bool"),
+				jen.ID("userCreationEnabled").Bool(),
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher fetches usernames from requests"),
-			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
 		),
 		jen.Line(),
 	)
@@ -81,7 +81,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("counter").Dot("IncrementBy").Call(utils.CtxVar(), jen.ID("userCount")),
 			jen.Line(),
 			jen.ID("us").Assign().VarPointer().ID("Service").Valuesln(
-				jen.ID("cookieSecret").MapAssign().Index().ID("byte").Call(jen.ID("authSettings").Dot("CookieSecret")),
+				jen.ID("cookieSecret").MapAssign().Index().Byte().Call(jen.ID("authSettings").Dot("CookieSecret")),
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("database").MapAssign().ID("db"),
 				jen.ID("authenticator").MapAssign().ID("authenticator"),

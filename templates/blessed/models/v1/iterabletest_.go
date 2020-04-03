@@ -11,6 +11,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, ret)
 	sn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
 
 	buildUpdateInputColumns := func() (updateCols []jen.Code, assertCalls []jen.Code) {
 		for _, field := range typ.Fields {
@@ -43,5 +44,33 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			utils.BuildSubTestWithoutContext("happy path", buildHappyPathBlock()...)),
 		jen.Line(),
 	)
+
+	updateInputFields := []jen.Code{}
+	expectedFields := []jen.Code{}
+	for _, field := range typ.Fields {
+		if field.ValidForUpdateInput {
+			fns := field.Name.Singular()
+			updateInputFields = append(updateInputFields, jen.ID(fns).MapAssign().Add(utils.FakeCallForField(proj.OutputPath, field)))
+			expectedFields = append(expectedFields, jen.ID(fns).MapAssign().ID(uvn).Dot(field.Name.Singular()))
+		}
+	}
+
+	ret.Add(
+		jen.Func().IDf("Test%s_ToUpdateInput", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID(uvn).Assign().VarPointer().ID(sn).Valuesln(updateInputFields...),
+				jen.Line(),
+				jen.ID("expected").Assign().VarPointer().IDf("%sUpdateInput", sn).Valuesln(expectedFields...),
+				jen.ID("actual").Assign().ID(uvn).Dot("ToUpdateInput").Call(),
+				jen.Line(),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			),
+		),
+		jen.Line(),
+	)
+
 	return ret
 }

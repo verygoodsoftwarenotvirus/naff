@@ -12,7 +12,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("net/http", "Handler").Equals().Parens(jen.PointerTo().ID("mockHTTPHandler")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual("net/http", "Handler").Equals().Parens(jen.PointerTo().ID("mockHTTPHandler")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -102,7 +102,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("THIS IS A FAKE CLIENT ID"),
-					jen.ID("Scopes").MapAssign().Index().ID("string").Values(jen.Lit("things")),
+					jen.ID("Scopes").MapAssign().Index().String().Values(jen.Lit("things")),
 				),
 				jen.Line(),
 				jen.ID("mh").Assign().VarPointer().ID("mockOauth2Handler").Values(),
@@ -180,7 +180,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("THIS IS A FAKE CLIENT ID"),
-					jen.ID("Scopes").MapAssign().Index().ID("string").Values(jen.Lit("things")),
+					jen.ID("Scopes").MapAssign().Index().String().Values(jen.Lit("things")),
 				),
 				jen.Line(),
 				jen.ID("mh").Assign().VarPointer().ID("mockOauth2Handler").Values(),
@@ -220,7 +220,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().Lit("THIS IS A FAKE CLIENT ID"),
-					jen.ID("Scopes").MapAssign().Index().ID("string").Values(jen.Lit("things")),
+					jen.ID("Scopes").MapAssign().Index().String().Values(jen.Lit("things")),
 				),
 				jen.Line(),
 				jen.ID("mh").Assign().VarPointer().ID("mockOauth2Handler").Values(),

@@ -50,9 +50,9 @@ and logging in.`)
 	ret.Add(
 		jen.Var().Defs(
 			jen.ID("lastChange").Qual("time", "Time"),
-			jen.ID("currentCode").ID("string"),
+			jen.ID("currentCode").String(),
 			jen.Line(),
-			jen.ID("numbers").Equals().Index(jen.Lit(10)).Index(jen.Lit(5)).ID("string").Valuesln(
+			jen.ID("numbers").Equals().Index(jen.Lit(10)).Index(jen.Lit(5)).String().Valuesln(
 				jen.ID("limitSlice").Call(jen.Qual("strings", "Split").Call(jen.ID("zero"), jen.Lit("&"))),
 				jen.ID("limitSlice").Call(jen.Qual("strings", "Split").Call(jen.ID("one"), jen.Lit("&"))),
 				jen.ID("limitSlice").Call(jen.Qual("strings", "Split").Call(jen.ID("two"), jen.Lit("&"))),
@@ -69,7 +69,7 @@ and logging in.`)
 	)
 
 	ret.Add(
-		jen.Func().ID("limitSlice").Params(jen.ID("in").Index().ID("string")).Params(jen.ID("out").Index(jen.Lit(5)).ID("string")).Block(
+		jen.Func().ID("limitSlice").Params(jen.ID("in").Index().String()).Params(jen.ID("out").Index(jen.Lit(5)).String()).Block(
 			jen.If(jen.ID("len").Call(jen.ID("in")).DoesNotEqual().Lit(5)).Block(
 				jen.ID("panic").Call(jen.Lit("wut")),
 			),
@@ -81,7 +81,7 @@ and logging in.`)
 		jen.Line(),
 	)
 	ret.Add(
-		jen.Func().ID("mustnt").Params(jen.Err().ID("error")).Block(
+		jen.Func().ID("mustnt").Params(jen.Err().Error()).Block(
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
@@ -97,8 +97,8 @@ and logging in.`)
 	)
 
 	ret.Add(
-		jen.Func().ID("buildTheThing").Params(jen.ID("token").ID("string")).Params(jen.ID("string")).Block(
-			jen.Var().ID("out").ID("string"),
+		jen.Func().ID("buildTheThing").Params(jen.ID("token").String()).Params(jen.String()).Block(
+			jen.Var().ID("out").String(),
 			jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 				jen.If(jen.ID("i").DoesNotEqual().Lit(0)).Block(
 					jen.ID("out").Op("+=").Lit("\n"),
@@ -122,7 +122,7 @@ and logging in.`)
 	)
 
 	ret.Add(
-		jen.Func().ID("doTheThing").Params(jen.ID("secret").ID("string")).Block(
+		jen.Func().ID("doTheThing").Params(jen.ID("secret").String()).Block(
 			jen.ID("t").Assign().Qual("strings", "ToUpper").Call(jen.ID("secret")),
 			jen.ID("n").Assign().Qual("time", "Now").Call().Dot("UTC").Call(),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("t"), jen.ID("n")),
@@ -144,10 +144,10 @@ and logging in.`)
 	)
 
 	ret.Add(
-		jen.Func().ID("requestTOTPSecret").Params().Params(jen.ID("string")).Block(
+		jen.Func().ID("requestTOTPSecret").Params().Params(jen.String()).Block(
 			jen.Var().Defs(
-				jen.ID("token").ID("string"),
-				jen.Err().ID("error"),
+				jen.ID("token").String(),
+				jen.Err().Error(),
 			),
 			jen.Line(),
 			jen.If(jen.ID("len").Call(jen.Qual("os", "Args")).Op("==").Lit(1)).Block(

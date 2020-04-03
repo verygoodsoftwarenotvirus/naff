@@ -17,7 +17,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("expected").Assign().Lit("uint64(123)"),
+				jen.ID("expected").Assign().Lit("123"),
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().ID("expected"),
 				),
@@ -33,7 +33,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("expected").Assign().Lit("uint64(123)"),
+				jen.ID("expected").Assign().Lit("123"),
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("ClientSecret").MapAssign().ID("expected"),
 				),
@@ -49,7 +49,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("expected").Assign().Lit("uint64(123)"),
+				jen.ID("expected").Assign().Lit("123"),
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("RedirectURI").MapAssign().ID("expected"),
 				),
@@ -65,7 +65,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
 				jen.ID("expected").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expectation")),
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
 					jen.ID("BelongsToUser").MapAssign().ID("expectation"),
@@ -83,7 +83,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
-					jen.ID("Scopes").MapAssign().Index().ID("string").Values(jen.Lit("things"), jen.Lit("and"), jen.Lit("stuff")),
+					jen.ID("Scopes").MapAssign().Index().String().Values(jen.Lit("things"), jen.Lit("and"), jen.Lit("stuff")),
 				),
 				jen.Line(),
 				utils.AssertTrue(jen.ID("oac").Dot("HasScope").Call(jen.ID("oac").Dot("Scopes").Index(jen.Lit(0))), nil),

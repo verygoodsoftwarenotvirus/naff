@@ -52,12 +52,12 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("reverse").Params(jen.ID("s").ID("string")).Params(jen.ID("string")).Block(
+		jen.Func().ID("reverse").Params(jen.ID("s").String()).Params(jen.String()).Block(
 			jen.ID("runes").Assign().Index().ID("rune").Call(jen.ID("s")),
 			jen.For(jen.List(jen.ID("i"), jen.ID("j")).Assign().List(jen.Lit(0), jen.ID("len").Call(jen.ID("runes")).Op("-").Lit(1)), jen.ID("i").Op("<").ID("j"), jen.List(jen.ID("i"), jen.ID("j")).Equals().List(jen.ID("i").Op("+").Lit(1), jen.ID("j").Op("-").Lit(1))).Block(
 				jen.List(jen.ID("runes").Index(jen.ID("i")), jen.ID("runes").Index(jen.ID("j"))).Equals().List(jen.ID("runes").Index(jen.ID("j")), jen.ID("runes").Index(jen.ID("i"))),
 			),
-			jen.Return().ID("string").Call(jen.ID("runes")),
+			jen.Return().String().Call(jen.ID("runes")),
 		),
 		jen.Line(),
 	)
@@ -114,7 +114,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertTrue(jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Webhooks")), nil),
 					jen.Line(),
 					jen.Comment("Clean up"),
-					jen.For(jen.List(jen.ID("_"), jen.ID("webhook")).Assign().Range().ID("actual").Dot("Webhooks")).Block(
+					jen.For(jen.List(jen.Underscore(), jen.ID("webhook")).Assign().Range().ID("actual").Dot("Webhooks")).Block(
 						jen.Err().Equals().ID("todoClient").Dot("ArchiveWebhook").Call(utils.CtxVar(), jen.ID("webhook").Dot("ID")),
 						utils.AssertNoError(jen.Err(), nil),
 					),
@@ -126,7 +126,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					"it should return an error when trying to read something that doesn't exist",
 					jen.Line(),
 					jen.Comment("Fetch webhook"),
-					jen.List(jen.ID("_"), jen.Err()).Assign().ID("todoClient").Dot("GetWebhook").Call(utils.CtxVar(), jen.ID("nonexistentID")),
+					jen.List(jen.Underscore(), jen.Err()).Assign().ID("todoClient").Dot("GetWebhook").Call(utils.CtxVar(), jen.ID("nonexistentID")),
 					utils.AssertError(jen.Err(), nil),
 				),
 				jen.Line(),

@@ -21,7 +21,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					utils.BuildSubTestWithoutContext(
 						"obligatory",
-						jen.ID("_").Equals().IDf("Provide%sServiceUserIDFetcher", n.Singular()).Call(),
+						jen.Underscore().Equals().IDf("Provide%sServiceUserIDFetcher", n.Singular()).Call(),
 					),
 				),
 				jen.Line(),
@@ -34,7 +34,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					utils.BuildSubTestWithoutContext(
 						"obligatory",
-						jen.ID("_").Equals().IDf("Provide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+						jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					),
 				),
 				jen.Line(),
@@ -47,7 +47,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildSubTestWithoutContext(
 					"obligatory",
-					jen.ID("_").Equals().IDf("Provide%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+					jen.Underscore().Equals().IDf("Provide%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				),
 			),
 			jen.Line(),
@@ -60,7 +60,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("_").Equals().ID("ProvideUsernameFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().ID("ProvideUsernameFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			),
 		),
 		jen.Line(),
@@ -72,7 +72,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("_").Equals().ID("ProvideAuthUserIDFetcher").Call(),
+				jen.Underscore().Equals().ID("ProvideAuthUserIDFetcher").Call(),
 			),
 		),
 		jen.Line(),
@@ -84,7 +84,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("_").Equals().ID("ProvideWebhooksUserIDFetcher").Call(),
+				jen.Underscore().Equals().ID("ProvideWebhooksUserIDFetcher").Call(),
 			),
 		),
 		jen.Line(),
@@ -96,7 +96,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("_").Equals().ID("ProvideWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().ID("ProvideWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			),
 		),
 		jen.Line(),
@@ -108,7 +108,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("_").Equals().ID("ProvideOAuth2ServiceClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().ID("ProvideOAuth2ServiceClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			),
 		),
 		jen.Line(),
@@ -154,8 +154,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
-								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
 					),
@@ -169,7 +169,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
 				jen.ID("fn").Assign().ID("buildChiUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Assign().ID("uint64").Call(jen.Lit(0)),
+				jen.ID("expected").Assign().Uint64().Call(jen.Lit(0)),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
@@ -178,8 +178,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
-								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Lit("expected")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 							),
 						),
 					),
@@ -210,8 +210,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 							jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 							jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 								jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-									jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
-									jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
+									jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
+									jen.ID("Values").MapAssign().Index().String().Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 								),
 							),
 						),
@@ -225,7 +225,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					"with invalid value somehow",
 					jen.Comment("NOTE: This will probably never happen in dev or production"),
 					jen.ID("fn").Assign().IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-					jen.ID("expected").Assign().ID("uint64").Call(jen.Lit(0)),
+					jen.ID("expected").Assign().Uint64().Call(jen.Lit(0)),
 					jen.Line(),
 					jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 					jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
@@ -233,8 +233,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 							jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 							jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 								jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-									jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
-									jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Lit("expected")),
+									jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
+									jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 								),
 							),
 						),
@@ -264,8 +264,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
-								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
 					),
@@ -279,7 +279,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
 				jen.ID("fn").Assign().ID("buildChiWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Assign().ID("uint64").Call(jen.Lit(0)),
+				jen.ID("expected").Assign().Uint64().Call(jen.Lit(0)),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
@@ -288,8 +288,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
-								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Lit("expected")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 							),
 						),
 					),
@@ -317,8 +317,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
-								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
 							),
 						),
 					),
@@ -332,7 +332,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
 				jen.ID("fn").Assign().ID("buildChiOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Assign().ID("uint64").Call(jen.Lit(0)),
+				jen.ID("expected").Assign().Uint64().Call(jen.Lit(0)),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
@@ -341,8 +341,8 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.VarPointer().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().ID("string").Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
-								jen.ID("Values").MapAssign().Index().ID("string").Values(jen.Lit("expected")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 							),
 						),
 					),

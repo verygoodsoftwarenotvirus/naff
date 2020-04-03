@@ -330,7 +330,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 		expected := []migration{
 			{
 				description: "create users table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS users ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `username` VARCHAR(150) NOT NULL,"),
@@ -348,7 +348,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create users table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS users_creation_trigger BEFORE INSERT ON users FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -360,7 +360,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create oauth2_clients table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS oauth2_clients ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `name` VARCHAR(128) DEFAULT '',"),
@@ -380,7 +380,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create oauth2_clients table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS oauth2_clients_creation_trigger BEFORE INSERT ON oauth2_clients FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -392,7 +392,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create webhooks table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS webhooks ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `name` VARCHAR(128) NOT NULL,"),
@@ -413,7 +413,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create webhooks table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS webhooks_creation_trigger BEFORE INSERT ON webhooks FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -425,7 +425,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create thing ones table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS thing_ones ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `field_one` LONGTEXT NOT NULL,"),
@@ -442,7 +442,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create thing ones table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS thing_ones_creation_trigger BEFORE INSERT ON thing_ones FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -475,7 +475,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 		expected := []migration{
 			{
 				description: "create users table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS users ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `username` VARCHAR(150) NOT NULL,"),
@@ -493,7 +493,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create users table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS users_creation_trigger BEFORE INSERT ON users FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -505,7 +505,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create oauth2_clients table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS oauth2_clients ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `name` VARCHAR(128) DEFAULT '',"),
@@ -525,7 +525,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create oauth2_clients table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS oauth2_clients_creation_trigger BEFORE INSERT ON oauth2_clients FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -537,7 +537,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create webhooks table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS webhooks ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `name` VARCHAR(128) NOT NULL,"),
@@ -558,7 +558,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create webhooks table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS webhooks_creation_trigger BEFORE INSERT ON webhooks FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -571,7 +571,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			{
 				description: "create thing twos table",
 
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS thing_twos ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `field_one` LONGTEXT NOT NULL,"),
@@ -588,7 +588,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create thing twos table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS thing_twos_creation_trigger BEFORE INSERT ON thing_twos FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -621,7 +621,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 		expected := []migration{
 			{
 				description: "create users table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS users ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `username` VARCHAR(150) NOT NULL,"),
@@ -639,7 +639,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create users table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS users_creation_trigger BEFORE INSERT ON users FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -651,7 +651,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create oauth2_clients table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS oauth2_clients ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `name` VARCHAR(128) DEFAULT '',"),
@@ -671,7 +671,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create oauth2_clients table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS oauth2_clients_creation_trigger BEFORE INSERT ON oauth2_clients FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -683,7 +683,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create webhooks table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS webhooks ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `name` VARCHAR(128) NOT NULL,"),
@@ -704,7 +704,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create webhooks table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS webhooks_creation_trigger BEFORE INSERT ON webhooks FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -716,7 +716,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create thing threes table",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TABLE IF NOT EXISTS thing_threes ("),
 					jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 					jen.Lit("    `field_one` LONGTEXT NOT NULL,"),
@@ -731,7 +731,7 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 			},
 			{
 				description: "create thing threes table creation trigger",
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Lit("CREATE TRIGGER IF NOT EXISTS thing_threes_creation_trigger BEFORE INSERT ON thing_threes FOR EACH ROW"),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),

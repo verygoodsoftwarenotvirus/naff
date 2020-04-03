@@ -199,7 +199,7 @@ func buildTestV1Client_ItemExists(proj *models.Project, typ models.DataType) []j
 				jen.Qual("strings", "HasSuffix").Call(
 					jen.ID("req").Dot("URL").Dot("String").Call(),
 					jen.Qual("strconv", "Itoa").Call(
-						jen.ID("int").Call(
+						jen.Int().Call(
 							jen.IDf("example%s", ts).Dot("ID"),
 						),
 					),
@@ -323,7 +323,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 				jen.Qual("strings", "HasSuffix").Call(
 					jen.ID("req").Dot("URL").Dot("String").Call(),
 					jen.Qual("strconv", "Itoa").Call(
-						jen.ID("int").Call(
+						jen.Int().Call(
 							jen.IDf("example%s", ts).Dot("ID"),
 						),
 					),
@@ -371,7 +371,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 				jen.Qual("strings", "HasSuffix").Call(
 					jen.ID("req").Dot("URL").Dot("String").Call(),
 					jen.Qual("strconv", "Itoa").Call(
-						jen.ID("int").Call(
+						jen.Int().Call(
 							jen.IDf("example%s", ts).Dot("ID"),
 						),
 					),

@@ -12,7 +12,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("loginUser").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpSecret")).ID("string")).Params(jen.ParamPointer().Qual("net/http", "Cookie")).Block(
+		jen.Func().ID("loginUser").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpSecret")).String()).Params(jen.ParamPointer().Qual("net/http", "Cookie")).Block(
 			jen.ID("loginURL").Assign().Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s://%s:%s/users/login"),
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL").Dot("Scheme"),
@@ -32,7 +32,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 `), jen.ID("username"), jen.ID("password"), jen.ID("code")),
 			jen.Line(),
 			jen.ID("body").Assign().Qual("strings", "NewReader").Call(jen.ID("bodyStr")),
-			jen.List(jen.ID("req"), jen.ID("_")).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.ID("loginURL"), jen.ID("body")),
+			jen.List(jen.ID("req"), jen.Underscore()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.ID("loginURL"), jen.ID("body")),
 			jen.List(jen.ID("resp"), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Qual("log", "Fatal").Call(jen.Err()),
@@ -185,9 +185,9 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr"))),
 				jen.Line(),
 				jen.Comment("create login request"),
-				jen.Var().ID("badPassword").ID("string"),
-				jen.For(jen.List(jen.ID("_"), jen.ID("v")).Assign().Range().ID("ui").Dot("Password")).Block(
-					jen.ID("badPassword").Equals().ID("string").Call(jen.ID("v")).Op("+").ID("badPassword"),
+				jen.Var().ID("badPassword").String(),
+				jen.For(jen.List(jen.Underscore(), jen.ID("v")).Assign().Range().ID("ui").Dot("Password")).Block(
+					jen.ID("badPassword").Equals().String().Call(jen.ID("v")).Op("+").ID("badPassword"),
 				),
 				jen.Line(),
 				jen.Comment("create login request"),
@@ -261,9 +261,9 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 				jen.Line(),
 				jen.Comment("create login request"),
-				jen.Var().ID("backwardsPass").ID("string"),
-				jen.For(jen.List(jen.ID("_"), jen.ID("v")).Assign().Range().ID("ui").Dot("Password")).Block(
-					jen.ID("backwardsPass").Equals().ID("string").Call(jen.ID("v")).Op("+").ID("backwardsPass"),
+				jen.Var().ID("backwardsPass").String(),
+				jen.For(jen.List(jen.Underscore(), jen.ID("v")).Assign().Range().ID("ui").Dot("Password")).Block(
+					jen.ID("backwardsPass").Equals().String().Call(jen.ID("v")).Op("+").ID("backwardsPass"),
 				),
 				jen.Line(),
 				jen.Comment("create password update request"),
@@ -411,7 +411,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should accept a login cookie if a token is missing"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
 				jen.Comment("create user"),
-				jen.List(jen.ID("_"), jen.ID("_"), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(jen.ID("test")),
+				jen.List(jen.Underscore(), jen.Underscore(), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(jen.ID("test")),
 				utils.AssertNotNil(jen.ID("cookie"), nil),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("BuildURL").Call(jen.Nil(), jen.Lit("webhooks")), jen.Nil()),
@@ -496,7 +496,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("y").Dot("Password"),
 					jen.ID("x").Dot("TwoFactorSecret"),
 				),
-				jen.ID("input").Dot("Scopes").Equals().Index().ID("string").Values(jen.Lit("absolutelynevergonnaexistascopelikethis")),
+				jen.ID("input").Dot("Scopes").Equals().Index().String().Values(jen.Lit("absolutelynevergonnaexistascopelikethis")),
 				jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("cookie"), jen.ID("input")),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 				jen.Line(),

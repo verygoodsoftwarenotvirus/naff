@@ -19,8 +19,8 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("UpdateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_update_input"),
 			jen.Line(),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit("webhooks"),
-			jen.ID("topicName").ID("string").Equals().Lit("webhooks"),
-			jen.ID("serviceName").ID("string").Equals().Lit("webhooks_service"),
+			jen.ID("topicName").String().Equals().Lit("webhooks"),
+			jen.ID("serviceName").String().Equals().Lit("webhooks_service"),
 		),
 		jen.Line(),
 	)
@@ -52,10 +52,10 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
-			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
 			jen.Line(),
 			jen.Comment("WebhookIDFetcher is a function that fetches webhook IDs"),
-			jen.ID("WebhookIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.ID("WebhookIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
 		),
 
 		jen.Line(),

@@ -357,7 +357,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 
 	lines = append(lines,
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-		jen.Var().ID("expected").ID("error"),
+		jen.Var().ID("expected").Error(),
 		jen.Line(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(
 			mockArgs...,
@@ -393,7 +393,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 	callArgs := append([]jen.Code{utils.CtxVar()}, idCallArgs...)
 
 	block = append(block,
-		jen.Var().ID("expected").ID("error"),
+		jen.Var().ID("expected").Error(),
 		jen.Line(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID("expected")),

@@ -14,7 +14,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Counter counts things"),
 		jen.Line(),
-		jen.Type().ID("Counter").Interface(jen.ID("Increment").Params(), jen.ID("IncrementBy").Params(jen.ID("val").ID("uint64")), jen.ID("Decrement").Params()),
+		jen.Type().ID("Counter").Interface(jen.ID("Increment").Params(), jen.ID("IncrementBy").Params(jen.ID("val").Uint64()), jen.ID("Decrement").Params()),
 		jen.Line(),
 	)
 
@@ -22,8 +22,8 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Comment("opencensusCounter is a Counter that interfaces with opencensus"),
 		jen.Line(),
 		jen.Type().ID("opencensusCounter").Struct(
-			jen.ID("name").ID("string"),
-			jen.ID("actualCount").ID("uint64"),
+			jen.ID("name").String(),
+			jen.ID("actualCount").Uint64(),
 			jen.ID("count").ParamPointer().Qual("go.opencensus.io/stats", "Int64Measure"),
 			jen.ID("counter").ParamPointer().Qual("go.opencensus.io/stats/view", "View"),
 		),
@@ -33,7 +33,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Increment satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("opencensusCounter")).ID("Increment").Params(utils.CtxVar().Qual("context", "Context")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("opencensusCounter")).ID("Increment").Params(utils.CtxParam()).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(jen.VarPointer().ID("c").Dot("actualCount"), jen.Lit(1)),
 			jen.Qual("go.opencensus.io/stats", "Record").Call(utils.CtxVar(), jen.ID("c").Dot("count").Dot("M").Call(jen.Lit(1))),
 		),
@@ -43,7 +43,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("IncrementBy satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("opencensusCounter")).ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").ID("uint64")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("opencensusCounter")).ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").Uint64()).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(jen.VarPointer().ID("c").Dot(
 				"actualCount",
 			), jen.ID("val")),
@@ -59,10 +59,10 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Decrement satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("opencensusCounter")).ID("Decrement").Params(utils.CtxVar().Qual("context", "Context")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("opencensusCounter")).ID("Decrement").Params(utils.CtxParam()).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(jen.VarPointer().ID("c").Dot(
 				"actualCount",
-			), jen.Op("^").ID("uint64").Call(jen.Lit(0))),
+			), jen.Op("^").Uint64().Call(jen.Lit(0))),
 			jen.Qual("go.opencensus.io/stats", "Record").Call(utils.CtxVar(), jen.ID("c").Dot(
 				"count",
 			).Dot(
@@ -84,8 +84,8 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideUnitCounter provides a new counter"),
 		jen.Line(),
-		jen.Func().ID("ProvideUnitCounter").Params(jen.ID("counterName").ID("CounterName"), jen.ID("description").ID("string")).Params(jen.ID("UnitCounter"), jen.Error()).Block(
-			jen.ID("name").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%s_count"), jen.ID("string").Call(jen.ID("counterName"))),
+		jen.Func().ID("ProvideUnitCounter").Params(jen.ID("counterName").ID("CounterName"), jen.ID("description").String()).Params(jen.ID("UnitCounter"), jen.Error()).Block(
+			jen.ID("name").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%s_count"), jen.String().Call(jen.ID("counterName"))),
 			jen.Comment("Counts/groups the lengths of lines read in."),
 			jen.ID("count").Assign().Qual("go.opencensus.io/stats", "Int64").Call(jen.ID("name"), jen.Lit(""), jen.Lit("By")),
 			jen.Line(),

@@ -41,9 +41,9 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("PasswordHasher hashes passwords"),
 			jen.ID("PasswordHasher").Interface(
-				jen.ID("PasswordIsAcceptable").Params(jen.ID("password").ID("string")).Params(jen.ID("bool")),
-				jen.ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.Error()),
-				jen.ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("salt").Index().ID("byte")).Params(jen.ID("bool")),
+				jen.ID("PasswordIsAcceptable").Params(jen.ID("password").String()).Params(jen.Bool()),
+				jen.ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()),
+				jen.ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.ID("salt").Index().Byte()).Params(jen.Bool()),
 			),
 			jen.Line(),
 			jen.Comment("Authenticator is a poorly named Authenticator interface"),
@@ -57,9 +57,9 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 						jen.ID("ProvidedPassword"),
 						jen.ID("TwoFactorSecret"),
 						jen.ID("TwoFactorCode"),
-					).ID("string"),
-					jen.ID("Salt").Index().ID("byte"),
-				).Params(jen.ID("valid").ID("bool"), jen.Err().ID("error")),
+					).String(),
+					jen.ID("Salt").Index().Byte(),
+				).Params(jen.ID("valid").Bool(), jen.Err().Error()),
 			),
 		),
 		jen.Line(),
@@ -68,7 +68,7 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 		jen.Comment("we run this function to ensure that we have no problem reading from crypto/rand"),
 		jen.Line(),
 		jen.Func().ID("init").Params().Block(
-			jen.ID("b").Assign().ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
+			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),

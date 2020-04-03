@@ -132,9 +132,9 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("wh").Dot("ID")),
 				jen.ID("s").Dot("webhookCounter").Dot("Increment").Call(utils.CtxVar()),
 				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-					jen.ID("EventType").MapAssign().ID("string").Call(jen.Qual(proj.ModelsV1Package(), "Create")),
+					jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Create")),
 					jen.ID("Data").MapAssign().ID("wh"),
-					jen.ID("Topics").MapAssign().Index().ID("string").Values(jen.ID("topicName"))),
+					jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName"))),
 				),
 				jen.Line(),
 				jen.ID("l").Assign().ID("wh").Dot("ToListener").Call(jen.ID("s").Dot("logger")),
@@ -165,7 +165,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Comment("document it for posterity"),
 				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
-				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 					jen.Lit("user").MapAssign().ID("userID"),
 					jen.Lit("webhook").MapAssign().ID("webhookID"),
 				)),
@@ -206,7 +206,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Comment("document it for posterity"),
 				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
-				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 					jen.Lit("user_id").MapAssign().ID("userID"),
 					jen.Lit("webhook_id").MapAssign().ID("webhookID")),
 				),
@@ -243,9 +243,9 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("notify the relevant parties"),
 				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-					jen.ID("EventType").MapAssign().ID("string").Call(jen.Qual(proj.ModelsV1Package(), "Update")),
+					jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Update")),
 					jen.ID("Data").MapAssign().ID("wh"),
-					jen.ID("Topics").MapAssign().Index().ID("string").Values(jen.ID("topicName"))),
+					jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName"))),
 				),
 				jen.Line(),
 				jen.Comment("let everybody know we're good"),
@@ -272,7 +272,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Comment("document it for posterity"),
 				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
-				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 					jen.Lit("webhook_id").MapAssign().ID("webhookID"),
 					jen.Lit("user_id").MapAssign().ID("userID"),
 				),
@@ -293,9 +293,9 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Comment("let the interested parties know"),
 				jen.ID("s").Dot("webhookCounter").Dot("Decrement").Call(utils.CtxVar()),
 				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-					jen.ID("EventType").MapAssign().ID("string").Call(jen.Qual(proj.ModelsV1Package(), "Archive")),
+					jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Archive")),
 					jen.ID("Data").MapAssign().Qual(proj.ModelsV1Package(), "Webhook").Values(jen.ID("ID").MapAssign().ID("webhookID")),
-					jen.ID("Topics").MapAssign().Index().ID("string").Values(jen.ID("topicName"))),
+					jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName"))),
 				),
 				jen.Line(),
 				jen.Comment("let everybody go home"),

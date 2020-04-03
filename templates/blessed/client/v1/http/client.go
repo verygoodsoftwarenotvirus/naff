@@ -45,9 +45,9 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("plainClient").ParamPointer().Qual("net/http", "Client"),
 			jen.ID("authedClient").ParamPointer().Qual("net/http", "Client"),
 			jen.ID("logger").Qual(utils.LoggingPkg, "Logger"),
-			jen.ID("Debug").ID("bool"),
+			jen.ID("Debug").Bool(),
 			jen.ID("URL").ParamPointer().Qual("net/url", "URL"),
-			jen.ID("Scopes").Index().ID("string"),
+			jen.ID("Scopes").Index().String(),
 			jen.ID("tokenSource").Qual("golang.org/x/oauth2", "TokenSource"),
 		),
 		jen.Line(),
@@ -125,12 +125,12 @@ func buildNewClient() []jen.Code {
 			jen.Listln(
 				jen.ID("clientID"),
 				jen.ID("clientSecret"),
-			).ID("string"),
+			).String(),
 			jen.ID("address").ParamPointer().Qual("net/url", "URL"),
 			jen.ID("logger").Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("hclient").ParamPointer().Qual("net/http", "Client"),
-			jen.ID("scopes").Index().ID("string"),
-			jen.ID("debug").ID("bool"),
+			jen.ID("scopes").Index().String(),
+			jen.ID("debug").Bool(),
 		).Params(
 			jen.PointerTo().ID(v1),
 			jen.Error(),
@@ -199,8 +199,8 @@ func buildBuildOAuthClient() []jen.Code {
 			jen.Listln(
 				jen.ID("clientID"),
 				jen.ID("clientSecret"),
-			).ID("string"),
-			jen.ID("scopes").Index().ID("string"),
+			).String(),
+			jen.ID("scopes").Index().String(),
 		).Params(
 			jen.ParamPointer().Qual("net/http", "Client"),
 			jen.ID("oauth2").Dot("TokenSource"),
@@ -210,8 +210,8 @@ func buildBuildOAuthClient() []jen.Code {
 				jen.ID("ClientSecret").MapAssign().ID("clientSecret"),
 				jen.ID("Scopes").MapAssign().ID("scopes"),
 				jen.ID("EndpointParams").MapAssign().Qual("net/url", "Values").Valuesln(
-					jen.Lit("client_id").MapAssign().Index().ID("string").Values(jen.ID("clientID")),
-					jen.Lit("client_secret").MapAssign().Index().ID("string").Values(jen.ID("clientSecret")),
+					jen.Lit("client_id").MapAssign().Index().String().Values(jen.ID("clientID")),
+					jen.Lit("client_secret").MapAssign().Index().String().Values(jen.ID("clientSecret")),
 				),
 				jen.ID("TokenURL").MapAssign().ID("tokenEndpoint").Call(
 					jen.ID("uri"),
@@ -289,7 +289,7 @@ func buildNewSimpleClient() []jen.Code {
 		jen.Func().ID("NewSimpleClient").Params(
 			utils.CtxParam(),
 			jen.ID("address").ParamPointer().Qual("net/url", "URL"),
-			jen.ID("debug").ID("bool"),
+			jen.ID("debug").Bool(),
 		).Params(
 			jen.PointerTo().ID(v1),
 			jen.Error(),
@@ -303,7 +303,7 @@ func buildNewSimpleClient() []jen.Code {
 				jen.VarPointer().Qual("net/http", "Client").Values(
 					jen.ID("Timeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
 				),
-				jen.Index().ID("string").Values(jen.Lit("*")),
+				jen.Index().String().Values(jen.Lit("*")),
 				jen.ID("debug"),
 			),
 		),
@@ -386,7 +386,7 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 			jen.If(jen.Err().Op("==").ID("nil").Op("&&").ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
 				jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 					jen.Lit("response_body"),
-					jen.ID("string").Call(
+					jen.String().Call(
 						jen.ID("bdump"),
 					),
 				),
@@ -422,8 +422,8 @@ func buildExportedBuildURL() []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildURL").Params(
 			jen.ID("qp").Qual("net/url", "Values"),
-			jen.ID("parts").Op("...").ID("string"),
-		).Params(jen.ID("string")).Block(
+			jen.ID("parts").Op("...").String(),
+		).Params(jen.String()).Block(
 			jen.Var().ID("u").ParamPointer().Qual("net/url", "URL"),
 			jen.If(jen.ID("qp").DoesNotEqual().ID("nil")).Block(
 				jen.ID("u").Equals().ID("c").Dot("buildURL").Call(jen.ID("qp"), jen.ID("parts").Op("...")),
@@ -450,12 +450,12 @@ func buildUnexportedBuildURL() []jen.Code {
 		jen.Line(),
 		newClientMethod("buildURL").Params(
 			jen.ID("queryParams").Qual("net/url", "Values"),
-			jen.ID("parts").Op("...").ID("string"),
+			jen.ID("parts").Op("...").String(),
 		).Params(jen.ParamPointer().Qual("net/url", "URL")).Block(
 			jen.ID("tu").Assign().PointerTo().ID("c").Dot("URL"),
 			jen.Line(),
 			jen.ID("parts").Equals().ID("append").Call(
-				jen.Index().ID("string").Values(jen.Lit("api"), jen.Lit("v1")),
+				jen.Index().String().Values(jen.Lit("api"), jen.Lit("v1")),
 				jen.ID("parts").Op("..."),
 			),
 			jen.List(
@@ -494,8 +494,8 @@ func buildBuildVersionlessURL() []jen.Code {
 		jen.Line(),
 		newClientMethod("buildVersionlessURL").Params(
 			jen.ID("qp").Qual("net/url", "Values"),
-			jen.ID("parts").Op("...").ID("string"),
-		).Params(jen.ID("string")).Block(
+			jen.ID("parts").Op("...").String(),
+		).Params(jen.String()).Block(
 			jen.ID("tu").Assign().PointerTo().ID("c").Dot("URL"),
 			jen.Line(),
 			jen.List(
@@ -530,8 +530,8 @@ func buildBuildWebsocketURL() []jen.Code {
 		jen.Comment("BuildWebsocketURL builds a standard URL and then converts its scheme to the websocket protocol"),
 		jen.Line(),
 		newClientMethod("BuildWebsocketURL").Params(
-			jen.ID("parts").Op("...").ID("string"),
-		).Params(jen.ID("string")).Block(
+			jen.ID("parts").Op("...").String(),
+		).Params(jen.String()).Block(
 			jen.ID("u").Assign().ID("c").Dot("buildURL").Call(
 				jen.Nil(),
 				jen.ID("parts").Op("..."),
@@ -578,7 +578,7 @@ func buildIsUp() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("IsUp returns whether or not the service's health endpoint is returning 200s"),
 		jen.Line(),
-		newClientMethod("IsUp").Params(utils.CtxParam()).Params(jen.ID("bool")).Block(
+		newClientMethod("IsUp").Params(utils.CtxParam()).Params(jen.Bool()).Block(
 			jen.List(
 				jen.ID("req"),
 				jen.Err(),
@@ -658,7 +658,7 @@ func buildBuildDataRequest(proj *models.Project) []jen.Code {
 			jen.List(
 				jen.ID("method"),
 				jen.ID("uri"),
-			).ID("string"),
+			).String(),
 			jen.ID("in").Interface(),
 		).Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(block...),
 		jen.Line(),

@@ -13,7 +13,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().ID("testingType").Struct(
-			jen.ID("Name").ID("string").Tag(map[string]string{"json": "name"}),
+			jen.ID("Name").String().Tag(map[string]string{"json": "name"}),
 		),
 		jen.Line(),
 	)
@@ -243,7 +243,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("Body").MapAssign().Qual("io/ioutil", "NopCloser").Callln(
 						jen.Qual("strings", "NewReader").Callln(
 							jen.Func().Params().Params(
-								jen.ID("string"),
+								jen.String(),
 							).Block(
 								jen.List(
 									jen.ID("bs"),
@@ -252,7 +252,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 									jen.VarPointer().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
 								),
 								utils.RequireNoError(jen.Err(), nil),
-								jen.Return().ID("string").Call(
+								jen.Return().String().Call(
 									jen.ID("bs"),
 								),
 							).Call(),
@@ -395,7 +395,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.AssertEqual(
 					jen.ID("expected"),
-					jen.ID("string").Call(
+					jen.String().Call(
 						jen.ID("bs"),
 					),
 					jen.Lit("expected and actual JSON bodies don't match"),
@@ -408,7 +408,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("Thing").MapAssign().Lit("stuff"),
 				),
 				jen.List(
-					jen.ID("_"),
+					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID("createBodyFromStruct").Call(
 					jen.ID("x"),

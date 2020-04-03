@@ -13,7 +13,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("T").ParamPointer().Qual("testing", "T"), jen.ID("tp").ID("testProvider")).Block(
-			jen.For(jen.List(jen.ID("_"), jen.ID("bn")).Assign().Range().Index().ID("string").Values(jen.Lit("firefox"), jen.Lit("chrome"))).Block(
+			jen.For(jen.List(jen.Underscore(), jen.ID("bn")).Assign().Range().Index().String().Values(jen.Lit("firefox"), jen.Lit("chrome"))).Block(
 				jen.ID("browserName").Assign().ID("bn"),
 				jen.ID("caps").Assign().Qual("github.com/tebeka/selenium", "Capabilities").Values(jen.Lit("browserName").MapAssign().ID("browserName")),
 				jen.List(jen.ID("wd"), jen.Err()).Assign().Qual("github.com/tebeka/selenium", "NewRemote").Call(jen.ID("caps"), jen.ID("seleniumHubAddr")),

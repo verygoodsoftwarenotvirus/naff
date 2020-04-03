@@ -408,7 +408,7 @@ func buildTestClient_UpdateOAuth2Client(proj *models.Project) []jen.Code {
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
-				jen.Var().ID("expected").ID("error"),
+				jen.Var().ID("expected").Error(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
 					jen.Lit("UpdateOAuth2Client"),
@@ -437,7 +437,7 @@ func buildTestClient_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
-				jen.Var().ID("expected").ID("error"),
+				jen.Var().ID("expected").Error(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
 					jen.Lit("ArchiveOAuth2Client"),

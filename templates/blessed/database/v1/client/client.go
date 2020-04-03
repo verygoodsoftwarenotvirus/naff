@@ -30,7 +30,7 @@ func clientDotGo(proj *models.Project) *jen.File {
 		jen.Comment("the actual database querying is performed."),
 		jen.Line(),
 		jen.Type().ID("Client").Struct(jen.ID("db").ParamPointer().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
-			jen.ID("debug").ID("bool"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")),
+			jen.ID("debug").Bool(), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")),
 		jen.Line(),
 	)
 
@@ -47,7 +47,7 @@ func buildMigrate(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("%s is a simple wrapper around the core querier %s call", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(utils.CtxParam()).Params(jen.Error()).Block(
 			utils.StartSpan(proj, true, funcName),
 			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(utils.CtxVar()),
 		),
@@ -63,7 +63,7 @@ func buildIsReady(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("%s is a simple wrapper around the core querier %s call", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(utils.CtxParam()).Params(jen.ID("ready").Bool()).Block(
 			utils.StartSpan(proj, true, funcName),
 			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(utils.CtxVar()),
 		),
@@ -83,7 +83,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("db").ParamPointer().Qual("database/sql", "DB"),
 			jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
-			jen.ID("debug").ID("bool"),
+			jen.ID("debug").Bool(),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 		).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.Error()).Block(
 			jen.ID("c").Assign().VarPointer().ID("Client").Valuesln(

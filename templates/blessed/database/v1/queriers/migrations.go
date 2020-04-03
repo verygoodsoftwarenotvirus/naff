@@ -254,7 +254,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 	migrations := []migration{
 		{
 			description: "create users table",
-			script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+			script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 				jen.Lit("CREATE TABLE IF NOT EXISTS users ("),
 				jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 				jen.Lit("    `username` VARCHAR(150) NOT NULL,"),
@@ -272,7 +272,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 		},
 		{
 			description: "create users table creation trigger",
-			script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+			script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 				jen.Lit("CREATE TRIGGER IF NOT EXISTS users_creation_trigger BEFORE INSERT ON users FOR EACH ROW"),
 				jen.Lit("BEGIN"),
 				jen.Lit("  IF (new.created_on is null)"),
@@ -284,7 +284,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 		},
 		{
 			description: "create oauth2_clients table",
-			script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+			script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 				jen.Lit("CREATE TABLE IF NOT EXISTS oauth2_clients ("),
 				jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 				jen.Lit("    `name` VARCHAR(128) DEFAULT '',"),
@@ -304,7 +304,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 		},
 		{
 			description: "create oauth2_clients table creation trigger",
-			script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+			script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 				jen.Lit("CREATE TRIGGER IF NOT EXISTS oauth2_clients_creation_trigger BEFORE INSERT ON oauth2_clients FOR EACH ROW"),
 				jen.Lit("BEGIN"),
 				jen.Lit("  IF (new.created_on is null)"),
@@ -316,7 +316,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 		},
 		{
 			description: "create webhooks table",
-			script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+			script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 				jen.Lit("CREATE TABLE IF NOT EXISTS webhooks ("),
 				jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 				jen.Lit("    `name` VARCHAR(128) NOT NULL,"),
@@ -337,7 +337,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 		},
 		{
 			description: "create webhooks table creation trigger",
-			script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+			script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 				jen.Lit("CREATE TRIGGER IF NOT EXISTS webhooks_creation_trigger BEFORE INSERT ON webhooks FOR EACH ROW"),
 				jen.Lit("BEGIN"),
 				jen.Lit("  IF (new.created_on is null)"),
@@ -411,13 +411,13 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 		migrations = append(migrations,
 			migration{
 				description: fmt.Sprintf("create %s table", pcn),
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					scriptParts...,
 				), jen.Lit("\n")),
 			},
 			migration{
 				description: fmt.Sprintf("create %s table creation trigger", pcn),
-				script: jen.Qual("strings", "Join").Call(jen.Index().ID("string").Valuesln(
+				script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
 					jen.Litf("CREATE TRIGGER IF NOT EXISTS %s_creation_trigger BEFORE INSERT ON %s FOR EACH ROW", tableName, tableName),
 					jen.Lit("BEGIN"),
 					jen.Lit("  IF (new.created_on is null)"),
@@ -636,7 +636,7 @@ func buildMigrate(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Comment("safe (as in idempotent, though not necessarily recommended) to call this function multiple times."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).ID("Migrate").Params(utils.CtxParam()).Params(jen.Error()).Block(
 			jen.ID(dbfl).Dot("logger").Dot("Info").Call(jen.Lit("migrating db")),
 			jen.If(jen.Op("!").ID(dbfl).Dot("IsReady").Call(utils.CtxVar())).Block(
 				jen.Return().ID("errors").Dot("New").Call(jen.Lit("db is not ready yet")),

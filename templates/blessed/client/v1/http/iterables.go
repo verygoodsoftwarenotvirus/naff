@@ -197,8 +197,8 @@ func buildItemExists(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Commentf("%s retrieves whether or not %s exists", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(
-			jen.ID("exists").ID("bool"),
-			jen.Err().ID("error"),
+			jen.ID("exists").Bool(),
+			jen.Err().Error(),
 		).Block(block...,
 		),
 		jen.Line(),
@@ -264,13 +264,13 @@ func buildParamsForMethodThatHandlesAnInstanceWithIDs(proj *models.Project, typ 
 		}
 		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 		if !call {
-			params = append(params, jen.List(listParams...).ID("uint64"))
+			params = append(params, jen.List(listParams...).Uint64())
 		} else {
 			params = append(params, listParams...)
 		}
 	} else {
 		if !call {
-			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).ID("uint64"))
+			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).Uint64())
 		} else {
 			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 		}
@@ -317,7 +317,7 @@ func buildParamsForMethodThatRetrievesAListOfADataType(proj *models.Project, typ
 			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 		}
 		if !call {
-			params = append(params, jen.List(listParams...).ID("uint64"))
+			params = append(params, jen.List(listParams...).Uint64())
 		} else {
 			params = append(params, listParams...)
 		}
@@ -350,7 +350,7 @@ func buildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(proj *models.P
 			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
 		}
 		if !call {
-			params = append(params, jen.List(listParams...).ID("uint64"))
+			params = append(params, jen.List(listParams...).Uint64())
 		} else {
 			params = append(params, listParams...)
 		}
@@ -383,7 +383,7 @@ func buildParamsForMethodThatCreatesADataType(proj *models.Project, typ models.D
 			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 		}
 		if !call {
-			params = append(params, jen.List(listParams...).ID("uint64"))
+			params = append(params, jen.List(listParams...).Uint64())
 		} else {
 			params = append(params, listParams...)
 		}
@@ -416,7 +416,7 @@ func buildParamsForMethodThatCreatesADataTypeFromStructs(proj *models.Project, t
 			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
 		}
 		if !call {
-			params = append(params, jen.List(listParams...).ID("uint64"))
+			params = append(params, jen.List(listParams...).Uint64())
 		} else {
 			params = append(params, listParams...)
 		}
@@ -449,7 +449,7 @@ func buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj *models.Pro
 			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
 		}
 		if !call {
-			params = append(params, jen.List(listParams...).ID("uint64"))
+			params = append(params, jen.List(listParams...).Uint64())
 		} else {
 			params = append(params, listParams...)
 		}
@@ -485,7 +485,7 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj *models.Project,
 
 		if len(listParams) > 0 {
 			if !call {
-				params = append(params, jen.List(listParams...).ID("uint64"))
+				params = append(params, jen.List(listParams...).Uint64())
 			} else {
 				params = append(params, listParams...)
 			}
@@ -548,7 +548,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(
 			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), ts),
-			jen.Err().ID("error"),
+			jen.Err().Error(),
 		).Block(block...,
 		),
 		jen.Line(),
@@ -629,7 +629,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, false)...).Params(
 			jen.ID(pvn).PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", ts)),
-			jen.Err().ID("error"),
+			jen.Err().Error(),
 		).Block(block...,
 		),
 		jen.Line(),
@@ -721,7 +721,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 			buildParamsForMethodThatCreatesADataType(proj, typ, false)...,
 		).Params(
 			jen.ID(vn).PointerTo().Qual(proj.ModelsV1Package(), ts),
-			jen.Err().ID("error"),
+			jen.Err().Error(),
 		).Block(block...,
 		),
 		jen.Line(),

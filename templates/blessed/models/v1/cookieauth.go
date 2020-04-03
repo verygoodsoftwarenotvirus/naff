@@ -14,7 +14,7 @@ func cookieauthDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("CookieAuth represents what we encode in our authentication cookies"),
 		jen.Line(),
-		jen.Type().ID("CookieAuth").Struct(jen.ID("UserID").ID("uint64"), jen.ID("Admin").ID("bool"), jen.ID("Username").ID("string")),
+		jen.Type().ID("CookieAuth").Struct(jen.ID("UserID").Uint64(), jen.ID("Admin").Bool(), jen.ID("Username").String()),
 		jen.Line(),
 	)
 	return ret

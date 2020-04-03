@@ -19,7 +19,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetWebhook fetches a webhook from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 			jen.Error()).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetWebhook")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -27,7 +27,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
 			jen.Line(),
-			jen.ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+			jen.ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 				jen.Lit("webhook_id").MapAssign().ID("webhookID"),
 				jen.Lit("user_id").MapAssign().ID("userID"),
 			)).Dot("Debug").Call(jen.Lit("GetWebhook called")),
@@ -42,7 +42,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetWebhooks").Params(
 			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
+			jen.ID("userID").Uint64(),
 			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"), jen.Error()).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetWebhooks")),
@@ -61,7 +61,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetAllWebhooks fetches a list of webhooks from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllWebhooks").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"), jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllWebhooks").Params(utils.CtxParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"), jen.Error()).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetAllWebhooks")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -75,7 +75,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetAllWebhooksCount fetches the count of webhooks from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllWebhooksCount").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("count").ID("uint64"), jen.Err().ID("error")).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllWebhooksCount").Params(utils.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetAllWebhooksCount")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
@@ -124,14 +124,14 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ArchiveWebhook archives a webhook from the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).ID("uint64")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.Error()).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("ArchiveWebhook")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
 			jen.Line(),
-			jen.ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+			jen.ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 				jen.Lit("webhook_id").MapAssign().ID("webhookID"),
 				jen.Lit("user_id").MapAssign().ID("userID")),
 			).Dot("Debug").Call(jen.Lit("ArchiveWebhook called")),

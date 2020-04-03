@@ -12,7 +12,7 @@ func oauth2HandlerMockTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("oauth2Handler").Equals().Parens(jen.PointerTo().ID("mockOauth2Handler")).Call(jen.Nil()),
+		jen.Var().Underscore().ID("oauth2Handler").Equals().Parens(jen.PointerTo().ID("mockOauth2Handler")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -24,7 +24,7 @@ func oauth2HandlerMockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOauth2Handler")).ID("SetAllowGetAccessRequest").Params(jen.ID("allowed").ID("bool")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOauth2Handler")).ID("SetAllowGetAccessRequest").Params(jen.ID("allowed").Bool()).Block(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("allowed")),

@@ -18,12 +18,12 @@ func userTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("actual").Assign().ID("User").Valuesln(
-					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
+					jen.ID("Username").MapAssign().Lit("old_username"),
 					jen.ID("HashedPassword").MapAssign().Lit("hashed_pass"),
 					jen.ID("TwoFactorSecret").MapAssign().Lit("two factor secret"),
 				),
 				jen.ID("exampleInput").Assign().ID("User").Valuesln(
-					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
+					jen.ID("Username").MapAssign().Lit("new_username"),
 					jen.ID("HashedPassword").MapAssign().Lit("updated_hashed_pass"),
 					jen.ID("TwoFactorSecret").MapAssign().Lit("new fancy secret"),
 				),

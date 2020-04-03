@@ -11,22 +11,22 @@ func buildCORSHandlerDef() []jen.Code {
 		jen.Comment("Basic CORS, for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing"),
 		jen.ID("ch").Assign().Qual("github.com/go-chi/cors", "New").Call(jen.Qual("github.com/go-chi/cors", "Options").Valuesln(
 			jen.Comment(`AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts`),
-			jen.ID("AllowedOrigins").MapAssign().Index().ID("string").Values(jen.Lit("*")),
+			jen.ID("AllowedOrigins").MapAssign().Index().String().Values(jen.Lit("*")),
 			jen.Comment(`AllowOriginFunc:  func(r *http.Request, origin string) bool { return true }`),
-			jen.ID("AllowedMethods").MapAssign().Index().ID("string").Valuesln(
+			jen.ID("AllowedMethods").MapAssign().Index().String().Valuesln(
 				jen.Qual("net/http", "MethodGet"),
 				jen.Qual("net/http", "MethodPost"),
 				jen.Qual("net/http", "MethodPut"),
 				jen.Qual("net/http", "MethodDelete"),
 				jen.Qual("net/http", "MethodOptions"),
 			),
-			jen.ID("AllowedHeaders").MapAssign().Index().ID("string").Valuesln(
+			jen.ID("AllowedHeaders").MapAssign().Index().String().Valuesln(
 				jen.Lit("Accept"),
 				jen.Lit("Authorization"),
 				jen.Lit("Content-Provider"),
 				jen.Lit("X-CSRF-Token"),
 			),
-			jen.ID("ExposedHeaders").MapAssign().Index().ID("string").Values(jen.Lit("Link")),
+			jen.ID("ExposedHeaders").MapAssign().Index().String().Values(jen.Lit("Link")),
 			jen.ID("AllowCredentials").MapAssign().ID("true"),
 			jen.Comment("Maximum value not ignored by any of major browsers"),
 			jen.ID("MaxAge").MapAssign().Lit(300),

@@ -26,8 +26,8 @@ func metricsDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.ID("metricsProvider").ID("string"),
-			jen.ID("tracingProvider").ID("string"),
+			jen.ID("metricsProvider").String(),
+			jen.ID("tracingProvider").String(),
 		),
 		jen.Line(),
 	)
@@ -69,12 +69,12 @@ func metricsDotGo(proj *models.Project) *jen.File {
 			jen.ID("log").Dot("Debug").Call(jen.Lit("setting metrics provider")),
 			jen.Line(),
 			jen.Switch(jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")).Block(
-				jen.Case(jen.ID("Prometheus"), jen.ID("DefaultMetricsProvider")).Block(
+				jen.Case(jen.ID("Prometheus")).Block(
 					jen.List(jen.ID("p"), jen.Err()).Assign().Qual("contrib.go.opencensus.io/exporter/prometheus", "NewExporter").Call(jen.Qual("contrib.go.opencensus.io/exporter/prometheus", "Options").Valuesln(
-						jen.ID("OnError").MapAssign().Func().Params(jen.Err().ID("error")).Block(
+						jen.ID("OnError").MapAssign().Func().Params(jen.Err().Error()).Block(
 							jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("setting up prometheus export")),
 						),
-						jen.ID("Namespace").MapAssign().ID("string").Call(jen.ID("MetricsNamespace")),
+						jen.ID("Namespace").MapAssign().ID("MetricsNamespace"),
 					)),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to create Prometheus exporter: %w"), jen.Err())),
@@ -99,7 +99,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 			jen.ID("log").Dot("Info").Call(jen.Lit("setting tracing provider")),
 			jen.Line(),
 			jen.Switch(jen.ID("cfg").Dot("Metrics").Dot("TracingProvider")).Block(
-				jen.Case(jen.ID("Jaeger"), jen.ID("DefaultTracingProvider")).Block(
+				jen.Case(jen.ID("Jaeger")).Block(
 					jen.ID("ah").Assign().Qual("os", "Getenv").Call(jen.Lit("JAEGER_AGENT_HOST")),
 					jen.ID("ap").Assign().Qual("os", "Getenv").Call(jen.Lit("JAEGER_AGENT_PORT")),
 					jen.ID("sn").Assign().Qual("os", "Getenv").Call(jen.Lit("JAEGER_SERVICE_NAME")),

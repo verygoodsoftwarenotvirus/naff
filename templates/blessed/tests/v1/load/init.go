@@ -13,8 +13,8 @@ func initDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("debug").ID("bool"),
-			jen.ID("urlToUse").ID("string"),
+			jen.ID("debug").Bool(),
+			jen.ID("urlToUse").String(),
 			jen.ID("oa2Client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 		),
 		jen.Line(),

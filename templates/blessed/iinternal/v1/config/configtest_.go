@@ -44,8 +44,8 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.ID("expected").Assign().Lit("thisisatest"),
 				jen.Line(),
-				jen.List(jen.ID("_"), jen.Err()).Equals().ID("tf").Dot("Write").Call(
-					jen.Index().ID("byte").Call(
+				jen.List(jen.Underscore(), jen.Err()).Equals().ID("tf").Dot("Write").Call(
+					jen.Index().Byte().Call(
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit(`
 [server]
@@ -84,7 +84,7 @@ connection_details = "%s"
 				utils.AssertEqual(jen.ID("expectedConfig").Dot("Database").Dot("Debug"), jen.ID("cfg").Dot("Database").Dot("Debug"), nil),
 				utils.AssertEqual(jen.ID("expectedConfig").Dot("Database").Dot("ConnectionDetails"), jen.ID("cfg").Dot("Database").Dot("ConnectionDetails"), nil),
 				jen.Line(),
-				jen.Qual("os", "Remove").Call(jen.ID("tf").Dot("Name").Call()),
+				utils.AssertNoError(jen.Qual("os", "Remove").Call(jen.ID("tf").Dot("Name").Call()), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

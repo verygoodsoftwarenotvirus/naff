@@ -19,7 +19,7 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("_").Equals().ID("buildDefaultTransport").Call(),
+				jen.Underscore().Equals().ID("buildDefaultTransport").Call(),
 			),
 		),
 		jen.Line(),
@@ -42,7 +42,7 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNotNil(jen.ID("req"), nil),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.List(jen.ID("_"), jen.Err()).Equals().ID("transport").Dot("RoundTrip").Call(jen.ID("req")),
+				jen.List(jen.Underscore(), jen.Err()).Equals().ID("transport").Dot("RoundTrip").Call(jen.ID("req")),
 				utils.AssertNoError(jen.Err(), nil),
 			),
 		),
@@ -55,7 +55,7 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("_").Equals().ID("newDefaultRoundTripper").Call(),
+				jen.Underscore().Equals().ID("newDefaultRoundTripper").Call(),
 			),
 		),
 		jen.Line(),

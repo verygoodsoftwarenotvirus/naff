@@ -14,7 +14,7 @@ func serviceDataEventsDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ServiceDataEvent is a simple string alias"),
 		jen.Line(),
-		jen.Type().ID("ServiceDataEvent").ID("string"),
+		jen.Type().ID("ServiceDataEvent").String(),
 		jen.Line(),
 	)
 

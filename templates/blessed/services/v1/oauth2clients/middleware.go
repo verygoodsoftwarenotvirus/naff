@@ -89,7 +89,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("in the HTTP server's package instead"),
 		jen.Line(),
-		jen.Func().ID("determineScope").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("string")).Block(
+		jen.Func().ID("determineScope").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.String()).Block(
 			jen.If(jen.Qual("strings", "HasPrefix").Call(jen.ID("req").Dot("URL").Dot("Path"),
 				jen.ID("apiPathPrefix"))).Block(
 				jen.ID("x").Assign().Qual("strings", "TrimPrefix").Call(jen.ID("req").Dot("URL").Dot("Path"), jen.ID("apiPathPrefix")),
@@ -178,8 +178,8 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchOAuth2ClientIDFromRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("string")).Block(
-			jen.List(jen.ID("clientID"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.ID("clientIDKey")).Assert(jen.ID("string")),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchOAuth2ClientIDFromRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.String()).Block(
+			jen.List(jen.ID("clientID"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.ID("clientIDKey")).Assert(jen.String()),
 			jen.ID("_").Equals().ID("ok").Comment("we don't really care, but the linters do"),
 			jen.Return().ID("clientID"),
 		),

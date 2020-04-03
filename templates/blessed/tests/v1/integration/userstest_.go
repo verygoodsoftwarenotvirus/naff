@@ -15,8 +15,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("init").Params().Block(
 			utils.InlineFakeSeedFunc(),
 			jen.Line(),
-			jen.ID("b").Assign().ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
-			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),
@@ -28,10 +28,10 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
 		jen.Line(),
-		jen.Func().ID("randString").Params().Params(jen.ID("string"), jen.Error()).Block(
-			jen.ID("b").Assign().ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
+		jen.Func().ID("randString").Params().Params(jen.String(), jen.Error()).Block(
+			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.Comment("Note that err == nil only if we read len(b) bytes"),
-			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Lit(""), jen.Err()),
 			),
 			jen.Line(),
@@ -206,7 +206,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Create users"),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 					jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
-						jen.List(jen.ID("user"), jen.ID("_"), jen.ID("c")).Assign().ID("buildDummyUser").Call(jen.ID("t")),
+						jen.List(jen.ID("user"), jen.Underscore(), jen.ID("c")).Assign().ID("buildDummyUser").Call(jen.ID("t")),
 						utils.AssertNotNil(jen.ID("c"), nil),
 						jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.ID("user")),
 					),
@@ -217,7 +217,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertTrue(jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Users")), nil),
 					jen.Line(),
 					jen.Comment("Clean up"),
-					jen.For(jen.List(jen.ID("_"), jen.ID("user")).Assign().Range().ID("actual").Dot("Users")).Block(
+					jen.For(jen.List(jen.Underscore(), jen.ID("user")).Assign().Range().ID("actual").Dot("Users")).Block(
 						jen.Err().Equals().ID("todoClient").Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("user").Dot("ID")),
 						utils.AssertNoError(jen.Err(), nil),
 					),

@@ -7,7 +7,7 @@ import (
 )
 
 func spanAttachersDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("tracing")
+	ret := jen.NewFile(packageName)
 
 	utils.AddImports(proj, ret)
 

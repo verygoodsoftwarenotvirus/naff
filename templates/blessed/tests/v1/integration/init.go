@@ -21,7 +21,7 @@ func initDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("urlToUse").ID("string"),
+			jen.ID("urlToUse").String(),
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
 		),
 		jen.Line(),

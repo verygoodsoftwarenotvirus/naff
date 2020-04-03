@@ -26,8 +26,8 @@ func databaseDotGo(proj *models.Project) *jen.File {
 
 	buildInterfaceLines := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("Migrate").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.Error()),
-			jen.ID("IsReady").Params(utils.CtxVar().Qual("context", "Context")).Params(jen.ID("ready").ID("bool")),
+			jen.ID("Migrate").Params(utils.CtxParam()).Params(jen.Error()),
+			jen.ID("IsReady").Params(utils.CtxParam()).Params(jen.ID("ready").Bool()),
 			jen.Line(),
 		}
 
@@ -55,13 +55,13 @@ func databaseDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx} objects"),
 			jen.ID("Querier").Interface(
-				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("query").ID("string"), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
-				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("query").ID("string"), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.Error()),
-				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("query").ID("string"), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Row")),
+				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
+				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.Error()),
+				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Row")),
 			),
 			jen.Line(),
 			jen.Comment("ConnectionDetails is a string alias for dependency injection"),
-			jen.ID("ConnectionDetails").ID("string"),
+			jen.ID("ConnectionDetails").String(),
 			jen.Line(),
 			jen.Comment("Database describes anything that stores data for our services"),
 			jen.ID("Database").Interface(

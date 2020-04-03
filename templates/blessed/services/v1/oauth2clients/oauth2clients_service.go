@@ -13,7 +13,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
-			jen.ID("b").Assign().ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
+			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
@@ -27,8 +27,8 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("CreationMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("create_oauth2_client"),
 			jen.Line(),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit("oauth2_clients"),
-			jen.ID("counterDescription").ID("string").Equals().Lit("number of oauth2 clients managed by the oauth2 client service"),
-			jen.ID("serviceName").ID("string").Equals().Lit("oauth2_clients_service"),
+			jen.ID("counterDescription").String().Equals().Lit("number of oauth2 clients managed by the oauth2 client service"),
+			jen.ID("serviceName").String().Equals().Lit("oauth2_clients_service"),
 		),
 		jen.Line(),
 	)
@@ -44,7 +44,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Type().Defs(
 			jen.ID("oauth2Handler").Interface(
-				jen.ID("SetAllowGetAccessRequest").Params(jen.ID("bool")),
+				jen.ID("SetAllowGetAccessRequest").Params(jen.Bool()),
 				jen.ID("SetClientAuthorizedHandler").Params(jen.ID("handler").Qual("goproj.in/oauth2.v3/server", "ClientAuthorizedHandler")),
 				jen.ID("SetClientScopeHandler").Params(jen.ID("handler").Qual("goproj.in/oauth2.v3/server", "ClientScopeHandler")),
 				jen.ID("SetClientInfoHandler").Params(jen.ID("handler").Qual("goproj.in/oauth2.v3/server", "ClientInfoHandler")),
@@ -58,7 +58,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("ClientIDFetcher is a function for fetching client IDs out of requests"),
-			jen.ID("ClientIDFetcher").Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")),
+			jen.ID("ClientIDFetcher").Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
 			jen.Line(),
 			jen.Comment("Service manages our OAuth2 clients via HTTP"),
 			jen.ID("Service").Struct(
@@ -66,7 +66,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("database").Qual(proj.DatabaseV1Package(), "Database"),
 				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 				jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
-				jen.ID("urlClientIDExtractor").Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")),
+				jen.ID("urlClientIDExtractor").Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
 				jen.Line(),
 				jen.ID("tokenStore").Qual("goproj.in/oauth2.v3", "TokenStore"),
 				jen.ID("oauth2Handler").ID("oauth2Handler"),
@@ -93,7 +93,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("GetByID implements oauth2.ClientStorage"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("clientStore")).ID("GetByID").Params(jen.ID("id").ID("string")).Params(jen.Qual("goproj.in/oauth2.v3", "ClientInfo"), jen.Error()).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("clientStore")).ID("GetByID").Params(jen.ID("id").String()).Params(jen.Qual("goproj.in/oauth2.v3", "ClientInfo"), jen.Error()).Block(
 			jen.List(jen.ID("client"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.InlineCtx(), jen.ID("id")),
 			jen.Line(),
 			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(

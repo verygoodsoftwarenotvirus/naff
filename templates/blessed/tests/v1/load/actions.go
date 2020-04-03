@@ -28,7 +28,7 @@ func actionsDotGo(proj *models.Project) *jen.File {
 			jen.ID("Action").Struct(
 				jen.ID("Action").ID("actionFunc"),
 				jen.ID("Weight").ID("int"),
-				jen.ID("Name").ID("string"),
+				jen.ID("Name").String(),
 			),
 		),
 		jen.Line(),
@@ -37,7 +37,7 @@ func actionsDotGo(proj *models.Project) *jen.File {
 	buildRandomActionLines := func() []jen.Code {
 		lines := []jen.Code{
 			utils.CreateCtx(),
-			jen.ID("allActions").Assign().Map(jen.ID("string")).PointerTo().ID("Action").Valuesln(
+			jen.ID("allActions").Assign().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 				jen.Lit("GetHealthCheck").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("GetHealthCheck"),
 					jen.ID("Action").MapAssign().ID("c").Dot("BuildHealthCheckRequest"),

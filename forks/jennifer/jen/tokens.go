@@ -520,6 +520,28 @@ func (s *Statement) Dotf(name string, args ...interface{}) *Statement {
 	return s
 }
 
+// Underscore renders an identifier.
+func Underscore() *Statement {
+	return newStatement().Underscore()
+}
+
+// Underscore renders an identifier.
+func (g *Group) Underscore() *Statement {
+	s := Underscore()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Underscore renders an identifier.
+func (s *Statement) Underscore() *Statement {
+	t := token{
+		typ:     identifierToken,
+		content: "_",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // ID renders an identifier.
 func ID(name string) *Statement {
 	return newStatement().ID(name)

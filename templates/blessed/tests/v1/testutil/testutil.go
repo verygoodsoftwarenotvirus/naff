@@ -21,7 +21,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("DetermineServiceURL returns the URL, if properly configured"),
 		jen.Line(),
-		jen.Func().ID("DetermineServiceURL").Params().Params(jen.ID("string")).Block(
+		jen.Func().ID("DetermineServiceURL").Params().Params(jen.String()).Block(
 			jen.ID("ta").Assign().Qual("os", "Getenv").Call(jen.Lit("TARGET_ADDRESS")),
 			jen.If(jen.ID("ta").Op("==").Lit("")).Block(
 				jen.ID("panic").Call(jen.Lit("must provide target address!")),
@@ -40,7 +40,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("EnsureServerIsUp checks that a server is up and doesn't return until it's certain one way or the other"),
 		jen.Line(),
-		jen.Func().ID("EnsureServerIsUp").Params(jen.ID("address").ID("string")).Block(
+		jen.Func().ID("EnsureServerIsUp").Params(jen.ID("address").String()).Block(
 			jen.Var().Defs(
 				jen.ID("isDown").Equals().ID("true"),
 				jen.ID("interval").Equals().Qual("time", "Second"),
@@ -67,7 +67,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("IsUp can check if an instance of our server is alive"),
 		jen.Line(),
-		jen.Func().ID("IsUp").Params(jen.ID("address").ID("string")).Params(jen.ID("bool")).Block(
+		jen.Func().ID("IsUp").Params(jen.ID("address").String()).Params(jen.Bool()).Block(
 			jen.ID("uri").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%s/_meta_/ready"), jen.ID("address")),
 			jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.ID("uri"), jen.Nil()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -91,7 +91,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("CreateObligatoryUser creates a user for the sake of having an OAuth2 client"),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").ID("string"), jen.ID("debug").ID("bool")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
+		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").String(), jen.ID("debug").Bool()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
 		), jen.Error()).Block(
 			jen.List(jen.ID("tu"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
@@ -137,7 +137,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildURL").Params(jen.ID("address").ID("string"), jen.ID("parts").Op("...").ID("string")).Params(jen.ID("string")).Block(
+		jen.Func().ID("buildURL").Params(jen.ID("address").String(), jen.ID("parts").Op("...").String()).Params(jen.String()).Block(
 			jen.List(jen.ID("tu"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
@@ -154,7 +154,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(),
+		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
 		)).Params(jen.ParamPointer().Qual("net/http", "Cookie"), jen.Error()).Block(
 			jen.ID("uri").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("users"), jen.Lit("login")),
@@ -205,7 +205,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests"),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").ID("string"), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
+		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
 			jen.ID("firstOAuth2ClientURI").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("oauth2"), jen.Lit("client")),
 			jen.Line(),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Callln(
@@ -270,7 +270,7 @@ cookie problems!
 			jen.Line(),
 			jen.List(jen.ID("bdump"), jen.Err()).Assign().ID("httputil").Dot("DumpResponse").Call(jen.ID("res"), jen.ID("true")),
 			jen.If(jen.Err().Op("==").ID("nil").Op("&&").ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
-				jen.Qual("log", "Println").Call(jen.ID("string").Call(jen.ID("bdump"))),
+				jen.Qual("log", "Println").Call(jen.String().Call(jen.ID("bdump"))),
 			),
 			jen.Line(),
 			jen.Return().List(jen.VarPointer().ID("o"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.VarPointer().ID("o"))),

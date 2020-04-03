@@ -68,12 +68,18 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("HashPassword takes a password and hashes it using bcrypt"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("HashPassword").Params(jen.ID("c").Qual("context", "Context"), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.Error()).Block(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("c"), jen.Lit("HashPassword")),
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("HashPassword").Params(
+			utils.CtxParam(),
+			jen.ID("password").String(),
+		).Params(jen.String(), jen.Error()).Block(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(
+				utils.CtxVar(),
+				jen.Lit("HashPassword"),
+			),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.List(jen.ID("hashedPass"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "GenerateFromPassword").Call(jen.Index().ID("byte").Call(jen.ID("password")), jen.ID("int").Call(jen.ID("b").Dot("hashCost"))),
-			jen.Return().List(jen.ID("string").Call(jen.ID("hashedPass")), jen.Err()),
+			jen.List(jen.ID("hashedPass"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "GenerateFromPassword").Call(jen.Index().Byte().Call(jen.ID("password")), jen.ID("int").Call(jen.ID("b").Dot("hashCost"))),
+			jen.Return().List(jen.String().Call(jen.ID("hashedPass")), jen.Err()),
 		),
 		jen.Line(),
 	)
@@ -92,18 +98,18 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.Listln(jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 				jen.ID("twoFactorSecret"),
-				jen.ID("twoFactorCode")).ID("string"),
-			jen.ID("salt").Index().ID("byte"),
-		).Params(jen.ID("passwordMatches").ID("bool"), jen.Err().ID("error")).Block(
+				jen.ID("twoFactorCode")).String(),
+			jen.ID("_").Index().Byte(),
+		).Params(jen.ID("passwordMatches").Bool(), jen.Err().Error()).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("ValidateLogin")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.ID("passwordMatches").Equals().ID("b").Dot("PasswordMatches").Call(utils.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),
-			jen.ID("tooWeak").Assign().ID("b").Dot("hashedPasswordIsTooWeak").Call(jen.ID("hashedPassword")),
+			jen.ID("tooWeak").Assign().ID("b").Dot("hashedPasswordIsTooWeak").Call(utils.CtxVar(), jen.ID("hashedPassword")),
 			jen.Line(),
 			jen.If(jen.Op("!").Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("twoFactorCode"), jen.ID("twoFactorSecret"))).Block(
 				jen.ID("b").Dot("logger").Dot("WithValues").Call(
-					jen.Map(jen.ID("string")).Interface().Valuesln(
+					jen.Map(jen.String()).Interface().Valuesln(
 						jen.Lit("password_matches").MapAssign().ID("passwordMatches"),
 						jen.Lit("2fa_secret").MapAssign().ID("twoFactorSecret"),
 						jen.Lit("provided_code").MapAssign().ID("twoFactorCode"),
@@ -128,8 +134,9 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("PasswordMatches validates whether or not a bcrypt-hashed password matches a provided password"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("_").Index().ID("byte")).Params(jen.ID("bool")).Block(
-			jen.Return().Qual("golang.org/x/crypto/bcrypt", "CompareHashAndPassword").Call(jen.Index().ID("byte").Call(jen.ID("hashedPassword")), jen.Index().ID("byte").Call(jen.ID("providedPassword"))).Op("==").ID("nil"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.ID("_").Index().Byte()).Params(jen.Bool()).Block(
+			utils.StartSpan(proj, false, "PasswordMatches"),
+			jen.Return().Qual("golang.org/x/crypto/bcrypt", "CompareHashAndPassword").Call(jen.Index().Byte().Call(jen.ID("hashedPassword")), jen.Index().Byte().Call(jen.ID("providedPassword"))).Op("==").ID("nil"),
 		),
 		jen.Line(),
 	)
@@ -137,8 +144,14 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("hashedPasswordIsTooWeak determines if a given hashed password was hashed with too weak a bcrypt cost"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("hashedPasswordIsTooWeak").Params(jen.ID("hashedPassword").ID("string")).Params(jen.ID("bool")).Block(
-			jen.List(jen.ID("cost"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "Cost").Call(jen.Index().ID("byte").Call(jen.ID("hashedPassword"))),
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("hashedPasswordIsTooWeak").Params(
+			utils.CtxParam(),
+			jen.ID("hashedPassword").String(),
+		).Params(
+			jen.Bool(),
+		).Block(
+			utils.StartSpan(proj, false, "hashedPasswordIsTooWeak"),
+			jen.List(jen.ID("cost"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "Cost").Call(jen.Index().Byte().Call(jen.ID("hashedPassword"))),
 			jen.Line(),
 			jen.Return().ID("err").DoesNotEqual().ID("nil").Op("||").ID("uint").Call(jen.ID("cost")).Op("<").ID("b").Dot("hashCost"),
 		),
@@ -148,7 +161,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("PasswordIsAcceptable takes a password and returns whether or not it satisfies the authenticator"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordIsAcceptable").Params(jen.ID("pass").ID("string")).Params(jen.ID("bool")).Block(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordIsAcceptable").Params(jen.ID("pass").String()).Params(jen.Bool()).Block(
 			jen.Return().ID("uint").Call(jen.ID("len").Call(jen.ID("pass"))).Op(">=").ID("b").Dot("minimumPasswordSize"),
 		),
 		jen.Line(),

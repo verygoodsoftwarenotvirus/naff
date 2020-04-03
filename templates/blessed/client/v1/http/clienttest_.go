@@ -14,7 +14,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Const().Defs(
 			jen.ID("exampleURI").Equals().Lit("https://todo.verygoodsoftwarenotvirus.ru"),
-			jen.ID("asciiControlChar").Equals().ID("string").Call(jen.ID("byte").Call(jen.Lit(0x7f))),
+			jen.ID("asciiControlChar").Equals().String().Call(jen.Byte().Call(jen.Lit(0x7f))),
 		),
 	)
 
@@ -22,10 +22,10 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Type().Defs(
 			jen.ID("argleBargle").Struct(
-				jen.ID("Name").ID("string"),
+				jen.ID("Name").String(),
 			),
 			jen.Line(),
-			jen.ID("valuer").Map(jen.ID("string")).Index().ID("string"),
+			jen.ID("valuer").Map(jen.String()).Index().String(),
 		),
 		jen.Line(),
 	)
@@ -86,7 +86,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 func buildMustParseURL() []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("mustParseURL").Params(
-			jen.ID("uri").ID("string"),
+			jen.ID("uri").String(),
 		).Params(
 			jen.ParamPointer().Qual("net/url", "URL"),
 		).Block(
@@ -241,7 +241,7 @@ func buildTestV1Client_TokenSource() []jen.Code {
 					),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("ts").Dot("Client").Call(),
-					jen.Index().ID("string").Values(jen.Lit("*")),
+					jen.Index().String().Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
 				utils.RequireNoError(jen.Err(), nil),
@@ -277,7 +277,7 @@ func buildTestNewClient() []jen.Code {
 					),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("ts").Dot("Client").Call(),
-					jen.Index().ID("string").Values(jen.Lit("*")),
+					jen.Index().String().Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
 				jen.Line(),
@@ -302,7 +302,7 @@ func buildTestNewClient() []jen.Code {
 					jen.VarPointer().Qual("net/http", "Client").Valuesln(
 						jen.ID("Timeout").MapAssign().Lit(0),
 					),
-					jen.Index().ID("string").Values(jen.Lit("*")),
+					jen.Index().String().Values(jen.Lit("*")),
 					jen.ID("true"),
 				),
 				jen.Line(),
@@ -398,7 +398,7 @@ func buildTestBuildURL() []jen.Code {
 				jen.Line(),
 				jen.List(
 					jen.ID("u"),
-					jen.ID("_"),
+					jen.Underscore(),
 				).Assign().Qual("net/url", "Parse").Call(
 					jen.ID("exampleURI"),
 				),
@@ -412,37 +412,37 @@ func buildTestBuildURL() []jen.Code {
 					jen.ID("u"),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Nil(),
-					jen.Index().ID("string").Values(jen.Lit("*")),
+					jen.Index().String().Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("testCases").Assign().Index().Struct(
-					jen.ID("expectation").ID("string"),
-					jen.ID("inputParts").Index().ID("string"),
+					jen.ID("expectation").String(),
+					jen.ID("inputParts").Index().String(),
 					jen.ID("inputQuery").ID("valuer"),
 				).Valuesln(
 					jen.Valuesln(
 						jen.ID("expectation").MapAssign().Lit("https://todo.verygoodsoftwarenotvirus.ru/api/v1/things"),
-						jen.ID("inputParts").MapAssign().Index().ID("string").Values(jen.Lit("things")),
+						jen.ID("inputParts").MapAssign().Index().String().Values(jen.Lit("things")),
 					),
 					jen.Valuesln(
 						jen.ID("expectation").MapAssign().Lit("https://todo.verygoodsoftwarenotvirus.ru/api/v1/stuff?key=value"),
-						jen.ID("inputQuery").MapAssign().Map(jen.ID("string")).Index().ID("string").Values(
+						jen.ID("inputQuery").MapAssign().Map(jen.String()).Index().String().Values(
 							jen.Lit("key").MapAssign().Values(jen.Lit("value")),
 						),
-						jen.ID("inputParts").MapAssign().Index().ID("string").Values(jen.Lit("stuff")),
+						jen.ID("inputParts").MapAssign().Index().String().Values(jen.Lit("stuff")),
 					),
 					jen.Valuesln(
 						jen.ID("expectation").MapAssign().Lit("https://todo.verygoodsoftwarenotvirus.ru/api/v1/things/and/stuff?key=value1&key=value2&yek=eulav"),
-						jen.ID("inputQuery").MapAssign().Map(jen.ID("string")).Index().ID("string").Valuesln(
+						jen.ID("inputQuery").MapAssign().Map(jen.String()).Index().String().Valuesln(
 							jen.Lit("key").MapAssign().Values(
 								jen.Lit("value1"),
 								jen.Lit("value2"),
 							),
 							jen.Lit("yek").MapAssign().Values(jen.Lit("eulav")),
 						),
-						jen.ID("inputParts").MapAssign().Index().ID("string").Values(jen.Lit("things"),
+						jen.ID("inputParts").MapAssign().Index().String().Values(jen.Lit("things"),
 							jen.Lit("and"),
 							jen.Lit("stuff"),
 						),
@@ -450,7 +450,7 @@ func buildTestBuildURL() []jen.Code {
 				),
 				jen.Line(),
 				jen.For(jen.List(
-					jen.ID("_"),
+					jen.Underscore(),
 					jen.ID("tc"),
 				).Assign().Range().ID("testCases"),
 				).Block(
@@ -501,7 +501,7 @@ func buildTestBuildVersionlessURL() []jen.Code {
 				jen.Line(),
 				jen.List(
 					jen.ID("u"),
-					jen.ID("_"),
+					jen.Underscore(),
 				).Assign().Qual("net/url", "Parse").Call(
 					jen.ID("exampleURI"),
 				),
@@ -515,37 +515,37 @@ func buildTestBuildVersionlessURL() []jen.Code {
 					jen.ID("u"),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Nil(),
-					jen.Index().ID("string").Values(jen.Lit("*")),
+					jen.Index().String().Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("testCases").Assign().Index().Struct(
-					jen.ID("expectation").ID("string"),
-					jen.ID("inputParts").Index().ID("string"),
+					jen.ID("expectation").String(),
+					jen.ID("inputParts").Index().String(),
 					jen.ID("inputQuery").ID("valuer"),
 				).Valuesln(
 					jen.Valuesln(
 						jen.ID("expectation").MapAssign().Lit("https://todo.verygoodsoftwarenotvirus.ru/things"),
-						jen.ID("inputParts").MapAssign().Index().ID("string").Values(jen.Lit("things")),
+						jen.ID("inputParts").MapAssign().Index().String().Values(jen.Lit("things")),
 					),
 					jen.Valuesln(
 						jen.ID("expectation").MapAssign().Lit("https://todo.verygoodsoftwarenotvirus.ru/stuff?key=value"),
-						jen.ID("inputQuery").MapAssign().Map(jen.ID("string")).Index().ID("string").Values(
+						jen.ID("inputQuery").MapAssign().Map(jen.String()).Index().String().Values(
 							jen.Lit("key").MapAssign().Values(jen.Lit("value")),
 						),
-						jen.ID("inputParts").MapAssign().Index().ID("string").Values(jen.Lit("stuff")),
+						jen.ID("inputParts").MapAssign().Index().String().Values(jen.Lit("stuff")),
 					),
 					jen.Valuesln(
 						jen.ID("expectation").MapAssign().Lit("https://todo.verygoodsoftwarenotvirus.ru/things/and/stuff?key=value1&key=value2&yek=eulav"),
-						jen.ID("inputQuery").MapAssign().Map(jen.ID("string")).Index().ID("string").Valuesln(
+						jen.ID("inputQuery").MapAssign().Map(jen.String()).Index().String().Valuesln(
 							jen.Lit("key").MapAssign().Values(
 								jen.Lit("value1"),
 								jen.Lit("value2"),
 							),
 							jen.Lit("yek").MapAssign().Values(jen.Lit("eulav")),
 						),
-						jen.ID("inputParts").MapAssign().Index().ID("string").Values(jen.Lit("things"),
+						jen.ID("inputParts").MapAssign().Index().String().Values(jen.Lit("things"),
 							jen.Lit("and"),
 							jen.Lit("stuff"),
 						),
@@ -553,7 +553,7 @@ func buildTestBuildVersionlessURL() []jen.Code {
 				),
 				jen.Line(),
 				jen.For(jen.List(
-					jen.ID("_"),
+					jen.Underscore(),
 					jen.ID("tc"),
 				).Assign().Range().ID("testCases"),
 				).Block(
@@ -598,7 +598,7 @@ func buildTestV1Client_BuildWebsocketURL() []jen.Code {
 				"happy path",
 				jen.List(
 					jen.ID("u"),
-					jen.ID("_"),
+					jen.Underscore(),
 				).Assign().Qual("net/url", "Parse").Call(
 					jen.ID("exampleURI"),
 				),
@@ -612,7 +612,7 @@ func buildTestV1Client_BuildWebsocketURL() []jen.Code {
 					jen.ID("u"),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Nil(),
-					jen.Index().ID("string").Values(jen.Lit("*")),
+					jen.Index().String().Values(jen.Lit("*")),
 					jen.ID("false"),
 				),
 				utils.RequireNoError(jen.Err(), nil),

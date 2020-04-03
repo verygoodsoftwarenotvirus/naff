@@ -26,7 +26,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("auth").Assign().VarPointer().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 			jen.ID("userDB").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
 			jen.ID("oauth").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
-			jen.ID("userIDFetcher").Assign().Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).Block(
+			jen.ID("userIDFetcher").Assign().Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 				jen.Return().Add(utils.FakeUint64Func()),
 			),
 			jen.ID("ed").Assign().Qual(proj.InternalEncodingV1Package(), "ProvideResponseEncoder").Call(),

@@ -30,7 +30,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
 			jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 				jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
-				jen.ID("description").ID("string"),
+				jen.ID("description").String(),
 			).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).SingleLineBlock(
 				jen.Return().List(jen.ID("uc"), jen.Nil()),
 			),
@@ -41,7 +41,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID("mockDB"),
 				jen.VarPointer().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
+				jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0)),
 				jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ucp"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil()),
 			),
@@ -71,7 +71,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
-					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error(),
 				).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
@@ -82,7 +82,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(proj.InternalConfigV1Package(), "AuthSettings").Values(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"), jen.VarPointer().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
+					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0)),
 					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 					jen.Nil(),
@@ -106,7 +106,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
-					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error()).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
 				),
@@ -136,7 +136,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
-					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error(),
 				).Block(
 					jen.Return().List(jen.ID("uc"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -148,7 +148,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"),
 					jen.VarPointer().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
+					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0)),
 					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.Nil(),
 				),
 				utils.AssertError(jen.Err(), nil),
@@ -168,7 +168,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
-					jen.ID("description").ID("string")).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error(),
 				).Block(
 					jen.Return().List(jen.ID("uc"), jen.Nil()),
@@ -180,7 +180,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"),
 					jen.VarPointer().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
+					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0)),
 					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.Nil(),
 				),
 				jen.Line(),

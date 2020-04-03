@@ -13,7 +13,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().ID("example").Struct(
-			jen.ID("Name").ID("string").Tag(map[string]string{"json": "name", "xml": "name"}),
+			jen.ID("Name").String().Tag(map[string]string{"json": "name", "xml": "name"}),
 		),
 		jen.Line(),
 	)

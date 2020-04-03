@@ -32,7 +32,7 @@ func buildParamsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj *models.
 		if call {
 			params = append(params, listParams...)
 		} else {
-			params = append(params, jen.List(listParams...).ID("uint64"))
+			params = append(params, jen.List(listParams...).Uint64())
 		}
 	}
 
@@ -204,7 +204,7 @@ func buildRandomActionMap(proj *models.Project, typ models.DataType) []jen.Code 
 	pn := typ.Name.Plural()
 
 	blockLines := []jen.Code{
-		jen.Return().Map(jen.ID("string")).PointerTo().ID("Action").Valuesln(
+		jen.Return().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 			jen.Litf("Create%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Create%s", sn),
 				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
@@ -244,7 +244,7 @@ func buildRandomActionMap(proj *models.Project, typ models.DataType) []jen.Code 
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.ID("string")).PointerTo().ID("Action")).Block(blockLines...),
+		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Block(blockLines...),
 		jen.Line(),
 	}
 }

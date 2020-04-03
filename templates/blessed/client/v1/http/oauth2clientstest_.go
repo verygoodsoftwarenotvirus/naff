@@ -91,7 +91,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 						jen.Qual("strings", "HasSuffix").Call(
 							jen.ID("req").Dot("URL").Dot("String").Call(),
 							jen.Qual("strconv", "Itoa").Call(
-								jen.ID("int").Call(
+								jen.Int().Call(
 									jen.ID("exampleOAuth2Client").Dot("ID"),
 								),
 							),
@@ -395,7 +395,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 								jen.Qual("net/http", "MethodPost"),
 								nil,
 							),
-							jen.List(jen.ID("_"), jen.Err()).Assign().ID("res").Dot("Write").Call(jen.Index().Byte().Call(jen.Lit("BLAH"))),
+							jen.List(jen.Underscore(), jen.Err()).Assign().ID("res").Dot("Write").Call(jen.Index().Byte().Call(jen.Lit("BLAH"))),
 							utils.AssertNoError(jen.Err(), nil),
 						),
 					),
@@ -417,7 +417,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
-				jen.List(jen.ID("_"), jen.Err()).Assign().ID("c").Dot("CreateOAuth2Client").Call(
+				jen.List(jen.Underscore(), jen.Err()).Assign().ID("c").Dot("CreateOAuth2Client").Call(
 					utils.CtxVar(),
 					jen.Nil(),
 					jen.Nil(),

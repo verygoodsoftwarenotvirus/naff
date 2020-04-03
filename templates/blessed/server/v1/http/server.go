@@ -23,7 +23,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 	makeServerStructDeclLines := func() []jen.Code {
 
 		lines := []jen.Code{
-			jen.ID("DebugMode").ID("bool"),
+			jen.ID("DebugMode").Bool(),
 			jen.Line(),
 			jen.Comment("Services"),
 			jen.ID("authService").PointerTo().Qual(proj.ServiceV1AuthPackage(), "Service"),

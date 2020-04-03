@@ -16,8 +16,8 @@ func helpersDotGo(proj *models.Project) *jen.File {
 	ret.Add(utils.Comments("argIsNotPointer checks an argument and returns whether or not it is a pointer")...)
 	ret.Add(
 		jen.Func().ID("argIsNotPointer").Params(jen.ID("i").Interface()).Params(
-			jen.ID("notAPointer").ID("bool"),
-			jen.Err().ID("error"),
+			jen.ID("notAPointer").Bool(),
+			jen.Err().Error(),
 		).Block(
 			jen.If(
 				jen.ID("i").Op("==").ID("nil").
@@ -40,8 +40,8 @@ func helpersDotGo(proj *models.Project) *jen.File {
 	ret.Add(utils.Comments("argIsNotNil checks an argument and returns whether or not it is nil")...)
 	ret.Add(
 		jen.Func().ID("argIsNotNil").Params(jen.ID("i").Interface()).Params(
-			jen.ID("isNil").ID("bool"),
-			jen.Err().ID("error"),
+			jen.ID("isNil").Bool(),
+			jen.Err().Error(),
 		).Block(
 			jen.If(jen.ID("i").Op("==").ID("nil")).Block(
 				jen.Return().List(

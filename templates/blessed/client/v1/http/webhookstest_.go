@@ -79,7 +79,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual("strings", "HasSuffix").Call(
 							jen.ID("req").Dot("URL").Dot("String").Call(),
 							jen.Qual("strconv", "Itoa").Call(
-								jen.ID("int").Call(
+								jen.Int().Call(
 									jen.ID("exampleWebhook").Dot("ID"),
 								),
 							),

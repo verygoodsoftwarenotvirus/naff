@@ -249,6 +249,11 @@ func OuterTestFunc(subjectName string) *jen.Statement {
 	return jen.Func().ID(fmt.Sprintf("Test%s", subjectName)).Params(jen.ID(T).Op("*").Qual("testing", T))
 }
 
+// QueryFilterParam does
+func QueryFilterParam() jen.Code {
+	return jen.ID(FilterVarName).PointerTo().ID("QueryFilter")
+}
+
 const SpanVarName = "span"
 
 func StartSpan(proj *models.Project, saveCtx bool, spanName string) jen.Code {

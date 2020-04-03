@@ -6,10 +6,13 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+const packageName = "tracing"
+
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
 		"internal/v1/tracing/doc.go":            docDotGo(),
+		"internal/v1/tracing/spans.go":          spansDotGo(proj),
 		"internal/v1/tracing/span_attachers.go": spanAttachersDotGo(proj),
 	}
 

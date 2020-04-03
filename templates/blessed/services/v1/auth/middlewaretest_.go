@@ -351,7 +351,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("TOTPToken").MapAssign().Lit("123456"),
 				),
 				jen.Line(),
-				jen.ID("req").Dot("Form").Equals().Map(jen.ID("string")).Index().ID("string").Valuesln(
+				jen.ID("req").Dot("Form").Equals().Map(jen.String()).Index().String().Valuesln(
 					jen.ID("UsernameFormKey").MapAssign().Values(jen.ID("expected").Dot("Username")),
 					jen.ID("PasswordFormKey").MapAssign().Values(jen.ID("expected").Dot("Password")),
 					jen.ID("TOTPTokenFormKey").MapAssign().Values(jen.ID("expected").Dot("TOTPToken")),

@@ -434,7 +434,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Line(),
 		jen.Comment("Clean up"),
-		jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Assign().Range().ID("actual").Dot(pn)).Block(
+		jen.For(jen.List(jen.Underscore(), jen.IDf("created%s", sn)).Assign().Range().ID("actual").Dot(pn)).Block(
 			jen.Err().Equals().ID("todoClient").Dotf("Archive%s", sn).Call(
 				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 			),
@@ -597,7 +597,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *m
 
 	lines = append(lines,
 		jen.Commentf("Attempt to fetch nonexistent %s", scn),
-		jen.List(jen.ID("_"), jen.Err()).Op(func() string {
+		jen.List(jen.Underscore(), jen.Err()).Op(func() string {
 			if typ.BelongsToStruct == nil {
 				return ":="
 			} else {

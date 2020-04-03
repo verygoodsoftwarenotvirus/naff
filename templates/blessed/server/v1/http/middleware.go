@@ -19,7 +19,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("formatSpanNameForRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("string")).Block(
+		jen.Func().ID("formatSpanNameForRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.String()).Block(
 			jen.Return().Qual("fmt", "Sprintf").Callln(
 				jen.Lit("%s %s"),
 				jen.ID("req").Dot("Method"),
@@ -37,7 +37,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 				jen.ID("start").Assign().Qual("time", "Now").Call(),
 				jen.ID("next").Dot("ServeHTTP").Call(jen.ID("ww"), jen.ID("req")),
 				jen.Line(),
-				jen.ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
+				jen.ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 					jen.Lit("status").MapAssign().ID("ww").Dot("Status").Call(),
 					jen.Lit("bytes_written").MapAssign().ID("ww").Dot("BytesWritten").Call(),
 					jen.Lit("elapsed").MapAssign().Qual("time", "Since").Call(jen.ID("start")),
