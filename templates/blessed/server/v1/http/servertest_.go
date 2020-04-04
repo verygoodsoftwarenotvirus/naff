@@ -49,6 +49,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("s").Assign().VarPointer().ID("Server").Valuesln(
 				buildServerLines()...,
 			),
+			jen.Line(),
 			jen.Return().ID("s"),
 		),
 		jen.Line(),
@@ -94,7 +95,9 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
+				jen.Line(),
 				jen.ID("exampleWebhookList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookList").Call(),
+				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
@@ -114,7 +117,9 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with invalid cookie secret",
+				jen.Line(),
 				jen.ID("exampleWebhookList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookList").Call(),
+				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
@@ -134,6 +139,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with error fetching webhooks",
+				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),

@@ -240,7 +240,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("getLoginCookie").Call(jen.ID("serviceURL"), jen.ID("u")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Op("||").ID("cookie").Op("==").ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("cookie").Op("==").ID("nil")).Block(
 				jen.Qual("log", "Fatalf").Call(jen.Lit(`
 cookie problems!
 	cookie == nil: %v

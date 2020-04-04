@@ -16,7 +16,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("fetchRandomWebhook").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
 			jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("c").Dot("GetWebhooks").Call(utils.InlineCtx(), jen.Nil()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Op("||").ID("webhooks").Op("==").ID("nil").Op("||").ID("len").Call(jen.ID("webhooks").Dot("Webhooks")).Op("==").Lit(0)).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("webhooks").Op("==").ID("nil").Or().ID("len").Call(jen.ID("webhooks").Dot("Webhooks")).Op("==").Lit(0)).Block(
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),

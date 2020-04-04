@@ -29,7 +29,7 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
 		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Error()).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("req")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("req")),
 			jen.Return().List(
 				jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")),
 				jen.ID("args").Dot("Error").Call(jen.Lit(1)),

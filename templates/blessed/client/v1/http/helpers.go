@@ -66,12 +66,12 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("argIsNotPointerOrNil").Params(jen.ID("i").Interface()).Params(jen.Error()).Block(
 			jen.If(
 				jen.List(jen.ID("nn"), jen.Err()).Assign().ID("argIsNotNil").Call(jen.ID("i")),
-				jen.ID("nn").Op("||").ID("err").DoesNotEqual().ID("nil"),
+				jen.ID("nn").Or().ID("err").DoesNotEqual().ID("nil"),
 			).Block(jen.Return().ID("err")),
 			jen.Line(),
 			jen.If(
 				jen.List(jen.ID("np"), jen.Err()).Assign().ID("argIsNotPointer").Call(jen.ID("i")),
-				jen.ID("np").Op("||").ID("err").DoesNotEqual().ID("nil"),
+				jen.ID("np").Or().ID("err").DoesNotEqual().ID("nil"),
 			).Block(jen.Return().ID("err")),
 			jen.Line(),
 			jen.Return().ID("nil"),

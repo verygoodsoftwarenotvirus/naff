@@ -131,7 +131,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -163,7 +163,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -196,7 +196,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -232,7 +232,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 		),
@@ -315,7 +315,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusCreated"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusCreated"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -340,7 +340,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -379,7 +379,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -426,7 +426,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusCreated"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusCreated"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 		),
@@ -488,7 +488,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -523,7 +523,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -559,7 +559,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -598,7 +598,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 		),
 		jen.Line(),
@@ -690,7 +690,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -709,7 +709,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -749,7 +749,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -788,7 +788,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -842,7 +842,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -896,7 +896,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 		),
 		jen.Line(),
@@ -968,7 +968,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNoContent"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusNoContent"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -1003,7 +1003,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -1037,7 +1037,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 		),

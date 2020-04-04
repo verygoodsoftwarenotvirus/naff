@@ -27,7 +27,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("parse our config file"),
 			jen.List(jen.ID("cfg"), jen.Err()).Assign().Qual(internalConfigImp, "ParseConfigFile").Call(jen.ID("configFilepath")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Op("||").ID("cfg").Op("==").ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("cfg").Op("==").ID("nil")).Block(
 				jen.ID("logger").Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),

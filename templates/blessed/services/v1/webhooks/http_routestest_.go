@@ -55,7 +55,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -89,7 +89,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -124,7 +124,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -162,7 +162,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ListHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 		),
 		jen.Line(),
@@ -254,7 +254,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusCreated"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusCreated"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -302,7 +302,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -328,7 +328,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -372,7 +372,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -420,7 +420,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusCreated"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusCreated"), jen.ID("res").Dot("Code"), nil),
 			),
 		),
 		jen.Line(),
@@ -468,7 +468,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -503,7 +503,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -537,7 +537,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -576,7 +576,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ReadHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 		),
 		jen.Line(),
@@ -641,7 +641,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -658,7 +658,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusBadRequest"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -702,7 +702,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -746,7 +746,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -804,7 +804,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -861,7 +861,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusOK"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
 		),
 		jen.Line(),
@@ -915,7 +915,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNoContent"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusNoContent"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -954,7 +954,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusNotFound"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID("res").Dot("Code"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -993,7 +993,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID("res"), jen.ID("req")),
-				utils.AssertEqual(jen.ID("res").Dot("Code"), jen.Qual("net/http", "StatusInternalServerError"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
 		),
 		jen.Line(),

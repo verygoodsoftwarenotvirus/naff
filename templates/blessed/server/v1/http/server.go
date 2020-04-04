@@ -204,8 +204,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment(`
-func (s *Server) logRoutes() {
+		jen.Comment(`func (s *Server) logRoutes() {
 	if err := chi.Walk(s.router, func(method string, route string, _ http.Handler, _ ...func(http.Handler) http.Handler) error {
 		s.logger.WithValues(map[string]interface{}{
 			"method": method,

@@ -106,15 +106,12 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.List(jen.ID("loginData"), jen.ID("errRes")).Assign().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
-				jen.If(jen.ID("errRes").DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.ID("errRes").DoesNotEqual().ID("nil").Or().ID("loginData").Op("==").Nil()).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("errRes"), jen.Lit("error encountered fetching login data from request")),
 					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("errRes")), jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 					),
-					jen.Return(),
-				).Else().If(jen.ID("loginData").Op("==").ID("nil")).Block(
-					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),
 				),
 				jen.Line(),
@@ -260,8 +257,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.Comment("alias the relevant data"),
-			jen.ID("user").Assign().ID("loginInfo").Dot("user"),
-			jen.ID("loginInput").Assign().ID("loginInfo").Dot("loginInput"),
+			jen.List(jen.ID("user"), jen.ID("loginInput")).Assign().List(jen.ID("loginInfo").Dot("user"), jen.ID("loginInfo").Dot("loginInput")),
 			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("username"), jen.ID("user").Dot("Username")),
 			jen.Line(),
 			jen.Comment("check for login validity"),
@@ -289,12 +285,14 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.If(jen.ID("updateErr").Assign().ID("s").Dot("userDB").Dot("UpdateUser").Call(utils.CtxVar(), jen.ID("user")), jen.ID("updateErr").DoesNotEqual().ID("nil")).Block(
 					jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("saving updated password hash: %w"), jen.ID("updateErr"))),
 				),
+				jen.Line(),
+				jen.Return().List(jen.ID("loginValid"), jen.Nil()),
 			).Else().If(jen.Err().DoesNotEqual().ID("nil").Op("&&").ID("err").DoesNotEqual().Qual(proj.InternalAuthV1Package(), "ErrPasswordHashTooWeak")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("issue validating login")),
 				jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("validating login: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("loginValid"), jen.Nil()),
+			jen.Return().List(jen.ID("loginValid"), jen.Err()),
 		),
 		jen.Line(),
 	)

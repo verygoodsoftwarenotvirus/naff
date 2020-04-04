@@ -25,7 +25,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideDatabase").Params(utils.CtxParam(), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.Error()).Block(
 			jen.Var().Defs(
-				jen.ID("debug").Equals().ID("cfg").Dot("Database").Dot("Debug").Op("||").ID("cfg").Dot("Meta").Dot("Debug"),
+				jen.ID("debug").Equals().ID("cfg").Dot("Database").Dot("Debug").Or().ID("cfg").Dot("Meta").Dot("Debug"),
 				jen.ID("connectionDetails").Equals().ID("cfg").Dot("Database").Dot("ConnectionDetails"),
 			),
 			jen.Line(),

@@ -11,8 +11,6 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, ret)
 
-	ret.Add(utils.FakeSeedFunc())
-
 	ret.Add(
 		jen.Func().ID("buildTestService").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
@@ -27,7 +25,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("userDB").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
 			jen.ID("oauth").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("userIDFetcher").Assign().Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-				jen.Return().Add(utils.FakeUint64Func()),
+				jen.Return().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call().Dot("ID"),
 			),
 			jen.ID("ed").Assign().Qual(proj.InternalEncodingV1Package(), "ProvideResponseEncoder").Call(),
 			jen.Line(),

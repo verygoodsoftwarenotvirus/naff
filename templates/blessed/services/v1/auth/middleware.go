@@ -93,7 +93,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 						jen.Comment("check to see if there is an OAuth2 token for a valid client attached to the request."),
 						jen.Comment("We do this first because it is presumed to be the primary means by which requests are made to the httpServer."),
 						jen.List(jen.ID("oauth2Client"), jen.Err()).Assign().ID("s").Dot("oauth2ClientsService").Dot("ExtractOAuth2ClientFromRequest").Call(utils.CtxVar(), jen.ID("req")),
-						jen.If(jen.Err().DoesNotEqual().ID("nil").Op("||").ID("oauth2Client").Op("==").ID("nil")).Block(
+						jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("oauth2Client").Op("==").ID("nil")).Block(
 							jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching oauth2 client")),
 							jen.Qual("net/http", "Redirect").Call(jen.ID("res"), jen.ID("req"), jen.Lit("/login"), jen.Qual("net/http", "StatusUnauthorized")),
 							jen.Return(),
@@ -139,7 +139,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
 				jen.List(jen.ID("user"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")),
 				jen.Line(),
-				jen.If(jen.Op("!").ID("ok").Op("||").ID("user").Op("==").ID("nil")).Block(
+				jen.If(jen.Op("!").ID("ok").Or().ID("user").Op("==").ID("nil")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("AdminMiddleware called without user attached to context")),
 					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.Return(),

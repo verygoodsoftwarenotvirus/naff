@@ -542,6 +542,28 @@ func (s *Statement) Underscore() *Statement {
 	return s
 }
 
+// Or renders an identifier.
+func Or() *Statement {
+	return newStatement().Or()
+}
+
+// Or renders an identifier.
+func (g *Group) Or() *Statement {
+	s := Or()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Or renders an identifier.
+func (s *Statement) Or() *Statement {
+	t := token{
+		typ:     identifierToken,
+		content: "||",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // ID renders an identifier.
 func ID(name string) *Statement {
 	return newStatement().ID(name)
