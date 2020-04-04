@@ -269,7 +269,7 @@ cookie problems!
 			).Call(),
 			jen.Line(),
 			jen.List(jen.ID("bdump"), jen.Err()).Assign().ID("httputil").Dot("DumpResponse").Call(jen.ID("res"), jen.ID("true")),
-			jen.If(jen.Err().Op("==").ID("nil").Op("&&").ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
+			jen.If(jen.Err().Op("==").ID("nil").And().ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
 				jen.Qual("log", "Println").Call(jen.String().Call(jen.ID("bdump"))),
 			),
 			jen.Line(),

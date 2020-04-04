@@ -77,7 +77,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 					jen.If(jen.ID("allowValidCookieInLieuOfAValidToken")).Block(
 						jen.List(jen.ID("cookieAuth"), jen.Err()).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(utils.CtxVar(), jen.ID("req")),
 						jen.Line(),
-						jen.If(jen.Err().Op("==").ID("nil").Op("&&").ID("cookieAuth").DoesNotEqual().ID("nil")).Block(
+						jen.If(jen.Err().Op("==").ID("nil").And().ID("cookieAuth").DoesNotEqual().ID("nil")).Block(
 							jen.List(jen.ID("user"), jen.Err()).Equals().ID("s").Dot("userDB").Dot("GetUser").Call(utils.CtxVar(), jen.ID("cookieAuth").Dot("UserID")),
 							jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 								jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error authenticating request")),
@@ -168,7 +168,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 					jen.ID("TOTPToken").MapAssign().ID("req").Dot("FormValue").Call(jen.ID("TOTPTokenFormKey")),
 				),
 				jen.Line(),
-				jen.If(jen.ID("uli").Dot("Username").DoesNotEqual().Lit("").Op("&&").ID("uli").Dot("Password").DoesNotEqual().Lit("").Op("&&").ID("uli").Dot("TOTPToken").DoesNotEqual().Lit("")).Block(
+				jen.If(jen.ID("uli").Dot("Username").DoesNotEqual().Lit("").And().ID("uli").Dot("Password").DoesNotEqual().Lit("").And().ID("uli").Dot("TOTPToken").DoesNotEqual().Lit("")).Block(
 					jen.Return().ID("uli"),
 				),
 			),

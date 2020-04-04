@@ -104,7 +104,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 					jen.ID("ap").Assign().Qual("os", "Getenv").Call(jen.Lit("JAEGER_AGENT_PORT")),
 					jen.ID("sn").Assign().Qual("os", "Getenv").Call(jen.Lit("JAEGER_SERVICE_NAME")),
 					jen.Line(),
-					jen.If(jen.ID("ah").DoesNotEqual().Lit("").Op("&&").ID("ap").DoesNotEqual().Lit("").Op("&&").ID("sn").DoesNotEqual().Lit("")).Block(
+					jen.If(jen.ID("ah").DoesNotEqual().Lit("").And().ID("ap").DoesNotEqual().Lit("").And().ID("sn").DoesNotEqual().Lit("")).Block(
 						jen.List(jen.ID("je"), jen.Err()).Assign().Qual("contrib.go.opencensus.io/exporter/jaeger", "NewExporter").Call(jen.Qual("contrib.go.opencensus.io/exporter/jaeger", "Options").Valuesln(
 							jen.ID("AgentEndpoint").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit("%s:%s"), jen.ID("ah"), jen.ID("ap")),
 							jen.ID("Process").MapAssign().Qual("contrib.go.opencensus.io/exporter/jaeger", "Process").Values(jen.ID("ServiceName").MapAssign().ID("sn")),

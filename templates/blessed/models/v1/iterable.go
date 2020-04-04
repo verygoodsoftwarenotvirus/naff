@@ -201,14 +201,14 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 			if field.Pointer {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").Op("&&").PointerTo().ID("input").Dot(fsn).DoesNotEqual().Lit("").Op("&&").ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().Lit("").And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
 						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
 			} else {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().Lit("").Op("&&").ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().Lit("").And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
 						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
@@ -229,7 +229,7 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 			if field.Pointer {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").Op("&&").ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
 						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)

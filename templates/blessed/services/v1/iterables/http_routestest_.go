@@ -15,6 +15,7 @@ func httpRoutesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(buildTestServiceListFuncDecl(proj, typ)...)
 	ret.Add(buildTestServiceCreateFuncDecl(proj, typ)...)
+	ret.Add(buildTestServiceExistenceFuncDecl(proj, typ)...)
 	ret.Add(buildTestServiceReadFuncDecl(proj, typ)...)
 	ret.Add(buildTestServiceUpdateFuncDecl(proj, typ)...)
 	ret.Add(buildTestServiceArchiveFuncDecl(proj, typ)...)
@@ -33,13 +34,15 @@ func buildOwnerVarName(typ models.DataType) string {
 }
 
 func buildRelevantOwnerVar(proj *models.Project, typ models.DataType) jen.Code {
+	g := &jen.Group{}
+
 	if typ.BelongsToUser {
-		return jen.ID(buildOwnerVarName(typ)).Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()))
+		g.Add(jen.ID(buildOwnerVarName(typ)).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
 	} else if typ.BelongsToStruct != nil {
-		return jen.ID(buildOwnerVarName(typ)).Assign().VarPointer().Qual(proj.ModelsV1Package(), typ.BelongsToStruct.Singular()).Values(jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()))
+		g.Add(jen.ID(buildOwnerVarName(typ)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.BelongsToStruct.Singular())).Call())
 	}
 
-	return nil
+	return g
 }
 
 func includeUserFetcher(typ models.DataType) jen.Code {
@@ -88,7 +91,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 	dataManagerVarName := fmt.Sprintf("%sdm", typ.Name.LowercaseAbbreviation())
 
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_List", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_ListHandler", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			buildRelevantOwnerVar(proj, typ),
@@ -100,20 +103,14 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
-					jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Valuesln(
-						jen.Valuesln(
-							jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-						),
-					),
-				),
+				jen.IDf("example%sList", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual(utils.MockPkg, "Anything"),
 					buildDBCallOwnerVar(typ),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+				).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -205,16 +202,14 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
-					jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Values(),
-				),
+				jen.IDf("example%sList", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", pn),
 					jen.Qual(utils.MockPkg, "Anything"),
 					buildDBCallOwnerVar(typ),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+				).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -234,8 +229,8 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
-			jen.Line(),
 		),
+		jen.Line(),
 	}
 
 	return lines
@@ -249,21 +244,8 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 
 	dataManagerVarName := fmt.Sprintf("%sdm", typ.Name.LowercaseAbbreviation())
 
-	buildCreationInputFromExpectedLines := func() []jen.Code {
-		lines := []jen.Code{}
-
-		for _, field := range typ.Fields {
-			if field.ValidForCreationInput {
-				sn := field.Name.Singular()
-				lines = append(lines, jen.ID(sn).MapAssign().ID("expected").Dot(sn))
-			}
-		}
-
-		return lines
-	}
-
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_Create", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_CreateHandler", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			buildRelevantOwnerVar(proj, typ),
@@ -275,9 +257,8 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 				jen.Line(),
 				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
@@ -291,7 +272,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+					jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -308,9 +289,6 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().ID("models").Dotf("%sCreationInput", sn).Valuesln(
-					buildCreationInputFromExpectedLines()...,
-				),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
@@ -349,9 +327,8 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual(utils.MockPkg, "Anything"),
@@ -372,9 +349,6 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().ID("models").Dotf("%sCreationInput", sn).Valuesln(
-					buildCreationInputFromExpectedLines()...,
-				),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
@@ -388,9 +362,8 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 				jen.Line(),
 				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(utils.MockPkg, "Anything")),
@@ -402,7 +375,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Create%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+					jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -419,17 +392,173 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().ID("models").Dotf("%sCreationInput", sn).Valuesln(
-					buildCreationInputFromExpectedLines()...,
-				),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("CreateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusCreated"), jen.ID("res").Dot("Code"), nil),
 			),
-			jen.Line(),
 		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	scn := typ.Name.SingularCommonName()
+	uvn := typ.Name.UnexportedVarName()
+
+	dataManagerVarName := fmt.Sprintf("%sdm", typ.Name.LowercaseAbbreviation())
+
+	lines := []jen.Code{
+		jen.Func().ID(fmt.Sprintf("Test%sService_ExistenceHandler", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			buildRelevantOwnerVar(proj, typ),
+			buildRelevantIDFetcher(typ),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("s").Assign().ID("buildTestService").Call(),
+				includeUserFetcher(typ),
+				includeOwnerFetcher(typ),
+				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+					jen.Return().IDf("example%s", sn).Dot("ID"),
+				),
+				jen.Line(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("%sExists", sn),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.IDf("example%s", sn).Dot("ID"),
+					buildDBCallOwnerVar(typ),
+				).Dot("Return").Call(jen.True(), jen.Nil()),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
+				jen.Line(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
+				jen.Line(),
+				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
+				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
+					jen.Qual("net/http", "MethodGet"),
+					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
+					jen.Nil(),
+				),
+				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+				jen.Line(),
+				jen.ID("s").Dot("ExistenceHandler").Call().Call(jen.ID("res"), jen.ID("req")),
+				jen.Line(),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with no such %s in database", scn),
+				jen.ID("s").Assign().ID("buildTestService").Call(),
+				includeUserFetcher(typ),
+				includeOwnerFetcher(typ),
+				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+					jen.Return().IDf("example%s", sn).Dot("ID"),
+				),
+				jen.Line(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("%sExists", sn), jen.Qual(utils.MockPkg, "Anything"),
+					jen.IDf("example%s", sn).Dot("ID"),
+					buildDBCallOwnerVar(typ),
+				).Dot("Return").Call(jen.False(), jen.Qual("database/sql", "ErrNoRows")),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
+				jen.Line(),
+				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
+				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
+					jen.Qual("net/http", "MethodGet"),
+					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
+					jen.Nil(),
+				),
+				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+				jen.Line(),
+				jen.ID("s").Dot("ExistenceHandler").Call().Call(jen.ID("res"), jen.ID("req")),
+				jen.Line(),
+				utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID("res").Dot("Code"), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				fmt.Sprintf("with error fetching %s from database", scn),
+				jen.ID("s").Assign().ID("buildTestService").Call(),
+				includeUserFetcher(typ),
+				includeOwnerFetcher(typ),
+				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+					jen.Return().IDf("example%s", sn).Dot("ID"),
+				),
+				jen.Line(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("%sExists", sn),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.IDf("example%s", sn).Dot("ID"),
+					buildDBCallOwnerVar(typ),
+				).Dot("Return").Call(jen.False(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
+				jen.Line(),
+				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
+				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
+					jen.Qual("net/http", "MethodGet"),
+					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
+					jen.Nil(),
+				),
+				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+				jen.Line(),
+				jen.ID("s").Dot("ExistenceHandler").Call().Call(jen.ID("res"), jen.ID("req")),
+				jen.Line(),
+				utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID("res").Dot("Code"), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"with error encoding response",
+				jen.ID("s").Assign().ID("buildTestService").Call(),
+				includeUserFetcher(typ),
+				includeOwnerFetcher(typ),
+				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+					jen.Return().IDf("example%s", sn).Dot("ID"),
+				),
+				jen.Line(),
+				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("%sExists", sn), jen.Qual(utils.MockPkg, "Anything"),
+					jen.IDf("example%s", sn).Dot("ID"),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.True(), jen.Nil()),
+				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
+				jen.Line(),
+				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
+				jen.Line(),
+				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
+				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
+					jen.Qual("net/http", "MethodGet"),
+					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
+					jen.Nil(),
+				),
+				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
+				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+				jen.Line(),
+				jen.ID("s").Dot("ExistenceHandler").Call().Call(jen.ID("res"), jen.ID("req")),
+				jen.Line(),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
+			),
+		),
+		jen.Line(),
 	}
 
 	return lines
@@ -445,7 +574,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 
 	lines := []jen.Code{
 
-		jen.Func().ID(fmt.Sprintf("Test%sService_Read", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_ReadHandler", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			buildRelevantOwnerVar(proj, typ),
@@ -457,20 +586,17 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
-				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
+					jen.IDf("example%s", sn).Dot("ID"),
 					buildDBCallOwnerVar(typ),
-				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+				).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -497,17 +623,14 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
-				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
+					jen.IDf("example%s", sn).Dot("ID"),
 					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
@@ -532,18 +655,15 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
-				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
+					jen.IDf("example%s", sn).Dot("ID"),
 					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
@@ -568,18 +688,15 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
-				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
-					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+					jen.IDf("example%s", sn).Dot("ID"),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
 				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -615,21 +732,8 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 
 	dataManagerVarName := fmt.Sprintf("%sdm", typ.Name.LowercaseAbbreviation())
 
-	buildUpdateInputFromExpectedLines := func() []jen.Code {
-		lines := []jen.Code{}
-
-		for _, field := range typ.Fields {
-			if field.ValidForUpdateInput {
-				sn := field.Name.Singular()
-				lines = append(lines, jen.ID(sn).MapAssign().ID("expected").Dot(sn))
-			}
-		}
-
-		return lines
-	}
-
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_Update", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_UpdateHandler", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			buildRelevantOwnerVar(proj, typ),
@@ -641,12 +745,11 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -664,8 +767,8 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
-					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+					jen.IDf("example%s", sn).Dot("ID"),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
@@ -683,9 +786,6 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().ID("models").Dotf("%sUpdateInput", sn).Valuesln(
-					buildUpdateInputFromExpectedLines()...,
-				),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
@@ -718,17 +818,16 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
+					jen.IDf("example%s", sn).Dot("ID"),
 					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
@@ -742,9 +841,6 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().ID("models").Dotf("%sUpdateInput", sn).Valuesln(
-					buildUpdateInputFromExpectedLines()...,
-				),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
@@ -758,17 +854,16 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
+					jen.IDf("example%s", sn).Dot("ID"),
 					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
@@ -781,9 +876,6 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().ID("models").Dotf("%sUpdateInput", sn).Valuesln(
-					buildUpdateInputFromExpectedLines()...,
-				),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
@@ -797,12 +889,11 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -815,8 +906,8 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
-					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+					jen.IDf("example%s", sn).Dot("ID"),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
@@ -835,9 +926,6 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().ID("models").Dotf("%sUpdateInput", sn).Valuesln(
-					buildUpdateInputFromExpectedLines()...,
-				),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
@@ -851,12 +939,11 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 				jen.Line(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -869,8 +956,8 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Get%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
-					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+					jen.IDf("example%s", sn).Dot("ID"),
+					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
@@ -889,9 +976,6 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().VarPointer().ID("models").Dotf("%sUpdateInput", sn).Valuesln(
-					buildUpdateInputFromExpectedLines()...,
-				),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID("req").Dot("Context").Call(), jen.ID("UpdateMiddlewareCtxKey"), jen.ID("exampleInput"))),
 				jen.Line(),
 				jen.ID("s").Dot("UpdateHandler").Call().Call(jen.ID("res"), jen.ID("req")),
@@ -914,7 +998,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 	dataManagerVarName := fmt.Sprintf("%sdm", typ.Name.LowercaseAbbreviation())
 
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_Archive", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_ArchiveHandler", pn)).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			buildRelevantOwnerVar(proj, typ),
@@ -926,12 +1010,9 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
-				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID("r").Assign().VarPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
@@ -939,12 +1020,12 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
 				jen.ID("mc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement")).Dot("Return").Call(),
+				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
+					jen.IDf("example%s", sn).Dot("ID"),
 					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
@@ -977,17 +1058,14 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
-				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
+					jen.IDf("example%s", sn).Dot("ID"),
 					buildDBCallOwnerVar(typ),
 				).Dot("Return").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
@@ -1012,17 +1090,14 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				includeUserFetcher(typ),
 				includeOwnerFetcher(typ),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
-					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
-				),
-				jen.Line(),
+				jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return().ID("expected").Dot("ID"),
+					jen.Return().IDf("example%s", sn).Dot("ID"),
 				),
 				jen.Line(),
 				jen.ID(dataManagerVarName).Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 				jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Archive%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("expected").Dot("ID"),
+					jen.IDf("example%s", sn).Dot("ID"),
 					buildDBCallOwnerVar(typ)).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Equals().ID(dataManagerVarName),
 				jen.Line(),
@@ -1039,8 +1114,8 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID("res").Dot("Code"), nil),
 			),
-			jen.Line(),
 		),
+		jen.Line(),
 	}
 
 	return lines

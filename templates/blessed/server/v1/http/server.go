@@ -148,12 +148,12 @@ func serverDotGo(proj *models.Project) *jen.File {
 				buildServerDecLines()...,
 			),
 			jen.Line(),
-			jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.Err().DoesNotEqual().ID("nil").Op("&&").ID("err").DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidTracingProvider")).Block(
+			jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.Err().DoesNotEqual().ID("nil").And().ID("err").DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidTracingProvider")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
 			jen.List(jen.ID("ih"), jen.Err()).Assign().ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID("logger")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Op("&&").ID("err").DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidMetricsProvider")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").And().ID("err").DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidMetricsProvider")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.If(jen.ID("ih").DoesNotEqual().ID("nil")).Block(

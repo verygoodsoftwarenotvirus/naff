@@ -75,8 +75,9 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
+				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
+				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.Qual(utils.MockPkg, "Anything"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
@@ -107,8 +108,9 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 			utils.BuildSubTest(
 				"with error providing unit counter",
 				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
+				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
+				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.Qual(utils.MockPkg, "Anything"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
@@ -136,12 +138,12 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.Qual("github.com/stretchr/testify/require", "Error").Call(jen.ID("t"), jen.Err()),
 			),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
+			utils.BuildSubTest(
 				fmt.Sprintf("with error fetching %s count", cn),
-				utils.CreateCtx(),
 				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
+				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
+				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.Qual(utils.MockPkg, "Anything"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
@@ -168,8 +170,8 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.Qual("github.com/stretchr/testify/require", "Nil").Call(jen.ID("t"), jen.ID("s")),
 				jen.Qual("github.com/stretchr/testify/require", "Error").Call(jen.ID("t"), jen.Err()),
 			),
-			jen.Line(),
 		),
+		jen.Line(),
 	}
 
 	return lines

@@ -73,7 +73,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("check for client and return if valid"),
 			jen.Var().ID("client").Equals().ID("s").Dot("fetchOAuth2ClientFromRequest").Call(jen.ID("req")),
-			jen.If(jen.ID("client").DoesNotEqual().ID("nil").Op("&&").ID("client").Dot("HasScope").Call(jen.ID("scope"))).Block(
+			jen.If(jen.ID("client").DoesNotEqual().ID("nil").And().ID("client").Dot("HasScope").Call(jen.ID("scope"))).Block(
 				jen.ID("res").Dot(
 					"WriteHeader",
 				).Call(jen.Qual("net/http", "StatusOK")),
@@ -170,7 +170,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("disallow implicit grants unless authorized"),
-			jen.If(jen.ID("grant").Op("==").Qual("gopkg.in/oauth2.v3", "Implicit").Op("&&").Op("!").ID("client").Dot("ImplicitAllowed")).Block(
+			jen.If(jen.ID("grant").Op("==").Qual("gopkg.in/oauth2.v3", "Implicit").And().Op("!").ID("client").Dot("ImplicitAllowed")).Block(
 				jen.Return().List(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("client not authorized for implicit grants"))),
 			),
 			jen.Line(),

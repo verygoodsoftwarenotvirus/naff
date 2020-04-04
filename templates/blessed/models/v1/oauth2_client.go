@@ -139,7 +139,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("scope").Op("==").Lit("")).Block(
 				jen.Return().ID("false"),
 			),
-			jen.If(jen.ID("c").DoesNotEqual().ID("nil").Op("&&").ID("c").Dot("Scopes").DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID("c").DoesNotEqual().ID("nil").And().ID("c").Dot("Scopes").DoesNotEqual().ID("nil")).Block(
 				jen.For(jen.List(jen.ID("_"), jen.ID("s")).Assign().Range().ID("c").Dot("Scopes")).Block(
 					jen.If(jen.Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("s"))).Op("==").Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("scope"))).Or().Qual("strings", "TrimSpace").Call(jen.ID("s")).Op("==").Lit("*")).Block(
 						jen.Return().ID("true"),

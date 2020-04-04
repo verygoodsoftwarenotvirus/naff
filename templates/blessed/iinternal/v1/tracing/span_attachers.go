@@ -103,7 +103,7 @@ func buildAttachFilterToSpan(proj *models.Project) []jen.Code {
 			jen.ID(utils.SpanVarName).PointerTo().Qual(utils.TracingLibrary, "Span"),
 			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Block(
-			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().Nil().Op("&&").ID(utils.SpanVarName).DoesNotEqual().Nil()).Block(
+			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().Nil().And().ID(utils.SpanVarName).DoesNotEqual().Nil()).Block(
 				jen.ID(utils.SpanVarName).Dot("AddAttributes").Callln(
 					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(
 						jen.ID("filterPageSpanAttachmentKey"),

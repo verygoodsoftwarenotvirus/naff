@@ -301,7 +301,7 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 		block = append(block, jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 		elseErrBlock = append(elseErrBlock,
 			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			utils.WriteXHeader("res", "StatusNotFound"),
 			jen.Return(),
 		)
 	}
@@ -309,13 +309,13 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 		block = append(block, jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 		elseErrBlock = append(elseErrBlock,
 			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			utils.WriteXHeader("res", "StatusNotFound"),
 			jen.Return(),
 		)
 	} else if typ.BelongsToNobody {
 		elseErrBlock = append(elseErrBlock,
 			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			utils.WriteXHeader("res", "StatusNotFound"),
 			jen.Return(),
 		)
 	}
@@ -324,7 +324,7 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 		jen.Line(),
 		jen.Commentf("fetch %s from database", scn),
 		jen.List(jen.ID("exists"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("%sExists", sn).Call(dbCallArgs...),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(elseErrBlock...),
+		jen.If(jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual("database/sql", "ErrNoRows")).Block(elseErrBlock...),
 		jen.Line(),
 		jen.If(jen.ID("exists")).Block(
 			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),

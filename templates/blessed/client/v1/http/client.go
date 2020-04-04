@@ -348,7 +348,7 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 		).Assign().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(
 			jen.ID("req"),
 		),
-			jen.Err().Op("==").ID("nil").Op("&&").ID("c").Dot("Debug"),
+			jen.Err().Op("==").ID("nil").And().ID("c").Dot("Debug"),
 		).Block(
 			jen.ID("logger").Equals().ID("c").Dot("logger").Dot("WithValue").Call(
 				jen.Lit("curl"),
@@ -382,7 +382,7 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 				jen.ID("res"),
 				jen.ID("true"),
 			),
-			jen.If(jen.Err().Op("==").ID("nil").Op("&&").ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
+			jen.If(jen.Err().Op("==").ID("nil").And().ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
 				jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 					jen.Lit("response_body"),
 					jen.String().Call(

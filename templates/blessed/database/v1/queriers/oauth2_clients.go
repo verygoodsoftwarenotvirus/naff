@@ -75,7 +75,7 @@ func oauth2ClientsDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *je
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.If(jen.ID("scopes").Assign().Qual("strings", "Split").Call(jen.ID("scopes"), jen.ID("scopesSeparator")), jen.ID("len").Call(jen.ID("scopes")).Op(">=").Add(utils.FakeUint64Func()).Op("&&").ID("scopes").Index(jen.Lit(0)).DoesNotEqual().Lit("")).Block(
+			jen.If(jen.ID("scopes").Assign().Qual("strings", "Split").Call(jen.ID("scopes"), jen.ID("scopesSeparator")), jen.ID("len").Call(jen.ID("scopes")).Op(">=").Add(utils.FakeUint64Func()).And().ID("scopes").Index(jen.Lit(0)).DoesNotEqual().Lit("")).Block(
 				jen.ID("x").Dot(
 					"Scopes",
 				).Equals().ID("scopes"),
