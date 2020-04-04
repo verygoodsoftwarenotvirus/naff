@@ -13,8 +13,6 @@ func iterableServiceTestDotGo(proj *models.Project, typ models.DataType) *jen.Fi
 
 	utils.AddImports(proj, ret)
 
-	ret.Add(utils.FakeSeedFunc())
-
 	ret.Add(buildbuildTestServiceFuncDecl(proj, typ)...)
 	ret.Add(buildTestProvideServiceFuncDecl(proj, typ)...)
 
@@ -76,7 +74,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
@@ -108,7 +106,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 			jen.Line(),
 			utils.BuildSubTest(
 				"with error providing unit counter",
-				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
@@ -141,7 +139,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 			utils.BuildSubTestWithoutContext(
 				fmt.Sprintf("with error fetching %s count", cn),
 				utils.CreateCtx(),
-				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
