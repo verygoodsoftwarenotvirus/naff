@@ -19,7 +19,7 @@ func mockWebhookDataManagerDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("WebhookDataManager is a mocked models.WebhookDataManager for testing"),
 		jen.Line(),
-		jen.Type().ID("WebhookDataManager").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
+		jen.Type().ID("WebhookDataManager").Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 

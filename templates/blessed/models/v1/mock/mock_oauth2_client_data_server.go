@@ -19,7 +19,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("OAuth2ClientDataServer is a mocked models.OAuth2ClientDataServer for testing"),
 		jen.Line(),
-		jen.Type().ID("OAuth2ClientDataServer").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
+		jen.Type().ID("OAuth2ClientDataServer").Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 

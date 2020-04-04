@@ -84,7 +84,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleClient").Dot("ClientID"),
 				).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -114,7 +114,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleClient").Dot("ClientID"),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -142,7 +142,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleClient").Dot("ClientID"),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -181,7 +181,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleClient").Dot("ClientID"),
 				).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -273,7 +273,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
-					jen.Lit("GetOAuth2ClientByClientID"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("stringID"),
+					jen.Lit("GetOAuth2ClientByClientID"), jen.Qual(utils.MockPkg, "Anything"), jen.ID("stringID"),
 				).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
@@ -306,7 +306,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("stringID"),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -332,7 +332,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("stringID"),
 				).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -365,7 +365,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("stringID"),
 				).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -391,7 +391,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("stringID"),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -417,7 +417,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("stringID"),
 				).Dot("Return").Call(jen.ID("exampleClient"), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),

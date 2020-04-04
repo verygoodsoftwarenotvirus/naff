@@ -22,7 +22,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetWebhook"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleWebhook").Dot("ID"),
 					jen.ID("exampleWebhook").Dot("BelongsToUser"),
 				).Dot("Return").Call(jen.ID("exampleWebhook"), jen.Nil()),
@@ -52,7 +52,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooksCount"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetAllWebhooksCount").Call(utils.CtxVar()),
@@ -76,7 +76,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID("exampleWebhookList"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetAllWebhooks").Call(utils.CtxVar()),
@@ -103,7 +103,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetWebhooks"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleUser").Dot("ID"),
 					jen.ID(utils.FilterVarName),
 				).Dot("Return").Call(jen.ID("exampleWebhookList"), jen.Nil()),
@@ -127,7 +127,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetWebhooks"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleUser").Dot("ID"),
 					jen.ID(utils.FilterVarName),
 				).Dot("Return").Call(jen.ID("exampleWebhookList"), jen.Nil()),
@@ -158,7 +158,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("CreateWebhook"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleInput"),
 				).Dot("Return").Call(jen.ID("exampleWebhook"), jen.Nil()),
 				jen.Line(),
@@ -184,7 +184,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("UpdateWebhook"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleWebhook"),
 				).Dot("Return").Call(jen.ID("expected")),
 				jen.Line(),
@@ -210,7 +210,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("ArchiveWebhook"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleWebhook").Dot("ID"),
 					jen.ID("exampleWebhook").Dot("BelongsToUser"),
 				).Dot("Return").Call(jen.ID("expected")),

@@ -22,12 +22,12 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 			jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 				jen.Lit("GetUserCount"),
-				jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+				jen.Qual(utils.MockPkg, "Anything"),
 				jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
 			).Dot("Return").Call(jen.ID("expectedUserCount"), jen.Nil()),
 			jen.Line(),
 			jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-			jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.Qual("github.com/stretchr/testify/mock", "Anything")),
+			jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.Qual(utils.MockPkg, "Anything")),
 			jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 				jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 				jen.ID("description").String(),
@@ -62,8 +62,8 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID("mockUserCount"), jen.Nil()),
 				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -97,8 +97,8 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID("mockUserCount"), jen.Nil()),
 				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -127,8 +127,8 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID("mockUserCount"), jen.Nil()),
 				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -161,8 +161,8 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserCount"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID("mockUserCount"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),

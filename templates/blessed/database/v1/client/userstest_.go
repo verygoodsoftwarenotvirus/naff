@@ -22,7 +22,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleUser").Dot("ID"),
 				).Dot("Return").Call(
 					jen.ID("exampleUser"),
@@ -53,7 +53,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserByUsername"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleUser").Dot("Username"),
 				).Dot("Return").Call(
 					jen.ID("exampleUser"), jen.Nil(),
@@ -81,7 +81,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID(utils.FilterVarName),
 				).Dot("Return").Call(jen.ID("exampleUserList"), jen.Nil()),
 				jen.Line(),
@@ -103,7 +103,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID(utils.FilterVarName),
 				).Dot("Return").Call(jen.ID("exampleUserList"), jen.Nil()),
 				jen.Line(),
@@ -132,7 +132,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleInput"),
 				).Dot("Return").Call(
 					jen.ID("exampleUser"),
@@ -161,7 +161,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("UpdateUser"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleUser"),
 				).Dot("Return").Call(
 					jen.ID("expected"),
@@ -187,7 +187,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("ArchiveUser"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleUser").Dot("ID"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.Line(),

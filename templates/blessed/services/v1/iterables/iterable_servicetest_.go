@@ -89,7 +89,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				),
 				jen.Line(),
 				jen.ID("idm").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Nil()),
+				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					utils.CtxVar(),
@@ -121,7 +121,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				),
 				jen.Line(),
 				jen.ID("idm").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Nil()),
+				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					utils.CtxVar(),
@@ -154,7 +154,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				),
 				jen.Line(),
 				jen.ID("idm").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					utils.CtxVar(),

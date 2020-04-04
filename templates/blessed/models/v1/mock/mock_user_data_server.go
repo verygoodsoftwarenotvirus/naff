@@ -19,7 +19,7 @@ func mockUserDataServerDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("UserDataServer is a mocked models.UserDataServer for testing"),
 		jen.Line(),
-		jen.Type().ID("UserDataServer").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
+		jen.Type().ID("UserDataServer").Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 

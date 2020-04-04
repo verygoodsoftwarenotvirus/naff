@@ -18,7 +18,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().ID("mockHTTPHandler").Struct(
-			jen.Qual("github.com/stretchr/testify/mock", "Mock"),
+			jen.Qual(utils.MockPkg, "Mock"),
 		),
 		jen.Line(),
 	)
@@ -78,8 +78,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Assign().VarPointer().ID("mockHTTPHandler").Values(),
 				jen.ID("mh").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(),
 				jen.Line(),
 				jen.List(jen.ID("res"), jen.ID("req")).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),

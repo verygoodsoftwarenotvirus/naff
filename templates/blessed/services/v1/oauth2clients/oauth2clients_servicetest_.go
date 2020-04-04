@@ -50,11 +50,11 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Nil()),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2ClientCount"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -84,11 +84,11 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Nil()),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2ClientCount"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -120,11 +120,11 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2ClientCount"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID("expected"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -165,7 +165,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleID"),
 				).Dot("Return").Call(jen.VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(jen.ID("ClientID").MapAssign().ID("exampleID")), jen.Nil()),
 				jen.Line(),
@@ -183,7 +183,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleID"),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
@@ -200,7 +200,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleID"),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.ID("exampleID"))),
 				jen.Line(),
@@ -224,8 +224,8 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("moah").Assign().VarPointer().ID("mockOauth2Handler").Values(),
 				jen.ID("moah").Dot("On").Callln(
 					jen.Lit("HandleAuthorizeRequest"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("moah"),
 				jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
@@ -247,8 +247,8 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("moah").Assign().VarPointer().ID("mockOauth2Handler").Values(),
 				jen.ID("moah").Dot("On").Callln(
 					jen.Lit("HandleTokenRequest"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("moah"),
 				jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),

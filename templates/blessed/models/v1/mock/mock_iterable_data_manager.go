@@ -24,7 +24,7 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 	ret.Add(
 		jen.Commentf("%sDataManager is a mocked models.%sDataManager for testing", sn, sn),
 		jen.Line(),
-		jen.Type().IDf("%sDataManager", sn).Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
+		jen.Type().IDf("%sDataManager", sn).Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 

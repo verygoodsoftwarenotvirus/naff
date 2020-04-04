@@ -17,7 +17,7 @@ func oauth2HandlerMockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("mockOauth2Handler").Struct(jen.Qual("github.com/stretchr/testify/mock",
+		jen.Type().ID("mockOauth2Handler").Struct(jen.Qual(utils.MockPkg,
 			"Mock",
 		)),
 		jen.Line(),

@@ -23,7 +23,7 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 	ret.Add(
 		jen.Commentf("%sDataServer is a mocked models.%sDataServer for testing", sn, sn),
 		jen.Line(),
-		jen.Type().IDf("%sDataServer", sn).Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
+		jen.Type().IDf("%sDataServer", sn).Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 

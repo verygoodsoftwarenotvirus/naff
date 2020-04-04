@@ -101,7 +101,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID("exampleWebhookList"),
 					jen.Nil(),
@@ -123,7 +123,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID("exampleWebhookList"),
 					jen.Nil(),
@@ -143,7 +143,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
-					jen.Qual("github.com/stretchr/testify/mock", "Anything"),
+					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList")).Call(jen.Nil()),
 					jen.Qual("errors", "New").Call(jen.Lit("blah")),

@@ -11,8 +11,6 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, ret)
 
-	ret.Add(utils.FakeSeedFunc())
-
 	ret.Add(
 		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Block(
 			jen.Return().VarPointer().ID("Service").Valuesln(
@@ -34,9 +32,10 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
+				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
+				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
+				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.Qual(utils.MockPkg, "Anything"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
@@ -46,7 +45,7 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("dm").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
-				jen.ID("dm").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Nil()),
+				jen.ID("dm").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideWebhooksService").Callln(
 					utils.CtxVar(),
@@ -83,10 +82,11 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			utils.BuildSubTest(
-				"with error setting count",
-				jen.ID("expectation").Assign().Add(utils.FakeUint64Func()),
+				"with error getting count",
+				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
+				jen.Line(),
 				jen.ID("uc").Assign().VarPointer().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
+				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.Qual(utils.MockPkg, "Anything"), jen.ID("expectation")).Dot("Return").Call(),
 				jen.Line(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
@@ -96,7 +96,7 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("dm").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
-				jen.ID("dm").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("dm").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideWebhooksService").Callln(
 					utils.CtxVar(), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),

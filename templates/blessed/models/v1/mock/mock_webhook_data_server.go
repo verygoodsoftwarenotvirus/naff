@@ -19,7 +19,7 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("WebhookDataServer is a mocked models.WebhookDataServer for testing"),
 		jen.Line(),
-		jen.Type().ID("WebhookDataServer").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
+		jen.Type().ID("WebhookDataServer").Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 

@@ -30,7 +30,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
 				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
@@ -40,7 +40,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"bubbles up errors",
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
 				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
@@ -57,7 +57,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"obligatory",
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("IsReady"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.True()),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("IsReady"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.True()),
 				jen.Line(),
 				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("c").Dot("IsReady").Call(utils.CtxVar()),
@@ -74,7 +74,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Nil()),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideDatabaseClient").Call(
 					utils.CtxVar(),
@@ -91,7 +91,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				"with error migrating querier",
 				jen.ID("expected").Assign().Qual("errors", "New").Call(jen.Lit("blah")),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected")),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expected")),
 				jen.Line(),
 				jen.List(jen.ID("x"), jen.ID("actual")).Assign().ID("ProvideDatabaseClient").Call(
 					utils.CtxVar(),

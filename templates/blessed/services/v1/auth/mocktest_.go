@@ -17,7 +17,7 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("mockOAuth2ClientValidator").Struct(jen.Qual("github.com/stretchr/testify/mock",
+		jen.Type().ID("mockOAuth2ClientValidator").Struct(jen.Qual(utils.MockPkg,
 			"Mock",
 		)),
 		jen.Line(),
@@ -44,7 +44,7 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("mockCookieEncoderDecoder").Struct(jen.Qual("github.com/stretchr/testify/mock",
+		jen.Type().ID("mockCookieEncoderDecoder").Struct(jen.Qual(utils.MockPkg,
 			"Mock",
 		)),
 		jen.Line(),
@@ -79,7 +79,7 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Type().ID("MockHTTPHandler").Struct(jen.Qual("github.com/stretchr/testify/mock",
+		jen.Type().ID("MockHTTPHandler").Struct(jen.Qual(utils.MockPkg,
 			"Mock",
 		)),
 		jen.Line(),

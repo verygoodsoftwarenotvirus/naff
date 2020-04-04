@@ -19,7 +19,7 @@ func mockUserDataManagerDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("UserDataManager is a mocked models.UserDataManager for testing"),
 		jen.Line(),
-		jen.Type().ID("UserDataManager").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
+		jen.Type().ID("UserDataManager").Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 
