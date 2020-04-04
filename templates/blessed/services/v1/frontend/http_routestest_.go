@@ -111,7 +111,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 		tpcn := typ.Name.PluralCommonName()
 
 		block = append(block,
-			jen.Line(),
+			jen.Line(), jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				fmt.Sprintf("with frontend %s routing path", tpcn),
 				jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
@@ -127,7 +127,6 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
 			),
-			jen.Line(),
 		)
 	}
 
