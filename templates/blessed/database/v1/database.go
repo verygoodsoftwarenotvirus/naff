@@ -50,14 +50,14 @@ func databaseDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("Scanner represents any database response (i.e. sql.Row[s])"),
 			jen.ID("Scanner").Interface(
-				jen.ID("Scan").Params(jen.ID("dest").Op("...").Interface()).Params(jen.Error()),
+				jen.ID("Scan").Params(jen.ID("dest").Spread().Interface()).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx} objects"),
 			jen.ID("Querier").Interface(
-				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
-				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.Error()),
-				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Row")),
+				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
+				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.Error()),
+				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.ParamPointer().Qual("database/sql", "Row")),
 			),
 			jen.Line(),
 			jen.Comment("ConnectionDetails is a string alias for dependency injection"),

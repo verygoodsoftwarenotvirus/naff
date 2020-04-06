@@ -250,7 +250,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 				jen.ID("WriteTimeout").MapAssign().Lit(10).Times().Qual("time", "Second"),
 				jen.ID("IdleTimeout").MapAssign().Lit(120).Times().Qual("time", "Second"),
 				jen.ID("TLSConfig").MapAssign().VarPointer().Qual("crypto/tls", "Config").Valuesln(
-					jen.ID("PreferServerCipherSuites").MapAssign().ID("true"),
+					jen.ID("PreferServerCipherSuites").MapAssign().True(),
 					jen.Comment(`"Only use curves which have assembly implementations"`).Line().
 						ID("CurvePreferences").MapAssign().Index().Qual("crypto/tls", "CurveID").Valuesln(
 						jen.Qual("crypto/tls", "CurveP256"),

@@ -27,7 +27,7 @@ func buildCORSHandlerDef() []jen.Code {
 				jen.Lit("X-CSRF-Token"),
 			),
 			jen.ID("ExposedHeaders").MapAssign().Index().String().Values(jen.Lit("Link")),
-			jen.ID("AllowCredentials").MapAssign().ID("true"),
+			jen.ID("AllowCredentials").MapAssign().True(),
 			jen.Comment("Maximum value not ignored by any of major browsers"),
 			jen.ID("MaxAge").MapAssign().Lit(300),
 		)),
@@ -172,7 +172,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.ID("router").Dot("With").Callln(
-			jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.ID("true")),
+			jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.True()),
 			jen.ID("s").Dot("authService").Dot("AdminMiddleware"),
 		).Dot("Route").Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").Qual("github.com/go-chi/chi", "Router")).Block(
 			jen.ID("adminRouter").Dot("Post").Call(jen.Lit("/cycle_cookie_secret"), jen.ID("s").Dot("authService").Dot("CycleSecretHandler").Call()),
@@ -221,7 +221,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 			)),
 		)),
 		jen.Line(),
-		jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.ID("true"))).Dot("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual("github.com/go-chi/chi", "Router")).Block(
+		jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.True())).Dot("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual("github.com/go-chi/chi", "Router")).Block(
 			buildIterableAPIRoutes(proj),
 			jen.Line(),
 			buildWebhookAPIRoutes(proj),

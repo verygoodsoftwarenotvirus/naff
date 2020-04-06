@@ -27,11 +27,11 @@ func helpersDotGo(proj *models.Project) *jen.File {
 				).Dot("Kind").Call().DoesNotEqual().Qual("reflect", "Ptr"),
 			).Block(
 				jen.Return().List(
-					jen.ID("true"),
+					jen.True(),
 					jen.Qual("errors", "New").Call(jen.Lit("value is not a pointer")),
 				),
 			),
-			jen.Return().List(jen.ID("false"),
+			jen.Return().List(jen.False(),
 				jen.Nil()),
 		),
 		jen.Line(),
@@ -45,13 +45,13 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		).Block(
 			jen.If(jen.ID("i").Op("==").ID("nil")).Block(
 				jen.Return().List(
-					jen.ID("true"),
+					jen.True(),
 					jen.Qual("errors", "New").Call(
 						jen.Lit("value is nil"),
 					),
 				),
 			),
-			jen.Return().List(jen.ID("false"),
+			jen.Return().List(jen.False(),
 				jen.Nil()),
 		),
 		jen.Line(),

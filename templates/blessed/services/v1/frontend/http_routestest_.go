@@ -51,7 +51,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				"obligatory",
 				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
 					jen.ID("config").MapAssign().Qual(proj.InternalConfigV1Package(), "FrontendSettings").Valuesln(
-						jen.ID("CacheStaticFiles").MapAssign().ID("true"),
+						jen.ID("CacheStaticFiles").MapAssign().True(),
 					),
 				),
 				jen.List(jen.ID("cwd"), jen.Err()).Assign().Qual("os", "Getwd").Call(),

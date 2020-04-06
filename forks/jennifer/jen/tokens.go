@@ -188,6 +188,28 @@ func (s *Statement) Op(op string) *Statement {
 	return s
 }
 
+// Spread renders the provided operator / token.
+func Spread() *Statement {
+	return newStatement().Spread()
+}
+
+// Spread renders the provided operator / token.
+func (g *Group) Spread() *Statement {
+	s := Spread()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Spread renders the provided operator / token.
+func (s *Statement) Spread() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "...",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // BitwiseXOR renders the provided operator / token.
 func BitwiseXOR() *Statement {
 	return newStatement().BitwiseXOR()

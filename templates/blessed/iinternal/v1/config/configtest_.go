@@ -66,11 +66,11 @@ connection_details = "%s"
 				jen.ID("expectedConfig").Assign().VarPointer().ID("ServerConfig").Valuesln(
 					jen.ID("Server").MapAssign().ID("ServerSettings").Valuesln(
 						jen.ID("HTTPPort").MapAssign().Lit(1234),
-						jen.ID("Debug").MapAssign().ID("false"),
+						jen.ID("Debug").MapAssign().False(),
 					),
 					jen.ID("Database").MapAssign().ID("DatabaseSettings").Valuesln(
 						jen.ID("Provider").MapAssign().Lit("postgres"),
-						jen.ID("Debug").MapAssign().ID("true"),
+						jen.ID("Debug").MapAssign().True(),
 						jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabaseV1Package(), "ConnectionDetails").Call(jen.ID("expected")),
 					),
 				),

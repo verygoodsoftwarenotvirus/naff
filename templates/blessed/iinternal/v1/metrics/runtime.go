@@ -142,7 +142,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 		jen.Comment("RegisterDefaultViews registers default runtime views"),
 		jen.Line(),
 		jen.Func().ID("RegisterDefaultViews").Params().Params(jen.Error()).Block(
-			jen.Return().Qual("go.opencensus.io/stats/view", "Register").Call(jen.ID("DefaultRuntimeViews").Op("...")),
+			jen.Return().Qual("go.opencensus.io/stats/view", "Register").Call(jen.ID("DefaultRuntimeViews").Spread()),
 		),
 		jen.Line(),
 	)

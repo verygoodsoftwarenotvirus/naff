@@ -380,7 +380,7 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 				jen.Err(),
 			).Assign().Qual("net/http/httputil", "DumpResponse").Call(
 				jen.ID("res"),
-				jen.ID("true"),
+				jen.True(),
 			),
 			jen.If(jen.Err().Op("==").ID("nil").And().ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
 				jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
@@ -421,13 +421,13 @@ func buildExportedBuildURL() []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildURL").Params(
 			jen.ID("qp").Qual("net/url", "Values"),
-			jen.ID("parts").Op("...").String(),
+			jen.ID("parts").Spread().String(),
 		).Params(jen.String()).Block(
 			jen.Var().ID("u").ParamPointer().Qual("net/url", "URL"),
 			jen.If(jen.ID("qp").DoesNotEqual().ID("nil")).Block(
-				jen.ID("u").Equals().ID("c").Dot("buildURL").Call(jen.ID("qp"), jen.ID("parts").Op("...")),
+				jen.ID("u").Equals().ID("c").Dot("buildURL").Call(jen.ID("qp"), jen.ID("parts").Spread()),
 			).Else().Block(
-				jen.ID("u").Equals().ID("c").Dot("buildURL").Call(jen.Nil(), jen.ID("parts").Op("...")),
+				jen.ID("u").Equals().ID("c").Dot("buildURL").Call(jen.Nil(), jen.ID("parts").Spread()),
 			),
 			jen.Line(),
 			jen.If(jen.ID("u").DoesNotEqual().Nil()).Block(
@@ -449,13 +449,13 @@ func buildUnexportedBuildURL() []jen.Code {
 		jen.Line(),
 		newClientMethod("buildURL").Params(
 			jen.ID("queryParams").Qual("net/url", "Values"),
-			jen.ID("parts").Op("...").String(),
+			jen.ID("parts").Spread().String(),
 		).Params(jen.ParamPointer().Qual("net/url", "URL")).Block(
 			jen.ID("tu").Assign().PointerTo().ID("c").Dot("URL"),
 			jen.Line(),
 			jen.ID("parts").Equals().ID("append").Call(
 				jen.Index().String().Values(jen.Lit("api"), jen.Lit("v1")),
-				jen.ID("parts").Op("..."),
+				jen.ID("parts").Spread(),
 			),
 			jen.List(
 				jen.ID("u"),
@@ -493,7 +493,7 @@ func buildBuildVersionlessURL() []jen.Code {
 		jen.Line(),
 		newClientMethod("buildVersionlessURL").Params(
 			jen.ID("qp").Qual("net/url", "Values"),
-			jen.ID("parts").Op("...").String(),
+			jen.ID("parts").Spread().String(),
 		).Params(jen.String()).Block(
 			jen.ID("tu").Assign().PointerTo().ID("c").Dot("URL"),
 			jen.Line(),
@@ -502,7 +502,7 @@ func buildBuildVersionlessURL() []jen.Code {
 				jen.Err(),
 			).Assign().Qual("net/url", "Parse").Call(
 				jen.Qual("path", "Join").Call(
-					jen.ID("parts").Op("..."),
+					jen.ID("parts").Spread(),
 				),
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -529,11 +529,11 @@ func buildBuildWebsocketURL() []jen.Code {
 		jen.Comment("BuildWebsocketURL builds a standard URL and then converts its scheme to the websocket protocol"),
 		jen.Line(),
 		newClientMethod("BuildWebsocketURL").Params(
-			jen.ID("parts").Op("...").String(),
+			jen.ID("parts").Spread().String(),
 		).Params(jen.String()).Block(
 			jen.ID("u").Assign().ID("c").Dot("buildURL").Call(
 				jen.Nil(),
-				jen.ID("parts").Op("..."),
+				jen.ID("parts").Spread(),
 			),
 			jen.ID("u").Dot("Scheme").Equals().Lit("ws"),
 			jen.Line(),
@@ -587,7 +587,7 @@ func buildIsUp() []jen.Code {
 					jen.Err(),
 					jen.Lit("building request"),
 				),
-				jen.Return().ID("false"),
+				jen.Return().False(),
 			),
 			jen.Line(),
 			jen.List(
@@ -601,7 +601,7 @@ func buildIsUp() []jen.Code {
 					jen.Err(),
 					jen.Lit("health check"),
 				),
-				jen.Return().ID("false"),
+				jen.Return().False(),
 			),
 			jen.ID("c").Dot("closeResponseBody").Call(jen.ID("res")),
 			jen.Line(),

@@ -159,22 +159,22 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("reject invalid grant type"),
 			jen.If(jen.ID("grant").Op("==").Qual("gopkg.in/oauth2.v3", "PasswordCredentials")).Block(
-				jen.Return().List(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("invalid grant type: password"))),
+				jen.Return().List(jen.False(), jen.Qual("errors", "New").Call(jen.Lit("invalid grant type: password"))),
 			),
 			jen.Line(),
 			jen.Comment("fetch client data"),
 			jen.List(jen.ID("client"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("clientID")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching oauth2 client from database")),
-				jen.Return().List(jen.ID("false"), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 client from database: %w"), jen.Err())),
+				jen.Return().List(jen.False(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 client from database: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Comment("disallow implicit grants unless authorized"),
 			jen.If(jen.ID("grant").Op("==").Qual("gopkg.in/oauth2.v3", "Implicit").And().Op("!").ID("client").Dot("ImplicitAllowed")).Block(
-				jen.Return().List(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("client not authorized for implicit grants"))),
+				jen.Return().List(jen.False(), jen.Qual("errors", "New").Call(jen.Lit("client not authorized for implicit grants"))),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("true"), jen.Nil()),
+			jen.Return().List(jen.True(), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -201,15 +201,15 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("clientID")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 client for ClientScopeHandler")),
-				jen.Return().List(jen.ID("false"), jen.Err()),
+				jen.Return().List(jen.False(), jen.Err()),
 			),
 			jen.Line(),
 			jen.Comment("check for scope"),
 			jen.If(jen.ID("c").Dot("HasScope").Call(jen.ID("scope"))).Block(
-				jen.Return().List(jen.ID("true"), jen.Nil()),
+				jen.Return().List(jen.True(), jen.Nil()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("false"), jen.Qual("errors", "New").Call(jen.Lit("unauthorized"))),
+			jen.Return().List(jen.False(), jen.Qual("errors", "New").Call(jen.Lit("unauthorized"))),
 		),
 		jen.Line(),
 	)

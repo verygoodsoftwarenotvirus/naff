@@ -13,7 +13,7 @@ func initDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.ID("debug").Equals().ID("true"),
+			jen.ID("debug").Equals().True(),
 			jen.ID("nonexistentID").Equals().Lit(999999999),
 		),
 		jen.Line(),

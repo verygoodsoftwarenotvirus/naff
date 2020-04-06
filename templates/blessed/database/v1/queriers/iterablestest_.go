@@ -80,8 +80,17 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 	gFields := buildGeneralFields("x", typ)
 
 	ret.Add(
-		jen.Func().IDf("buildMockRowFrom%s", sn).Params(jen.ID("x").PointerTo().Qual(proj.ModelsV1Package(), sn)).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
-			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(gFields...),
+		jen.Func().IDf("buildMockRowsFrom%s", sn).Params(
+			jen.ID("includeCount").Bool(),
+			jen.ID(puvn).Spread().PointerTo().Qual(proj.ModelsV1Package(), sn),
+		).Params(
+			jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
+		).Block(
+			jen.ID("columns").Assign().IDf("%sTableColumns", puvn),
+			jen.If(jen.ID("includeCount")).Block(
+				jen.ID("columns").Equals().Append(jen.ID("columns"), jen.Lit("count")),
+			),
+			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")).Dot("AddRow").Callln(gFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
 		),
@@ -102,15 +111,15 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 	ret.Add(buildTestDBBuildGetSomethingQuery(proj, dbvendor, typ)...)
 	ret.Add(buildTestDBGetSomething(proj, dbvendor, typ)...)
 	ret.Add(buildTestDBBuildGetSomethingCountQuery(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBGetSomethingCount(proj, dbvendor, typ)...)
+	// ret.Add(buildTestDBGetSomethingCount(proj, dbvendor, typ)...)
 	ret.Add(buildTestDBBuildGetAllSomethingCountQuery(proj, dbvendor, typ)...)
 	ret.Add(buildTestDBGetAllSomethingCount(proj, dbvendor, typ)...)
 	ret.Add(buildTestDBGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 	ret.Add(buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
 
-	if typ.BelongsToUser || typ.BelongsToStruct != nil {
-		ret.Add(buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj, dbvendor, typ)...)
-	}
+	// if typ.BelongsToUser || typ.BelongsToStruct != nil {
+	// 	ret.Add(buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj, dbvendor, typ)...)
+	// }
 
 	ret.Add(buildTestDBCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 	ret.Add(buildTestDBCreateSomethingFuncDecl(proj, dbvendor, typ)...)

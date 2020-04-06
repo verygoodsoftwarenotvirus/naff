@@ -168,7 +168,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 				"updated_on" BIGINT DEFAULT NULL,
 				"archived_on" BIGINT DEFAULT NULL,
 				"belongs_to_user" BIGINT NOT NULL,
-				FOREIGN KEY ("belongs_to_user") REFERENCES "users"("id")
+				FOREIGN KEY("belongs_to_user") REFERENCES users(id)
 			);`),
 		},
 		{
@@ -187,7 +187,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 				"updated_on" BIGINT DEFAULT NULL,
 				"archived_on" BIGINT DEFAULT NULL,
 				"belongs_to_user" BIGINT NOT NULL,
-				FOREIGN KEY ("belongs_to_user") REFERENCES "users"("id")
+				FOREIGN KEY("belongs_to_user") REFERENCES users(id)
 			);`),
 		},
 	}
@@ -223,7 +223,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 			scriptParts = append(scriptParts,
 				`				"archived_on" BIGINT DEFAULT NULL,`,
 				`				"belongs_to_user" BIGINT NOT NULL,`,
-				`				FOREIGN KEY ("belongs_to_user") REFERENCES "users"("id")`,
+				`				FOREIGN KEY("belongs_to_user") REFERENCES users(id)`,
 			)
 		}
 		if typ.BelongsToStruct != nil {

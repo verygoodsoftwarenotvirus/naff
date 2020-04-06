@@ -38,8 +38,11 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			jen.ID("loggerName").Equals().Lit(rn),
 			jen.IDf("%sDriverName", uvn).Equals().Litf("wrapped-%s-driver", vendor.KebabName()),
 			jen.Line(),
+			jen.ID("existencePrefix").Equals().Lit("SELECT EXISTS ("),
+			jen.ID("existenceSuffix").Equals().Lit(")"),
+			jen.Line(),
 			jen.Comment("countQuery is a generic counter query used in a few query builders"),
-			jen.ID("countQuery").Equals().Lit("COUNT(id)"),
+			jen.ID("countQuery").Equals().Lit("COUNT(%s.id)"),
 			jen.Line(),
 			jen.Commentf("currentUnixTimeQuery is the query %s uses to determine the current unix time", cn),
 			jen.ID("currentUnixTimeQuery").Equals().Lit(getTimeQuery(vendor)),
@@ -63,11 +66,11 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			jen.Commentf("Explicitly wrap the %s driver with ocsql", sn),
 			jen.ID("driver").Assign().Qual("contrib.go.opencensus.io/integrations/ocsql", "Wrap").Callln(
 				driverInit,
-				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQuery").Call(jen.ID("true")),
-				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithAllowRoot").Call(jen.ID("false")),
-				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithRowsNext").Call(jen.ID("true")),
-				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithRowsClose").Call(jen.ID("true")),
-				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQueryParams").Call(jen.ID("true")),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQuery").Call(jen.True()),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithAllowRoot").Call(jen.False()),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithRowsNext").Call(jen.True()),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithRowsClose").Call(jen.True()),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQueryParams").Call(jen.True()),
 			),
 			jen.Line(),
 			jen.Comment("Register our ocsql wrapper as a db driver"),
@@ -92,9 +95,9 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			jen.Line(),
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx|Stmt} objects"),
 			jen.ID("Querier").Interface(
-				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
-				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.Error()),
-				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("args").Op("...").Interface()).Params(jen.ParamPointer().Qual("database/sql", "Row")),
+				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
+				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.Error()),
+				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.ParamPointer().Qual("database/sql", "Row")),
 			),
 		),
 		jen.Line(),
@@ -142,7 +145,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 
 	buildIsReadyBody := func() []jen.Code {
 		if isSqlite {
-			return []jen.Code{jen.Return(jen.ID("true"))}
+			return []jen.Code{jen.Return(jen.True())}
 		} else if isPostgres {
 			return []jen.Code{
 				jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
@@ -153,21 +156,21 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				).Dot("Debug").Call(jen.Lit("IsReady called")),
 				jen.Line(),
 				jen.For(jen.Op("!").ID("ready")).Block(
-					jen.Err().Assign().ID(dbfl).Dot("db").Dot("Ping").Call(),
+					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(utils.CtxVar()),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID(dbfl).Dot("logger").Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
 						jen.Line(),
 						jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
 						jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
-							jen.Return().ID("false"),
+							jen.Return().False(),
 						),
 					).Else().Block(
-						jen.ID("ready").Equals().ID("true"),
+						jen.ID("ready").Equals().True(),
 						jen.Return().ID("ready"),
 					),
 				),
-				jen.Return().ID("false"),
+				jen.Return().False(),
 			}
 		} else if isMariaDB {
 			return []jen.Code{
@@ -179,21 +182,21 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				).Dot("Debug").Call(jen.Lit("IsReady called")),
 				jen.Line(),
 				jen.For(jen.Op("!").ID("ready")).Block(
-					jen.Err().Assign().ID(dbfl).Dot("db").Dot("Ping").Call(),
+					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(utils.CtxVar()),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID(dbfl).Dot("logger").Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
 						jen.Line(),
 						jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
 						jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
-							jen.Return().ID("false"),
+							jen.Return().False(),
 						),
 					).Else().Block(
-						jen.ID("ready").Equals().ID("true"),
+						jen.ID("ready").Equals().True(),
 						jen.Return().ID("ready"),
 					),
 				),
-				jen.Return().ID("false"),
+				jen.Return().False(),
 			}
 		}
 		return nil

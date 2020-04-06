@@ -42,7 +42,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("EnsureServerIsUp").Params(jen.ID("address").String()).Block(
 			jen.Var().Defs(
-				jen.ID("isDown").Equals().ID("true"),
+				jen.ID("isDown").Equals().True(),
 				jen.ID("interval").Equals().Qual("time", "Second"),
 				jen.ID("maxAttempts").Equals().Lit(50),
 				jen.ID("numberOfAttempts").Equals().Zero(),
@@ -57,7 +57,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 						jen.Qual("log", "Fatal").Call(jen.Lit("Maximum number of attempts made, something's gone awry")),
 					),
 				).Else().Block(
-					jen.ID("isDown").Equals().ID("false"),
+					jen.ID("isDown").Equals().False(),
 				),
 			),
 		),
@@ -76,7 +76,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.List(jen.ID("res"), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().ID("false"),
+				jen.Return().False(),
 			),
 			jen.Line(),
 			jen.If(jen.Err().Equals().ID("res").Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -109,7 +109,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.ID("username").Assign().Qual(utils.FakeLibrary, "Username").Call().Op("+").Qual(utils.FakeLibrary, "HexColor").Call().Op("+").Qual(utils.FakeLibrary, "Country").Call(),
 			jen.ID("in").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
 				jen.ID("Username").MapAssign().ID("username"),
-				jen.ID("Password").MapAssign().Qual(utils.FakeLibrary, "Password").Call(jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.ID("true"), jen.Lit(64)),
+				jen.ID("Password").MapAssign().Qual(utils.FakeLibrary, "Password").Call(jen.True(), jen.True(), jen.True(), jen.True(), jen.True(), jen.Lit(64)),
 			),
 			jen.Line(),
 			jen.List(jen.ID("ucr"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(utils.InlineCtx(), jen.ID("in")),
@@ -137,7 +137,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildURL").Params(jen.ID("address").String(), jen.ID("parts").Op("...").String()).Params(jen.String()).Block(
+		jen.Func().ID("buildURL").Params(jen.ID("address").String(), jen.ID("parts").Spread().String()).Params(jen.String()).Block(
 			jen.List(jen.ID("tu"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
@@ -268,7 +268,7 @@ cookie problems!
 				),
 			).Call(),
 			jen.Line(),
-			jen.List(jen.ID("bdump"), jen.Err()).Assign().ID("httputil").Dot("DumpResponse").Call(jen.ID("res"), jen.ID("true")),
+			jen.List(jen.ID("bdump"), jen.Err()).Assign().ID("httputil").Dot("DumpResponse").Call(jen.ID("res"), jen.True()),
 			jen.If(jen.Err().Op("==").ID("nil").And().ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
 				jen.Qual("log", "Println").Call(jen.String().Call(jen.ID("bdump"))),
 			),

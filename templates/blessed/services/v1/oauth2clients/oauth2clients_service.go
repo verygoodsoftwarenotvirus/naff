@@ -131,7 +131,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("manager").Dot("SetAuthorizeCodeTokenCfg").Call(jen.Qual("gopkg.in/oauth2.v3/manage", "DefaultAuthorizeCodeTokenCfg")),
 			jen.ID("manager").Dot("SetRefreshTokenCfg").Call(jen.Qual("gopkg.in/oauth2.v3/manage", "DefaultRefreshTokenCfg")),
 			jen.ID("oHandler").Assign().Qual("gopkg.in/oauth2.v3/server", "NewDefaultServer").Call(jen.ID("manager")),
-			jen.ID("oHandler").Dot("SetAllowGetAccessRequest").Call(jen.ID("true")),
+			jen.ID("oHandler").Dot("SetAllowGetAccessRequest").Call(jen.True()),
 			jen.Line(),
 			jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
 				jen.ID("database").MapAssign().ID("db"),
@@ -160,7 +160,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Comment("initializeOAuth2Handler"),
 		jen.Line(),
 		jen.Func().ID("initializeOAuth2Handler").Params(jen.ID("handler").ID("oauth2Handler"), jen.ID("s").PointerTo().ID("Service")).Block(
-			jen.ID("handler").Dot("SetAllowGetAccessRequest").Call(jen.ID("true")),
+			jen.ID("handler").Dot("SetAllowGetAccessRequest").Call(jen.True()),
 			jen.ID("handler").Dot("SetClientAuthorizedHandler").Call(jen.ID("s").Dot("ClientAuthorizedHandler")),
 			jen.ID("handler").Dot("SetClientScopeHandler").Call(jen.ID("s").Dot("ClientScopeHandler")),
 			jen.ID("handler").Dot("SetClientInfoHandler").Call(jen.Qual("gopkg.in/oauth2.v3/server", "ClientFormHandler")),

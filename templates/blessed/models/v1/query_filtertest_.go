@@ -127,7 +127,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("baseQueryBuilder").Assign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", "Dollar")).
 				Dotln("Select").Call(jen.Lit("things")).
 				Dotln("From").Call(jen.Lit("stuff")).
-				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("condition").MapAssign().ID("true"))),
+				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("condition").MapAssign().True())),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",

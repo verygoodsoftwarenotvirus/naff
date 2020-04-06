@@ -186,7 +186,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 						jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 						jen.ID("buildHTTPClient").Call(),
 						jen.ID("premade").Dot("Scopes"),
-						jen.ID("true"),
+						jen.True(),
 					),
 					jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("c2"), jen.Err()),
 					jen.Line(),
@@ -224,10 +224,10 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.For(jen.List(jen.Underscore(), jen.ID("oAuth2Client")).Assign().Range().ID("expected")).Block(
-						jen.ID("clientFound").Assign().ID("false"),
+						jen.ID("clientFound").Assign().False(),
 						jen.For(jen.List(jen.Underscore(), jen.ID("c")).Assign().Range().ID("actual").Dot("Clients")).Block(
 							jen.If(jen.ID("c").Dot("ID").Op("==").ID("oAuth2Client").Dot("ID")).Block(
-								jen.ID("clientFound").Equals().ID("true"),
+								jen.ID("clientFound").Equals().True(),
 								jen.Break(),
 							),
 						),

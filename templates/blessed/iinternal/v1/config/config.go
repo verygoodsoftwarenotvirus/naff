@@ -247,7 +247,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.Comment("NOTE: this will result in an ever-changing cookie secret per server instance running."),
 			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("auth.cookie_secret"), jen.ID("randString").Call()),
 			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("auth.cookie_lifetime"), jen.ID("defaultCookieLifetime")),
-			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("auth.enable_user_signup"), jen.ID("true")),
+			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("auth.enable_user_signup"), jen.True()),
 			jen.Line(),
 			jen.Comment("metrics stuff"),
 			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("metrics.database_metrics_collection_interval"), jen.ID("defaultMetricsCollectionInterval")),

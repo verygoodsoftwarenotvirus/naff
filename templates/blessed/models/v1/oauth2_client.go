@@ -137,16 +137,16 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("HasScope").Params(jen.ID("scope").String()).Params(jen.ID("found").Bool()).Block(
 			jen.ID("scope").Equals().Qual("strings", "TrimSpace").Call(jen.ID("scope")),
 			jen.If(jen.ID("scope").Op("==").EmptyString()).Block(
-				jen.Return().ID("false"),
+				jen.Return().False(),
 			),
 			jen.If(jen.ID("c").DoesNotEqual().ID("nil").And().ID("c").Dot("Scopes").DoesNotEqual().ID("nil")).Block(
 				jen.For(jen.List(jen.Underscore(), jen.ID("s")).Assign().Range().ID("c").Dot("Scopes")).Block(
 					jen.If(jen.Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("s"))).Op("==").Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("scope"))).Or().Qual("strings", "TrimSpace").Call(jen.ID("s")).Op("==").Lit("*")).Block(
-						jen.Return().ID("true"),
+						jen.Return().True(),
 					),
 				),
 			),
-			jen.Return().ID("false"),
+			jen.Return().False(),
 		),
 		jen.Line(),
 	)

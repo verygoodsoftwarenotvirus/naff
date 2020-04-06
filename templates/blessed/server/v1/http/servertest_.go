@@ -15,7 +15,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 
 	buildServerLines := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("DebugMode").MapAssign().ID("true"),
+			jen.ID("DebugMode").MapAssign().True(),
 			jen.ID("db").MapAssign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 			jen.ID("config").MapAssign().VarPointer().Qual(proj.InternalConfigV1Package(), "ServerConfig").Values(),
 			jen.ID("encoder").MapAssign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),

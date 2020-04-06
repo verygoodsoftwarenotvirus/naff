@@ -27,6 +27,8 @@ var (
 						{
 							Name:                  wordsmith.FromSingularPascalCase("Details"),
 							Type:                  "string",
+							DefaultAllowed:        true,
+							DefaultValue:          "''",
 							Pointer:               false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
