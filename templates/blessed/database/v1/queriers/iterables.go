@@ -153,20 +153,33 @@ func buildScanSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen
 	return []jen.Code{
 		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct", sn, pscnwp),
 		jen.Line(),
-		jen.Func().IDf("scan%s", sn).Params(jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Block(
+		jen.Func().IDf("scan%s", sn).Params(
+			jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner"),
+			jen.ID("includeCount").Bool(),
+		).Params(
+			jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
+			jen.Error(),
+		).Block(
 			func() []jen.Code {
 				body := []jen.Code{
 					jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Values(),
+					jen.Var().ID("count").Uint64(),
 					jen.Line(),
-					jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Callln(buildScanFields(typ)...), jen.Err().DoesNotEqual().ID("nil")).Block(
-						jen.Return().List(jen.Nil(), jen.Err()),
+					jen.ID("targetVars").Assign().Index().Interface().Valuesln(buildScanFields(typ)...),
+					jen.Line(),
+					jen.If(jen.ID("includeCount")).Block(
+						jen.ID("targetVars").Equals().Append(jen.ID("targetVars"), jen.VarPointer().ID("count")),
+					),
+					jen.Line(),
+					jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Callln(), jen.Err().DoesNotEqual().ID("nil")).Block(
+						jen.Return().List(jen.Nil(), jen.Zero(), jen.Err()),
 					),
 					jen.Line(),
 				}
 
 				body = append(body,
 					jen.Line(),
-					jen.Return().List(jen.ID("x"), jen.Nil()),
+					jen.Return().List(jen.ID("x"), jen.ID("count"), jen.Nil()),
 				)
 
 				return body
