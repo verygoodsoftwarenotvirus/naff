@@ -639,7 +639,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.IDf("example%s", ts)),
 		func() jen.Code {
 			if typ.BelongsToUser {
-				return jen.ID("exampleInput").Dot("BelongsToUser").Equals().Lit(0)
+				return jen.ID("exampleInput").Dot("BelongsToUser").Equals().Zero()
 			}
 			return jen.Null()
 		}(),

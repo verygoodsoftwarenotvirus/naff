@@ -104,7 +104,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 		utils.AssertNoError(jen.Err(), nil),
 		utils.AssertTrue(jen.ID("actual"), nil),
 		jen.Line(),
-		jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
+		utils.AssertExpectationsFor("mockDB"),
 	)
 
 	return []jen.Code{
@@ -138,7 +138,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 		utils.AssertNoError(jen.Err(), nil),
 		utils.AssertEqual(jen.IDf("example%s", sn), jen.ID("actual"), nil),
 		jen.Line(),
-		jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
+		utils.AssertExpectationsFor("mockDB"),
 	)
 
 	return []jen.Code{
@@ -172,7 +172,7 @@ func buildTestClientGetAllOfSomethingForUser(proj *models.Project, typ models.Da
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertTrue(jen.ID("actual"), nil),
 				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
+				utils.AssertExpectationsFor("mockDB"),
 			),
 		),
 		jen.Line(),
@@ -199,7 +199,7 @@ func buildTestClientGetAllOfSomethingCount(proj *models.Project, typ models.Data
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID("exampleCount"), jen.ID("actual"), nil, nil),
 				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
+				utils.AssertExpectationsFor("mockDB"),
 			),
 		),
 		jen.Line(),
@@ -244,7 +244,7 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 			utils.AssertNoError(jen.Err(), nil),
 			utils.AssertEqual(jen.IDf("example%sList", sn), jen.ID("actual"), nil),
 			jen.Line(),
-			jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
+			utils.AssertExpectationsFor("mockDB"),
 		)
 
 		return lines
@@ -309,7 +309,7 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 		utils.AssertNoError(jen.Err(), nil),
 		utils.AssertEqual(jen.IDf("example%s", sn), jen.ID("actual"), nil),
 		jen.Line(),
-		jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
+		utils.AssertExpectationsFor("mockDB"),
 	)
 
 	return []jen.Code{
@@ -370,6 +370,8 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 			callArgs...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
+		jen.Line(),
+		utils.AssertExpectationsFor("mockDB"),
 	)
 
 	return []jen.Code{
@@ -403,6 +405,8 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 		jen.Line(),
 		jen.Err().Assign().ID("c").Dotf("Archive%s", sn).Call(callArgs...),
 		utils.AssertNoError(jen.Err(), nil),
+		jen.Line(),
+		utils.AssertExpectationsFor("mockDB"),
 	)
 
 	return []jen.Code{

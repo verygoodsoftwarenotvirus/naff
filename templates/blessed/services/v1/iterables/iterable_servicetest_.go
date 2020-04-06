@@ -31,17 +31,17 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 
 	if typ.BelongsToUser {
 		serviceValues = append(serviceValues,
-			jen.ID("userIDFetcher").MapAssign().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0)),
+			jen.ID("userIDFetcher").MapAssign().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		serviceValues = append(serviceValues,
-			jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).MapAssign().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0)),
+			jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).MapAssign().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 		)
 	}
 
 	serviceValues = append(serviceValues,
-		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).MapAssign().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0)),
+		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).MapAssign().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 		jen.ID("encoderDecoder").MapAssign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 		jen.ID("reporter").MapAssign().ID("nil"),
 	)
@@ -58,7 +58,7 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 
 func relevantIDFetcherParam(typ models.DataType) jen.Code {
 	if typ.BelongsToUser || typ.BelongsToStruct != nil {
-		return jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0))
+		return jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero())
 	}
 	return nil
 }
@@ -94,7 +94,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 					utils.CtxVar(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
-					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0)),
+					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 					relevantIDFetcherParam(typ),
 					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
@@ -102,7 +102,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				),
 				jen.Line(),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("s")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.RequireNoError(jen.Err(), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -127,7 +127,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 					utils.CtxVar(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
-					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0)),
+					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 					relevantIDFetcherParam(typ),
 					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
@@ -160,7 +160,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 					utils.CtxVar(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("idm"),
-					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Lit(0)),
+					jen.Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 					relevantIDFetcherParam(typ),
 					jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),

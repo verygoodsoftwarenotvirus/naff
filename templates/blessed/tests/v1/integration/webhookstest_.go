@@ -45,7 +45,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			utils.CreateCtx(),
 			jen.Line(),
 			jen.List(jen.ID("y"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID("buildDummyWebhookInput").Call()),
-			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+			utils.RequireNoError(jen.Err(), nil),
 			jen.Return().ID("y"),
 		),
 		jen.Line(),
@@ -54,7 +54,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("reverse").Params(jen.ID("s").String()).Params(jen.String()).Block(
 			jen.ID("runes").Assign().Index().ID("rune").Call(jen.ID("s")),
-			jen.For(jen.List(jen.ID("i"), jen.ID("j")).Assign().List(jen.Lit(0), jen.ID("len").Call(jen.ID("runes")).Op("-").Lit(1)), jen.ID("i").Op("<").ID("j"), jen.List(jen.ID("i"), jen.ID("j")).Equals().List(jen.ID("i").Op("+").Lit(1), jen.ID("j").Op("-").Lit(1))).Block(
+			jen.For(jen.List(jen.ID("i"), jen.ID("j")).Assign().List(jen.Zero(), jen.ID("len").Call(jen.ID("runes")).Op("-").One()), jen.ID("i").Op("<").ID("j"), jen.List(jen.ID("i"), jen.ID("j")).Equals().List(jen.ID("i").Op("+").One(), jen.ID("j").Op("-").One())).Block(
 				jen.List(jen.ID("runes").Index(jen.ID("i")), jen.ID("runes").Index(jen.ID("j"))).Equals().List(jen.ID("runes").Index(jen.ID("j")), jen.ID("runes").Index(jen.ID("i"))),
 			),
 			jen.Return().String().Call(jen.ID("runes")),
@@ -104,7 +104,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhooks"),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
-					jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+					jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.ID("buildDummyWebhook").Call(jen.ID("t"))),
 					),
 					jen.Line(),

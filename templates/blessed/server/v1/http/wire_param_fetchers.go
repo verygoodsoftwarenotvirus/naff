@@ -141,7 +141,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.List(jen.ID("userID"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()), jen.ID("ok")).Block(
 				jen.Return(jen.ID("userID")),
 			),
-			jen.Return(jen.Lit(0)),
+			jen.Return(jen.Zero()),
 		),
 		jen.Line(),
 	)

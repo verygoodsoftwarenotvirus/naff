@@ -158,7 +158,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Comment("Frontend routes"),
-		jen.If(jen.ID("s").Dot("config").Dot("Frontend").Dot("StaticFilesDirectory").DoesNotEqual().Lit("")).Block(
+		jen.If(jen.ID("s").Dot("config").Dot("Frontend").Dot("StaticFilesDirectory").DoesNotEqual().EmptyString()).Block(
 			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("setting static file server")),
 			jen.List(jen.ID("staticFileServer"), jen.Err()).Assign().ID("s").Dot("frontendService").Dot("StaticDir").Call(jen.ID("frontendConfig").Dot("StaticFilesDirectory")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(

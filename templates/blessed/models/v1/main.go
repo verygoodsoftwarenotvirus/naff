@@ -45,7 +45,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Error().Equals().Parens(jen.PointerTo().ID("ErrorResponse")).Call(jen.Nil()),
+		jen.Var().Underscore().Error().Equals().Parens(jen.PointerTo().ID("ErrorResponse")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

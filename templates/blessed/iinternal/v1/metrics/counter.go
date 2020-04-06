@@ -9,49 +9,57 @@ import (
 func counterDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(proj, ret)
-
-	ret.Add(
-		jen.Comment("Counter counts things"),
-		jen.Line(),
-		jen.Type().ID("Counter").Interface(jen.ID("Increment").Params(), jen.ID("IncrementBy").Params(jen.ID("val").Uint64()), jen.ID("Decrement").Params()),
-		jen.Line(),
+	const (
+		typeName       = "opencensusCounter"
+		pointerVarName = "c"
 	)
+
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Comment("opencensusCounter is a Counter that interfaces with opencensus"),
 		jen.Line(),
-		jen.Type().ID("opencensusCounter").Struct(
+		jen.Type().ID(typeName).Struct(
 			jen.ID("name").String(),
 			jen.ID("actualCount").Uint64(),
-			jen.ID("count").ParamPointer().Qual("go.opencensus.io/stats", "Int64Measure"),
-			jen.ID("counter").ParamPointer().Qual("go.opencensus.io/stats/view", "View"),
+			jen.ID("measure").ParamPointer().Qual("go.opencensus.io/stats", "Int64Measure"),
+			jen.ID("v").ParamPointer().Qual("go.opencensus.io/stats/view", "View"),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("Increment satisfies our Counter interface"),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("opencensusCounter")).ID("Increment").Params(utils.CtxParam()).Block(
-			jen.Qual("sync/atomic", "AddUint64").Call(jen.VarPointer().ID("c").Dot("actualCount"), jen.Lit(1)),
-			jen.Qual("go.opencensus.io/stats", "Record").Call(utils.CtxVar(), jen.ID("c").Dot("count").Dot("M").Call(jen.Lit(1))),
+		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("subtractFromCount").Params(
+			utils.CtxParam(),
+			jen.ID("value").Uint64(),
+		).Block(
+			jen.Qual("sync/atomic", "AddUint64").Call(
+				jen.VarPointer().ID(pointerVarName).Dot("actualCount"),
+				jen.BitwiseXOR().ID("value").Plus().One(),
+			),
+			jen.Qual("go.opencensus.io/stats", "Record").Call(
+				utils.CtxVar(),
+				jen.ID(pointerVarName).Dot("measure").Dot("M").Call(
+					jen.Int64().Call(jen.Minus().ID("value")),
+				),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("IncrementBy satisfies our Counter interface"),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("opencensusCounter")).ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").Uint64()).Block(
-			jen.Qual("sync/atomic", "AddUint64").Call(jen.VarPointer().ID("c").Dot(
-				"actualCount",
-			), jen.ID("val")),
-			jen.Qual("go.opencensus.io/stats", "Record").Call(utils.CtxVar(), jen.ID("c").Dot(
-				"count",
-			).Dot(
-				"M",
-			).Call(jen.ID("int64").Call(jen.ID("val")))),
+		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("addToCount").Params(
+			utils.CtxParam(),
+			jen.ID("value").Uint64(),
+		).Block(
+			jen.Qual("sync/atomic", "AddUint64").Call(
+				jen.VarPointer().ID(pointerVarName).Dot("actualCount"),
+				jen.ID("value"),
+			),
+			jen.Qual("go.opencensus.io/stats", "Record").Call(
+				utils.CtxVar(),
+				jen.ID(pointerVarName).Dot("measure").Dot("M").Call(jen.Int64().Call(jen.ID("value"))),
+			),
 		),
 		jen.Line(),
 	)
@@ -59,24 +67,26 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Decrement satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("opencensusCounter")).ID("Decrement").Params(utils.CtxParam()).Block(
-			jen.Qual("sync/atomic", "AddUint64").Call(jen.VarPointer().ID("c").Dot(
-				"actualCount",
-			), jen.Op("^").Uint64().Call(jen.Lit(0))),
-			jen.Qual("go.opencensus.io/stats", "Record").Call(utils.CtxVar(), jen.ID("c").Dot(
-				"count",
-			).Dot(
-				"M",
-			).Call(jen.Lit(-1))),
+		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Decrement").Params(utils.CtxParam()).Block(
+			jen.ID("c").Dot("subtractFromCount").Call(utils.CtxVar(), jen.One()),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("ProvideUnitCounterProvider provides UnitCounter providers"),
+		jen.Comment("Increment satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().ID("ProvideUnitCounterProvider").Params().Params(jen.ID("UnitCounterProvider")).Block(
-			jen.Return().ID("ProvideUnitCounter"),
+		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Increment").Params(utils.CtxParam()).Block(
+			jen.ID("c").Dot("addToCount").Call(utils.CtxVar(), jen.One()),
+		),
+		jen.Line(),
+	)
+
+	ret.Add(
+		jen.Comment("IncrementBy satisfies our Counter interface"),
+		jen.Line(),
+		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("IncrementBy").Params(utils.CtxParam(), jen.ID("value").Uint64()).Block(
+			jen.ID("c").Dot("addToCount").Call(utils.CtxVar(), jen.ID("value")),
 		),
 		jen.Line(),
 	)
@@ -87,7 +97,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("ProvideUnitCounter").Params(jen.ID("counterName").ID("CounterName"), jen.ID("description").String()).Params(jen.ID("UnitCounter"), jen.Error()).Block(
 			jen.ID("name").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%s_count"), jen.String().Call(jen.ID("counterName"))),
 			jen.Comment("Counts/groups the lengths of lines read in."),
-			jen.ID("count").Assign().Qual("go.opencensus.io/stats", "Int64").Call(jen.ID("name"), jen.Lit(""), jen.Lit("By")),
+			jen.ID("count").Assign().Qual("go.opencensus.io/stats", "Int64").Call(jen.ID("name"), jen.ID("description"), jen.Lit("By")),
 			jen.Line(),
 			jen.ID("countView").Assign().VarPointer().Qual("go.opencensus.io/stats/view", "View").Valuesln(
 				jen.ID("Name").MapAssign().ID("name"),
@@ -100,7 +110,13 @@ func counterDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to register views: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.Return().List(jen.VarPointer().ID("opencensusCounter").Valuesln(jen.ID("name").MapAssign().ID("name"), jen.ID("count").MapAssign().ID("count"), jen.ID("counter").MapAssign().ID("countView")), jen.Nil()),
+			jen.ID(pointerVarName).Assign().VarPointer().ID(typeName).Valuesln(
+				jen.ID("name").MapAssign().ID("name"),
+				jen.ID("measure").MapAssign().ID("count"),
+				jen.ID("v").MapAssign().ID("countView"),
+			),
+			jen.Line(),
+			jen.Return(jen.ID(pointerVarName), jen.Nil()),
 		),
 		jen.Line(),
 	)

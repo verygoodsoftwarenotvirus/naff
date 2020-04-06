@@ -18,7 +18,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			"OAuth2Client",
 		)).Block(
 			jen.List(jen.ID("clientsRes"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(utils.InlineCtx(), jen.Nil()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("clientsRes").Op("==").ID("nil").Or().ID("len").Call(jen.ID("clientsRes").Dot("Clients")).Op("<=").Lit(1)).Block(jen.Return().ID("nil")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("clientsRes").Op("==").ID("nil").Or().ID("len").Call(jen.ID("clientsRes").Dot("Clients")).Op("<=").One()).Block(jen.Return().ID("nil")),
 			jen.Line(),
 			jen.Var().ID("selectedClient").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.For(jen.ID("selectedClient").Op("==").ID("nil")).Block(

@@ -49,7 +49,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("DefaultQueryFilter").Params().Params(jen.PointerTo().ID("QueryFilter")).Block(
 			jen.Return().VarPointer().ID("QueryFilter").Valuesln(
-				jen.ID("Page").MapAssign().Lit(1),
+				jen.ID("Page").MapAssign().One(),
 				jen.ID("Limit").MapAssign().ID("DefaultLimit"),
 				jen.ID("SortBy").MapAssign().ID("SortAscending"),
 			),
@@ -62,27 +62,27 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("FromParams").Params(jen.ID("params").Qual("net/url", "Values")).Block(
 			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("pageKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
-				jen.ID("qf").Dot("Page").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(1))),
+				jen.ID("qf").Dot("Page").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.One())),
 			),
 			jen.Line(),
 			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("limitKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
-				jen.ID("qf").Dot("Limit").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(0)), jen.ID("MaxLimit"))),
+				jen.ID("qf").Dot("Limit").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Zero()), jen.ID("MaxLimit"))),
 			),
 			jen.Line(),
 			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("createdBeforeKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
-				jen.ID("qf").Dot("CreatedBefore").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(0))),
+				jen.ID("qf").Dot("CreatedBefore").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Zero())),
 			),
 			jen.Line(),
 			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("createdAfterKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
-				jen.ID("qf").Dot("CreatedAfter").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(0))),
+				jen.ID("qf").Dot("CreatedAfter").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Zero())),
 			),
 			jen.Line(),
 			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("updatedBeforeKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
-				jen.ID("qf").Dot("UpdatedBefore").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(0))),
+				jen.ID("qf").Dot("UpdatedBefore").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Zero())),
 			),
 			jen.Line(),
 			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("updatedAfterKey")), jen.Lit(10), jen.Lit(64)), jen.Err().Op("==").ID("nil")).Block(
-				jen.ID("qf").Dot("UpdatedAfter").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Lit(0))),
+				jen.ID("qf").Dot("UpdatedAfter").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Zero())),
 			),
 			jen.Line(),
 			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.ID("params").Dot("Get").Call(jen.ID("sortByKey")))).Block(
@@ -101,7 +101,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 		jen.Comment("SetPage sets the current page with certain constraints"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("SetPage").Params(jen.ID("page").Uint64()).Block(
-			jen.ID("qf").Dot("Page").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.Lit(1), jen.ID("float64").Call(jen.ID("page")))),
+			jen.ID("qf").Dot("Page").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.One(), jen.ID("float64").Call(jen.ID("page")))),
 		),
 		jen.Line(),
 	)
@@ -110,7 +110,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 		jen.Comment("QueryPage calculates a query page from the current filter values"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("QueryPage").Params().Params(jen.Uint64()).Block(
-			jen.Return().ID("qf").Dot("Limit").Times().Parens(jen.ID("qf").Dot("Page").Op("-").Lit(1)),
+			jen.Return().ID("qf").Dot("Limit").Times().Parens(jen.ID("qf").Dot("Page").Op("-").One()),
 		),
 		jen.Line(),
 	)
@@ -124,25 +124,25 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.ID("v").Assign().Qual("net/url", "Values").Values(),
-			jen.If(jen.ID("qf").Dot("Page").DoesNotEqual().Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("Page").DoesNotEqual().Zero()).Block(
 				jen.ID("v").Dot("Set").Call(jen.Lit("page"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("Page"), jen.Lit(10))),
 			),
-			jen.If(jen.ID("qf").Dot("Limit").DoesNotEqual().Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("Limit").DoesNotEqual().Zero()).Block(
 				jen.ID("v").Dot("Set").Call(jen.Lit("limit"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("Limit"), jen.Lit(10))),
 			),
-			jen.If(jen.ID("qf").Dot("SortBy").DoesNotEqual().Lit("")).Block(
+			jen.If(jen.ID("qf").Dot("SortBy").DoesNotEqual().EmptyString()).Block(
 				jen.ID("v").Dot("Set").Call(jen.Lit("sort_by"), jen.String().Call(jen.ID("qf").Dot("SortBy"))),
 			),
-			jen.If(jen.ID("qf").Dot("CreatedBefore").DoesNotEqual().Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("CreatedBefore").DoesNotEqual().Zero()).Block(
 				jen.ID("v").Dot("Set").Call(jen.Lit("created_before"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("CreatedBefore"), jen.Lit(10))),
 			),
-			jen.If(jen.ID("qf").Dot("CreatedAfter").DoesNotEqual().Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("CreatedAfter").DoesNotEqual().Zero()).Block(
 				jen.ID("v").Dot("Set").Call(jen.Lit("created_after"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("CreatedAfter"), jen.Lit(10))),
 			),
-			jen.If(jen.ID("qf").Dot("UpdatedBefore").DoesNotEqual().Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("UpdatedBefore").DoesNotEqual().Zero()).Block(
 				jen.ID("v").Dot("Set").Call(jen.Lit("updated_before"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("UpdatedBefore"), jen.Lit(10))),
 			),
-			jen.If(jen.ID("qf").Dot("UpdatedAfter").DoesNotEqual().Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("UpdatedAfter").DoesNotEqual().Zero()).Block(
 				jen.ID("v").Dot("Set").Call(jen.Lit("updated_after"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("UpdatedAfter"), jen.Lit(10))),
 			),
 			jen.Line(),
@@ -160,29 +160,29 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.ID("qf").Dot("SetPage").Call(jen.ID("qf").Dot("Page")),
-			jen.If(jen.ID("qp").Assign().ID("qf").Dot("QueryPage").Call(), jen.ID("qp").Op(">").Lit(0)).Block(
+			jen.If(jen.ID("qp").Assign().ID("qf").Dot("QueryPage").Call(), jen.ID("qp").Op(">").Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Offset").Call(jen.ID("qp")),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("Limit").Op(">").Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("Limit").Op(">").Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Limit").Call(jen.ID("qf").Dot("Limit")),
 			).Else().Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Limit").Call(jen.ID("MaxLimit")),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("CreatedAfter").Op(">").Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("CreatedAfter").Op(">").Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(jen.Lit("created_on").MapAssign().ID("qf").Dot("CreatedAfter"))),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("CreatedBefore").Op(">").Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("CreatedBefore").Op(">").Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(jen.Lit("created_on").MapAssign().ID("qf").Dot("CreatedBefore"))),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("UpdatedAfter").Op(">").Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("UpdatedAfter").Op(">").Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(jen.Lit("updated_on").MapAssign().ID("qf").Dot("UpdatedAfter"))),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("UpdatedBefore").Op(">").Lit(0)).Block(
+			jen.If(jen.ID("qf").Dot("UpdatedBefore").Op(">").Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(jen.Lit("updated_on").MapAssign().ID("qf").Dot("UpdatedBefore"))),
 			),
 			jen.Line(),

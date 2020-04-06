@@ -36,7 +36,7 @@ func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
+			jen.Underscore().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)

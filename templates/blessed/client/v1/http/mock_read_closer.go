@@ -12,7 +12,7 @@ func mockReadCloserDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("io", "ReadCloser").Equals().Parens(jen.PointerTo().ID("ReadCloser")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual("io", "ReadCloser").Equals().Parens(jen.PointerTo().ID("ReadCloser")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -37,7 +37,7 @@ func mockReadCloserDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("ReadCloser")).ID("Read").Params(jen.ID("b").Index().Byte()).Params(jen.ID("i").ID("int"), jen.Err().Error()).Block(
 			jen.ID("retVals").Assign().ID("m").Dot("Called").Call(jen.ID("b")),
-			jen.Return().List(jen.ID("retVals").Dot("Int").Call(jen.Lit(0)), jen.ID("retVals").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("retVals").Dot("Int").Call(jen.Zero()), jen.ID("retVals").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	)
@@ -46,7 +46,7 @@ func mockReadCloserDotGo(proj *models.Project) *jen.File {
 		jen.Comment("Close implements the Closer part of our ReadCloser"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("ReadCloser")).ID("Close").Params().Params(jen.Err().Error()).Block(
-			jen.Return().ID("m").Dot("Called").Call().Dot("Error").Call(jen.Lit(0)),
+			jen.Return().ID("m").Dot("Called").Call().Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)

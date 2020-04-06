@@ -474,7 +474,7 @@ func buildSomethingAllCountQueryDecls(dbvendor wordsmith.SuperPalabra, typ model
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildGetAll%sCountQuery", pn).Params().Params(jen.String()).Block(
 			jen.IDf("all%sCountQueryBuilder", pn).Dot("Do").Call(jen.Func().Params().Block(
 				jen.Var().ID("err").Error(),
-				jen.List(jen.IDf("all%sCountQuery", pn), jen.ID("_"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
+				jen.List(jen.IDf("all%sCountQuery", pn), jen.Underscore(), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
 					Dotln("Select").Call(jen.Qual("fmt", "Sprintf").Call(jen.ID("countQuery"), jen.IDf("%sTableName", puvn))).
 					Dotln("From").Call(jen.IDf("%sTableName", puvn)).
 					Dotln("Where").Call(
@@ -1044,7 +1044,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		_g := &jen.Group{}
 		_g.Add(
-			jen.List(jen.ID("_"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Line(),
 			jen.Return(jen.Err()),
 		)
@@ -1143,7 +1143,7 @@ func buildArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Supe
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildArchive%sQuery", sn).Call(
 				queryBuildingArgs...,
 			),
-			jen.List(jen.ID("_"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("err"),
 		),
 		jen.Line(),

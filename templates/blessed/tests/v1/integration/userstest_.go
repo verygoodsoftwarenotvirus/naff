@@ -32,7 +32,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.Comment("Note that err == nil only if we read len(b) bytes"),
 			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().List(jen.Lit(""), jen.Err()),
+				jen.Return().List(jen.EmptyString(), jen.Err()),
 			),
 			jen.Line(),
 			jen.Return().List(jen.Qual("encoding/base32", "StdEncoding").Dot("EncodeToString").Call(jen.ID("b")), jen.Nil()),
@@ -64,7 +64,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("userInput").Assign().ID("buildDummyUserInput").Call(jen.ID("t")),
 			jen.List(jen.ID("user"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(utils.CtxVar(), jen.ID("userInput")),
 			utils.AssertNotNil(jen.ID("user"), nil),
-			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+			utils.RequireNoError(jen.Err(), nil),
 			jen.Line(),
 			jen.If(jen.ID("user").Op("==").ID("nil").Or().ID("err").DoesNotEqual().ID("nil")).Block(
 				jen.ID("t").Dot("FailNow").Call(),
@@ -76,7 +76,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("user").Dot("TwoFactorSecret"),
 			),
 			jen.Line(),
-			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+			utils.RequireNoError(jen.Err(), nil),
 			jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("cookie")),
 			jen.Line(),
 			jen.Return().List(jen.ID("user"), jen.ID("userInput"), jen.ID("cookie")),
@@ -205,7 +205,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create users"),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
-					jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+					jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.List(jen.ID("user"), jen.Underscore(), jen.ID("c")).Assign().ID("buildDummyUser").Call(jen.ID("t")),
 						utils.AssertNotNil(jen.ID("c"), nil),
 						jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.ID("user")),

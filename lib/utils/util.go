@@ -132,7 +132,7 @@ func FakeUsernameFunc() jen.Code {
 }
 
 func FakeUnixTimeFunc() jen.Code {
-	return jen.Uint64().Call(jen.Qual(FakeLibrary, "Date").Call().Dot("Unix").Call())
+	return jen.Uint64().Call(jen.Uint32().Call(jen.Qual(FakeLibrary, "Date").Call().Dot("Unix").Call()))
 }
 
 func FakePasswordFunc() jen.Code {
@@ -277,6 +277,18 @@ func StartSpan(proj *models.Project, saveCtx bool, spanName string) jen.Code {
 	)
 
 	return g
+}
+
+func AssertExpectationsFor(varNames ...string) jen.Code {
+	callArgs := []jen.Code{
+		jen.ID("t"),
+	}
+
+	for _, name := range varNames {
+		callArgs = append(callArgs, jen.ID(name))
+	}
+
+	return jen.Qual(MockPkg, "AssertExpectationsForObjects").Call(callArgs...)
 }
 
 // RunGoimportsForFile runs the `goimports` binary for a given filename

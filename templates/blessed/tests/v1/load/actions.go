@@ -73,17 +73,17 @@ func actionsDotGo(proj *models.Project) *jen.File {
 				jen.ID("allActions").Index(jen.ID("k")).Equals().ID("v"),
 			),
 			jen.Line(),
-			jen.ID("totalWeight").Assign().Lit(0),
-			jen.For(jen.List(jen.ID("_"), jen.ID("rb")).Assign().Range().ID("allActions")).Block(
+			jen.ID("totalWeight").Assign().Zero(),
+			jen.For(jen.List(jen.Underscore(), jen.ID("rb")).Assign().Range().ID("allActions")).Block(
 				jen.ID("totalWeight").Op("+=").ID("rb").Dot("Weight"),
 			),
 			jen.Line(),
 			jen.Qual("math/rand", "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.ID("r").Assign().Qual("math/rand", "Intn").Call(jen.ID("totalWeight")),
 			jen.Line(),
-			jen.For(jen.List(jen.ID("_"), jen.ID("rb")).Assign().Range().ID("allActions")).Block(
+			jen.For(jen.List(jen.Underscore(), jen.ID("rb")).Assign().Range().ID("allActions")).Block(
 				jen.ID("r").Op("-=").ID("rb").Dot("Weight"),
-				jen.If(jen.ID("r").Op("<=").Lit(0)).Block(
+				jen.If(jen.ID("r").Op("<=").Zero()).Block(
 					jen.Return().ID("rb"),
 				),
 			),

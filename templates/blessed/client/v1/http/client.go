@@ -141,7 +141,7 @@ func buildNewClient() []jen.Code {
 					jen.ID("Timeout").MapAssign().ID("defaultTimeout"),
 				),
 			),
-			jen.If(jen.ID("client").Dot("Timeout").Op("==").Lit(0)).Block(
+			jen.If(jen.ID("client").Dot("Timeout").Op("==").Zero()).Block(
 				jen.ID("client").Dot("Timeout").Equals().ID("defaultTimeout"),
 			),
 			jen.Line(),
@@ -295,8 +295,8 @@ func buildNewSimpleClient() []jen.Code {
 		).Block(
 			jen.Return().ID("NewClient").Callln(
 				utils.CtxVar(),
-				jen.Lit(""),
-				jen.Lit(""),
+				jen.EmptyString(),
+				jen.EmptyString(),
 				jen.ID("address"),
 				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.VarPointer().Qual("net/http", "Client").Values(
@@ -433,7 +433,7 @@ func buildExportedBuildURL() []jen.Code {
 			jen.If(jen.ID("u").DoesNotEqual().Nil()).Block(
 				jen.Return(jen.ID("u").Dot("String").Call()),
 			),
-			jen.Return(jen.Lit("")),
+			jen.Return(jen.EmptyString()),
 		),
 		jen.Line(),
 	}
@@ -507,7 +507,7 @@ func buildBuildVersionlessURL() []jen.Code {
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("c").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("building URL")),
-				jen.Return(jen.Lit("")),
+				jen.Return(jen.EmptyString()),
 			),
 			jen.Line(),
 			jen.If(jen.ID("qp").DoesNotEqual().ID("nil")).Block(

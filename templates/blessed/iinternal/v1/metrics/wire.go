@@ -21,5 +21,15 @@ func wireDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
+	ret.Add(
+		jen.Comment("ProvideUnitCounterProvider provides UnitCounter providers"),
+		jen.Line(),
+		jen.Func().ID("ProvideUnitCounterProvider").Params().Params(jen.ID("UnitCounterProvider")).Block(
+			jen.Return().ID("ProvideUnitCounter"),
+		),
+		jen.Line(),
+	)
+
 	return ret
 }

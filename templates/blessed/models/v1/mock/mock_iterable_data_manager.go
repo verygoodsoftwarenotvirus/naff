@@ -17,7 +17,7 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 	sn := n.Singular()
 
 	ret.Add(
-		jen.Var().ID("_").ID("models").Dotf("%sDataManager", sn).Equals().Parens(jen.PointerTo().IDf("%sDataManager", sn)).Call(jen.Nil()),
+		jen.Var().Underscore().ID("models").Dotf("%sDataManager", sn).Equals().Parens(jen.PointerTo().IDf("%sDataManager", sn)).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -61,7 +61,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).ID(funcName).Params(params...).Params(jen.Bool(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Bool").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Bool").Call(jen.Zero()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -82,7 +82,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", sn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -102,7 +102,7 @@ func buildGetSomethingCount(proj *models.Project, typ models.DataType) []jen.Cod
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%sCount", sn).Params(params...).Params(jen.Uint64(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -122,7 +122,7 @@ func buildGetAllSomethingsCount(typ models.DataType) []jen.Code {
 			utils.CtxParam(),
 		).Params(jen.Uint64(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -144,7 +144,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().ID("models").Dotf("%sList", sn),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.PointerTo().ID("models").Dotf("%sList", sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().ID("models").Dotf("%sList", sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -167,7 +167,7 @@ func buildGetAllSomethingsForUser(proj *models.Project, typ models.DataType) []j
 		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("userID")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -190,7 +190,7 @@ func buildGetAllSomethingsForSomethingElse(proj *models.Project, typ models.Data
 		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -215,7 +215,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(
 				args...,
 			),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -238,7 +238,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot("Called").Call(
 				args...,
-			).Dot("Error").Call(jen.Lit(0)),
+			).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	}
@@ -257,7 +257,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 		jen.Commentf("Archive%s is a mock function", sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Archive%s", sn).Params(params...).Params(jen.Error()).Block(
-			jen.Return().ID("m").Dot("Called").Call(callArgs...).Dot("Error").Call(jen.Lit(0)),
+			jen.Return().ID("m").Dot("Called").Call(callArgs...).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	}

@@ -168,7 +168,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 					jen.ID("TOTPToken").MapAssign().ID("req").Dot("FormValue").Call(jen.ID("TOTPTokenFormKey")),
 				),
 				jen.Line(),
-				jen.If(jen.ID("uli").Dot("Username").DoesNotEqual().Lit("").And().ID("uli").Dot("Password").DoesNotEqual().Lit("").And().ID("uli").Dot("TOTPToken").DoesNotEqual().Lit("")).Block(
+				jen.If(jen.ID("uli").Dot("Username").DoesNotEqual().EmptyString().And().ID("uli").Dot("Password").DoesNotEqual().EmptyString().And().ID("uli").Dot("TOTPToken").DoesNotEqual().EmptyString()).Block(
 					jen.Return().ID("uli"),
 				),
 			),

@@ -17,7 +17,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	sn := n.Singular()
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

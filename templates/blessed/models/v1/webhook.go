@@ -89,26 +89,26 @@ func webhookDotGo(proj *models.Project) *jen.File {
 		jen.Comment("Update merges an WebhookCreationInput with an Webhook"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("Update").Params(jen.ID("input").PointerTo().ID("WebhookUpdateInput")).Block(
-			jen.If(jen.ID("input").Dot("Name").DoesNotEqual().Lit("")).Block(
+			jen.If(jen.ID("input").Dot("Name").DoesNotEqual().EmptyString()).Block(
 				jen.ID("w").Dot("Name").Equals().ID("input").Dot("Name"),
 			),
-			jen.If(jen.ID("input").Dot("ContentType").DoesNotEqual().Lit("")).Block(
+			jen.If(jen.ID("input").Dot("ContentType").DoesNotEqual().EmptyString()).Block(
 				jen.ID("w").Dot("ContentType").Equals().ID("input").Dot("ContentType"),
 			),
-			jen.If(jen.ID("input").Dot("URL").DoesNotEqual().Lit("")).Block(
+			jen.If(jen.ID("input").Dot("URL").DoesNotEqual().EmptyString()).Block(
 				jen.ID("w").Dot("URL").Equals().ID("input").Dot("URL"),
 			),
-			jen.If(jen.ID("input").Dot("Method").DoesNotEqual().Lit("")).Block(
+			jen.If(jen.ID("input").Dot("Method").DoesNotEqual().EmptyString()).Block(
 				jen.ID("w").Dot("Method").Equals().ID("input").Dot("Method"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("Events").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("Events")).Op(">").Lit(0)).Block(
+			jen.If(jen.ID("input").Dot("Events").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("Events")).Op(">").Zero()).Block(
 				jen.ID("w").Dot("Events").Equals().ID("input").Dot("Events"),
 			),
-			jen.If(jen.ID("input").Dot("DataTypes").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("DataTypes")).Op(">").Lit(0)).Block(
+			jen.If(jen.ID("input").Dot("DataTypes").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("DataTypes")).Op(">").Zero()).Block(
 				jen.ID("w").Dot("DataTypes").Equals().ID("input").Dot("DataTypes"),
 			),
-			jen.If(jen.ID("input").Dot("Topics").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("Topics")).Op(">").Lit(0)).Block(
+			jen.If(jen.ID("input").Dot("Topics").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("Topics")).Op(">").Zero()).Block(
 				jen.ID("w").Dot("Topics").Equals().ID("input").Dot("Topics"),
 			),
 		),

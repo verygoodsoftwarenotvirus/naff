@@ -174,7 +174,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Block(
+			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Block(
 				jen.ID("wh").Assign().ID("allWebhooks").Dot("Webhooks").Index(jen.ID("i")),
 				jen.Comment("NOTE: we must guarantee that whatever is stored in the database is valid, otherwise"),
 				jen.Comment("newsman will try (and fail) to execute requests constantly"),
@@ -233,7 +233,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 				jen.If(jen.Err().Op("==").Qual("net/http", "ErrServerClosed")).Block(
 					jen.Comment("NOTE: there is a chance that next line won't have time to run,"),
 					jen.Comment("as main() doesn't wait for this goroutine to stop."),
-					jen.Qual("os", "Exit").Call(jen.Lit(0)),
+					jen.Qual("os", "Exit").Call(jen.Zero()),
 				),
 			),
 		),

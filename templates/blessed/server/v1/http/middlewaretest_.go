@@ -86,6 +86,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("loggingMiddleware").Call(jen.ID("mh")).Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
 				jen.Line(),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
+				utils.AssertExpectationsFor("mh"),
 			),
 		),
 		jen.Line(),

@@ -21,7 +21,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("find and validate our configuration filepath"),
 			jen.ID("configFilepath").Assign().Qual("os", "Getenv").Call(jen.Lit("CONFIGURATION_FILEPATH")),
-			jen.If(jen.ID("configFilepath").Op("==").Lit("")).Block(
+			jen.If(jen.ID("configFilepath").Op("==").EmptyString()).Block(
 				jen.ID("logger").Dot("Fatal").Call(jen.Qual("errors", "New").Call(jen.Lit("no configuration file provided"))),
 			),
 			jen.Line(),
@@ -32,8 +32,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("only allow initialization to take so long"),
-			jen.List(jen.ID("tctx"), jen.ID("cancel")).Assign().Qual("context", "WithTimeout").Call(jen.Qual("context", "Background").Call(), jen.ID("cfg").Dot("Meta").Dot("StartupDeadline")),
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("tctx"), jen.Lit("initialization")),
+			jen.List(utils.CtxVar(), jen.ID("cancel")).Assign().Qual("context", "WithTimeout").Call(jen.Qual("context", "Background").Call(), jen.ID("cfg").Dot("Meta").Dot("StartupDeadline")),
+			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("initialization")),
 			jen.Line(),
 			jen.Comment("connect to our database"),
 			jen.List(jen.ID("db"), jen.Err()).Assign().ID("cfg").Dot("ProvideDatabase").Call(utils.CtxVar(), jen.ID("logger")),

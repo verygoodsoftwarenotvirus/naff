@@ -13,18 +13,16 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Comment("MiddlewareCtxKey is the context key we search for when interacting with user-related requests"),
-			jen.ID("MiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("user_input"),
+			jen.ID("serviceName").String().Equals().Lit("users_service"),
+			jen.ID("topicName").String().Equals().Lit("users"),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit("users"),
-			jen.ID("topicName").Equals().Lit("users"),
-			jen.ID("serviceName").Equals().Lit("users_service"),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.ModelsV1Package(), "UserDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
+			jen.Underscore().Qual(proj.ModelsV1Package(), "UserDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -74,7 +72,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("userCount"), jen.Err()).Assign().ID("db").Dot("GetUserCount").Call(utils.CtxVar(), jen.Nil()),
+			jen.List(jen.ID("userCount"), jen.Err()).Assign().ID("db").Dot("GetAllUserCount").Call(utils.CtxVar()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.Err())),
 			),

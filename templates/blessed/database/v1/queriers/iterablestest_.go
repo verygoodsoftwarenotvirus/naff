@@ -494,13 +494,13 @@ func buildTestDBArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wor
 	if typ.BelongsToUser {
 		assertIndesx = 1
 		testLines = append(testLines,
-			utils.AssertEqual(jen.ID("expected").Dot("BelongsToUser"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.Uint64()), nil),
+			utils.AssertEqual(jen.ID("expected").Dot("BelongsToUser"), jen.ID("args").Index(jen.Zero()).Assert(jen.Uint64()), nil),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		assertIndesx = 1
 		testLines = append(testLines,
-			utils.AssertEqual(jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.Uint64()), nil),
+			utils.AssertEqual(jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Zero()).Assert(jen.Uint64()), nil),
 		)
 	} else if typ.BelongsToNobody {
 		assertIndesx = 0
@@ -1511,7 +1511,7 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 	)
 
 	if typ.BelongsToUser || typ.BelongsToStruct != nil {
-		bodyBlock = append(bodyBlock, utils.AssertEqual(jen.ID(expectedOwnerID), jen.ID("args").Index(jen.Lit(0)).Assert(jen.Uint64()), nil))
+		bodyBlock = append(bodyBlock, utils.AssertEqual(jen.ID(expectedOwnerID), jen.ID("args").Index(jen.Zero()).Assert(jen.Uint64()), nil))
 	}
 
 	lines := []jen.Code{
@@ -1611,11 +1611,11 @@ func buildTestDBBuildGetSomethingQuery(proj *models.Project, dbvendor wordsmith.
 	var argIndex int
 	if typ.BelongsToUser {
 		argIndex = 1
-		block = append(block, utils.AssertEqual(jen.IDf("%sUserID", varPrefix), jen.ID("args").Index(jen.Lit(0)).Assert(jen.Uint64()), nil))
+		block = append(block, utils.AssertEqual(jen.IDf("%sUserID", varPrefix), jen.ID("args").Index(jen.Zero()).Assert(jen.Uint64()), nil))
 	}
 	if typ.BelongsToStruct != nil {
 		argIndex = 1
-		block = append(block, utils.AssertEqual(jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.Uint64()), nil))
+		block = append(block, utils.AssertEqual(jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()), jen.ID("args").Index(jen.Zero()).Assert(jen.Uint64()), nil))
 	} else if typ.BelongsToNobody {
 		argIndex = 0
 	}
@@ -1810,10 +1810,10 @@ func buildTestDBBuildGetSomethingCountQuery(proj *models.Project, dbvendor words
 	)
 
 	if typ.BelongsToUser {
-		block = append(block, utils.AssertEqual(jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.Uint64()), nil))
+		block = append(block, utils.AssertEqual(jen.ID("exampleUserID"), jen.ID("args").Index(jen.Zero()).Assert(jen.Uint64()), nil))
 	}
 	if typ.BelongsToStruct != nil {
-		block = append(block, utils.AssertEqual(jen.IDf("example%sID", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(0)).Assert(jen.Uint64()), nil))
+		block = append(block, utils.AssertEqual(jen.IDf("example%sID", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Zero()).Assert(jen.Uint64()), nil))
 	}
 
 	lines := []jen.Code{

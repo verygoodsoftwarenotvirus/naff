@@ -69,7 +69,7 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
-			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),

@@ -467,7 +467,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 		} else if isSqlite || isMariaDB {
 			return []jen.Code{
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("input")),
-				jen.List(jen.ID("_"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
+				jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 				jen.Return().ID("err"),
 			}
 		}
@@ -524,7 +524,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("ArchiveUser").Params(utils.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildArchiveUserQuery").Call(jen.ID("userID")),
-			jen.List(jen.ID("_"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
+			jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Op("...")),
 			jen.Return().ID("err"),
 		),
 		jen.Line(),

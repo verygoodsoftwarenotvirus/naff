@@ -15,7 +15,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Comment("gopkg.in/oauth2.v3/server specific implementations"),
 		jen.Line(),
 		jen.Line(),
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "InternalErrorHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("OAuth2InternalErrorHandler"),
+		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "InternalErrorHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("OAuth2InternalErrorHandler"),
 		jen.Line(),
 	)
 
@@ -38,7 +38,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("OAuth2ResponseErrorHandler"),
+		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("OAuth2ResponseErrorHandler"),
 		jen.Line(),
 	)
 
@@ -57,7 +57,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("AuthorizeScopeHandler"),
+		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("AuthorizeScopeHandler"),
 		jen.Line(),
 	)
 
@@ -81,24 +81,24 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("check to see if the client ID is present instead"),
-			jen.If(jen.ID("clientID").Assign().ID("s").Dot("fetchOAuth2ClientIDFromRequest").Call(jen.ID("req")), jen.ID("clientID").DoesNotEqual().Lit("")).Block(
+			jen.If(jen.ID("clientID").Assign().ID("s").Dot("fetchOAuth2ClientIDFromRequest").Call(jen.ID("req")), jen.ID("clientID").DoesNotEqual().EmptyString()).Block(
 				jen.Comment("fetch oauth2 client from database"),
 				jen.List(jen.ID("client"), jen.Err()).Equals().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("clientID")),
 				jen.Line(),
 				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 Client")),
 					utils.WriteXHeader("res", "StatusNotFound"),
-					jen.Return().List(jen.Lit(""), jen.Err()),
+					jen.Return().List(jen.EmptyString(), jen.Err()),
 				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 Client")),
 					utils.WriteXHeader("res", "StatusInternalServerError"),
-					jen.Return().List(jen.Lit(""), jen.Err()),
+					jen.Return().List(jen.EmptyString(), jen.Err()),
 				),
 				jen.Line(),
 				jen.Comment("authorization check"),
 				jen.If(jen.Op("!").ID("client").Dot("HasScope").Call(jen.ID("scope"))).Block(
 					utils.WriteXHeader("res", "StatusUnauthorized"),
-					jen.Return().List(jen.Lit(""), jen.Qual("errors", "New").Call(jen.Lit("not authorized for scope"))),
+					jen.Return().List(jen.EmptyString(), jen.Qual("errors", "New").Call(jen.Lit("not authorized for scope"))),
 				),
 				jen.Line(),
 				jen.Return().List(jen.ID("scope"), jen.Nil()),
@@ -106,13 +106,13 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("invalid credentials"),
 			utils.WriteXHeader("res", "StatusBadRequest"),
-			jen.Return().List(jen.Lit(""), jen.Qual("errors", "New").Call(jen.Lit("no scope information found"))),
+			jen.Return().List(jen.EmptyString(), jen.Qual("errors", "New").Call(jen.Lit("no scope information found"))),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "UserAuthorizationHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("UserAuthorizationHandler"),
+		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "UserAuthorizationHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("UserAuthorizationHandler"),
 		jen.Line(),
 	)
 
@@ -129,7 +129,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 				jen.Comment("check for user instead"),
 				jen.List(jen.ID("user"), jen.ID("userOk")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")),
 				jen.If(jen.Op("!").ID("userOk")).Block(jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no user attached to this request")),
-					jen.Return().List(jen.Lit(""), jen.Qual("errors", "New").Call(jen.Lit("user not found"))),
+					jen.Return().List(jen.EmptyString(), jen.Qual("errors", "New").Call(jen.Lit("user not found"))),
 				),
 				jen.ID("uid").Equals().ID("user").Dot("ID"),
 			).Else().Block(
@@ -142,7 +142,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ClientAuthorizedHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("ClientAuthorizedHandler"),
+		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "ClientAuthorizedHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("ClientAuthorizedHandler"),
 		jen.Line(),
 	)
 
@@ -180,7 +180,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3/server", "ClientScopeHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("ClientScopeHandler"),
+		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "ClientScopeHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("ClientScopeHandler"),
 		jen.Line(),
 	)
 

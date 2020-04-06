@@ -31,8 +31,8 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("req")),
 			jen.Return().List(
-				jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")),
-				jen.ID("args").Dot("Error").Call(jen.Lit(1)),
+				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")),
+				jen.ID("args").Dot("Error").Call(jen.One()),
 			),
 		),
 		jen.Line(),
@@ -56,8 +56,8 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 				"Called",
 			).Call(jen.ID("name"), jen.ID("value")),
 			jen.Return().List(
-				jen.ID("args").Dot("String").Call(jen.Lit(0)),
-				jen.ID("args").Dot("Error").Call(jen.Lit(1)),
+				jen.ID("args").Dot("String").Call(jen.Zero()),
+				jen.ID("args").Dot("Error").Call(jen.One()),
 			),
 		),
 		jen.Line(),
@@ -68,7 +68,7 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("args").Assign().ID("m").Dot(
 				"Called",
 			).Call(jen.ID("name"), jen.ID("value"), jen.ID("dst")),
-			jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
+			jen.Return().ID("args").Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)

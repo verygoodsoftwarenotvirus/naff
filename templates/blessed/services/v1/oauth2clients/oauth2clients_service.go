@@ -14,7 +14,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
-			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),
@@ -35,8 +35,8 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
-			jen.ID("_").Qual("gopkg.in/oauth2.v3", "ClientStore").Equals().Parens(jen.PointerTo().ID("clientStore")).Call(jen.Nil()),
+			jen.Underscore().Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
+			jen.Underscore().Qual("gopkg.in/oauth2.v3", "ClientStore").Equals().Parens(jen.PointerTo().ID("clientStore")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)

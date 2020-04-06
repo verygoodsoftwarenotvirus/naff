@@ -114,6 +114,7 @@ func AddImports(proj *models.Project, file *jen.File) {
 		"io/ioutil":         "ioutil",
 		"reflect":           "reflect",
 
+		"github.com/boombuler/barcode/qr":              "qr",
 		"contrib.go.opencensus.io/exporter/jaeger":     "jaeger",
 		"contrib.go.opencensus.io/exporter/prometheus": "prometheus",
 		"contrib.go.opencensus.io/integrations/ocsql":  "ocsql",

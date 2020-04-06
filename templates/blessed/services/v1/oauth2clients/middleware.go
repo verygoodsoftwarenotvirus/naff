@@ -93,13 +93,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.Qual("strings", "HasPrefix").Call(jen.ID("req").Dot("URL").Dot("Path"),
 				jen.ID("apiPathPrefix"))).Block(
 				jen.ID("x").Assign().Qual("strings", "TrimPrefix").Call(jen.ID("req").Dot("URL").Dot("Path"), jen.ID("apiPathPrefix")),
-				jen.If(jen.ID("y").Assign().Qual("strings", "Split").Call(jen.ID("x"), jen.Lit("/")), jen.ID("len").Call(jen.ID("y")).Op(">").Lit(0)).Block(
-					jen.ID("x").Equals().ID("y").Index(jen.Lit(0)),
+				jen.If(jen.ID("y").Assign().Qual("strings", "Split").Call(jen.ID("x"), jen.Lit("/")), jen.ID("len").Call(jen.ID("y")).Op(">").Zero()).Block(
+					jen.ID("x").Equals().ID("y").Index(jen.Zero()),
 				),
 				jen.Return().ID("x"),
 			),
 			jen.Line(),
-			jen.Return().Lit(""),
+			jen.Return().EmptyString(),
 		),
 		jen.Line(),
 	)
@@ -142,7 +142,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("OAuth2ClientInfoMiddleware")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
-				jen.If(jen.ID("v").Assign().ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.ID("oauth2ClientIDURIParamKey")), jen.ID("v").DoesNotEqual().Lit("")).Block(
+				jen.If(jen.ID("v").Assign().ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.ID("oauth2ClientIDURIParamKey")), jen.ID("v").DoesNotEqual().EmptyString()).Block(
 					jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("oauth2_client_id"), jen.ID("v")),
 					jen.Line(),
 					jen.List(jen.ID("client"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.CtxVar(), jen.ID("v")),
@@ -171,7 +171,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchOAuth2ClientFromRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Block(
 			jen.List(jen.ID("client"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")),
-			jen.ID("_").Equals().ID("ok").Comment("we don't really care, but the linters do"),
+			jen.Underscore().Equals().ID("ok").Comment("we don't really care, but the linters do"),
 			jen.Return().ID("client"),
 		),
 		jen.Line(),
@@ -180,7 +180,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchOAuth2ClientIDFromRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.String()).Block(
 			jen.List(jen.ID("clientID"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.ID("clientIDKey")).Assert(jen.String()),
-			jen.ID("_").Equals().ID("ok").Comment("we don't really care, but the linters do"),
+			jen.Underscore().Equals().ID("ok").Comment("we don't really care, but the linters do"),
 			jen.Return().ID("clientID"),
 		),
 		jen.Line(),

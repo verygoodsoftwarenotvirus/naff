@@ -12,7 +12,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.ModelsV1Package(), "WebhookDataManager").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.ModelsV1Package(), "WebhookDataManager").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

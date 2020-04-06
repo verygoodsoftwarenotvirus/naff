@@ -24,7 +24,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("DecodeCookieFromRequest takes a request object and fetches the cookie data if it is present"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("DecodeCookieFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.ID("ca").PointerTo().Qual(proj.ModelsV1Package(), "CookieAuth"), jen.Err().Error()).Block(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("DecodeCookieFromRequest")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("DecodeCookieFromRequest")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("req").Dot("Cookie").Call(jen.ID("CookieName")),
@@ -161,7 +161,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("LogoutHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("LogoutHandler")),
+				jen.List(jen.Underscore(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("LogoutHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.If(jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("req").Dot("Cookie").Call(jen.ID("CookieName")), jen.Err().Op("==").ID("nil").And().ID("cookie").DoesNotEqual().ID("nil")).Block(
@@ -185,7 +185,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CycleSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
 				jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("cycling cookie secret!")),
-				jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CycleSecretHandler")),
+				jen.List(jen.Underscore(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CycleSecretHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.ID("s").Dot("cookieManager").Equals().Qual("github.com/gorilla/securecookie", "New").Callln(

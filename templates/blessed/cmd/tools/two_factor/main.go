@@ -73,7 +73,7 @@ and logging in.`)
 			jen.If(jen.ID("len").Call(jen.ID("in")).DoesNotEqual().Lit(5)).Block(
 				jen.ID("panic").Call(jen.Lit("wut")),
 			),
-			jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 				jen.ID("out").Index(jen.ID("i")).Equals().ID("in").Index(jen.ID("i")),
 			),
 			jen.Return(),
@@ -99,11 +99,11 @@ and logging in.`)
 	ret.Add(
 		jen.Func().ID("buildTheThing").Params(jen.ID("token").String()).Params(jen.String()).Block(
 			jen.Var().ID("out").String(),
-			jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
-				jen.If(jen.ID("i").DoesNotEqual().Lit(0)).Block(
+			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+				jen.If(jen.ID("i").DoesNotEqual().Zero()).Block(
 					jen.ID("out").Op("+=").Lit("\n"),
 				),
-				jen.For(jen.List(jen.ID("_"), jen.ID("x")).Assign().Range().Qual("strings", "Split").Call(jen.ID("token"), jen.Lit(""))).Block(
+				jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().Qual("strings", "Split").Call(jen.ID("token"), jen.EmptyString())).Block(
 					jen.List(jen.ID("y"), jen.Err()).Assign().Qual("strconv", "Atoi").Call(jen.ID("x")),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID("panic").Call(jen.Err()),
@@ -150,13 +150,13 @@ and logging in.`)
 				jen.Err().Error(),
 			),
 			jen.Line(),
-			jen.If(jen.ID("len").Call(jen.Qual("os", "Args")).Op("==").Lit(1)).Block(
+			jen.If(jen.ID("len").Call(jen.Qual("os", "Args")).Op("==").One()).Block(
 				jen.ID("reader").Assign().Qual("bufio", "NewReader").Call(jen.Qual("os", "Stdin")),
 				jen.Qual("fmt", "Print").Call(jen.Lit("token: ")),
 				jen.List(jen.ID("token"), jen.Err()).Equals().ID("reader").Dot("ReadString").Call(jen.ID(`'\n'`)),
 				jen.ID("mustnt").Call(jen.Err()),
 			).Else().Block(
-				jen.ID("token").Equals().Qual("os", "Args").Index(jen.Lit(1)),
+				jen.ID("token").Equals().Qual("os", "Args").Index(jen.One()),
 			),
 			jen.Line(),
 			jen.Return().ID("token"),
@@ -169,7 +169,7 @@ and logging in.`)
 			jen.ID("secret").Assign().ID("requestTOTPSecret").Call(),
 			jen.ID("clearTheScreen").Call(),
 			jen.ID("doTheThing").Call(jen.ID("secret")),
-			jen.ID("every").Assign().Qual("time", "Tick").Call(jen.Lit(1).Times().Qual("time", "Second")),
+			jen.ID("every").Assign().Qual("time", "Tick").Call(jen.One().Times().Qual("time", "Second")),
 			jen.ID("lastChange").Equals().Qual("time", "Now").Call(),
 			jen.Line(),
 			jen.For().Range().ID("every").Block(

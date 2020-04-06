@@ -99,6 +99,24 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 		vals = append(vals, jen.ID(fmt.Sprintf("Runtime%sView", metric.varName)))
 	}
 
+	defs = append(defs,
+		jen.Line(),
+		jen.Comment("MetricAggregationMeasurement keeps track of how much time we spend collecting metrics"),
+		jen.ID("MetricAggregationMeasurement").Equals().Qual("go.opencensus.io/stats", "Int64").Callln(
+			jen.Lit("metrics_aggregation_time"),
+			jen.Lit("cumulative time in nanoseconds spent aggregating metrics"),
+			jen.Qual("go.opencensus.io/stats", "UnitDimensionless"),
+		),
+		jen.Comment("MetricAggregationMeasurementView is the corresponding view for the above metric"),
+		jen.ID("MetricAggregationMeasurementView").Equals().VarPointer().Qual("go.opencensus.io/stats/view", "View").Valuesln(
+			jen.ID("Name").MapAssign().Lit("metrics_aggregation_time"),
+			jen.ID("Measure").MapAssign().ID("MetricAggregationMeasurement"),
+			jen.ID("Description").MapAssign().Lit("cumulative time in nanoseconds spent aggregating metrics"),
+			jen.ID("Aggregation").MapAssign().Qual("go.opencensus.io/stats/view", "LastValue").Call(),
+		),
+		jen.Line(),
+	)
+
 	vals = append(vals,
 		jen.ID("MetricAggregationMeasurementView"),
 		jen.Comment("provided by ochttp"),
@@ -109,6 +127,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerRequestCountByMethod"),
 		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerResponseCountByStatusCode"),
 	)
+
 	defs = append(defs,
 		jen.Comment("DefaultRuntimeViews represents the pre-configured views"),
 		jen.ID("DefaultRuntimeViews").Equals().Index().ParamPointer().Qual("go.opencensus.io/stats/view", "View").Valuesln(vals...),
@@ -116,6 +135,15 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(defs...),
+		jen.Line(),
+	)
+
+	ret.Add(
+		jen.Comment("RegisterDefaultViews registers default runtime views"),
+		jen.Line(),
+		jen.Func().ID("RegisterDefaultViews").Params().Params(jen.Error()).Block(
+			jen.Return().Qual("go.opencensus.io/stats/view", "Register").Call(jen.ID("DefaultRuntimeViews").Op("...")),
+		),
 		jen.Line(),
 	)
 
@@ -131,13 +159,13 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 				jen.ID("done").Equals().ID("make").Call(jen.Chan().Struct()),
 			),
 			jen.Line(),
-			jen.ID("ms").Assign().VarPointer().Qual("runtime", "MemStats").Values(),
 			jen.Go().Func().Params().Block(
 				jen.For().Block(
 					jen.Select().Block(
 						jen.Case(jen.Op("<-").ID("ticker").Dot("C")).Block(
-							jen.ID("startTime").Assign().Qual("time", "Now").Call(),
 							utils.CreateCtx(),
+							jen.ID("startTime").Assign().Qual("time", "Now").Call(),
+							jen.ID("ms").Assign().VarPointer().Qual("runtime", "MemStats").Values(),
 							jen.Line(),
 							jen.Qual("runtime", "ReadMemStats").Call(jen.ID("ms")),
 							jen.Qual("go.opencensus.io/stats", "Record").Callln(
@@ -169,11 +197,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 								jen.ID("RuntimeNumGCMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("NumGC"))),
 								jen.ID("RuntimeNumForcedGCMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("NumForcedGC"))),
 								jen.ID("RuntimeGCCPUFractionMeasurement").Dot("M").Call(jen.ID("ms").Dot("GCCPUFraction")),
-							),
-							jen.Qual("go.opencensus.io/stats", "Record").Call(
-								utils.CtxVar(), jen.ID("MetricAggregationMeasurement").Dot("M").Call(
-									jen.Qual("time", "Since").Call(jen.ID("startTime")).Dot("Nanoseconds").Call(),
-								),
+								jen.ID("MetricAggregationMeasurement").Dot("M").Call(jen.Qual("time", "Since").Call(jen.ID("startTime")).Dot("Nanoseconds").Call()),
 							),
 						),
 						jen.Case(jen.Op("<-").ID("done")).Block(jen.ID("ticker").Dot("Stop").Call(), jen.Return()),

@@ -12,7 +12,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.ModelsV1Package(),
+		jen.Var().Underscore().Qual(proj.ModelsV1Package(),
 			"OAuth2ClientDataManager",
 		).Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 		jen.Line(),

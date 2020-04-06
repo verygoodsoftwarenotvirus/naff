@@ -12,7 +12,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder").Equals().Parens(jen.PointerTo().ID("EncoderDecoder")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.InternalEncodingV1Package(), "EncoderDecoder").Equals().Parens(jen.PointerTo().ID("EncoderDecoder")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -27,7 +27,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Comment("EncodeResponse satisfies our EncoderDecoder interface"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("EncoderDecoder")).ID("EncodeResponse").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.Error()).Block(
-			jen.Return().ID("m").Dot("Called").Call(jen.ID("res"), jen.ID("v")).Dot("Error").Call(jen.Lit(0)),
+			jen.Return().ID("m").Dot("Called").Call(jen.ID("res"), jen.ID("v")).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)
@@ -36,7 +36,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Comment("DecodeRequest satisfies our EncoderDecoder interface"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("EncoderDecoder")).ID("DecodeRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
-			jen.Return().ID("m").Dot("Called").Call(jen.ID("req"), jen.ID("v")).Dot("Error").Call(jen.Lit(0)),
+			jen.Return().ID("m").Dot("Called").Call(jen.ID("req"), jen.ID("v")).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)

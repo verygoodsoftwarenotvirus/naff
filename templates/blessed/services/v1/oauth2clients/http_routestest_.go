@@ -64,7 +64,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				"without context value present",
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("expected").Assign().Uint64().Call(jen.Lit(0)),
+				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				jen.ID("actual").Assign().ID("s").Dot("fetchUserID").Call(jen.ID("req")),

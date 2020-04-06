@@ -194,7 +194,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with zero limit",
-				jen.ID("exampleQF").Assign().VarPointer().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(0), jen.ID("Page").MapAssign().Lit(1)),
+				jen.ID("exampleQF").Assign().VarPointer().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Zero(), jen.ID("Page").MapAssign().One()),
 				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE condition = $1 LIMIT 250`),
 				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),

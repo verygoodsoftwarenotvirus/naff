@@ -24,7 +24,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
-			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),
@@ -39,8 +39,8 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("randString").Params().Params(jen.String(), jen.Error()).Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.Comment("Note that err == nil only if we read len(b) bytes."),
-			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().List(jen.Lit(""), jen.Err()),
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.Return().List(jen.EmptyString(), jen.Err()),
 			),
 			jen.Line(),
 			jen.Return().List(jen.Qual("encoding/base32", "StdEncoding").Dot("EncodeToString").Call(jen.ID("b")), jen.Nil()),
@@ -140,27 +140,34 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("fetch parsed input from request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UserCreationMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserInput")),
+				jen.List(jen.ID("userInput"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(
+					jen.ID("UserCreationMiddlewareCtxKey"),
+				).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput")),
 				jen.If(jen.Op("!").ID("ok")).Block(
 					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("valid input not attached to UsersService CreateHandler request")),
 					utils.WriteXHeader("res", "StatusBadRequest"),
 					jen.Return(),
 				),
-				jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID("span"), jen.ID("input").Dot("Username")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID("span"), jen.ID("userInput").Dot("Username")),
 				jen.Line(),
 				jen.Comment("NOTE: I feel comfortable letting username be in the logger, since"),
 				jen.Comment("the logging statements below are only in the event of errors. If"),
 				jen.Comment("and when that changes, this can/should be removed."),
-				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("username"), jen.ID("input").Dot("Username")),
+				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("username"), jen.ID("userInput").Dot("Username")),
 				jen.Line(),
 				jen.Comment("hash the password"),
-				jen.List(jen.ID("hp"), jen.Err()).Assign().ID("s").Dot("authenticator").Dot("HashPassword").Call(utils.CtxVar(), jen.ID("input").Dot("Password")),
+				jen.List(jen.ID("hp"), jen.Err()).Assign().ID("s").Dot("authenticator").Dot("HashPassword").Call(utils.CtxVar(), jen.ID("userInput").Dot("Password")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("valid input not attached to request")),
 					utils.WriteXHeader("res", "StatusInternalServerError"),
 					jen.Return(),
 				),
-				jen.ID("input").Dot("Password").Equals().ID("hp"),
+				jen.Line(),
+				jen.ID("input").Assign().Qual(proj.ModelsV1Package(), "UserDatabaseCreationInput").Valuesln(
+					jen.ID("Username").MapAssign().ID("userInput").Dot("Username"),
+					jen.ID("HashedPassword").MapAssign().ID("hp"),
+					jen.ID("TwoFactorSecret").MapAssign().EmptyString(),
+				),
 				jen.Line(),
 				jen.Comment("generate a two factor secret"),
 				jen.List(jen.ID("input").Dot("TwoFactorSecret"), jen.Err()).Equals().ID("randString").Call(),
@@ -220,7 +227,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("buildQRCode builds a QR code for a given username and secret"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildQRCode").Params(utils.CtxParam(), jen.List(jen.ID("username"), jen.ID("twoFactorSecret")).String()).Params(jen.String()).Block(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("buildQRCode")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("buildQRCode")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
 			jen.Comment("encode two factor secret as authenticator-friendly QR code"),
@@ -238,21 +245,21 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("trying to encode secret to qr code")),
-				jen.Return().Lit(""),
+				jen.Return().EmptyString(),
 			),
 			jen.Line(),
 			jen.Comment("scale the QR code so that it's not a PNG for ants"),
 			jen.List(jen.ID("qrcode"), jen.Err()).Equals().Qual("github.com/boombuler/barcode", "Scale").Call(jen.ID("qrcode"), jen.Lit(256), jen.Lit(256)),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("trying to enlarge qr code")),
-				jen.Return().Lit(""),
+				jen.Return().EmptyString(),
 			),
 			jen.Line(),
 			jen.Comment("encode the QR code to PNG"),
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.If(jen.Err().Equals().Qual("image/png", "Encode").Call(jen.VarPointer().ID("b"), jen.ID("qrcode")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("trying to encode qr code to png")),
-				jen.Return().Lit(""),
+				jen.Return().EmptyString(),
 			),
 			jen.Line(),
 			jen.Comment("base64 encode the image for easy HTML use"),

@@ -362,7 +362,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
 		jen.If(jen.ID("input").Is().Nil()).Block(
-			jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil input provided!"))),
+			jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil input provided"))),
 		),
 		jen.Line(),
 		jen.List(jen.ID("body"), jen.Err()).Assign().ID("createBodyFromStruct").Call(jen.VarPointer().ID("input")),
@@ -412,7 +412,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
 		jen.If(jen.ID("input").Is().Nil()).Block(
-			jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil input provided!"))),
+			jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil input provided"))),
 		),
 		jen.Line(),
 		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(utils.CtxVar(), jen.ID("input")),
@@ -443,10 +443,10 @@ func buildLogin(proj *models.Project) []jen.Code {
 		jen.ID("cookies").Assign().ID("res").Dot("Cookies").Call(),
 		jen.If(jen.ID("len").Call(
 			jen.ID("cookies"),
-		).Op(">").Lit(0),
+		).Op(">").Zero(),
 		).Block(
 			jen.Return().List(jen.ID("cookies").Index(
-				jen.Lit(0),
+				jen.Zero(),
 			),
 				jen.Nil(),
 			),

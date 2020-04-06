@@ -12,7 +12,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.PointerTo().ID("OAuth2ClientDataServer")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.PointerTo().ID("OAuth2ClientDataServer")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -28,7 +28,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
 	)
@@ -38,7 +38,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
 	)
@@ -48,7 +48,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
 	)
@@ -58,7 +58,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
 	)
@@ -68,7 +68,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "Handler")),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
 	)
@@ -78,7 +78,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("OAuth2ClientInfoMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "Handler")),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
 	)
@@ -89,7 +89,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("req")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	)
@@ -99,7 +99,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("res"), jen.ID("req")),
-			jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
+			jen.Return().ID("args").Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)
@@ -109,7 +109,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("res"), jen.ID("req")),
-			jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
+			jen.Return().ID("args").Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)

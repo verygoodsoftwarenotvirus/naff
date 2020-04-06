@@ -41,7 +41,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.List(jen.ID("tf"), jen.Err()).Assign().Qual("io/ioutil", "TempFile").Call(jen.Qual("os", "TempDir").Call(), jen.Lit("*.toml")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.ID("expected").Assign().Lit("thisisatest"),
 				jen.Line(),
 				jen.List(jen.Underscore(), jen.Err()).Equals().ID("tf").Dot("Write").Call(
@@ -61,7 +61,7 @@ connection_details = "%s"
 						),
 					),
 				),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("expectedConfig").Assign().VarPointer().ID("ServerConfig").Valuesln(
 					jen.ID("Server").MapAssign().ID("ServerSettings").Valuesln(

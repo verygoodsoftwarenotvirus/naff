@@ -102,7 +102,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("todoClient").Assign().ID("initializeClient").Call(jen.ID("oa2Client")),
 			jen.Line(),
 			jen.Var().ID("runTime").Equals().Lit(10).Times().Qual("time", "Minute"),
-			jen.If(jen.ID("rt").Assign().Qual("os", "Getenv").Call(jen.Lit("LOADTEST_RUN_TIME")), jen.ID("rt").DoesNotEqual().Lit("")).Block(
+			jen.If(jen.ID("rt").Assign().Qual("os", "Getenv").Call(jen.Lit("LOADTEST_RUN_TIME")), jen.ID("rt").DoesNotEqual().EmptyString()).Block(
 				jen.List(jen.ID("_rt"), jen.Err()).Assign().Qual("time", "ParseDuration").Call(jen.ID("rt")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("panic").Call(jen.Err()),

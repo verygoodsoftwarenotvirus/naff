@@ -40,7 +40,7 @@ func buildBuildFakeOAuth2Client(proj *models.Project) []jen.Code {
 					),
 					jen.ID("ImplicitAllowed").MapAssign().False(),
 					jen.ID("BelongsToUser").MapAssign().Add(utils.FakeUint64Func()),
-					jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Uint32().Call(jen.Qual(utils.FakeLibrary, "Date").Call().Dot("Unix").Call())),
+					jen.ID("CreatedOn").MapAssign().Add(utils.FakeUnixTimeFunc()),
 				),
 			),
 		),
@@ -65,7 +65,7 @@ func buildBuildFakeOAuth2ClientList(proj *models.Project) []jen.Code {
 			jen.Return(
 				jen.VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
-						jen.ID("Page").MapAssign().Lit(1),
+						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
 						jen.ID("TotalCount").MapAssign().Lit(3),
 					),

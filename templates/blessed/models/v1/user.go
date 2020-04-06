@@ -128,15 +128,15 @@ func userDotGo(proj *models.Project) *jen.File {
 		jen.Comment("Update accepts a User as input and merges those values if they're set"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("Update").Params(jen.ID("input").PointerTo().ID("User")).Block(
-			jen.If(jen.ID("input").Dot("Username").DoesNotEqual().Lit("").And().ID("input").Dot("Username").DoesNotEqual().ID("u").Dot("Username")).Block(
+			jen.If(jen.ID("input").Dot("Username").DoesNotEqual().EmptyString().And().ID("input").Dot("Username").DoesNotEqual().ID("u").Dot("Username")).Block(
 				jen.ID("u").Dot("Username").Equals().ID("input").Dot("Username"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("HashedPassword").DoesNotEqual().Lit("").And().ID("input").Dot("HashedPassword").DoesNotEqual().ID("u").Dot("HashedPassword")).Block(
+			jen.If(jen.ID("input").Dot("HashedPassword").DoesNotEqual().EmptyString().And().ID("input").Dot("HashedPassword").DoesNotEqual().ID("u").Dot("HashedPassword")).Block(
 				jen.ID("u").Dot("HashedPassword").Equals().ID("input").Dot("HashedPassword"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("TwoFactorSecret").DoesNotEqual().Lit("").And().ID("input").Dot("TwoFactorSecret").DoesNotEqual().ID("u").Dot("TwoFactorSecret")).Block(
+			jen.If(jen.ID("input").Dot("TwoFactorSecret").DoesNotEqual().EmptyString().And().ID("input").Dot("TwoFactorSecret").DoesNotEqual().ID("u").Dot("TwoFactorSecret")).Block(
 				jen.ID("u").Dot("TwoFactorSecret").Equals().ID("input").Dot("TwoFactorSecret"),
 			),
 		),

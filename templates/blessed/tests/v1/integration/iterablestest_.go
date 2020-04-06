@@ -246,7 +246,7 @@ func buildBuildDummySomething(proj *models.Project, typ models.DataType) []jen.C
 		jen.List(jen.ID("y"), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
 			creationArgs...,
 		),
-		jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+		utils.RequireNoError(jen.Err(), nil),
 		jen.Line(),
 		jen.Return().ID("y"),
 	)
@@ -418,7 +418,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 	lines = append(lines,
 		jen.Commentf("Create %s", pcn),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
-		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 			jen.ID("expected").Equals().Append(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
 		),
 		jen.Line(),

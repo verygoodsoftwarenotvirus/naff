@@ -113,6 +113,8 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
 			),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -135,6 +137,8 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
 			),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -155,6 +159,8 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
 			),
 		),
 		jen.Line(),

@@ -285,7 +285,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				"happy path",
 				jen.ID("exampleWebhook").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhook").Call(),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID("exampleWebhook")),
-				jen.ID("exampleInput").Dot("BelongsToUser").Equals().Lit(0),
+				jen.ID("exampleInput").Dot("BelongsToUser").Equals().Zero(),
 				jen.Line(),
 				jen.Line(),
 				utils.BuildTestServer(

@@ -103,6 +103,38 @@ func developmentDotJSON(projectName wordsmith.SuperPalabra) models.DockerCompose
 				Logging: nullLogger,
 				Ports:   []string{"2345:5432"},
 			},
+			serviceName: {
+				Build: &models.DockerComposeBuild{
+					Context:    "../",
+					Dockerfile: "dockerfiles/development.Dockerfile",
+				},
+				DependsOn: []string{
+					"prometheus",
+					"grafana",
+				},
+				Environment: map[string]string{
+					"CONFIGURATION_FILEPATH":           "config_files/development.toml",
+					"DOCKER":                           "true",
+					"JAEGER_AGENT_HOST":                "tracing-server",
+					"JAEGER_AGENT_PORT":                "6831",
+					"JAEGER_SAMPLER_MANAGER_HOST_PORT": "tracing-server:5778",
+					"JAEGER_SERVICE_NAME":              fmt.Sprintf("%s-server", projectName.KebabName()),
+				},
+				Links: []string{
+					"tracing-server",
+					"database",
+				},
+				Ports: []string{
+					"80:8888",
+				},
+				Volumes: []models.DockerVolume{
+					{
+						Source: "../frontend/v1/public",
+						Target: "/frontend",
+						Type:   "bind",
+					},
+				},
+			},
 			"grafana": {
 				Image: "grafana/grafana",
 				Links: []string{
@@ -136,38 +168,6 @@ func developmentDotJSON(projectName wordsmith.SuperPalabra) models.DockerCompose
 					{
 						Source: "../deploy/prometheus/local/config.yaml",
 						Target: "/etc/prometheus/config.yaml",
-						Type:   "bind",
-					},
-				},
-			},
-			serviceName: {
-				Build: &models.DockerComposeBuild{
-					Context:    "../",
-					Dockerfile: "dockerfiles/development.Dockerfile",
-				},
-				DependsOn: []string{
-					"prometheus",
-					"grafana",
-				},
-				Environment: map[string]string{
-					"CONFIGURATION_FILEPATH":           "config_files/development.toml",
-					"DOCKER":                           "true",
-					"JAEGER_AGENT_HOST":                "tracing-server",
-					"JAEGER_AGENT_PORT":                "6831",
-					"JAEGER_SAMPLER_MANAGER_HOST_PORT": "tracing-server:5778",
-					"JAEGER_SERVICE_NAME":              fmt.Sprintf("%s-server", projectName.KebabName()),
-				},
-				Links: []string{
-					"tracing-server",
-					"database",
-				},
-				Ports: []string{
-					"80:8888",
-				},
-				Volumes: []models.DockerVolume{
-					{
-						Source: "../frontend/v1/public",
-						Target: "/frontend",
 						Type:   "bind",
 					},
 				},

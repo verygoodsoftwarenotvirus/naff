@@ -29,7 +29,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("randString").Params().Params(jen.String()).Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(32)),
-			jen.If(jen.List(jen.ID("_"), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
@@ -46,7 +46,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.List(jen.ID("id"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()), jen.ID("ok")).Block(
 				jen.Return().ID("id"),
 			),
-			jen.Return().Lit(0),
+			jen.Return().Zero(),
 		),
 		jen.Line(),
 	)

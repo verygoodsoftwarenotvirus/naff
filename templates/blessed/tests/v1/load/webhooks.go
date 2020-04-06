@@ -16,7 +16,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("fetchRandomWebhook").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
 			jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("c").Dot("GetWebhooks").Call(utils.InlineCtx(), jen.Nil()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("webhooks").Op("==").ID("nil").Or().ID("len").Call(jen.ID("webhooks").Dot("Webhooks")).Op("==").Lit(0)).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("webhooks").Op("==").ID("nil").Or().ID("len").Call(jen.ID("webhooks").Dot("Webhooks")).Op("==").Zero()).Block(
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),
@@ -48,7 +48,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 					jen.ID("Name").MapAssign().Lit("CreateWebhook"), jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
 						jen.Return().ID("c").Dot("BuildCreateWebhookRequest").Call(utils.InlineCtx(), jen.Qual(proj.FakeModelsPackage(), "RandomWebhookInput").Call()),
 					),
-					jen.ID("Weight").MapAssign().Lit(1),
+					jen.ID("Weight").MapAssign().One(),
 				),
 				jen.Lit("UpdateWebhook").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("UpdateWebhook"), jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(

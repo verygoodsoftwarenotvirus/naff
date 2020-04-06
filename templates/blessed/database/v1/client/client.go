@@ -12,7 +12,7 @@ func clientDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.DatabaseV1Package(), "Database").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "Database").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

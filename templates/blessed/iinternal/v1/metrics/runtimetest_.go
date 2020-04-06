@@ -24,5 +24,15 @@ func runtimeTestDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
+	ret.Add(
+		jen.Func().ID("TestRegisterDefaultViews").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("t").Dot("Parallel").Call(),
+			jen.Comment("obligatory"),
+			utils.RequireNoError(jen.ID("RegisterDefaultViews").Call(), nil),
+		),
+		jen.Line(),
+	)
+
 	return ret
 }

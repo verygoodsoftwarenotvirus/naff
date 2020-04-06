@@ -19,7 +19,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("Database").Equals().Parens(jen.PointerTo().ID("MockDatabase")).Call(jen.Nil()),
+		jen.Var().Underscore().ID("Database").Equals().Parens(jen.PointerTo().ID("MockDatabase")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -83,7 +83,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("Migrate").Params(utils.CtxParam()).Params(jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
-			jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
+			jen.Return().ID("args").Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)
@@ -93,7 +93,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("IsReady").Params(utils.CtxParam()).Params(jen.ID("ready").Bool()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
-			jen.Return().ID("args").Dot("Bool").Call(jen.Lit(0)),
+			jen.Return().ID("args").Dot("Bool").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)

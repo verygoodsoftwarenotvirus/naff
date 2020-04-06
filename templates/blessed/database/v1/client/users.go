@@ -13,7 +13,7 @@ func usersDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.ModelsV1Package(), "UserDataManager").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
+			jen.Underscore().Qual(proj.ModelsV1Package(), "UserDataManager").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 			jen.Line(),
 			jen.Comment("ErrUserExists is a sentinel error for returning when a username is taken"),
 			jen.ID("ErrUserExists").Equals().Qual("errors", "New").Call(jen.Lit("error: username already exists")),

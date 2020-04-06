@@ -28,7 +28,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").ID("Authenticator").Equals().Parens(jen.PointerTo().ID("BcryptAuthenticator")).Call(jen.Nil()),
+			jen.Underscore().ID("Authenticator").Equals().Parens(jen.PointerTo().ID("BcryptAuthenticator")).Call(jen.Nil()),
 			jen.Line(),
 			jen.Comment("ErrCostTooLow indicates that a password has too low a Bcrypt cost"),
 			jen.ID("ErrCostTooLow").Equals().Qual("errors", "New").Call(jen.Lit("stored password's cost is too low")),
@@ -72,7 +72,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			utils.CtxParam(),
 			jen.ID("password").String(),
 		).Params(jen.String(), jen.Error()).Block(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(
 				utils.CtxVar(),
 				jen.Lit("HashPassword"),
 			),
@@ -99,7 +99,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 				jen.ID("providedPassword"),
 				jen.ID("twoFactorSecret"),
 				jen.ID("twoFactorCode")).String(),
-			jen.ID("_").Index().Byte(),
+			jen.Underscore().Index().Byte(),
 		).Params(jen.ID("passwordMatches").Bool(), jen.Err().Error()).Block(
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("ValidateLogin")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -134,7 +134,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("PasswordMatches validates whether or not a bcrypt-hashed password matches a provided password"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.ID("_").Index().Byte()).Params(jen.Bool()).Block(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.Underscore().Index().Byte()).Params(jen.Bool()).Block(
 			utils.StartSpan(proj, false, "PasswordMatches"),
 			jen.Return().Qual("golang.org/x/crypto/bcrypt", "CompareHashAndPassword").Call(jen.Index().Byte().Call(jen.ID("hashedPassword")), jen.Index().Byte().Call(jen.ID("providedPassword"))).Op("==").ID("nil"),
 		),

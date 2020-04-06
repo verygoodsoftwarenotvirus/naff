@@ -91,7 +91,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual("gopkg.in/oauth2.v3", "ClientInfo").Equals().Parens(jen.PointerTo().ID("OAuth2Client")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3", "ClientInfo").Equals().Parens(jen.PointerTo().ID("OAuth2Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -136,11 +136,11 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("HasScope").Params(jen.ID("scope").String()).Params(jen.ID("found").Bool()).Block(
 			jen.ID("scope").Equals().Qual("strings", "TrimSpace").Call(jen.ID("scope")),
-			jen.If(jen.ID("scope").Op("==").Lit("")).Block(
+			jen.If(jen.ID("scope").Op("==").EmptyString()).Block(
 				jen.Return().ID("false"),
 			),
 			jen.If(jen.ID("c").DoesNotEqual().ID("nil").And().ID("c").Dot("Scopes").DoesNotEqual().ID("nil")).Block(
-				jen.For(jen.List(jen.ID("_"), jen.ID("s")).Assign().Range().ID("c").Dot("Scopes")).Block(
+				jen.For(jen.List(jen.Underscore(), jen.ID("s")).Assign().Range().ID("c").Dot("Scopes")).Block(
 					jen.If(jen.Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("s"))).Op("==").Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("scope"))).Or().Qual("strings", "TrimSpace").Call(jen.ID("s")).Op("==").Lit("*")).Block(
 						jen.Return().ID("true"),
 					),

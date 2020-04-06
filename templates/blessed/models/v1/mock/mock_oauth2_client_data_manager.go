@@ -12,7 +12,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.ModelsV1Package(), "OAuth2ClientDataManager").Equals().Parens(jen.PointerTo().ID("OAuth2ClientDataManager")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.ModelsV1Package(), "OAuth2ClientDataManager").Equals().Parens(jen.PointerTo().ID("OAuth2ClientDataManager")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -29,7 +29,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("clientID"), jen.ID("userID")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	)
@@ -40,7 +40,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetOAuth2ClientByClientID").Params(utils.CtxParam(), jen.ID("identifier").String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("identifier")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	)
@@ -54,7 +54,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 	//		jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 	//	).Params(jen.Uint64(), jen.Error()).Block(
 	//		jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("userID"), jen.ID(utils.FilterVarName)),
-	//		jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+	//		jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.One())),
 	//	),
 	//	jen.Line(),
 	//)
@@ -64,7 +64,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetAllOAuth2ClientCount").Params(utils.CtxParam()).Params(jen.Uint64(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	)
@@ -75,7 +75,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetAllOAuth2Clients").Params(utils.CtxParam()).Params(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	)
@@ -86,7 +86,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 	//	jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetAllOAuth2ClientsForUser").Params(utils.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 	//		jen.Error()).Block(
 	//		jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("userID")),
-	//		jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+	//		jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 	//	),
 	//	jen.Line(),
 	//)
@@ -101,7 +101,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("userID"), jen.ID(utils.FilterVarName)),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	)
@@ -112,7 +112,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("CreateOAuth2Client").Params(utils.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("input")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	)
@@ -121,7 +121,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 		jen.Comment("UpdateOAuth2Client is a mock function"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("UpdateOAuth2Client").Params(utils.CtxParam(), jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.Error()).Block(
-			jen.Return().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("updated")).Dot("Error").Call(jen.Lit(0)),
+			jen.Return().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("updated")).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)
@@ -130,7 +130,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ArchiveOAuth2Client is a mock function"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("ArchiveOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.Error()).Block(
-			jen.Return().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("clientID"), jen.ID("userID")).Dot("Error").Call(jen.Lit(0)),
+			jen.Return().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("clientID"), jen.ID("userID")).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)

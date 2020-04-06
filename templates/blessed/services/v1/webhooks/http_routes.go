@@ -61,7 +61,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("validateWebhook").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(),
 			"WebhookCreationInput",
 		)).Params(jen.Error()).Block(
-			jen.List(jen.ID("_"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("input").Dot("URL")),
+			jen.List(jen.Underscore(), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("input").Dot("URL")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("invalid URL provided: %w"), jen.Err()),
 			),

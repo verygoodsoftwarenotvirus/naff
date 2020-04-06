@@ -68,7 +68,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				"happy path",
 				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
 				jen.Comment("the hashed password is never transmitted over the wire"),
-				jen.ID("exampleUser").Dot("HashedPassword").Equals().Lit(""),
+				jen.ID("exampleUser").Dot("HashedPassword").Equals().EmptyString(),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -113,7 +113,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				"with invalid client URL",
 				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
 				jen.ID("exampleUser").Dot("Salt").Equals().Nil(),
-				jen.ID("exampleUser").Dot("HashedPassword").Equals().Lit(""),
+				jen.ID("exampleUser").Dot("HashedPassword").Equals().EmptyString(),
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUser").Call(
@@ -174,9 +174,9 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				"happy path",
 				jen.ID("exampleUserList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserList").Call(),
 				jen.Comment("the hashed password is never transmitted over the wire"),
-				jen.ID("exampleUserList").Dot("Users").Index(jen.Lit(0)).Dot("HashedPassword").Equals().Lit(""),
-				jen.ID("exampleUserList").Dot("Users").Index(jen.Lit(1)).Dot("HashedPassword").Equals().Lit(""),
-				jen.ID("exampleUserList").Dot("Users").Index(jen.Lit(2)).Dot("HashedPassword").Equals().Lit(""),
+				jen.ID("exampleUserList").Dot("Users").Index(jen.Zero()).Dot("HashedPassword").Equals().EmptyString(),
+				jen.ID("exampleUserList").Dot("Users").Index(jen.One()).Dot("HashedPassword").Equals().EmptyString(),
+				jen.ID("exampleUserList").Dot("Users").Index(jen.Lit(2)).Dot("HashedPassword").Equals().EmptyString(),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",

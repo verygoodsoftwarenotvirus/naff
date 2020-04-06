@@ -232,8 +232,8 @@ func buildTestV1Client_TokenSource() []jen.Code {
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.Err()).Assign().ID("NewClient").Callln(
 					utils.CtxVar(),
-					jen.Lit(""),
-					jen.Lit(""),
+					jen.EmptyString(),
+					jen.EmptyString(),
 					jen.ID("mustParseURL").Call(
 						jen.ID("exampleURI"),
 					),
@@ -266,8 +266,8 @@ func buildTestNewClient() []jen.Code {
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.Err()).Assign().ID("NewClient").Callln(
 					utils.CtxVar(),
-					jen.Lit(""),
-					jen.Lit(""),
+					jen.EmptyString(),
+					jen.EmptyString(),
 					jen.ID("mustParseURL").Call(
 						jen.ID("exampleURI"),
 					),
@@ -289,14 +289,14 @@ func buildTestNewClient() []jen.Code {
 					jen.Err(),
 				).Assign().ID("NewClient").Callln(
 					utils.CtxVar(),
-					jen.Lit(""),
-					jen.Lit(""),
+					jen.EmptyString(),
+					jen.EmptyString(),
 					jen.ID("mustParseURL").Call(
 						jen.ID("exampleURI"),
 					),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.VarPointer().Qual("net/http", "Client").Valuesln(
-						jen.ID("Timeout").MapAssign().Lit(0),
+						jen.ID("Timeout").MapAssign().Zero(),
 					),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.ID("true"),
@@ -371,6 +371,8 @@ func buildTestV1Client_CloseRequestBody() []jen.Code {
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("c").Dot("closeResponseBody").Call(jen.ID("res")),
+				jen.Line(),
+				utils.AssertExpectationsFor("rc"),
 			),
 		),
 		jen.Line(),
@@ -401,8 +403,8 @@ func buildTestBuildURL() []jen.Code {
 					jen.Err(),
 				).Assign().ID("NewClient").Callln(
 					utils.CtxVar(),
-					jen.Lit(""),
-					jen.Lit(""),
+					jen.EmptyString(),
+					jen.EmptyString(),
 					jen.ID("u"),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Nil(),
@@ -502,8 +504,8 @@ func buildTestBuildVersionlessURL() []jen.Code {
 					jen.Err(),
 				).Assign().ID("NewClient").Callln(
 					utils.CtxVar(),
-					jen.Lit(""),
-					jen.Lit(""),
+					jen.EmptyString(),
+					jen.EmptyString(),
 					jen.ID("u"),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Nil(),
@@ -600,8 +602,8 @@ func buildTestV1Client_BuildWebsocketURL() []jen.Code {
 					jen.Err(),
 				).Assign().ID("NewClient").Callln(
 					utils.CtxVar(),
-					jen.Lit(""),
-					jen.Lit(""),
+					jen.EmptyString(),
+					jen.EmptyString(),
 					jen.ID("u"),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Nil(),

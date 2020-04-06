@@ -12,6 +12,11 @@ func RequireNotNil(value, message *jen.Statement, formatArgs ...*jen.Statement) 
 	return buildSingleValueTestifyFunc(r, "NotNil")(value, message, formatArgs...)
 }
 
+// RequireTrue creates a require call
+func RequireTrue(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
+	return buildSingleValueTestifyFunc(r, "True")(value, message, formatArgs...)
+}
+
 // RequireNil creates a require call
 func RequireNil(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return buildSingleValueTestifyFunc(r, "Nil")(value, message, formatArgs...)

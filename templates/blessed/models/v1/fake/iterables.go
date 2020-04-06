@@ -35,7 +35,7 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 	}
 
 	block = append(block,
-		jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Uint32().Call(jen.Qual(utils.FakeLibrary, "Date").Call().Dot("Unix").Call())),
+		jen.ID("CreatedOn").MapAssign().Add(utils.FakeUnixTimeFunc()),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().Add(utils.FakeUint64Func())
@@ -99,7 +99,7 @@ func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []je
 			jen.Return(
 				jen.VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
-						jen.ID("Page").MapAssign().Lit(1),
+						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
 						jen.ID("TotalCount").MapAssign().Lit(3),
 					),

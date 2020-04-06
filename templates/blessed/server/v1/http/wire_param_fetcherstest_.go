@@ -177,7 +177,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
 				jen.ID("fn").Assign().ID("buildChiUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Assign().Uint64().Call(jen.Lit(0)),
+				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
@@ -233,7 +233,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					"with invalid value somehow",
 					jen.Comment("NOTE: This will probably never happen in dev or production"),
 					jen.ID("fn").Assign().IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-					jen.ID("expected").Assign().Uint64().Call(jen.Lit(0)),
+					jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 					jen.Line(),
 					jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 					jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
@@ -287,7 +287,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
 				jen.ID("fn").Assign().ID("buildChiWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Assign().Uint64().Call(jen.Lit(0)),
+				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
@@ -340,7 +340,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
 				jen.ID("fn").Assign().ID("buildChiOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Assign().Uint64().Call(jen.Lit(0)),
+				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(

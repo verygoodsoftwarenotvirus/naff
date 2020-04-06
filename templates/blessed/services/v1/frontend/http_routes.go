@@ -33,7 +33,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("reading directory for frontend files: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.For(jen.List(jen.ID("_"), jen.ID("file")).Assign().Range().ID("files")).Block(
+			jen.For(jen.List(jen.Underscore(), jen.ID("file")).Assign().Range().ID("files")).Block(
 				jen.If(jen.ID("file").Dot("IsDir").Call()).Block(
 					jen.Continue(),
 				),
@@ -49,7 +49,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 					jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("reading static file from directory: %w"), jen.Err())),
 				),
 				jen.Line(),
-				jen.If(jen.List(jen.ID("_"), jen.Err()).Equals().ID("f").Dot("Write").Call(jen.ID("bs")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.List(jen.Underscore(), jen.Err()).Equals().ID("f").Dot("Write").Call(jen.ID("bs")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("loading static file into memory: %w"), jen.Err())),
 				),
 				jen.Line(),

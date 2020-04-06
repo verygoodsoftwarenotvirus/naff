@@ -12,7 +12,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.InternalAuthV1Package(), "Authenticator").Equals().Parens(jen.PointerTo().ID("Authenticator")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.InternalAuthV1Package(), "Authenticator").Equals().Parens(jen.PointerTo().ID("Authenticator")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -41,7 +41,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 				jen.ID("twoFactorCode"),
 				jen.ID("salt"),
 			),
-			jen.Return().List(jen.ID("args").Dot("Bool").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("Bool").Call(jen.Zero()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	)
@@ -49,7 +49,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("PasswordIsAcceptable satisfies our authenticator interface"), jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("PasswordIsAcceptable").Params(jen.ID("password").String()).Params(jen.Bool()).Block(
-			jen.Return().ID("m").Dot("Called").Call(jen.ID("password")).Dot("Bool").Call(jen.Lit(0)),
+			jen.Return().ID("m").Dot("Called").Call(jen.ID("password")).Dot("Bool").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)
@@ -58,7 +58,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 		jen.Comment("HashPassword satisfies our authenticator interface"), jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("password")),
-			jen.Return().List(jen.ID("args").Dot("String").Call(jen.Lit(0)), jen.ID("args").Dot("Error").Call(jen.Lit(1))),
+			jen.Return().List(jen.ID("args").Dot("String").Call(jen.Zero()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	)
@@ -77,7 +77,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 				jen.ID("providedPassword"),
 				jen.ID("salt"),
 			),
-			jen.Return().ID("args").Dot("Bool").Call(jen.Lit(0)),
+			jen.Return().ID("args").Dot("Bool").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)

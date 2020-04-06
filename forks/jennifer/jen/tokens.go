@@ -188,6 +188,138 @@ func (s *Statement) Op(op string) *Statement {
 	return s
 }
 
+// BitwiseXOR renders the provided operator / token.
+func BitwiseXOR() *Statement {
+	return newStatement().BitwiseXOR()
+}
+
+// BitwiseXOR renders the provided operator / token.
+func (g *Group) BitwiseXOR() *Statement {
+	s := BitwiseXOR()
+	g.items = append(g.items, s)
+	return s
+}
+
+// BitwiseXOR renders the provided operator / token.
+func (s *Statement) BitwiseXOR() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "^",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// BitwiseOR renders the provided operator / token.
+func BitwiseOR() *Statement {
+	return newStatement().BitwiseOR()
+}
+
+// BitwiseOR renders the provided operator / token.
+func (g *Group) BitwiseOR() *Statement {
+	s := BitwiseOR()
+	g.items = append(g.items, s)
+	return s
+}
+
+// BitwiseOR renders the provided operator / token.
+func (s *Statement) BitwiseOR() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "|",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// LeftShift renders the provided operator / token.
+func LeftShift() *Statement {
+	return newStatement().LeftShift()
+}
+
+// LeftShift renders the provided operator / token.
+func (g *Group) LeftShift() *Statement {
+	s := LeftShift()
+	g.items = append(g.items, s)
+	return s
+}
+
+// LeftShift renders the provided operator / token.
+func (s *Statement) LeftShift() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "<<",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// RightShift renders the provided operator / token.
+func RightShift() *Statement {
+	return newStatement().RightShift()
+}
+
+// RightShift renders the provided operator / token.
+func (g *Group) RightShift() *Statement {
+	s := RightShift()
+	g.items = append(g.items, s)
+	return s
+}
+
+// RightShift renders the provided operator / token.
+func (s *Statement) RightShift() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: ">>",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Plus renders the provided operator / token.
+func Plus() *Statement {
+	return newStatement().Plus()
+}
+
+// Plus renders the provided operator / token.
+func (g *Group) Plus() *Statement {
+	s := Plus()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Plus renders the provided operator / token.
+func (s *Statement) Plus() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "+",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Minus renders the provided operator / token.
+func Minus() *Statement {
+	return newStatement().Minus()
+}
+
+// Minus renders the provided operator / token.
+func (g *Group) Minus() *Statement {
+	s := Minus()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Minus renders the provided operator / token.
+func (s *Statement) Minus() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "-",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // And renders the provided operator / token.
 func And() *Statement {
 	return newStatement().And()

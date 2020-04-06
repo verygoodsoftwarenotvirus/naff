@@ -33,5 +33,6 @@ func wireDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

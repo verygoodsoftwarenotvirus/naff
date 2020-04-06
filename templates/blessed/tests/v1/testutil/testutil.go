@@ -23,7 +23,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("DetermineServiceURL").Params().Params(jen.String()).Block(
 			jen.ID("ta").Assign().Qual("os", "Getenv").Call(jen.Lit("TARGET_ADDRESS")),
-			jen.If(jen.ID("ta").Op("==").Lit("")).Block(
+			jen.If(jen.ID("ta").Op("==").EmptyString()).Block(
 				jen.ID("panic").Call(jen.Lit("must provide target address!")),
 			),
 			jen.Line(),
@@ -45,7 +45,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 				jen.ID("isDown").Equals().ID("true"),
 				jen.ID("interval").Equals().Qual("time", "Second"),
 				jen.ID("maxAttempts").Equals().Lit(50),
-				jen.ID("numberOfAttempts").Equals().Lit(0),
+				jen.ID("numberOfAttempts").Equals().Zero(),
 			),
 			jen.Line(),
 			jen.For(jen.ID("isDown")).Block(
@@ -193,8 +193,8 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.ID("cookies").Assign().ID("res").Dot("Cookies").Call(),
-			jen.If(jen.ID("len").Call(jen.ID("cookies")).Op(">").Lit(0)).Block(
-				jen.Return().List(jen.ID("cookies").Index(jen.Lit(0)), jen.Nil()),
+			jen.If(jen.ID("len").Call(jen.ID("cookies")).Op(">").Zero()).Block(
+				jen.Return().List(jen.ID("cookies").Index(jen.Zero()), jen.Nil()),
 			),
 			jen.Line(),
 			jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("no cookie found :("))),

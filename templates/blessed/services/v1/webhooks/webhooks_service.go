@@ -27,7 +27,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.ModelsV1Package(), "WebhookDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
+			jen.Underscore().Qual(proj.ModelsV1Package(), "WebhookDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)

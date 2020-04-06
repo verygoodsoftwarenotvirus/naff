@@ -17,9 +17,9 @@ func databaseDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.ID("_").ID("Scanner").Equals().Parens(jen.ParamPointer().Qual("database/sql", "Row")).Call(jen.Nil()),
-			jen.ID("_").ID("Querier").Equals().Parens(jen.ParamPointer().Qual("database/sql", "DB")).Call(jen.Nil()),
-			jen.ID("_").ID("Querier").Equals().Parens(jen.ParamPointer().Qual("database/sql", "Tx")).Call(jen.Nil()),
+			jen.Underscore().ID("Scanner").Equals().Parens(jen.ParamPointer().Qual("database/sql", "Row")).Call(jen.Nil()),
+			jen.Underscore().ID("Querier").Equals().Parens(jen.ParamPointer().Qual("database/sql", "DB")).Call(jen.Nil()),
+			jen.Underscore().ID("Querier").Equals().Parens(jen.ParamPointer().Qual("database/sql", "Tx")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)

@@ -15,7 +15,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("mustBuildCode").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("totpSecret").String()).Params(jen.String()).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("totpSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
-			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.Err()),
+			utils.RequireNoError(jen.Err(), nil),
 			jen.Return().ID("code"),
 		),
 		jen.Line(),
@@ -201,7 +201,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create oauth2Clients"),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
-					jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+					jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
 						jen.ID("input").Assign().ID("buildDummyOAuth2ClientInput").Call(
 							jen.ID("t"),
 							jen.ID("x").Dot("Username"),
@@ -217,7 +217,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("testClient").Dot("GetOAuth2Clients").Call(utils.CtxVar(), jen.Nil()),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					utils.AssertTrue(
-						jen.ID("len").Call(jen.ID("actual").Dot("Clients")).Op("-").ID("len").Call(jen.ID("expected")).Op(">").Lit(0),
+						jen.ID("len").Call(jen.ID("actual").Dot("Clients")).Op("-").ID("len").Call(jen.ID("expected")).Op(">").Zero(),
 						jen.Lit("expected %d - %d to be > 0"),
 						jen.ID("len").Call(jen.ID("actual").Dot("Clients")),
 						jen.ID("len").Call(jen.ID("expected")),

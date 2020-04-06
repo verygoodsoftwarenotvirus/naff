@@ -12,7 +12,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.InternalMetricsV1Package(), "UnitCounter").Equals().Parens(jen.PointerTo().ID("UnitCounter")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.InternalMetricsV1Package(), "UnitCounter").Equals().Parens(jen.PointerTo().ID("UnitCounter")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

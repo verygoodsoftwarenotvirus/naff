@@ -326,7 +326,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("Read"),
 					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("[]uint8")),
 				).Dot("Return").Call(
-					jen.Lit(0),
+					jen.Zero(),
 					jen.ID("expected"),
 				),
 				jen.Line(),
@@ -346,6 +346,8 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 					jen.Err(),
 					jen.Lit("no error should be encountered unmarshaling into a valid struct"),
 				),
+				jen.Line(),
+				utils.AssertExpectationsFor("rc"),
 			),
 		),
 		jen.Line(),

@@ -77,7 +77,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(proj.DatabaseV1Package(), "Database").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "Database").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
 		jen.Line(),
 		jen.Type().Defs(
 			jen.Commentf("%s is our main %s interaction db", sn, sn),
@@ -145,7 +145,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			return []jen.Code{jen.Return(jen.ID("true"))}
 		} else if isPostgres {
 			return []jen.Code{
-				jen.ID("numberOfUnsuccessfulAttempts").Assign().Lit(0),
+				jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
 				jen.Line(),
 				jen.ID(dbfl).Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 					jen.Lit("interval").MapAssign().Qual("time", "Second"),
@@ -171,7 +171,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			}
 		} else if isMariaDB {
 			return []jen.Code{
-				jen.ID("numberOfUnsuccessfulAttempts").Assign().Lit(0),
+				jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
 				jen.Line(),
 				jen.ID(dbfl).Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 					jen.Lit("interval").MapAssign().Qual("time", "Second"),

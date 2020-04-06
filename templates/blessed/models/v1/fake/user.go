@@ -97,7 +97,7 @@ func buildBuildFakeUserList(proj *models.Project) []jen.Code {
 			jen.Return(
 				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
-						jen.ID("Page").MapAssign().Lit(1),
+						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
 						jen.ID("TotalCount").MapAssign().Lit(3),
 					),
