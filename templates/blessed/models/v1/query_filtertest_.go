@@ -234,7 +234,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("https://verygoodsoftwarenotvirus.ru"), jen.Nil()),
 				utils.AssertNoError(jen.Err(), nil),
-				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("req")),
+				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				jen.ID("req").Dot("URL").Dot("RawQuery").Equals().ID("exampleInput").Dot("Encode").Call(),
 				jen.ID("actual").Assign().ID("ExtractQueryFilter").Call(jen.ID("req")),

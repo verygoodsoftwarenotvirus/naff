@@ -101,7 +101,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 					jen.Nil(),
 				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("s")),
+				utils.RequireNotNil(jen.ID("s"), nil),
 				utils.RequireNoError(jen.Err(), nil),
 			),
 			jen.Line(),

@@ -77,7 +77,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			utils.RequireNoError(jen.Err(), nil),
-			jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("cookie")),
+			utils.RequireNotNil(jen.ID("cookie"), nil),
 			jen.Line(),
 			jen.Return().List(jen.ID("user"), jen.ID("userInput"), jen.ID("cookie")),
 		),

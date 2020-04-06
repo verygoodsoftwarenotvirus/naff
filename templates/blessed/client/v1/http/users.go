@@ -361,7 +361,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
-		jen.If(jen.ID("input").Is().Nil()).Block(
+		jen.If(jen.ID("input").DoubleEquals().Nil()).Block(
 			jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil input provided"))),
 		),
 		jen.Line(),
@@ -411,7 +411,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
-		jen.If(jen.ID("input").Is().Nil()).Block(
+		jen.If(jen.ID("input").DoubleEquals().Nil()).Block(
 			jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil input provided"))),
 		),
 		jen.Line(),

@@ -27,7 +27,7 @@ func metaTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("checkValueAndError").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("i").Interface(), jen.Err().Error()).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			utils.RequireNoError(jen.Err(), nil),
-			jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("i")),
+			utils.RequireNotNil(jen.ID("i"), nil),
 		),
 		jen.Line(),
 	)

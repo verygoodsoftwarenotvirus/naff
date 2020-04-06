@@ -61,7 +61,11 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("oauth2ClientsService").ID("OAuth2ClientValidator"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
-		).Params(jen.PointerTo().ID("Service")).Block(
+		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
+			jen.If(jen.ID("cfg").DoubleEquals().Nil()).Block(
+				jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil config provided"))),
+			),
+			jen.Line(),
 			jen.ID("svc").Assign().VarPointer().ID("Service").Valuesln(
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("encoderDecoder").MapAssign().ID("encoder"),
@@ -76,7 +80,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Line(),
-			jen.Return().ID("svc"),
+			jen.Return(jen.ID("svc"), jen.Nil()),
 		),
 		jen.Line(),
 	)

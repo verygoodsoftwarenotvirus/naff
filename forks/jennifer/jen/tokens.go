@@ -474,20 +474,20 @@ func (s *Statement) Equals() *Statement {
 	return s
 }
 
-// Is renders the provided operator / token.
-func Is() *Statement {
-	return newStatement().Equals()
+// DoubleEquals renders the provided operator / token.
+func DoubleEquals() *Statement {
+	return newStatement().DoubleEquals()
 }
 
-// Is renders the provided operator / token.
-func (g *Group) Is() *Statement {
-	s := Is()
+// DoubleEquals renders the provided operator / token.
+func (g *Group) DoubleEquals() *Statement {
+	s := DoubleEquals()
 	g.items = append(g.items, s)
 	return s
 }
 
-// Is renders the provided operator / token.
-func (s *Statement) Is() *Statement {
+// DoubleEquals renders the provided operator / token.
+func (s *Statement) DoubleEquals() *Statement {
 	t := token{
 		typ:     operatorToken,
 		content: "==",
