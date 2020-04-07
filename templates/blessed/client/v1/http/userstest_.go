@@ -24,7 +24,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
 				jen.List(
 					jen.ID("actual"),
@@ -66,7 +66,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.Comment("the hashed password is never transmitted over the wire"),
 				jen.ID("exampleUser").Dot("HashedPassword").Equals().EmptyString(),
 				jen.Line(),
@@ -111,7 +111,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with invalid client URL",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.ID("exampleUser").Dot("Salt").Equals().Nil(),
 				jen.ID("exampleUser").Dot("HashedPassword").Equals().EmptyString(),
 				jen.Line(),
@@ -172,7 +172,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleUserList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserList").Call(),
+				utils.BuildFakeVar(proj, "UserList"),
 				jen.Comment("the hashed password is never transmitted over the wire"),
 				jen.ID("exampleUserList").Dot("Users").Index(jen.Zero()).Dot("HashedPassword").Equals().EmptyString(),
 				jen.ID("exampleUserList").Dot("Users").Index(jen.One()).Dot("HashedPassword").Equals().EmptyString(),
@@ -231,7 +231,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInputFromUser").Call(jen.ID("exampleUser")),
 				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
@@ -267,7 +267,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInputFromUser").Call(jen.ID("exampleUser")),
 				jen.ID("expected").Assign().Qual(proj.FakeModelsPackage(), "BuildDatabaseCreationResponse").Call(jen.ID("exampleUser")),
 				jen.Line(),
@@ -310,7 +310,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with invalid client URL",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInputFromUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
@@ -333,7 +333,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodDelete"),
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(
@@ -381,7 +381,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -409,7 +409,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with invalid client URL",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
 				jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("ArchiveUser").Call(
 					utils.CtxVar(),
@@ -430,7 +430,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(
@@ -465,7 +465,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -513,7 +513,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with invalid client URL",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
@@ -528,7 +528,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with timeout",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -569,7 +569,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with missing cookie",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				utils.BuildFakeVar(proj, "User"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				utils.BuildTestServer(

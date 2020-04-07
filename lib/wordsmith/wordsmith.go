@@ -48,15 +48,15 @@ func (s *SuperWord) Singular() string {
 
 func (s *SuperWord) Abbreviation() string {
 	x := kace.Pascal(s.word)
-	out := []string{}
+	var out string
 
 	for _, b := range x {
 		if strings.ToUpper(string(b)) == string(b) {
-			out = append(out, string(b))
+			out += string(b)
 		}
 	}
 
-	return strings.Join(out, "")
+	return out
 }
 
 func (s *SuperWord) LowercaseAbbreviation() string {

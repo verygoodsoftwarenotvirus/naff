@@ -146,6 +146,19 @@ func FakePasswordFunc() jen.Code {
 	)
 }
 
+func AppendItemsToList(list jen.Code, items ...jen.Code) jen.Code {
+	return jen.Add(list).Equals().Append(append([]jen.Code{list}, items...)...)
+}
+
+func BuildFakeVar(proj *models.Project, typName string, args ...jen.Code) jen.Code {
+	varName := fmt.Sprintf("example%s", typName)
+	return BuildFakeVarWithCustomName(proj, varName, typName, args...)
+}
+
+func BuildFakeVarWithCustomName(proj *models.Project, varName, typName string, args ...jen.Code) jen.Code {
+	return jen.IDf(varName).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typName)).Call(args...)
+}
+
 func buildSingleValueTestifyFunc(pkg, method string) func(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return func(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 		args := []jen.Code{

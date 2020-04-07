@@ -96,7 +96,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				jen.Line(),
-				jen.ID("exampleWebhookList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookList").Call(),
+				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -120,7 +120,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"with invalid cookie secret",
 				jen.Line(),
-				jen.ID("exampleWebhookList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookList").Call(),
+				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(

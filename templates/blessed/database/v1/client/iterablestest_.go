@@ -254,7 +254,7 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 		jen.Func().IDf("TestClient_Get%s", pn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+			utils.BuildFakeVar(proj, "User"),
 			jen.Line(),
 			utils.BuildSubTest("obligatory", buildSubtest(false)...),
 			jen.Line(),

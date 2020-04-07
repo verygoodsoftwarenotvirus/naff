@@ -37,7 +37,7 @@ func buildV1Client_BuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code 
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
 				jen.List(
 					jen.ID("actual"),
@@ -79,7 +79,7 @@ func buildV1Client_BuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code 
 func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 
 	happyPathSubtestLines := []jen.Code{
-		jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+		utils.BuildFakeVar(proj, "OAuth2Client"),
 		jen.Line(),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 			jen.Qual("net/http", "HandlerFunc").Callln(
@@ -131,7 +131,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 	}
 
 	invalidClientURLSubtestLines := []jen.Code{
-		jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+		utils.BuildFakeVar(proj, "OAuth2Client"),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Client").Call(
@@ -200,7 +200,7 @@ func buildV1Client_BuildGetOAuth2ClientsRequest() []jen.Code {
 
 func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 	happyPathSubtestLines := []jen.Code{
-		jen.ID("exampleOAuth2ClientList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2ClientList").Call(),
+		utils.BuildFakeVar(proj, "OAuth2ClientList"),
 		jen.Line(),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 			jen.Qual("net/http", "HandlerFunc").Callln(
@@ -284,7 +284,7 @@ func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Co
 					jen.ID("ts"),
 				),
 				jen.Line(),
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2ClientCreationInputFromClient").Call(jen.ID("exampleOAuth2Client")),
 				jen.List(
 					jen.ID("req"),
@@ -321,8 +321,8 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 			utils.BuildSubTest(
 				"happy path",
 				jen.Line(),
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2ClientCreationInputFromClient").Call(jen.ID("exampleOAuth2Client")),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
+				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "OAuth2ClientCreationInputFromClient", jen.ID("exampleOAuth2Client")),
 				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
@@ -360,8 +360,8 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with invalid client URL",
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2ClientCreationInputFromClient").Call(jen.ID("exampleOAuth2Client")),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
+				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "OAuth2ClientCreationInputFromClient", jen.ID("exampleOAuth2Client")),
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.Line(),
@@ -376,8 +376,8 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with invalid response from server",
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2ClientCreationInputFromClient").Call(jen.ID("exampleOAuth2Client")),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
+				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "OAuth2ClientCreationInputFromClient", jen.ID("exampleOAuth2Client")),
 				jen.Line(),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
@@ -441,7 +441,7 @@ func buildV1Client_BuildArchiveOAuth2ClientRequest(proj *models.Project) []jen.C
 				utils.ExpectMethod("expectedMethod", "MethodDelete"),
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.List(
 					jen.ID("actual"),
@@ -483,7 +483,7 @@ func buildV1Client_BuildArchiveOAuth2ClientRequest(proj *models.Project) []jen.C
 
 func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 	happyPathSubtestLines := []jen.Code{
-		jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+		utils.BuildFakeVar(proj, "OAuth2Client"),
 		jen.Line(),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 			jen.Qual("net/http", "HandlerFunc").Callln(
@@ -518,7 +518,7 @@ func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 	}
 
 	invalidClientURLSubtestLines := []jen.Code{
-		jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+		utils.BuildFakeVar(proj, "OAuth2Client"),
 		jen.Line(),
 
 		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(

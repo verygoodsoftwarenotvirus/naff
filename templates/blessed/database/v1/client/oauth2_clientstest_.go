@@ -30,7 +30,7 @@ func buildTestClient_GetOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
@@ -53,7 +53,7 @@ func buildTestClient_GetOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with error returned from querier",
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID("expected").Assign().Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -88,7 +88,7 @@ func buildTestClient_GetOAuth2ClientByClientID(proj *models.Project) []jen.Code 
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
@@ -107,7 +107,7 @@ func buildTestClient_GetOAuth2ClientByClientID(proj *models.Project) []jen.Code 
 			jen.Line(),
 			utils.BuildSubTest(
 				"with error returned from querier",
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
@@ -275,12 +275,12 @@ func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
 		jen.Func().ID("TestClient_GetOAuth2Clients").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+			utils.BuildFakeVar(proj, "User"),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-				jen.ID("exampleOAuth2ClientList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2ClientList").Call(),
+				utils.BuildFakeVar(proj, "OAuth2ClientList"),
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
@@ -304,7 +304,7 @@ func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
 			utils.BuildSubTest(
 				"with nil filter",
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-				jen.ID("exampleOAuth2ClientList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2ClientList").Call(),
+				utils.BuildFakeVar(proj, "OAuth2ClientList"),
 				utils.CreateNilQueryFilter(proj),
 				jen.Line(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
@@ -364,8 +364,8 @@ func buildTestClient_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				"happy path",
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.Line(),
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2ClientCreationInputFromClient").Call(jen.ID("exampleOAuth2Client")),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
+				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "OAuth2ClientCreationInputFromClient", jen.ID("exampleOAuth2Client")),
 				jen.Line(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
 					jen.Lit("CreateOAuth2Client"),
@@ -385,8 +385,8 @@ func buildTestClient_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.Line(),
 				jen.ID("expected").Assign().Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2ClientCreationInputFromClient").Call(jen.ID("exampleOAuth2Client")),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
+				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "OAuth2ClientCreationInputFromClient", jen.ID("exampleOAuth2Client")),
 				jen.Line(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
 					jen.Lit("CreateOAuth2Client"),
@@ -417,7 +417,7 @@ func buildTestClient_UpdateOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
 				jen.Var().ID("expected").Error(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -447,7 +447,7 @@ func buildTestClient_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
 				jen.Var().ID("expected").Error(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -471,7 +471,7 @@ func buildTestClient_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with error returned from querier",
-				jen.ID("exampleOAuth2Client").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
 				jen.ID("expected").Assign().Qual("fmt", "Errorf").Call(jen.Lit("blah")),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),

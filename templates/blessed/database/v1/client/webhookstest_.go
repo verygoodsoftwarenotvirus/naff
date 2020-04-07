@@ -17,7 +17,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleWebhook").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhook").Call(),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -71,7 +71,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleWebhookList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookList").Call(),
+				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
@@ -93,11 +93,11 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestClient_GetWebhooks").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+			utils.BuildFakeVar(proj, "User"),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleWebhookList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookList").Call(),
+				utils.BuildFakeVar(proj, "WebhookList"),
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -121,7 +121,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with nil filter",
-				jen.ID("exampleWebhookList").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookList").Call(),
+				utils.BuildFakeVar(proj, "WebhookList"),
 				utils.CreateNilQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -152,7 +152,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleWebhook").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhook").Call(),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID("exampleWebhook")),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -178,7 +178,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleWebhook").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhook").Call(),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Var().ID("expected").Error(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -204,7 +204,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleWebhook").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhook").Call(),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Var().ID("expected").Error(),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),

@@ -3,17 +3,27 @@ package queriers
 import (
 	"errors"
 	"fmt"
-
+	"github.com/Masterminds/squirrel"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"log"
+	"strings"
 )
 
 const (
 	postgres = "postgres"
 	sqlite   = "sqlite"
 	mariadb  = "mariadb"
+
+	existencePrefix = "SELECT EXISTS ("
+	existenceSuffix = ")"
+
+	whateverValue = "fart"
+
+	// countQuery is a generic counter query used in a few query builders
+	countQuery = "COUNT(%s.id)"
 )
 
 // RenderPackage renders the package
@@ -113,6 +123,8 @@ func buildMariaDBWord() wordsmith.SuperPalabra {
 		PluralStr:                             "MariaDBs",
 		RouteNameStr:                          "mariadb",
 		KebabNameStr:                          "mariadb",
+		AbbreviationStr:                       "M",
+		LowercaseAbbreviationStr:              "m",
 		PluralRouteNameStr:                    "mariadbs",
 		UnexportedVarNameStr:                  "mariaDB",
 		PluralUnexportedVarNameStr:            "mariaDBs",
@@ -124,4 +136,124 @@ func buildMariaDBWord() wordsmith.SuperPalabra {
 		SingularCommonNameWithPrefixStr:       "maria DB",
 		PluralCommonNameWithPrefixStr:         "maria DBs",
 	}
+}
+
+func buildQueryTest(
+	proj *models.Project,
+	dbvendor wordsmith.SuperPalabra,
+	typ models.DataType,
+	queryName,
+	query string,
+	expectedArgs []jen.Code,
+	callArgs []jen.Code,
+	countQuery bool,
+	listQuery bool,
+	includeFilter bool,
+	createUser bool,
+) []jen.Code {
+	const (
+		expectedQueryVarName = "expectedQuery"
+		expectedArgsVarName  = "expectedArgs"
+		actualQueryVarName   = "actualQuery"
+		actualArgsVarName    = "actualArgs"
+		uhOh                 = "QUERY"
+	)
+
+	if strings.HasSuffix(strings.ToUpper(queryName), uhOh) {
+		queryName = queryName[:len(queryName)-len(uhOh)]
+	}
+
+	if createUser {
+		callArgs = append(callArgs, jen.ID("exampleUser").Dot("ID"))
+	}
+	if includeFilter {
+		callArgs = append(callArgs, jen.ID(utils.FilterVarName))
+	}
+
+	dbn := dbvendor.Singular()
+	sn := typ.Name.Singular()
+	dbi := dbvendor.LowercaseAbbreviation()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_build%sQuery", dbn, queryName).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.List(jen.ID("p"), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+				func() jen.Code {
+					if createUser {
+						return jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call()
+					}
+					return jen.Null()
+				}(),
+				func() jen.Code {
+					if !countQuery && !listQuery {
+						return jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call()
+					}
+					return jen.Null()
+				}(),
+				func() jen.Code {
+					if includeFilter {
+						return jen.ID(utils.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call()
+					}
+					return jen.Null()
+				}(),
+				jen.Line(),
+				jen.ID(expectedQueryVarName).Assign().Lit(query),
+				func() jen.Code {
+					if !countQuery {
+						x := jen.ID(expectedArgsVarName).Assign().Index().Interface()
+						if len(expectedArgs) > 0 {
+							return x.Valuesln(expectedArgs...)
+						}
+						return x.Values(expectedArgs...)
+					}
+					return jen.Null()
+				}(),
+				func() jen.Code {
+					returnedVars := []jen.Code{jen.ID(actualQueryVarName)}
+					if !countQuery {
+						returnedVars = append(returnedVars, jen.ID(actualArgsVarName))
+					}
+					return jen.List(returnedVars...).Assign().ID(dbi).Dotf("build%sQuery", queryName).Call(callArgs...)
+				}(),
+				jen.Line(),
+				jen.ID("ensureArgCountMatchesQuery").Call(
+					jen.ID("t"),
+					jen.ID(actualQueryVarName),
+					func() jen.Code {
+						if !countQuery {
+							return jen.ID(actualArgsVarName)
+						}
+						return jen.Index().Interface().Values()
+					}(),
+				),
+				utils.AssertEqual(jen.ID(expectedQueryVarName), jen.ID(actualQueryVarName), nil),
+				func() jen.Code {
+					if !countQuery {
+						return utils.AssertEqual(jen.ID(expectedArgsVarName), jen.ID(actualArgsVarName), nil)
+					}
+					return jen.Null()
+				}(),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilderType {
+	switch db.LowercaseAbbreviation() {
+	case "m":
+		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
+	case "p":
+		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
+	case "s":
+		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
+	default:
+		log.Fatalf("invalid database type! %q", db.LowercaseAbbreviation())
+	}
+	panic("won't get here")
 }
