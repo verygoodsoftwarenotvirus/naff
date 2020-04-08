@@ -1546,7 +1546,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID(expectedSomethingID).Assign().Add(utils.FakeUint64Func()),
-				jen.IDf("expected%s", sn).Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
+				jen.IDf("expected%s", sn).Assign().AddressOf().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Lit(321),
 				),
 				jen.Line(),
@@ -1600,7 +1600,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 			utils.BuildSubTestWithoutContext(
 				"with unscannable response",
 				jen.ID(expectedSomethingID).Assign().Add(utils.FakeUint64Func()),
-				jen.ID(utils.BuildFakeVarName(sn)).Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(
+				jen.ID(utils.BuildFakeVarName(sn)).Assign().AddressOf().Qual(proj.ModelsV1Package(), sn).Valuesln(
 					jen.ID("ID").MapAssign().Lit(321),
 				),
 				jen.Line(),

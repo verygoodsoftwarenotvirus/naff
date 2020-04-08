@@ -60,7 +60,7 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 		jen.Line(),
 		jen.Func().ID("scanWebhook").Params(jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"), jen.Error()).Block(
 			jen.Var().Defs(
-				jen.ID("x").Equals().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Values(),
+				jen.ID("x").Equals().AddressOf().Qual(proj.ModelsV1Package(), "Webhook").Values(),
 				jen.Listln(
 					jen.ID("eventsStr"),
 					jen.ID("dataTypesStr"),
@@ -263,7 +263,7 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching webhook count: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
+			jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
 				jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().One(),
 					jen.ID("TotalCount").MapAssign().ID("count"),
@@ -359,7 +359,7 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching count: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
+			jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
 				jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().ID("filter").Dot("Page"),
 					jen.ID("TotalCount").MapAssign().ID("count"),
@@ -455,7 +455,7 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 
 	buildCreateWebhookQuery := func() []jen.Code {
 		out := []jen.Code{
-			jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
+			jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 				jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 				jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
 				jen.ID("URL").MapAssign().ID("input").Dot("URL"),

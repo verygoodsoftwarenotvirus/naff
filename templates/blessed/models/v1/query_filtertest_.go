@@ -17,8 +17,8 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("actual").Assign().VarPointer().ID("QueryFilter").Values(),
-				jen.ID("expected").Assign().VarPointer().ID("QueryFilter").Valuesln(
+				jen.ID("actual").Assign().AddressOf().ID("QueryFilter").Values(),
+				jen.ID("expected").Assign().AddressOf().ID("QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(100),
 					jen.ID("Limit").MapAssign().ID("MaxLimit"),
 					jen.ID("CreatedAfter").MapAssign().Lit(123456789),
@@ -56,7 +56,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("qf").Assign().VarPointer().ID("QueryFilter").Values(),
+				jen.ID("qf").Assign().AddressOf().ID("QueryFilter").Values(),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.ID("qf").Dot("SetPage").Call(jen.ID("expected")),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("qf").Dot("Page"), nil),
@@ -71,7 +71,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("qf").Assign().VarPointer().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(10), jen.ID("Page").MapAssign().Lit(11)),
+				jen.ID("qf").Assign().AddressOf().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(10), jen.ID("Page").MapAssign().Lit(11)),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(100)),
 				jen.ID("actual").Assign().ID("qf").Dot("QueryPage").Call(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
@@ -86,7 +86,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("qf").Assign().VarPointer().ID("QueryFilter").Valuesln(
+				jen.ID("qf").Assign().AddressOf().ID("QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(100),
 					jen.ID("Limit").MapAssign().Lit(50),
 					jen.ID("CreatedAfter").MapAssign().Lit(123456789),
@@ -131,7 +131,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("qf").Assign().VarPointer().ID("QueryFilter").Valuesln(
+				jen.ID("qf").Assign().AddressOf().ID("QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(100),
 					jen.ID("Limit").MapAssign().Lit(50),
 					jen.ID("CreatedAfter").MapAssign().Lit(123456789),
@@ -152,7 +152,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"basic usecase",
-				jen.ID("exampleQF").Assign().VarPointer().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(15), jen.ID("Page").MapAssign().Lit(2)),
+				jen.ID("exampleQF").Assign().AddressOf().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(15), jen.ID("Page").MapAssign().Lit(2)),
 				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE condition = $1 LIMIT 15 OFFSET 15`),
 				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
@@ -175,7 +175,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"whole kit and kaboodle",
-				jen.ID("exampleQF").Assign().VarPointer().ID("QueryFilter").Valuesln(
+				jen.ID("exampleQF").Assign().AddressOf().ID("QueryFilter").Valuesln(
 					jen.ID("Limit").MapAssign().Lit(20), jen.ID("Page").MapAssign().Lit(6),
 					jen.ID("CreatedAfter").MapAssign().Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 					jen.ID("CreatedBefore").MapAssign().Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -194,7 +194,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with zero limit",
-				jen.ID("exampleQF").Assign().VarPointer().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Zero(), jen.ID("Page").MapAssign().One()),
+				jen.ID("exampleQF").Assign().AddressOf().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Zero(), jen.ID("Page").MapAssign().One()),
 				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE condition = $1 LIMIT 250`),
 				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
@@ -213,7 +213,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().ID("QueryFilter").Valuesln(
+				jen.ID("expected").Assign().AddressOf().ID("QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(100),
 					jen.ID("Limit").MapAssign().ID("MaxLimit"),
 					jen.ID("CreatedAfter").MapAssign().Lit(123456789),

@@ -78,7 +78,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			),
 			jen.ID("counter").Dot("IncrementBy").Call(utils.CtxVar(), jen.ID("userCount")),
 			jen.Line(),
-			jen.ID("us").Assign().VarPointer().ID("Service").Valuesln(
+			jen.ID("us").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID("cookieSecret").MapAssign().Index().Byte().Call(jen.ID("authSettings").Dot("CookieSecret")),
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("database").MapAssign().ID("db"),

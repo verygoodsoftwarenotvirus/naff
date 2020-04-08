@@ -107,7 +107,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.Comment("I had difficulty ensuring these values were unique, even when fake.Seed was called. Could've been fake's fault,"),
 			jen.Comment("could've been docker's fault. In either case, it wasn't worth the time to investigate and determine the culprit"),
 			jen.ID("username").Assign().Qual(utils.FakeLibrary, "Username").Call().Op("+").Qual(utils.FakeLibrary, "HexColor").Call().Op("+").Qual(utils.FakeLibrary, "Country").Call(),
-			jen.ID("in").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
+			jen.ID("in").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
 				jen.ID("Username").MapAssign().ID("username"),
 				jen.ID("Password").MapAssign().Qual(utils.FakeLibrary, "Password").Call(jen.True(), jen.True(), jen.True(), jen.True(), jen.True(), jen.Lit(64)),
 			),
@@ -119,7 +119,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("something happened"))),
 			),
 			jen.Line(),
-			jen.ID("u").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+			jen.ID("u").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 				jen.ID("ID").MapAssign().ID("ucr").Dot("ID"),
 				jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
 				jen.Comment("this is a dirty trick to reuse most of this model"),

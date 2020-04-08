@@ -25,7 +25,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("OAuth2InternalErrorHandler").Params(jen.Err().Error()).Params(jen.ParamPointer().Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
 			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("OAuth2 Internal Error")),
 			jen.Line(),
-			jen.ID("res").Assign().VarPointer().Qual("gopkg.in/oauth2.v3/errors", "Response").Valuesln(
+			jen.ID("res").Assign().AddressOf().Qual("gopkg.in/oauth2.v3/errors", "Response").Valuesln(
 				jen.ID("Error").MapAssign().ID("err"),
 				jen.ID("Description").MapAssign().Lit("Internal error"),
 				jen.ID("ErrorCode").MapAssign().Qual("net/http", "StatusInternalServerError"),

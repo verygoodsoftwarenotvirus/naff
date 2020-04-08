@@ -27,7 +27,7 @@ func mockReadCloserDotGo(proj *models.Project) *jen.File {
 		jen.Comment("newMockReadCloser returns a new mock io.ReadCloser"),
 		jen.Line(),
 		jen.Func().ID("newMockReadCloser").Params().Params(jen.PointerTo().ID("ReadCloser")).Block(
-			jen.Return().VarPointer().ID("ReadCloser").Values(),
+			jen.Return().AddressOf().ID("ReadCloser").Values(),
 		),
 		jen.Line(),
 	)

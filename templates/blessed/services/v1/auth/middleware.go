@@ -162,7 +162,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("parseLoginInputFromForm").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput")).Block(
 			jen.If(jen.Err().Assign().ID("req").Dot("ParseForm").Call(), jen.Err().Op("==").ID("nil")).Block(
-				jen.ID("uli").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.ID("uli").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("req").Dot("FormValue").Call(jen.ID("UsernameFormKey")),
 					jen.ID("Password").MapAssign().ID("req").Dot("FormValue").Call(jen.ID("PasswordFormKey")),
 					jen.ID("TOTPToken").MapAssign().ID("req").Dot("FormValue").Call(jen.ID("TOTPTokenFormKey")),

@@ -66,7 +66,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 				jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil config provided"))),
 			),
 			jen.Line(),
-			jen.ID("svc").Assign().VarPointer().ID("Service").Valuesln(
+			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("encoderDecoder").MapAssign().ID("encoder"),
 				jen.ID("config").MapAssign().ID("cfg").Dot("Auth"),

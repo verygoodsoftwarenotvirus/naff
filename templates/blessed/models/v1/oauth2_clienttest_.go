@@ -18,7 +18,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("expected").Assign().Lit("123"),
-				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
+				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
 					jen.ID("ClientID").MapAssign().ID("expected"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetID").Call(), nil),
@@ -34,7 +34,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("expected").Assign().Lit("123"),
-				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
+				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
 					jen.ID("ClientSecret").MapAssign().ID("expected"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetSecret").Call(), nil),
@@ -50,7 +50,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("expected").Assign().Lit("123"),
-				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
+				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
 					jen.ID("RedirectURI").MapAssign().ID("expected"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetDomain").Call(), nil),
@@ -67,7 +67,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 				"happy path",
 				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
 				jen.ID("expected").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expectation")),
-				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
+				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
 					jen.ID("BelongsToUser").MapAssign().ID("expectation"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetUserID").Call(), nil),
@@ -82,7 +82,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("oac").Assign().VarPointer().ID("OAuth2Client").Valuesln(
+				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
 					jen.ID("Scopes").MapAssign().Index().String().Values(jen.Lit("things"), jen.Lit("and"), jen.Lit("stuff")),
 				),
 				jen.Line(),

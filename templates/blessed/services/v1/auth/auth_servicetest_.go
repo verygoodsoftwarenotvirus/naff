@@ -16,14 +16,14 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("logger").Assign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-			jen.ID("cfg").Assign().VarPointer().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
+			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
 				jen.ID("Auth").MapAssign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
 					jen.ID("CookieSecret").MapAssign().Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),
 				),
 			),
-			jen.ID("auth").Assign().VarPointer().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-			jen.ID("userDB").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
-			jen.ID("oauth").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
+			jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+			jen.ID("userDB").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
+			jen.ID("oauth").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
 			jen.ID("userIDFetcher").Assign().Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 				jen.Return().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call().Dot("ID"),
 			),
@@ -51,14 +51,14 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("cfg").Assign().VarPointer().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
+				jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
 					jen.ID("Auth").MapAssign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
 						jen.ID("CookieSecret").MapAssign().Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),
 					),
 				),
-				jen.ID("auth").Assign().VarPointer().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.ID("userDB").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
-				jen.ID("oauth").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+				jen.ID("userDB").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
+				jen.ID("oauth").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
 				jen.ID("userIDFetcher").Assign().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return(jen.Qual(proj.FakeModelsPackage(), "BuildFakeUser")).Call().Dot("ID"),
 				),
@@ -79,9 +79,9 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with nil config",
-				jen.ID("auth").Assign().VarPointer().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.ID("userDB").Assign().VarPointer().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
-				jen.ID("oauth").Assign().VarPointer().ID("mockOAuth2ClientValidator").Values(),
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+				jen.ID("userDB").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
+				jen.ID("oauth").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
 				jen.ID("userIDFetcher").Assign().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return(jen.Qual(proj.FakeModelsPackage(), "BuildFakeUser")).Call().Dot("ID"),
 				),

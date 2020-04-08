@@ -106,7 +106,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ProvideResponseEncoder provides a jsonResponseEncoder"),
 		jen.Line(),
 		jen.Func().ID("ProvideResponseEncoder").Params().Params(jen.ID("EncoderDecoder")).Block(
-			jen.Return().VarPointer().ID("ServerEncoderDecoder").Values(),
+			jen.Return().AddressOf().ID("ServerEncoderDecoder").Values(),
 		),
 		jen.Line(),
 	)

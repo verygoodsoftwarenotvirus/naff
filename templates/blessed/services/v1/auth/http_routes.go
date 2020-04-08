@@ -139,7 +139,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error building cookie")),
 					jen.Line(),
 					utils.WriteXHeader("res", "StatusInternalServerError"),
-					jen.ID("response").Assign().VarPointer().Qual(proj.ModelsV1Package(), "ErrorResponse").Valuesln(
+					jen.ID("response").Assign().AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Valuesln(
 						jen.ID("Code").MapAssign().Qual("net/http", "StatusInternalServerError"),
 						jen.ID("Message").MapAssign().Lit("error encountered building cookie"),
 					),
@@ -237,7 +237,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("user").Dot("ID")),
 			jen.Line(),
-			jen.ID("ld").Assign().VarPointer().ID("loginData").Valuesln(
+			jen.ID("ld").Assign().AddressOf().ID("loginData").Valuesln(
 				jen.ID("loginInput").MapAssign().ID("loginInput"),
 				jen.ID("user").MapAssign().ID("user"),
 			),
@@ -329,7 +329,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildCookie").Params(jen.ID("value").String()).Params(jen.ParamPointer().Qual("net/http", "Cookie")).Block(
 			jen.Comment("https://www.calhoun.io/securing-cookies-in-go/"),
-			jen.Return().VarPointer().Qual("net/http", "Cookie").Valuesln(
+			jen.Return().AddressOf().Qual("net/http", "Cookie").Valuesln(
 				jen.ID("Name").MapAssign().ID("CookieName"),
 				jen.ID("Value").MapAssign().ID("value"),
 				jen.ID("Path").MapAssign().Lit("/"),

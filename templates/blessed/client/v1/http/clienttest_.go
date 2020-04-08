@@ -125,7 +125,7 @@ func buildBuildTestClient() []jen.Code {
 			),
 			jen.ID("c").Assign().ID("ts").Dot("Client").Call(),
 			jen.Line(),
-			jen.Return().VarPointer().ID(v1).Valuesln(
+			jen.Return().AddressOf().ID(v1).Valuesln(
 				jen.ID("URL").MapAssign().ID("u"),
 				jen.ID("plainClient").MapAssign().ID("c"),
 				jen.ID("logger").MapAssign().ID("l"),
@@ -151,7 +151,7 @@ func buildBuildTestClientWithInvalidURL() []jen.Code {
 				jen.ID("asciiControlChar"),
 			),
 			jen.Line(),
-			jen.Return().VarPointer().ID(v1).Valuesln(
+			jen.Return().AddressOf().ID(v1).Valuesln(
 				jen.ID("URL").MapAssign().ID("u"),
 				jen.ID("plainClient").MapAssign().Qual("net/http", "DefaultClient"),
 				jen.ID("logger").MapAssign().ID("l"),
@@ -354,7 +354,7 @@ func buildTestV1Client_CloseRequestBody() []jen.Code {
 				jen.ID("rc").Assign().ID("newMockReadCloser").Call(),
 				jen.ID("rc").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.ID("res").Assign().VarPointer().Qual("net/http", "Response").Valuesln(
+				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().ID("rc"),
 					jen.ID("StatusCode").MapAssign().Qual("net/http", "StatusOK"),
 				),
@@ -781,7 +781,7 @@ func buildTestV1Client_buildDataRequest() []jen.Code {
 		utils.OuterTestFunc("V1Client_buildDataRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			jen.ID("exampleData").Assign().VarPointer().ID("testingType").Values(jen.ID("Name").MapAssign().Lit("whatever")),
+			jen.ID("exampleData").Assign().AddressOf().ID("testingType").Values(jen.ID("Name").MapAssign().Lit("whatever")),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
@@ -822,7 +822,7 @@ func buildTestV1Client_buildDataRequest() []jen.Code {
 					jen.ID("ts"),
 				),
 				jen.Line(),
-				jen.ID("x").Assign().VarPointer().ID("testBreakableStruct").Values(jen.ID("Thing").MapAssign().Lit("stuff")),
+				jen.ID("x").Assign().AddressOf().ID("testBreakableStruct").Values(jen.ID("Thing").MapAssign().Lit("stuff")),
 				jen.List(
 					jen.ID("req"),
 					jen.Err(),
@@ -973,7 +973,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
-				jen.ID("exampleResponse").Assign().VarPointer().ID("argleBargle").Values(jen.ID("Name").MapAssign().Lit("whatever")),
+				jen.ID("exampleResponse").Assign().AddressOf().ID("argleBargle").Values(jen.ID("Name").MapAssign().Lit("whatever")),
 				jen.Line(),
 				jen.ID("ts").Assign().ID("httptest").Dot("NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
@@ -1158,7 +1158,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 		utils.OuterTestFunc("V1Client_executeRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			jen.ID("exampleResponse").Assign().VarPointer().ID("argleBargle").Values(jen.ID("Name").MapAssign().Lit("whatever")),
+			jen.ID("exampleResponse").Assign().AddressOf().ID("argleBargle").Values(jen.ID("Name").MapAssign().Lit("whatever")),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
@@ -1477,7 +1477,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 		utils.OuterTestFunc("V1Client_executeUnauthenticatedDataRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			jen.ID("exampleResponse").Assign().VarPointer().ID("argleBargle").Values(jen.ID("Name").MapAssign().Lit("whatever")),
+			jen.ID("exampleResponse").Assign().AddressOf().ID("argleBargle").Values(jen.ID("Name").MapAssign().Lit("whatever")),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
@@ -1753,7 +1753,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("ts"),
 				),
 				jen.Line(),
-				jen.ID("in").Assign().VarPointer().ID("argleBargle").Values(),
+				jen.ID("in").Assign().AddressOf().ID("argleBargle").Values(),
 				jen.Line(),
 				jen.List(
 					jen.ID("body"),

@@ -17,7 +17,7 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("c").Assign().VarPointer().ID("ServerConfig").Valuesln(
+				jen.ID("c").Assign().AddressOf().ID("ServerConfig").Valuesln(
 					jen.ID("Metrics").MapAssign().ID("MetricsSettings").Valuesln(
 						jen.ID("RuntimeMetricsCollectionInterval").MapAssign().Qual("time", "Second"),
 						jen.ID("MetricsProvider").MapAssign().ID("DefaultMetricsProvider"),
@@ -38,7 +38,7 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("c").Assign().VarPointer().ID("ServerConfig").Valuesln(
+				jen.ID("c").Assign().AddressOf().ID("ServerConfig").Valuesln(
 					jen.ID("Metrics").MapAssign().ID("MetricsSettings").Valuesln(
 						jen.ID("TracingProvider").MapAssign().ID("DefaultTracingProvider"),
 					),

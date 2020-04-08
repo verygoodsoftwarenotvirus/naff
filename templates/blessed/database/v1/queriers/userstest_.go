@@ -87,7 +87,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Username").MapAssign().Lit("username"),
 				),
@@ -106,7 +106,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"surfaces sql.ErrNoRows",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Username").MapAssign().Lit("username"),
 				),
@@ -156,7 +156,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 				"happy path",
 				jen.ID("expectedCountQuery").Assign().Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
 				jen.ID("expectedCount").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserList").Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().Add(utils.FakeUint64Func()),
 						jen.ID("Limit").MapAssign().Lit(20),
@@ -214,7 +214,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with erroneous response from database",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserList").Valuesln(
 					jen.ID("Users").MapAssign().Index().Qual(proj.ModelsV1Package(), "User").Valuesln(
 						jen.Valuesln(
 							jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -237,7 +237,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 				"with error fetching count",
 				jen.ID("expectedCountQuery").Assign().Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
 				jen.ID("expectedCount").Assign().Add(utils.FakeUint64Func()),
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserList").Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().Add(utils.FakeUint64Func()),
 						jen.ID("Limit").MapAssign().Lit(20),
@@ -299,7 +299,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Username").MapAssign().Lit("username"),
 				),
@@ -318,7 +318,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"surfaces sql.ErrNoRows",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Username").MapAssign().Lit("username"),
 				),
@@ -338,7 +338,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with error querying database",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Username").MapAssign().Lit("username"),
 				),
@@ -437,7 +437,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
+				jen.ID("exampleUser").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
 					jen.ID("Username").MapAssign().Lit("username"),
 					jen.ID("Password").MapAssign().Lit("hashed password"),
 					jen.ID("TwoFactorSecret").MapAssign().Lit("two factor secret"),
@@ -472,12 +472,12 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	if isPostgres {
 		specialSnowflakePGTest = utils.BuildSubTestWithoutContext(
 			"with postgres row exists error",
-			jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+			jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 				jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 				jen.ID("Username").MapAssign().Lit("username"),
 				jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 			),
-			jen.ID("expectedInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
+			jen.ID("expectedInput").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
 				jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 			),
 			jen.ID("expectedQuery").Assign().Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
@@ -542,12 +542,12 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 				"happy path",
 				func() []jen.Code {
 					out := []jen.Code{
-						jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+						jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 							jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 							jen.ID("Username").MapAssign().Lit("username"),
 							jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 						),
-						jen.ID("expectedInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
+						jen.ID("expectedInput").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
 							jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 						),
 					}
@@ -603,12 +603,12 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with error querying database",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Username").MapAssign().Lit("username"),
 					jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
-				jen.ID("expectedInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
+				jen.ID("expectedInput").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 				),
 				jen.Line(),
@@ -644,7 +644,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleUser").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+				jen.ID("exampleUser").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 					jen.ID("ID").MapAssign().Lit(321),
 					jen.ID("Username").MapAssign().Lit("username"),
 					jen.ID("HashedPassword").MapAssign().Lit("hashed password"), jen.ID("TwoFactorSecret").MapAssign().Lit("two factor secret"),
@@ -695,7 +695,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Username").MapAssign().Lit("username"),
 					jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -765,7 +765,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+				jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Username").MapAssign().Lit("username"),
 					jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),

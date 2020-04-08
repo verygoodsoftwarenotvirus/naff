@@ -57,7 +57,7 @@ func initDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("buildHTTPClient").Params().Params(jen.ParamPointer().Qual("net/http", "Client")).Block(
-			jen.ID("httpc").Assign().VarPointer().Qual("net/http", "Client").Valuesln(
+			jen.ID("httpc").Assign().AddressOf().Qual("net/http", "Client").Valuesln(
 				jen.ID("Transport").MapAssign().Qual("net/http", "DefaultTransport"),
 				jen.ID("Timeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
 			),

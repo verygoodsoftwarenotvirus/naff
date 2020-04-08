@@ -52,7 +52,7 @@ func viewDotView(viewName, measurementName, measurementVarName, description stri
 		agg = agg.Qual("go.opencensus.io/stats/view", "LastValue").Call()
 	}
 
-	return jen.ID(viewName).Equals().VarPointer().Qual("go.opencensus.io/stats/view", "View").Valuesln(
+	return jen.ID(viewName).Equals().AddressOf().Qual("go.opencensus.io/stats/view", "View").Valuesln(
 		jen.ID("Name").MapAssign().Lit(measurementName),
 		jen.ID("Measure").MapAssign().ID(measurementVarName),
 		jen.ID("Description").MapAssign().Lit(description),
@@ -108,7 +108,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 			jen.Qual("go.opencensus.io/stats", "UnitDimensionless"),
 		),
 		jen.Comment("MetricAggregationMeasurementView is the corresponding view for the above metric"),
-		jen.ID("MetricAggregationMeasurementView").Equals().VarPointer().Qual("go.opencensus.io/stats/view", "View").Valuesln(
+		jen.ID("MetricAggregationMeasurementView").Equals().AddressOf().Qual("go.opencensus.io/stats/view", "View").Valuesln(
 			jen.ID("Name").MapAssign().Lit("metrics_aggregation_time"),
 			jen.ID("Measure").MapAssign().ID("MetricAggregationMeasurement"),
 			jen.ID("Description").MapAssign().Lit("cumulative time in nanoseconds spent aggregating metrics"),
@@ -165,7 +165,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 						jen.Case(jen.Op("<-").ID("ticker").Dot("C")).Block(
 							utils.CreateCtx(),
 							jen.ID("startTime").Assign().Qual("time", "Now").Call(),
-							jen.ID("ms").Assign().VarPointer().Qual("runtime", "MemStats").Values(),
+							jen.ID("ms").Assign().AddressOf().Qual("runtime", "MemStats").Values(),
 							jen.Line(),
 							jen.Qual("runtime", "ReadMemStats").Call(jen.ID("ms")),
 							jen.Qual("go.opencensus.io/stats", "Record").Callln(

@@ -79,7 +79,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("svc").Assign().VarPointer().ID("Service").Valuesln(
+			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("webhookDatabase").MapAssign().ID("webhookDatabase"),
 				jen.ID("encoderDecoder").MapAssign().ID("encoder"),

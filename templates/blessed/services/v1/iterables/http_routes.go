@@ -98,7 +98,7 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		jen.List(jen.ID(puvn), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("Get%s", pn)).Call(dbCallArgs...),
 		jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
 			jen.Comment("in the event no rows exist return an empty list"),
-			jen.ID(puvn).Equals().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
+			jen.ID(puvn).Equals().AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
 				jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Values(),
 			),
 		).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(elseErrBlock...),
@@ -610,7 +610,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Decrement").Call(utils.CtxVar()),
 		jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 			jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Archive")),
-			jen.ID("Data").MapAssign().VarPointer().Qual(proj.ModelsV1Package(), sn).Values(jen.ID("ID").MapAssign().ID(fmt.Sprintf("%sID", uvn))),
+			jen.ID("Data").MapAssign().AddressOf().Qual(proj.ModelsV1Package(), sn).Values(jen.ID("ID").MapAssign().ID(fmt.Sprintf("%sID", uvn))),
 			jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName")),
 		)),
 		jen.Line(),

@@ -99,7 +99,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 			jen.Comment("Counts/groups the lengths of lines read in."),
 			jen.ID("count").Assign().Qual("go.opencensus.io/stats", "Int64").Call(jen.ID("name"), jen.ID("description"), jen.Lit("By")),
 			jen.Line(),
-			jen.ID("countView").Assign().VarPointer().Qual("go.opencensus.io/stats/view", "View").Valuesln(
+			jen.ID("countView").Assign().AddressOf().Qual("go.opencensus.io/stats/view", "View").Valuesln(
 				jen.ID("Name").MapAssign().ID("name"),
 				jen.ID("Description").MapAssign().ID("description"),
 				jen.ID("Measure").MapAssign().ID("count"),
@@ -110,7 +110,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to register views: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID(pointerVarName).Assign().VarPointer().ID(typeName).Valuesln(
+			jen.ID(pointerVarName).Assign().AddressOf().ID(typeName).Valuesln(
 				jen.ID("name").MapAssign().ID("name"),
 				jen.ID("measure").MapAssign().ID("count"),
 				jen.ID("v").MapAssign().ID("countView"),

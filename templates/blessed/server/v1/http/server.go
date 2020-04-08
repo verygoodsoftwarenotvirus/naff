@@ -144,7 +144,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.ID("srv").Assign().VarPointer().ID("Server").Valuesln(
+			jen.ID("srv").Assign().AddressOf().ID("Server").Valuesln(
 				buildServerDecLines()...,
 			),
 			jen.Line(),
@@ -160,7 +160,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 				jen.ID("srv").Dot("setupRouter").Call(jen.ID("cfg").Dot("Frontend"), jen.ID("ih")),
 			),
 			jen.Line(),
-			jen.ID("srv").Dot("httpServer").Dot("Handler").Equals().VarPointer().Qual("go.opencensus.io/plugin/ochttp", "Handler").Valuesln(
+			jen.ID("srv").Dot("httpServer").Dot("Handler").Equals().AddressOf().Qual("go.opencensus.io/plugin/ochttp", "Handler").Valuesln(
 				jen.ID("Handler").MapAssign().ID("srv").Dot("router"),
 				jen.ID("FormatSpanName").MapAssign().ID("formatSpanNameForRequest"),
 			),
@@ -245,11 +245,11 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("provideHTTPServer").Params().Params(jen.ParamPointer().Qual("net/http", "Server")).Block(
 			jen.Comment("heavily inspired by https://blog.cloudflare.com/exposing-go-on-the-internet/"),
-			jen.ID("srv").Assign().VarPointer().Qual("net/http", "Server").Valuesln(
+			jen.ID("srv").Assign().AddressOf().Qual("net/http", "Server").Valuesln(
 				jen.ID("ReadTimeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
 				jen.ID("WriteTimeout").MapAssign().Lit(10).Times().Qual("time", "Second"),
 				jen.ID("IdleTimeout").MapAssign().Lit(120).Times().Qual("time", "Second"),
-				jen.ID("TLSConfig").MapAssign().VarPointer().Qual("crypto/tls", "Config").Valuesln(
+				jen.ID("TLSConfig").MapAssign().AddressOf().Qual("crypto/tls", "Config").Valuesln(
 					jen.ID("PreferServerCipherSuites").MapAssign().True(),
 					jen.Comment(`"Only use curves which have assembly implementations"`).Line().
 						ID("CurvePreferences").MapAssign().Index().Qual("crypto/tls", "CurveID").Valuesln(

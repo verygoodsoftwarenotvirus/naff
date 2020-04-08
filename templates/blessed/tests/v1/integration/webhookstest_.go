@@ -27,7 +27,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput")).Block(
-			jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
+			jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 				jen.ID("Name").MapAssign().Qual(utils.FakeLibrary, "Word").Call(),
 				jen.ID("URL").MapAssign().Qual(utils.FakeLibrary, "DomainName").Call(),
 				jen.ID("ContentType").MapAssign().Lit("application/json"),
@@ -72,7 +72,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
+					jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 						jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 						jen.ID("URL").MapAssign().ID("input").Dot("URL"),
 						jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
@@ -135,7 +135,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
+					jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 						jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 						jen.ID("URL").MapAssign().ID("input").Dot("URL"),
 						jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
@@ -177,7 +177,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
+					jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 						jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 						jen.ID("URL").MapAssign().ID("input").Dot("URL"),
 						jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
@@ -219,7 +219,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create webhook"),
 					jen.ID("input").Assign().ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
+					jen.ID("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 						jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 						jen.ID("URL").MapAssign().ID("input").Dot("URL"),
 						jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),

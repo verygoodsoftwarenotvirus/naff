@@ -49,7 +49,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
 					jen.ID("config").MapAssign().Qual(proj.InternalConfigV1Package(), "FrontendSettings").Valuesln(
 						jen.ID("CacheStaticFiles").MapAssign().True(),
 					),
@@ -73,7 +73,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 		jen.Line(),
 		utils.BuildSubTestWithoutContext(
 			"happy path",
-			jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.List(jen.ID("cwd"), jen.Err()).Assign().Qual("os", "Getwd").Call(),
 			utils.RequireNoError(jen.Err(), nil),
@@ -91,7 +91,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 		jen.Line(),
 		utils.BuildSubTestWithoutContext(
 			"with frontend routing path",
-			jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.ID("exampleDir").Assign().Lit("."),
 			jen.Line(),
 			jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID("exampleDir")),
@@ -114,7 +114,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 			jen.Line(), jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				fmt.Sprintf("with frontend %s routing path", tpcn),
-				jen.ID("s").Assign().VarPointer().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("exampleDir").Assign().Lit("."),
 				jen.Line(),
 				jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID("exampleDir")),

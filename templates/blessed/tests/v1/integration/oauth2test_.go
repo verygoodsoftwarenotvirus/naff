@@ -25,7 +25,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("buildDummyOAuth2ClientInput").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
+			jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
 				jen.ID("UserLoginInput").MapAssign().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("username"),
 					jen.ID("Password").MapAssign().ID("password"),
@@ -42,7 +42,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("convertInputToClient").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Block(
-			jen.Return().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
+			jen.Return().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 				jen.ID("ClientID").MapAssign().ID("input").Dot("ClientID"),
 				jen.ID("ClientSecret").MapAssign().ID("input").Dot("ClientSecret"),
 				jen.ID("RedirectURI").MapAssign().ID("input").Dot("RedirectURI"),

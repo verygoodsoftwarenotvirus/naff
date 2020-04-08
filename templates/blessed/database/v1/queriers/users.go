@@ -49,7 +49,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 		jen.Comment("scanUser provides a consistent way to scan something like a *sql.Row into a User struct"),
 		jen.Line(),
 		jen.Func().ID("scanUser").Params(jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
-			jen.Var().ID("x").Equals().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
+			jen.Var().ID("x").Equals().AddressOf().Qual(proj.ModelsV1Package(), "User").Values(),
 			jen.Line(),
 			jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Callln(
 				jen.AddressOf().ID("x").Dot("ID"),
@@ -229,7 +229,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user count: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Valuesln(
+			jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserList").Valuesln(
 				jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().ID("filter").Dot("Page"),
 					jen.ID("Limit").MapAssign().ID("filter").Dot("Limit"),
@@ -363,7 +363,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 		uqb := buildCreateUserQueryBlock()
 
 		out := []jen.Code{
-			jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), "User").Valuesln(
+			jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 				jen.ID("Username").MapAssign().ID("input").Dot("Username"),
 				jen.ID("TwoFactorSecret").MapAssign().ID("input").Dot("TwoFactorSecret")),
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildCreateUserQuery").Call(jen.ID("input")),

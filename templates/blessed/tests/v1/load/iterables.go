@@ -69,7 +69,7 @@ func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.
 			),
 			jen.Line(),
 			jen.ID("randIndex").Assign().Qual("math/rand", "Intn").Call(jen.ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn))),
-			jen.Return().VarPointer().IDf("%sRes", puvn).Dot(pn).Index(jen.ID("randIndex")),
+			jen.Return().AddressOf().IDf("%sRes", puvn).Dot(pn).Index(jen.ID("randIndex")),
 		),
 		jen.Line(),
 	}
@@ -143,7 +143,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("%s%s", sourceVarPrefix, typ.Name.Singular()).Assign().VarPointer().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(
+		jen.IDf("%s%s", sourceVarPrefix, typ.Name.Singular()).Assign().AddressOf().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(proj, typ)...,
 		),
 		jen.Line(),

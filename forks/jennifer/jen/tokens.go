@@ -542,18 +542,18 @@ func (s *Statement) ParamPointer() *Statement {
 
 // AddressOf renders the provided operator / token.
 func AddressOf() *Statement {
-	return newStatement().VarPointer()
+	return newStatement().AddressOf()
 }
 
 // AddressOf renders the provided operator / token.
-func (g *Group) VarPointer() *Statement {
+func (g *Group) AddressOf() *Statement {
 	s := AddressOf()
 	g.items = append(g.items, s)
 	return s
 }
 
 // AddressOf renders the provided operator / token.
-func (s *Statement) VarPointer() *Statement {
+func (s *Statement) AddressOf() *Statement {
 	t := token{
 		typ:     operatorToken,
 		content: "&",

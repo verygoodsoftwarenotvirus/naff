@@ -83,7 +83,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "Database")).Params(jen.PointerTo().ID("clientStore")).Block(
-			jen.ID("cs").Assign().VarPointer().ID("clientStore").Valuesln(
+			jen.ID("cs").Assign().AddressOf().ID("clientStore").Valuesln(
 				jen.ID("database").MapAssign().ID("db")),
 			jen.Return().ID("cs"),
 		),
@@ -133,7 +133,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("oHandler").Assign().Qual("gopkg.in/oauth2.v3/server", "NewDefaultServer").Call(jen.ID("manager")),
 			jen.ID("oHandler").Dot("SetAllowGetAccessRequest").Call(jen.True()),
 			jen.Line(),
-			jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
+			jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID("database").MapAssign().ID("db"),
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("encoderDecoder").MapAssign().ID("encoderDecoder"),

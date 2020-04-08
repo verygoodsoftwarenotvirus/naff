@@ -153,7 +153,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
-		jen.ID("users").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserList").Values(),
+		jen.ID("users").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserList").Values(),
 		jen.Line(),
 		jen.List(
 			jen.ID("req"),
@@ -235,7 +235,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
-		jen.ID("user").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
+		jen.ID("user").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
 		jen.Line(),
 		jen.List(
 			jen.ID("req"),

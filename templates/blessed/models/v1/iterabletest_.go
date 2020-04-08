@@ -27,9 +27,9 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	buildHappyPathBlock := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("i").Assign().VarPointer().ID(sn).Values(),
+			jen.ID("i").Assign().AddressOf().ID(sn).Values(),
 			jen.Line(),
-			jen.ID("expected").Assign().VarPointer().IDf("%sUpdateInput", sn).Valuesln(updateCols...),
+			jen.ID("expected").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(updateCols...),
 			jen.Line(),
 			jen.ID("i").Dot("Update").Call(jen.ID("expected")),
 		}
@@ -61,9 +61,9 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID(uvn).Assign().VarPointer().ID(sn).Valuesln(updateInputFields...),
+				jen.ID(uvn).Assign().AddressOf().ID(sn).Valuesln(updateInputFields...),
 				jen.Line(),
-				jen.ID("expected").Assign().VarPointer().IDf("%sUpdateInput", sn).Valuesln(expectedFields...),
+				jen.ID("expected").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(expectedFields...),
 				jen.ID("actual").Assign().ID(uvn).Dot("ToUpdateInput").Call(),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),

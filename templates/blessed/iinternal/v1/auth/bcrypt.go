@@ -55,7 +55,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ProvideBcryptAuthenticator returns a bcrypt powered Authenticator"),
 		jen.Line(),
 		jen.Func().ID("ProvideBcryptAuthenticator").Params(jen.ID("hashCost").ID("BcryptHashCost"), jen.ID("logger").Qual(loggingImport, "Logger")).Params(jen.ID("Authenticator")).Block(
-			jen.ID("ba").Assign().VarPointer().ID("BcryptAuthenticator").Valuesln(
+			jen.ID("ba").Assign().AddressOf().ID("BcryptAuthenticator").Valuesln(
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.Lit("bcrypt")),
 				jen.ID("hashCost").MapAssign().ID("uint").Call(jen.Qual("math", "Min").Call(jen.ID("float64").Call(jen.ID("DefaultBcryptHashCost")), jen.ID("float64").Call(jen.ID("hashCost")))),
 				jen.ID("minimumPasswordSize").MapAssign().ID("defaultMinimumPasswordSize"),

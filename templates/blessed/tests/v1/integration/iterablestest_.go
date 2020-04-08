@@ -119,7 +119,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(
+		jen.IDf("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(proj, typ)...,
 		),
 		jen.Line(),
@@ -161,7 +161,7 @@ func buildRequisiteCreationCodeForUpdateFunction(proj *models.Project, typ model
 
 	lines = append(lines,
 		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
-		jen.IDf("expected").Assign().VarPointer().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(
+		jen.IDf("expected").Assign().AddressOf().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(proj, typ)...,
 		),
 		jen.Line(),
@@ -240,7 +240,7 @@ func buildBuildDummySomething(proj *models.Project, typ models.DataType) []jen.C
 
 	blockLines = append(blockLines,
 		utils.CreateCtx(),
-		jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			buildFakeCallForCreationInput(proj, typ)...,
 		),
 		jen.List(jen.ID("y"), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(

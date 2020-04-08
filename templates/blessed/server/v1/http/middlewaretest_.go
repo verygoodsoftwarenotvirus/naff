@@ -75,7 +75,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestServer").Call(),
 				jen.Line(),
-				jen.ID("mh").Assign().VarPointer().ID("mockHTTPHandler").Values(),
+				jen.ID("mh").Assign().AddressOf().ID("mockHTTPHandler").Values(),
 				jen.ID("mh").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
 					jen.Qual(utils.MockPkg, "Anything"),

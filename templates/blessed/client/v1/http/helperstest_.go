@@ -187,7 +187,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"expected use",
 				jen.ID("expected").Assign().Lit("whatever"),
-				jen.ID("res").Assign().VarPointer().Qual("net/http", "Response").Valuesln(
+				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(
 							jen.Qual("fmt", "Sprintf").Call(
@@ -218,7 +218,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with good status but unmarshallable response",
-				jen.ID("res").Assign().VarPointer().Qual("net/http", "Response").Valuesln(
+				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(jen.Lit("BLAH")),
 					),
@@ -239,7 +239,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with an erroneous error code",
-				jen.ID("res").Assign().VarPointer().Qual("net/http", "Response").Valuesln(
+				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().Qual("io/ioutil", "NopCloser").Callln(
 						jen.Qual("strings", "NewReader").Callln(
 							jen.Func().Params().Params(
@@ -279,7 +279,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with an erroneous error code and unmarshallable body",
-				jen.ID("res").Assign().VarPointer().Qual("net/http", "Response").Valuesln(
+				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(jen.Lit("BLAH")),
 					),
@@ -330,7 +330,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("expected"),
 				),
 				jen.Line(),
-				jen.ID("res").Assign().VarPointer().Qual("net/http", "Response").Valuesln(
+				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().ID("rc"),
 					jen.ID("StatusCode").MapAssign().Qual("net/http", "StatusOK"),
 				),
@@ -370,7 +370,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				"expected use",
 				jen.ID("name").Assign().Lit("whatever"),
 				jen.ID("expected").Assign().Qual("fmt", "Sprintf").Call(jen.Lit(`{"name":%q}`), jen.ID("name")),
-				jen.ID("x").Assign().VarPointer().ID("testingType").Values(
+				jen.ID("x").Assign().AddressOf().ID("testingType").Values(
 					jen.ID("Name").MapAssign().ID("name"),
 				),
 				jen.Line(),
@@ -406,7 +406,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with unmarshallable struct",
-				jen.ID("x").Assign().VarPointer().ID("testBreakableStruct").Values(
+				jen.ID("x").Assign().AddressOf().ID("testBreakableStruct").Values(
 					jen.ID("Thing").MapAssign().Lit("stuff"),
 				),
 				jen.List(

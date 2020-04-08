@@ -48,7 +48,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 		jen.Comment("DefaultQueryFilter builds the default query filter"),
 		jen.Line(),
 		jen.Func().ID("DefaultQueryFilter").Params().Params(jen.PointerTo().ID("QueryFilter")).Block(
-			jen.Return().VarPointer().ID("QueryFilter").Valuesln(
+			jen.Return().AddressOf().ID("QueryFilter").Valuesln(
 				jen.ID("Page").MapAssign().One(),
 				jen.ID("Limit").MapAssign().ID("DefaultLimit"),
 				jen.ID("SortBy").MapAssign().ID("SortAscending"),
@@ -195,7 +195,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ExtractQueryFilter can extract a QueryFilter from a request"),
 		jen.Line(),
 		jen.Func().ID("ExtractQueryFilter").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.PointerTo().ID("QueryFilter")).Block(
-			jen.ID("qf").Assign().VarPointer().ID("QueryFilter").Values(),
+			jen.ID("qf").Assign().AddressOf().ID("QueryFilter").Values(),
 			jen.ID("qf").Dot("FromParams").Call(jen.ID("req").Dot("URL").Dot("Query").Call()),
 			jen.Return().ID("qf"),
 		),

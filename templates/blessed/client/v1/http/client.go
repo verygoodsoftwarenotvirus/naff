@@ -137,7 +137,7 @@ func buildNewClient() []jen.Code {
 		).Block(
 			jen.Var().ID("client").Equals().ID("hclient"),
 			jen.If(jen.ID("client").Op("==").ID("nil")).Block(
-				jen.ID("client").Equals().VarPointer().Qual("net/http", "Client").Valuesln(
+				jen.ID("client").Equals().AddressOf().Qual("net/http", "Client").Valuesln(
 					jen.ID("Timeout").MapAssign().ID("defaultTimeout"),
 				),
 			),
@@ -165,7 +165,7 @@ func buildNewClient() []jen.Code {
 				jen.ID("scopes"),
 			),
 			jen.Line(),
-			jen.ID("c").Assign().VarPointer().ID(v1).Valuesln(
+			jen.ID("c").Assign().AddressOf().ID(v1).Valuesln(
 				jen.ID("URL").MapAssign().ID("address"),
 				jen.ID("plainClient").MapAssign().ID("client"),
 				jen.ID("logger").MapAssign().Qual("logger", "WithName").Call(jen.ID("clientName")),
@@ -224,9 +224,9 @@ func buildBuildOAuthClient() []jen.Code {
 					utils.CtxVar(),
 				),
 			),
-			jen.ID("client").Assign().VarPointer().Qual("net/http", "Client").Valuesln(
-				jen.ID("Transport").MapAssign().VarPointer().ID("oauth2").Dot("Transport").Valuesln(
-					jen.ID("Base").MapAssign().VarPointer().Qual("go.opencensus.io/plugin/ochttp", "Transport").Valuesln(
+			jen.ID("client").Assign().AddressOf().Qual("net/http", "Client").Valuesln(
+				jen.ID("Transport").MapAssign().AddressOf().ID("oauth2").Dot("Transport").Valuesln(
+					jen.ID("Base").MapAssign().AddressOf().Qual("go.opencensus.io/plugin/ochttp", "Transport").Valuesln(
 						jen.ID("Base").MapAssign().ID("newDefaultRoundTripper").Call(),
 					),
 					jen.ID("Source").MapAssign().ID("ts"),

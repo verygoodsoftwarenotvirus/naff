@@ -68,13 +68,13 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.Err()),
 				jen.Line(),
 				jen.Comment("load user response"),
-				jen.ID("ucr").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
+				jen.ID("ucr").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
 				utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr")), nil),
 				jen.Line(),
 				jen.Comment("create login request"),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("r").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.ID("r").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
@@ -109,12 +109,12 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("res"), jen.Err()).Assign().ID("todoClient").Dot("PlainClient").Call().Dot("Do").Call(jen.ID("req")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.Err()),
 				jen.Line(),
-				jen.ID("ucr").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
+				jen.ID("ucr").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
 				utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr")), nil),
 				jen.Line(),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("r").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.ID("r").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
@@ -181,7 +181,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("res"), jen.Err()),
 				jen.Line(),
 				jen.Comment("load user response"),
-				jen.ID("ucr").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
+				jen.ID("ucr").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
 				utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("ucr")), nil),
 				jen.Line(),
 				jen.Comment("create login request"),
@@ -193,7 +193,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.Comment("create login request"),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("ucr").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("r").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.ID("r").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("badPassword"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
@@ -223,7 +223,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("s"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("r").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.ID("r").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("ui").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("token")),
@@ -269,7 +269,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.Comment("create password update request"),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("r").Assign().VarPointer().Qual(proj.ModelsV1Package(), "PasswordUpdateInput").Valuesln(
+				jen.ID("r").Assign().AddressOf().Qual(proj.ModelsV1Package(), "PasswordUpdateInput").Valuesln(
 					jen.ID("CurrentPassword").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
 					jen.ID("NewPassword").MapAssign().ID("backwardsPass"),
@@ -341,7 +341,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.Comment("create TOTP secret update request"),
 				jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("token"), jen.Err()),
-				jen.ID("ir").Assign().VarPointer().Qual(proj.ModelsV1Package(), "TOTPSecretRefreshInput").Valuesln(
+				jen.ID("ir").Assign().AddressOf().Qual(proj.ModelsV1Package(), "TOTPSecretRefreshInput").Valuesln(
 					jen.ID("CurrentPassword").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
 				),
@@ -363,7 +363,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.Qual("net/http", "StatusAccepted"), jen.ID("res").Dot("StatusCode"), nil),
 				jen.Line(),
 				jen.Comment("load user response"),
-				jen.ID("r").Assign().VarPointer().Qual(proj.ModelsV1Package(), "TOTPSecretRefreshResponse").Values(),
+				jen.ID("r").Assign().AddressOf().Qual(proj.ModelsV1Package(), "TOTPSecretRefreshResponse").Values(),
 				utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.ID("r")), nil),
 				jen.Qual("github.com/stretchr/testify/require", "NotEqual").Call(jen.ID("t"), jen.ID("user").Dot("TwoFactorSecret"), jen.ID("r").Dot("TwoFactorSecret")),
 				jen.Line(),

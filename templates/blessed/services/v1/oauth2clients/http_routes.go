@@ -71,7 +71,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("oauth2Clients"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2Clients").Call(utils.CtxVar(), jen.ID("userID"), jen.ID(utils.FilterVarName)),
 				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
 					jen.Comment("just return an empty list if there are no results"),
-					jen.ID("oauth2Clients").Equals().VarPointer().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
+					jen.ID("oauth2Clients").Equals().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
 						jen.ID("Clients").MapAssign().Index().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
 					),
 				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(

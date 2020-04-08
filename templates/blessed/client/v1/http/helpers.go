@@ -109,7 +109,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.If(jen.ID("res").Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(
-				jen.ID("apiErr").Assign().VarPointer().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
+				jen.ID("apiErr").Assign().AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
 				jen.If(jen.Err().Equals().Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),
 					jen.AddressOf().ID("apiErr"),

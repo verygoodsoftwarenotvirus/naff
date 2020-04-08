@@ -45,7 +45,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
-			jen.ID("userInput").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
+			jen.ID("userInput").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
 				jen.ID("Username").MapAssign().Qual(utils.FakeLibrary, "Username").Call(),
 				jen.ID("Password").MapAssign().Qual(utils.FakeLibrary, "Password").Call(jen.True(), jen.True(), jen.True(), jen.True(), jen.True(), jen.Lit(64)),
 			),

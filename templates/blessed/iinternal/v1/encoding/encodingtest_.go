@@ -25,7 +25,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("expectation").Assign().Lit("name"),
-				jen.ID("ex").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
+				jen.ID("ex").Assign().AddressOf().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
 				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -38,7 +38,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"as XML",
 				jen.ID("expectation").Assign().Lit("name"),
-				jen.ID("ex").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
+				jen.ID("ex").Assign().AddressOf().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
 				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -59,7 +59,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("expectation").Assign().Lit("name"),
-				jen.ID("e").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
+				jen.ID("e").Assign().AddressOf().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
 				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
 				jen.Line(),
 				jen.List(jen.ID("bs"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("e")),
@@ -76,7 +76,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"as XML",
 				jen.ID("expectation").Assign().Lit("name"),
-				jen.ID("e").Assign().VarPointer().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
+				jen.ID("e").Assign().AddressOf().ID("example").Values(jen.ID("Name").MapAssign().ID("expectation")),
 				jen.ID("ed").Assign().ID("ProvideResponseEncoder").Call(),
 				jen.Line(),
 				jen.List(jen.ID("bs"), jen.Err()).Assign().Qual("encoding/xml", "Marshal").Call(jen.ID("e")),

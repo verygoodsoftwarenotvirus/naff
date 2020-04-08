@@ -193,7 +193,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("UserCreationResponse is a struct we can use to notify the user of"),
 				jen.Comment("their two factor secret, but ideally just this once and then never again."),
-				jen.ID("ucr").Assign().VarPointer().Qual(proj.ModelsV1Package(), "UserCreationResponse").Valuesln(
+				jen.ID("ucr").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationResponse").Valuesln(
 					jen.ID("ID").MapAssign().ID("user").Dot("ID"),
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("TwoFactorSecret").MapAssign().ID("user").Dot("TwoFactorSecret"),

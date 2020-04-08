@@ -160,7 +160,7 @@ func buildScanSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen
 		).Block(
 			func() []jen.Code {
 				body := []jen.Code{
-					jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Values(),
+					jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), sn).Values(),
 					jen.Var().ID("count").Uint64(),
 					jen.Line(),
 					jen.ID("targetVars").Assign().Index().Interface().Valuesln(buildScanFields(typ)...),
@@ -723,7 +723,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Su
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("list").Assign().VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
+			jen.ID("list").Assign().AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
 				jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().ID("filter").Dot("Page"),
 					jen.ID("Limit").MapAssign().ID("filter").Dot("Limit"),
@@ -960,7 +960,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	}
 
 	baseCreateFuncBody := []jen.Code{
-		jen.ID("x").Assign().VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(createInitColumns...),
+		jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), sn).Valuesln(createInitColumns...),
 		jen.Line(),
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildCreate%sQuery", sn).Call(
 			queryBuildingArgs...,

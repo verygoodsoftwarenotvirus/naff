@@ -17,7 +17,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("exampleInput").Assign().VarPointer().ID("WebhookUpdateInput").Valuesln(
+				jen.ID("exampleInput").Assign().AddressOf().ID("WebhookUpdateInput").Valuesln(
 					jen.ID("Name").MapAssign().Lit("whatever"),
 					jen.ID("ContentType").MapAssign().Lit("application/xml"),
 					jen.ID("URL").MapAssign().Lit("https://blah.verygoodsoftwarenotvirus.ru"),
@@ -27,7 +27,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("Topics").MapAssign().Index().String().Values(jen.Lit("blah-blah")),
 				),
 				jen.Line(),
-				jen.ID("actual").Assign().VarPointer().ID("Webhook").Valuesln(
+				jen.ID("actual").Assign().AddressOf().ID("Webhook").Valuesln(
 					jen.ID("Name").MapAssign().Lit("something_else"),
 					jen.ID("ContentType").MapAssign().Lit("application/json"),
 					jen.ID("URL").MapAssign().Lit("https://verygoodsoftwarenotvirus.ru"),
@@ -36,7 +36,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("DataTypes").MapAssign().Index().String().Values(jen.Lit("stuff")),
 					jen.ID("Topics").MapAssign().Index().String().Values(jen.Lit("blah")),
 				),
-				jen.ID("expected").Assign().VarPointer().ID("Webhook").Valuesln(
+				jen.ID("expected").Assign().AddressOf().ID("Webhook").Valuesln(
 					jen.ID("Name").MapAssign().ID("exampleInput").Dot("Name"),
 					jen.ID("ContentType").MapAssign().Lit("application/xml"),
 					jen.ID("URL").MapAssign().Lit("https://blah.verygoodsoftwarenotvirus.ru"),
@@ -59,7 +59,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("w").Assign().VarPointer().ID("Webhook").Values(),
+				jen.ID("w").Assign().AddressOf().ID("Webhook").Values(),
 				jen.ID("w").Dot("ToListener").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			),
 		),
@@ -72,7 +72,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("w").Assign().VarPointer().ID("Webhook").Values(),
+				jen.ID("w").Assign().AddressOf().ID("Webhook").Values(),
 				jen.ID("actual").Assign().ID("buildErrorLogFunc").Call(jen.ID("w"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("actual").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 			),

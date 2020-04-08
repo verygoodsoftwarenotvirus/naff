@@ -133,7 +133,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 		jen.Commentf("Provide%s provides a %s%s controller", sn, cn, dbTrail),
 		jen.Line(),
 		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").ParamPointer().Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "Database")).Block(
-			jen.Return().VarPointer().IDf(sn).Valuesln(
+			jen.Return().AddressOf().IDf(sn).Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("debug").MapAssign().ID("debug"),
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("loggerName")),

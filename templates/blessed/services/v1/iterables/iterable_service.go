@@ -156,7 +156,7 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("svc").Assign().VarPointer().ID("Service").Valuesln(serviceValues...),
+			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(serviceValues...),
 			jen.Line(),
 			jen.List(jen.ID(fmt.Sprintf("%sCount", uvn)), jen.Err()).Assign().ID("svc").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("GetAll%sCount", pn)).Call(utils.CtxVar()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(

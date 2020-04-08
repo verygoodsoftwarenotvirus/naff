@@ -63,7 +63,7 @@ connection_details = "%s"
 				),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.ID("expectedConfig").Assign().VarPointer().ID("ServerConfig").Valuesln(
+				jen.ID("expectedConfig").Assign().AddressOf().ID("ServerConfig").Valuesln(
 					jen.ID("Server").MapAssign().ID("ServerSettings").Valuesln(
 						jen.ID("HTTPPort").MapAssign().Lit(1234),
 						jen.ID("Debug").MapAssign().False(),

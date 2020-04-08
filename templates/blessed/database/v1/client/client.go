@@ -86,7 +86,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			jen.ID("debug").Bool(),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 		).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.Error()).Block(
-			jen.ID("c").Assign().VarPointer().ID("Client").Valuesln(
+			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("querier").MapAssign().ID("querier"),
 				jen.ID("debug").MapAssign().ID("debug"),

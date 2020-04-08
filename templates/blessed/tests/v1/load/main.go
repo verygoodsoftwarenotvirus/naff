@@ -110,7 +110,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("runTime").Equals().ID("_rt"),
 			),
 			jen.Line(),
-			jen.ID("attacker").Assign().VarPointer().ID("ServiceAttacker").Values(jen.ID("todoClient").MapAssign().ID("todoClient")),
+			jen.ID("attacker").Assign().AddressOf().ID("ServiceAttacker").Values(jen.ID("todoClient").MapAssign().ID("todoClient")),
 			jen.ID("cfg").Assign().Qual("github.com/emicklei/hazana", "Config").Valuesln(
 				jen.ID("RPS").MapAssign().Lit(50),
 				jen.ID("AttackTimeSec").MapAssign().ID("int").Call(jen.ID("runTime").Dot("Seconds").Call()),

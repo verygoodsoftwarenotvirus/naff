@@ -27,13 +27,13 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		var lines []jen.Code
 
 		for _, typ := range proj.DataTypes {
-			lines = append(lines, jen.IDf("%sDataManager", typ.Name.Singular()).MapAssign().VarPointer().Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())).Values())
+			lines = append(lines, jen.IDf("%sDataManager", typ.Name.Singular()).MapAssign().AddressOf().Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())).Values())
 		}
 
 		lines = append(lines,
-			jen.ID("UserDataManager").MapAssign().VarPointer().Qual(mockModelsImp, "UserDataManager").Values(),
-			jen.ID("OAuth2ClientDataManager").MapAssign().VarPointer().Qual(mockModelsImp, "OAuth2ClientDataManager").Values(),
-			jen.ID("WebhookDataManager").MapAssign().VarPointer().Qual(mockModelsImp, "WebhookDataManager").Values(),
+			jen.ID("UserDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "UserDataManager").Values(),
+			jen.ID("OAuth2ClientDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "OAuth2ClientDataManager").Values(),
+			jen.ID("WebhookDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "WebhookDataManager").Values(),
 		)
 
 		return lines
@@ -43,7 +43,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		jen.Comment("BuildMockDatabase builds a mock database"),
 		jen.Line(),
 		jen.Func().ID("BuildMockDatabase").Params().Params(jen.PointerTo().ID("MockDatabase")).Block(
-			jen.Return().VarPointer().ID("MockDatabase").Valuesln(
+			jen.Return().AddressOf().ID("MockDatabase").Valuesln(
 				buildMockDatabaseLines()...,
 			),
 		),

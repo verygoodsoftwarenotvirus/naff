@@ -63,7 +63,7 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 		jen.Comment("buildDefaultTransport constructs a new http.Transport"),
 		jen.Line(),
 		jen.Func().ID("buildDefaultTransport").Params().Params(jen.ParamPointer().Qual("net/http", "Transport")).Block(
-			jen.Return().VarPointer().Qual("net/http", "Transport").Valuesln(
+			jen.Return().AddressOf().Qual("net/http", "Transport").Valuesln(
 				jen.ID("Proxy").MapAssign().Qual("net/http", "ProxyFromEnvironment"),
 				jen.ID("DialContext").MapAssign().Parens(jen.AddressOf().Qual("net", "Dialer").Valuesln(
 					jen.ID("Timeout").MapAssign().ID("defaultTimeout"),

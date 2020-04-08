@@ -17,28 +17,28 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 		lines := []jen.Code{
 			jen.ID("DebugMode").MapAssign().True(),
 			jen.ID("db").MapAssign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-			jen.ID("config").MapAssign().VarPointer().Qual(proj.InternalConfigV1Package(), "ServerConfig").Values(),
-			jen.ID("encoder").MapAssign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+			jen.ID("config").MapAssign().AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Values(),
+			jen.ID("encoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 			jen.ID("httpServer").MapAssign().ID("provideHTTPServer").Call(),
 			jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("frontendService").MapAssign().Qual(proj.ServiceV1FrontendPackage(), "ProvideFrontendService").Callln(
 				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.Qual(proj.InternalConfigV1Package(), "FrontendSettings").Values(),
 			),
-			jen.ID("webhooksService").MapAssign().VarPointer().Qual(proj.ModelsV1Package("mock"), "WebhookDataServer").Values(),
-			jen.ID("usersService").MapAssign().VarPointer().Qual(proj.ModelsV1Package("mock"), "UserDataServer").Values(),
-			jen.ID("authService").MapAssign().VarPointer().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
+			jen.ID("webhooksService").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataServer").Values(),
+			jen.ID("usersService").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataServer").Values(),
+			jen.ID("authService").MapAssign().AddressOf().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
 		}
 		for _, typ := range proj.DataTypes {
 			tpuvn := typ.Name.PluralUnexportedVarName()
 			tsn := typ.Name.Singular()
 			lines = append(lines,
-				jen.IDf("%sService", tpuvn).MapAssign().VarPointer().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataServer", tsn)).Values(),
+				jen.IDf("%sService", tpuvn).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataServer", tsn)).Values(),
 			)
 		}
 
 		lines = append(lines,
-			jen.ID("oauth2ClientsService").MapAssign().VarPointer().Qual(proj.ModelsV1Package("mock"), "OAuth2ClientDataServer").Values(),
+			jen.ID("oauth2ClientsService").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "OAuth2ClientDataServer").Values(),
 		)
 
 		return lines
@@ -46,7 +46,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("buildTestServer").Params().Params(jen.PointerTo().ID("Server")).Block(
-			jen.ID("s").Assign().VarPointer().ID("Server").Valuesln(
+			jen.ID("s").Assign().AddressOf().ID("Server").Valuesln(
 				buildServerLines()...,
 			),
 			jen.Line(),

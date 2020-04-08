@@ -38,7 +38,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Comment("find the webhooks"),
 				jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("s").Dot("webhookDatabase").Dot("GetWebhooks").Call(utils.CtxVar(), jen.ID("userID"), jen.ID(utils.FilterVarName)),
 				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("webhooks").Equals().VarPointer().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
+					jen.ID("webhooks").Equals().AddressOf().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
 						jen.ID("Webhooks").MapAssign().Index().Qual(proj.ModelsV1Package(), "Webhook").Values()),
 				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error encountered fetching webhooks")),

@@ -23,7 +23,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Var().ID("selectedClient").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.For(jen.ID("selectedClient").Op("==").ID("nil")).Block(
 				jen.ID("ri").Assign().Qual("math/rand", "Intn").Call(jen.ID("len").Call(jen.ID("clientsRes").Dot("Clients"))),
-				jen.ID("c").Assign().VarPointer().ID("clientsRes").Dot("Clients").Index(jen.ID("ri")),
+				jen.ID("c").Assign().AddressOf().ID("clientsRes").Dot("Clients").Index(jen.ID("ri")),
 				jen.If(jen.ID("c").Dot("ClientID").DoesNotEqual().Lit("FIXME")).Block(jen.ID("selectedClient").Equals().ID("c")),
 			),
 			jen.Line(),

@@ -14,7 +14,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabaseV1Package(), "MockDatabase")).Block(
 			jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-			jen.ID("c").Assign().VarPointer().ID("Client").Valuesln(
+			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
 				jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID("querier").MapAssign().ID("db"),
 			),
@@ -32,7 +32,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
+				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
 				utils.AssertNoError(jen.ID("actual"), nil),
 				jen.Line(),
@@ -44,7 +44,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Line(),
-				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
+				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
 				utils.AssertError(jen.ID("actual"), nil),
 				jen.Line(),
@@ -63,7 +63,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("IsReady"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.True()),
 				jen.Line(),
-				jen.ID("c").Assign().VarPointer().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
+				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("c").Dot("IsReady").Call(utils.CtxVar()),
 				jen.Line(),
 				utils.AssertExpectationsFor("mockDB"),

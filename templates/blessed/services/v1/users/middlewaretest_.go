@@ -34,11 +34,11 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -46,7 +46,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.ID("mh").Assign().VarPointer().ID("MockHTTPHandler").Values(),
+				jen.ID("mh").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("mh").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -64,11 +64,11 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with error decoding request",
-				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -76,7 +76,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.ID("mh").Assign().VarPointer().ID("MockHTTPHandler").Values(),
+				jen.ID("mh").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("mh").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -101,11 +101,11 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -113,7 +113,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.ID("mh").Assign().VarPointer().ID("MockHTTPHandler").Values(),
+				jen.ID("mh").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("mh").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -131,7 +131,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with error decoding request",
-				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
@@ -143,7 +143,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.Uint64().Call(jen.Lit(123)), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -151,7 +151,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.ID("mh").Assign().VarPointer().ID("MockHTTPHandler").Values(),
+				jen.ID("mh").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("mh").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -176,11 +176,11 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -188,7 +188,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.ID("mh").Assign().VarPointer().ID("MockHTTPHandler").Values(),
+				jen.ID("mh").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("mh").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -206,11 +206,11 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with error decoding request",
-				jen.ID("s").Assign().VarPointer().ID("Service").Valuesln(
+				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
 					jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				jen.Line(),
-				jen.ID("ed").Assign().VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
 					jen.Qual(utils.MockPkg, "Anything"),
@@ -218,7 +218,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
-				jen.ID("mh").Assign().VarPointer().ID("MockHTTPHandler").Values(),
+				jen.ID("mh").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("mh").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
 					jen.Qual(utils.MockPkg, "Anything"),
