@@ -171,9 +171,9 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Zero())),
-					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Zero())),
-					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Zero())),
+					jen.ID("buildMockRowFromUser").Call(jen.AddressOf().ID("expected").Dot("Users").Index(jen.Zero())),
+					jen.ID("buildMockRowFromUser").Call(jen.AddressOf().ID("expected").Dot("Users").Index(jen.Zero())),
+					jen.ID("buildMockRowFromUser").Call(jen.AddressOf().ID("expected").Dot("Users").Index(jen.Zero())),
 				),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
@@ -224,7 +224,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Zero()))),
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromUser").Call(jen.AddressOf().ID("expected").Dot("Users").Index(jen.Zero()))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call()),
 				utils.AssertError(jen.Err(), nil),
@@ -253,9 +253,9 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Zero())),
-					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Zero())),
-					jen.ID("buildMockRowFromUser").Call(jen.VarPointer().ID("expected").Dot("Users").Index(jen.Zero())),
+					jen.ID("buildMockRowFromUser").Call(jen.AddressOf().ID("expected").Dot("Users").Index(jen.Zero())),
+					jen.ID("buildMockRowFromUser").Call(jen.AddressOf().ID("expected").Dot("Users").Index(jen.Zero())),
+					jen.ID("buildMockRowFromUser").Call(jen.AddressOf().ID("expected").Dot("Users").Index(jen.Zero())),
 				),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -496,7 +496,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 				jen.ID("expected").Dot("HashedPassword"),
 				jen.ID("expected").Dot("TwoFactorSecret"),
 				jen.ID("expected").Dot("IsAdmin"),
-			).Dot("WillReturnError").Call(jen.VarPointer().Qual("github.com/lib/pq", "Error").Valuesln(
+			).Dot("WillReturnError").Call(jen.AddressOf().Qual("github.com/lib/pq", "Error").Valuesln(
 				jen.ID("Code").MapAssign().Qual("github.com/lib/pq", "ErrorCode").Call(jen.Lit("23505")),
 			)),
 			jen.Line(),

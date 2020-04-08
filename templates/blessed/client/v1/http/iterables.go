@@ -286,14 +286,14 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructs(proj *models.Project, 
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
-			listParams = append(listParams, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
+			listParams = append(listParams, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 		}
-		listParams = append(listParams, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
+		listParams = append(listParams, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dot("ID"))
 
 		params = append(params, listParams...)
 
 	} else {
-		params = append(params, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
+		params = append(params, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dot("ID"))
 	}
 
 	return params
@@ -508,7 +508,7 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
-			listParams = append(listParams, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
+			listParams = append(listParams, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 		}
 		listParams = listParams[:len(listParams)-1]
 
@@ -516,7 +516,7 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj
 			params = append(params, listParams...)
 		}
 	}
-	params = append(params, jen.IDf("example%s", typ.Name.Singular()))
+	params = append(params, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())))
 
 	return params
 }
@@ -536,7 +536,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 			),
 		),
 		jen.Line(),
-		jen.If(jen.ID("retrieveErr").Assign().ID("c").Dot("retrieve").Call(utils.CtxVar(), jen.ID("req"), jen.VarPointer().ID(uvn)), jen.ID("retrieveErr").DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.ID("retrieveErr").Assign().ID("c").Dot("retrieve").Call(utils.CtxVar(), jen.ID("req"), jen.AddressOf().ID(uvn)), jen.ID("retrieveErr").DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(jen.Nil(), jen.ID("retrieveErr")),
 		),
 		jen.Line(),
@@ -615,7 +615,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 		),
 		jen.Line(),
 		jen.If(
-			jen.ID("retrieveErr").Assign().ID("c").Dot("retrieve").Call(utils.CtxVar(), jen.ID("req"), jen.VarPointer().ID(pvn)),
+			jen.ID("retrieveErr").Assign().ID("c").Dot("retrieve").Call(utils.CtxVar(), jen.ID("req"), jen.AddressOf().ID(pvn)),
 			jen.ID("retrieveErr").DoesNotEqual().ID("nil"),
 		).Block(
 			jen.Return().List(jen.Nil(), jen.ID("retrieveErr")),
@@ -706,7 +706,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.Err().Equals().ID("c").Dot("executeRequest").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.VarPointer().ID(vn),
+			jen.AddressOf().ID(vn),
 		),
 		jen.Return().List(
 			jen.ID(vn),
@@ -790,7 +790,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.Return().ID("c").Dot("executeRequest").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.VarPointer().ID(typ.Name.UnexportedVarName()),
+			jen.AddressOf().ID(typ.Name.UnexportedVarName()),
 		),
 	}
 

@@ -90,7 +90,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.VarPointer().ID("user"),
+			jen.AddressOf().ID("user"),
 		),
 		jen.Return().List(
 			jen.ID("user"),
@@ -175,7 +175,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.VarPointer().ID("users"),
+			jen.AddressOf().ID("users"),
 		),
 		jen.Return().List(jen.ID("users"), jen.Err()),
 	}
@@ -257,7 +257,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 		jen.Err().Equals().ID("c").Dot("executeUnauthenticatedDataRequest").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.VarPointer().ID("user"),
+			jen.AddressOf().ID("user"),
 		),
 		jen.Return().List(jen.ID("user"), jen.Err()),
 	}
@@ -365,7 +365,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 			jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil input provided"))),
 		),
 		jen.Line(),
-		jen.List(jen.ID("body"), jen.Err()).Assign().ID("createBodyFromStruct").Call(jen.VarPointer().ID("input")),
+		jen.List(jen.ID("body"), jen.Err()).Assign().ID("createBodyFromStruct").Call(jen.AddressOf().ID("input")),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(
 				jen.Nil(),

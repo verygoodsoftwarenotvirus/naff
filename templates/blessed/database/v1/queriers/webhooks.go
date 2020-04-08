@@ -69,18 +69,18 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			),
 			jen.Line(),
 			jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Callln(
-				jen.VarPointer().ID("x").Dot("ID"),
-				jen.VarPointer().ID("x").Dot("Name"),
-				jen.VarPointer().ID("x").Dot("ContentType"),
-				jen.VarPointer().ID("x").Dot("URL"),
-				jen.VarPointer().ID("x").Dot("Method"),
-				jen.VarPointer().ID("eventsStr"),
-				jen.VarPointer().ID("dataTypesStr"),
-				jen.VarPointer().ID("topicsStr"),
-				jen.VarPointer().ID("x").Dot("CreatedOn"),
-				jen.VarPointer().ID("x").Dot("UpdatedOn"),
-				jen.VarPointer().ID("x").Dot("ArchivedOn"),
-				jen.VarPointer().ID("x").Dot("BelongsToUser"),
+				jen.AddressOf().ID("x").Dot("ID"),
+				jen.AddressOf().ID("x").Dot("Name"),
+				jen.AddressOf().ID("x").Dot("ContentType"),
+				jen.AddressOf().ID("x").Dot("URL"),
+				jen.AddressOf().ID("x").Dot("Method"),
+				jen.AddressOf().ID("eventsStr"),
+				jen.AddressOf().ID("dataTypesStr"),
+				jen.AddressOf().ID("topicsStr"),
+				jen.AddressOf().ID("x").Dot("CreatedOn"),
+				jen.AddressOf().ID("x").Dot("UpdatedOn"),
+				jen.AddressOf().ID("x").Dot("ArchivedOn"),
+				jen.AddressOf().ID("x").Dot("BelongsToUser"),
 			), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
@@ -203,7 +203,7 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 		jen.Comment("GetAllWebhooksCount will fetch the count of every active webhook in the database"),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllWebhooksCount").Params(utils.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
-			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID(dbfl).Dot("buildGetAllWebhooksCountQuery").Call()).Dot("Scan").Call(jen.VarPointer().ID("count")),
+			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID(dbfl).Dot("buildGetAllWebhooksCountQuery").Call()).Dot("Scan").Call(jen.AddressOf().ID("count")),
 			jen.Return().List(jen.ID("count"), jen.Err()),
 		),
 		jen.Line(),
@@ -319,7 +319,7 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			),
 			jen.Line(),
 			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().ID("nil")).Block(
-				jen.ID("builder").Equals().ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
+				jen.ID("builder").Equals().ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.ID("webhooksTableName")),
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID("builder").Dot("ToSql").Call(),
@@ -471,7 +471,7 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 
 		if isPostgres {
 			out = append(out,
-				jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID("x").Dot("ID"), jen.VarPointer().ID("x").Dot("CreatedOn")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("ID"), jen.AddressOf().ID("x").Dot("CreatedOn")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing webhook creation query: %w"), jen.Err())),
 				),
 			)
@@ -486,7 +486,7 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 					jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
 					jen.Line(),
 					jen.List(jen.ID("query"), jen.ID("args")).Equals().ID(dbfl).Dot("buildWebhookCreationTimeQuery").Call(jen.ID("x").Dot("ID")),
-					jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID("x").Dot("CreatedOn"))),
+					jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("CreatedOn"))),
 				),
 				jen.Line(),
 			)
@@ -554,7 +554,7 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 		if isPostgres {
 			return []jen.Code{
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateWebhookQuery").Call(jen.ID("input")),
-				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID("input").Dot("UpdatedOn")),
+				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("input").Dot("UpdatedOn")),
 			}
 		} else if isSqlite || isMariaDB {
 			return []jen.Code{

@@ -308,7 +308,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.Comment("create login request"),
 				jen.List(jen.ID("newToken"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("user").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("newToken"), jen.Err()),
-				jen.List(jen.ID("l"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.List(jen.ID("l"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("backwardsPass"),
 					jen.ID("TOTPToken").MapAssign().ID("newToken")),
@@ -384,7 +384,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.Comment("create login request"),
 				jen.List(jen.ID("newToken"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("r").Dot("TwoFactorSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("newToken"), jen.Err()),
-				jen.List(jen.ID("l"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.VarPointer().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.List(jen.ID("l"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("Password").MapAssign().ID("ui").Dot("Password"),
 					jen.ID("TOTPToken").MapAssign().ID("newToken")),
@@ -418,7 +418,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.Err(), nil),
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("cookie")),
 				jen.Line(),
-				jen.List(jen.ID("res"), jen.Err()).Assign().Parens(jen.VarPointer().Qual("net/http", "Client").Values(jen.ID("Timeout").MapAssign().Lit(10).Times().Qual("time", "Second"))).Dot("Do").Call(jen.ID("req")),
+				jen.List(jen.ID("res"), jen.Err()).Assign().Parens(jen.AddressOf().Qual("net/http", "Client").Values(jen.ID("Timeout").MapAssign().Lit(10).Times().Qual("time", "Second"))).Dot("Do").Call(jen.ID("req")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("StatusCode"), nil),
 			)),
@@ -461,14 +461,14 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.Err()),
 				jen.Line(),
 				jen.Comment("create webhook for user A"),
-				jen.List(jen.ID("webhookA"), jen.Err()).Assign().ID("clientA").Dot("CreateWebhook").Call(utils.CtxVar(), jen.VarPointer().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
+				jen.List(jen.ID("webhookA"), jen.Err()).Assign().ID("clientA").Dot("CreateWebhook").Call(utils.CtxVar(), jen.AddressOf().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 					jen.ID("Method").MapAssign().Qual("net/http", "MethodPatch"),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 				)),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("webhookA"), jen.Err()),
 				jen.Line(),
 				jen.Comment("create webhook for user B"),
-				jen.List(jen.ID("webhookB"), jen.Err()).Assign().ID("clientB").Dot("CreateWebhook").Call(utils.CtxVar(), jen.VarPointer().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
+				jen.List(jen.ID("webhookB"), jen.Err()).Assign().ID("clientB").Dot("CreateWebhook").Call(utils.CtxVar(), jen.AddressOf().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 					jen.ID("Method").MapAssign().Qual("net/http", "MethodPatch"),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 				)),

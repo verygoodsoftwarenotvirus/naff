@@ -129,7 +129,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen
 	ca := buildCreationArguments(proj, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs,
-		jen.VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
+		jen.AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
 			fieldToExpectedDotField(fmt.Sprintf("%s%s", sourceVarPrefix, typ.Name.Singular()), typ)...,
 		),
 	)

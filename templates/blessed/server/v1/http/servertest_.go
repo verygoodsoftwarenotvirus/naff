@@ -58,26 +58,26 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 	buildProvideServerArgs := func(cookieSecret string) []jen.Code {
 		args := []jen.Code{
 			utils.CtxVar(),
-			jen.VarPointer().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
+			jen.AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
 				jen.ID("Auth").MapAssign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
 					jen.ID("CookieSecret").MapAssign().Lit(cookieSecret),
 				),
 			),
-			jen.VarPointer().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
-			jen.VarPointer().Qual(proj.ServiceV1FrontendPackage(), "Service").Values(),
+			jen.AddressOf().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
+			jen.AddressOf().Qual(proj.ServiceV1FrontendPackage(), "Service").Values(),
 		}
 
 		for _, typ := range proj.DataTypes {
 			pn := typ.Name.PackageName()
-			args = append(args, jen.VarPointer().Qual(proj.ServiceV1Package(pn), "Service").Values())
+			args = append(args, jen.AddressOf().Qual(proj.ServiceV1Package(pn), "Service").Values())
 		}
 
 		args = append(args,
-			jen.VarPointer().Qual(proj.ServiceV1UsersPackage(), "Service").Values(),
-			jen.VarPointer().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service").Values(),
-			jen.VarPointer().Qual(proj.ServiceV1WebhooksPackage(), "Service").Values(),
+			jen.AddressOf().Qual(proj.ServiceV1UsersPackage(), "Service").Values(),
+			jen.AddressOf().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service").Values(),
+			jen.AddressOf().Qual(proj.ServiceV1WebhooksPackage(), "Service").Values(),
 			jen.ID("mockDB"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-			jen.VarPointer().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+			jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 		)
 
 		// if proj.EnableNewsman {

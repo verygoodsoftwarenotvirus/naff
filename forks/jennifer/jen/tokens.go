@@ -386,6 +386,94 @@ func (s *Statement) PointerTo() *Statement {
 	return s
 }
 
+// GreaterThan renders the provided operator / token.
+func GreaterThan() *Statement {
+	return newStatement().GreaterThan()
+}
+
+// GreaterThan renders the provided operator / token.
+func (g *Group) GreaterThan() *Statement {
+	s := GreaterThan()
+	g.items = append(g.items, s)
+	return s
+}
+
+// GreaterThan renders the provided operator / token.
+func (s *Statement) GreaterThan() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: ">",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// GreaterThanOrEqual renders the provided operator / token.
+func GreaterThanOrEqual() *Statement {
+	return newStatement().GreaterThanOrEqual()
+}
+
+// GreaterThanOrEqual renders the provided operator / token.
+func (g *Group) GreaterThanOrEqual() *Statement {
+	s := GreaterThanOrEqual()
+	g.items = append(g.items, s)
+	return s
+}
+
+// GreaterThanOrEqual renders the provided operator / token.
+func (s *Statement) GreaterThanOrEqual() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: ">=",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// LessThan renders the provided operator / token.
+func LessThan() *Statement {
+	return newStatement().LessThan()
+}
+
+// LessThan renders the provided operator / token.
+func (g *Group) LessThan() *Statement {
+	s := LessThan()
+	g.items = append(g.items, s)
+	return s
+}
+
+// LessThan renders the provided operator / token.
+func (s *Statement) LessThan() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "<",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// LessThanOrEqual renders the provided operator / token.
+func LessThanOrEqual() *Statement {
+	return newStatement().LessThanOrEqual()
+}
+
+// LessThanOrEqual renders the provided operator / token.
+func (g *Group) LessThanOrEqual() *Statement {
+	s := LessThanOrEqual()
+	g.items = append(g.items, s)
+	return s
+}
+
+// LessThanOrEqual renders the provided operator / token.
+func (s *Statement) LessThanOrEqual() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "<=",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // MapAssign renders the provided operator / token.
 func MapAssign() *Statement {
 	return newStatement().MapAssign()
@@ -452,19 +540,19 @@ func (s *Statement) ParamPointer() *Statement {
 	return s
 }
 
-// VarPointer renders the provided operator / token.
-func VarPointer() *Statement {
+// AddressOf renders the provided operator / token.
+func AddressOf() *Statement {
 	return newStatement().VarPointer()
 }
 
-// VarPointer renders the provided operator / token.
+// AddressOf renders the provided operator / token.
 func (g *Group) VarPointer() *Statement {
-	s := VarPointer()
+	s := AddressOf()
 	g.items = append(g.items, s)
 	return s
 }
 
-// VarPointer renders the provided operator / token.
+// AddressOf renders the provided operator / token.
 func (s *Statement) VarPointer() *Statement {
 	t := token{
 		typ:     operatorToken,

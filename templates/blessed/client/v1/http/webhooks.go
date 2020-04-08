@@ -90,7 +90,7 @@ func buildGetWebhook(proj *models.Project) []jen.Code {
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.VarPointer().ID("webhook"),
+			jen.AddressOf().ID("webhook"),
 		),
 		jen.Return().List(
 			jen.ID("webhook"),
@@ -171,7 +171,7 @@ func buildGetWebhooks(proj *models.Project) []jen.Code {
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.VarPointer().ID("webhooks"),
+			jen.AddressOf().ID("webhooks"),
 		),
 		jen.Return().List(
 			jen.ID("webhooks"),
@@ -252,7 +252,7 @@ func buildCreateWebhook(proj *models.Project) []jen.Code {
 		jen.Err().Equals().ID("c").Dot("executeRequest").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.VarPointer().ID("webhook"),
+			jen.AddressOf().ID("webhook"),
 		),
 		jen.Return().List(
 			jen.ID("webhook"),
@@ -333,7 +333,7 @@ func buildUpdateWebhook(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Return().ID("c").Dot("executeRequest").Call(
 			utils.CtxVar(),
-			jen.ID("req"), jen.VarPointer().ID("updated"),
+			jen.ID("req"), jen.AddressOf().ID("updated"),
 		),
 	}
 

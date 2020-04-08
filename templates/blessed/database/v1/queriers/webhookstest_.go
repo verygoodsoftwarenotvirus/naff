@@ -362,9 +362,9 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
 				),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
@@ -438,9 +438,9 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
 				),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -475,9 +475,9 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Index(jen.Zero())),
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Index(jen.Zero())),
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Index(jen.Zero())),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooksForUser").Call(utils.CtxVar(), jen.ID("exampleUser").Dot("ID")),
@@ -530,7 +530,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Index(jen.Zero()))),
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Index(jen.Zero()))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooksForUser").Call(utils.CtxVar(), jen.ID("exampleUser").Dot("ID")),
 				utils.AssertError(jen.Err(), nil),
@@ -594,9 +594,9 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
 				),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
@@ -679,9 +679,9 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
-					jen.ID("buildMockRowFromWebhook").Call(jen.VarPointer().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
+					jen.ID("buildMockRowFromWebhook").Call(jen.AddressOf().ID("expected").Dot("Webhooks").Index(jen.Zero())),
 				),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),

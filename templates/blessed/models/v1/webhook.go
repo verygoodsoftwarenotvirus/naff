@@ -135,12 +135,12 @@ func webhookDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("ToListener").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Block(
 			jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewWebhookListener").Callln(
 				jen.ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID("logger")),
-				jen.VarPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebhookConfig").Valuesln(
+				jen.AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebhookConfig").Valuesln(
 					jen.ID("Method").MapAssign().ID("w").Dot("Method"),
 					jen.ID("URL").MapAssign().ID("w").Dot("URL"),
 					jen.ID("ContentType").MapAssign().ID("w").Dot("ContentType"),
 				),
-				jen.VarPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "ListenerConfig").Valuesln(
+				jen.AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "ListenerConfig").Valuesln(
 					jen.ID("Events").MapAssign().ID("w").Dot("Events"),
 					jen.ID("DataTypes").MapAssign().ID("w").Dot("DataTypes"),
 					jen.ID("Topics").MapAssign().ID("w").Dot("Topics"),

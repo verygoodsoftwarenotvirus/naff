@@ -138,12 +138,16 @@ func buildMariaDBWord() wordsmith.SuperPalabra {
 	}
 }
 
+type SqlBuilder interface {
+	ToSql() (string, []interface{}, error)
+}
+
 func buildQueryTest(
 	proj *models.Project,
 	dbvendor wordsmith.SuperPalabra,
 	typ models.DataType,
-	queryName,
-	query string,
+	queryName string,
+	queryBuilder SqlBuilder,
 	expectedArgs []jen.Code,
 	callArgs []jen.Code,
 	countQuery bool,
@@ -174,6 +178,11 @@ func buildQueryTest(
 	sn := typ.Name.Singular()
 	dbi := dbvendor.LowercaseAbbreviation()
 
+	expectedQuery, _, err := queryBuilder.ToSql()
+	if err != nil {
+		log.Panicf("error building %q: %v", queryName, err)
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_build%sQuery", dbn, queryName).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -189,7 +198,7 @@ func buildQueryTest(
 				}(),
 				func() jen.Code {
 					if !countQuery && !listQuery {
-						return jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call()
+						return jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call()
 					}
 					return jen.Null()
 				}(),
@@ -200,7 +209,7 @@ func buildQueryTest(
 					return jen.Null()
 				}(),
 				jen.Line(),
-				jen.ID(expectedQueryVarName).Assign().Lit(query),
+				jen.ID(expectedQueryVarName).Assign().Lit(expectedQuery),
 				func() jen.Code {
 					if !countQuery {
 						x := jen.ID(expectedArgsVarName).Assign().Index().Interface()
@@ -242,6 +251,20 @@ func buildQueryTest(
 	}
 
 	return lines
+}
+
+func unixTimeForDatabase(db wordsmith.SuperPalabra) string {
+	switch db.LowercaseAbbreviation() {
+	case "m":
+		return "UNIX_TIMESTAMP()"
+	case "p":
+		return "extract(epoch FROM NOW())"
+	case "s":
+		return "(strftime('%s','now'))"
+	default:
+		log.Fatalf("invalid database type! %q", db.LowercaseAbbreviation())
+	}
+	panic("won't get here")
 }
 
 func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilderType {

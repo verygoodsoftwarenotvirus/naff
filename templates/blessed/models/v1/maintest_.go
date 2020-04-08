@@ -19,7 +19,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.Underscore().Equals().Parens(jen.VarPointer().ID("ErrorResponse").Values()).Dot("Error").Call(),
+				jen.Underscore().Equals().Parens(jen.AddressOf().ID("ErrorResponse").Values()).Dot("Error").Call(),
 			),
 		),
 		jen.Line(),

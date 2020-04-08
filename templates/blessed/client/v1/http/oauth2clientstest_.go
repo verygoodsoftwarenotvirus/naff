@@ -291,7 +291,7 @@ func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Co
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildCreateOAuth2ClientRequest").Call(
 					utils.CtxVar(),
-					jen.VarPointer().Qual("net/http", "Cookie").Values(),
+					jen.AddressOf().Qual("net/http", "Cookie").Values(),
 					jen.ID("exampleInput"),
 				),
 				jen.Line(),
@@ -351,7 +351,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateOAuth2Client").Call(
 					utils.CtxVar(),
-					jen.VarPointer().Qual("net/http", "Cookie").Values(),
+					jen.AddressOf().Qual("net/http", "Cookie").Values(),
 					jen.ID("exampleInput"),
 				),
 				utils.AssertNoError(jen.Err(), nil),
@@ -367,7 +367,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateOAuth2Client").Call(
 					utils.CtxVar(),
-					jen.VarPointer().Qual("net/http", "Cookie").Values(),
+					jen.AddressOf().Qual("net/http", "Cookie").Values(),
 					jen.ID("exampleInput"),
 				),
 				utils.AssertNil(jen.ID("actual"), nil),
@@ -404,7 +404,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateOAuth2Client").Call(
 					utils.CtxVar(),
-					jen.VarPointer().Qual("net/http", "Cookie").Values(),
+					jen.AddressOf().Qual("net/http", "Cookie").Values(),
 					jen.ID("exampleInput"),
 				),
 				utils.AssertError(jen.Err(), nil),

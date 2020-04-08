@@ -33,9 +33,9 @@ func buildRequisiteIDDeclarations(proj *models.Project, typ models.DataType) []j
 	lines := []jen.Code{}
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		lines = append(lines, jen.IDf("example%s", pt.Name.Singular()).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
+		lines = append(lines, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
 	}
-	lines = append(lines, jen.IDf("example%s", typ.Name.Singular()).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	lines = append(lines, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 
 	return lines
 }
@@ -45,17 +45,17 @@ func buildRequisiteIDCallArgs(proj *models.Project, typ models.DataType) []jen.C
 	sn := typ.Name.Singular()
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		lines = append(lines, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
+		lines = append(lines, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 
 	}
-	lines = append(lines, jen.IDf("example%s", sn).Dot("ID"))
+	lines = append(lines, jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"))
 
 	if typ.BelongsToStruct != nil {
-		lines = append(lines, jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+		lines = append(lines, jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 	}
 
 	if typ.BelongsToUser {
-		lines = append(lines, jen.IDf("example%s", sn).Dot("BelongsToUser"))
+		lines = append(lines, jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser"))
 	}
 
 	return lines
@@ -66,13 +66,13 @@ func buildRequisiteIDCallArgsWithPreCreatedUser(proj *models.Project, typ models
 	sn := typ.Name.Singular()
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		lines = append(lines, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
+		lines = append(lines, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 
 	}
-	lines = append(lines, jen.IDf("example%s", sn).Dot("ID"))
+	lines = append(lines, jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"))
 
 	if typ.BelongsToStruct != nil {
-		lines = append(lines, jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+		lines = append(lines, jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 	}
 
 	if typ.BelongsToUser {
@@ -132,11 +132,11 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 		buildRequisiteIDDeclarations(proj, typ),
 		jen.Line(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
+		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", sn).Call(callArgs...),
 		utils.AssertNoError(jen.Err(), nil),
-		utils.AssertEqual(jen.IDf("example%s", sn), jen.ID("actual"), nil),
+		utils.AssertEqual(jen.ID(utils.BuildFakeVarName(sn)), jen.ID("actual"), nil),
 		jen.Line(),
 		utils.AssertExpectationsFor("mockDB"),
 	)
@@ -295,19 +295,19 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 	mockCalls = append(mockCalls, jen.ID(inputVarName))
 
 	lines = append(lines,
-		jen.IDf("example%s", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-		jen.ID(inputVarName).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(inputVarName).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(
 			mockCalls...,
-		).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
+		).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
 		jen.Line(),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Create%s", sn).Call(
 			callArgs...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
-		utils.AssertEqual(jen.IDf("example%s", sn), jen.ID("actual"), nil),
+		utils.AssertEqual(jen.ID(utils.BuildFakeVarName(sn)), jen.ID("actual"), nil),
 		jen.Line(),
 		utils.AssertExpectationsFor("mockDB"),
 	)

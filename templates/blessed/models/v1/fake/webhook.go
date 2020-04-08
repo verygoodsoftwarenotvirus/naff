@@ -30,7 +30,7 @@ func buildBuildFakeWebhook(proj *models.Project) []jen.Code {
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 					jen.ID("ContentType").MapAssign().Add(utils.FakeContentTypeFunc()),
@@ -64,7 +64,7 @@ func buildBuildFakeWebhookList(proj *models.Project) []jen.Code {
 			jen.ID("exampleWebhook2").Assign().ID("BuildFakeWebhook").Call(),
 			jen.ID("exampleWebhook3").Assign().ID("BuildFakeWebhook").Call(),
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
@@ -96,7 +96,7 @@ func buildBuildFakeWebhookUpdateInputFromWebhook(proj *models.Project) []jen.Cod
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Name").MapAssign().ID("webhook").Dot("Name"),
 					jen.ID("ContentType").MapAssign().ID("webhook").Dot("ContentType"),
 					jen.ID("URL").MapAssign().ID("webhook").Dot("URL"),
@@ -146,7 +146,7 @@ func buildBuildFakeWebhookCreationInputFromWebhook(proj *models.Project) []jen.C
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Name").MapAssign().ID("webhook").Dot("Name"),
 					jen.ID("ContentType").MapAssign().ID("webhook").Dot("ContentType"),
 					jen.ID("URL").MapAssign().ID("webhook").Dot("URL"),

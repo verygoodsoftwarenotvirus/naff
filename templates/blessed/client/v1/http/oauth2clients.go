@@ -92,7 +92,7 @@ func buildGetOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.VarPointer().ID("oauth2Client"),
+			jen.AddressOf().ID("oauth2Client"),
 		),
 		jen.Return().List(
 			jen.ID("oauth2Client"),
@@ -176,7 +176,7 @@ func buildGetOAuth2Clients(proj *models.Project) []jen.Code {
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			utils.CtxVar(),
 			jen.ID("req"),
-			jen.VarPointer().ID("oauth2Clients"),
+			jen.AddressOf().ID("oauth2Clients"),
 		),
 		jen.Return().List(
 			jen.ID("oauth2Clients"),
@@ -276,7 +276,7 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.If(
-			jen.ID("resErr").Assign().ID("c").Dot("executeUnauthenticatedDataRequest").Call(utils.CtxVar(), jen.ID("req"), jen.VarPointer().ID("oauth2Client")),
+			jen.ID("resErr").Assign().ID("c").Dot("executeUnauthenticatedDataRequest").Call(utils.CtxVar(), jen.ID("req"), jen.AddressOf().ID("oauth2Client")),
 			jen.ID("resErr").DoesNotEqual().ID("nil"),
 		).Block(
 			jen.Return().List(

@@ -273,7 +273,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Var().ID("serverConfig").PointerTo().ID("ServerConfig"),
-			jen.If(jen.Err().Assign().ID("cfg").Dot("Unmarshal").Call(jen.VarPointer().ID("serverConfig")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("cfg").Dot("Unmarshal").Call(jen.AddressOf().ID("serverConfig")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to unmarshal the config: %w"), jen.Err())),
 			),
 			jen.Line(),

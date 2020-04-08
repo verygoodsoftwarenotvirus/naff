@@ -178,7 +178,7 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			}
 		}
 
-		return jen.Return(jen.VarPointer().IDf("%sUpdateInput", sn).Valuesln(lines...))
+		return jen.Return(jen.AddressOf().IDf("%sUpdateInput", sn).Valuesln(lines...))
 	}
 
 	ret.Add(

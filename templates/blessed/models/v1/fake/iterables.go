@@ -54,7 +54,7 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 		jen.Commentf("%s builds a faked %s", funcName, scn),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(jen.ParamPointer().Qual(proj.ModelsV1Package(), sn)).Block(
-			jen.Return(jen.VarPointer().Qual(proj.ModelsV1Package(), sn).Valuesln(block...)),
+			jen.Return(jen.AddressOf().Qual(proj.ModelsV1Package(), sn).Valuesln(block...)),
 		),
 	}
 
@@ -97,7 +97,7 @@ func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []je
 			jen.IDf("example%s3", sn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.Line(),
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
@@ -154,7 +154,7 @@ func buildBuildFakeSomethingUpdateInputFromSomething(proj *models.Project, typ m
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn)),
 		).Block(
-			jen.Return(jen.VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(block...)),
+			jen.Return(jen.AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(block...)),
 		),
 	}
 
@@ -229,7 +229,7 @@ func buildBuildFakeSomethingCreationInputFromSomething(proj *models.Project, typ
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)),
 		).Block(
-			jen.Return(jen.VarPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(block...)),
+			jen.Return(jen.AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(block...)),
 		),
 	}
 

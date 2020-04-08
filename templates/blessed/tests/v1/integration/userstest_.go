@@ -129,7 +129,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("expected").Assign().ID("buildDummyUserInput").Call(jen.ID("t")),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(utils.CtxVar(), jen.VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
+					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(utils.CtxVar(), jen.AddressOf().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
 						jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 						jen.ID("Password").MapAssign().ID("expected").Dot("Password"))),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -157,7 +157,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					jen.ID("expected").Assign().ID("buildDummyUserInput").Call(jen.ID("t")),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(utils.CtxVar(), jen.VarPointer().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(utils.CtxVar(), jen.AddressOf().Qual(proj.ModelsV1Package(), "UserInput").Valuesln(
 						jen.ID("Username").MapAssign().ID("expected").Dot("Username"),
 						jen.ID("Password").MapAssign().ID("expected").Dot("Password"))),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),

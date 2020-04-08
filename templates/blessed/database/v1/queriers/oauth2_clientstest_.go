@@ -577,9 +577,9 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.VarPointer().ID("expected").Dot("Clients").Index(jen.Zero())),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.VarPointer().ID("expected").Dot("Clients").Index(jen.Zero())),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.VarPointer().ID("expected").Dot("Clients").Index(jen.Zero())),
+					jen.ID("buildMockRowFromOAuth2Client").Call(jen.AddressOf().ID("expected").Dot("Clients").Index(jen.Zero())),
+					jen.ID("buildMockRowFromOAuth2Client").Call(jen.AddressOf().ID("expected").Dot("Clients").Index(jen.Zero())),
+					jen.ID("buildMockRowFromOAuth2Client").Call(jen.AddressOf().ID("expected").Dot("Clients").Index(jen.Zero())),
 				),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
@@ -643,7 +643,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.VarPointer().ID("expected").Dot("Clients").Index(jen.Zero()))),
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.AddressOf().ID("expected").Dot("Clients").Index(jen.Zero()))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(utils.CtxVar(), jen.Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
 				utils.AssertError(jen.Err(), nil),
@@ -673,9 +673,9 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.VarPointer().ID("expected").Dot("Clients").Index(jen.Zero())),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.VarPointer().ID("expected").Dot("Clients").Index(jen.Zero())),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.VarPointer().ID("expected").Dot("Clients").Index(jen.Zero())),
+					jen.ID("buildMockRowFromOAuth2Client").Call(jen.AddressOf().ID("expected").Dot("Clients").Index(jen.Zero())),
+					jen.ID("buildMockRowFromOAuth2Client").Call(jen.AddressOf().ID("expected").Dot("Clients").Index(jen.Zero())),
+					jen.ID("buildMockRowFromOAuth2Client").Call(jen.AddressOf().ID("expected").Dot("Clients").Index(jen.Zero())),
 				),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 					Dotln("WithArgs").Call(jen.ID("expectedUserID")).

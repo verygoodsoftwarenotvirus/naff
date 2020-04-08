@@ -37,7 +37,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				utils.AssertNotNil(jen.Parens(jen.VarPointer().ID("Service").Values()).Dot("Routes").Call(), nil),
+				utils.AssertNotNil(jen.Parens(jen.AddressOf().ID("Service").Values()).Dot("Routes").Call(), nil),
 			),
 		),
 		jen.Line(),

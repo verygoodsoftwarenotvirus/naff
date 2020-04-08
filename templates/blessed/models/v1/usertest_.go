@@ -28,7 +28,7 @@ func userTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("TwoFactorSecret").MapAssign().Lit("new fancy secret"),
 				),
 				jen.Line(),
-				jen.ID("actual").Dot("Update").Call(jen.VarPointer().ID("exampleInput")),
+				jen.ID("actual").Dot("Update").Call(jen.AddressOf().ID("exampleInput")),
 				utils.AssertEqual(jen.ID("exampleInput"), jen.ID("actual"), nil),
 			),
 		),

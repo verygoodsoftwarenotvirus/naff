@@ -296,7 +296,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
 					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(
-							jen.VarPointer().ID("x"),
+							jen.AddressOf().ID("x"),
 						),
 						nil,
 					),

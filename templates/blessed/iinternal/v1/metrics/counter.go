@@ -34,7 +34,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 			jen.ID("value").Uint64(),
 		).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(
-				jen.VarPointer().ID(pointerVarName).Dot("actualCount"),
+				jen.AddressOf().ID(pointerVarName).Dot("actualCount"),
 				jen.BitwiseXOR().ID("value").Plus().One(),
 			),
 			jen.Qual("go.opencensus.io/stats", "Record").Call(
@@ -53,7 +53,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 			jen.ID("value").Uint64(),
 		).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(
-				jen.VarPointer().ID(pointerVarName).Dot("actualCount"),
+				jen.AddressOf().ID(pointerVarName).Dot("actualCount"),
 				jen.ID("value"),
 			),
 			jen.Qual("go.opencensus.io/stats", "Record").Call(

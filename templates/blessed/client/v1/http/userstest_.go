@@ -286,7 +286,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.VarPointer().ID("x")),
+						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")),
 						nil,
 					),
 					utils.AssertEqual(jen.ID("exampleInput"), jen.ID("x"), nil),
@@ -483,7 +483,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Qual("net/http", "SetCookie").Call(
 						jen.ID("res"),
-						jen.VarPointer().Qual("net/http", "Cookie").Values(
+						jen.AddressOf().Qual("net/http", "Cookie").Values(
 							jen.ID("Name").MapAssign().ID("exampleUser").Dot("Username"),
 						),
 					),

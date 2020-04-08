@@ -54,11 +54,11 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 
 	var driverInit jen.Code
 	if isPostgres {
-		driverInit = jen.VarPointer().Qual("github.com/lib/pq", "Driver").Values()
+		driverInit = jen.AddressOf().Qual("github.com/lib/pq", "Driver").Values()
 	} else if isSqlite {
-		driverInit = jen.VarPointer().Qual("github.com/mattn/go-sqlite3", "SQLiteDriver").Values()
+		driverInit = jen.AddressOf().Qual("github.com/mattn/go-sqlite3", "SQLiteDriver").Values()
 	} else if isMariaDB {
-		driverInit = jen.VarPointer().Qual("github.com/go-sql-driver/mysql", "MySQLDriver").Values()
+		driverInit = jen.AddressOf().Qual("github.com/go-sql-driver/mysql", "MySQLDriver").Values()
 	}
 
 	ret.Add(

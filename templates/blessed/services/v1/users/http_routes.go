@@ -257,7 +257,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("encode the QR code to PNG"),
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
-			jen.If(jen.Err().Equals().Qual("image/png", "Encode").Call(jen.VarPointer().ID("b"), jen.ID("qrcode")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Equals().Qual("image/png", "Encode").Call(jen.AddressOf().ID("b"), jen.ID("qrcode")), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("trying to encode qr code to png")),
 				jen.Return().EmptyString(),
 			),
@@ -369,7 +369,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("let the requester know we're all good"),
 				utils.WriteXHeader("res", "StatusAccepted"),
-				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.VarPointer().Qual(proj.ModelsV1Package(), "TOTPSecretRefreshResponse").Values(jen.ID("TwoFactorSecret").MapAssign().ID("user").Dot("TwoFactorSecret"))), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.AddressOf().Qual(proj.ModelsV1Package(), "TOTPSecretRefreshResponse").Values(jen.ID("TwoFactorSecret").MapAssign().ID("user").Dot("TwoFactorSecret"))), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 				),
 			),

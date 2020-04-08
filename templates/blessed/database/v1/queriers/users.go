@@ -52,15 +52,15 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 			jen.Var().ID("x").Equals().VarPointer().Qual(proj.ModelsV1Package(), "User").Values(),
 			jen.Line(),
 			jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Callln(
-				jen.VarPointer().ID("x").Dot("ID"),
-				jen.VarPointer().ID("x").Dot("Username"),
-				jen.VarPointer().ID("x").Dot("HashedPassword"),
-				jen.VarPointer().ID("x").Dot("PasswordLastChangedOn"),
-				jen.VarPointer().ID("x").Dot("TwoFactorSecret"),
-				jen.VarPointer().ID("x").Dot("IsAdmin"),
-				jen.VarPointer().ID("x").Dot("CreatedOn"),
-				jen.VarPointer().ID("x").Dot("UpdatedOn"),
-				jen.VarPointer().ID("x").Dot("ArchivedOn"),
+				jen.AddressOf().ID("x").Dot("ID"),
+				jen.AddressOf().ID("x").Dot("Username"),
+				jen.AddressOf().ID("x").Dot("HashedPassword"),
+				jen.AddressOf().ID("x").Dot("PasswordLastChangedOn"),
+				jen.AddressOf().ID("x").Dot("TwoFactorSecret"),
+				jen.AddressOf().ID("x").Dot("IsAdmin"),
+				jen.AddressOf().ID("x").Dot("CreatedOn"),
+				jen.AddressOf().ID("x").Dot("UpdatedOn"),
+				jen.AddressOf().ID("x").Dot("ArchivedOn"),
 			), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
@@ -196,7 +196,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 				jen.Lit("archived_on").MapAssign().ID("nil"))),
 			jen.Line(),
 			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().ID("nil")).Block(
-				jen.ID("builder").Equals().ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
+				jen.ID("builder").Equals().ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.ID("usersTableName")),
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID("builder").Dot("ToSql").Call(),
@@ -324,7 +324,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	buildCreateUserQueryBlock := func() []jen.Code {
 		if isPostgres {
 			out := []jen.Code{
-				jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID("x").Dot("ID"), jen.VarPointer().ID("x").Dot("CreatedOn")).Op(";").ID("err").DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("ID"), jen.AddressOf().ID("x").Dot("CreatedOn")).Op(";").ID("err").DoesNotEqual().ID("nil")).Block(
 					jen.Switch(jen.ID("e").Assign().ID("err").Assert(jen.Type())).Block(
 						jen.Case(jen.ParamPointer().Qual("github.com/lib/pq", "Error")).Block(
 							jen.If(jen.ID("e").Dot("Code").Op("==").Qual("github.com/lib/pq", "ErrorCode").Call(jen.Lit("23505"))).Block(
@@ -350,7 +350,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 					jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
 					jen.Line(),
 					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUserCreationTimeQuery").Call(jen.ID("x").Dot("ID")),
-					jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID("x").Dot("CreatedOn"))),
+					jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("CreatedOn"))),
 				),
 			}
 			return out
@@ -428,7 +428,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 		if isPostgres {
 			return []jen.Code{
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("input")),
-				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID("input").Dot("UpdatedOn")),
+				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("input").Dot("UpdatedOn")),
 			}
 		} else if isSqlite || isMariaDB {
 			return []jen.Code{

@@ -273,7 +273,7 @@ cookie problems!
 				jen.Qual("log", "Println").Call(jen.String().Call(jen.ID("bdump"))),
 			),
 			jen.Line(),
-			jen.Return().List(jen.VarPointer().ID("o"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.VarPointer().ID("o"))),
+			jen.Return().List(jen.AddressOf().ID("o"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("o"))),
 		),
 		jen.Line(),
 	)

@@ -61,7 +61,12 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("queryArgCount").Assign().Len(jen.ID("queryArgRegexp").Dot("FindAllString").Call(jen.ID("query"), jen.Minus().One())),
-			utils.AssertEqual(jen.ID("queryArgCount"), jen.Len(jen.ID("args")), nil),
+			jen.Line(),
+			jen.If(jen.Len(jen.ID("args")).GreaterThan().Zero()).Block(
+				utils.AssertEqual(jen.ID("queryArgCount"), jen.Len(jen.ID("args")), nil),
+			).Else().Block(
+				utils.AssertZero(jen.ID("queryArgCount"), nil),
+			),
 		),
 		jen.Line(),
 	)

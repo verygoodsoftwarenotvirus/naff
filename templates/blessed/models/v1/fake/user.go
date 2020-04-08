@@ -34,7 +34,7 @@ func buildBuildFakeUser(proj *models.Project) []jen.Code {
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("ID").MapAssign().Uint64().Call(utils.FakeUint32Func()),
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.Comment(`HashedPassword: ""`),
@@ -63,7 +63,7 @@ func buildBuildDatabaseCreationResponse(proj *models.Project) []jen.Code {
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("ID").MapAssign().ID("user").Dot("ID"),
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("TwoFactorSecret").MapAssign().ID("user").Dot("TwoFactorSecret"),
@@ -95,7 +95,7 @@ func buildBuildFakeUserList(proj *models.Project) []jen.Code {
 			jen.ID("exampleUser3").Assign().ID("BuildFakeUser").Call(),
 			jen.Line(),
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
@@ -126,7 +126,7 @@ func buildBuildFakeUserCreationInput(proj *models.Project) []jen.Code {
 		).Block(
 			jen.ID("exampleUser").Assign().ID("BuildFakeUser").Call(),
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("exampleUser").Dot("Username"),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 				),
@@ -150,7 +150,7 @@ func buildBuildFakeUserCreationInputFromUser(proj *models.Project) []jen.Code {
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 				),
@@ -199,7 +199,7 @@ func buildBuildFakeUserLoginInputFromUser(proj *models.Project) []jen.Code {
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(utils.FakeLibrary, "Zip").Call()),
@@ -222,7 +222,7 @@ func buildBuildFakePasswordUpdateInput(proj *models.Project) []jen.Code {
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("NewPassword").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("CurrentPassword").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(utils.FakeLibrary, "Zip").Call()),
@@ -245,7 +245,7 @@ func buildBuildFakeTOTPSecretRefreshInput(proj *models.Project) []jen.Code {
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("CurrentPassword").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(utils.FakeLibrary, "Zip").Call()),
 				),

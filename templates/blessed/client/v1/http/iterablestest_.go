@@ -34,9 +34,9 @@ func buildVarDeclarationsOfDependentStructs(proj *models.Project, typ models.Dat
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		pts := pt.Name.Singular()
-		lines = append(lines, jen.IDf("example%s", pts).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+		lines = append(lines, jen.ID(utils.BuildFakeVarName(pts)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
 	}
-	lines = append(lines, jen.IDf("example%s", typ.Name.Singular()).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	lines = append(lines, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 
 	return lines
 }
@@ -46,12 +46,12 @@ func buildCreationVarDeclarationsOfDependentStructs(proj *models.Project, typ mo
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lines = append(lines,
-			jen.IDf("example%s", pt.Name.Singular()).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call(),
+			jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call(),
 		)
 	}
 
 	lines = append(lines,
-		jen.IDf("example%s", typ.Name.Singular()).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call(),
+		jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call(),
 	)
 
 	return lines
@@ -90,9 +90,9 @@ func buildFormatStringForSingleInstanceCreationRoute(proj *models.Project, typ m
 func buildFormatCallArgsForSingleInstanceRoute(proj *models.Project, typ models.DataType) (args []jen.Code) {
 	callArgs := []jen.Code{}
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		callArgs = append(callArgs, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
+		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 	}
-	callArgs = append(callArgs, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
+	callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dot("ID"))
 
 	return callArgs
 }
@@ -121,12 +121,12 @@ func buildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(proj *model
 
 	for i, pt := range owners {
 		if typ.BelongsToStruct != nil && i == len(owners)-1 {
-			callArgs = append(callArgs, jen.IDf("example%s", typ.Name.Singular()).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+			callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 		} else {
-			callArgs = append(callArgs, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
+			callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 		}
 	}
-	callArgs = append(callArgs, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
+	callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dot("ID"))
 
 	return callArgs
 }
@@ -159,7 +159,7 @@ func buildTestV1Client_BuildItemExistsRequest(proj *models.Project, typ models.D
 				jen.ID("actual").Dot("URL").Dot("String").Call(),
 				jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%d"),
-					jen.IDf("example%s", ts).Dot("ID"),
+					jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
 				),
 			),
 			nil,
@@ -189,7 +189,7 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 
 	// routes
 	happyPathSubtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
-	actualCallArgs := []jen.Code{utils.CtxVar(), jen.IDf("example%s", ts).Dot("ID")}
+	actualCallArgs := []jen.Code{utils.CtxVar(), jen.ID(utils.BuildFakeVarName(ts)).Dot("ID")}
 
 	happyPathSubtestLines = append(happyPathSubtestLines,
 		jen.Line(),
@@ -200,7 +200,7 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 					jen.ID("req").Dot("URL").Dot("String").Call(),
 					jen.Qual("strconv", "Itoa").Call(
 						jen.Int().Call(
-							jen.IDf("example%s", ts).Dot("ID"),
+							jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
 						),
 					),
 				),
@@ -283,7 +283,7 @@ func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models
 				jen.ID("actual").Dot("URL").Dot("String").Call(),
 				jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%d"),
-					jen.IDf("example%s", ts).Dot("ID"),
+					jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
 				),
 			),
 			nil,
@@ -324,7 +324,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 					jen.ID("req").Dot("URL").Dot("String").Call(),
 					jen.Qual("strconv", "Itoa").Call(
 						jen.Int().Call(
-							jen.IDf("example%s", ts).Dot("ID"),
+							jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
 						),
 					),
 				),
@@ -341,7 +341,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
-			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.IDf("example%s", ts)), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))), nil),
 		),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
@@ -349,7 +349,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
-		utils.AssertEqual(jen.IDf("example%s", ts), jen.ID("actual"), nil),
+		utils.AssertEqual(jen.ID(utils.BuildFakeVarName(ts)), jen.ID("actual"), nil),
 	)
 
 	invalidClientURLSubtestLines := append(
@@ -372,7 +372,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 					jen.ID("req").Dot("URL").Dot("String").Call(),
 					jen.Qual("strconv", "Itoa").Call(
 						jen.Int().Call(
-							jen.IDf("example%s", ts).Dot("ID"),
+							jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
 						),
 					),
 				),
@@ -580,7 +580,7 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 
 	subtestLines := append(
 		buildVarDeclarationsOfDependentStructs(proj, typ),
-		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.IDf("example%s", ts)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		jen.Line(),
 		utils.ExpectMethod("expectedMethod", "MethodPost"),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
@@ -636,7 +636,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 
 	happyPathSubtestLines := append(
 		buildCreationVarDeclarationsOfDependentStructs(proj, typ),
-		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.IDf("example%s", ts)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		func() jen.Code {
 			if typ.BelongsToUser {
 				return jen.ID("exampleInput").Dot("BelongsToUser").Equals().Zero()
@@ -654,10 +654,10 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 			jen.Line(),
 			jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)),
-			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.VarPointer().ID("x")), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")), nil),
 			utils.AssertEqual(jen.ID("exampleInput"), jen.ID("x"), nil),
 			jen.Line(),
-			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.IDf("example%s", ts)), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))), nil),
 		),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
@@ -667,12 +667,12 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
-		utils.AssertEqual(jen.IDf("example%s", ts), jen.ID("actual"), nil),
+		utils.AssertEqual(jen.ID(utils.BuildFakeVarName(ts)), jen.ID("actual"), nil),
 	)
 
 	invalidClientURLSubtestLines := append(
 		buildCreationVarDeclarationsOfDependentStructs(proj, typ),
-		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.IDf("example%s", ts)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
@@ -754,7 +754,7 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 			),
 			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
 			utils.AssertNoError(
-				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.IDf("example%s", ts)),
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))),
 				nil,
 			),
 		),
@@ -813,7 +813,7 @@ func buildTestV1Client_BuildArchiveSomethingRequest(proj *models.Project, typ mo
 				jen.ID("actual").Dot("URL").Dot("String").Call(),
 				jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%d"),
-					jen.IDf("example%s", ts).Dot("ID"),
+					jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
 				),
 			),
 			nil,

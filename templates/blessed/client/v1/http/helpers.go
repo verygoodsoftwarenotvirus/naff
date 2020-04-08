@@ -112,7 +112,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 				jen.ID("apiErr").Assign().VarPointer().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
 				jen.If(jen.Err().Equals().Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),
-					jen.VarPointer().ID("apiErr"),
+					jen.AddressOf().ID("apiErr"),
 				),
 					jen.Err().DoesNotEqual().ID("nil"),
 				).Block(
@@ -127,7 +127,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			jen.If(
 				jen.Err().Equals().Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),
-					jen.VarPointer().ID("dest"),
+					jen.AddressOf().ID("dest"),
 				),
 				jen.Err().DoesNotEqual().ID("nil"),
 			).Block(

@@ -30,7 +30,7 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("newDefaultRoundTripper").Params().Params(jen.PointerTo().ID("defaultRoundTripper")).Block(
 			jen.Return(
-				jen.VarPointer().ID("defaultRoundTripper").Valuesln(
+				jen.AddressOf().ID("defaultRoundTripper").Valuesln(
 					jen.ID("baseTransport").MapAssign().ID("buildDefaultTransport").Call(),
 				),
 			),
@@ -65,7 +65,7 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("buildDefaultTransport").Params().Params(jen.ParamPointer().Qual("net/http", "Transport")).Block(
 			jen.Return().VarPointer().Qual("net/http", "Transport").Valuesln(
 				jen.ID("Proxy").MapAssign().Qual("net/http", "ProxyFromEnvironment"),
-				jen.ID("DialContext").MapAssign().Parens(jen.VarPointer().Qual("net", "Dialer").Valuesln(
+				jen.ID("DialContext").MapAssign().Parens(jen.AddressOf().Qual("net", "Dialer").Valuesln(
 					jen.ID("Timeout").MapAssign().ID("defaultTimeout"),
 					jen.ID("KeepAlive").MapAssign().Lit(30).Times().Qual("time", "Second"),
 				),

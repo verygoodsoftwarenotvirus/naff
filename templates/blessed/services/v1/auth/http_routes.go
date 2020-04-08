@@ -29,7 +29,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("req").Dot("Cookie").Call(jen.ID("CookieName")),
 			jen.If(jen.Err().DoesNotEqual().Qual("net/http", "ErrNoCookie").And().ID("cookie").DoesNotEqual().ID("nil")).Block(
-				jen.ID("decodeErr").Assign().ID("s").Dot("cookieManager").Dot("Decode").Call(jen.ID("CookieName"), jen.ID("cookie").Dot("Value"), jen.VarPointer().ID("ca")),
+				jen.ID("decodeErr").Assign().ID("s").Dot("cookieManager").Dot("Decode").Call(jen.ID("CookieName"), jen.ID("cookie").Dot("Value"), jen.AddressOf().ID("ca")),
 				jen.If(jen.ID("decodeErr").DoesNotEqual().ID("nil")).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("decoding request cookie")),
 					jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("decoding request cookie: %w"), jen.ID("decodeErr"))),
@@ -216,7 +216,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.List(jen.ID("loginInput"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UserLoginInputMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput")),
 			jen.If(jen.Op("!").ID("ok")).Block(
 				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no UserLoginInput found for /login request")),
-				jen.Return().List(jen.Nil(), jen.VarPointer().Qual(proj.ModelsV1Package(), "ErrorResponse").Valuesln(
+				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Valuesln(
 					jen.ID("Code").MapAssign().Qual("net/http", "StatusUnauthorized")),
 				),
 			),
@@ -230,10 +230,10 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("userDB").Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("username")),
 			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("no matching user")),
-				jen.Return().List(jen.Nil(), jen.VarPointer().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(jen.ID("Code").MapAssign().Qual("net/http", "StatusBadRequest"))),
+				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(jen.ID("Code").MapAssign().Qual("net/http", "StatusBadRequest"))),
 			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching user")),
-				jen.Return().List(jen.Nil(), jen.VarPointer().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(jen.ID("Code").MapAssign().Qual("net/http", "StatusInternalServerError"))),
+				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(jen.ID("Code").MapAssign().Qual("net/http", "StatusInternalServerError"))),
 			),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("user").Dot("ID")),
 			jen.Line(),

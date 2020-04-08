@@ -25,7 +25,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"expected use",
 				jen.Err().Assign().ID("argIsNotPointerOrNil").Call(
-					jen.VarPointer().ID("testingType").Values(),
+					jen.AddressOf().ID("testingType").Values(),
 				),
 				utils.AssertNoError(
 					jen.Err(),
@@ -68,7 +68,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("notAPointer"),
 					jen.Err(),
 				).Assign().ID("argIsNotPointer").Call(
-					jen.VarPointer().ID("testingType").Values(),
+					jen.AddressOf().ID("testingType").Values(),
 				),
 				utils.AssertFalse(
 					jen.ID("notAPointer"),
@@ -129,7 +129,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("isNil"),
 					jen.Err(),
 				).Assign().ID("argIsNotNil").Call(
-					jen.VarPointer().ID("testingType").Values(),
+					jen.AddressOf().ID("testingType").Values(),
 				),
 				utils.AssertFalse(
 					jen.ID("isNil"),
@@ -203,7 +203,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					utils.CtxVar(),
 					jen.ID("res"),
-					jen.VarPointer().ID("out"),
+					jen.AddressOf().ID("out"),
 				),
 				utils.AssertEqual(
 					jen.ID("out").Dot("Name"),
@@ -229,7 +229,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					utils.CtxVar(),
 					jen.ID("res"),
-					jen.VarPointer().ID("out"),
+					jen.AddressOf().ID("out"),
 				),
 				utils.AssertError(
 					jen.Err(),
@@ -249,7 +249,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 									jen.ID("bs"),
 									jen.Err(),
 								).Assign().Qual("encoding/json", "Marshal").Call(
-									jen.VarPointer().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
+									jen.AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
 								),
 								utils.RequireNoError(jen.Err(), nil),
 								jen.Return().String().Call(
@@ -265,7 +265,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					utils.CtxVar(),
 					jen.ID("res"),
-					jen.VarPointer().ID("out"),
+					jen.AddressOf().ID("out"),
 				),
 				utils.AssertNil(
 					jen.ID("out"),
@@ -290,7 +290,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					utils.CtxVar(),
 					jen.ID("res"),
-					jen.VarPointer().ID("out"),
+					jen.AddressOf().ID("out"),
 				),
 				utils.AssertNil(
 					jen.ID("out"),
@@ -339,7 +339,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					utils.CtxVar(),
 					jen.ID("res"),
-					jen.VarPointer().ID("out"),
+					jen.AddressOf().ID("out"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.Err(), nil),
 				utils.AssertError(

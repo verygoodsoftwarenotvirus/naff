@@ -535,7 +535,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("b").Qual("bytes", "Buffer"),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(
 					jen.ID("t"), jen.Qual("encoding/json", "NewEncoder").Call(
-						jen.VarPointer().ID("b"),
+						jen.AddressOf().ID("b"),
 					).Dot("Encode").Call(jen.ID("exampleInput")),
 				),
 				jen.Line(),
@@ -543,7 +543,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(
 					jen.Qual("net/http", "MethodPost"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
-					jen.VarPointer().ID("b"),
+					jen.AddressOf().ID("b"),
 				),
 				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("req"), nil),
@@ -568,13 +568,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				jen.Var().ID("b").Qual("bytes", "Buffer"),
-				utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.VarPointer().ID("b")).Dot("Encode").Call(jen.ID("exampleInput")), nil),
+				utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.AddressOf().ID("b")).Dot("Encode").Call(jen.ID("exampleInput")), nil),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(
 					jen.Qual("net/http", "MethodPost"),
 					jen.Lit("http://todo.verygoodsoftwarenotvirus.ru"),
-					jen.VarPointer().ID("b"),
+					jen.AddressOf().ID("b"),
 				),
 				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("req"), nil),

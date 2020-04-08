@@ -295,7 +295,7 @@ func buildTestNewClient() []jen.Code {
 						jen.ID("exampleURI"),
 					),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.VarPointer().Qual("net/http", "Client").Valuesln(
+					jen.AddressOf().Qual("net/http", "Client").Valuesln(
 						jen.ID("Timeout").MapAssign().Zero(),
 					),
 					jen.Index().String().Values(jen.Lit("*")),
@@ -1013,7 +1013,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 				jen.Err().Equals().ID("c").Dot("retrieve").Call(
 					utils.CtxVar(),
 					jen.ID("req"),
-					jen.VarPointer().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
 				),
 				utils.AssertNoError(
 					jen.Err(),
@@ -1093,7 +1093,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 				jen.Err().Equals().ID("c").Dot("retrieve").Call(
 					utils.CtxVar(),
 					jen.ID("req"),
-					jen.VarPointer().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
 				),
 				utils.AssertError(
 					jen.Err(),
@@ -1141,7 +1141,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 					jen.ID("c").Dot("retrieve").Call(
 						utils.CtxVar(),
 						jen.ID("req"),
-						jen.VarPointer().ID("argleBargle").Values(),
+						jen.AddressOf().ID("argleBargle").Values(),
 					),
 					nil,
 				),
@@ -1204,7 +1204,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 				jen.Err().Equals().ID("c").Dot("executeRequest").Call(
 					utils.CtxVar(),
 					jen.ID("req"),
-					jen.VarPointer().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
 				),
 				utils.AssertNoError(
 					jen.Err(),
@@ -1254,7 +1254,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 				jen.Err().Equals().ID("c").Dot("executeRequest").Call(
 					utils.CtxVar(),
 					jen.ID("req"),
-					jen.VarPointer().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
 				),
 				utils.AssertError(jen.Err(), nil),
 			),
@@ -1299,7 +1299,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.ID("c").Dot("executeRequest").Call(
 						utils.CtxVar(),
 						jen.ID("req"),
-						jen.VarPointer().ID("argleBargle").Values(),
+						jen.AddressOf().ID("argleBargle").Values(),
 					),
 					nil,
 				),
@@ -1345,7 +1345,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.ID("c").Dot("executeRequest").Call(
 						utils.CtxVar(),
 						jen.ID("req"),
-						jen.VarPointer().ID("argleBargle").Values(),
+						jen.AddressOf().ID("argleBargle").Values(),
 					),
 					nil,
 				),
@@ -1451,7 +1451,7 @@ func buildTestV1Client_executeRawRequest() []jen.Code {
 					jen.Err(),
 				).Assign().ID("c").Dot("executeRawRequest").Call(
 					utils.CtxVar(),
-					jen.VarPointer().Qual("net/http", "Client").Values(
+					jen.AddressOf().Qual("net/http", "Client").Values(
 						jen.ID("Timeout").MapAssign().Qual("time", "Second"),
 					),
 					jen.ID("req"),
@@ -1509,8 +1509,8 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("in"),
 					jen.ID("out"),
 				).Assign().List(
-					jen.VarPointer().ID("argleBargle").Values(),
-					jen.VarPointer().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
 				),
 				jen.Line(),
 				jen.List(
@@ -1573,8 +1573,8 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("in"),
 					jen.ID("out"),
 				).Assign().List(
-					jen.VarPointer().ID("argleBargle").Values(),
-					jen.VarPointer().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
 				),
 				jen.Line(),
 				jen.List(
@@ -1639,8 +1639,8 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("in"),
 					jen.ID("out"),
 				).Assign().List(
-					jen.VarPointer().ID("argleBargle").Values(),
-					jen.VarPointer().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
 				),
 				jen.Line(),
 				jen.List(
@@ -1707,8 +1707,8 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("in"),
 					jen.ID("out"),
 				).Assign().List(
-					jen.VarPointer().ID("argleBargle").Values(),
-					jen.VarPointer().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
+					jen.AddressOf().ID("argleBargle").Values(),
 				),
 				jen.Line(),
 				jen.List(

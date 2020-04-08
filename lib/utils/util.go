@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -146,17 +147,35 @@ func FakePasswordFunc() jen.Code {
 	)
 }
 
+func ReverseListOfJens(a []jen.Code) []jen.Code {
+	for i := len(a)/2 - 1; i >= 0; i-- {
+		opp := len(a) - 1 - i
+		a[i], a[opp] = a[opp], a[i]
+	}
+	return a
+}
+
 func AppendItemsToList(list jen.Code, items ...jen.Code) jen.Code {
 	return jen.Add(list).Equals().Append(append([]jen.Code{list}, items...)...)
 }
 
-func BuildFakeVar(proj *models.Project, typName string, args ...jen.Code) jen.Code {
-	varName := fmt.Sprintf("example%s", typName)
-	return BuildFakeVarWithCustomName(proj, varName, typName, args...)
+func FakeError() jen.Code {
+	return jen.Qual("errors", "New").Call(jen.Lit("blah"))
 }
 
-func BuildFakeVarWithCustomName(proj *models.Project, varName, typName string, args ...jen.Code) jen.Code {
-	return jen.IDf(varName).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typName)).Call(args...)
+func BuildFakeVarName(typName string) string {
+	return fmt.Sprintf("example%s", typName)
+}
+
+func BuildFakeVar(proj *models.Project, typName string, args ...jen.Code) jen.Code {
+	return BuildFakeVarWithCustomName(proj, BuildFakeVarName(typName), typName, args...)
+}
+
+func BuildFakeVarWithCustomName(proj *models.Project, varName, funcName string, args ...jen.Code) jen.Code {
+	if !strings.HasPrefix(funcName, "BuildFake") {
+		funcName = fmt.Sprintf("BuildFake%s", funcName)
+	}
+	return jen.IDf(varName).Assign().Qual(proj.FakeModelsPackage(), funcName).Call(args...)
 }
 
 func buildSingleValueTestifyFunc(pkg, method string) func(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {

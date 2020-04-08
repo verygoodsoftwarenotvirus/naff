@@ -299,7 +299,7 @@ func buildNewSimpleClient() []jen.Code {
 				jen.EmptyString(),
 				jen.ID("address"),
 				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-				jen.VarPointer().Qual("net/http", "Client").Values(
+				jen.AddressOf().Qual("net/http", "Client").Values(
 					jen.ID("Timeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
 				),
 				jen.Index().String().Values(jen.Lit("*")),
@@ -726,7 +726,7 @@ func buildRetrieve(proj *models.Project) []jen.Code {
 			jen.Return().ID("ErrNotFound"),
 		),
 		jen.Line(),
-		jen.Return().ID("unmarshalBody").Call(utils.CtxVar(), jen.ID("res"), jen.VarPointer().ID("obj")),
+		jen.Return().ID("unmarshalBody").Call(utils.CtxVar(), jen.ID("res"), jen.AddressOf().ID("obj")),
 	}
 
 	lines := []jen.Code{

@@ -120,23 +120,23 @@ func buildTableColumns(typ models.DataType) []jen.Code {
 }
 
 func buildScanFields(typ models.DataType) (scanFields []jen.Code) {
-	scanFields = []jen.Code{jen.VarPointer().ID("x").Dot("ID")}
+	scanFields = []jen.Code{jen.AddressOf().ID("x").Dot("ID")}
 
 	for _, field := range typ.Fields {
-		scanFields = append(scanFields, jen.VarPointer().ID("x").Dot(field.Name.Singular()))
+		scanFields = append(scanFields, jen.AddressOf().ID("x").Dot(field.Name.Singular()))
 	}
 
 	scanFields = append(scanFields,
-		jen.VarPointer().ID("x").Dot("CreatedOn"),
-		jen.VarPointer().ID("x").Dot("UpdatedOn"),
-		jen.VarPointer().ID("x").Dot("ArchivedOn"),
+		jen.AddressOf().ID("x").Dot("CreatedOn"),
+		jen.AddressOf().ID("x").Dot("UpdatedOn"),
+		jen.AddressOf().ID("x").Dot("ArchivedOn"),
 	)
 
 	if typ.BelongsToUser {
-		scanFields = append(scanFields, jen.VarPointer().ID("x").Dot("BelongsToUser"))
+		scanFields = append(scanFields, jen.AddressOf().ID("x").Dot("BelongsToUser"))
 	}
 	if typ.BelongsToStruct != nil {
-		scanFields = append(scanFields, jen.VarPointer().ID("x").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+		scanFields = append(scanFields, jen.AddressOf().ID("x").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
 	}
 
 	return scanFields
@@ -166,7 +166,7 @@ func buildScanSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen
 					jen.ID("targetVars").Assign().Index().Interface().Valuesln(buildScanFields(typ)...),
 					jen.Line(),
 					jen.If(jen.ID("includeCount")).Block(
-						jen.ID("targetVars").Equals().Append(jen.ID("targetVars"), jen.VarPointer().ID("count")),
+						jen.ID("targetVars").Equals().Append(jen.ID("targetVars"), jen.AddressOf().ID("count")),
 					),
 					jen.Line(),
 					jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Spread()), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -307,7 +307,7 @@ func buildSomethingExistsFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 			jen.Err().Error(),
 		).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("build%sExistsQuery", sn).Call(buildQueryParams...),
-			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID(existenceVarName)),
+			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID(existenceVarName)),
 			jen.Return().List(jen.ID(existenceVarName), jen.Err()),
 		),
 		jen.Line(),
@@ -449,7 +449,7 @@ func buildGetSomethingCountQueryFuncDecl(proj *models.Project, dbvendor wordsmit
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(vals...)),
 			jen.Line(),
 			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().ID("nil")).Block(
-				jen.ID("builder").Equals().ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
+				jen.ID("builder").Equals().ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.IDf("%sTableName", puvn)),
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID("builder").Dot("ToSql").Call(),
@@ -487,7 +487,7 @@ func buildGetSomethingCountFuncDecl(proj *models.Project, dbvendor wordsmith.Sup
 			params...,
 		).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sCountQuery", sn).Call(queryBuildingParams...),
-			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID("count")),
+			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("count")),
 			jen.Return().List(jen.ID("count"), jen.Err()),
 		),
 		jen.Line(),
@@ -543,7 +543,7 @@ func buildGetAllSomethingCountFuncDecl(dbvendor wordsmith.SuperPalabra, typ mode
 		jen.Commentf("GetAll%sCount will fetch the count of %s from the database", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("GetAll%sCount", pn).Params(utils.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
-			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call()).Dot("Scan").Call(jen.VarPointer().ID("count")),
+			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call()).Dot("Scan").Call(jen.AddressOf().ID("count")),
 			jen.Return().List(jen.ID("count"), jen.Err()),
 		),
 		jen.Line(),
@@ -682,7 +682,7 @@ func buildGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmi
 				Dotln("GroupBy").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.IDf("%sTableName", puvn))),
 			jen.Line(),
 			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().ID("nil")).Block(
-				jen.ID("builder").Equals().ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder")),
+				jen.ID("builder").Equals().ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.IDf("%sTableName", puvn)),
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID("builder").Dot("ToSql").Call(),
@@ -971,7 +971,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 
 	if isPostgres(dbvendor) {
 		baseCreateFuncBody = append(baseCreateFuncBody,
-			jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID("x").Dot("ID"), jen.VarPointer().ID("x").Dot("CreatedOn")),
+			jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("ID"), jen.AddressOf().ID("x").Dot("CreatedOn")),
 		)
 	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		baseCreateFuncBody = append(baseCreateFuncBody,
@@ -997,7 +997,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 				jen.Line(),
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("build%sCreationTimeQuery", sn).Call(jen.ID("x").Dot("ID")),
 				jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(
-					jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID("x").Dot("CreatedOn")),
+					jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("CreatedOn")),
 				),
 			),
 		)
@@ -1084,7 +1084,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 
 	var finalStatement jen.Code
 	if isPostgres(dbvendor) {
-		finalStatement = jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.VarPointer().ID(updatedVarName).Dot("UpdatedOn"))
+		finalStatement = jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID(updatedVarName).Dot("UpdatedOn"))
 	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		_g := &jen.Group{}
 		_g.Add(

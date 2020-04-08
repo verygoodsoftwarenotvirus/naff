@@ -77,7 +77,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("URL").MapAssign().ID("input").Dot("URL"),
 						jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
 						jen.ID("Method").MapAssign().ID("input").Dot("Method")),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(utils.CtxVar(), jen.VarPointer().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(utils.CtxVar(), jen.AddressOf().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 						jen.ID("Name").MapAssign().ID("expected").Dot("Name"),
 						jen.ID("ContentType").MapAssign().ID("expected").Dot("ContentType"),
 						jen.ID("URL").MapAssign().ID("expected").Dot("URL"),
@@ -142,7 +142,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("Method").MapAssign().ID("input").Dot("Method")),
 					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(
 						utils.CtxVar(),
-						jen.VarPointer().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
+						jen.AddressOf().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 							jen.ID("Name").MapAssign().ID("expected").Dot("Name"),
 							jen.ID("ContentType").MapAssign().ID("expected").Dot("ContentType"),
 							jen.ID("URL").MapAssign().ID("expected").Dot("URL"),
@@ -168,7 +168,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildSubTest(
 					"it should return an error when trying to update something that doesn't exist",
 					jen.Line(),
-					jen.Err().Assign().ID("todoClient").Dot("UpdateWebhook").Call(utils.CtxVar(), jen.VarPointer().Qual(proj.ModelsV1Package(), "Webhook").Values(jen.ID("ID").MapAssign().ID("nonexistentID"))),
+					jen.Err().Assign().ID("todoClient").Dot("UpdateWebhook").Call(utils.CtxVar(), jen.AddressOf().Qual(proj.ModelsV1Package(), "Webhook").Values(jen.ID("ID").MapAssign().ID("nonexistentID"))),
 					utils.AssertError(jen.Err(), nil),
 				),
 				jen.Line(),
@@ -184,7 +184,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("Method").MapAssign().ID("input").Dot("Method")),
 					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(
 						utils.CtxVar(),
-						jen.VarPointer().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
+						jen.AddressOf().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 							jen.ID("Name").MapAssign().ID("expected").Dot("Name"),
 							jen.ID("ContentType").MapAssign().ID("expected").Dot("ContentType"),
 							jen.ID("URL").MapAssign().ID("expected").Dot("URL"),
@@ -225,7 +225,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("ContentType").MapAssign().ID("input").Dot("ContentType"),
 						jen.ID("Method").MapAssign().ID("input").Dot("Method"),
 					),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(utils.CtxVar(), jen.VarPointer().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(utils.CtxVar(), jen.AddressOf().Qual(proj.ModelsV1Package(), "WebhookCreationInput").Valuesln(
 						jen.ID("Name").MapAssign().ID("expected").Dot("Name"),
 						jen.ID("ContentType").MapAssign().ID("expected").Dot("ContentType"),
 						jen.ID("URL").MapAssign().ID("expected").Dot("URL"),

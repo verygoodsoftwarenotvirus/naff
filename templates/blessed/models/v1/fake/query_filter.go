@@ -25,7 +25,7 @@ func buildBuildFleshedOutQueryFilter(proj *models.Project) []jen.Code {
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Block(
 			jen.Return(
-				jen.VarPointer().Qual(proj.ModelsV1Package(), "QueryFilter").Valuesln(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), "QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(10),
 					jen.ID("Limit").MapAssign().Lit(20),
 					jen.ID("CreatedAfter").MapAssign().Add(utils.FakeUnixTimeFunc()),
