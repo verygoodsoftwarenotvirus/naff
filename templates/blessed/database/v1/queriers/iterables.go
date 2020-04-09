@@ -80,10 +80,6 @@ func iterablesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 
 	ret.Add(buildCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 
-	if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-		ret.Add(buildSomethingCreationTimeQueryFuncDecl(dbvendor, typ)...)
-	}
-
 	ret.Add(buildCreateSomethingFuncDecl(proj, dbvendor, typ)...)
 	ret.Add(buildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 	ret.Add(buildUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
@@ -374,6 +370,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPal
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 	sn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
 
 	params := typ.BuildGetSomethingParams(proj)
 	buildQueryParams := typ.BuildGetSomethingArgs(proj)[1:]
@@ -386,8 +383,8 @@ func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPal
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", sn).Call(buildQueryParams...),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Line(),
-			jen.List(jen.ID("x"), jen.Underscore(), jen.Err()).Assign().ID("scanItem").Call(jen.ID("row"), jen.False()),
-			jen.Return(jen.ID("x"), jen.Err()),
+			jen.List(jen.ID(uvn), jen.Underscore(), jen.Err()).Assign().ID("scanItem").Call(jen.ID("row"), jen.False()),
+			jen.Return(jen.ID(uvn), jen.Err()),
 		),
 		jen.Line(),
 	}

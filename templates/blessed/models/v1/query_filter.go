@@ -154,9 +154,19 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ApplyToQueryBuilder applies the query filter to a query builder"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("ApplyToQueryBuilder").Params(jen.ID("queryBuilder").Qual("github.com/Masterminds/squirrel", "SelectBuilder")).Params(jen.Qual("github.com/Masterminds/squirrel", "SelectBuilder")).Block(
+		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("ApplyToQueryBuilder").Params(
+			jen.ID("queryBuilder").Qual("github.com/Masterminds/squirrel", "SelectBuilder"),
+			jen.ID("tableName").String(),
+		).Params(
+			jen.Qual("github.com/Masterminds/squirrel", "SelectBuilder"),
+		).Block(
 			jen.If(jen.ID("qf").Op("==").ID("nil")).Block(
 				jen.Return().ID("queryBuilder"),
+			),
+			jen.Line(),
+			jen.Const().Defs(
+				jen.ID("createdOnKey").Equals().Lit("created_on"),
+				jen.ID("updatedOnKey").Equals().Lit("updated_on"),
 			),
 			jen.Line(),
 			jen.ID("qf").Dot("SetPage").Call(jen.ID("qf").Dot("Page")),
@@ -171,19 +181,35 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.If(jen.ID("qf").Dot("CreatedAfter").Op(">").Zero()).Block(
-				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(jen.Lit("created_on").MapAssign().ID("qf").Dot("CreatedAfter"))),
+				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
+					jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(
+						jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.ID("tableName"), jen.ID("createdOnKey")).MapAssign().ID("qf").Dot("CreatedAfter"),
+					),
+				),
 			),
 			jen.Line(),
 			jen.If(jen.ID("qf").Dot("CreatedBefore").Op(">").Zero()).Block(
-				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(jen.Lit("created_on").MapAssign().ID("qf").Dot("CreatedBefore"))),
+				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
+					jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(
+						jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.ID("tableName"), jen.ID("createdOnKey")).MapAssign().ID("qf").Dot("CreatedBefore"),
+					),
+				),
 			),
 			jen.Line(),
 			jen.If(jen.ID("qf").Dot("UpdatedAfter").Op(">").Zero()).Block(
-				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(jen.Lit("updated_on").MapAssign().ID("qf").Dot("UpdatedAfter"))),
+				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
+					jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(
+						jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.ID("tableName"), jen.ID("updatedOnKey")).MapAssign().ID("qf").Dot("UpdatedAfter"),
+					),
+				),
 			),
 			jen.Line(),
 			jen.If(jen.ID("qf").Dot("UpdatedBefore").Op(">").Zero()).Block(
-				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(jen.Lit("updated_on").MapAssign().ID("qf").Dot("UpdatedBefore"))),
+				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
+					jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(
+						jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.ID("tableName"), jen.ID("updatedOnKey")).MapAssign().ID("qf").Dot("UpdatedBefore"),
+					),
+				),
 			),
 			jen.Line(),
 			jen.Return().ID("queryBuilder"),

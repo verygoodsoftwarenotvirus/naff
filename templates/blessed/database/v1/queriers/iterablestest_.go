@@ -218,12 +218,13 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 
 	ret.Add(
 		jen.Func().IDf("buildMockRowsFrom%s", sn).Params(
-			jen.ID("includeCount").Bool(),
 			jen.ID(puvn).Spread().PointerTo().Qual(proj.ModelsV1Package(), sn),
 		).Params(
 			jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
 		).Block(
+			jen.ID("includeCount").Assign().Len(jen.ID(puvn)).GreaterThan().One(),
 			jen.ID("columns").Assign().IDf("%sTableColumns", puvn),
+			jen.Line(),
 			jen.If(jen.ID("includeCount")).Block(
 				jen.ID("columns").Equals().Append(jen.ID("columns"), jen.Lit("count")),
 			),
@@ -313,19 +314,7 @@ func buildTestDBBuildSomethingExistsQuery(proj *models.Project, dbvendor wordsmi
 	}
 	callArgs := typ.BuildGetSomethingArgsWithExampleVariables(proj)
 
-	return buildQueryTest(
-		proj,
-		dbvendor,
-		typ,
-		fmt.Sprintf("%sExists", sn),
-		qb,
-		expectationArgs,
-		callArgs[1:],
-		false,
-		false,
-		false,
-		false,
-	)
+	return buildQueryTest(proj, dbvendor, typ, fmt.Sprintf("%sExists", sn), qb, expectationArgs, callArgs[1:], true, false, false, false, true)
 }
 
 func buildTestDBSomethingExists(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -435,19 +424,7 @@ func buildTestDBBuildGetSomethingQuery(proj *models.Project, dbvendor wordsmith.
 	}
 	callArgs := typ.BuildGetSomethingArgsWithExampleVariables(proj)
 
-	return buildQueryTest(
-		proj,
-		dbvendor,
-		typ,
-		fmt.Sprintf("Get%s", sn),
-		qb,
-		expectationArgs,
-		callArgs[1:],
-		false,
-		false,
-		false,
-		false,
-	)
+	return buildQueryTest(proj, dbvendor, typ, fmt.Sprintf("Get%s", sn), qb, expectationArgs, callArgs[1:], true, false, false, false, true)
 }
 
 func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -483,18 +460,18 @@ func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalab
 		if typ.BelongsToUser {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 				Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser"), jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")).
-				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", sn).Call(jen.False(), jen.ID(utils.BuildFakeVarName(sn))))
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", sn).Call(jen.ID(utils.BuildFakeVarName(sn))))
 			actualCallArgs = append(actualCallArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser"))
 		}
 		if typ.BelongsToStruct != nil {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 				Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"), jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")).
-				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", sn).Call(jen.False(), jen.ID(utils.BuildFakeVarName(sn))))
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", sn).Call(jen.ID(utils.BuildFakeVarName(sn))))
 			actualCallArgs = append(actualCallArgs, jen.ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
 		} else if typ.BelongsToNobody {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 				Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")).
-				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", sn).Call(jen.False(), jen.ID(utils.BuildFakeVarName(sn))))
+				Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", sn).Call(jen.ID(utils.BuildFakeVarName(sn))))
 		}
 
 		lines = append(lines,
@@ -535,9 +512,9 @@ func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalab
 		var mockDBCall jen.Code
 		if typ.BelongsToUser {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-				Dotln("WithArgs").Call(jen.ID("exampleUser").Dot("ID"), jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")).
+				Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser"), jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")).
 				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
-			actualCallArgs = append(actualCallArgs, jen.ID("exampleUser").Dot("ID"))
+			actualCallArgs = append(actualCallArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser"))
 		}
 		if typ.BelongsToStruct != nil {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -615,10 +592,9 @@ func buildTestDBBuildGetAllSomethingCountQuery(proj *models.Project, dbvendor wo
 		dbvendor,
 		typ,
 		fmt.Sprintf("GetAll%sCount", pn),
-		qb,
-		[]jen.Code{},
-		[]jen.Code{},
-		true,
+		qb, []jen.Code{}, []jen.Code{},
+		false,
+		false,
 		false,
 		false,
 		false,
@@ -700,18 +676,18 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 	qb = applyFleshedOutQueryFilter(qb, tableName)
 	expectedArgs = appendFleshedOutQueryFilterArgs(expectedArgs)
 
-	return buildQueryTest(
-		proj,
+	return buildQueryTest(proj,
 		dbvendor,
 		typ,
 		fmt.Sprintf("Get%s", pn),
 		qb,
 		expectedArgs,
 		[]jen.Code{},
+		true,
+		true,
+		true,
+		true,
 		false,
-		true,
-		true,
-		true,
 	)
 }
 
@@ -743,9 +719,8 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		if typ.BelongsToUser {
 			expectQueryMock = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.ID("exampleUser").Dot("ID")).
-				Dotln("WillReturnRows").Call(
+				Dotln("WillReturnRows").Callln(
 				jen.IDf("buildMockRowsFrom%s", sn).Callln(
-					jen.True(),
 					jen.AddressOf().ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Dot(pn).Index(jen.Zero()),
 					jen.AddressOf().ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Dot(pn).Index(jen.One()),
 					jen.AddressOf().ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Dot(pn).Index(jen.Lit(2)),
@@ -756,18 +731,16 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		if typ.BelongsToStruct != nil {
 			expectQueryMock = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
-				Dotln("WillReturnRows").Call(
-				jen.IDf("buildMockRowsFrom%s", sn).Call(
-					jen.True(),
+				Dotln("WillReturnRows").Callln(
+				jen.IDf("buildMockRowsFrom%s", sn).Callln(
 					jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))),
 				),
 			)
 			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
 		} else if typ.BelongsToNobody {
 			expectQueryMock = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-				Dotln("WillReturnRows").Call(
-				jen.IDf("buildMockRowsFrom%s", sn).Call(
-					jen.True(),
+				Dotln("WillReturnRows").Callln(
+				jen.IDf("buildMockRowsFrom%s", sn).Callln(
 					jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))),
 				),
 			)
@@ -953,18 +926,18 @@ func buildTestDBCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor word
 		qb = qb.Suffix("RETURNING id, created_on")
 	}
 
-	return buildQueryTest(
-		proj,
+	return buildQueryTest(proj,
 		dbvendor,
 		typ,
 		fmt.Sprintf("Create%s", sn),
 		qb,
 		expectedArgs,
 		[]jen.Code{jen.ID(utils.BuildFakeVarName(sn))},
+		true,
 		false,
 		false,
 		false,
-		false,
+		true,
 	)
 }
 
@@ -1200,18 +1173,18 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 
 	qb, expectedArgs := buildTestBuildUpdateSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
 
-	return buildQueryTest(
-		proj,
+	return buildQueryTest(proj,
 		dbvendor,
 		typ,
 		fmt.Sprintf("Update%s", sn),
 		qb,
 		expectedArgs,
 		[]jen.Code{jen.ID(utils.BuildFakeVarName(sn))},
+		true,
 		false,
 		false,
 		false,
-		false,
+		true,
 	)
 }
 
@@ -1385,18 +1358,18 @@ func buildTestDBArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wor
 
 	qb, expectedArgs, callArgs := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
 
-	return buildQueryTest(
-		proj,
+	return buildQueryTest(proj,
 		dbvendor,
 		typ,
 		fmt.Sprintf("Archive%s", sn),
 		qb,
 		expectedArgs,
 		callArgs,
+		true,
 		false,
 		false,
 		false,
-		false,
+		true,
 	)
 }
 
@@ -1553,7 +1526,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 					Dotln("WithArgs").Call(jen.ID(expectedSomethingID)).
-					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", sn).Call(jen.False(), jen.IDf("expected%s", sn))),
+					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", sn).Call(jen.IDf("expected%s", sn))),
 				jen.Line(),
 				jen.ID(utils.BuildFakeVarName(sn)).Assign().Index().Qual(proj.ModelsV1Package(), sn).Values(jen.PointerTo().IDf("expected%s", sn)),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot(baseFuncName).Call(utils.CtxVar(), jen.ID(expectedSomethingID)),

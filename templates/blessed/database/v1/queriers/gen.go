@@ -65,6 +65,27 @@ func GetDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 	}
 }
 
+// GetOAuth2ClientPalabra gets a given DB's superpalabra
+func GetOAuth2ClientPalabra() wordsmith.SuperPalabra {
+
+	return &wordsmith.ManualWord{
+		SingularStr:                           "OAuth2Client",
+		PluralStr:                             "OAuth2Clients",
+		RouteNameStr:                          "oauth2_client",
+		KebabNameStr:                          "oauth2-client",
+		PluralRouteNameStr:                    "oauth2_clients",
+		UnexportedVarNameStr:                  "oauth2Client",
+		PluralUnexportedVarNameStr:            "oauth2Clients",
+		PackageNameStr:                        "oauth2clients",
+		SingularPackageNameStr:                "oauth2client",
+		SingularCommonNameStr:                 "OAuth2 client",
+		ProperSingularCommonNameWithPrefixStr: "an OAuth2 client",
+		PluralCommonNameStr:                   "OAuth2 clients",
+		SingularCommonNameWithPrefixStr:       "OAuth2 client",
+		PluralCommonNameWithPrefixStr:         "OAuth2 clients",
+	}
+}
+
 // renderDatabasePackage renders the package
 func renderDatabasePackage(proj *models.Project, vendor string) error {
 	var (
@@ -148,12 +169,13 @@ func buildQueryTest(
 	typ models.DataType,
 	queryName string,
 	queryBuilder SqlBuilder,
-	expectedArgs []jen.Code,
+	expectedArgs,
 	callArgs []jen.Code,
-	countQuery bool,
-	listQuery bool,
-	includeFilter bool,
-	createUser bool,
+	includeExpectedAndActualArgs,
+	listQuery,
+	includeFilter,
+	createUser,
+	createExampleVariable bool,
 ) []jen.Code {
 	const (
 		expectedQueryVarName = "expectedQuery"
@@ -175,7 +197,6 @@ func buildQueryTest(
 	}
 
 	dbn := dbvendor.Singular()
-	sn := typ.Name.Singular()
 	dbi := dbvendor.LowercaseAbbreviation()
 
 	expectedQuery, _, err := queryBuilder.ToSql()
@@ -197,7 +218,8 @@ func buildQueryTest(
 					return jen.Null()
 				}(),
 				func() jen.Code {
-					if !countQuery && !listQuery {
+					if createExampleVariable && !listQuery && typ.Name != nil {
+						sn := typ.Name.Singular()
 						return jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call()
 					}
 					return jen.Null()
@@ -211,7 +233,7 @@ func buildQueryTest(
 				jen.Line(),
 				jen.ID(expectedQueryVarName).Assign().Lit(expectedQuery),
 				func() jen.Code {
-					if !countQuery {
+					if includeExpectedAndActualArgs {
 						x := jen.ID(expectedArgsVarName).Assign().Index().Interface()
 						if len(expectedArgs) > 0 {
 							return x.Valuesln(expectedArgs...)
@@ -222,7 +244,7 @@ func buildQueryTest(
 				}(),
 				func() jen.Code {
 					returnedVars := []jen.Code{jen.ID(actualQueryVarName)}
-					if !countQuery {
+					if includeExpectedAndActualArgs {
 						returnedVars = append(returnedVars, jen.ID(actualArgsVarName))
 					}
 					return jen.List(returnedVars...).Assign().ID(dbi).Dotf("build%sQuery", queryName).Call(callArgs...)
@@ -232,7 +254,7 @@ func buildQueryTest(
 					jen.ID("t"),
 					jen.ID(actualQueryVarName),
 					func() jen.Code {
-						if !countQuery {
+						if includeExpectedAndActualArgs {
 							return jen.ID(actualArgsVarName)
 						}
 						return jen.Index().Interface().Values()
@@ -240,7 +262,7 @@ func buildQueryTest(
 				),
 				utils.AssertEqual(jen.ID(expectedQueryVarName), jen.ID(actualQueryVarName), nil),
 				func() jen.Code {
-					if !countQuery {
+					if includeExpectedAndActualArgs {
 						return utils.AssertEqual(jen.ID(expectedArgsVarName), jen.ID(actualArgsVarName), nil)
 					}
 					return jen.Null()

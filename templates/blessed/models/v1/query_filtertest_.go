@@ -124,10 +124,15 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestQueryFilter_ApplyToQueryBuilder").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
+			jen.ID("exampleTableName").Assign().Lit("stuff"),
 			jen.ID("baseQueryBuilder").Assign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", "Dollar")).
 				Dotln("Select").Call(jen.Lit("things")).
-				Dotln("From").Call(jen.Lit("stuff")).
-				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(jen.Lit("condition").MapAssign().True())),
+				Dotln("From").Call(jen.ID("exampleTableName")).
+				Dotln("Where").Call(
+				jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(
+					jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.condition"), jen.ID("exampleTableName")).MapAssign().True(),
+				),
+			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -142,7 +147,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("sb").Assign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("Select").Call(jen.Lit("*")).Dot("From").Call(jen.Lit("testing")),
-				jen.ID("qf").Dot("ApplyToQueryBuilder").Call(jen.ID("sb")),
+				jen.ID("qf").Dot("ApplyToQueryBuilder").Call(jen.ID("sb"), jen.ID("exampleTableName")),
 				jen.ID("expected").Assign().Lit("SELECT * FROM testing"),
 				jen.List(jen.ID("actual"), jen.Underscore(), jen.Err()).Assign().ID("sb").Dot("ToSql").Call(),
 				jen.Line(),
@@ -153,8 +158,9 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"basic usecase",
 				jen.ID("exampleQF").Assign().AddressOf().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(15), jen.ID("Page").MapAssign().Lit(2)),
-				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE condition = $1 LIMIT 15 OFFSET 15`),
-				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
+				jen.Line(),
+				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE stuff.condition = $1 LIMIT 15 OFFSET 15`),
+				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID("exampleTableName")),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
@@ -164,8 +170,9 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"returns query builder if query filter is nil",
-				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE condition = $1`),
-				jen.ID("x").Assign().Parens(jen.PointerTo().ID("QueryFilter")).Call(jen.Nil()).Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
+				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE stuff.condition = $1`),
+				jen.Line(),
+				jen.ID("x").Assign().Parens(jen.PointerTo().ID("QueryFilter")).Call(jen.Nil()).Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID("exampleTableName")),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
@@ -183,8 +190,8 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("UpdatedBefore").MapAssign().Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 				),
 				jen.Line(),
-				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE condition = $1 AND created_on > $2 AND created_on < $3 AND updated_on > $4 AND updated_on < $5 LIMIT 20 OFFSET 100`),
-				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
+				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE stuff.condition = $1 AND stuff.created_on > $2 AND stuff.created_on < $3 AND stuff.updated_on > $4 AND stuff.updated_on < $5 LIMIT 20 OFFSET 100`),
+				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID("exampleTableName")),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
@@ -195,8 +202,8 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with zero limit",
 				jen.ID("exampleQF").Assign().AddressOf().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Zero(), jen.ID("Page").MapAssign().One()),
-				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE condition = $1 LIMIT 250`),
-				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder")),
+				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE stuff.condition = $1 LIMIT 250`),
+				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID("exampleTableName")),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),

@@ -60,6 +60,9 @@ $(EXAMPLE_OUTPUT_DIR):
 clean_example_output:
 	rm -rf $(EXAMPLE_OUTPUT_DIR)
 
+.PHONY: example_project
+example_project: clean_example_output example_output
+
 .PHONY: install-tojen
 install-tojen:
 	go build -o $(INSTALL_PATH)/tojen -ldflags "-X main.Version=$(VERSION)" $(THIS_PKG)/forks/tojen
