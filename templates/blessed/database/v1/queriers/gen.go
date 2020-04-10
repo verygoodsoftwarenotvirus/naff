@@ -67,7 +67,6 @@ func GetDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 
 // GetOAuth2ClientPalabra gets a given DB's superpalabra
 func GetOAuth2ClientPalabra() wordsmith.SuperPalabra {
-
 	return &wordsmith.ManualWord{
 		SingularStr:                           "OAuth2Client",
 		PluralStr:                             "OAuth2Clients",
@@ -83,6 +82,26 @@ func GetOAuth2ClientPalabra() wordsmith.SuperPalabra {
 		PluralCommonNameStr:                   "OAuth2 clients",
 		SingularCommonNameWithPrefixStr:       "OAuth2 client",
 		PluralCommonNameWithPrefixStr:         "OAuth2 clients",
+	}
+}
+
+// GetUserPalabra gets a given DB's superpalabra
+func GetUserPalabra() wordsmith.SuperPalabra {
+	return &wordsmith.ManualWord{
+		SingularStr:                           "User",
+		PluralStr:                             "Users",
+		RouteNameStr:                          "user",
+		KebabNameStr:                          "user",
+		PluralRouteNameStr:                    "users",
+		UnexportedVarNameStr:                  "user",
+		PluralUnexportedVarNameStr:            "users",
+		PackageNameStr:                        "users",
+		SingularPackageNameStr:                "user",
+		SingularCommonNameStr:                 "user",
+		ProperSingularCommonNameWithPrefixStr: "a User",
+		PluralCommonNameStr:                   "users",
+		SingularCommonNameWithPrefixStr:       "a user",
+		PluralCommonNameWithPrefixStr:         "users",
 	}
 }
 
@@ -163,20 +182,7 @@ type SqlBuilder interface {
 	ToSql() (string, []interface{}, error)
 }
 
-func buildQueryTest(
-	proj *models.Project,
-	dbvendor wordsmith.SuperPalabra,
-	typ models.DataType,
-	queryName string,
-	queryBuilder SqlBuilder,
-	expectedArgs,
-	callArgs []jen.Code,
-	includeExpectedAndActualArgs,
-	listQuery,
-	includeFilter,
-	createUser,
-	createExampleVariable bool,
-) []jen.Code {
+func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType, queryName string, queryBuilder SqlBuilder, expectedArgs, callArgs []jen.Code, includeExpectedAndActualArgs, listQuery, includeFilter, createUser, createExampleVariable, excludeUserID bool, preQueryLines []jen.Code) []jen.Code {
 	const (
 		expectedQueryVarName = "expectedQuery"
 		expectedArgsVarName  = "expectedArgs"
@@ -189,7 +195,7 @@ func buildQueryTest(
 		queryName = queryName[:len(queryName)-len(uhOh)]
 	}
 
-	if createUser {
+	if createUser && !excludeUserID {
 		callArgs = append(callArgs, jen.ID("exampleUser").Dot("ID"))
 	}
 	if includeFilter {
@@ -230,6 +236,15 @@ func buildQueryTest(
 						return jen.ID(utils.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call()
 					}
 					return jen.Null()
+				}(),
+				func() jen.Code {
+					g := &jen.Group{}
+					if len(preQueryLines) > 0 {
+						for i := range preQueryLines {
+							g.Add(preQueryLines[i], jen.Line())
+						}
+					}
+					return g
 				}(),
 				jen.Line(),
 				jen.ID(expectedQueryVarName).Assign().Lit(expectedQuery),

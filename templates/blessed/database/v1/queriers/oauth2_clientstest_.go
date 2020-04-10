@@ -145,7 +145,7 @@ func buildTestDB_buildGetOAuth2ClientByClientIDQuery(proj *models.Project, dbven
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
 	}
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "GetOAuth2ClientByClientID", qb, expectedArgs, callArgs, true, false, false, false, true)
+	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "GetOAuth2ClientByClientID", qb, expectedArgs, callArgs, true, false, false, false, true, false, nil)
 }
 
 func buildTestDB_GetOAuth2ClientByClientID(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -247,7 +247,7 @@ func buildTestDB_buildGetAllOAuth2ClientsQuery(proj *models.Project, dbvendor wo
 	expectedArgs := []jen.Code{}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj, dbvendor, models.DataType{}, "GetAllOAuth2Clients", qb, expectedArgs, callArgs, false, true, false, false, false)
+	return buildQueryTest(proj, dbvendor, models.DataType{}, "GetAllOAuth2Clients", qb, expectedArgs, callArgs, false, true, false, false, false, false, nil)
 }
 
 func buildTestDB_GetAllOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -452,20 +452,7 @@ func buildTestDB_buildGetOAuth2ClientQuery(proj *models.Project, dbvendor wordsm
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
 	}
 
-	return buildQueryTest(
-		proj,
-		dbvendor,
-		models.DataType{Name: GetOAuth2ClientPalabra()},
-		"GetOAuth2Client",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		false,
-		true,
-	)
+	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "GetOAuth2Client", qb, expectedArgs, callArgs, true, false, false, false, true, false, nil)
 }
 
 func buildTestDB_GetOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -555,19 +542,7 @@ func buildTestDB_buildGetAllOAuth2ClientCountQuery(proj *models.Project, dbvendo
 		callArgs     []jen.Code
 	)
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: GetOAuth2ClientPalabra()},
-		"GetAllOAuth2ClientCount",
-		qb,
-		expectedArgs,
-		callArgs,
-		false,
-		false,
-		false,
-		false,
-		false,
-	)
+	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "GetAllOAuth2ClientCount", qb, expectedArgs, callArgs, false, false, false, false, false, false, nil)
 }
 
 func buildTestDB_GetAllOAuth2ClientCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -624,19 +599,9 @@ func buildTestDB_buildGetOAuth2ClientsQuery(proj *models.Project, dbvendor words
 	qb = applyFleshedOutQueryFilter(qb, oauth2ClientsTableName)
 	expectedArgs = appendFleshedOutQueryFilterArgs(expectedArgs)
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: GetOAuth2ClientPalabra()},
-		"GetOAuth2Clients",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		true,
-		true,
-		false,
-	)
+	lines := buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "GetOAuth2Clients", qb, expectedArgs, callArgs, true, false, true, true, false, false, nil)
+
+	return lines
 }
 
 func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -789,19 +754,7 @@ func buildTestDB_buildCreateOAuth2ClientQuery(proj *models.Project, dbvendor wor
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: GetOAuth2ClientPalabra()},
-		"CreateOAuth2Client",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		false,
-		true,
-	)
+	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "CreateOAuth2Client", qb, expectedArgs, callArgs, true, false, false, false, true, false, nil)
 }
 
 func buildTestDB_CreateOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -936,19 +889,7 @@ func buildTestDB_buildUpdateOAuth2ClientQuery(proj *models.Project, dbvendor wor
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: GetOAuth2ClientPalabra()},
-		"UpdateOAuth2Client",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		false,
-		true,
-	)
+	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "UpdateOAuth2Client", qb, expectedArgs, callArgs, true, false, false, false, true, false, nil)
 }
 
 func buildTestDB_UpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -1051,19 +992,7 @@ func buildTestDB_buildArchiveOAuth2ClientQuery(proj *models.Project, dbvendor wo
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
 	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: GetOAuth2ClientPalabra()},
-		"ArchiveOAuth2Client",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		false,
-		true,
-	)
+	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "ArchiveOAuth2Client", qb, expectedArgs, callArgs, true, false, false, false, true, false, nil)
 }
 
 func buildTestDB_ArchiveOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
