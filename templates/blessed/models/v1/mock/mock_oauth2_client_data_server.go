@@ -86,7 +86,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ExtractOAuth2ClientFromRequest is the obligatory implementation for our interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("req")),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
@@ -97,7 +97,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("HandleAuthorizeRequest is the obligatory implementation for our interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("res"), jen.ID("req")),
 			jen.Return().ID("args").Dot("Error").Call(jen.Zero()),
 		),
@@ -107,7 +107,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("HandleTokenRequest is the obligatory implementation for our interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("res"), jen.ID("req")),
 			jen.Return().ID("args").Dot("Error").Call(jen.Zero()),
 		),

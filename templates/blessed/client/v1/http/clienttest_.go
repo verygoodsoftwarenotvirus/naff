@@ -88,7 +88,7 @@ func buildMustParseURL() []jen.Code {
 		jen.Func().ID("mustParseURL").Params(
 			jen.ID("uri").String(),
 		).Params(
-			jen.ParamPointer().Qual("net/url", "URL"),
+			jen.PointerTo().Qual("net/url", "URL"),
 		).Block(
 			jen.List(
 				jen.ID("u"),
@@ -112,8 +112,8 @@ func buildMustParseURL() []jen.Code {
 func buildBuildTestClient() []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildTestClient").Params(
-			jen.ID("t").ParamPointer().Qual("testing", "T"),
-			jen.ID("ts").ParamPointer().Qual("net/http/httptest", "Server"),
+			jen.ID("t").PointerTo().Qual("testing", "T"),
+			jen.ID("ts").PointerTo().Qual("net/http/httptest", "Server"),
 		).Params(
 			jen.PointerTo().ID(v1),
 		).Block(
@@ -141,7 +141,7 @@ func buildBuildTestClient() []jen.Code {
 
 func buildBuildTestClientWithInvalidURL() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildTestClientWithInvalidURL").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().ID(v1)).Block(
+		jen.Func().ID("buildTestClientWithInvalidURL").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID(v1)).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("l").Assign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -678,7 +678,7 @@ func buildTestV1Client_IsUp() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -715,7 +715,7 @@ func buildTestV1Client_IsUp() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -744,7 +744,7 @@ func buildTestV1Client_IsUp() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -879,7 +879,7 @@ func buildTestV1Client_checkExistence() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -922,7 +922,7 @@ func buildTestV1Client_checkExistence() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -979,7 +979,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1059,7 +1059,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1108,7 +1108,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1168,7 +1168,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1219,7 +1219,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1266,7 +1266,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1312,7 +1312,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1359,7 +1359,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1486,7 +1486,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1553,7 +1553,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1619,7 +1619,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1685,7 +1685,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),
@@ -1794,7 +1794,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("Method"),

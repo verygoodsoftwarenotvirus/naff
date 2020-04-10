@@ -12,7 +12,7 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -33,7 +33,7 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestServerConfig_ProvideTracing").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestServerConfig_ProvideTracing").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

@@ -96,7 +96,7 @@ func oauth2HandlerMockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOauth2Handler")).ID("ValidationBearerToken").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Qual("gopkg.in/oauth2.v3",
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOauth2Handler")).ID("ValidationBearerToken").Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Qual("gopkg.in/oauth2.v3",
 			"TokenInfo",
 		),
 			jen.Error()).Block(
@@ -112,7 +112,7 @@ func oauth2HandlerMockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOauth2Handler")).ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOauth2Handler")).ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot(
 				"Called",
 			).Call(jen.ID("res"), jen.ID("req")).Dot("Error").Call(jen.Zero()),
@@ -121,7 +121,7 @@ func oauth2HandlerMockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOauth2Handler")).ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOauth2Handler")).ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot(
 				"Called",
 			).Call(jen.ID("res"), jen.ID("req")).Dot("Error").Call(jen.Zero()),

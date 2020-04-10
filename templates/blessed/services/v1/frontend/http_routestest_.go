@@ -13,7 +13,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("buildRequest").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.ParamPointer().Qual("net/http", "Request")).Block(
+		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
@@ -32,7 +32,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(buildTestService_StaticDir(proj)...)
 
 	ret.Add(
-		jen.Func().ID("TestService_Routes").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_Routes").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -44,7 +44,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -131,7 +131,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Func().ID("TestService_StaticDir").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(block...), jen.Line(),
+		jen.Func().ID("TestService_StaticDir").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(block...), jen.Line(),
 	}
 
 	return lines

@@ -36,7 +36,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("buildOAuth2ClientActions").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Block(
 			jen.Return().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 				jen.Lit("CreateOAuth2Client").MapAssign().Valuesln(
-					jen.ID("Name").MapAssign().Lit("CreateOAuth2Client"), jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
+					jen.ID("Name").MapAssign().Lit("CreateOAuth2Client"), jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
 						jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "RandomUserInput").Call(),
 						jen.List(jen.ID("u"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(utils.InlineCtx(), jen.ID("ui")),
 						jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -63,14 +63,14 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 						jen.Return().List(jen.ID("req"), jen.Err()),
 					),
 					jen.ID("Weight").MapAssign().Lit(100)), jen.Lit("GetOAuth2Client").MapAssign().Valuesln(
-					jen.ID("Name").MapAssign().Lit("GetOAuth2Client"), jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
+					jen.ID("Name").MapAssign().Lit("GetOAuth2Client"), jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
 						jen.If(jen.ID("randomOAuth2Client").Assign().ID("fetchRandomOAuth2Client").Call(jen.ID("c")), jen.ID("randomOAuth2Client").DoesNotEqual().ID("nil")).Block(
 							jen.Return().ID("c").Dot("BuildGetOAuth2ClientRequest").Call(utils.InlineCtx(), jen.ID("randomOAuth2Client").Dot("ID")),
 						),
 						jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
 					),
 					jen.ID("Weight").MapAssign().Lit(100)), jen.Lit("GetOAuth2Clients").MapAssign().Valuesln(
-					jen.ID("Name").MapAssign().Lit("GetOAuth2Clients"), jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
+					jen.ID("Name").MapAssign().Lit("GetOAuth2Clients"), jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
 						jen.Return().ID("c").Dot("BuildGetOAuth2ClientsRequest").Call(utils.InlineCtx(), jen.Nil()),
 					),
 					jen.ID("Weight").MapAssign().Lit(100))),

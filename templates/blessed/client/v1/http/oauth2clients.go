@@ -58,7 +58,7 @@ func buildBuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("id").Uint64(),
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),
@@ -141,7 +141,7 @@ func buildBuildGetOAuth2ClientsRequest(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),
@@ -238,9 +238,9 @@ func buildBuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("BuildCreateOAuth2ClientRequest").Paramsln(
 			utils.CtxParam(),
-			jen.ID("cookie").ParamPointer().Qual("net/http", "Cookie"),
+			jen.ID("cookie").PointerTo().Qual("net/http", "Cookie"),
 			jen.ID("body").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
-		).Params(jen.ParamPointer().Qual("net/http", "Request"),
+		).Params(jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error()).Block(block...),
 		jen.Line(),
 	}
@@ -301,7 +301,7 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("CreateOAuth2Client").Paramsln(
 			utils.CtxParam(),
-			jen.ID("cookie").ParamPointer().Qual("net/http", "Cookie"),
+			jen.ID("cookie").PointerTo().Qual("net/http", "Cookie"),
 			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
@@ -340,7 +340,7 @@ func buildBuildArchiveOAuth2ClientRequest(proj *models.Project) []jen.Code {
 		jen.Comment("BuildArchiveOAuth2ClientRequest builds an HTTP request for archiving an oauth2 client"),
 		jen.Line(),
 		newClientMethod("BuildArchiveOAuth2ClientRequest").Params(utils.CtxParam(), jen.ID("id").Uint64()).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),

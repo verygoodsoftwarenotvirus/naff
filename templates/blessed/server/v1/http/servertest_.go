@@ -90,7 +90,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		jen.Func().ID("TestProvideServer").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(

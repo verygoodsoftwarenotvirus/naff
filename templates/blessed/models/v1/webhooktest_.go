@@ -12,7 +12,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("TestWebhook_Update").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhook_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -54,7 +54,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestWebhook_ToListener").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhook_ToListener").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -67,7 +67,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_buildErrorLogFunc").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildErrorLogFunc").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

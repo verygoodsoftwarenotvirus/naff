@@ -12,7 +12,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("mustBuildCode").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("totpSecret").String()).Params(jen.String()).Block(
+		jen.Func().ID("mustBuildCode").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("totpSecret").String()).Params(jen.String()).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("totpSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 			utils.RequireNoError(jen.Err(), nil),
@@ -22,7 +22,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyOAuth2ClientInput").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Block(
+		jen.Func().ID("buildDummyOAuth2ClientInput").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
@@ -53,7 +53,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("checkOAuth2ClientEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Block(
+		jen.Func().ID("checkOAuth2ClientEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
@@ -68,7 +68,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestOAuth2Clients").Params(jen.ID("test").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestOAuth2Clients").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Parallel").Call(),
 			jen.ID("_ctx").Assign().Add(utils.InlineCtx()),
 			jen.Line(),
@@ -97,7 +97,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("test"), jen.Err(), jen.Lit("error setting up auxiliary client")),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"should be creatable",
 					jen.Line(),
@@ -114,7 +114,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"it should return an error when trying to read one that doesn't exist",
 					jen.Line(),
@@ -144,7 +144,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"should be able to be deleted",
 					jen.Line(),
@@ -195,7 +195,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"should be able to be read in a list",
 					jen.Line(),

@@ -17,7 +17,7 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	ret.Add(
-		jen.Func().ID("buildTestService").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().ID(sn), jen.Qual("github.com/DATA-DOG/go-sqlmock", "Sqlmock")).Block(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID(sn), jen.Qual("github.com/DATA-DOG/go-sqlmock", "Sqlmock")).Block(
 			jen.List(jen.ID("db"), jen.ID("mock"), jen.Err()).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "New").Call(),
 			utils.RequireNoError(jen.Err(), nil),
 			jen.ID(dbfl).Assign().IDf("Provide%s", sn).Call(jen.True(), jen.ID("db"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
@@ -72,7 +72,7 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 	)
 
 	ret.Add(
-		jen.Func().IDf("TestProvide%s", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestProvide%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -84,7 +84,7 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_IsReady", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_IsReady", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -97,7 +97,7 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_logQueryBuildingError", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_logQueryBuildingError", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

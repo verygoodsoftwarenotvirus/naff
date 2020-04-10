@@ -56,7 +56,7 @@ func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("userID").Uint64(),
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),
@@ -139,7 +139,7 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),
@@ -221,7 +221,7 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("body").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),
@@ -307,7 +307,7 @@ func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("userID").Uint64(),
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),
@@ -396,7 +396,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),
@@ -467,7 +467,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 			utils.CtxParam(),
 			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Cookie"),
+			jen.PointerTo().Qual("net/http", "Cookie"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),

@@ -207,35 +207,35 @@ func buildRandomActionMap(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Return().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 			jen.Litf("Create%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Create%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
 					buildCreateSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Get%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Get%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
 					buildGetSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Get%s", pn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Get%s", pn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
 					buildGetListOfSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Update%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Update%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
 					buildUpdateChildBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Archive%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Archive%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
 					buildArchiveSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(85),

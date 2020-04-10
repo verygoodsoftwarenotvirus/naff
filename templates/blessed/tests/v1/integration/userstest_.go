@@ -41,7 +41,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserInput")).Block(
+		jen.Func().ID("buildDummyUserInput").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserInput")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
@@ -56,7 +56,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyUser").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"), jen.PointerTo().Qual(proj.ModelsV1Package(), "UserInput"), jen.ParamPointer().Qual("net/http", "Cookie")).Block(
+		jen.Func().ID("buildDummyUser").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"), jen.PointerTo().Qual(proj.ModelsV1Package(), "UserInput"), jen.PointerTo().Qual("net/http", "Cookie")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			utils.CreateCtx(),
 			jen.Line(),
@@ -85,7 +85,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserInput"), jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse")).Block(
+		jen.Func().ID("checkUserCreationEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserInput"), jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
@@ -103,7 +103,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("checkUserEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserInput"), jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "User")).Block(
+		jen.Func().ID("checkUserEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserInput"), jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "User")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
@@ -120,10 +120,10 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestUsers").Params(jen.ID("test").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestUsers").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"should be creatable",
 					jen.Line(),
@@ -142,7 +142,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"it should return an error when trying to read something that doesn't exist",
 					jen.Line(),
@@ -178,7 +178,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"should be able to be deleted",
 					jen.Line(),
@@ -199,7 +199,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"should be able to be read in a list",
 					jen.Line(),

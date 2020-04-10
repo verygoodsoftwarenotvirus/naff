@@ -12,7 +12,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("loginUser").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpSecret")).String()).Params(jen.ParamPointer().Qual("net/http", "Cookie")).Block(
+		jen.Func().ID("loginUser").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpSecret")).String()).Params(jen.PointerTo().Qual("net/http", "Cookie")).Block(
 			jen.ID("loginURL").Assign().Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s://%s:%s/users/login"),
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL").Dot("Scheme"),
@@ -53,10 +53,10 @@ func authTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestAuth").Params(jen.ID("test").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestAuth").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to login"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to login"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.Line(),
 				jen.Comment("create a user"),
@@ -99,7 +99,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertLength(jen.ID("cookies"), jen.One(), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to logout"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to logout"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.Line(),
 				jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "RandomUserInput").Call(),
@@ -155,7 +155,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("StatusCode"), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("login request without body fails"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("login request without body fails"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("BuildURL").Call(jen.Nil())),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.ID("u").Dot("Path").Equals().Lit("/users/login"),
@@ -169,7 +169,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID("res").Dot("StatusCode"), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to log in with the wrong password"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to log in with the wrong password"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.Line(),
 				jen.Comment("create a user"),
@@ -215,7 +215,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("StatusCode"), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to login as someone that doesn't exist"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to login as someone that doesn't exist"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "RandomUserInput").Call(),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID("randString").Call(),
@@ -246,7 +246,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertLength(jen.ID("cookies"), jen.Zero(), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should reject an unauthenticated request"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should reject an unauthenticated request"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("BuildURL").Call(jen.Nil(), jen.Lit("webhooks")), jen.Nil()),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
@@ -255,7 +255,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID("res").Dot("StatusCode"), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to change password"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to change password"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				jen.Comment("create user"),
 				jen.List(jen.ID("user"), jen.ID("ui"), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(jen.ID("test")),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
@@ -333,7 +333,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNotEqual(jen.ID("cookie"), jen.ID("cookies").Index(jen.Zero()), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to change 2FA Token"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to change 2FA Token"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				jen.Comment("create user"),
 				jen.List(jen.ID("user"), jen.ID("ui"), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(jen.ID("test")),
 				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
@@ -409,7 +409,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNotEqual(jen.ID("cookie"), jen.ID("cookies").Index(jen.Zero()), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should accept a login cookie if a token is missing"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should accept a login cookie if a token is missing"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				jen.Comment("create user"),
 				jen.List(jen.Underscore(), jen.Underscore(), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(jen.ID("test")),
 				utils.AssertNotNil(jen.ID("cookie"), nil),
@@ -423,7 +423,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("StatusCode"), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow users to see their own content"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow users to see their own content"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.Line(),
 				jen.Comment("create user and oauth2 client A"),
@@ -483,7 +483,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(utils.CtxVar(), jen.ID("webhookB").Dot("ID")), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow clients with a given scope to see that scope's content"), jen.Func().Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow clients with a given scope to see that scope's content"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				utils.CreateCtx(),
 				jen.Line(),
 				jen.Comment("create user"),

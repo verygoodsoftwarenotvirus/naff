@@ -85,20 +85,20 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 	if typ.BelongsToUser {
 		typeDefs = append(typeDefs,
 			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
-			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
+			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		typeDefs = append(typeDefs,
 			jen.Commentf("%sIDFetcher is a function that fetches %s IDs", typ.BelongsToStruct.Singular(), typ.BelongsToStruct.SingularCommonName()),
-			jen.IDf("%sIDFetcher", typ.BelongsToStruct.Singular()).Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
+			jen.IDf("%sIDFetcher", typ.BelongsToStruct.Singular()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 		)
 	}
 
 	typeDefs = append(typeDefs,
 		jen.Line(),
 		jen.Commentf("%sIDFetcher is a function that fetches %s IDs", sn, cn),
-		jen.ID(fmt.Sprintf("%sIDFetcher", sn)).Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
+		jen.ID(fmt.Sprintf("%sIDFetcher", sn)).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 	)
 
 	lines := []jen.Code{

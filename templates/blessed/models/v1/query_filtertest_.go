@@ -12,7 +12,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("TestFromParams").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestFromParams").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -51,7 +51,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestQueryFilter_SetPage").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestQueryFilter_SetPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -66,7 +66,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestQueryFilter_QueryPage").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestQueryFilter_QueryPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -81,7 +81,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestQueryFilter_ToValues").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestQueryFilter_ToValues").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -121,7 +121,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestQueryFilter_ApplyToQueryBuilder").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestQueryFilter_ApplyToQueryBuilder").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("exampleTableName").Assign().Lit("stuff"),
@@ -215,7 +215,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestExtractQueryFilter").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestExtractQueryFilter").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

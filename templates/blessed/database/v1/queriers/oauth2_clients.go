@@ -107,7 +107,7 @@ func oauth2ClientsDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *je
 		jen.Comment("scanOAuth2Clients takes sql rows and turns them into a slice of OAuth2Clients"),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("scanOAuth2Clients").Params(
-			jen.ID("rows").ParamPointer().Qual("database/sql", "Rows"),
+			jen.ID("rows").PointerTo().Qual("database/sql", "Rows"),
 		).Params(
 			jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Uint64(),

@@ -207,14 +207,14 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 			).Dot("Post").Call(jen.Lit("/client"), jen.ID("s").Dot("oauth2ClientsService").Dot("CreateHandler").Call()),
 			jen.Line(),
 			jen.ID("oauth2Router").Dot("With").Call(jen.ID("s").Dot("oauth2ClientsService").Dot("OAuth2ClientInfoMiddleware")).
-				Dotln("Post").Call(jen.Lit("/authorize"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+				Dotln("Post").Call(jen.Lit("/authorize"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 				jen.ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).Dot("Debug").Call(jen.Lit("oauth2 authorize route hit")),
 				jen.If(jen.Err().Assign().ID("s").Dot("oauth2ClientsService").Dot("HandleAuthorizeRequest").Call(jen.ID("res"), jen.ID("req")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.Err().Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
 				),
 			)),
 			jen.Line(),
-			jen.ID("oauth2Router").Dot("Post").Call(jen.Lit("/token"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+			jen.ID("oauth2Router").Dot("Post").Call(jen.Lit("/token"), jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 				jen.If(jen.Err().Assign().ID("s").Dot("oauth2ClientsService").Dot("HandleTokenRequest").Call(jen.ID("res"), jen.ID("req")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.Qual("net/http", "Error").Call(jen.ID("res"), jen.Err().Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
 				),

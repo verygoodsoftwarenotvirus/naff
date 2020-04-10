@@ -20,7 +20,7 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 	ret.Add(jen.Line())
 
 	ret.Add(jen.Type().ID("defaultRoundTripper").Struct(
-		jen.ID("baseTransport").ParamPointer().Qual("net/http", "Transport"),
+		jen.ID("baseTransport").PointerTo().Qual("net/http", "Transport"),
 	),
 		jen.Line(),
 	)
@@ -43,9 +43,9 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 		jen.Comment("RoundTrip implements the http.RoundTripper interface"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("t").PointerTo().ID("defaultRoundTripper")).ID("RoundTrip").Params(
-			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+			jen.ID("req").PointerTo().Qual("net/http", "Request"),
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Response"),
+			jen.PointerTo().Qual("net/http", "Response"),
 			jen.Error(),
 		).Block(
 			jen.ID("req").Dot("Header").Dot("Set").Call(
@@ -62,7 +62,7 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("buildDefaultTransport constructs a new http.Transport"),
 		jen.Line(),
-		jen.Func().ID("buildDefaultTransport").Params().Params(jen.ParamPointer().Qual("net/http", "Transport")).Block(
+		jen.Func().ID("buildDefaultTransport").Params().Params(jen.PointerTo().Qual("net/http", "Transport")).Block(
 			jen.Return().AddressOf().Qual("net/http", "Transport").Valuesln(
 				jen.ID("Proxy").MapAssign().Qual("net/http", "ProxyFromEnvironment"),
 				jen.ID("DialContext").MapAssign().Parens(jen.AddressOf().Qual("net", "Dialer").Valuesln(

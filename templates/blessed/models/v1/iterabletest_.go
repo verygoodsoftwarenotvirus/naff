@@ -38,7 +38,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("happy path", buildHappyPathBlock()...)),
@@ -56,7 +56,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_ToUpdateInput", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_ToUpdateInput", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

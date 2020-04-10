@@ -12,7 +12,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("Test_randString").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_randString").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -25,7 +25,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildRequest").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.ParamPointer().Qual("net/http", "Request")).Block(
+		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
@@ -42,7 +42,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_fetchUserID").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_fetchUserID").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -75,7 +75,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_ListHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_ListHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -196,7 +196,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_CreateHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_CreateHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -545,7 +545,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_ReadHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_ReadHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -554,7 +554,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("userID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleOAuth2ClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
 				),
 				jen.Line(),
@@ -587,7 +587,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("userID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleOAuth2ClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
 				),
 				jen.Line(),
@@ -620,7 +620,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("userID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleOAuth2ClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
 				),
 				jen.Line(),
@@ -653,7 +653,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("userID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleOAuth2ClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
 				),
 				jen.Line(),
@@ -685,7 +685,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_ArchiveHandler").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_ArchiveHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -694,7 +694,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("userID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleOAuth2ClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
 				),
 				jen.Line(),
@@ -731,7 +731,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("userID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleOAuth2ClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
 				),
 				jen.Line(),
@@ -760,7 +760,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("userID").Assign().Add(utils.FakeUint64Func()),
 				jen.ID("exampleOAuth2ClientID").Assign().Add(utils.FakeUint64Func()),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleOAuth2ClientID"),
 				),
 				jen.Line(),

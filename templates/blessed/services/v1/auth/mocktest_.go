@@ -26,7 +26,7 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(
 			utils.CtxParam(),
-			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+			jen.ID("req").PointerTo().Qual("net/http", "Request"),
 		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("req")),
@@ -86,7 +86,7 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").PointerTo().ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("res"), jen.ID("req")),

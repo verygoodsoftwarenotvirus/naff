@@ -22,7 +22,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	ret.Add(
-		jen.Func().ID("buildMockRowFromUser").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().ID("buildMockRowFromUser").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
 				jen.ID("user").Dot("ID"),
 				jen.ID("user").Dot("Username"),
@@ -41,7 +41,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	)
 
 	ret.Add(
-		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
 				jen.ID("user").Dot("ArchivedOn"),
 				jen.ID("user").Dot("ID"),
@@ -60,7 +60,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetUserQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetUserQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -80,7 +80,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetUser", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
@@ -128,7 +128,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetUsersQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetUsersQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -147,7 +147,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetUsers", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUsers", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedUsersQuery").Assign().Lit("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE archived_on IS NULL LIMIT 20"),
@@ -271,7 +271,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetUserByUsernameQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetUserByUsernameQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -292,7 +292,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetUserByUsername", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUserByUsername", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("SELECT id, username, hashed_password, password_last_changed_on, two_factor_secret, is_admin, created_on, updated_on, archived_on FROM users WHERE username = %s", getIncIndex(dbvendor, 0)),
@@ -359,7 +359,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetUserCountQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetUserCountQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -378,7 +378,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetUserCount", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUserCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit("SELECT COUNT(id) FROM users WHERE archived_on IS NULL LIMIT 20"),
@@ -431,7 +431,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildCreateUserQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildCreateUserQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -526,7 +526,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_CreateUser", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_CreateUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("INSERT INTO users (username,hashed_password,two_factor_secret,is_admin%s) VALUES (%s,%s,%s,%s%s)%s",
@@ -638,7 +638,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildUpdateUserQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildUpdateUserQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -690,7 +690,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_UpdateUser", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_UpdateUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -735,7 +735,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildArchiveUserQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildArchiveUserQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -760,7 +760,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	)
 
 	ret.Add(
-		jen.Func().IDf("Test%s_ArchiveUser", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_ArchiveUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

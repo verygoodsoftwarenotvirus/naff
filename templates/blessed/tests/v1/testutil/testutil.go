@@ -156,7 +156,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
-		)).Params(jen.ParamPointer().Qual("net/http", "Cookie"), jen.Error()).Block(
+		)).Params(jen.PointerTo().Qual("net/http", "Cookie"), jen.Error()).Block(
 			jen.ID("uri").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("users"), jen.Lit("login")),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.Qual("strings", "ToUpper").Call(jen.ID("u").Dot("TwoFactorSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(

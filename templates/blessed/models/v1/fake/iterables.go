@@ -53,7 +53,7 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 	lines := []jen.Code{
 		jen.Commentf("%s builds a faked %s", funcName, scn),
 		jen.Line(),
-		jen.Func().ID(funcName).Params().Params(jen.ParamPointer().Qual(proj.ModelsV1Package(), sn)).Block(
+		jen.Func().ID(funcName).Params().Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
 			jen.Return(jen.AddressOf().Qual(proj.ModelsV1Package(), sn).Valuesln(block...)),
 		),
 	}
@@ -91,7 +91,7 @@ func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []je
 	lines := []jen.Code{
 		jen.Commentf("%s builds a faked %sList", funcName, sn),
 		jen.Line(),
-		jen.Func().ID(funcName).Params().Params(jen.ParamPointer().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Block(
+		jen.Func().ID(funcName).Params().Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Block(
 			jen.IDf("example%s1", sn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.IDf("example%s2", sn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.IDf("example%s3", sn).Assign().IDf("BuildFake%s", sn).Call(),

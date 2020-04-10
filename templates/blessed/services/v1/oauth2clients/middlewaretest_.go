@@ -22,14 +22,14 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("m").Dot("Called").Call(jen.ID("res"), jen.ID("req")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_CreationInputMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_CreationInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -94,7 +94,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_RequestIsAuthenticated").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_RequestIsAuthenticated").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -136,7 +136,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Parens(jen.ParamPointer().Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("mh"),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -210,7 +210,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_OAuth2TokenAuthenticationMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_OAuth2TokenAuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.Comment("These tests have a lot of overlap to those of ExtractOAuth2ClientFromRequest, which is deliberate"),
@@ -261,7 +261,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Parens(jen.ParamPointer().Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("mh"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -282,7 +282,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_OAuth2ClientInfoMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_OAuth2ClientInfoMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -347,7 +347,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_fetchOAuth2ClientFromRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_fetchOAuth2ClientFromRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -379,7 +379,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_fetchOAuth2ClientIDFromRequest").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_fetchOAuth2ClientIDFromRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(

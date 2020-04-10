@@ -85,7 +85,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Qual("net/http", "HandlerFunc").Callln(
 				jen.Func().Params(
 					jen.ID("res").Qual("net/http", "ResponseWriter"),
-					jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+					jen.ID("req").PointerTo().Qual("net/http", "Request"),
 				).Block(
 					utils.AssertTrue(
 						jen.Qual("strings", "HasSuffix").Call(
@@ -206,7 +206,7 @@ func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 			jen.Qual("net/http", "HandlerFunc").Callln(
 				jen.Func().Params(
 					jen.ID("res").Qual("net/http", "ResponseWriter"),
-					jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+					jen.ID("req").PointerTo().Qual("net/http", "Request"),
 				).Block(
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
@@ -328,7 +328,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.Lit("/oauth2/client"),
@@ -383,7 +383,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
 							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+							jen.ID("req").PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.ID("req").Dot("URL").Dot("Path"),
@@ -489,7 +489,7 @@ func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 			jen.Qual("net/http", "HandlerFunc").Callln(
 				jen.Func().Params(
 					jen.ID("res").Qual("net/http", "ResponseWriter"),
-					jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+					jen.ID("req").PointerTo().Qual("net/http", "Request"),
 				).Block(
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),

@@ -42,7 +42,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("fetchUserID grabs a userID out of the request context"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchUserID").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchUserID").Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 			jen.If(jen.List(jen.ID("id"), jen.ID("ok")).Assign().ID("req").Dot("Context").Call().Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()), jen.ID("ok")).Block(
 				jen.Return().ID("id"),
 			),
@@ -55,7 +55,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ListHandler is a handler that returns a list of OAuth2 clients"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ListHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
@@ -93,7 +93,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("CreateHandler is our OAuth2 client creation route"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreateHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
@@ -172,7 +172,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ReadHandler is a route handler for retrieving an OAuth2 client"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ReadHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
@@ -211,7 +211,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ArchiveHandler is a route handler for archiving an OAuth2 client"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 				jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ArchiveHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),

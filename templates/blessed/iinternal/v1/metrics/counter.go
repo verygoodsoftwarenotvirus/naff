@@ -22,8 +22,8 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Type().ID(typeName).Struct(
 			jen.ID("name").String(),
 			jen.ID("actualCount").Uint64(),
-			jen.ID("measure").ParamPointer().Qual("go.opencensus.io/stats", "Int64Measure"),
-			jen.ID("v").ParamPointer().Qual("go.opencensus.io/stats/view", "View"),
+			jen.ID("measure").PointerTo().Qual("go.opencensus.io/stats", "Int64Measure"),
+			jen.ID("v").PointerTo().Qual("go.opencensus.io/stats/view", "View"),
 		),
 		jen.Line(),
 	)

@@ -26,7 +26,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").String()).Params(jen.ParamPointer().Qual("github.com/spf13/afero", "HttpFs"), jen.Error()).Block(jen.Var().ID("afs").Qual("github.com/spf13/afero", "Fs"), jen.If(jen.ID("s").Dot("config").Dot("CacheStaticFiles")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").String()).Params(jen.PointerTo().Qual("github.com/spf13/afero", "HttpFs"), jen.Error()).Block(jen.Var().ID("afs").Qual("github.com/spf13/afero", "Fs"), jen.If(jen.ID("s").Dot("config").Dot("CacheStaticFiles")).Block(
 			jen.ID("afs").Equals().Qual("github.com/spf13/afero", "NewMemMapFs").Call(),
 			jen.List(jen.ID("files"), jen.Err()).Assign().Qual("io/ioutil", "ReadDir").Call(jen.ID("fileDir")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -159,7 +159,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("static_dir"), jen.ID("fileDir")).Dot("Debug").Call(jen.Lit("setting static file server")),
 			jen.ID("fs").Assign().Qual("net/http", "StripPrefix").Call(jen.Lit("/"), jen.Qual("net/http", "FileServer").Call(jen.ID("httpFs").Dot("Dir").Call(jen.ID("fileDir")))),
 			jen.Line(),
-			jen.Return().List(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+			jen.Return().List(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 				buildIndexRoute()...,
 			), jen.Nil()),
 		),

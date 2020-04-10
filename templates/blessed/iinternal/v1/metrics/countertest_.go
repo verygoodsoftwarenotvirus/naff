@@ -12,7 +12,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("Test_opencensusCounter_Increment").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_opencensusCounter_Increment").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -34,7 +34,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_opencensusCounter_IncrementBy").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_opencensusCounter_IncrementBy").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -56,7 +56,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_opencensusCounter_Decrement").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_opencensusCounter_Decrement").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -81,7 +81,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideUnitCounterProvider").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideUnitCounterProvider").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.Comment("obligatory"),

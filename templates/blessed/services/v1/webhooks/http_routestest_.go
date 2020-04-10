@@ -12,7 +12,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("TestWebhooksService_List").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooksService_List").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("requestingUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -23,7 +23,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
@@ -57,7 +57,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				"with no rows returned",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
@@ -90,7 +90,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				"with error fetching webhooks from database",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
@@ -126,7 +126,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
@@ -160,7 +160,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestValidateWebhook").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestValidateWebhook").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -193,7 +193,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestWebhooksService_Create").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooksService_Create").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("requestingUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -209,7 +209,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(utils.MockPkg, "Anything")),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
@@ -252,7 +252,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(utils.MockPkg, "Anything")),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
@@ -287,7 +287,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				"without input attached",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
@@ -315,7 +315,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID("exampleWebhook")),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
@@ -357,7 +357,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(utils.MockPkg, "Anything")),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
@@ -392,7 +392,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestWebhooksService_Read").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooksService_Read").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("requestingUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -403,11 +403,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -441,11 +441,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -473,11 +473,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID")),
 				jen.Line(),
 				jen.ID("wd").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
@@ -504,11 +504,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -538,7 +538,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestWebhooksService_Update").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooksService_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("requestingUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -554,11 +554,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(utils.MockPkg, "Anything")),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -620,11 +620,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookUpdateInputFromWebhook").Call(jen.ID("exampleWebhook")),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -659,11 +659,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookUpdateInputFromWebhook").Call(jen.ID("exampleWebhook")),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -703,11 +703,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(utils.MockPkg, "Anything")),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -756,11 +756,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(utils.MockPkg, "Anything")),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -801,7 +801,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestWebhooksService_Archive").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooksService_Archive").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("requestingUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -816,11 +816,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -856,11 +856,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -892,11 +892,11 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("requestingUser").Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),

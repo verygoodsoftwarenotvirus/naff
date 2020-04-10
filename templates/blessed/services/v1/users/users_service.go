@@ -31,7 +31,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("RequestValidator validates request"),
 			jen.ID("RequestValidator").Interface(
-				jen.ID("Validate").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.Bool(), jen.Error()),
+				jen.ID("Validate").Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Bool(), jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("Service handles our users"),
@@ -46,7 +46,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher fetches usernames from requests"),
-			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
+			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 		),
 		jen.Line(),
 	)

@@ -35,7 +35,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("DecodeRequest satisfies our EncoderDecoder interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("EncoderDecoder")).ID("DecodeRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("EncoderDecoder")).ID("DecodeRequest").Params(jen.ID("req").PointerTo().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot("Called").Call(jen.ID("req"), jen.ID("v")).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),

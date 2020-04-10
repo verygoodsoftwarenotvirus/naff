@@ -14,7 +14,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(utils.FakeSeedFunc(), jen.Line())
 
 	ret.Add(
-		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

@@ -52,10 +52,10 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
-			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
+			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 			jen.Line(),
 			jen.Comment("WebhookIDFetcher is a function that fetches webhook IDs"),
-			jen.ID("WebhookIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
+			jen.ID("WebhookIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 		),
 
 		jen.Line(),
@@ -72,7 +72,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 			jen.ID("webhookCounterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
-			jen.ID("em").ParamPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
+			jen.ID("em").PointerTo().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
 			jen.List(jen.ID("webhookCounter"), jen.Err()).Assign().ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.Lit("the number of webhooks managed by the webhooks service")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(

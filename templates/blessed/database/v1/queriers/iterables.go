@@ -193,7 +193,7 @@ func buildScanListOfSomethingFuncDecl(proj *models.Project, typ models.DataType)
 		jen.Line(),
 		jen.Func().IDf("scan%s", pn).Params(
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-			jen.ID("rows").ParamPointer().Qual("database/sql", "Rows"),
+			jen.ID("rows").PointerTo().Qual("database/sql", "Rows"),
 		).Params(
 			jen.Index().Qual(proj.ModelsV1Package(), sn),
 			jen.Uint64(),

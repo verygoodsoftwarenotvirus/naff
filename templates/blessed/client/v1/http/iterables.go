@@ -166,7 +166,7 @@ func buildBuildItemExistsRequest(proj *models.Project, typ models.DataType) []je
 		jen.Commentf("%s builds an HTTP request for checking the existence of %s", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),
@@ -236,7 +236,7 @@ func buildBuildGetSomethingRequestFuncDecl(proj *models.Project, typ models.Data
 		jen.Commentf("%s builds an HTTP request for fetching %s", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),
@@ -585,7 +585,7 @@ func buildBuildGetListOfSomethingRequestFuncDecl(proj *models.Project, typ model
 		jen.Commentf("%s builds an HTTP request for fetching %s", funcName, typ.Name.PluralCommonName()),
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatRetrievesAListOfADataType(proj, typ, false)...).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),
@@ -668,7 +668,7 @@ func buildBuildCreateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 		newClientMethod(funcName).Params(
 			buildParamsForMethodThatCreatesADataType(proj, typ, false)...,
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(
 			block...,
@@ -756,7 +756,7 @@ func buildBuildUpdateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 		newClientMethod(funcName).Params(
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, typ, false)...,
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...,
 		),
@@ -838,7 +838,7 @@ func buildBuildArchiveSomethingRequestFuncDecl(proj *models.Project, typ models.
 		jen.Commentf("%s builds an HTTP request for updating %s", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, typ, false)...).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
 		jen.Line(),

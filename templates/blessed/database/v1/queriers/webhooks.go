@@ -104,7 +104,7 @@ func webhooksDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	ret.Add(
 		jen.Comment("scanWebhooks provides a consistent way to turn sql rows into a slice of webhooks"),
 		jen.Line(),
-		jen.Func().ID("scanWebhooks").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").ParamPointer().Qual("database/sql", "Rows")).Params(jen.Index().Qual(proj.ModelsV1Package(), "Webhook"), jen.Error()).Block(
+		jen.Func().ID("scanWebhooks").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").PointerTo().Qual("database/sql", "Rows")).Params(jen.Index().Qual(proj.ModelsV1Package(), "Webhook"), jen.Error()).Block(
 			jen.Var().ID("list").Index().Qual(proj.ModelsV1Package(), "Webhook"),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(

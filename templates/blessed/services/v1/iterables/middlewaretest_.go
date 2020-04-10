@@ -22,14 +22,14 @@ func middlewareTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockHTTPHandler")).ID("ServeHTTP").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("m").Dot("Called").Call(jen.ID("res"), jen.ID("req")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_CreationInputMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_CreationInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -90,7 +90,7 @@ func middlewareTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestService_UpdateInputMiddleware").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_UpdateInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

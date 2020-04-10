@@ -23,7 +23,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			jen.Comment("OAuth2ClientValidator is a stand-in interface, where we needed to abstract"),
 			jen.Comment("a regular structure with an interface for testing purposes"),
 			jen.ID("OAuth2ClientValidator").Interface(
-				jen.ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()),
+				jen.ID("ExtractOAuth2ClientFromRequest").Params(utils.CtxParam(), jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("cookieEncoderDecoder is a stand-in interface for gorilla/securecookie"),
@@ -33,7 +33,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
-			jen.ID("UserIDFetcher").Func().Params(jen.ParamPointer().Qual("net/http", "Request")).Params(jen.Uint64()),
+			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 			jen.Line(),
 			jen.Comment("Service handles authentication service-wide"),
 			jen.ID("Service").Struct(

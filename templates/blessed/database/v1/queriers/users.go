@@ -73,7 +73,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 	ret.Add(
 		jen.Comment("scanUsers takes database rows and loads them into a slice of User structs"),
 		jen.Line(),
-		jen.Func().ID("scanUsers").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").ParamPointer().Qual("database/sql", "Rows")).Params(jen.Index().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
+		jen.Func().ID("scanUsers").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("rows").PointerTo().Qual("database/sql", "Rows")).Params(jen.Index().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
 			jen.Var().ID("list").Index().Qual(proj.ModelsV1Package(), "User"),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
@@ -326,7 +326,7 @@ func usersDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 			out := []jen.Code{
 				jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("ID"), jen.AddressOf().ID("x").Dot("CreatedOn")).Op(";").ID("err").DoesNotEqual().ID("nil")).Block(
 					jen.Switch(jen.ID("e").Assign().ID("err").Assert(jen.Type())).Block(
-						jen.Case(jen.ParamPointer().Qual("github.com/lib/pq", "Error")).Block(
+						jen.Case(jen.PointerTo().Qual("github.com/lib/pq", "Error")).Block(
 							jen.If(jen.ID("e").Dot("Code").Op("==").Qual("github.com/lib/pq", "ErrorCode").Call(jen.Lit("23505"))).Block(
 								jen.Return().List(jen.Nil(), jen.Qual(proj.DatabaseV1Package("client"), "ErrUserExists")),
 							),

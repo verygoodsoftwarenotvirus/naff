@@ -22,7 +22,7 @@ func actionsDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Type().Defs(
 			jen.Comment("actionFunc represents a thing you can do"),
-			jen.ID("actionFunc").Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()),
+			jen.ID("actionFunc").Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()),
 			jen.Line(),
 			jen.Comment("Action is a wrapper struct around some important values"),
 			jen.ID("Action").Struct(
@@ -45,7 +45,7 @@ func actionsDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Lit("CreateUser").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("CreateUser"),
-					jen.ID("Action").MapAssign().Func().Params().Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(
+					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
 						jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "RandomUserInput").Call(),
 						jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(utils.CtxVar(), jen.ID("ui")),
 					),

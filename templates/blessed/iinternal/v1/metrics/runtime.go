@@ -130,7 +130,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 
 	defs = append(defs,
 		jen.Comment("DefaultRuntimeViews represents the pre-configured views"),
-		jen.ID("DefaultRuntimeViews").Equals().Index().ParamPointer().Qual("go.opencensus.io/stats/view", "View").Valuesln(vals...),
+		jen.ID("DefaultRuntimeViews").Equals().Index().PointerTo().Qual("go.opencensus.io/stats/view", "View").Valuesln(vals...),
 	)
 
 	ret.Add(

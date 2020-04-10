@@ -24,7 +24,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().ID("buildMockRowFromWebhook").Params(jen.ID("w").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().ID("buildMockRowFromWebhook").Params(jen.ID("w").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("webhooksTableColumns")).Dot("AddRow").Callln(
 				jen.ID("w").Dot("ID"),
 				jen.ID("w").Dot("Name"),
@@ -48,7 +48,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.ParamPointer().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("webhooksTableColumns")).Dot("AddRow").Callln(
 				jen.ID("w").Dot("ArchivedOn"),
 				jen.ID("w").Dot("BelongsToUser"),
@@ -72,7 +72,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetWebhookQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetWebhookQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -97,7 +97,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetWebhook", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to_user FROM webhooks WHERE belongs_to_user = %s AND id = %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1)),
@@ -199,7 +199,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetWebhookCountQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetWebhookCountQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -222,7 +222,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetWebhookCount", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetWebhookCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("SELECT COUNT(webhooks.id) FROM webhooks WHERE webhooks.archived_on IS NULL AND webhooks.belongs_to_user = %s LIMIT 20", getIncIndex(dbvendor, 0)),
@@ -266,7 +266,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetAllWebhooksCountQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetAllWebhooksCountQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -284,7 +284,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetAllWebhooksCount", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetAllWebhooksCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
@@ -323,7 +323,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetAllWebhooksQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetAllWebhooksQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -341,7 +341,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetAllWebhooks", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetAllWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedListQuery").Assign().Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to_user FROM webhooks WHERE archived_on IS NULL"),
@@ -458,7 +458,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetAllWebhooksForUser", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetAllWebhooksForUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedListQuery").Assign().Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to_user FROM webhooks WHERE archived_on IS NULL"),
@@ -545,7 +545,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildGetWebhooksQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGetWebhooksQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -568,7 +568,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	/////////////
 
 	ret.Add(
-		jen.Func().IDf("Test%s_GetWebhooks", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedListQuery").Assign().Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to_user FROM webhooks WHERE archived_on IS NULL"),
@@ -713,7 +713,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildWebhookCreationQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildWebhookCreationQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -775,7 +775,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_CreateWebhook", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_CreateWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to_user%s) VALUES (%s,%s,%s,%s,%s,%s,%s,%s%s)%s",
@@ -887,7 +887,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildUpdateWebhookQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildUpdateWebhookQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -949,7 +949,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_UpdateWebhook", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_UpdateWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("UPDATE webhooks SET name = %s, content_type = %s, url = %s, method = %s, events = %s, data_types = %s, topics = %s, updated_on = %s WHERE belongs_to_user = %s AND id = %s%s",
@@ -1034,7 +1034,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_buildArchiveWebhookQuery", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildArchiveWebhookQuery", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -1069,7 +1069,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_ArchiveWebhook", sn).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_ArchiveWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

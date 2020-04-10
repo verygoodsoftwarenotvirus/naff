@@ -29,7 +29,7 @@ func clientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("the actual database querying is performed."),
 		jen.Line(),
-		jen.Type().ID("Client").Struct(jen.ID("db").ParamPointer().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
+		jen.Type().ID("Client").Struct(jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
 			jen.ID("debug").Bool(), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")),
 		jen.Line(),
 	)
@@ -81,7 +81,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Paramsln(
 			utils.CtxParam(),
-			jen.ID("db").ParamPointer().Qual("database/sql", "DB"),
+			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
 			jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
 			jen.ID("debug").Bool(),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),

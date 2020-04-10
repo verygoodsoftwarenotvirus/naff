@@ -17,7 +17,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	pn := typ.Name.Plural()
 
 	ret.Add(
-		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
+		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
 			buildEqualityCheckLines(typ)...,
 		),
 		jen.Line(),
@@ -26,24 +26,24 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret.Add(buildBuildDummySomething(proj, typ)...)
 
 	ret.Add(
-		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be createable",
 					buildTestCreating(proj, typ)...,
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be able to be read in a list",
 					buildTestListing(proj, typ)...,
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to check something that does not exist",
 					buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
@@ -55,7 +55,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to read something that does not exist",
 					buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
@@ -67,7 +67,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to update something that does not exist",
 					buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, typ)...,
@@ -79,7 +79,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be able to be deleted",
 					buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)...,
@@ -252,7 +252,7 @@ func buildBuildDummySomething(proj *models.Project, typ models.DataType) []jen.C
 	)
 
 	lines := []jen.Code{
-		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
+		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
 			blockLines...,
 		),
 		jen.Line(),

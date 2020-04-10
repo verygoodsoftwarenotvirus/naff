@@ -16,7 +16,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 
 		if typ.BelongsToUser {
 			ret.Add(
-				jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Singular()).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+				jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 					jen.ID("T").Dot("Parallel").Call(),
 					jen.Line(),
 					utils.BuildSubTestWithoutContext(
@@ -29,7 +29,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		}
 		if typ.BelongsToStruct != nil {
 			ret.Add(
-				jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+				jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Singular(), typ.BelongsToStruct.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 					jen.ID("T").Dot("Parallel").Call(),
 					jen.Line(),
 					utils.BuildSubTestWithoutContext(
@@ -42,7 +42,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		}
 
 		ret.Add(
-			jen.Func().IDf("TestProvide%sIDFetcher", n.Singular()).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.Func().IDf("TestProvide%sIDFetcher", n.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
 				utils.BuildSubTestWithoutContext(
@@ -55,7 +55,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		jen.Func().ID("TestProvideUsernameFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideUsernameFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -67,7 +67,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideAuthUserIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideAuthUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -79,7 +79,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideWebhooksUserIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideWebhooksUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -91,7 +91,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideWebhookIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -103,7 +103,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideOAuth2ServiceClientIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideOAuth2ServiceClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -115,7 +115,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestUserIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -147,7 +147,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_buildChiUserIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildChiUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -203,7 +203,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	for _, typ := range proj.DataTypes {
 		n := typ.Name
 		ret.Add(
-			jen.Func().IDf("Test_buildChi%sIDFetcher", n.Singular()).Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.Func().IDf("Test_buildChi%sIDFetcher", n.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
 				utils.BuildSubTestWithoutContext(
@@ -257,7 +257,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		jen.Func().ID("Test_buildChiWebhookIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildChiWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -311,7 +311,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_buildChiOAuth2ClientIDFetcher").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildChiOAuth2ClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

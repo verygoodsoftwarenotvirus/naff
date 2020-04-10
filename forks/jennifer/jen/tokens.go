@@ -364,6 +364,28 @@ func (s *Statement) And() *Statement {
 	return s
 }
 
+// AddressOf renders the provided operator / token.
+func AddressOf() *Statement {
+	return newStatement().AddressOf()
+}
+
+// AddressOf renders the provided operator / token.
+func (g *Group) AddressOf() *Statement {
+	s := AddressOf()
+	g.items = append(g.items, s)
+	return s
+}
+
+// AddressOf renders the provided operator / token.
+func (s *Statement) AddressOf() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "&",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // PointerTo renders the provided operator / token.
 func PointerTo() *Statement {
 	return newStatement().PointerTo()
@@ -378,6 +400,28 @@ func (g *Group) PointerTo() *Statement {
 
 // PointerTo renders the provided operator / token.
 func (s *Statement) PointerTo() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "*",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Times renders the provided operator / token.
+func Times() *Statement {
+	return newStatement().Times()
+}
+
+// Times renders the provided operator / token.
+func (g *Group) Times() *Statement {
+	s := Times()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Times renders the provided operator / token.
+func (s *Statement) Times() *Statement {
 	t := token{
 		typ:     operatorToken,
 		content: "*",
@@ -491,72 +535,6 @@ func (s *Statement) MapAssign() *Statement {
 	t := token{
 		typ:     operatorToken,
 		content: ":",
-	}
-	*s = append(*s, t)
-	return s
-}
-
-// Times renders the provided operator / token.
-func Times() *Statement {
-	return newStatement().Times()
-}
-
-// Times renders the provided operator / token.
-func (g *Group) Times() *Statement {
-	s := Times()
-	g.items = append(g.items, s)
-	return s
-}
-
-// Times renders the provided operator / token.
-func (s *Statement) Times() *Statement {
-	t := token{
-		typ:     operatorToken,
-		content: "*",
-	}
-	*s = append(*s, t)
-	return s
-}
-
-// ParamPointer renders the provided operator / token.
-func ParamPointer() *Statement {
-	return newStatement().ParamPointer()
-}
-
-// ParamPointer renders the provided operator / token.
-func (g *Group) ParamPointer() *Statement {
-	s := ParamPointer()
-	g.items = append(g.items, s)
-	return s
-}
-
-// ParamPointer renders the provided operator / token.
-func (s *Statement) ParamPointer() *Statement {
-	t := token{
-		typ:     operatorToken,
-		content: "*",
-	}
-	*s = append(*s, t)
-	return s
-}
-
-// AddressOf renders the provided operator / token.
-func AddressOf() *Statement {
-	return newStatement().AddressOf()
-}
-
-// AddressOf renders the provided operator / token.
-func (g *Group) AddressOf() *Statement {
-	s := AddressOf()
-	g.items = append(g.items, s)
-	return s
-}
-
-// AddressOf renders the provided operator / token.
-func (s *Statement) AddressOf() *Statement {
-	t := token{
-		typ:     operatorToken,
-		content: "&",
 	}
 	*s = append(*s, t)
 	return s

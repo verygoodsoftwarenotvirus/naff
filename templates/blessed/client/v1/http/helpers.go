@@ -89,7 +89,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("unmarshalBody").Params(
 			utils.CtxParam(),
-			jen.ID("res").ParamPointer().Qual("net/http", "Response"),
+			jen.ID("res").PointerTo().Qual("net/http", "Response"),
 			jen.ID("dest").Interface(),
 		).Params(
 			jen.Error(),

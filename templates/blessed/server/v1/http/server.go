@@ -46,15 +46,15 @@ func serverDotGo(proj *models.Project) *jen.File {
 			jen.Comment("infra things"),
 			jen.ID("db").Qual(proj.DatabaseV1Package(), "Database"),
 			jen.ID("config").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
-			jen.ID("router").ParamPointer().Qual("github.com/go-chi/chi", "Mux"),
-			jen.ID("httpServer").ParamPointer().Qual("net/http", "Server"),
+			jen.ID("router").PointerTo().Qual("github.com/go-chi/chi", "Mux"),
+			jen.ID("httpServer").PointerTo().Qual("net/http", "Server"),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		)
 
 		// if proj.EnableNewsman {
 		lines = append(lines,
-			jen.ID("newsManager").ParamPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
+			jen.ID("newsManager").PointerTo().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		)
 		// }
 
@@ -94,7 +94,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 
 		// if proj.EnableNewsman {
 		lines = append(lines,
-			jen.ID("newsManager").ParamPointer().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
+			jen.ID("newsManager").PointerTo().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		)
 		// }
 
@@ -243,7 +243,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("provideHTTPServer provides an HTTP httpServer"),
 		jen.Line(),
-		jen.Func().ID("provideHTTPServer").Params().Params(jen.ParamPointer().Qual("net/http", "Server")).Block(
+		jen.Func().ID("provideHTTPServer").Params().Params(jen.PointerTo().Qual("net/http", "Server")).Block(
 			jen.Comment("heavily inspired by https://blog.cloudflare.com/exposing-go-on-the-internet/"),
 			jen.ID("srv").Assign().AddressOf().Qual("net/http", "Server").Valuesln(
 				jen.ID("ReadTimeout").MapAssign().Lit(5).Times().Qual("time", "Second"),

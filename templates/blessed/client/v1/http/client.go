@@ -42,11 +42,11 @@ func mainDotGo(proj *models.Project) *jen.File {
 	ret.Add(utils.Comments(fmt.Sprintf("%s is a client for interacting with v1 of our REST API", v1))...)
 	ret.Add(
 		jen.Type().ID(v1).Struct(
-			jen.ID("plainClient").ParamPointer().Qual("net/http", "Client"),
-			jen.ID("authedClient").ParamPointer().Qual("net/http", "Client"),
+			jen.ID("plainClient").PointerTo().Qual("net/http", "Client"),
+			jen.ID("authedClient").PointerTo().Qual("net/http", "Client"),
 			jen.ID("logger").Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("Debug").Bool(),
-			jen.ID("URL").ParamPointer().Qual("net/url", "URL"),
+			jen.ID("URL").PointerTo().Qual("net/url", "URL"),
 			jen.ID("Scopes").Index().String(),
 			jen.ID("tokenSource").Qual("golang.org/x/oauth2", "TokenSource"),
 		),
@@ -81,7 +81,7 @@ func buildAuthenticatedClient() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("AuthenticatedClient returns the authenticated *http.Client that we use to make most requests"),
 		jen.Line(),
-		newClientMethod("AuthenticatedClient").Params().Params(jen.ParamPointer().Qual("net/http", "Client")).Block(
+		newClientMethod("AuthenticatedClient").Params().Params(jen.PointerTo().Qual("net/http", "Client")).Block(
 			jen.Return().ID("c").Dot("authedClient"),
 		),
 		jen.Line(),
@@ -94,7 +94,7 @@ func buildPlainClient() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("PlainClient returns the unauthenticated *http.Client that we use to make certain requests"),
 		jen.Line(),
-		newClientMethod("PlainClient").Params().Params(jen.ParamPointer().Qual("net/http", "Client")).Block(
+		newClientMethod("PlainClient").Params().Params(jen.PointerTo().Qual("net/http", "Client")).Block(
 			jen.Return().ID("c").Dot("plainClient"),
 		),
 		jen.Line(),
@@ -126,9 +126,9 @@ func buildNewClient() []jen.Code {
 				jen.ID("clientID"),
 				jen.ID("clientSecret"),
 			).String(),
-			jen.ID("address").ParamPointer().Qual("net/url", "URL"),
+			jen.ID("address").PointerTo().Qual("net/url", "URL"),
 			jen.ID("logger").Qual(utils.LoggingPkg, "Logger"),
-			jen.ID("hclient").ParamPointer().Qual("net/http", "Client"),
+			jen.ID("hclient").PointerTo().Qual("net/http", "Client"),
 			jen.ID("scopes").Index().String(),
 			jen.ID("debug").Bool(),
 		).Params(
@@ -195,14 +195,14 @@ func buildBuildOAuthClient() []jen.Code {
 		jen.Line(),
 		jen.Func().ID("buildOAuthClient").Paramsln(
 			utils.CtxParam(),
-			jen.ID("uri").ParamPointer().Qual("net/url", "URL"),
+			jen.ID("uri").PointerTo().Qual("net/url", "URL"),
 			jen.Listln(
 				jen.ID("clientID"),
 				jen.ID("clientSecret"),
 			).String(),
 			jen.ID("scopes").Index().String(),
 		).Params(
-			jen.ParamPointer().Qual("net/http", "Client"),
+			jen.PointerTo().Qual("net/http", "Client"),
 			jen.ID("oauth2").Dot("TokenSource"),
 		).Block(
 			jen.ID("conf").Assign().Qual("golang.org/x/oauth2/clientcredentials", "Config").Valuesln(
@@ -248,7 +248,7 @@ func buildTokenEndpoint() []jen.Code {
 		jen.Comment("tokenEndpoint provides the oauth2 Endpoint for a given host"),
 		jen.Line(),
 		jen.Func().ID("tokenEndpoint").Params(
-			jen.ID("baseURL").ParamPointer().Qual("net/url", "URL"),
+			jen.ID("baseURL").PointerTo().Qual("net/url", "URL"),
 		).Params(
 			jen.ID("oauth2").Dot("Endpoint"),
 		).Block(
@@ -287,7 +287,7 @@ func buildNewSimpleClient() []jen.Code {
 		jen.Line(),
 		jen.Func().ID("NewSimpleClient").Params(
 			utils.CtxParam(),
-			jen.ID("address").ParamPointer().Qual("net/url", "URL"),
+			jen.ID("address").PointerTo().Qual("net/url", "URL"),
 			jen.ID("debug").Bool(),
 		).Params(
 			jen.PointerTo().ID(v1),
@@ -325,7 +325,7 @@ func buildCloseResponseBody() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("closeResponseBody takes a given HTTP response and closes its body, logging if an error occurs"),
 		jen.Line(),
-		newClientMethod("closeResponseBody").Params(jen.ID("res").ParamPointer().Qual("net/http", "Response")).Block(
+		newClientMethod("closeResponseBody").Params(jen.ID("res").PointerTo().Qual("net/http", "Response")).Block(
 			jen.If(jen.ID("res").DoesNotEqual().Nil()).Block(
 				jen.If(jen.Err().Assign().ID("res").Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().Nil()).Block(
 					jen.ID("c").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("closing response body")),
@@ -405,9 +405,9 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("executeRawRequest").Params(
 			utils.CtxParam(),
-			jen.ID("client").ParamPointer().Qual("net/http", "Client"),
-			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
-		).Params(jen.ParamPointer().Qual("net/http", "Response"), jen.Error()).Block(block...),
+			jen.ID("client").PointerTo().Qual("net/http", "Client"),
+			jen.ID("req").PointerTo().Qual("net/http", "Request"),
+		).Params(jen.PointerTo().Qual("net/http", "Response"), jen.Error()).Block(block...),
 		jen.Line(),
 	}
 
@@ -423,7 +423,7 @@ func buildExportedBuildURL() []jen.Code {
 			jen.ID("qp").Qual("net/url", "Values"),
 			jen.ID("parts").Spread().String(),
 		).Params(jen.String()).Block(
-			jen.Var().ID("u").ParamPointer().Qual("net/url", "URL"),
+			jen.Var().ID("u").PointerTo().Qual("net/url", "URL"),
 			jen.If(jen.ID("qp").DoesNotEqual().ID("nil")).Block(
 				jen.ID("u").Equals().ID("c").Dot("buildURL").Call(jen.ID("qp"), jen.ID("parts").Spread()),
 			).Else().Block(
@@ -450,7 +450,7 @@ func buildUnexportedBuildURL() []jen.Code {
 		newClientMethod("buildURL").Params(
 			jen.ID("queryParams").Qual("net/url", "Values"),
 			jen.ID("parts").Spread().String(),
-		).Params(jen.ParamPointer().Qual("net/url", "URL")).Block(
+		).Params(jen.PointerTo().Qual("net/url", "URL")).Block(
 			jen.ID("tu").Assign().PointerTo().ID("c").Dot("URL"),
 			jen.Line(),
 			jen.ID("parts").Equals().ID("append").Call(
@@ -550,7 +550,7 @@ func buildBuildHealthCheckRequest() []jen.Code {
 		jen.Comment("BuildHealthCheckRequest builds a health check HTTP Request"),
 		jen.Line(),
 		newClientMethod("BuildHealthCheckRequest").Params(utils.CtxParam()).Params(
-			jen.ParamPointer().Qual("net/http", "Request"),
+			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(
 			jen.ID("u").Assign().PointerTo().ID("c").Dot("URL"),
@@ -659,7 +659,7 @@ func buildBuildDataRequest(proj *models.Project) []jen.Code {
 				jen.ID("uri"),
 			).String(),
 			jen.ID("in").Interface(),
-		).Params(jen.ParamPointer().Qual("net/http", "Request"), jen.Error()).Block(block...),
+		).Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(block...),
 		jen.Line(),
 	}
 
@@ -683,7 +683,7 @@ func buildCheckExistence(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("checkExistence").Params(
 			utils.CtxParam(),
-			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+			jen.ID("req").PointerTo().Qual("net/http", "Request"),
 		).Params(jen.Bool(), jen.Error()).Block(block...),
 		jen.Line(),
 	}
@@ -734,7 +734,7 @@ func buildRetrieve(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+			jen.ID("req").PointerTo().Qual("net/http", "Request"),
 			jen.ID("obj").Interface(),
 		).Params(jen.Error()).Block(block...),
 		jen.Line(),
@@ -794,7 +794,7 @@ func buildExecuteRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+			jen.ID("req").PointerTo().Qual("net/http", "Request"),
 			jen.ID("out").Interface(),
 		).Params(jen.Error()).Block(block...,
 		),
@@ -854,7 +854,7 @@ func buildExecuteUnauthenticatedDataRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			utils.CtxParam(),
-			jen.ID("req").ParamPointer().Qual("net/http", "Request"),
+			jen.ID("req").PointerTo().Qual("net/http", "Request"),
 			jen.ID("out").Interface(),
 		).Params(jen.Error()).Block(block...),
 		jen.Line(),

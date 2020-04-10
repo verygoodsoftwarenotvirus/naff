@@ -237,7 +237,7 @@ func configDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("BuildConfig is a constructor function that initializes a viper config."),
 		jen.Line(),
-		jen.Func().ID("BuildConfig").Params().Params(jen.ParamPointer().Qual("github.com/spf13/viper", "Viper")).Block(
+		jen.Func().ID("BuildConfig").Params().Params(jen.PointerTo().Qual("github.com/spf13/viper", "Viper")).Block(
 			jen.ID("cfg").Assign().ID("viper").Dot("New").Call(),
 			jen.Line(),
 			jen.Comment("meta stuff"),

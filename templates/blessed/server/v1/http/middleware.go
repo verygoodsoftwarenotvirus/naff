@@ -19,7 +19,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("formatSpanNameForRequest").Params(jen.ID("req").ParamPointer().Qual("net/http", "Request")).Params(jen.String()).Block(
+		jen.Func().ID("formatSpanNameForRequest").Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.String()).Block(
 			jen.Return().Qual("fmt", "Sprintf").Callln(
 				jen.Lit("%s %s"),
 				jen.ID("req").Dot("Method"),
@@ -31,7 +31,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("loggingMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").ParamPointer().Qual("net/http", "Request")).Block(
+			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
 				jen.ID("ww").Assign().Qual("github.com/go-chi/chi/middleware", "NewWrapResponseWriter").Call(jen.ID("res"), jen.ID("req").Dot("ProtoMajor")),
 				jen.Line(),
 				jen.ID("start").Assign().Qual("time", "Now").Call(),

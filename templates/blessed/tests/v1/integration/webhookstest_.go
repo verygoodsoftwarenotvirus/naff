@@ -12,7 +12,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").ParamPointer().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
+		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
@@ -39,7 +39,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").ParamPointer().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
+		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.CreateCtx(),
@@ -63,10 +63,10 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestWebhooks").Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooks").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"should be createable",
 					jen.Line(),
@@ -98,7 +98,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"should be able to be read in a list",
 					jen.Line(),
@@ -121,7 +121,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"it should return an error when trying to read something that doesn't exist",
 					jen.Line(),
@@ -164,7 +164,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"it should return an error when trying to update something that doesn't exist",
 					jen.Line(),
@@ -213,7 +213,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").ParamPointer().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTest(
 					"should be able to be deleted",
 					jen.Line(),

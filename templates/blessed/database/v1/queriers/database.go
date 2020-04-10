@@ -86,7 +86,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			jen.Commentf("%s is our main %s interaction db", sn, sn),
 			jen.ID(sn).Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("db").ParamPointer().Qual("database/sql", "DB"), jen.ID("sqlBuilder").Qual("github.com/Masterminds/squirrel", "StatementBuilderType"),
+				jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("sqlBuilder").Qual("github.com/Masterminds/squirrel", "StatementBuilderType"),
 				jen.ID("migrateOnce").Qual("sync", "Once"), jen.ID("debug").Bool(),
 			),
 			jen.Line(),
@@ -96,8 +96,8 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx|Stmt} objects"),
 			jen.ID("Querier").Interface(
 				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
-				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.ParamPointer().Qual("database/sql", "Rows"), jen.Error()),
-				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.ParamPointer().Qual("database/sql", "Row")),
+				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Rows"), jen.Error()),
+				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Row")),
 			),
 		),
 		jen.Line(),
@@ -116,7 +116,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	ret.Add(
 		jen.Commentf("Provide%s%s provides an instrumented %s db", sn, dbTrail, cn),
 		jen.Line(),
-		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.ParamPointer().Qual("database/sql", "DB"), jen.Error()).Block(
+		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Block(
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
 			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.String().Call(jen.ID("connectionDetails"))),
 		),
@@ -132,7 +132,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	ret.Add(
 		jen.Commentf("Provide%s provides a %s%s controller", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").ParamPointer().Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "Database")).Block(
+		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "Database")).Block(
 			jen.Return().AddressOf().IDf(sn).Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("debug").MapAssign().ID("debug"),
