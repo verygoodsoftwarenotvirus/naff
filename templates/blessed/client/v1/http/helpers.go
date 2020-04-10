@@ -66,13 +66,13 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("argIsNotPointerOrNil").Params(jen.ID("i").Interface()).Params(jen.Error()).Block(
 			jen.If(
 				jen.List(jen.ID("nn"), jen.Err()).Assign().ID("argIsNotNil").Call(jen.ID("i")),
-				jen.ID("nn").Or().ID("err").DoesNotEqual().ID("nil"),
-			).Block(jen.Return().ID("err")),
+				jen.ID("nn").Or().Err().DoesNotEqual().ID("nil"),
+			).Block(jen.Return().Err()),
 			jen.Line(),
 			jen.If(
 				jen.List(jen.ID("np"), jen.Err()).Assign().ID("argIsNotPointer").Call(jen.ID("i")),
-				jen.ID("np").Or().ID("err").DoesNotEqual().ID("nil"),
-			).Block(jen.Return().ID("err")),
+				jen.ID("np").Or().Err().DoesNotEqual().ID("nil"),
+			).Block(jen.Return().Err()),
 			jen.Line(),
 			jen.Return().ID("nil"),
 		),
@@ -96,7 +96,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		).Block(
 			utils.StartSpan(proj, false, "unmarshalBody"),
 			jen.If(jen.Err().Assign().ID("argIsNotPointerOrNil").Call(jen.ID("dest")), jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().ID("err"),
+				jen.Return().Err(),
 			),
 			jen.Line(),
 			jen.List(
@@ -105,7 +105,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			).Assign().Qual("io/ioutil", "ReadAll").
 				Call(jen.ID("res").Dot("Body")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().ID("err"),
+				jen.Return().Err(),
 			),
 			jen.Line(),
 			jen.If(jen.ID("res").Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(

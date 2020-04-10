@@ -258,7 +258,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 		jen.Line(),
 		jen.Func().ID("buildError").Params(jen.Err().Error(), jen.ID("msg").String()).Params(jen.Error()).Block(
 			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
-				jen.Return().ID("err"),
+				jen.Return().Err(),
 			),
 			jen.Line(),
 			jen.If(jen.Op("!").Qual("strings", "Contains").Call(jen.ID("msg"), jen.RawString(`%w`))).Block(

@@ -45,7 +45,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Qual("log", "Printf").Call(jen.Lit("something has gone awry: %v\n"), jen.Err()),
-				jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Values(jen.ID("Error").MapAssign().ID("err")),
+				jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Values(jen.ID("Error").MapAssign().Err()),
 			),
 			jen.Line(),
 			jen.Var().Defs(
@@ -56,7 +56,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("req").Dot("Body").DoesNotEqual().ID("nil")).Block(
 				jen.List(jen.ID("bi"), jen.Err()).Equals().Qual("io/ioutil", "ReadAll").Call(jen.ID("req").Dot("Body")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Values(jen.ID("Error").MapAssign().ID("err")),
+					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Values(jen.ID("Error").MapAssign().Err()),
 				),
 				jen.ID("rdr").Assign().Qual("io/ioutil", "NopCloser").Call(jen.Qual("bytes", "NewBuffer").Call(jen.ID("bi"))),
 				jen.ID("req").Dot("Body").Equals().ID("rdr"),
@@ -70,7 +70,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("dr").Assign().Qual("github.com/emicklei/hazana", "DoResult").Valuesln(
 				jen.ID("RequestLabel").MapAssign().ID("act").Dot("Name"),
-				jen.ID("Error").MapAssign().ID("err"),
+				jen.ID("Error").MapAssign().Err(),
 				jen.ID("StatusCode").MapAssign().ID("sc"),
 				jen.ID("BytesIn").MapAssign().ID("int64").Call(jen.ID("len").Call(jen.ID("bi"))),
 				jen.ID("BytesOut").MapAssign().ID("bo")),

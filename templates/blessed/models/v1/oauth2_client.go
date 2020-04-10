@@ -26,7 +26,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 				jen.ID("GetOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
 				jen.ID("GetOAuth2ClientByClientID").Params(utils.CtxParam(), jen.ID("clientID").String()).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
 				jen.ID("GetAllOAuth2ClientCount").Params(utils.CtxParam()).Params(jen.Uint64(), jen.Error()),
-				jen.ID("GetOAuth2Clients").Params(utils.CtxParam(), jen.ID("userID").Uint64(), utils.QueryFilterParam()).Params(jen.PointerTo().ID("OAuth2ClientList"), jen.Error()),
+				jen.ID("GetOAuth2Clients").Params(utils.CtxParam(), jen.ID("userID").Uint64(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("OAuth2ClientList"), jen.Error()),
 				jen.ID("CreateOAuth2Client").Params(utils.CtxParam(), jen.ID("input").PointerTo().ID("OAuth2ClientCreationInput")).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
 				jen.ID("UpdateOAuth2Client").Params(utils.CtxParam(), jen.ID("updated").PointerTo().ID("OAuth2Client")).Params(jen.Error()),
 				jen.ID("ArchiveOAuth2Client").Params(utils.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.Error()),

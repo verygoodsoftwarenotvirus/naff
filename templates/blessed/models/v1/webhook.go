@@ -17,7 +17,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 			jen.ID("WebhookDataManager").Interface(
 				jen.ID("GetWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().ID("Webhook"), jen.Error()),
 				jen.ID("GetAllWebhooksCount").Params(utils.CtxParam()).Params(jen.Uint64(), jen.Error()),
-				jen.ID("GetWebhooks").Params(utils.CtxParam(), jen.ID("userID").Uint64(), utils.QueryFilterParam()).Params(jen.PointerTo().ID("WebhookList"), jen.Error()),
+				jen.ID("GetWebhooks").Params(utils.CtxParam(), jen.ID("userID").Uint64(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("WebhookList"), jen.Error()),
 				jen.ID("GetAllWebhooks").Params(utils.CtxParam()).Params(jen.PointerTo().ID("WebhookList"), jen.Error()),
 				jen.ID("CreateWebhook").Params(utils.CtxParam(), jen.ID("input").PointerTo().ID("WebhookCreationInput")).Params(jen.PointerTo().ID("Webhook"), jen.Error()),
 				jen.ID("UpdateWebhook").Params(utils.CtxParam(), jen.ID("updated").PointerTo().ID("Webhook")).Params(jen.Error()),

@@ -66,7 +66,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.AssertNotNil(jen.ID("user"), nil),
 			utils.RequireNoError(jen.Err(), nil),
 			jen.Line(),
-			jen.If(jen.ID("user").Op("==").ID("nil").Or().ID("err").DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID("user").Op("==").ID("nil").Or().Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("t").Dot("FailNow").Call(),
 			),
 			jen.ID("cookie").Assign().ID("loginUser").Call(
@@ -188,7 +188,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertNoError(jen.Err(), nil),
 					utils.AssertNotNil(jen.ID("u"), nil),
 					jen.Line(),
-					jen.If(jen.ID("u").Op("==").ID("nil").Or().ID("err").DoesNotEqual().ID("nil")).Block(
+					jen.If(jen.ID("u").Op("==").ID("nil").Or().Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID("t").Dot("Log").Call(jen.Lit("something has gone awry, user returned is nil")),
 						jen.ID("t").Dot("FailNow").Call(),
 					),

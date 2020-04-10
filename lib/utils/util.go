@@ -282,7 +282,10 @@ func OuterTestFunc(subjectName string) *jen.Statement {
 }
 
 // QueryFilterParam does
-func QueryFilterParam() jen.Code {
+func QueryFilterParam(proj *models.Project) jen.Code {
+	if proj != nil {
+		return jen.ID(FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")
+	}
 	return jen.ID(FilterVarName).PointerTo().ID("QueryFilter")
 }
 

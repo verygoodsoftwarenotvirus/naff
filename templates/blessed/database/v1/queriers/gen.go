@@ -198,6 +198,7 @@ func buildQueryTest(
 
 	dbn := dbvendor.Singular()
 	dbi := dbvendor.LowercaseAbbreviation()
+	dbfl := dbi[0]
 
 	expectedQuery, _, err := queryBuilder.ToSql()
 	if err != nil {
@@ -210,7 +211,7 @@ func buildQueryTest(
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.List(jen.ID("p"), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(string(dbfl)), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
 				func() jen.Code {
 					if createUser {
 						return jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call()

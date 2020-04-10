@@ -146,7 +146,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("initializeOAuth2Handler").Call(jen.ID("s").Dot("oauth2Handler"), jen.ID("s")),
 			jen.List(jen.ID("count"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetAllOAuth2ClientCount").Call(utils.CtxVar()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").And().ID("err").DoesNotEqual().Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual("database/sql", "ErrNoRows")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 clients: %w"), jen.Err())),
 			),
 			jen.ID("counter").Dot("IncrementBy").Call(utils.CtxVar(), jen.ID("count")),

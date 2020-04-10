@@ -226,7 +226,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("EncodeToFile").Params(jen.ID("path").String(), jen.ID("marshaler").ID("MarshalFunc")).Params(jen.Error()).Block(
 			jen.List(jen.ID("byteSlice"), jen.Err()).Assign().ID("marshaler").Call(jen.PointerTo().ID("cfg")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().ID("err"),
+				jen.Return().Err(),
 			),
 			jen.Line(),
 			jen.Return().Qual("io/ioutil", "WriteFile").Call(jen.ID("path"), jen.ID("byteSlice"), jen.Op("0644")),

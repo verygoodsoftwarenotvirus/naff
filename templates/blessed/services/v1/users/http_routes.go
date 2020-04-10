@@ -422,7 +422,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user"), jen.ID("user").Dot("ID")),
 				jen.Line(),
 				jen.Comment("hash the new password"),
-				jen.Var().ID("err").Error(),
+				jen.Var().Err().Error(),
 				jen.List(jen.ID("user").Dot("HashedPassword"), jen.Err()).Equals().ID("s").Dot("authenticator").Dot("HashPassword").Call(utils.CtxVar(), jen.ID("input").Dot("NewPassword")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error hashing password")),

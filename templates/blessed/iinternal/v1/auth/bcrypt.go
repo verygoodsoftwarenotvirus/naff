@@ -153,7 +153,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			utils.StartSpan(proj, false, "hashedPasswordIsTooWeak"),
 			jen.List(jen.ID("cost"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "Cost").Call(jen.Index().Byte().Call(jen.ID("hashedPassword"))),
 			jen.Line(),
-			jen.Return().ID("err").DoesNotEqual().ID("nil").Or().ID("uint").Call(jen.ID("cost")).Op("<").ID("b").Dot("hashCost"),
+			jen.Return().Err().DoesNotEqual().ID("nil").Or().ID("uint").Call(jen.ID("cost")).Op("<").ID("b").Dot("hashCost"),
 		),
 		jen.Line(),
 	)

@@ -176,7 +176,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Err().Assign().ID("c").Dot("querier").Dot("ArchiveOAuth2Client").Call(utils.CtxVar(), jen.ID("clientID"), jen.ID("userID")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("logger").Dot("WithError").Call(jen.Err()).Dot("Debug").Call(jen.Lit("error deleting oauth2 client to the querier")),
-				jen.Return().ID("err"),
+				jen.Return().Err(),
 			),
 			jen.ID("logger").Dot("Debug").Call(jen.Lit("removed oauth2 client successfully")),
 			jen.Line(),

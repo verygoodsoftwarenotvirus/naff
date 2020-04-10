@@ -101,7 +101,7 @@ func userDotGo(proj *models.Project) *jen.File {
 				jen.ID("GetUser").Params(utils.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().ID("User"), jen.Error()),
 				jen.ID("GetUserByUsername").Params(utils.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().ID("User"), jen.Error()),
 				jen.ID("GetAllUserCount").Params(utils.CtxParam()).Params(jen.Uint64(), jen.Error()),
-				jen.ID("GetUsers").Params(utils.CtxParam(), utils.QueryFilterParam()).Params(jen.PointerTo().ID("UserList"), jen.Error()),
+				jen.ID("GetUsers").Params(utils.CtxParam(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("UserList"), jen.Error()),
 				jen.ID("CreateUser").Params(utils.CtxParam(), jen.ID("input").ID("UserDatabaseCreationInput")).Params(jen.PointerTo().ID("User"), jen.Error()),
 				jen.ID("UpdateUser").Params(utils.CtxParam(), jen.ID("updated").PointerTo().ID("User")).Params(jen.Error()),
 				jen.ID("ArchiveUser").Params(utils.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()),

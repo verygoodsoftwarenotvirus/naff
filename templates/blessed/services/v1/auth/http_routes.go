@@ -287,7 +287,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Return().List(jen.ID("loginValid"), jen.Nil()),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil").And().ID("err").DoesNotEqual().Qual(proj.InternalAuthV1Package(), "ErrPasswordHashTooWeak")).Block(
+			).Else().If(jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalAuthV1Package(), "ErrPasswordHashTooWeak")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("issue validating login")),
 				jen.Return().List(jen.False(), jen.Qual("fmt", "Errorf").Call(jen.Lit("validating login: %w"), jen.Err())),
 			),
