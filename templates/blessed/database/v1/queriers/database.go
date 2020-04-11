@@ -9,21 +9,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
-	ret := jen.NewFile(vendor.RouteName())
+func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	ret := jen.NewFile(dbvendor.RouteName())
 
 	utils.AddImports(proj, ret)
 
-	uvn := vendor.UnexportedVarName()
-	cn := vendor.SingularCommonName()
-	sn := vendor.Singular()
-	rn := vendor.RouteName()
+	uvn := dbvendor.UnexportedVarName()
+	cn := dbvendor.SingularCommonName()
+	sn := dbvendor.Singular()
+	rn := dbvendor.RouteName()
 	dbrn := rn
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
-
-	isPostgres := dbrn == "postgres"
-	isSqlite := dbrn == "sqlite"
-	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
 
 	var squirrelInitConfig jen.Code
 
@@ -36,7 +32,18 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	ret.Add(
 		jen.Const().Defs(
 			jen.ID("loggerName").Equals().Lit(rn),
-			jen.IDf("%sDriverName", uvn).Equals().Litf("wrapped-%s-driver", vendor.KebabName()),
+			jen.IDf("%sDriverName", uvn).Equals().Litf("wrapped-%s-driver", dbvendor.KebabName()),
+			func() jen.Code {
+				if isPostgres(dbvendor) {
+					g := &jen.Group{}
+					g.Add(
+						jen.Line(),
+						jen.ID("postgresRowExistsErrorCode").Equals().Lit("23505"),
+					)
+					return g
+				}
+				return jen.Null()
+			}(),
 			jen.Line(),
 			jen.ID("existencePrefix").Equals().Lit("SELECT EXISTS ("),
 			jen.ID("existenceSuffix").Equals().Lit(")"),
@@ -45,7 +52,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 			jen.ID("countQuery").Equals().Lit("COUNT(%s.id)"),
 			jen.Line(),
 			jen.Commentf("currentUnixTimeQuery is the query %s uses to determine the current unix time", cn),
-			jen.ID("currentUnixTimeQuery").Equals().Lit(getTimeQuery(vendor)),
+			jen.ID("currentUnixTimeQuery").Equals().Lit(getTimeQuery(dbvendor)),
 		),
 		jen.Line(),
 	)
@@ -53,11 +60,11 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	////////////
 
 	var driverInit jen.Code
-	if isPostgres {
+	if isPostgres(dbvendor) {
 		driverInit = jen.AddressOf().Qual("github.com/lib/pq", "Driver").Values()
-	} else if isSqlite {
+	} else if isSqlite(dbvendor) {
 		driverInit = jen.AddressOf().Qual("github.com/mattn/go-sqlite3", "SQLiteDriver").Values()
-	} else if isMariaDB {
+	} else if isMariaDB(dbvendor) {
 		driverInit = jen.AddressOf().Qual("github.com/go-sql-driver/mysql", "MySQLDriver").Values()
 	}
 
@@ -107,7 +114,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	var (
 		dbTrail string
 	)
-	if !isMariaDB {
+	if !isMariaDB(dbvendor) {
 		dbTrail = "DB"
 	} else {
 		dbTrail = "Connection"
@@ -125,7 +132,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 
 	////////////
 	dbTrail = ""
-	if !isMariaDB {
+	if !isMariaDB(dbvendor) {
 		dbTrail = " db"
 	}
 
@@ -144,9 +151,9 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 	)
 
 	buildIsReadyBody := func() []jen.Code {
-		if isSqlite {
+		if isSqlite(dbvendor) {
 			return []jen.Code{jen.Return(jen.True())}
-		} else if isPostgres {
+		} else if isPostgres(dbvendor) {
 			return []jen.Code{
 				jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
 				jen.Line(),
@@ -172,7 +179,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 				),
 				jen.Return().False(),
 			}
-		} else if isMariaDB {
+		} else if isMariaDB(dbvendor) {
 			return []jen.Code{
 				jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
 				jen.Line(),
@@ -230,7 +237,7 @@ func databaseDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.Fil
 		jen.Line(),
 	)
 
-	if isSqlite || isMariaDB {
+	if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		ret.Add(
 			jen.Comment("logCreationTimeRetrievalError logs errors that may occur during creation time retrieval."),
 			jen.Line(),

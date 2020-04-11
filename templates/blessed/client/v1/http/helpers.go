@@ -13,8 +13,9 @@ func helpersDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(jen.Line())
 
-	ret.Add(utils.Comments("argIsNotPointer checks an argument and returns whether or not it is a pointer")...)
 	ret.Add(
+		jen.Comment("argIsNotPointer checks an argument and returns whether or not it is a pointer"),
+		jen.Line(),
 		jen.Func().ID("argIsNotPointer").Params(jen.ID("i").Interface()).Params(
 			jen.ID("notAPointer").Bool(),
 			jen.Err().Error(),
@@ -37,8 +38,9 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(utils.Comments("argIsNotNil checks an argument and returns whether or not it is nil")...)
 	ret.Add(
+		jen.Comment("argIsNotNil checks an argument and returns whether or not it is nil"),
+		jen.Line(),
 		jen.Func().ID("argIsNotNil").Params(jen.ID("i").Interface()).Params(
 			jen.ID("isNil").Bool(),
 			jen.Err().Error(),
@@ -57,12 +59,13 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(utils.Comments(
-		"argIsNotPointerOrNil does what it says on the tin. This function",
-		"is primarily useful for detecting if a destination value is valid",
-		"before decoding an HTTP response, for instance",
-	)...)
 	ret.Add(
+		jen.Comment("argIsNotPointerOrNil does what it says on the tin. This function"),
+		jen.Line(),
+		jen.Comment("is primarily useful for detecting if a destination value is valid"),
+		jen.Line(),
+		jen.Comment("before decoding an HTTP response, for instance"),
+		jen.Line(),
 		jen.Func().ID("argIsNotPointerOrNil").Params(jen.ID("i").Interface()).Params(jen.Error()).Block(
 			jen.If(
 				jen.List(jen.ID("nn"), jen.Err()).Assign().ID("argIsNotNil").Call(jen.ID("i")),
@@ -79,14 +82,17 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(utils.Comments(
-		"unmarshalBody takes an HTTP response and JSON decodes its",
-		"body into a destination value. `dest` must be a non-nil",
-		"pointer to an object. Ideally, response is also not nil.",
-		"The error returned here should only ever be received in",
-		"testing, and should never be encountered by an end-user.",
-	)...)
 	ret.Add(
+		jen.Comment("unmarshalBody takes an HTTP response and JSON decodes its"),
+		jen.Line(),
+		jen.Comment("body into a destination value. `dest` must be a non-nil"),
+		jen.Line(),
+		jen.Comment("pointer to an object. Ideally, response is also not nil."),
+		jen.Line(),
+		jen.Comment("The error returned here should only ever be received in"),
+		jen.Line(),
+		jen.Comment("testing, and should never be encountered by an end-user."),
+		jen.Line(),
 		jen.Func().ID("unmarshalBody").Params(
 			utils.CtxParam(),
 			jen.ID("res").PointerTo().Qual("net/http", "Response"),
@@ -142,11 +148,11 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(utils.Comments(
-		"createBodyFromStruct takes any value in and returns an io.Reader",
-		"for placement within http.NewRequest's last argument.",
-	)...)
 	ret.Add(
+		jen.Comment("createBodyFromStruct takes any value in and returns an io.Reader"),
+		jen.Line(),
+		jen.Comment("for placement within http.NewRequest's last argument."),
+		jen.Line(),
 		jen.Func().ID("createBodyFromStruct").Params(
 			jen.ID("in").Interface(),
 		).Params(

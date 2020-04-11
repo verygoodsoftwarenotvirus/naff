@@ -23,19 +23,6 @@ const (
 	T = "T"
 )
 
-// Comments turns a bunch of lines of strings into jen comments
-func Comments(input ...string) []jen.Code {
-	out := []jen.Code{}
-	for i, c := range input {
-		if i == len(input)-1 {
-			out = append(out, jen.Comment(c))
-		} else {
-			out = append(out, jen.Comment(c), jen.Line())
-		}
-	}
-	return out
-}
-
 // WriteHeader calls res.WriteHeader for a given status
 func WriteHeader(status string) jen.Code {
 	return WriteXHeader("res", status)

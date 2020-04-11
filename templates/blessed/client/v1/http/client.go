@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
@@ -39,8 +38,9 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	// types
-	ret.Add(utils.Comments(fmt.Sprintf("%s is a client for interacting with v1 of our REST API", v1))...)
 	ret.Add(
+		jen.Commentf("%s is a client for interacting with v1 of our REST API", v1),
+		jen.Line(),
 		jen.Type().ID(v1).Struct(
 			jen.ID("plainClient").PointerTo().Qual("net/http", "Client"),
 			jen.ID("authedClient").PointerTo().Qual("net/http", "Client"),
@@ -312,15 +312,6 @@ func buildNewSimpleClient() []jen.Code {
 	return lines
 }
 
-//
-//func (c *V1Client) closeRequestBody(res *http.Response) {
-//	if res != nil {
-//		if err := res.Body.Close(); err != nil {
-//			c.logger.Error(err, "closing request body")
-//		}
-//	}
-//}
-//
 func buildCloseResponseBody() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("closeResponseBody takes a given HTTP response and closes its body, logging if an error occurs"),

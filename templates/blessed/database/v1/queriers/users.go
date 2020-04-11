@@ -467,7 +467,7 @@ func buildCreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 			jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("ID"), jen.AddressOf().ID("x").Dot("CreatedOn")).Op(";").Err().DoesNotEqual().ID("nil")).Block(
 				jen.Switch(jen.ID("e").Assign().Err().Assert(jen.Type())).Block(
 					jen.Case(jen.PointerTo().Qual("github.com/lib/pq", "Error")).Block(
-						jen.If(jen.ID("e").Dot("Code").Op("==").Qual("github.com/lib/pq", "ErrorCode").Call(jen.Lit("23505"))).Block(
+						jen.If(jen.ID("e").Dot("Code").Op("==").Qual("github.com/lib/pq", "ErrorCode").Call(jen.ID("postgresRowExistsErrorCode"))).Block(
 							jen.Return().List(jen.Nil(), jen.Qual(proj.DatabaseV1Package("client"), "ErrUserExists")),
 						),
 					),
