@@ -497,11 +497,6 @@ func buildBuildWebhookCreationQuery(proj *models.Project, dbvendor wordsmith.Sup
 			jen.ID("x").Dot("BelongsToUser"),
 		}
 
-		if isMariaDB(dbvendor) {
-			cols = append(cols, jen.Lit("created_on"))
-			vals = append(vals, jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery")))
-		}
-
 		q := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
 			Dotln("Insert").Call(jen.ID("webhooksTableName")).
 			Dotln("Columns").Callln(cols...).
@@ -566,12 +561,13 @@ func buildCreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 					jen.Return(jen.List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing webhook creation query: %w"), jen.Err()))),
 				),
 				jen.Line(),
-				jen.If(jen.List(jen.ID("id"), jen.ID("idErr")).Assign().ID("res").Dot("LastInsertId").Call().Op(";").ID("idErr").IsEqualTo().ID("nil")).Block(
-					jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
-					jen.Line(),
-					jen.List(jen.ID("query"), jen.ID("args")).Equals().ID(dbfl).Dot("buildWebhookCreationTimeQuery").Call(jen.ID("x").Dot("ID")),
-					jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("CreatedOn"))),
-				),
+				jen.Comment("fetch the last inserted ID"),
+				jen.List(jen.ID("id"), jen.ID("err")).Assign().ID("res").Dot("LastInsertId").Call(),
+				jen.ID(dbfl).Dot("logIDRetrievalError").Call(jen.Err()),
+				jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
+				jen.Line(),
+				jen.Comment("this won't be completely accurate, but it will suffice"),
+				jen.ID("x").Dot("CreatedOn").Equals().ID(dbfl).Dot("timeTeller").Dot("Now").Call(),
 				jen.Line(),
 			)
 		}

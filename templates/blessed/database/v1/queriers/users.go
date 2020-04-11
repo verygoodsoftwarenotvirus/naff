@@ -485,12 +485,12 @@ func buildCreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 			),
 			jen.Line(),
 			jen.Comment("fetch the last inserted ID"),
-			jen.If(jen.List(jen.ID("id"), jen.ID("idErr")).Assign().ID("res").Dot("LastInsertId").Call().Op(";").ID("idErr").IsEqualTo().ID("nil")).Block(
-				jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
-				jen.Line(),
-				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUserCreationTimeQuery").Call(jen.ID("x").Dot("ID")),
-				jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("CreatedOn"))),
-			),
+			jen.List(jen.ID("id"), jen.ID("err")).Assign().ID("res").Dot("LastInsertId").Call(),
+			jen.ID(dbfl).Dot("logIDRetrievalError").Call(jen.Err()),
+			jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
+			jen.Line(),
+			jen.Comment("this won't be completely accurate, but it will suffice"),
+			jen.ID("x").Dot("CreatedOn").Equals().ID(dbfl).Dot("timeTeller").Dot("Now").Call(),
 		}
 	}
 

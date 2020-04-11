@@ -548,6 +548,32 @@ func (s *Statement) Params(params ...Code) *Statement {
 	return s
 }
 
+// Receiver renders a comma separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func Receiver(receiver Code) *Statement {
+	return newStatement().Receiver(receiver)
+}
+
+// Receiver renders a comma separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func (g *Group) Receiver(receiver Code) *Statement {
+	s := Receiver(receiver)
+	g.items = append(g.items, s)
+	return s
+}
+
+// Receiver renders a comma separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func (s *Statement) Receiver(receiver Code) *Statement {
+	g := &Group{
+		close:     ")",
+		items:     []Code{receiver},
+		multi:     false,
+		name:      "params",
+		open:      "(",
+		separator: ",",
+	}
+	*s = append(*s, g)
+	return s
+}
+
 // Paramsln renders a comma-and-newline separated list enclosed by parenthesis. Use for function parameters and method receivers.
 func Paramsln(params ...Code) *Statement {
 	return newStatement().Paramsln(params...)

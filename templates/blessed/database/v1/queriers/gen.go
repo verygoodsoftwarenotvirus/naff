@@ -163,6 +163,11 @@ func renderDatabasePackage(proj *models.Project, vendor string) error {
 		fmt.Sprintf("database/v1/queriers/%s/oauth2_clients_test.go", vendor): oauth2ClientsTestDotGo(proj, vendorWord),
 	}
 
+	if isMariaDB(vendorWord) || isSqlite(vendorWord) {
+		files[fmt.Sprintf("database/v1/queriers/%s/time_teller.go", vendor)] = timeTellerDotGo(pn, dbDesc)
+		files[fmt.Sprintf("database/v1/queriers/%s/time_teller_test.go", vendor)] = timeTellerTestDotGo(pn, dbDesc)
+	}
+
 	for _, typ := range proj.DataTypes {
 		files[fmt.Sprintf("database/v1/queriers/%s/%s.go", vendor, typ.Name.PluralRouteName())] = iterablesDotGo(proj, vendorWord, typ)
 		files[fmt.Sprintf("database/v1/queriers/%s/%s_test.go", vendor, typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, vendorWord, typ)

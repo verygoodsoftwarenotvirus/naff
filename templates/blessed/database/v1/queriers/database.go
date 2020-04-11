@@ -21,13 +21,11 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	dbrn := rn
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
-	var squirrelInitConfig jen.Code
-
+	squirrelPlaceholder := "Question"
 	if dbrn == "postgres" {
-		squirrelInitConfig = jen.ID("sqlBuilder").MapAssign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", "Dollar"))
-	} else if dbrn == "sqlite" || dbrn == "mariadb" {
-		squirrelInitConfig = jen.ID("sqlBuilder").MapAssign().Qual("github.com/Masterminds/squirrel", "StatementBuilder")
+		squirrelPlaceholder = "Dollar"
 	}
+	squirrelInitConfig := jen.ID("sqlBuilder").MapAssign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", squirrelPlaceholder))
 
 	ret.Add(
 		jen.Const().Defs(
@@ -45,8 +43,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				return jen.Null()
 			}(),
 			jen.Line(),
-			jen.ID("existencePrefix").Equals().Lit("SELECT EXISTS ("),
-			jen.ID("existenceSuffix").Equals().Lit(")"),
+			jen.List(jen.ID("existencePrefix"), jen.ID("existenceSuffix")).Equals().List(jen.Lit("SELECT EXISTS ("), jen.Lit(")")),
 			jen.Line(),
 			jen.Comment("countQuery is a generic counter query used in a few query builders"),
 			jen.ID("countQuery").Equals().Lit("COUNT(%s.id)"),
@@ -93,7 +90,14 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Commentf("%s is our main %s interaction db", sn, sn),
 			jen.ID(sn).Struct(
 				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("sqlBuilder").Qual("github.com/Masterminds/squirrel", "StatementBuilderType"),
+				jen.ID("db").PointerTo().Qual("database/sql", "DB"),
+				func() jen.Code {
+					if isMariaDB(dbvendor) || isSqlite(dbvendor) {
+						return jen.ID("timeTeller").ID("timeTeller")
+					}
+					return jen.Null()
+				}(),
+				jen.ID("sqlBuilder").Qual("github.com/Masterminds/squirrel", "StatementBuilderType"),
 				jen.ID("migrateOnce").Qual("sync", "Once"), jen.ID("debug").Bool(),
 			),
 			jen.Line(),
@@ -143,6 +147,12 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Return().AddressOf().IDf(sn).Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("debug").MapAssign().ID("debug"),
+				func() jen.Code {
+					if isMariaDB(dbvendor) || isSqlite(dbvendor) {
+						return jen.ID("timeTeller").MapAssign().AddressOf().ID("stdLibTimeTeller").Values()
+					}
+					return jen.Null()
+				}(),
 				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("loggerName")),
 				squirrelInitConfig,
 			),
@@ -212,7 +222,14 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	ret.Add(
 		jen.Comment("IsReady reports whether or not the db is ready"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("IsReady").Params(utils.CtxParam()).Params(jen.ID("ready").Bool()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("IsReady").Params(
+			func() jen.Code {
+				if !isSqlite(dbvendor) {
+					return utils.CtxParam()
+				}
+				return jen.Underscore().Qual("context", "Context")
+			}(),
+		).Params(jen.ID("ready").Bool()).Block(
 			buildIsReadyBody()...,
 		),
 		jen.Line(),
@@ -237,9 +254,9 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		jen.Line(),
 	)
 
-	if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+	if isMariaDB(dbvendor) || isSqlite(dbvendor) {
 		ret.Add(
-			jen.Comment("logCreationTimeRetrievalError logs errors that may occur during creation time retrieval."),
+			jen.Comment("logIDRetrievalError logs errors that may occur during created db row ID retrieval."),
 			jen.Line(),
 			jen.Comment("Such errors should be few and far between, as the generally only occur with"),
 			jen.Line(),
@@ -249,9 +266,9 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.Comment("with the utmost priority."),
 			jen.Line(),
-			jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logCreationTimeRetrievalError").Params(jen.Err().Error()).Block(
+			jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logIDRetrievalError").Params(jen.Err().Error()).Block(
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.ID(dbfl).Dot("logger").Dot("WithName").Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot("Error").Call(jen.Err(), jen.Lit("retrieving creation time")),
+					jen.ID(dbfl).Dot("logger").Dot("WithName").Call(jen.Lit("ROW_ID_ERROR")).Dot("Error").Call(jen.Err(), jen.Lit("fetching row ID")),
 				),
 			),
 			jen.Line(),

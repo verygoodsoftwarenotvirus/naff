@@ -734,9 +734,9 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 
 					if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 						out = append(out,
-							jen.ID("expectedTimeQuery").Assign().Litf("SELECT created_on FROM webhooks WHERE id = %s", getIncIndex(dbvendor, 0)),
-							jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
-								Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("CreatedOn"))),
+							jen.ID("mtt").Assign().AddressOf().ID("mockTimeTeller").Values(),
+							jen.ID("mtt").Dot("On").Call(jen.Lit("Now")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("CreatedOn")),
+							jen.ID(dbfl).Dot("timeTeller").Equals().ID("mtt"),
 							jen.Line(),
 						)
 					}

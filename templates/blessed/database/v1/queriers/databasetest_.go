@@ -9,11 +9,11 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
-	ret := jen.NewFile(vendor.SingularPackageName())
+func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	ret := jen.NewFile(dbvendor.SingularPackageName())
 
 	utils.AddImports(proj, ret)
-	sn := vendor.Singular()
+	sn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	ret.Add(
@@ -25,6 +25,11 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 		),
 		jen.Line(),
 	)
+
+	regexPattern := `\?+`
+	if isPostgres(dbvendor) {
+		regexPattern = `\$\d+`
+	}
 
 	ret.Add(
 		jen.Var().Defs(
@@ -40,7 +45,7 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 				jen.Lit(","), jen.RawString(`\,`),
 				jen.Lit("-"), jen.RawString(`\-`),
 			),
-			jen.ID("queryArgRegexp").Equals().Qual("regexp", "MustCompile").Call(jen.RawString(`\$\d+`)),
+			jen.ID("queryArgRegexp").Equals().Qual("regexp", "MustCompile").Call(jen.RawString(regexPattern)),
 		),
 		jen.Line(),
 	)
@@ -108,5 +113,21 @@ func databaseTestDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen
 		),
 		jen.Line(),
 	)
+
+	if isMariaDB(dbvendor) || isSqlite(dbvendor) {
+		ret.Add(
+			jen.Func().IDf("Test%s_logIDRetrievalError", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+				jen.ID("T").Dot("Parallel").Call(),
+				jen.Line(),
+				utils.BuildSubTestWithoutContext(
+					"obligatory",
+					jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+					jen.ID(dbfl).Dot("logIDRetrievalError").Call(jen.Qual("errors", "New").Call(jen.EmptyString())),
+				),
+			),
+			jen.Line(),
+		)
+	}
+
 	return ret
 }

@@ -794,23 +794,63 @@ func buildTestDB_CreateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 			whateverValue,
 		)
 
-	if isPostgres(dbvendor) {
-		qb = qb.Suffix("RETURNING id, created_on")
-	}
-
-	expectedQuery, _, _ := qb.ToSql()
-
 	var (
 		happyPathExpectMethodName string
 		happyPathReturnMethodName string
+		exampleRowsDecl           jen.Code
 	)
 	if isPostgres(dbvendor) {
 		happyPathExpectMethodName = "ExpectQuery"
 		happyPathReturnMethodName = "WillReturnRows"
+		qb = qb.Suffix("RETURNING id, created_on")
+		exampleRowsDecl = jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").
+			Call(jen.Index().String().Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").
+			Call(
+				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("CreatedOn"),
+			)
 	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		happyPathExpectMethodName = "ExpectExec"
 		happyPathReturnMethodName = "WillReturnResult"
+		exampleRowsDecl = jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").
+			Call(jen.Int64().Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID")), jen.One())
 	}
+
+	happyPathLines := []jen.Code{
+		utils.BuildFakeVar(proj, "OAuth2Client"),
+		utils.BuildFakeVarWithCustomName(proj, "expectedInput", "BuildFakeOAuth2ClientCreationInputFromClient", jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
+		exampleRowsDecl,
+		jen.Line(),
+		jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("mockDB").Dot(happyPathExpectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Name"),
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientSecret"),
+			jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Scopes"), jen.ID("scopesSeparator")),
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("RedirectURI"),
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+		).Dot(happyPathReturnMethodName).Call(jen.ID("exampleRows")),
+		jen.Line(),
+	}
+
+	if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+		happyPathLines = append(happyPathLines,
+			jen.ID("mtt").Assign().AddressOf().ID("mockTimeTeller").Values(),
+			jen.ID("mtt").Dot("On").Call(jen.Lit("Now")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("CreatedOn")),
+			jen.ID(dbfl).Dot("timeTeller").Equals().ID("mtt"),
+			jen.Line(),
+		)
+	}
+
+	happyPathLines = append(happyPathLines,
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("expectedInput")),
+		utils.AssertNoError(jen.Err(), nil),
+		utils.AssertEqual(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.ID("actual"), nil),
+		jen.Line(),
+		utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+	)
+
+	expectedQuery, _, _ := qb.ToSql()
 
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_CreateOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
@@ -818,33 +858,7 @@ func buildTestDB_CreateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				utils.BuildFakeVar(proj, "OAuth2Client"),
-				utils.BuildFakeVarWithCustomName(proj, "expectedInput", "BuildFakeOAuth2ClientCreationInputFromClient", jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
-				jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").
-					Call(jen.Index().String().Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").
-					Call(
-						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
-						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("CreatedOn"),
-					),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot(happyPathExpectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Name"),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientSecret"),
-					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Scopes"), jen.ID("scopesSeparator")),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("RedirectURI"),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
-				).Dot(happyPathReturnMethodName).Call(jen.ID("exampleRows")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("expectedInput")),
-				utils.AssertNoError(jen.Err(), nil),
-				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.ID("actual"), nil),
-				jen.Line(),
-				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			),
+			utils.BuildSubTest("happy path", happyPathLines...),
 			jen.Line(),
 			utils.BuildSubTest(
 				"with error writing to database",
@@ -940,7 +954,7 @@ func buildTestDB_UpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 		errFuncExpectMethod = "ExpectQuery"
 	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		mockDBExpect = jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-			Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.One()), jen.One())
+			Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.One(), jen.One()))
 		errFuncExpectMethod = "ExpectExec"
 	}
 

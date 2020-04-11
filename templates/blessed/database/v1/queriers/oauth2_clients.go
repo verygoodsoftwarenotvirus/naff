@@ -488,11 +488,6 @@ func oauth2ClientsDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *je
 			jen.ID("input").Dot("BelongsToUser"),
 		}
 
-		if isMariaDB {
-			cols = append(cols, jen.Lit("created_on"))
-			vals = append(vals, jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery")))
-		}
-
 		q := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
 			Dotln("Insert").Call(jen.ID("oauth2ClientsTableName")).
 			Dotln("Columns").Callln(cols...).
@@ -519,34 +514,6 @@ func oauth2ClientsDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *je
 		),
 		jen.Line(),
 	)
-
-	////////////
-
-	if isSqlite || isMariaDB {
-		ret.Add(
-			jen.Comment("buildOAuth2ClientCreationTimeQuery takes an oauth2 client ID and returns a creation query"),
-			jen.Line(),
-			jen.Comment("for that oauth2 client and the relevant arguments."),
-			jen.Line(),
-			jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildOAuth2ClientCreationTimeQuery").Params(jen.ID("clientID").Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
-				jen.Var().Err().Error(),
-				jen.Line(),
-				jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
-					Dotln("Select").Call(jen.Lit("created_on")).
-					Dotln("From").Call(jen.ID("oauth2ClientsTableName")).
-					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-					jen.Lit("id").MapAssign().ID("clientID"))).
-					Dotln("ToSql").Call(),
-				jen.Line(),
-				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
-				jen.Line(),
-				jen.Return().List(jen.ID("query"), jen.ID("args")),
-			),
-			jen.Line(),
-		)
-	}
-
-	////////////
 
 	buildCreateOauth2ClientTestBody := func() []jen.Code {
 		out := []jen.Code{
@@ -576,12 +543,12 @@ func oauth2ClientsDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *je
 				),
 				jen.Line(),
 				jen.Comment("fetch the last inserted ID"),
-				jen.If(jen.List(jen.ID("id"), jen.ID("idErr")).Assign().ID("res").Dot("LastInsertId").Call()).Op(";").ID("idErr").IsEqualTo().ID("nil").Block(
-					jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
-					jen.Line(),
-					jen.List(jen.ID("query"), jen.ID("args")).Equals().ID(dbfl).Dot("buildOAuth2ClientCreationTimeQuery").Call(jen.ID("x").Dot("ID")),
-					jen.ID(dbfl).Dot("logCreationTimeRetrievalError").Call(jen.ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("CreatedOn"))),
-				),
+				jen.List(jen.ID("id"), jen.ID("err")).Assign().ID("res").Dot("LastInsertId").Call(),
+				jen.ID(dbfl).Dot("logIDRetrievalError").Call(jen.Err()),
+				jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
+				jen.Line(),
+				jen.Comment("this won't be completely accurate, but it will suffice"),
+				jen.ID("x").Dot("CreatedOn").Equals().ID(dbfl).Dot("timeTeller").Dot("Now").Call(),
 			)
 		}
 		out = append(out, jen.Line(), jen.Return().List(jen.ID("x"), jen.Nil()))

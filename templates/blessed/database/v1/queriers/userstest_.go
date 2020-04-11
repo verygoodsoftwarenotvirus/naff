@@ -618,10 +618,8 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 					} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 						expectMethodName = "ExpectExec"
 						returnMethodName = "WillReturnResult"
-						out = append(
-							out,
-							jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.Add(utils.FakeUint64Func())),
-							jen.Line(),
+						out = append(out,
+							jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.One()),
 						)
 					}
 					out = append(out,
@@ -636,9 +634,10 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 
 					if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 						out = append(out,
-							jen.ID("expectedTimeQuery").Assign().Litf("SELECT created_on FROM users WHERE id = %s", getIncIndex(dbvendor, 0)),
-							jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
-								Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("CreatedOn"))),
+							jen.ID("mtt").Assign().AddressOf().ID("mockTimeTeller").Values(),
+							jen.ID("mtt").Dot("On").Call(jen.Lit("Now")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("CreatedOn")),
+							jen.ID(dbfl).Dot("timeTeller").Equals().ID("mtt"),
+							jen.Line(),
 						)
 					}
 
@@ -761,7 +760,7 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		if isPostgres(dbvendor) {
 			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.Add(utils.FakeUint64Func()))
+			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.One())
 		}
 		return jen.Null()
 	}

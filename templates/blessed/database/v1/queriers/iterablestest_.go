@@ -142,69 +142,6 @@ func getTimeQuery(dbvendor wordsmith.SuperPalabra) string {
 	}
 }
 
-func buildCreationEqualityExpectations(varName string, typ models.DataType) []jen.Code {
-	var out []jen.Code
-
-	for i, field := range typ.Fields {
-		if field.Pointer {
-			out = append(out,
-				utils.AssertEqual(jen.ID(varName).Dot(field.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.PointerTo().ID(field.Type)), nil),
-			)
-		} else {
-			out = append(out,
-				utils.AssertEqual(jen.ID(varName).Dot(field.Name.Singular()), jen.ID("args").Index(jen.Lit(i)).Assert(jen.ID(field.Type)), nil),
-			)
-		}
-	}
-
-	if typ.BelongsToUser {
-		out = append(out,
-			utils.AssertEqual(jen.ID("expected").Dot("BelongsToUser"), jen.ID("args").Index(jen.Lit(len(out))).Assert(jen.Uint64()), nil),
-		)
-	}
-	if typ.BelongsToStruct != nil {
-		out = append(out,
-			utils.AssertEqual(jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()), jen.ID("args").Index(jen.Lit(len(out))).Assert(jen.Uint64()), nil),
-		)
-	}
-
-	return out
-}
-
-func buildFieldMaps(varName string, typ models.DataType) []jen.Code {
-	var out []jen.Code
-
-	for _, field := range typ.Fields {
-		xn := field.Name.Singular()
-		out = append(out, jen.ID(xn).MapAssign().ID(varName).Dot(xn))
-	}
-
-	if typ.BelongsToUser {
-		out = append(out, jen.ID("BelongsToUser").MapAssign().ID(varName).Dot("BelongsToUser"))
-	}
-	if typ.BelongsToStruct != nil {
-		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().ID(varName).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-	}
-
-	return out
-}
-
-func buildExpectQueryArgs(varName string, typ models.DataType) []jen.Code {
-	var out []jen.Code
-	for _, field := range typ.Fields {
-		out = append(out, jen.ID(varName).Dot(field.Name.Singular()))
-	}
-
-	if typ.BelongsToUser {
-		out = append(out, jen.ID(varName).Dot("BelongsToUser"), jen.ID(varName).Dot("ID"))
-	}
-	if typ.BelongsToStruct != nil {
-		out = append(out, jen.ID(varName).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()), jen.ID(varName).Dot("ID"))
-	}
-
-	return out
-}
-
 func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	ret := jen.NewFile(dbvendor.SingularPackageName())
 
@@ -984,18 +921,13 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 					Dotln("WithArgs").Callln(nef...).Dot("WillReturnResult").Call(
 					jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(
 						jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")),
-						jen.Lit(123),
+						jen.Lit(1),
 					),
 				),
 				jen.Line(),
-				jen.ID("expectedTimeQuery").Assign().Litf("SELECT created_on FROM %s WHERE id = %s", tableName, getIncIndex(dbvendor, 0)),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
-					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(
-					jen.Index().String().Values(jen.Lit("created_on")),
-				).Dot("AddRow").Call(
-					jen.ID(utils.BuildFakeVarName(sn)).Dot("CreatedOn")),
-				),
+				jen.ID("mtt").Assign().AddressOf().ID("mockTimeTeller").Values(),
+				jen.ID("mtt").Dot("On").Call(jen.Lit("Now")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("CreatedOn")),
+				jen.ID(dbfl).Dot("timeTeller").Equals().ID("mtt"),
 				jen.Line(),
 			)
 		}
@@ -1006,6 +938,12 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			utils.AssertNoError(jen.Err(), nil),
 			utils.AssertEqual(jen.ID(utils.BuildFakeVarName(sn)), jen.ID("actual"), nil),
 			jen.Line(),
+			func() jen.Code {
+				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+					return utils.AssertExpectationsFor("mtt")
+				}
+				return jen.Null()
+			}(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)
 
@@ -1052,18 +990,9 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			out = append(out,
 				jen.Line(),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID(expectedQueryVarName))).
-					Dotln("WithArgs").Callln(nef...).Dot("WillReturnResult").Call(
-					jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(
-						jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")),
-						jen.Lit(123),
-					),
+					Dotln("WithArgs").Callln(nef...).Dot("WillReturnError").Call(
+					jen.Qual("errors", "New").Call(jen.Lit("blah")),
 				),
-				jen.Line(),
-				jen.ID("expectedTimeQuery").Assign().Litf("SELECT created_on FROM %s WHERE id = %s", tableName, getIncIndex(dbvendor, 0)),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
-					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")).
-					Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
 			)
 		}
 
@@ -1175,7 +1104,7 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			returnFuncName = "WillReturnResult"
 			exRows = jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(
 				jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")),
-				jen.Lit(123),
+				jen.Lit(1),
 			)
 		}
 
@@ -1191,6 +1120,7 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 
 		lines = append(lines,
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+			jen.Line(),
 			utils.BuildFakeVar(proj, sn),
 			jen.Line(),
 			exRows,
