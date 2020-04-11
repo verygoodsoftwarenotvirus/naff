@@ -54,14 +54,14 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Comment("First we check to see if there is an OAuth2 token for a valid client attached to the request."),
 			jen.Comment("We do this first because it is presumed to be the primary means by which requests are made to the httpServer."),
 			jen.List(jen.ID("oauth2Client"), jen.Err()).Assign().ID("s").Dot("oauth2ClientsService").Dot("ExtractOAuth2ClientFromRequest").Call(utils.CtxVar(), jen.ID("req")),
-			jen.If(jen.Err().Op("==").ID("nil").And().ID("oauth2Client").DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().IsEqualTo().ID("nil").And().ID("oauth2Client").DoesNotEqual().ID("nil")).Block(
 				jen.Return().True(),
 			),
 			jen.Line(),
 			jen.Comment("In the event there's not a valid OAuth2 token attached to the request, or there is some other OAuth2 issue,"),
 			jen.Comment("we next check to see if a valid cookie is attached to the request"),
 			jen.List(jen.ID("cookieAuth"), jen.ID("cookieErr")).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(utils.CtxVar(), jen.ID("req")),
-			jen.If(jen.ID("cookieErr").Op("==").ID("nil").And().ID("cookieAuth").DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID("cookieErr").IsEqualTo().ID("nil").And().ID("cookieAuth").DoesNotEqual().ID("nil")).Block(
 				jen.Return().True(),
 			),
 			jen.Line(),
@@ -106,7 +106,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
 				jen.List(jen.ID("loginData"), jen.ID("errRes")).Assign().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID("req")),
-				jen.If(jen.ID("errRes").DoesNotEqual().ID("nil").Or().ID("loginData").Op("==").Nil()).Block(
+				jen.If(jen.ID("errRes").DoesNotEqual().ID("nil").Or().ID("loginData").IsEqualTo().Nil()).Block(
 					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("errRes"), jen.Lit("error encountered fetching login data from request")),
 					utils.WriteXHeader("res", "StatusUnauthorized"),
 					jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("errRes")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -164,7 +164,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.Underscore(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("LogoutHandler")),
 				jen.Defer().ID("span").Dot("End").Call(),
 				jen.Line(),
-				jen.If(jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("req").Dot("Cookie").Call(jen.ID("CookieName")), jen.Err().Op("==").ID("nil").And().ID("cookie").DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("req").Dot("Cookie").Call(jen.ID("CookieName")), jen.Err().IsEqualTo().ID("nil").And().ID("cookie").DoesNotEqual().ID("nil")).Block(
 					jen.ID("c").Assign().ID("s").Dot("buildCookie").Call(jen.Lit("deleted")),
 					jen.ID("c").Dot("Expires").Equals().Qual("time", "Time").Values(),
 					jen.ID("c").Dot("MaxAge").Equals().Lit(-1),
@@ -228,7 +228,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Comment("requested before allowing login here"),
 			jen.Line(),
 			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("userDB").Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID("username")),
-			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("no matching user")),
 				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(jen.ID("Code").MapAssign().Qual("net/http", "StatusBadRequest"))),
 			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -271,7 +271,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("if the login is otherwise valid, but the password is too weak, try to rehash it."),
-			jen.If(jen.Err().Op("==").Qual(proj.InternalAuthV1Package(), "ErrPasswordHashTooWeak").And().ID("loginValid")).Block(
+			jen.If(jen.Err().IsEqualTo().Qual(proj.InternalAuthV1Package(), "ErrPasswordHashTooWeak").And().ID("loginValid")).Block(
 				jen.ID("logger").Dot("Debug").Call(jen.Lit("hashed password was deemed to weak, updating its hash")),
 				jen.Line(),
 				jen.Comment("re-hash the password"),

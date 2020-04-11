@@ -105,6 +105,26 @@ func GetUserPalabra() wordsmith.SuperPalabra {
 	}
 }
 
+// GetWebhookPalabra gets a given DB's superpalabra
+func GetWebhookPalabra() wordsmith.SuperPalabra {
+	return &wordsmith.ManualWord{
+		SingularStr:                           "Webhook",
+		PluralStr:                             "Webhooks",
+		RouteNameStr:                          "webhook",
+		KebabNameStr:                          "webhook",
+		PluralRouteNameStr:                    "webhooks",
+		UnexportedVarNameStr:                  "webhook",
+		PluralUnexportedVarNameStr:            "webhooks",
+		PackageNameStr:                        "webhooks",
+		SingularPackageNameStr:                "webhook",
+		SingularCommonNameStr:                 "webhook",
+		ProperSingularCommonNameWithPrefixStr: "a Webhook",
+		PluralCommonNameStr:                   "webhooks",
+		SingularCommonNameWithPrefixStr:       "a webhook",
+		PluralCommonNameWithPrefixStr:         "webhooks",
+	}
+}
+
 // renderDatabasePackage renders the package
 func renderDatabasePackage(proj *models.Project, vendor string) error {
 	var (

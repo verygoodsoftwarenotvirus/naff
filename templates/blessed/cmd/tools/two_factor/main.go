@@ -150,7 +150,7 @@ and logging in.`)
 				jen.Err().Error(),
 			),
 			jen.Line(),
-			jen.If(jen.ID("len").Call(jen.Qual("os", "Args")).Op("==").One()).Block(
+			jen.If(jen.ID("len").Call(jen.Qual("os", "Args")).IsEqualTo().One()).Block(
 				jen.ID("reader").Assign().Qual("bufio", "NewReader").Call(jen.Qual("os", "Stdin")),
 				jen.Qual("fmt", "Print").Call(jen.Lit("token: ")),
 				jen.List(jen.ID("token"), jen.Err()).Equals().ID("reader").Dot("ReadString").Call(jen.ID(`'\n'`)),

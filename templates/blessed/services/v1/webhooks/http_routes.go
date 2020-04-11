@@ -37,7 +37,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("find the webhooks"),
 				jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("s").Dot("webhookDatabase").Dot("GetWebhooks").Call(utils.CtxVar(), jen.ID("userID"), jen.ID(utils.FilterVarName)),
-				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("webhooks").Equals().AddressOf().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
 						jen.ID("Webhooks").MapAssign().Index().Qual(proj.ModelsV1Package(), "Webhook").Values()),
 				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -172,7 +172,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("fetch the webhook from the database"),
 				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("webhookDatabase").Dot("GetWebhook").Call(utils.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
-				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("No rows found in webhookDatabase")),
 					utils.WriteXHeader("res", "StatusNotFound"),
 					jen.Return(),
@@ -221,7 +221,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("fetch the webhook in question"),
 				jen.List(jen.ID("wh"), jen.Err()).Assign().ID("s").Dot("webhookDatabase").Dot("GetWebhook").Call(utils.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
-				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("no rows found for webhook")),
 					utils.WriteXHeader("res", "StatusNotFound"),
 					jen.Return(),
@@ -280,7 +280,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("do the deed"),
 				jen.Err().Assign().ID("s").Dot("webhookDatabase").Dot("ArchiveWebhook").Call(utils.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
-				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("no rows found for webhook")),
 					utils.WriteXHeader("res", "StatusNotFound"),
 					jen.Return(),

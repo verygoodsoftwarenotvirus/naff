@@ -128,7 +128,7 @@ func buildScanUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen
 					),
 				),
 				jen.Line(),
-				jen.If(jen.ID("count").DoubleEquals().Zero()).Block(
+				jen.If(jen.ID("count").IsEqualTo().Zero()).Block(
 					jen.ID("count").Equals().ID("c"),
 				),
 				jen.Line(),
@@ -248,7 +248,7 @@ func buildGetUserByUsername(proj *models.Project, dbvendor wordsmith.SuperPalabr
 			jen.List(jen.ID("u"), jen.Underscore(), jen.Err()).Assign().ID("scanUser").Call(jen.ID("row"), jen.False()),
 			jen.Line(),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.Return().List(jen.Nil(), jen.Err()),
 				),
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user from database: %w"), jen.Err())),
@@ -467,7 +467,7 @@ func buildCreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 			jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("ID"), jen.AddressOf().ID("x").Dot("CreatedOn")).Op(";").Err().DoesNotEqual().ID("nil")).Block(
 				jen.Switch(jen.ID("e").Assign().Err().Assert(jen.Type())).Block(
 					jen.Case(jen.PointerTo().Qual("github.com/lib/pq", "Error")).Block(
-						jen.If(jen.ID("e").Dot("Code").Op("==").Qual("github.com/lib/pq", "ErrorCode").Call(jen.ID("postgresRowExistsErrorCode"))).Block(
+						jen.If(jen.ID("e").Dot("Code").IsEqualTo().Qual("github.com/lib/pq", "ErrorCode").Call(jen.ID("postgresRowExistsErrorCode"))).Block(
 							jen.Return().List(jen.Nil(), jen.Qual(proj.DatabaseV1Package("client"), "ErrUserExists")),
 						),
 					),
@@ -485,7 +485,7 @@ func buildCreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 			),
 			jen.Line(),
 			jen.Comment("fetch the last inserted ID"),
-			jen.If(jen.List(jen.ID("id"), jen.ID("idErr")).Assign().ID("res").Dot("LastInsertId").Call().Op(";").ID("idErr").Op("==").ID("nil")).Block(
+			jen.If(jen.List(jen.ID("id"), jen.ID("idErr")).Assign().ID("res").Dot("LastInsertId").Call().Op(";").ID("idErr").IsEqualTo().ID("nil")).Block(
 				jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
 				jen.Line(),
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUserCreationTimeQuery").Call(jen.ID("x").Dot("ID")),

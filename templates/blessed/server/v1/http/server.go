@@ -230,7 +230,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 			jen.Comment("returns ErrServerClosed on graceful close"),
 			jen.If(jen.Err().Assign().ID("s").Dot("httpServer").Dot("ListenAndServe").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("server shutting down")),
-				jen.If(jen.Err().Op("==").Qual("net/http", "ErrServerClosed")).Block(
+				jen.If(jen.Err().IsEqualTo().Qual("net/http", "ErrServerClosed")).Block(
 					jen.Comment("NOTE: there is a chance that next line won't have time to run,"),
 					jen.Comment("as main() doesn't wait for this goroutine to stop."),
 					jen.Qual("os", "Exit").Call(jen.Zero()),

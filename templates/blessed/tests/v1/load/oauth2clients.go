@@ -18,10 +18,10 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			"OAuth2Client",
 		)).Block(
 			jen.List(jen.ID("clientsRes"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(utils.InlineCtx(), jen.Nil()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("clientsRes").Op("==").ID("nil").Or().ID("len").Call(jen.ID("clientsRes").Dot("Clients")).Op("<=").One()).Block(jen.Return().ID("nil")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("clientsRes").IsEqualTo().ID("nil").Or().ID("len").Call(jen.ID("clientsRes").Dot("Clients")).Op("<=").One()).Block(jen.Return().ID("nil")),
 			jen.Line(),
 			jen.Var().ID("selectedClient").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
-			jen.For(jen.ID("selectedClient").Op("==").ID("nil")).Block(
+			jen.For(jen.ID("selectedClient").IsEqualTo().ID("nil")).Block(
 				jen.ID("ri").Assign().Qual("math/rand", "Intn").Call(jen.ID("len").Call(jen.ID("clientsRes").Dot("Clients"))),
 				jen.ID("c").Assign().AddressOf().ID("clientsRes").Dot("Clients").Index(jen.ID("ri")),
 				jen.If(jen.ID("c").Dot("ClientID").DoesNotEqual().Lit("FIXME")).Block(jen.ID("selectedClient").Equals().ID("c")),

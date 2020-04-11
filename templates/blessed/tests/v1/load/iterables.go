@@ -64,7 +64,7 @@ func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.
 			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 				callArgs...,
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().IDf("%sRes", puvn).Op("==").ID("nil").Or().ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).Op("==").Zero()).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().IDf("%sRes", puvn).IsEqualTo().ID("nil").Or().ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).IsEqualTo().Zero()).Block(
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),

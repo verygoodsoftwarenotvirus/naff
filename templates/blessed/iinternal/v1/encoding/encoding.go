@@ -62,7 +62,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("EncodeResponse").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.Error()).Block(
 			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.ID("ContentTypeHeader"))),
-			jen.If(jen.ID("ct").Op("==").EmptyString()).Block(
+			jen.If(jen.ID("ct").IsEqualTo().EmptyString()).Block(
 				jen.ID("ct").Equals().ID("DefaultContentType"),
 			),
 			jen.Line(),
@@ -83,7 +83,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("DecodeRequest").Params(jen.ID("req").PointerTo().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
 			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID("req").Dot("Header").Dot("Get").Call(jen.ID("ContentTypeHeader"))),
-			jen.If(jen.ID("ct").Op("==").EmptyString()).Block(
+			jen.If(jen.ID("ct").IsEqualTo().EmptyString()).Block(
 				jen.ID("ct").Equals().ID("DefaultContentType"),
 			),
 			jen.Line(),

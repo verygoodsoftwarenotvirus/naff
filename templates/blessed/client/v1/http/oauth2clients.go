@@ -254,7 +254,7 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.Var().ID("oauth2Client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
-		jen.If(jen.ID("cookie").Op("==").ID("nil")).Block(
+		jen.If(jen.ID("cookie").IsEqualTo().ID("nil")).Block(
 			jen.Return().List(
 				jen.Nil(),
 				jen.Qual("errors", "New").Call(

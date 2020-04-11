@@ -63,7 +63,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("counterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
 			jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
-			jen.If(jen.ID("userIDFetcher").Op("==").ID("nil")).Block(
+			jen.If(jen.ID("userIDFetcher").IsEqualTo().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("userIDFetcher must be provided"))),
 			),
 			jen.Line(),

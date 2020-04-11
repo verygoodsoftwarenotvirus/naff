@@ -96,7 +96,7 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		jen.Line(),
 		jen.Commentf("fetch %s from database", pcn),
 		jen.List(jen.ID(puvn), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("Get%s", pn)).Call(dbCallArgs...),
-		jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 			jen.Comment("in the event no rows exist return an empty list"),
 			jen.ID(puvn).Equals().AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
 				jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Values(),
@@ -425,7 +425,7 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		jen.Line(),
 		jen.Commentf("fetch %s from database", scn),
 		jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("Get%s", sn)).Call(dbCallArgs...),
-		jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 			utils.WriteXHeader("res", "StatusNotFound"),
 			jen.Return(),
 		).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(elseErrBlock...),
@@ -505,7 +505,7 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Line(),
 		jen.Commentf("fetch %s from database", scn),
 		jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Get%s", sn).Call(dbCallArgs...),
-		jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 			utils.WriteXHeader("res", "StatusNotFound"),
 			jen.Return(),
 		).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -597,7 +597,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 		jen.Line(),
 		jen.Commentf("archive the %s in the database", scn),
 		jen.Err().Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Archive%s", sn).Call(callArgs...),
-		jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 			utils.WriteXHeader("res", "StatusNotFound"),
 			jen.Return(),
 		).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(

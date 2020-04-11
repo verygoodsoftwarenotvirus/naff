@@ -136,12 +136,12 @@ func buildNewClient() []jen.Code {
 			jen.Error(),
 		).Block(
 			jen.Var().ID("client").Equals().ID("hclient"),
-			jen.If(jen.ID("client").Op("==").ID("nil")).Block(
+			jen.If(jen.ID("client").IsEqualTo().ID("nil")).Block(
 				jen.ID("client").Equals().AddressOf().Qual("net/http", "Client").Valuesln(
 					jen.ID("Timeout").MapAssign().ID("defaultTimeout"),
 				),
 			),
-			jen.If(jen.ID("client").Dot("Timeout").Op("==").Zero()).Block(
+			jen.If(jen.ID("client").Dot("Timeout").IsEqualTo().Zero()).Block(
 				jen.ID("client").Dot("Timeout").Equals().ID("defaultTimeout"),
 			),
 			jen.Line(),
@@ -339,7 +339,7 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 		).Assign().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(
 			jen.ID("req"),
 		),
-			jen.Err().Op("==").ID("nil").And().ID("c").Dot("Debug"),
+			jen.Err().IsEqualTo().ID("nil").And().ID("c").Dot("Debug"),
 		).Block(
 			jen.ID("logger").Equals().ID("c").Dot("logger").Dot("WithValue").Call(
 				jen.Lit("curl"),
@@ -373,7 +373,7 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 				jen.ID("res"),
 				jen.True(),
 			),
-			jen.If(jen.Err().Op("==").ID("nil").And().ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
+			jen.If(jen.Err().IsEqualTo().ID("nil").And().ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
 				jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 					jen.Lit("response_body"),
 					jen.String().Call(
@@ -596,7 +596,7 @@ func buildIsUp() []jen.Code {
 			),
 			jen.ID("c").Dot("closeResponseBody").Call(jen.ID("res")),
 			jen.Line(),
-			jen.Return().ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusOK"),
+			jen.Return().ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusOK"),
 		),
 		jen.Line(),
 	}
@@ -666,7 +666,7 @@ func buildCheckExistence(proj *models.Project) []jen.Code {
 		),
 		jen.ID("c").Dot("closeResponseBody").Call(jen.ID("res")),
 		jen.Line(),
-		jen.Return(jen.ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusOK"), jen.Nil()),
+		jen.Return(jen.ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusOK"), jen.Nil()),
 	}
 
 	lines := []jen.Code{
@@ -713,7 +713,7 @@ func buildRetrieve(proj *models.Project) []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.If(jen.ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusNotFound")).Block(
+		jen.If(jen.ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusNotFound")).Block(
 			jen.Return().ID("ErrNotFound"),
 		),
 		jen.Line(),

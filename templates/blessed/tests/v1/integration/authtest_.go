@@ -41,7 +41,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			utils.AssertEqual(jen.Qual("net/http", "StatusNoContent"), jen.ID("resp").Dot("StatusCode"), jen.Lit("login should be successful"), nil),
 			jen.Line(),
 			jen.ID("cookies").Assign().ID("resp").Dot("Cookies").Call(),
-			jen.If(jen.ID("len").Call(jen.ID("cookies")).Op("==").One()).Block(
+			jen.If(jen.ID("len").Call(jen.ID("cookies")).IsEqualTo().One()).Block(
 				jen.Return().ID("cookies").Index(jen.Zero()),
 			),
 			jen.ID("t").Dot("Logf").Call(jen.Lit("wrong number of cookies found: %d"), jen.ID("len").Call(jen.ID("cookies"))),

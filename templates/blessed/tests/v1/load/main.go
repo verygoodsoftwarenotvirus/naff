@@ -37,8 +37,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Comment("The context is used to cancel the request on timeout."),
 			jen.ID("act").Assign().ID("RandomAction").Call(jen.ID("a").Dot("todoClient")),
 			jen.List(jen.ID("req"), jen.Err()).Assign().ID("act").Dot("Action").Call(),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("req").Op("==").ID("nil")).Block(
-				jen.If(jen.Err().Op("==").ID("ErrUnavailableYet")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("req").IsEqualTo().ID("nil")).Block(
+				jen.If(jen.Err().IsEqualTo().ID("ErrUnavailableYet")).Block(
 					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Valuesln(
 						jen.ID("RequestLabel").MapAssign().ID("act").Dot("Name"),
 						jen.ID("Error").MapAssign().ID("nil"), jen.ID("StatusCode").MapAssign().Lit(200),

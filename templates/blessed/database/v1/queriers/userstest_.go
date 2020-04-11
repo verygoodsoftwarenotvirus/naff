@@ -412,7 +412,21 @@ func buildTestDB_buildGetAllUserCountQuery(proj *models.Project, dbvendor wordsm
 	expectedArgs := []jen.Code{}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetUserPalabra()}, "GetAllUserCount", qb, expectedArgs, callArgs, false, false, false, false, false, false, nil)
+	return buildQueryTest(proj,
+		dbvendor,
+		models.DataType{Name: GetUserPalabra()},
+		"GetAllUserCount",
+		qb,
+		expectedArgs,
+		callArgs,
+		false,
+		false,
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
 }
 
 func buildTestDB_GetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {

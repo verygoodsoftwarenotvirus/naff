@@ -226,7 +226,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.For(jen.List(jen.Underscore(), jen.ID("oAuth2Client")).Assign().Range().ID("expected")).Block(
 						jen.ID("clientFound").Assign().False(),
 						jen.For(jen.List(jen.Underscore(), jen.ID("c")).Assign().Range().ID("actual").Dot("Clients")).Block(
-							jen.If(jen.ID("c").Dot("ID").Op("==").ID("oAuth2Client").Dot("ID")).Block(
+							jen.If(jen.ID("c").Dot("ID").IsEqualTo().ID("oAuth2Client").Dot("ID")).Block(
 								jen.ID("clientFound").Equals().True(),
 								jen.Break(),
 							),

@@ -65,7 +65,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("fetch user data"),
 			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetUser").Call(utils.CtxVar(), jen.ID("userID")),
-			jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("net/http", "StatusNotFound")),
 			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error encountered fetching user")),
@@ -180,7 +180,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Comment("create the user"),
 				jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("database").Dot("CreateUser").Call(utils.CtxVar(), jen.ID("input")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.If(jen.Err().Op("==").Qual(proj.DatabaseV1Package("client"), "ErrUserExists")).Block(
+					jen.If(jen.Err().IsEqualTo().Qual(proj.DatabaseV1Package("client"), "ErrUserExists")).Block(
 						jen.ID("logger").Dot("Info").Call(jen.Lit("duplicate username attempted")),
 						utils.WriteXHeader("res", "StatusBadRequest"),
 						jen.Return(),
@@ -285,7 +285,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("fetch user data"),
 				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetUser").Call(utils.CtxVar(), jen.ID("userID")),
-				jen.If(jen.Err().Op("==").Qual("database/sql", "ErrNoRows")).Block(
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("logger").Dot("Debug").Call(jen.Lit("no such user")),
 					utils.WriteXHeader("res", "StatusNotFound"),
 					jen.Return(),

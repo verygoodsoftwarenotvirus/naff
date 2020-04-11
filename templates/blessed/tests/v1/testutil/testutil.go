@@ -23,7 +23,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("DetermineServiceURL").Params().Params(jen.String()).Block(
 			jen.ID("ta").Assign().Qual("os", "Getenv").Call(jen.Lit("TARGET_ADDRESS")),
-			jen.If(jen.ID("ta").Op("==").EmptyString()).Block(
+			jen.If(jen.ID("ta").IsEqualTo().EmptyString()).Block(
 				jen.ID("panic").Call(jen.Lit("must provide target address!")),
 			),
 			jen.Line(),
@@ -83,7 +83,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 				jen.Qual("log", "Println").Call(jen.Lit("error closing body")),
 			),
 			jen.Line(),
-			jen.Return().ID("res").Dot("StatusCode").Op("==").Qual("net/http", "StatusOK"),
+			jen.Return().ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusOK"),
 		),
 		jen.Line(),
 	)
@@ -115,7 +115,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.List(jen.ID("ucr"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(utils.InlineCtx(), jen.ID("in")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
-			).Else().If(jen.ID("ucr").Op("==").ID("nil")).Block(
+			).Else().If(jen.ID("ucr").IsEqualTo().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("something happened"))),
 			),
 			jen.Line(),
@@ -240,18 +240,18 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("getLoginCookie").Call(jen.ID("serviceURL"), jen.ID("u")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("cookie").Op("==").ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("cookie").IsEqualTo().ID("nil")).Block(
 				jen.Qual("log", "Fatalf").Call(jen.Lit(`
 cookie problems!
 	cookie == nil: %v
 			  err: %v
-	`), jen.ID("cookie").Op("==").ID("nil"), jen.Err()),
+	`), jen.ID("cookie").IsEqualTo().ID("nil"), jen.Err()),
 			),
 			jen.ID("req").Dot("AddCookie").Call(jen.ID("cookie")),
 			jen.Var().ID("o").Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Line(),
 			jen.Var().ID("command").Qual("fmt", "Stringer"),
-			jen.If(jen.List(jen.ID("command"), jen.Err()).Equals().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID("req")), jen.Err().Op("==").ID("nil")).Block(
+			jen.If(jen.List(jen.ID("command"), jen.Err()).Equals().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID("req")), jen.Err().IsEqualTo().ID("nil")).Block(
 				jen.Qual("log", "Println").Call(jen.ID("command").Dot("String").Call()),
 			),
 			jen.Line(),
@@ -269,7 +269,7 @@ cookie problems!
 			).Call(),
 			jen.Line(),
 			jen.List(jen.ID("bdump"), jen.Err()).Assign().ID("httputil").Dot("DumpResponse").Call(jen.ID("res"), jen.True()),
-			jen.If(jen.Err().Op("==").ID("nil").And().ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
+			jen.If(jen.Err().IsEqualTo().ID("nil").And().ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
 				jen.Qual("log", "Println").Call(jen.String().Call(jen.ID("bdump"))),
 			),
 			jen.Line(),

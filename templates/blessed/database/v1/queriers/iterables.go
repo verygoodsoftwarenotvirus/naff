@@ -210,7 +210,7 @@ func buildScanListOfSomethingFuncDecl(proj *models.Project, typ models.DataType)
 					jen.Return().List(jen.Nil(), jen.Zero(), jen.Err()),
 				),
 				jen.Line(),
-				jen.If(jen.ID("count").DoubleEquals().Zero()).Block(
+				jen.If(jen.ID("count").IsEqualTo().Zero()).Block(
 					jen.ID("count").Equals().ID("c"),
 				),
 				jen.Line(),
@@ -989,7 +989,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 		baseCreateFuncBody = append(baseCreateFuncBody,
 			jen.Comment("fetch the last inserted ID"),
 			jen.List(jen.ID("id"), jen.ID("idErr")).Assign().ID("res").Dot("LastInsertId").Call(),
-			jen.If(jen.ID("idErr")).Op("==").ID("nil").Block(
+			jen.If(jen.ID("idErr")).IsEqualTo().ID("nil").Block(
 				jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
 				jen.Line(),
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("build%sCreationTimeQuery", sn).Call(jen.ID("x").Dot("ID")),

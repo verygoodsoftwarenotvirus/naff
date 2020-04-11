@@ -21,7 +21,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			jen.Err().Error(),
 		).Block(
 			jen.If(
-				jen.ID("i").Op("==").ID("nil").
+				jen.ID("i").IsEqualTo().ID("nil").
 					Op("||").
 					Qual("reflect", "TypeOf").Call(
 					jen.ID("i"),
@@ -45,7 +45,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			jen.ID("isNil").Bool(),
 			jen.Err().Error(),
 		).Block(
-			jen.If(jen.ID("i").Op("==").ID("nil")).Block(
+			jen.If(jen.ID("i").IsEqualTo().ID("nil")).Block(
 				jen.Return().List(
 					jen.True(),
 					jen.Qual("errors", "New").Call(

@@ -599,7 +599,21 @@ func buildTestDB_buildGetOAuth2ClientsQuery(proj *models.Project, dbvendor words
 	qb = applyFleshedOutQueryFilter(qb, oauth2ClientsTableName)
 	expectedArgs = appendFleshedOutQueryFilterArgs(expectedArgs)
 
-	lines := buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "GetOAuth2Clients", qb, expectedArgs, callArgs, true, false, true, true, false, false, nil)
+	lines := buildQueryTest(proj,
+		dbvendor,
+		models.DataType{Name: GetOAuth2ClientPalabra()},
+		"GetOAuth2Clients",
+		qb,
+		expectedArgs,
+		callArgs,
+		true,
+		false,
+		true,
+		true,
+		false,
+		false,
+		nil,
+	)
 
 	return lines
 }
