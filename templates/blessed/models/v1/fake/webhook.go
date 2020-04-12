@@ -60,9 +60,9 @@ func buildBuildFakeWebhookList(proj *models.Project) []jen.Code {
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
-			jen.ID("exampleWebhook1").Assign().ID("BuildFakeWebhook").Call(),
-			jen.ID("exampleWebhook2").Assign().ID("BuildFakeWebhook").Call(),
-			jen.ID("exampleWebhook3").Assign().ID("BuildFakeWebhook").Call(),
+			jen.ID(utils.BuildFakeVarName("Webhook1")).Assign().ID("BuildFakeWebhook").Call(),
+			jen.ID(utils.BuildFakeVarName("Webhook2")).Assign().ID("BuildFakeWebhook").Call(),
+			jen.ID(utils.BuildFakeVarName("Webhook3")).Assign().ID("BuildFakeWebhook").Call(),
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(

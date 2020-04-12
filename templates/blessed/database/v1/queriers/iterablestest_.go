@@ -167,7 +167,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 			jen.If(jen.ID("includeCount")).Block(
 				jen.ID("columns").Equals().Append(jen.ID("columns"), jen.Lit("count")),
 			),
-			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
 			jen.For().List(jen.Underscore(), jen.ID("x")).Assign().Range().ID(puvn).Block(
 				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(gFields...),
@@ -176,7 +176,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID("items"))),
 				),
 				jen.Line(),
-				jen.ID("exampleRows").Dot("AddRow").Call(jen.ID("rowValues").Spread()),
+				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
 			),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -192,7 +192,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 		).Params(
 			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
 		).Block(
-			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(badFields...),
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(badFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
 		),
@@ -595,7 +595,7 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 
 	if typ.BelongsToUser {
 		equals[fmt.Sprintf("%s.belongs_to_user", tableName)] = whateverValue
-		expectedArgs = append(expectedArgs, jen.ID("exampleUser").Dot("ID"))
+		expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
 	}
 
 	qb := queryBuilderForDatabase(dbvendor).Select(append(cols, fmt.Sprintf(countQuery, tableName))...).
@@ -634,7 +634,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		actualCallArgs := []jen.Code{utils.CtxVar()}
 		if typ.BelongsToUser {
 			expectQueryMock = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-				Dotln("WithArgs").Call(jen.ID("exampleUser").Dot("ID")).
+				Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).
 				Dotln("WillReturnRows").Callln(
 				jen.IDf("buildMockRowsFrom%s", sn).Callln(
 					jen.AddressOf().ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Dot(pn).Index(jen.Zero()),
@@ -642,7 +642,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 					jen.AddressOf().ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Dot(pn).Index(jen.Lit(2)),
 				),
 			)
-			actualCallArgs = append(actualCallArgs, jen.ID("exampleUser").Dot("ID"))
+			actualCallArgs = append(actualCallArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
 		}
 		if typ.BelongsToStruct != nil {
 			expectQueryMock = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
@@ -689,9 +689,9 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		actualCallArgs := []jen.Code{utils.CtxVar()}
 		if typ.BelongsToUser {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-				Dotln("WithArgs").Call(jen.ID("exampleUser").Dot("ID")).
+				Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).
 				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
-			actualCallArgs = append(actualCallArgs, jen.ID("exampleUser").Dot("ID"))
+			actualCallArgs = append(actualCallArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
 		}
 		if typ.BelongsToStruct != nil {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
@@ -728,9 +728,9 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		actualCallArgs := []jen.Code{utils.CtxVar()}
 		if typ.BelongsToUser {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-				Dotln("WithArgs").Call(jen.ID("exampleUser").Dot("ID")).
+				Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).
 				Dotln("WillReturnError").Call(utils.ObligatoryError())
-			actualCallArgs = append(actualCallArgs, jen.ID("exampleUser").Dot("ID"))
+			actualCallArgs = append(actualCallArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
 		}
 		if typ.BelongsToStruct != nil {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
@@ -891,7 +891,7 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 
 		if isPostgres(dbvendor) {
 			out = append(out,
-				jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(
+				jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(
 					jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 					jen.ID(utils.BuildFakeVarName(sn)).Dot("CreatedOn"),
 				),
@@ -914,7 +914,7 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			out = append(out,
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID(expectedQueryVarName))).
 					Dotln("WithArgs").Callln(nef...).
-					Dot("WillReturnRows").Call(jen.ID("exampleRows")),
+					Dot("WillReturnRows").Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 			)
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			out = append(out,
@@ -936,7 +936,7 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 
 		out = append(out,
 			jen.Line(),
-			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Create%s", sn).Call(utils.CtxVar(), jen.ID("exampleInput")),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Create%s", sn).Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
 			utils.AssertNoError(jen.Err(), nil),
 			utils.AssertEqual(jen.ID(utils.BuildFakeVarName(sn)), jen.ID("actual"), nil),
 			jen.Line(),
@@ -1000,7 +1000,7 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 
 		out = append(out,
 			jen.Line(),
-			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Create%s", sn).Call(utils.CtxVar(), jen.ID("exampleInput")),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Create%s", sn).Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
 			utils.AssertError(jen.Err(), nil),
 			utils.AssertNil(jen.ID("actual"), nil),
 			jen.Line(),
@@ -1095,7 +1095,7 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			expectFuncName = "ExpectQuery"
 			returnFuncName = "WillReturnRows"
 
-			exRows = jen.ID("exampleRows").Assign().
+			exRows = jen.ID(utils.BuildFakeVarName("Rows")).Assign().
 				Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").
 				Call(jen.Index().String().Values(jen.Lit("updated_on"))).
 				Dot("AddRow").
@@ -1104,7 +1104,7 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			expectFuncName = "ExpectExec"
 			returnFuncName = "WillReturnResult"
-			exRows = jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(
+			exRows = jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(
 				jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")),
 				jen.Lit(1),
 			)
@@ -1129,7 +1129,7 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			jen.ID("mockDB").Dot(expectFuncName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 				Dotln("WithArgs").Callln(
 				expectQueryArgs...,
-			).Dot(returnFuncName).Call(jen.ID("exampleRows")),
+			).Dot(returnFuncName).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 			jen.Line(),
 			jen.Err().Assign().ID(dbfl).Dotf("Update%s", sn).Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName(sn))),
 			utils.AssertNoError(jen.Err(), nil),

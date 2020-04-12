@@ -362,7 +362,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
 		jen.If(jen.ID("input").IsEqualTo().Nil()).Block(
-			jen.Return(jen.Nil(), utils.Error("provided")),
+			jen.Return(jen.Nil(), utils.Error("nil input provided")),
 		),
 		jen.Line(),
 		jen.List(jen.ID("body"), jen.Err()).Assign().ID("createBodyFromStruct").Call(jen.AddressOf().ID("input")),
@@ -412,7 +412,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
 		jen.If(jen.ID("input").IsEqualTo().Nil()).Block(
-			jen.Return(jen.Nil(), utils.Error("provided")),
+			jen.Return(jen.Nil(), utils.Error("nil input provided")),
 		),
 		jen.Line(),
 		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(utils.CtxVar(), jen.ID("input")),

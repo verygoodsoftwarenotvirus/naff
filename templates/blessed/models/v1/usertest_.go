@@ -22,14 +22,14 @@ func userTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("HashedPassword").MapAssign().Lit("hashed_pass"),
 					jen.ID("TwoFactorSecret").MapAssign().Lit("two factor secret"),
 				),
-				jen.ID("exampleInput").Assign().ID("User").Valuesln(
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().ID("User").Valuesln(
 					jen.ID("Username").MapAssign().Lit("new_username"),
 					jen.ID("HashedPassword").MapAssign().Lit("updated_hashed_pass"),
 					jen.ID("TwoFactorSecret").MapAssign().Lit("new fancy secret"),
 				),
 				jen.Line(),
 				jen.ID("actual").Dot("Update").Call(jen.AddressOf().ID("exampleInput")),
-				utils.AssertEqual(jen.ID("exampleInput"), jen.ID("actual"), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Input")), jen.ID("actual"), nil),
 			),
 		),
 		jen.Line(),

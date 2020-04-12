@@ -71,7 +71,7 @@ func buildBuildMockRowsFromWebhook(proj *models.Project, dbvendor wordsmith.Supe
 			jen.If(jen.ID("includeCount")).Block(
 				utils.AppendItemsToList(jen.ID("columns"), jen.Lit("count")),
 			),
-			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
 			jen.For(jen.List(jen.Underscore(), jen.ID("w")).Assign().Range().ID("webhooks")).Block(
 				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(
@@ -93,7 +93,7 @@ func buildBuildMockRowsFromWebhook(proj *models.Project, dbvendor wordsmith.Supe
 					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID("webhooks"))),
 				),
 				jen.Line(),
-				jen.ID("exampleRows").Dot("AddRow").Call(jen.ID("rowValues").Spread()),
+				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
 			),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -107,7 +107,7 @@ func buildBuildMockRowsFromWebhook(proj *models.Project, dbvendor wordsmith.Supe
 func buildBuildErroneousMockRowFromWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
-			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("webhooksTableColumns")).Dot("AddRow").Callln(
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("webhooksTableColumns")).Dot("AddRow").Callln(
 				jen.ID("w").Dot("ArchivedOn"),
 				jen.ID("w").Dot("BelongsToUser"),
 				jen.ID("w").Dot("Name"),
@@ -524,7 +524,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
 					utils.CtxVar(),
-					jen.ID("exampleUser").Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(utils.FilterVarName),
 				),
 				utils.AssertNoError(jen.Err(), nil),
@@ -543,7 +543,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
 					utils.CtxVar(),
-					jen.ID("exampleUser").Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(utils.FilterVarName),
 				),
 				utils.AssertError(jen.Err(), nil),
@@ -563,7 +563,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
 					utils.CtxVar(),
-					jen.ID("exampleUser").Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(utils.FilterVarName),
 				),
 				utils.AssertError(jen.Err(), nil),
@@ -583,7 +583,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
 					utils.CtxVar(),
-					jen.ID("exampleUser").Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(utils.FilterVarName),
 				),
 				utils.AssertError(jen.Err(), nil),
@@ -694,14 +694,14 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 		if isPostgres(dbvendor) {
 			createWebhookExpectFunc = "ExpectQuery"
 			createWebhookReturnFunc = "WillReturnRows"
-			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("CreatedOn"),
 			)
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			createWebhookExpectFunc = "ExpectExec"
 			createWebhookReturnFunc = "WillReturnResult"
-			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")), jen.One())
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")), jen.One())
 		}
 		return jen.Null()
 	}
@@ -730,7 +730,7 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 							jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"), jen.ID("typesSeparator")),
 							jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"), jen.ID("topicsSeparator")),
 							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
-						).Dot(createWebhookReturnFunc).Call(jen.ID("exampleRows")),
+						).Dot(createWebhookReturnFunc).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 						jen.Line(),
 					}
 
@@ -744,7 +744,7 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 					}
 
 					out = append(out,
-						jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID("exampleInput")),
+						jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
 						utils.AssertNoError(jen.Err(), nil),
 						utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual"), nil),
 						jen.Line(),
@@ -772,7 +772,7 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
 				).Dot("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID("exampleInput")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -866,13 +866,13 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 		if isPostgres(dbvendor) {
 			updateWebhookExpectFunc = "ExpectQuery"
 			updateWebhookReturnFunc = "WillReturnRows"
-			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("updated_on"))).Dot("AddRow").Call(
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("updated_on"))).Dot("AddRow").Call(
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("UpdatedOn"),
 			)
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			updateWebhookExpectFunc = "ExpectExec"
 			updateWebhookReturnFunc = "WillReturnResult"
-			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")), jen.One())
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")), jen.One())
 		}
 		return jen.Null()
 	}
@@ -899,7 +899,7 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 						jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"),
 						jen.ID("topicsSeparator")), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
-				).Dot(updateWebhookReturnFunc).Call(jen.ID("exampleRows")),
+				).Dot(updateWebhookReturnFunc).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 				jen.Line(),
 				jen.Err().Assign().ID(dbfl).Dot("UpdateWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook"))),
 				utils.AssertNoError(jen.Err(), nil),

@@ -90,9 +90,9 @@ func buildBuildFakeUserList(proj *models.Project) []jen.Code {
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
-			jen.ID("exampleUser1").Assign().ID("BuildFakeUser").Call(),
-			jen.ID("exampleUser2").Assign().ID("BuildFakeUser").Call(),
-			jen.ID("exampleUser3").Assign().ID("BuildFakeUser").Call(),
+			jen.ID(utils.BuildFakeVarName("User1")).Assign().ID("BuildFakeUser").Call(),
+			jen.ID(utils.BuildFakeVarName("User2")).Assign().ID("BuildFakeUser").Call(),
+			jen.ID(utils.BuildFakeVarName("User3")).Assign().ID("BuildFakeUser").Call(),
 			jen.Line(),
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
@@ -124,7 +124,7 @@ func buildBuildFakeUserCreationInput(proj *models.Project) []jen.Code {
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
 		).Block(
-			jen.ID("exampleUser").Assign().ID("BuildFakeUser").Call(),
+			jen.ID(utils.BuildFakeVarName("User")).Assign().ID("BuildFakeUser").Call(),
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("exampleUser").Dot("Username"),

@@ -26,7 +26,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					jen.ID("exampleUser"),
+					jen.ID(utils.BuildFakeVarName("User")),
 					jen.Nil(),
 				),
 				jen.ID("s").Dot("userDB").Equals().ID("md"),
@@ -47,7 +47,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.Line(),
-				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleUser")),
+				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				utils.RequireNotNil(jen.ID("cookie"), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("cookie")),
@@ -83,7 +83,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.Line(),
-				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleUser")),
+				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				utils.RequireNotNil(jen.ID("cookie"), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("cookie")),
@@ -137,7 +137,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					jen.ID("exampleOAuth2Client"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					jen.Nil(),
 				),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
@@ -145,9 +145,9 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("exampleOAuth2Client").Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
 				).Dot("Return").Call(
-					jen.ID("exampleUser"),
+					jen.ID(utils.BuildFakeVarName("User")),
 					jen.Nil(),
 				),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
@@ -188,7 +188,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					jen.ID("exampleOAuth2Client"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					jen.Nil(),
 				),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
@@ -197,8 +197,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("exampleOAuth2Client").Dot("BelongsToUser"),
-				).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("h").Assign().AddressOf().ID("MockHTTPHandler").Values(),
@@ -234,8 +234,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("exampleUser").Dot("ID"),
-				).Dot("Return").Call(jen.ID("exampleUser"), jen.Nil()),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("h").Assign().AddressOf().ID("MockHTTPHandler").Values(),
@@ -254,7 +254,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleUser")),
+				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("c")),
 				jen.Line(),
@@ -268,14 +268,14 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleUser")),
+				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("exampleUser").Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
 					utils.ObligatoryError(),
@@ -312,7 +312,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					jen.ID("exampleOAuth2Client"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					jen.Nil(),
 				),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
@@ -321,7 +321,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("exampleOAuth2Client").Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
 					utils.ObligatoryError(),
@@ -385,7 +385,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID("exampleUser")),
+				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.ID("req").Dot("AddCookie").Call(jen.ID("c")),
 				jen.Line(),
@@ -439,7 +439,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					jen.ID("exampleOAuth2Client"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					jen.Nil(),
 				),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
@@ -448,7 +448,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID("exampleOAuth2Client").Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
 					jen.Nil(),
@@ -490,7 +490,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("expected").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
+				jen.ID("expected").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.ID("req").Dot("Form").Equals().Map(jen.String()).Index().String().Valuesln(
 					jen.ID("UsernameFormKey").MapAssign().Values(jen.ID("expected").Dot("Username")),
@@ -530,13 +530,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.Var().ID("b").Qual("bytes", "Buffer"),
 				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(
 					jen.ID("t"), jen.Qual("encoding/json", "NewEncoder").Call(
 						jen.AddressOf().ID("b"),
-					).Dot("Encode").Call(jen.ID("exampleInput")),
+					).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Input"))),
 				),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -565,10 +565,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with error decoding request",
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.Var().ID("b").Qual("bytes", "Buffer"),
-				utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.AddressOf().ID("b")).Dot("Encode").Call(jen.ID("exampleInput")), nil),
+				utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.AddressOf().ID("b")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Input"))), nil),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(
@@ -600,12 +600,12 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with error decoding request but valid value attached to form",
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID("exampleUser")),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.ID("form").Assign().Qual("net/url", "Values").Valuesln(
-					jen.ID("UsernameFormKey").MapAssign().Values(jen.ID("exampleInput").Dot("Username")),
-					jen.ID("PasswordFormKey").MapAssign().Values(jen.ID("exampleInput").Dot("Password")),
-					jen.ID("TOTPTokenFormKey").MapAssign().Values(jen.ID("exampleInput").Dot("TOTPToken")),
+					jen.ID("UsernameFormKey").MapAssign().Values(jen.ID(utils.BuildFakeVarName("Input")).Dot("Username")),
+					jen.ID("PasswordFormKey").MapAssign().Values(jen.ID(utils.BuildFakeVarName("Input")).Dot("Password")),
+					jen.ID("TOTPTokenFormKey").MapAssign().Values(jen.ID(utils.BuildFakeVarName("Input")).Dot("TOTPToken")),
 				),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
@@ -661,14 +661,14 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("exampleUser").Dot("IsAdmin").Equals().True(),
+				jen.ID(utils.BuildFakeVarName("User")).Dot("IsAdmin").Equals().True(),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(),
 						jen.Qual(proj.ModelsV1Package(), "UserKey"),
-						jen.ID("exampleUser"),
+						jen.ID(utils.BuildFakeVarName("User")),
 					),
 				),
 				jen.Line(),
@@ -721,14 +721,14 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("exampleUser").Dot("IsAdmin").Equals().False(),
+				jen.ID(utils.BuildFakeVarName("User")).Dot("IsAdmin").Equals().False(),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID("req").Dot("Context").Call(),
 						jen.Qual(proj.ModelsV1Package(), "UserKey"),
-						jen.ID("exampleUser"),
+						jen.ID(utils.BuildFakeVarName("User")),
 					),
 				),
 				jen.Line(),

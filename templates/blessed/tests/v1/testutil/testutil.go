@@ -116,7 +116,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			).Else().If(jen.ID("ucr").IsEqualTo().ID("nil")).Block(
-				jen.Return().List(jen.Nil(), utils.Error("happened")),
+				jen.Return().List(jen.Nil(), utils.Error("something happened")),
 			),
 			jen.Line(),
 			jen.ID("u").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(

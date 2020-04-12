@@ -221,7 +221,7 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 	}
 
 	if createUser && !excludeUserID {
-		callArgs = append(callArgs, jen.ID("exampleUser").Dot("ID"))
+		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
 	}
 	if includeFilter {
 		callArgs = append(callArgs, jen.ID(utils.FilterVarName))
@@ -245,7 +245,7 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 				jen.List(jen.ID(string(dbfl)), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
 				func() jen.Code {
 					if createUser {
-						return jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call()
+						return jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call()
 					}
 					return jen.Null()
 				}(),

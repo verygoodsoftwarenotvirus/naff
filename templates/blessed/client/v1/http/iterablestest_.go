@@ -580,7 +580,7 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 
 	subtestLines := append(
 		buildVarDeclarationsOfDependentStructs(proj, typ),
-		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		jen.Line(),
 		utils.ExpectMethod("expectedMethod", "MethodPost"),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
@@ -636,10 +636,10 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 
 	happyPathSubtestLines := append(
 		buildCreationVarDeclarationsOfDependentStructs(proj, typ),
-		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		func() jen.Code {
 			if typ.BelongsToUser {
-				return jen.ID("exampleInput").Dot("BelongsToUser").Equals().Zero()
+				return jen.ID(utils.BuildFakeVarName("Input")).Dot("BelongsToUser").Equals().Zero()
 			}
 			return jen.Null()
 		}(),
@@ -655,7 +655,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 			jen.Line(),
 			jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")), nil),
-			utils.AssertEqual(jen.ID("exampleInput"), jen.ID("x"), nil),
+			utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Input")), jen.ID("x"), nil),
 			jen.Line(),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))), nil),
 		),
@@ -672,7 +672,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 
 	invalidClientURLSubtestLines := append(
 		buildCreationVarDeclarationsOfDependentStructs(proj, typ),
-		jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(

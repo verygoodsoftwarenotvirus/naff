@@ -69,7 +69,7 @@ func buildBuildMockRowsFromUser(proj *models.Project, dbvendor wordsmith.SuperPa
 			jen.If(jen.ID("includeCount")).Block(
 				utils.AppendItemsToList(jen.ID("columns"), jen.Lit("count")),
 			),
-			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
 			jen.For(
 				jen.List(jen.Underscore(), jen.ID("user")).Assign().Range().ID("users"),
@@ -90,7 +90,7 @@ func buildBuildMockRowsFromUser(proj *models.Project, dbvendor wordsmith.SuperPa
 					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID("users"))),
 				),
 				jen.Line(),
-				jen.ID("exampleRows").Dot("AddRow").Call(jen.ID("rowValues").Spread()),
+				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
 			),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -104,7 +104,7 @@ func buildBuildMockRowsFromUser(proj *models.Project, dbvendor wordsmith.SuperPa
 func buildBuildErroneousMockRowFromUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
-			jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
 				jen.ID("user").Dot("ArchivedOn"),
 				jen.ID("user").Dot("ID"),
 				jen.ID("user").Dot("Username"),
@@ -450,7 +450,7 @@ func buildTestDB_GetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperP
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleCount").Assign().Uint64().Call(jen.Lit(123)),
+				jen.ID(utils.BuildFakeVarName("Count")).Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
@@ -610,7 +610,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 						expectMethodName = "ExpectQuery"
 						returnMethodName = "WillReturnRows"
 						out = append(out,
-							jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").
+							jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").
 								Call(jen.Index().String().Values(jen.Lit("id"), jen.Lit("created_on"))).
 								Dot("AddRow").Call(
 								jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
@@ -621,7 +621,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 						expectMethodName = "ExpectExec"
 						returnMethodName = "WillReturnResult"
 						out = append(out,
-							jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.One()),
+							jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.One()),
 						)
 					}
 					out = append(out,
@@ -630,7 +630,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 							jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 							jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 							jen.False(),
-						).Dot(returnMethodName).Call(jen.ID("exampleRows")),
+						).Dot(returnMethodName).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 						jen.Line(),
 					)
 
@@ -760,9 +760,9 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 
 	buildUpdateUserExampleRows := func() jen.Code {
 		if isPostgres(dbvendor) {
-			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-			return jen.ID("exampleRows").Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.One())
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.One())
 		}
 		return jen.Null()
 	}
@@ -784,7 +784,7 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-				).Dot(updateUserReturnMethod).Call(jen.ID("exampleRows")),
+				).Dot(updateUserReturnMethod).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 				jen.Line(),
 				jen.Err().Assign().ID(dbfl).Dot("UpdateUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User"))),
 				utils.AssertNoError(jen.Err(), nil),

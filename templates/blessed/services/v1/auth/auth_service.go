@@ -63,7 +63,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
 			jen.If(jen.ID("cfg").IsEqualTo().Nil()).Block(
-				jen.Return(jen.Nil(), utils.Error("provided")),
+				jen.Return(jen.Nil(), utils.Error("nil config provided")),
 			),
 			jen.Line(),
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(

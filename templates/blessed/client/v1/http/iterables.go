@@ -423,9 +423,9 @@ func buildParamsForMethodThatCreatesADataTypeFromStructs(proj *models.Project, t
 	}
 
 	if !call {
-		params = append(params, jen.ID("exampleInput").PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+		params = append(params, jen.ID(utils.BuildFakeVarName("Input")).PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
 	} else {
-		params = append(params, jen.ID("exampleInput"))
+		params = append(params, jen.ID(utils.BuildFakeVarName("Input")))
 	}
 
 	return params

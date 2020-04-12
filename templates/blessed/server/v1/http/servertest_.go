@@ -103,7 +103,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("GetAllWebhooks"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					jen.ID("exampleWebhookList"),
+					jen.ID(utils.BuildFakeVarName("WebhookList")),
 					jen.Nil(),
 				),
 				jen.Line(),
@@ -127,7 +127,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("GetAllWebhooks"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					jen.ID("exampleWebhookList"),
+					jen.ID(utils.BuildFakeVarName("WebhookList")),
 					jen.Nil(),
 				),
 				jen.Line(),

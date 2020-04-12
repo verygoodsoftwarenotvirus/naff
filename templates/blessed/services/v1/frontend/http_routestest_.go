@@ -92,9 +92,9 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 		utils.BuildSubTestWithoutContext(
 			"with frontend routing path",
 			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-			jen.ID("exampleDir").Assign().Lit("."),
+			jen.ID(utils.BuildFakeVarName("Dir")).Assign().Lit("."),
 			jen.Line(),
-			jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID("exampleDir")),
+			jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID(utils.BuildFakeVarName("Dir"))),
 			utils.AssertNoError(jen.Err(), nil),
 			utils.AssertNotNil(jen.ID("hf"), nil),
 			jen.Line(),
@@ -115,9 +115,9 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 			utils.BuildSubTestWithoutContext(
 				fmt.Sprintf("with frontend %s routing path", tpcn),
 				jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("exampleDir").Assign().Lit("."),
+				jen.ID(utils.BuildFakeVarName("Dir")).Assign().Lit("."),
 				jen.Line(),
-				jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID("exampleDir")),
+				jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID(utils.BuildFakeVarName("Dir"))),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertNotNil(jen.ID("hf"), nil),
 				jen.Line(),

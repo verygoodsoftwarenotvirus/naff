@@ -28,7 +28,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("SortBy").MapAssign().ID("SortDescending"),
 				),
 				jen.Line(),
-				jen.ID("exampleInput").Assign().Qual("net/url", "Values").Valuesln(
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual("net/url", "Values").Valuesln(
 					jen.ID("pageKey").MapAssign().Index().String().Values(jen.Qual("strconv", "Itoa").Call(jen.Int().Call(jen.ID("expected").Dot("Page")))),
 					jen.ID("limitKey").MapAssign().Index().String().Values(jen.Qual("strconv", "Itoa").Call(jen.Int().Call(jen.ID("expected").Dot("Limit")))),
 					jen.ID("createdBeforeKey").MapAssign().Index().String().Values(jen.Qual("strconv", "Itoa").Call(jen.Int().Call(jen.ID("expected").Dot("CreatedAfter")))),
@@ -38,12 +38,12 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("sortByKey").MapAssign().Index().String().Values(jen.String().Call(jen.ID("expected").Dot("SortBy"))),
 				),
 				jen.Line(),
-				jen.ID("actual").Dot("FromParams").Call(jen.ID("exampleInput")),
+				jen.ID("actual").Dot("FromParams").Call(jen.ID(utils.BuildFakeVarName("Input"))),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
-				jen.ID("exampleInput").Index(jen.ID("sortByKey")).Equals().Index().String().Values(jen.String().Call(jen.ID("SortAscending"))),
+				jen.ID(utils.BuildFakeVarName("Input")).Index(jen.ID("sortByKey")).Equals().Index().String().Values(jen.String().Call(jen.ID("SortAscending"))),
 				jen.Line(),
-				jen.ID("actual").Dot("FromParams").Call(jen.ID("exampleInput")),
+				jen.ID("actual").Dot("FromParams").Call(jen.ID(utils.BuildFakeVarName("Input"))),
 				utils.AssertEqual(jen.ID("SortAscending"), jen.ID("actual").Dot("SortBy"), nil),
 			),
 		),
@@ -124,13 +124,13 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestQueryFilter_ApplyToQueryBuilder").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("exampleTableName").Assign().Lit("stuff"),
+			jen.ID(utils.BuildFakeVarName("TableName")).Assign().Lit("stuff"),
 			jen.ID("baseQueryBuilder").Assign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", "Dollar")).
 				Dotln("Select").Call(jen.Lit("things")).
-				Dotln("From").Call(jen.ID("exampleTableName")).
+				Dotln("From").Call(jen.ID(utils.BuildFakeVarName("TableName"))).
 				Dotln("Where").Call(
 				jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(
-					jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.condition"), jen.ID("exampleTableName")).MapAssign().True(),
+					jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.condition"), jen.ID(utils.BuildFakeVarName("TableName"))).MapAssign().True(),
 				),
 			),
 			jen.Line(),
@@ -147,7 +147,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("sb").Assign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("Select").Call(jen.Lit("*")).Dot("From").Call(jen.Lit("testing")),
-				jen.ID("qf").Dot("ApplyToQueryBuilder").Call(jen.ID("sb"), jen.ID("exampleTableName")),
+				jen.ID("qf").Dot("ApplyToQueryBuilder").Call(jen.ID("sb"), jen.ID(utils.BuildFakeVarName("TableName"))),
 				jen.ID("expected").Assign().Lit("SELECT * FROM testing"),
 				jen.List(jen.ID("actual"), jen.Underscore(), jen.Err()).Assign().ID("sb").Dot("ToSql").Call(),
 				jen.Line(),
@@ -157,10 +157,10 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"basic usecase",
-				jen.ID("exampleQF").Assign().AddressOf().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(15), jen.ID("Page").MapAssign().Lit(2)),
+				jen.ID(utils.BuildFakeVarName("QF")).Assign().AddressOf().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Lit(15), jen.ID("Page").MapAssign().Lit(2)),
 				jen.Line(),
 				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE stuff.condition = $1 LIMIT 15 OFFSET 15`),
-				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID("exampleTableName")),
+				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID(utils.BuildFakeVarName("TableName"))),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
@@ -172,7 +172,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				"returns query builder if query filter is nil",
 				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE stuff.condition = $1`),
 				jen.Line(),
-				jen.ID("x").Assign().Parens(jen.PointerTo().ID("QueryFilter")).Call(jen.Nil()).Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID("exampleTableName")),
+				jen.ID("x").Assign().Parens(jen.PointerTo().ID("QueryFilter")).Call(jen.Nil()).Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID(utils.BuildFakeVarName("TableName"))),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
@@ -182,7 +182,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"whole kit and kaboodle",
-				jen.ID("exampleQF").Assign().AddressOf().ID("QueryFilter").Valuesln(
+				jen.ID(utils.BuildFakeVarName("QF")).Assign().AddressOf().ID("QueryFilter").Valuesln(
 					jen.ID("Limit").MapAssign().Lit(20), jen.ID("Page").MapAssign().Lit(6),
 					jen.ID("CreatedAfter").MapAssign().Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
 					jen.ID("CreatedBefore").MapAssign().Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
@@ -191,7 +191,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE stuff.condition = $1 AND stuff.created_on > $2 AND stuff.created_on < $3 AND stuff.updated_on > $4 AND stuff.updated_on < $5 LIMIT 20 OFFSET 100`),
-				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID("exampleTableName")),
+				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID(utils.BuildFakeVarName("TableName"))),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
@@ -201,9 +201,9 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with zero limit",
-				jen.ID("exampleQF").Assign().AddressOf().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Zero(), jen.ID("Page").MapAssign().One()),
+				jen.ID(utils.BuildFakeVarName("QF")).Assign().AddressOf().ID("QueryFilter").Values(jen.ID("Limit").MapAssign().Zero(), jen.ID("Page").MapAssign().One()),
 				jen.ID("expected").Assign().Lit(`SELECT things FROM stuff WHERE stuff.condition = $1 LIMIT 250`),
-				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID("exampleTableName")),
+				jen.ID("x").Assign().ID("exampleQF").Dot("ApplyToQueryBuilder").Call(jen.ID("baseQueryBuilder"), jen.ID(utils.BuildFakeVarName("TableName"))),
 				jen.List(jen.ID("actual"), jen.ID("args"), jen.Err()).Assign().ID("x").Dot("ToSql").Call(),
 				jen.Line(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), jen.Lit("expected and actual queries don't match"), nil),
@@ -229,7 +229,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("UpdatedBefore").MapAssign().Lit(123456789),
 					jen.ID("SortBy").MapAssign().ID("SortDescending"),
 				),
-				jen.ID("exampleInput").Assign().Qual("net/url", "Values").Valuesln(
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual("net/url", "Values").Valuesln(
 					jen.ID("pageKey").MapAssign().Index().String().Values(jen.Qual("strconv", "Itoa").Call(jen.Int().Call(jen.ID("expected").Dot("Page")))),
 					jen.ID("limitKey").MapAssign().Index().String().Values(jen.Qual("strconv", "Itoa").Call(jen.Int().Call(jen.ID("expected").Dot("Limit")))),
 					jen.ID("createdBeforeKey").MapAssign().Index().String().Values(jen.Qual("strconv", "Itoa").Call(jen.Int().Call(jen.ID("expected").Dot("CreatedAfter")))),

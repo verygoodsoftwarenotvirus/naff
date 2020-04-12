@@ -17,7 +17,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("exampleInput").Assign().AddressOf().ID("WebhookUpdateInput").Valuesln(
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().AddressOf().ID("WebhookUpdateInput").Valuesln(
 					jen.ID("Name").MapAssign().Lit("whatever"),
 					jen.ID("ContentType").MapAssign().Lit("application/xml"),
 					jen.ID("URL").MapAssign().Lit("https://blah.verygoodsoftwarenotvirus.ru"),
@@ -46,7 +46,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("Topics").MapAssign().Index().String().Values(jen.Lit("blah-blah")),
 				),
 				jen.Line(),
-				jen.ID("actual").Dot("Update").Call(jen.ID("exampleInput")),
+				jen.ID("actual").Dot("Update").Call(jen.ID(utils.BuildFakeVarName("Input"))),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 		),

@@ -76,7 +76,7 @@ func buildRequisiteIDCallArgsWithPreCreatedUser(proj *models.Project, typ models
 	}
 
 	if typ.BelongsToUser {
-		lines = append(lines, jen.ID("exampleUser").Dot("ID"))
+		lines = append(lines, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
 	}
 
 	return lines
@@ -162,13 +162,13 @@ func buildTestClientGetAllOfSomethingForUser(proj *models.Project, typ models.Da
 			jen.Line(),
 			utils.BuildSubTest(
 				"obligatory",
-				jen.ID("exampleUserID").Assign().Add(utils.FakeUint64Func()),
+				jen.ID(utils.BuildFakeVarName("UserID")).Assign().Add(utils.FakeUint64Func()),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("expected").Assign().Slice().Qual(proj.ModelsV1Package(), sn).Values(),
 				jen.Line(),
-				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sForUser", pn), jen.Qual(utils.MockPkg, "Anything"), jen.ID("exampleUserID")).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
+				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sForUser", pn), jen.Qual(utils.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("UserID"))).Dot("Return").Call(jen.ID("expected"), jen.Nil()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("GetAll%sForUser", pn).Call(utils.CtxVar(), jen.ID("exampleUserID")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("GetAll%sForUser", pn).Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("UserID"))),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertTrue(jen.ID("actual"), nil),
 				jen.Line(),
@@ -190,14 +190,14 @@ func buildTestClientGetAllOfSomethingCount(proj *models.Project, typ models.Data
 			jen.Line(),
 			utils.BuildSubTest(
 				"obligatory",
-				jen.ID("exampleCount").Assign().Uint64().Call(jen.Lit(123)),
+				jen.ID(utils.BuildFakeVarName("Count")).Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("exampleCount"), jen.Nil()),
+				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Count")), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("GetAll%sCount", pn).Call(utils.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
-				utils.AssertEqual(jen.ID("exampleCount"), jen.ID("actual"), nil, nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Count")), jen.ID("actual"), nil, nil),
 				jen.Line(),
 				utils.AssertExpectationsFor("mockDB"),
 			),

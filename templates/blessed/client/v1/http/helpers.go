@@ -21,16 +21,12 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			jen.Err().Error(),
 		).Block(
 			jen.If(
-				jen.ID("i").IsEqualTo().ID("nil").
-					Op("||").
+				jen.ID("i").IsEqualTo().ID("nil").Or().
 					Qual("reflect", "TypeOf").Call(
 					jen.ID("i"),
 				).Dot("Kind").Call().DoesNotEqual().Qual("reflect", "Ptr"),
 			).Block(
-				jen.Return().List(
-					jen.True(),
-					utils.Error("pointer"),
-				),
+				jen.Return().List(jen.True(), utils.Error("value is not a pointer")),
 			),
 			jen.Return().List(jen.False(),
 				jen.Nil()),
