@@ -42,7 +42,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"bubbles up errors",
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
 				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),

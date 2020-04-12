@@ -729,17 +729,17 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		if typ.BelongsToUser {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.ID("exampleUser").Dot("ID")).
-				Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah")))
+				Dotln("WillReturnError").Call(utils.ObligatoryError())
 			actualCallArgs = append(actualCallArgs, jen.ID("exampleUser").Dot("ID"))
 		}
 		if typ.BelongsToStruct != nil {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WithArgs").Call(jen.IDf("expected%sID", typ.BelongsToStruct.Singular())).
-				Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah")))
+				Dotln("WillReturnError").Call(utils.ObligatoryError())
 			actualCallArgs = append(actualCallArgs, jen.IDf("expected%sID", typ.BelongsToStruct.Singular()))
 		} else if typ.BelongsToNobody {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-				Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah")))
+				Dotln("WillReturnError").Call(utils.ObligatoryError())
 		}
 		actualCallArgs = append(actualCallArgs, jen.ID(utils.FilterVarName))
 
@@ -986,14 +986,14 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			out = append(out,
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID(expectedQueryVarName))).
 					Dotln("WithArgs").Callln(nef...).
-					Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dot("WillReturnError").Call(utils.ObligatoryError()),
 			)
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			out = append(out,
 				jen.Line(),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID(expectedQueryVarName))).
 					Dotln("WithArgs").Callln(nef...).Dot("WillReturnError").Call(
-					jen.Qual("errors", "New").Call(jen.Lit("blah")),
+					utils.ObligatoryError(),
 				),
 			)
 		}
@@ -1326,7 +1326,7 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 			jen.Line(),
 			jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 				Dotln("WithArgs").Callln(dbQueryExpectationArgs...).
-				Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				Dot("WillReturnError").Call(utils.ObligatoryError()),
 			jen.Line(),
 			jen.Err().Assign().ID(dbfl).Dotf("Archive%s", sn).Call(actualCallArgs...),
 			utils.AssertError(jen.Err(), nil),
@@ -1434,7 +1434,7 @@ func buildTestDBGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, db
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 					Dotln("WithArgs").Call(jen.ID(expectedSomethingID)).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot(baseFuncName).Call(utils.CtxVar(), jen.ID(expectedSomethingID)),
 				utils.AssertError(jen.Err(), nil),

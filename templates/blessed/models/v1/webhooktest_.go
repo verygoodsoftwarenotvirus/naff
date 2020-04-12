@@ -74,7 +74,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 				"obligatory",
 				jen.ID("w").Assign().AddressOf().ID("Webhook").Values(),
 				jen.ID("actual").Assign().ID("buildErrorLogFunc").Call(jen.ID("w"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("actual").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("actual").Call(utils.ObligatoryError()),
 			),
 		),
 		jen.Line(),

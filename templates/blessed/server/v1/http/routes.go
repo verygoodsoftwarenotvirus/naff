@@ -133,6 +133,14 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 	}
 	block = append(block, buildCORSHandlerDef()...)
 
+	v1RouterBlock := []jen.Code{
+		buildIterableAPIRoutes(proj),
+		jen.Line(),
+		buildWebhookAPIRoutes(proj),
+		jen.Line(),
+	}
+	v1RouterBlock = append(v1RouterBlock, buildOAuth2ClientsAPIRoutes(proj)...)
+
 	block = append(block,
 		jen.Line(),
 		jen.ID("router").Dot("Use").Callln(
@@ -222,11 +230,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 		)),
 		jen.Line(),
 		jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.True())).Dot("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual("github.com/go-chi/chi", "Router")).Block(
-			buildIterableAPIRoutes(proj),
-			jen.Line(),
-			buildWebhookAPIRoutes(proj),
-			jen.Line(),
-			buildOAuth2ClientsAPIRoutes(proj),
+			v1RouterBlock...,
 		)),
 		jen.Line(),
 		jen.ID("s").Dot("router").Equals().ID("router"),
@@ -258,12 +262,9 @@ func buildWebhookAPIRoutes(proj *models.Project) jen.Code {
 	return g
 }
 
-func buildOAuth2ClientsAPIRoutes(proj *models.Project) jen.Code {
-	g := &jen.Group{}
-
-	g.Add(
+func buildOAuth2ClientsAPIRoutes(proj *models.Project) []jen.Code {
+	return []jen.Code{
 		jen.Comment("OAuth2 Clients"),
-		jen.Line(),
 		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/oauth2/clients"), jen.Func().Params(jen.ID("clientRouter").Qual("github.com/go-chi/chi", "Router")).Block(
 			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
 			jen.Comment("CreateHandler is not bound to an OAuth2 authentication token"),
@@ -272,7 +273,5 @@ func buildOAuth2ClientsAPIRoutes(proj *models.Project) jen.Code {
 			jen.ID("clientRouter").Dot("Delete").Call(jen.ID("sr"), jen.ID("s").Dot("oauth2ClientsService").Dot("ArchiveHandler").Call()),
 			jen.ID("clientRouter").Dot("Get").Call(jen.Lit("/"), jen.ID("s").Dot("oauth2ClientsService").Dot("ListHandler").Call()),
 		)),
-	)
-
-	return g
+	}
 }

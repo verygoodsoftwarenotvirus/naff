@@ -62,7 +62,7 @@ func buildTestClient_GetOAuth2Client(proj *models.Project) []jen.Code {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleOAuth2Client").Dot("ID"),
 					jen.ID("exampleOAuth2Client").Dot("BelongsToUser"),
-				).Dot("Return").Call(jen.ID("expected"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.ID("expected"), utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Client").Call(
 					utils.CtxVar(),
@@ -116,7 +116,7 @@ func buildTestClient_GetOAuth2ClientByClientID(proj *models.Project) []jen.Code 
 					jen.ID("exampleOAuth2Client").Dot("ClientID"),
 				).Dot("Return").Call(
 					jen.ID("exampleOAuth2Client"),
-					jen.Qual("errors", "New").Call(jen.Lit("blah")),
+					utils.ObligatoryError(),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2ClientByClientID").Call(
@@ -197,7 +197,7 @@ func buildTestClient_GetOAuth2ClientCount(proj *models.Project) []jen.Code {
 				jen.Qual(utils.MockPkg, "Anything"),
 				jen.ID("exampleUserID"),
 				jen.ID(utils.FilterVarName),
-			).Dot("Return").Call(jen.ID("expected"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			).Dot("Return").Call(jen.ID("expected"), utils.ObligatoryError()),
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2ClientCount").Call(
 				utils.CtxVar(),
@@ -336,7 +336,7 @@ func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleUser").Dot("ID"),
 					jen.ID(utils.FilterVarName),
-				).Dot("Return").Call(jen.ID("exampleOAuth2ClientList"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.ID("exampleOAuth2ClientList"), utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(
 					utils.CtxVar(),
@@ -394,7 +394,7 @@ func buildTestClient_CreateOAuth2Client(proj *models.Project) []jen.Code {
 					jen.ID("exampleInput"),
 				).Dot("Return").Call(
 					jen.ID("expected"),
-					jen.Qual("errors", "New").Call(jen.Lit("blah")),
+					utils.ObligatoryError(),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("exampleInput")),

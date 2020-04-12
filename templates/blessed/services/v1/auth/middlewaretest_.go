@@ -278,7 +278,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleUser").Dot("ID"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
-					jen.Qual("errors", "New").Call(jen.Lit("blah")),
+					utils.ObligatoryError(),
 				),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
@@ -324,7 +324,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleOAuth2Client").Dot("BelongsToUser"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
-					jen.Qual("errors", "New").Call(jen.Lit("blah")),
+					utils.ObligatoryError(),
 				),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
@@ -358,7 +358,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
-					jen.Qual("errors", "New").Call(jen.Lit("blah")),
+					utils.ObligatoryError(),
 				),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
 				jen.Line(),
@@ -368,7 +368,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("CookieName"),
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(utils.ObligatoryError()),
 				jen.ID("cb").Dot("On").Call(
 					jen.Lit("Encode"),
 					jen.ID("CookieName"),
@@ -586,7 +586,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					jen.Qual("errors", "New").Call(jen.Lit("blah")),
+					utils.ObligatoryError(),
 				),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -626,7 +626,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					jen.Qual("errors", "New").Call(jen.Lit("blah")),
+					utils.ObligatoryError(),
 				),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),

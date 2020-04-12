@@ -25,14 +25,11 @@ func initDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
-			utils.InlineFakeSeedFunc(),
 			jen.ID("urlToUse").Equals().ID("testutil").Dot("DetermineServiceURL").Call(),
 			jen.Line(),
 			jen.ID("logger").Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.ID("logger").Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
 			jen.Qual(proj.TestutilV1Package(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
-			jen.Line(),
-			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 			jen.Line(),
 			jen.Comment("NOTE: this is sad, but also the only thing that consistently works"),
 			jen.Comment("see above for my vain attempts at a real solution to this problem"),

@@ -280,7 +280,7 @@ func buildTestDB_GetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
 				utils.AssertError(jen.Err(), nil),
@@ -388,7 +388,7 @@ func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.Supe
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("Username")).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("Username")),
 				utils.AssertError(jen.Err(), nil),
@@ -467,7 +467,7 @@ func buildTestDB_GetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperP
 				"with error querying database",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllUserCount").Call(utils.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
@@ -670,7 +670,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 					jen.False(),
-				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(utils.CtxVar(), jen.ID("expectedInput")),
 				utils.AssertError(jen.Err(), nil),

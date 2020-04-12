@@ -124,7 +124,7 @@ func AddImports(proj *models.Project, file *jen.File) {
 		"github.com/boombuler/barcode":                 "barcode",
 		"github.com/emicklei/hazana":                   "hazana",
 		"github.com/go-chi/chi":                        "chi",
-		"github.com/go-chi/middleware":                 "middleware",
+		"github.com/go-chi/chi/middleware":             "middleware",
 		"github.com/go-chi/cors":                       "cors",
 		"github.com/google/wire":                       "wire",
 		"github.com/gorilla/securecookie":              "securecookie",

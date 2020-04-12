@@ -65,7 +65,7 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error()).Block(
-					jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					jen.Return().List(jen.Nil(), utils.ObligatoryError()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideWebhooksService").Callln(
@@ -95,7 +95,7 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("dm").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
-				jen.ID("dm").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("dm").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expectation"), utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideWebhooksService").Callln(
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),

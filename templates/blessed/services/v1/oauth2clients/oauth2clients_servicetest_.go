@@ -98,7 +98,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error(),
 				).Block(
-					jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					jen.Return().List(jen.Nil(), utils.ObligatoryError()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideOAuth2ClientsService").Callln(
@@ -121,11 +121,11 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2Clients"),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), utils.ObligatoryError()),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetAllOAuth2ClientCount"),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.ID("expected"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.ID("expected"), utils.ObligatoryError()),
 				jen.Line(),
 				jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expected")).Dot("Return").Call(), jen.Line(),

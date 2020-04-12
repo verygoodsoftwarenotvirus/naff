@@ -150,7 +150,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList")).Call(jen.Nil()),
-					jen.Qual("errors", "New").Call(jen.Lit("blah")),
+					utils.ObligatoryError(),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideServer").Callln(

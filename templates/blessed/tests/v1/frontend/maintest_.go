@@ -12,7 +12,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("T").PointerTo().Qual("testing", "T"), jen.ID("tp").ID("testProvider")).Block(
+		jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("tp").ID("testProvider")).Block(
 			jen.For(jen.List(jen.Underscore(), jen.ID("bn")).Assign().Range().Index().String().Values(jen.Lit("firefox"), jen.Lit("chrome"))).Block(
 				jen.ID("browserName").Assign().ID("bn"),
 				jen.ID("caps").Assign().Qual("github.com/tebeka/selenium", "Capabilities").Values(jen.Lit("browserName").MapAssign().ID("browserName")),
@@ -20,9 +20,9 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("panic").Call(jen.Err()),
 				),
-				jen.Defer().ID("wd").Dot("Quit").Call(),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.ID("bn"), jen.ID("tp").Call(jen.ID("wd"))),
+				jen.ID("t").Dot("Run").Call(jen.ID("bn"), jen.ID("tp").Call(jen.ID("wd"))),
+				utils.AssertNoError(jen.ID("wd").Dot("Quit").Call(), nil),
 			),
 		),
 		jen.Line(),

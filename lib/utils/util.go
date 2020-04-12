@@ -284,7 +284,7 @@ func Errorf(str string, args ...interface{}) jen.Code {
 	return jen.Qual("errors", "New").Call(jen.Litf(str, args...))
 }
 
-func ObligatoryError(str string) jen.Code {
+func ObligatoryError() jen.Code {
 	return Error("blah")
 }
 

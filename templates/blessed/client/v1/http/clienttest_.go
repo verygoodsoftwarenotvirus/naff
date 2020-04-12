@@ -352,7 +352,7 @@ func buildTestV1Client_CloseRequestBody() []jen.Code {
 				"with error",
 				jen.Line(),
 				jen.ID("rc").Assign().ID("newMockReadCloser").Call(),
-				jen.ID("rc").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.ID("rc").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().ID("rc"),

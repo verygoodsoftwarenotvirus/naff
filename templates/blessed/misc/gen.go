@@ -90,8 +90,7 @@ func dockerIgnore() []byte {
 }
 
 func readmeDotMD(projectName wordsmith.SuperPalabra) func() []byte {
-	f := fmt.Sprintf(`
-# %s
+	f := fmt.Sprintf(`# %s
 
 replace me with a good description
 
@@ -109,6 +108,8 @@ the following tools are occasionally required for development:
 - [wire](https://github.com/google/wire) for dependency management
 - [golangci-lint](https://github.com/golangci/golangci-lint) for linting (see included config file)
 - [gocov](https://github.com/axw/gocov) for coverage report generation
+
+assuming you have go installed, you can install these by running `+"`"+`make dev-tools`+"`"+`
 
 ## running the server
 
@@ -253,8 +254,8 @@ lint:
 $(COVERAGE_OUT): $(ARTIFACTS_DIR) ensure-gocov
 	set -ex; \
 	echo "mode: set" > $(COVERAGE_OUT);
-	for proj in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
-		go test -coverprofile=profile.out -v -count 5 -race -failfast $$proj; \
+	for pkg in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
+		go test -coverprofile=profile.out -v -count 5 -race -failfast $$pkg; \
 		if [ $$? -ne 0 ]; then exit 1; fi; \
 		cat profile.out | grep -v "mode: atomic" >> $(COVERAGE_OUT); \
 	rm -f profile.out; \
@@ -265,8 +266,8 @@ $(COVERAGE_OUT): $(ARTIFACTS_DIR) ensure-gocov
 quicktest: $(ARTIFACTS_DIR) ensure-gocov
 	@set -ex; \
 	echo "mode: set" > $(COVERAGE_OUT);
-	for proj in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
-		go test -coverprofile=profile.out -race -failfast $$proj; \
+	for pkg in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
+		go test -coverprofile=profile.out -race -failfast $$pkg; \
 		if [ $$? -ne 0 ]; then exit 1; fi; \
 		cat profile.out | grep -v "mode: atomic" >> $(COVERAGE_OUT); \
 	rm -f profile.out; \
@@ -703,7 +704,7 @@ output:
 # all available settings of specific linters
 linters-settings:
   errcheck:
-    # report about not checking of errors in type assetions: `+"`"+`a := b.(MyStruct)`+"`"+`;
+    # report about not checking of errors in type assertions: `+"`"+`a := b.(MyStruct)`+"`"+`;
     # default is false: such cases aren't reported by default.
     check-type-assertions: true
 
@@ -722,10 +723,10 @@ linters-settings:
     settings:
       printf: # analyzer name, run `+"`"+`go tool vet help`+"`"+` to see all analyzers
         funcs: # run `+"`"+`go tool vet help printf`+"`"+` to see available settings for `+"`"+`printf`+"`"+` analyzer
-          - (github.com/golangci/golangci-lint/proj/logutils.Log).Infof
-          - (github.com/golangci/golangci-lint/proj/logutils.Log).Warnf
-          - (github.com/golangci/golangci-lint/proj/logutils.Log).Errorf
-          - (github.com/golangci/golangci-lint/proj/logutils.Log).Fatalf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
     # enable or disable analyzers by name
     enable-all: true
 
@@ -794,9 +795,10 @@ linters-settings:
     range-loops: true # Report preallocation suggestions on range loops, true by default
     for-loops: false # Report preallocation suggestions on for loops, false by default
   gocritic:
-    # # Which checks should be disabled; can't be combined with 'enabled-checks'; default is empty
+    # Which checks should be disabled; can't be combined with 'enabled-checks'; default is empty
     disabled-checks:
       - captLocal
+      - singleCaseSwitch
 
     # Enable multiple checks by tags, run `+"`"+`GL_DEBUG=gocritic golangci-lint`+"`"+` run to see all tags and checks.
     # Empty list by default. See https://github.com/go-critic/go-critic#usage -> section "Tags".
@@ -950,11 +952,13 @@ issues:
   # Default is false.
   new: false
 
-  # Show only new issues created after git revision `+"`"+`REV`+"`"+`
-  new-from-rev: REV
-
-  # Show only new issues created in git patch with set file path.
-  new-from-patch: path/to/patch/file
+  #
+  # # Show only new issues created after git revision `+"`"+`REV`+"`"+`
+  # new-from-rev: REV
+  #
+  # # Show only new issues created in git patch with set file path.
+  # new-from-patch: path/to/patch/file
+  #
 `, projRoot)
 
 	return func() []byte { return []byte(f) }

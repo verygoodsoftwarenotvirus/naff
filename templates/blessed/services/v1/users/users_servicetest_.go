@@ -139,7 +139,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error(),
 				).Block(
-					jen.Return().List(jen.ID("uc"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					jen.Return().List(jen.ID("uc"), utils.ObligatoryError()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
@@ -163,7 +163,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("GetUserCount"),
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.ID("mockUserCount"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("Return").Call(jen.ID("mockUserCount"), utils.ObligatoryError()),
 				jen.Line(),
 				jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Paramsln(

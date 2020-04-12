@@ -224,7 +224,7 @@ func buildTestDB_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser")),
 				utils.AssertError(jen.Err(), nil),
@@ -321,7 +321,7 @@ func buildTestDB_GetAllWebhooksCount(proj *models.Project, dbvendor wordsmith.Su
 				"with error from database",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooksCount").Call(utils.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
@@ -421,7 +421,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 				"with error querying database",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(utils.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
@@ -559,7 +559,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
 					utils.CtxVar(),
@@ -770,7 +770,7 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"), jen.ID("typesSeparator")),
 					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"), jen.ID("topicsSeparator")),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
-				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID("exampleInput")),
 				utils.AssertError(jen.Err(), nil),
@@ -922,7 +922,7 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 						jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"),
 						jen.ID("topicsSeparator")), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
-				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				).Dot("WillReturnError").Call(utils.ObligatoryError()),
 				jen.Line(),
 				jen.Err().Assign().ID(dbfl).Dot("UpdateWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook"))),
 				utils.AssertError(jen.Err(), nil),
