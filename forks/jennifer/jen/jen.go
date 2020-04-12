@@ -115,6 +115,7 @@ func (f *File) renderImports(source io.Writer) error {
 		paths = append(paths, path)
 	}
 	sort.Strings(paths)
+
 	for _, path := range paths {
 		def := filtered[path]
 		if def.alias && path != "C" {

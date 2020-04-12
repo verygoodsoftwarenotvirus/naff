@@ -27,7 +27,7 @@ func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("UpdateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
 			jen.Line(),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit(puvn),
-			jen.ID("counterDescription").Equals().Lit(fmt.Sprintf("the number of %s managed by the %s service", puvn, puvn)),
+			jen.ID("counterDescription").String().Equals().Lit(fmt.Sprintf("the number of %s managed by the %s service", puvn, puvn)),
 			jen.ID("topicName").String().Equals().Lit(prn),
 			jen.ID("serviceName").String().Equals().Lit(fmt.Sprintf("%s_service", prn)),
 		),
@@ -112,11 +112,9 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
-	cn := typ.Name.SingularCommonName()
 	uvn := typ.Name.UnexportedVarName()
 
 	params := []jen.Code{
-		utils.CtxParam(),
 		jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 		jen.ID("db").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
 	}
@@ -157,12 +155,6 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 			),
 			jen.Line(),
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(serviceValues...),
-			jen.Line(),
-			jen.List(jen.ID(fmt.Sprintf("%sCount", uvn)), jen.Err()).Assign().ID("svc").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("GetAll%sCount", pn)).Call(utils.CtxVar()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("setting current %s count: ", cn)+"%w"), jen.Err())),
-			),
-			jen.ID("svc").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("IncrementBy").Call(utils.CtxVar(), jen.ID(fmt.Sprintf("%sCount", uvn))),
 			jen.Line(),
 			jen.Return().List(jen.ID("svc"), jen.Nil()),
 		),

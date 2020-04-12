@@ -7,17 +7,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
-	ret := jen.NewFile(vendor.SingularPackageName())
+func wireDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	sn := dbvendor.Singular()
+	spn := dbvendor.SingularPackageName()
+
+	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
 	utils.AddImports(proj, ret)
-	sn := vendor.Singular()
 
-	isMariaDB := vendor.RouteName() == "mariadb" || vendor.RouteName() == "maria_db"
-	var (
-		dbTrail string
-	)
-	if !isMariaDB {
+	var dbTrail string
+
+	if !isMariaDB(dbvendor) {
 		dbTrail = "DB"
 	} else {
 		dbTrail = "Connection"

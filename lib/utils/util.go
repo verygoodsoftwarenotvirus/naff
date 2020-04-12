@@ -276,6 +276,18 @@ func QueryFilterParam(proj *models.Project) jen.Code {
 	return jen.ID(FilterVarName).PointerTo().ID("QueryFilter")
 }
 
+func Error(str string) jen.Code {
+	return jen.Qual("errors", "New").Call(jen.Lit(str))
+}
+
+func Errorf(str string, args ...interface{}) jen.Code {
+	return jen.Qual("errors", "New").Call(jen.Litf(str, args...))
+}
+
+func ObligatoryError(str string) jen.Code {
+	return Error("blah")
+}
+
 const SpanVarName = "span"
 
 func StartSpan(proj *models.Project, saveCtx bool, spanName string) jen.Code {

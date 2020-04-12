@@ -3,10 +3,16 @@ package queriers
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func timeTellerTestDotGo(vendor, dbDesc string) *jen.File {
-	ret := jen.NewFile(vendor)
+func timeTellerTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	spn := dbvendor.SingularPackageName()
+
+	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		utils.OuterTestFunc("_stdLibTimeTeller_Now").Block(

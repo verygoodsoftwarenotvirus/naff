@@ -9,13 +9,16 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientsDotGo(proj *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
-	ret := jen.NewFile(vendor.SingularPackageName())
+func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	spn := dbvendor.SingularPackageName()
+
+	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
 	utils.AddImports(proj, ret)
-	sn := vendor.Singular()
+
+	sn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
-	dbrn := vendor.RouteName()
+	dbrn := dbvendor.RouteName()
 
 	isPostgres := dbrn == "postgres"
 	isSqlite := dbrn == "sqlite"

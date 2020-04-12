@@ -143,7 +143,9 @@ func getTimeQuery(dbvendor wordsmith.SuperPalabra) string {
 }
 
 func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
-	ret := jen.NewFile(dbvendor.SingularPackageName())
+	spn := dbvendor.SingularPackageName()
+
+	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
 	utils.AddImports(proj, ret)
 

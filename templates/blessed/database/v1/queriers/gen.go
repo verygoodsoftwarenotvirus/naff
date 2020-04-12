@@ -164,8 +164,8 @@ func renderDatabasePackage(proj *models.Project, vendor string) error {
 	}
 
 	if isMariaDB(vendorWord) || isSqlite(vendorWord) {
-		files[fmt.Sprintf("database/v1/queriers/%s/time_teller.go", vendor)] = timeTellerDotGo(pn, dbDesc)
-		files[fmt.Sprintf("database/v1/queriers/%s/time_teller_test.go", vendor)] = timeTellerTestDotGo(pn, dbDesc)
+		files[fmt.Sprintf("database/v1/queriers/%s/time_teller.go", vendor)] = timeTellerDotGo(proj, vendorWord)
+		files[fmt.Sprintf("database/v1/queriers/%s/time_teller_test.go", vendor)] = timeTellerTestDotGo(proj, vendorWord)
 	}
 
 	for _, typ := range proj.DataTypes {
@@ -203,11 +203,11 @@ func buildMariaDBWord() wordsmith.SuperPalabra {
 	}
 }
 
-type SqlBuilder interface {
+type sqlBuilder interface {
 	ToSql() (string, []interface{}, error)
 }
 
-func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType, queryName string, queryBuilder SqlBuilder, expectedArgs, callArgs []jen.Code, includeExpectedAndActualArgs, listQuery, includeFilter, createUser, createExampleVariable, excludeUserID bool, preQueryLines []jen.Code) []jen.Code {
+func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType, queryName string, queryBuilder sqlBuilder, expectedArgs, callArgs []jen.Code, includeExpectedAndActualArgs, listQuery, includeFilter, createUser, createExampleVariable, excludeUserID bool, preQueryLines []jen.Code) []jen.Code {
 	const (
 		expectedQueryVarName = "expectedQuery"
 		expectedArgsVarName  = "expectedArgs"

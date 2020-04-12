@@ -32,7 +32,9 @@ var (
 )
 
 func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
-	ret := jen.NewFile(dbvendor.SingularPackageName())
+	spn := dbvendor.SingularPackageName()
+
+	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
 	utils.AddImports(proj, ret)
 
