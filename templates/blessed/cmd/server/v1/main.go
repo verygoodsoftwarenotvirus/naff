@@ -22,7 +22,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Comment("find and validate our configuration filepath"),
 			jen.ID("configFilepath").Assign().Qual("os", "Getenv").Call(jen.Lit("CONFIGURATION_FILEPATH")),
 			jen.If(jen.ID("configFilepath").IsEqualTo().EmptyString()).Block(
-				jen.ID("logger").Dot("Fatal").Call(jen.Qual("errors", "New").Call(jen.Lit("no configuration file provided"))),
+				jen.ID("logger").Dot("Fatal").Call(utils.Error("provided")),
 			),
 			jen.Line(),
 			jen.Comment("parse our config file"),

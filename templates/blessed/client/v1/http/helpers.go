@@ -29,7 +29,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			).Block(
 				jen.Return().List(
 					jen.True(),
-					jen.Qual("errors", "New").Call(jen.Lit("value is not a pointer")),
+					utils.Error("pointer"),
 				),
 			),
 			jen.Return().List(jen.False(),
@@ -48,9 +48,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("i").IsEqualTo().ID("nil")).Block(
 				jen.Return().List(
 					jen.True(),
-					jen.Qual("errors", "New").Call(
-						jen.Lit("value is nil"),
-					),
+					utils.Error("value is nil"),
 				),
 			),
 			jen.Return().List(jen.False(),

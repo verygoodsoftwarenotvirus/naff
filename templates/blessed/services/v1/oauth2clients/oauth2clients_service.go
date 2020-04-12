@@ -97,7 +97,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.List(jen.ID("client"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(utils.InlineCtx(), jen.ID("id")),
 			jen.Line(),
 			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
-				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("invalid client"))),
+				jen.Return().List(jen.Nil(), utils.Error("client")),
 			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for client: %w"), jen.Err())),
 			),

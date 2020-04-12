@@ -111,7 +111,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Qual("errors", "New").Call(jen.EmptyString())),
+				jen.ID(dbfl).Dot("logQueryBuildingError").Call(utils.ObligatoryError()),
 			),
 		),
 		jen.Line(),
@@ -125,7 +125,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.BuildSubTestWithoutContext(
 					"obligatory",
 					jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-					jen.ID(dbfl).Dot("logIDRetrievalError").Call(jen.Qual("errors", "New").Call(jen.EmptyString())),
+					jen.ID(dbfl).Dot("logIDRetrievalError").Call(utils.ObligatoryError()),
 				),
 			),
 			jen.Line(),

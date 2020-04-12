@@ -64,7 +64,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
 			jen.If(jen.ID("userIDFetcher").IsEqualTo().ID("nil")).Block(
-				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("userIDFetcher must be provided"))),
+				jen.Return().List(jen.Nil(), utils.Error("provided")),
 			),
 			jen.Line(),
 			jen.List(jen.ID("counter"), jen.Err()).Assign().ID("counterProvider").Call(jen.ID("counterName"), jen.Lit("number of users managed by the users service")),

@@ -202,7 +202,10 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("exampleID"),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("errors", "New").Call(jen.ID("exampleID"))),
+				).Dot("Return").Call(
+					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
+					utils.ObligatoryError(),
+				),
 				jen.Line(),
 				jen.ID("c").Assign().AddressOf().ID("clientStore").Values(jen.ID("database").MapAssign().ID("mockDB")),
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID("c").Dot("GetByID").Call(jen.ID("exampleID")),

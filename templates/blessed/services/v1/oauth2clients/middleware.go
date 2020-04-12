@@ -74,7 +74,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.If(jen.Op("!").ID("hasScope")).Block(
 				jen.ID("logger").Dot("Info").Call(jen.Lit("rejecting client for invalid scope")),
-				jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("client not authorized for scope"))),
+				jen.Return().List(jen.Nil(), utils.Error("scope")),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("c"), jen.Nil()),

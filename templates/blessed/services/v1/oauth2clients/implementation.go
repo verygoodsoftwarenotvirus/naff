@@ -98,7 +98,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 				jen.Comment("authorization check"),
 				jen.If(jen.Op("!").ID("client").Dot("HasScope").Call(jen.ID("scope"))).Block(
 					utils.WriteXHeader("res", "StatusUnauthorized"),
-					jen.Return().List(jen.EmptyString(), jen.Qual("errors", "New").Call(jen.Lit("not authorized for scope"))),
+					jen.Return().List(jen.EmptyString(), utils.Error("scope")),
 				),
 				jen.Line(),
 				jen.Return().List(jen.ID("scope"), jen.Nil()),
@@ -106,7 +106,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("invalid credentials"),
 			utils.WriteXHeader("res", "StatusBadRequest"),
-			jen.Return().List(jen.EmptyString(), jen.Qual("errors", "New").Call(jen.Lit("no scope information found"))),
+			jen.Return().List(jen.EmptyString(), utils.Error("found")),
 		),
 		jen.Line(),
 	)
@@ -129,7 +129,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 				jen.Comment("check for user instead"),
 				jen.List(jen.ID("user"), jen.ID("userOk")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")),
 				jen.If(jen.Op("!").ID("userOk")).Block(jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no user attached to this request")),
-					jen.Return().List(jen.EmptyString(), jen.Qual("errors", "New").Call(jen.Lit("user not found"))),
+					jen.Return().List(jen.EmptyString(), utils.Error("found")),
 				),
 				jen.ID("uid").Equals().ID("user").Dot("ID"),
 			).Else().Block(
@@ -159,7 +159,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("reject invalid grant type"),
 			jen.If(jen.ID("grant").IsEqualTo().Qual("gopkg.in/oauth2.v3", "PasswordCredentials")).Block(
-				jen.Return().List(jen.False(), jen.Qual("errors", "New").Call(jen.Lit("invalid grant type: password"))),
+				jen.Return().List(jen.False(), utils.Error("invalid grant type: password")),
 			),
 			jen.Line(),
 			jen.Comment("fetch client data"),
@@ -171,7 +171,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("disallow implicit grants unless authorized"),
 			jen.If(jen.ID("grant").IsEqualTo().Qual("gopkg.in/oauth2.v3", "Implicit").And().Op("!").ID("client").Dot("ImplicitAllowed")).Block(
-				jen.Return().List(jen.False(), jen.Qual("errors", "New").Call(jen.Lit("client not authorized for implicit grants"))),
+				jen.Return().List(jen.False(), utils.Error("grants")),
 			),
 			jen.Line(),
 			jen.Return().List(jen.True(), jen.Nil()),
@@ -209,7 +209,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.True(), jen.Nil()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.False(), jen.Qual("errors", "New").Call(jen.Lit("unauthorized"))),
+			jen.Return().List(jen.False(), utils.Error("unauthorized")),
 		),
 		jen.Line(),
 	)

@@ -257,9 +257,7 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 		jen.If(jen.ID("cookie").IsEqualTo().ID("nil")).Block(
 			jen.Return().List(
 				jen.Nil(),
-				jen.Qual("errors", "New").Call(
-					jen.Lit("cookie required for request"),
-				),
+				utils.Error("cookie required for request"),
 			),
 		),
 		jen.Line(),

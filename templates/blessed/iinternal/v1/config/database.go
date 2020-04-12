@@ -63,7 +63,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 					jen.ID("sdb").Assign().Qual(proj.DatabaseV1Package("queriers", "sqlite"), "ProvideSqlite").Call(jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
 					jen.Line(),
 					jen.Return().Qual(proj.DatabaseV1Package("client"), "ProvideDatabaseClient").Call(utils.CtxVar(), jen.ID("rawDB"), jen.ID("sdb"), jen.ID("debug"), jen.ID("logger"))),
-				jen.Default().Block(jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("invalid database type selected")))),
+				jen.Default().Block(jen.Return().List(jen.Nil(), utils.Error("selected"))),
 			),
 		),
 		jen.Line(),
