@@ -92,7 +92,7 @@ func FakeStringFunc() jen.Code {
 }
 
 func FakeContentTypeFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "MimeType").Call()
+	return jen.Qual(FakeLibrary, "FileMimeType").Call()
 }
 
 func FakeUUIDFunc() jen.Code {

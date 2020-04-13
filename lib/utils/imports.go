@@ -20,7 +20,7 @@ const (
 	AssertPkg      = "github.com/stretchr/testify/assert"
 	MustAssertPkg  = "github.com/stretchr/testify/require"
 	MockPkg        = "github.com/stretchr/testify/mock"
-	FakeLibrary    = "github.com/brianvoe/gofakeit"
+	FakeLibrary    = "github.com/brianvoe/gofakeit/v5"
 	TracingLibrary = "go.opencensus.io/trace"
 )
 
