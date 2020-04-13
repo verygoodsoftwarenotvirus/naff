@@ -19,6 +19,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("UpdateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_update_input"),
 			jen.Line(),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit("webhooks"),
+			jen.ID("counterDescription").String().Equals().Lit("the number of webhooks managed by the webhooks service"),
 			jen.ID("topicName").String().Equals().Lit("webhooks"),
 			jen.ID("serviceName").String().Equals().Lit("webhooks_service"),
 		),
@@ -65,7 +66,6 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ProvideWebhooksService builds a new WebhooksService"),
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksService").Paramsln(
-			utils.CtxParam(),
 			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
 			jen.ID("webhookDatabase").Qual(proj.ModelsV1Package(), "WebhookDataManager"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
@@ -74,7 +74,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("webhookCounterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
 			jen.ID("em").PointerTo().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
 		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
-			jen.List(jen.ID("webhookCounter"), jen.Err()).Assign().ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.Lit("the number of webhooks managed by the webhooks service")),
+			jen.List(jen.ID("webhookCounter"), jen.Err()).Assign().ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
@@ -88,12 +88,6 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("webhookIDFetcher").MapAssign().ID("webhookIDFetcher"),
 				jen.ID("eventManager").MapAssign().ID("em"),
 			),
-			jen.Line(),
-			jen.List(jen.ID("webhookCount"), jen.Err()).Assign().ID("svc").Dot("webhookDatabase").Dot("GetAllWebhooksCount").Call(utils.CtxVar()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting current webhook count: %w"), jen.Err())),
-			),
-			jen.ID("svc").Dot("webhookCounter").Dot("IncrementBy").Call(utils.CtxVar(), jen.ID("webhookCount")),
 			jen.Line(),
 			jen.Return().List(jen.ID("svc"), jen.Nil()),
 		),
