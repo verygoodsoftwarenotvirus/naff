@@ -33,31 +33,46 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
+		jen.Func().ID("mustBuildCode").Params(jen.ID("totpSecret").String()).Params(jen.String()).Block(
+			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
+				jen.ID("totpSecret"),
+				jen.Qual("time", "Now").Call().Dot("UTC").Call(),
+			),
+			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+				jen.Panic(jen.Err()),
+			),
+			jen.Return(jen.ID("code")),
+		),
+	)
+
+	ret.Add(
 		jen.Func().ID("buildOAuth2ClientActions").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Block(
 			jen.Return().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 				jen.Lit("CreateOAuth2Client").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("CreateOAuth2Client"), jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
-						jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "RandomUserInput").Call(),
-						jen.List(jen.ID("u"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(utils.InlineCtx(), jen.ID("ui")),
+						utils.CreateCtx(),
+						jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInput").Call(),
+						jen.List(jen.ID("u"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(utils.CtxVar(), jen.ID("ui")),
 						jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-							jen.Return().ID("c").Dot("BuildHealthCheckRequest").Call(),
+							jen.Return().ID("c").Dot("BuildHealthCheckRequest").Call(utils.CtxVar()),
 						),
 						jen.Line(),
-						jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("c").Dot("Login").Call(utils.InlineCtx(), jen.ID("u").Dot("Username"),
-							jen.ID("ui").Dot("Password"),
-							jen.ID("u").Dot("TwoFactorSecret"),
+						jen.ID("uli").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+							jen.ID("Username").MapAssign().ID("ui").Dot("Username"),
+							jen.ID("Password").MapAssign().ID("ui").Dot("Password"),
+							jen.ID("TOTPToken").MapAssign().ID("mustBuildCode").Call(jen.ID("u").Dot("TwoFactorSecret")),
 						),
+						jen.Line(),
+						jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("c").Dot("Login").Call(utils.CtxVar(), jen.ID("uli")),
 						jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-							jen.Return().ID("c").Dot("BuildHealthCheckRequest").Call(),
+							jen.Return().ID("c").Dot("BuildHealthCheckRequest").Call(utils.CtxVar()),
 						),
 						jen.Line(),
 						jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildCreateOAuth2ClientRequest").Callln(
-							utils.InlineCtx(),
+							utils.CtxVar(),
 							jen.ID("cookie"),
-							jen.Qual(proj.FakeModelsPackage(), "RandomOAuth2ClientInput").Callln(
-								jen.ID("u").Dot("Username"),
-								jen.ID("ui").Dot("Password"),
-								jen.ID("u").Dot("TwoFactorSecret"),
+							jen.AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
+								jen.ID("UserLoginInput").MapAssign().PointerTo().ID("uli"),
 							),
 						),
 						jen.Return().List(jen.ID("req"), jen.Err()),

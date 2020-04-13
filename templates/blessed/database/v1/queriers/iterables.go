@@ -386,7 +386,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPal
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", sn).Call(buildQueryParams...),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Line(),
-			jen.List(jen.ID(uvn), jen.Underscore(), jen.Err()).Assign().ID("scanItem").Call(jen.ID("row"), jen.False()),
+			jen.List(jen.ID(uvn), jen.Underscore(), jen.Err()).Assign().IDf("scan%s", sn).Call(jen.ID("row"), jen.False()),
 			jen.Return(jen.ID(uvn), jen.Err()),
 		),
 		jen.Line(),

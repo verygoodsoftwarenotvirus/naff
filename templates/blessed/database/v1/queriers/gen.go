@@ -37,33 +37,6 @@ func RenderPackage(proj *models.Project) error {
 }
 
 // GetDatabasePalabra gets a given DB's superpalabra
-func GetDatabasePalabra(vendor string) wordsmith.SuperPalabra {
-	switch vendor {
-	case postgres:
-		return wordsmith.FromSingularPascalCase("Postgres")
-	case sqlite:
-		return wordsmith.FromSingularPascalCase("Sqlite")
-	case mariadb:
-		return &wordsmith.ManualWord{
-			SingularStr:                           "MariaDB",
-			PluralStr:                             "MariaDBs",
-			RouteNameStr:                          "mariadb",
-			KebabNameStr:                          "mariadb",
-			PluralRouteNameStr:                    "mariadbs",
-			UnexportedVarNameStr:                  "mariaDB",
-			PluralUnexportedVarNameStr:            "mariaDBs",
-			PackageNameStr:                        "mariadbs",
-			SingularPackageNameStr:                "mariadb",
-			SingularCommonNameStr:                 "maria DB",
-			ProperSingularCommonNameWithPrefixStr: "a Maria DB",
-			PluralCommonNameStr:                   "maria DBs",
-			SingularCommonNameWithPrefixStr:       "maria DB",
-			PluralCommonNameWithPrefixStr:         "maria DBs",
-		}
-	default:
-		panic(fmt.Sprintf("unknown vendor: %q", vendor))
-	}
-}
 
 // GetOAuth2ClientPalabra gets a given DB's superpalabra
 func GetOAuth2ClientPalabra() wordsmith.SuperPalabra {

@@ -8,27 +8,6 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func buildFakeCallForCreationInput(proj *models.Project, typ models.DataType) []jen.Code {
-	lines := []jen.Code{}
-
-	for _, field := range typ.Fields {
-		lines = append(lines, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeCallForField(proj.OutputPath, field)))
-	}
-
-	return lines
-}
-
-func fieldToExpectedDotField(varName string, typ models.DataType) []jen.Code {
-	lines := []jen.Code{}
-
-	for _, field := range typ.Fields {
-		sn := field.Name.Singular()
-		lines = append(lines, jen.ID(sn).MapAssign().ID(varName).Dot(sn))
-	}
-
-	return lines
-}
-
 func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj *models.Project, typ models.DataType) []jen.Code {
 	parents := proj.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
@@ -72,6 +51,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
+	scn := typ.Name.SingularCommonName()
 
 	ret.Add(
 		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
@@ -107,7 +87,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				),
 				jen.Line(),
 				utils.BuildSubTest(
-					"it should return 200 when the relevant item exists",
+					fmt.Sprintf("it should return 200 when the relevant %s exists", scn),
 					buildTestExistenceCheckingShouldBeReadable(proj, typ)...,
 				),
 			)),

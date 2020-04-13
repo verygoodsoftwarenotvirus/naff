@@ -36,17 +36,23 @@ func actionsDotGo(proj *models.Project) *jen.File {
 
 	buildRandomActionLines := func() []jen.Code {
 		lines := []jen.Code{
-			utils.CreateCtx(),
 			jen.ID("allActions").Assign().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 				jen.Lit("GetHealthCheck").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("GetHealthCheck"),
-					jen.ID("Action").MapAssign().ID("c").Dot("BuildHealthCheckRequest"),
+					jen.ID("Action").MapAssign().Func().Params().Params(
+						jen.PointerTo().Qual("net/http", "Request"),
+						jen.Error(),
+					).Block(
+						utils.CreateCtx(),
+						jen.Return(jen.ID("c").Dot("BuildHealthCheckRequest").Call(utils.CtxVar())),
+					),
 					jen.ID("Weight").MapAssign().Lit(100),
 				),
 				jen.Lit("CreateUser").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("CreateUser"),
 					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
-						jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "RandomUserInput").Call(),
+						utils.CreateCtx(),
+						jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInput").Call(),
 						jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(utils.CtxVar(), jen.ID("ui")),
 					),
 					jen.ID("Weight").MapAssign().Lit(100),

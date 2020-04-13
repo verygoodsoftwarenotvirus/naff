@@ -173,7 +173,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(gFields...),
 				jen.Line(),
 				jen.If(jen.ID("includeCount")).Block(
-					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID("items"))),
+					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID(puvn))),
 				),
 				jen.Line(),
 				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),

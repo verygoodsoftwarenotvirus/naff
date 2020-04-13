@@ -104,9 +104,9 @@ func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []je
 						jen.ID("TotalCount").MapAssign().Lit(3),
 					),
 					jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Valuesln(
-						jen.PointerTo().ID("exampleItem1"),
-						jen.PointerTo().ID("exampleItem2"),
-						jen.PointerTo().ID("exampleItem3"),
+						jen.PointerTo().IDf("example%s1", sn),
+						jen.PointerTo().IDf("example%s2", sn),
+						jen.PointerTo().IDf("example%s3", sn),
 					),
 				),
 			),

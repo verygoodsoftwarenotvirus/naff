@@ -23,7 +23,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Setup implement's hazana's Attacker interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Setup").Params(jen.ID("c").Qual("github.com/emicklei/hazana", "Config")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Setup").Params(jen.Underscore().Qual("github.com/emicklei/hazana", "Config")).Params(jen.Error()).Block(
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
@@ -32,10 +32,13 @@ func mainDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Do implement's hazana's Attacker interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Do").Params(utils.CtxParam()).Params(jen.Qual("github.com/emicklei/hazana", "DoResult")).Block(
+		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Do").Params(
+			jen.Underscore().Qual("context", "Context"),
+		).Params(jen.Qual("github.com/emicklei/hazana", "DoResult")).Block(
 			jen.Comment("Do performs one request and is executed in a separate goroutine."),
 			jen.Comment("The context is used to cancel the request on timeout."),
 			jen.ID("act").Assign().ID("RandomAction").Call(jen.ID("a").Dot("todoClient")),
+			jen.Line(),
 			jen.List(jen.ID("req"), jen.Err()).Assign().ID("act").Dot("Action").Call(),
 			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("req").IsEqualTo().ID("nil")).Block(
 				jen.If(jen.Err().IsEqualTo().ID("ErrUnavailableYet")).Block(

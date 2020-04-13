@@ -20,8 +20,8 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.ID(basePath).Equals().Lit(typ.Name.PluralRouteName())),
 	)
 
-	ret.Add(buildBuildItemExistsRequest(proj, typ)...)
-	ret.Add(buildItemExists(proj, typ)...)
+	ret.Add(buildBuildSomethingExistsRequest(proj, typ)...)
+	ret.Add(buildSomethingExists(proj, typ)...)
 	ret.Add(buildBuildGetSomethingRequestFuncDecl(proj, typ)...)
 	ret.Add(buildGetSomethingFuncDecl(proj, typ)...)
 	ret.Add(buildBuildGetListOfSomethingRequestFuncDecl(proj, typ)...)
@@ -124,20 +124,7 @@ func buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj *models.
 	return urlBuildingParams
 }
 
-/*
-// BuildItemExistsRequest builds an HTTP request for checking the existence of an item
-func (c *V1Client) BuildItemExistsRequest(ctx context.Context, itemID uint64) (*http.Request, error) {
-	_, span := trace.StartSpan(ctx, "BuildItemExistsRequest")
-	defer span.End()
-
-	uri := c.BuildURL(nil, itemsBasePath, strconv.FormatUint(itemID, 10))
-	tracing.AttachRequestURIToSpan(span, uri)
-
-	return http.NewRequest(http.MethodHead, uri, nil)
-}
-*/
-
-func buildBuildItemExistsRequest(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildSomethingExistsRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular()
 	commonNameWithPrefix := typ.Name.SingularCommonNameWithPrefix()
 	funcName := fmt.Sprintf("Build%sExistsRequest", ts)
@@ -175,7 +162,7 @@ func buildBuildItemExistsRequest(proj *models.Project, typ models.DataType) []je
 	return lines
 }
 
-func buildItemExists(proj *models.Project, typ models.DataType) []jen.Code {
+func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular()
 	funcName := fmt.Sprintf("%sExists", ts)
 	commonNameWithPrefix := typ.Name.SingularCommonNameWithPrefix()

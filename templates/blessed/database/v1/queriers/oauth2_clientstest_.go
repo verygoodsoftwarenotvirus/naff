@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	scopesSeparator                   = ","
 	oauth2ClientsTableName            = "oauth2_clients"
 	oauth2ClientsTableOwnershipColumn = "belongs_to_user"
 )

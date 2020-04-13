@@ -13,7 +13,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, ret)
 
-	ret.Add(buildTestV1Client_BuildItemExistsRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_BuildSomethingExistsRequest(proj, typ)...)
 	ret.Add(buildTestV1Client_SomethingExists(proj, typ)...)
 	ret.Add(buildTestV1Client_BuildGetSomethingRequest(proj, typ)...)
 	ret.Add(buildTestV1Client_GetSomething(proj, typ)...)
@@ -131,7 +131,7 @@ func buildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(proj *model
 	return callArgs
 }
 
-func buildTestV1Client_BuildItemExistsRequest(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestV1Client_BuildSomethingExistsRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
 	depVarDecls := buildVarDeclarationsOfDependentStructs(proj, typ)

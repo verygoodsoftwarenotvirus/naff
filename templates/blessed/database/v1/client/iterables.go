@@ -39,6 +39,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
 	funcName := fmt.Sprintf("%sExists", sn)
@@ -49,7 +50,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
 		jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-		jen.Qual(proj.InternalTracingV1Package(), "AttachItemIDToSpan").Call(jen.ID("span"), jen.ID("itemID")),
+		jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.IDf("%sID", uvn)),
 		jen.Line(),
 		jen.ID("c").Dot("logger").Dot("WithValues").Call(
 			typ.BuildGetSomethingLogValues(proj),
