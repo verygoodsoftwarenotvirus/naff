@@ -10,12 +10,11 @@ import (
 
 // DataType represents a data model
 type DataType struct {
-	Name                 wordsmith.SuperPalabra
-	BelongsToUser        bool
-	ReadRestrictedToUser bool
-	BelongsToNobody      bool
-	BelongsToStruct      wordsmith.SuperPalabra
-	Fields               []DataField
+	Name            wordsmith.SuperPalabra
+	BelongsToUser   bool
+	BelongsToNobody bool
+	BelongsToStruct wordsmith.SuperPalabra
+	Fields          []DataField
 }
 
 // DataField represents a data model's field
