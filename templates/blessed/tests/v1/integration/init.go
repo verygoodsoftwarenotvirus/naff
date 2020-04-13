@@ -29,7 +29,6 @@ func initDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
-			utils.InlineFakeSeedFunc(),
 			jen.ID("urlToUse").Equals().Qual(proj.TestutilV1Package(), "DetermineServiceURL").Call(),
 			jen.ID("logger").Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.Line(),

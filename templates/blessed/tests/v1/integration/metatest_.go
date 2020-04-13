@@ -26,6 +26,7 @@ func metaTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("checkValueAndError").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("i").Interface(), jen.Err().Error()).Block(
 			jen.ID("t").Dot("Helper").Call(),
+			jen.Line(),
 			utils.RequireNoError(jen.Err(), nil),
 			utils.RequireNotNil(jen.ID("i"), nil),
 		),

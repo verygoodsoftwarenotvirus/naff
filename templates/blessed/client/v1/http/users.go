@@ -441,9 +441,9 @@ func buildLogin(proj *models.Project) []jen.Code {
 		jen.ID("c").Dot("closeResponseBody").Call(jen.ID("res")),
 		jen.Line(),
 		jen.ID("cookies").Assign().ID("res").Dot("Cookies").Call(),
-		jen.If(jen.ID("len").Call(
+		jen.If(jen.Len(
 			jen.ID("cookies"),
-		).Op(">").Zero(),
+		).GreaterThan().Zero(),
 		).Block(
 			jen.Return().List(jen.ID("cookies").Index(
 				jen.Zero(),

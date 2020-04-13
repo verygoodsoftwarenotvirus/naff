@@ -93,7 +93,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.Qual("strings", "HasPrefix").Call(jen.ID("req").Dot("URL").Dot("Path"),
 				jen.ID("apiPathPrefix"))).Block(
 				jen.ID("x").Assign().Qual("strings", "TrimPrefix").Call(jen.ID("req").Dot("URL").Dot("Path"), jen.ID("apiPathPrefix")),
-				jen.If(jen.ID("y").Assign().Qual("strings", "Split").Call(jen.ID("x"), jen.Lit("/")), jen.ID("len").Call(jen.ID("y")).Op(">").Zero()).Block(
+				jen.If(jen.ID("y").Assign().Qual("strings", "Split").Call(jen.ID("x"), jen.Lit("/")), jen.Len(jen.ID("y")).GreaterThan().Zero()).Block(
 					jen.ID("x").Equals().ID("y").Index(jen.Zero()),
 				),
 				jen.Return().ID("x"),

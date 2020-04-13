@@ -68,7 +68,7 @@ func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),
-			jen.ID("randIndex").Assign().Qual("math/rand", "Intn").Call(jen.ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn))),
+			jen.ID("randIndex").Assign().Qual("math/rand", "Intn").Call(jen.Len(jen.IDf("%sRes", puvn).Dot(pn))),
 			jen.Return().AddressOf().IDf("%sRes", puvn).Dot(pn).Index(jen.ID("randIndex")),
 		),
 		jen.Line(),

@@ -70,10 +70,10 @@ and logging in.`)
 
 	ret.Add(
 		jen.Func().ID("limitSlice").Params(jen.ID("in").Index().String()).Params(jen.ID("out").Index(jen.Lit(5)).String()).Block(
-			jen.If(jen.ID("len").Call(jen.ID("in")).DoesNotEqual().Lit(5)).Block(
+			jen.If(jen.Len(jen.ID("in")).DoesNotEqual().Lit(5)).Block(
 				jen.ID("panic").Call(jen.Lit("wut")),
 			),
-			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
 				jen.ID("out").Index(jen.ID("i")).Equals().ID("in").Index(jen.ID("i")),
 			),
 			jen.Return(),
@@ -99,7 +99,7 @@ and logging in.`)
 	ret.Add(
 		jen.Func().ID("buildTheThing").Params(jen.ID("token").String()).Params(jen.String()).Block(
 			jen.Var().ID("out").String(),
-			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
+			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
 				jen.If(jen.ID("i").DoesNotEqual().Zero()).Block(
 					jen.ID("out").Op("+=").Lit("\n"),
 				),
@@ -113,7 +113,7 @@ and logging in.`)
 				),
 			),
 			jen.Line(),
-			jen.ID("timeLeft").Assign().Parens(jen.Lit(30).Times().Qual("time", "Second").Op("-").Qual("time", "Since").Call(jen.ID("lastChange")).Dot("Round").Call(jen.Qual("time", "Second"))).Dot("String").Call(),
+			jen.ID("timeLeft").Assign().Parens(jen.Lit(30).Times().Qual("time", "Second").Minus().Qual("time", "Since").Call(jen.ID("lastChange")).Dot("Round").Call(jen.Qual("time", "Second"))).Dot("String").Call(),
 			jen.ID("out").Op("+=").Qual("fmt", "Sprintf").Call(jen.Lit("\n\n%s\n"), jen.ID("timeLeft")),
 			jen.Line(),
 			jen.Return().ID("out"),
@@ -150,7 +150,7 @@ and logging in.`)
 				jen.Err().Error(),
 			),
 			jen.Line(),
-			jen.If(jen.ID("len").Call(jen.Qual("os", "Args")).IsEqualTo().One()).Block(
+			jen.If(jen.Len(jen.Qual("os", "Args")).IsEqualTo().One()).Block(
 				jen.ID("reader").Assign().Qual("bufio", "NewReader").Call(jen.Qual("os", "Stdin")),
 				jen.Qual("fmt", "Print").Call(jen.Lit("token: ")),
 				jen.List(jen.ID("token"), jen.Err()).Equals().ID("reader").Dot("ReadString").Call(jen.ID(`'\n'`)),

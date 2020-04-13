@@ -110,7 +110,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 		jen.Comment("QueryPage calculates a query page from the current filter values"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("QueryPage").Params().Params(jen.Uint64()).Block(
-			jen.Return().ID("qf").Dot("Limit").Times().Parens(jen.ID("qf").Dot("Page").Op("-").One()),
+			jen.Return().ID("qf").Dot("Limit").Times().Parens(jen.ID("qf").Dot("Page").Minus().One()),
 		),
 		jen.Line(),
 	)
@@ -170,17 +170,17 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.ID("qf").Dot("SetPage").Call(jen.ID("qf").Dot("Page")),
-			jen.If(jen.ID("qp").Assign().ID("qf").Dot("QueryPage").Call(), jen.ID("qp").Op(">").Zero()).Block(
+			jen.If(jen.ID("qp").Assign().ID("qf").Dot("QueryPage").Call(), jen.ID("qp").GreaterThan().Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Offset").Call(jen.ID("qp")),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("Limit").Op(">").Zero()).Block(
+			jen.If(jen.ID("qf").Dot("Limit").GreaterThan().Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Limit").Call(jen.ID("qf").Dot("Limit")),
 			).Else().Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Limit").Call(jen.ID("MaxLimit")),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("CreatedAfter").Op(">").Zero()).Block(
+			jen.If(jen.ID("qf").Dot("CreatedAfter").GreaterThan().Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(
 						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("createdOnKey")).MapAssign().ID("qf").Dot("CreatedAfter"),
@@ -188,7 +188,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("CreatedBefore").Op(">").Zero()).Block(
+			jen.If(jen.ID("qf").Dot("CreatedBefore").GreaterThan().Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(
 						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("createdOnKey")).MapAssign().ID("qf").Dot("CreatedBefore"),
@@ -196,7 +196,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("UpdatedAfter").Op(">").Zero()).Block(
+			jen.If(jen.ID("qf").Dot("UpdatedAfter").GreaterThan().Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(
 						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("updatedOnKey")).MapAssign().ID("qf").Dot("UpdatedAfter"),
@@ -204,7 +204,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("UpdatedBefore").Op(">").Zero()).Block(
+			jen.If(jen.ID("qf").Dot("UpdatedBefore").GreaterThan().Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(
 						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("updatedOnKey")).MapAssign().ID("qf").Dot("UpdatedBefore"),

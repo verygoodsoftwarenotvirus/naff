@@ -94,7 +94,7 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 			jen.Line(),
 			jen.If(
 				jen.ID("scopes").Assign().Qual("strings", "Split").Call(jen.ID("scopes"), jen.ID("scopesSeparator")),
-				jen.ID("len").Call(jen.ID("scopes")).Op(">=").One().And().ID("scopes").Index(jen.Zero()).DoesNotEqual().EmptyString(),
+				jen.Len(jen.ID("scopes")).Op(">=").One().And().ID("scopes").Index(jen.Zero()).DoesNotEqual().EmptyString(),
 			).Block(
 				jen.ID("x").Dot("Scopes").Equals().ID("scopes"),
 			),

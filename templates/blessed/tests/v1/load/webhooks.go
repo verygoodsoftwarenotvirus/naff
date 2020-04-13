@@ -20,7 +20,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),
-			jen.ID("randIndex").Assign().Qual("math/rand", "Intn").Call(jen.ID("len").Call(jen.ID("webhooks").Dot("Webhooks"))),
+			jen.ID("randIndex").Assign().Qual("math/rand", "Intn").Call(jen.Len(jen.ID("webhooks").Dot("Webhooks"))),
 			jen.Return().AddressOf().ID("webhooks").Dot("Webhooks").Index(jen.ID("randIndex")),
 		),
 		jen.Line(),

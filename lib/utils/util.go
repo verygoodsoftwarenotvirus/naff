@@ -303,6 +303,10 @@ func ObligatoryError() jen.Code {
 const SpanVarName = "span"
 
 func StartSpan(proj *models.Project, saveCtx bool, spanName string) jen.Code {
+	return StartSpanWithVar(proj, saveCtx, jen.Lit(spanName))
+}
+
+func StartSpanWithVar(proj *models.Project, saveCtx bool, spanName jen.Code) jen.Code {
 	/*
 		ctx, span := trace.StartSpan(ctx, "UpdateItem")
 		defer span.End()
@@ -315,7 +319,7 @@ func StartSpan(proj *models.Project, saveCtx bool, spanName string) jen.Code {
 				return CtxVar()
 			}
 			return jen.ID("_")
-		}(), jen.ID(SpanVarName)).Op(":=").Qual(filepath.Join(proj.OutputPath, "internal", "v1", "tracing"), "StartSpan").Call(CtxVar(), jen.Lit(spanName)),
+		}(), jen.ID(SpanVarName)).Op(":=").Qual(filepath.Join(proj.OutputPath, "internal", "v1", "tracing"), "StartSpan").Call(CtxVar(), spanName),
 		jen.Line(),
 		jen.Defer().ID(SpanVarName).Dot("End").Call(),
 		jen.Line(),

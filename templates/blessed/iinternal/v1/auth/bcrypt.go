@@ -21,7 +21,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.ID("defaultMinimumPasswordSize").Equals().Lit(16),
 			jen.Line(),
 			jen.Comment("DefaultBcryptHashCost is what it says on the tin"),
-			jen.ID("DefaultBcryptHashCost").Equals().ID("BcryptHashCost").Call(jen.Qual("golang.org/x/crypto/bcrypt", "DefaultCost").Op("+").ID("bcryptCostCompensation")),
+			jen.ID("DefaultBcryptHashCost").Equals().ID("BcryptHashCost").Call(jen.Qual("golang.org/x/crypto/bcrypt", "DefaultCost").Plus().ID("bcryptCostCompensation")),
 		),
 		jen.Line(),
 	)
@@ -153,7 +153,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			utils.StartSpan(proj, false, "hashedPasswordIsTooWeak"),
 			jen.List(jen.ID("cost"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "Cost").Call(jen.Index().Byte().Call(jen.ID("hashedPassword"))),
 			jen.Line(),
-			jen.Return().Err().DoesNotEqual().ID("nil").Or().ID("uint").Call(jen.ID("cost")).Op("<").ID("b").Dot("hashCost"),
+			jen.Return().Err().DoesNotEqual().ID("nil").Or().ID("uint").Call(jen.ID("cost")).LessThan().ID("b").Dot("hashCost"),
 		),
 		jen.Line(),
 	)
@@ -162,7 +162,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Comment("PasswordIsAcceptable takes a password and returns whether or not it satisfies the authenticator"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordIsAcceptable").Params(jen.ID("pass").String()).Params(jen.Bool()).Block(
-			jen.Return().ID("uint").Call(jen.ID("len").Call(jen.ID("pass"))).Op(">=").ID("b").Dot("minimumPasswordSize"),
+			jen.Return().ID("uint").Call(jen.Len(jen.ID("pass"))).Op(">=").ID("b").Dot("minimumPasswordSize"),
 		),
 		jen.Line(),
 	)

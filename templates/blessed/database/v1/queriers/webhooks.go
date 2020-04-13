@@ -111,13 +111,13 @@ func buildScanWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 				jen.Return().List(jen.Nil(), jen.Zero(), jen.Err()),
 			),
 			jen.Line(),
-			jen.If(jen.ID("events").Assign().Qual("strings", "Split").Call(jen.ID("eventsStr"), jen.ID("eventsSeparator")), jen.ID("len").Call(jen.ID("events")).Op(">=").One().And().ID("events").Index(jen.Zero()).DoesNotEqual().EmptyString()).Block(
+			jen.If(jen.ID("events").Assign().Qual("strings", "Split").Call(jen.ID("eventsStr"), jen.ID("eventsSeparator")), jen.Len(jen.ID("events")).Op(">=").One().And().ID("events").Index(jen.Zero()).DoesNotEqual().EmptyString()).Block(
 				jen.ID("x").Dot("Events").Equals().ID("events"),
 			),
-			jen.If(jen.ID("dataTypes").Assign().Qual("strings", "Split").Call(jen.ID("dataTypesStr"), jen.ID("typesSeparator")), jen.ID("len").Call(jen.ID("dataTypes")).Op(">=").One().And().ID("dataTypes").Index(jen.Zero()).DoesNotEqual().EmptyString()).Block(
+			jen.If(jen.ID("dataTypes").Assign().Qual("strings", "Split").Call(jen.ID("dataTypesStr"), jen.ID("typesSeparator")), jen.Len(jen.ID("dataTypes")).Op(">=").One().And().ID("dataTypes").Index(jen.Zero()).DoesNotEqual().EmptyString()).Block(
 				jen.ID("x").Dot("DataTypes").Equals().ID("dataTypes"),
 			),
-			jen.If(jen.ID("topics").Assign().Qual("strings", "Split").Call(jen.ID("topicsStr"), jen.ID("topicsSeparator")), jen.ID("len").Call(jen.ID("topics")).Op(">=").One().And().ID("topics").Index(jen.Zero()).DoesNotEqual().EmptyString()).Block(
+			jen.If(jen.ID("topics").Assign().Qual("strings", "Split").Call(jen.ID("topicsStr"), jen.ID("topicsSeparator")), jen.Len(jen.ID("topics")).Op(">=").One().And().ID("topics").Index(jen.Zero()).DoesNotEqual().EmptyString()).Block(
 				jen.ID("x").Dot("Topics").Equals().ID("topics"),
 			),
 			jen.Line(),

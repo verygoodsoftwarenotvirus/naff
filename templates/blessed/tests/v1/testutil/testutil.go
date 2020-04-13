@@ -106,7 +106,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("I had difficulty ensuring these values were unique, even when fake.Seed was called. Could've been fake's fault,"),
 			jen.Comment("could've been docker's fault. In either case, it wasn't worth the time to investigate and determine the culprit"),
-			jen.ID("username").Assign().Qual(utils.FakeLibrary, "Username").Call().Op("+").Qual(utils.FakeLibrary, "HexColor").Call().Op("+").Qual(utils.FakeLibrary, "Country").Call(),
+			jen.ID("username").Assign().Qual(utils.FakeLibrary, "Username").Call().Plus().Qual(utils.FakeLibrary, "HexColor").Call().Plus().Qual(utils.FakeLibrary, "Country").Call(),
 			jen.ID("in").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationInput").Valuesln(
 				jen.ID("Username").MapAssign().ID("username"),
 				jen.ID("Password").MapAssign().Qual(utils.FakeLibrary, "Password").Call(jen.True(), jen.True(), jen.True(), jen.True(), jen.True(), jen.Lit(64)),
@@ -193,7 +193,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.ID("cookies").Assign().ID("res").Dot("Cookies").Call(),
-			jen.If(jen.ID("len").Call(jen.ID("cookies")).Op(">").Zero()).Block(
+			jen.If(jen.Len(jen.ID("cookies")).GreaterThan().Zero()).Block(
 				jen.Return().List(jen.ID("cookies").Index(jen.Zero()), jen.Nil()),
 			),
 			jen.Line(),

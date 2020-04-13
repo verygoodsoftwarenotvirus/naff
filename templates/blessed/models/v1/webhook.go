@@ -102,13 +102,13 @@ func webhookDotGo(proj *models.Project) *jen.File {
 				jen.ID("w").Dot("Method").Equals().ID("input").Dot("Method"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("Events").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("Events")).Op(">").Zero()).Block(
+			jen.If(jen.ID("input").Dot("Events").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("Events")).GreaterThan().Zero()).Block(
 				jen.ID("w").Dot("Events").Equals().ID("input").Dot("Events"),
 			),
-			jen.If(jen.ID("input").Dot("DataTypes").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("DataTypes")).Op(">").Zero()).Block(
+			jen.If(jen.ID("input").Dot("DataTypes").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("DataTypes")).GreaterThan().Zero()).Block(
 				jen.ID("w").Dot("DataTypes").Equals().ID("input").Dot("DataTypes"),
 			),
-			jen.If(jen.ID("input").Dot("Topics").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("Topics")).Op(">").Zero()).Block(
+			jen.If(jen.ID("input").Dot("Topics").DoesNotEqual().ID("nil").And().ID("len").Call(jen.ID("input").Dot("Topics")).GreaterThan().Zero()).Block(
 				jen.ID("w").Dot("Topics").Equals().ID("input").Dot("Topics"),
 			),
 		),

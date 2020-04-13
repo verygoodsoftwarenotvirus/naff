@@ -138,7 +138,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 
 	buildProvideServerLines := func() []jen.Code {
 		lines := []jen.Code{
-			jen.If(jen.ID("len").Call(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).Op("<").Lit(32)).Block(
+			jen.If(jen.Len(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).LessThan().Lit(32)).Block(
 				jen.Err().Assign().Qual("errors", "New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
 				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("cookie secret failure")),
 				jen.Return().List(jen.Nil(), jen.Err()),
@@ -174,7 +174,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Block(
+			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Block(
 				jen.ID("wh").Assign().ID("allWebhooks").Dot("Webhooks").Index(jen.ID("i")),
 				jen.Comment("NOTE: we must guarantee that whatever is stored in the database is valid, otherwise"),
 				jen.Comment("newsman will try (and fail) to execute requests constantly"),

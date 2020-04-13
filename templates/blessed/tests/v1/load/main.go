@@ -72,7 +72,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("RequestLabel").MapAssign().ID("act").Dot("Name"),
 				jen.ID("Error").MapAssign().Err(),
 				jen.ID("StatusCode").MapAssign().ID("sc"),
-				jen.ID("BytesIn").MapAssign().ID("int64").Call(jen.ID("len").Call(jen.ID("bi"))),
+				jen.ID("BytesIn").MapAssign().ID("int64").Call(jen.Len(jen.ID("bi"))),
 				jen.ID("BytesOut").MapAssign().ID("bo")),
 			jen.Return().ID("dr"),
 		),
