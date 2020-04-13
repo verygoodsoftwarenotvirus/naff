@@ -46,8 +46,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.Underscore(), jen.Err()).Equals().ID("tf").Dot("Write").Call(
 					jen.Index().Byte().Call(
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(`
+						utils.FormatString(`
 [server]
 http_port = 1234
 debug = false
@@ -56,7 +55,7 @@ debug = false
 provider = "postgres"
 debug = true
 connection_details = "%s"
-`),
+`,
 							jen.ID("expected"),
 						),
 					),

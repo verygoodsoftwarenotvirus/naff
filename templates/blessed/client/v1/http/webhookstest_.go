@@ -47,8 +47,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
+						utils.FormatString("%d",
 							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
 					),
@@ -88,8 +87,8 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(webhookRoute),
+						utils.FormatString(
+							webhookRoute,
 							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
 						jen.Lit("expected and actual paths do not match"),
@@ -373,8 +372,8 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					"ts",
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(webhookRoute),
+						utils.FormatString(
+							webhookRoute,
 							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
 						jen.Lit("expected and actual paths do not match"),
@@ -436,8 +435,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
+						utils.FormatString("%d",
 							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
 					),
@@ -470,8 +468,8 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					"ts",
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(webhookRoute),
+						utils.FormatString(
+							webhookRoute,
 							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
 						jen.Lit("expected and actual paths do not match"),

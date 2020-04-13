@@ -276,8 +276,12 @@ func QueryFilterParam(proj *models.Project) jen.Code {
 	return jen.ID(FilterVarName).PointerTo().ID("QueryFilter")
 }
 
-func FormatString(str string, args ...jen.Code) jen.Code {
+func FormatString(str string, args ...jen.Code) *jen.Statement {
 	return jen.Qual("fmt", "Sprintf").Call(append([]jen.Code{jen.Lit(str)}, args...)...)
+}
+
+func FormatStringWithArg(arg jen.Code, args ...jen.Code) *jen.Statement {
+	return jen.Qual("fmt", "Sprintf").Call(append([]jen.Code{arg}, args...)...)
 }
 
 func BuildError(args ...jen.Code) jen.Code {

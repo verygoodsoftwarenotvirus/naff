@@ -29,18 +29,18 @@ func webhooksDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	ret.Add(
 		jen.Var().Defs(
 			jen.ID("webhooksTableColumns").Equals().Index().String().Valuesln(
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.name"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.content_type"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.url"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.method"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.events"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.data_types"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.topics"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.created_on"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.updated_on"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.ID("webhooksTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.ID("webhooksTableName"), jen.ID("webhooksTableOwnershipColumn")),
+				utils.FormatString("%s.id", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.name", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.content_type", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.url", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.method", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.events", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.data_types", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.topics", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.created_on", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.updated_on", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.archived_on", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("webhooksTableOwnershipColumn")),
 			),
 		),
 		jen.Line(),
@@ -188,9 +188,8 @@ func buildBuildGetWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 				Dotln("Select").Call(jen.ID("webhooksTableColumns").Spread()).
 				Dotln("From").Call(jen.ID("webhooksTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.ID("webhooksTableName")).MapAssign().ID("webhookID"),
-				jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
+				utils.FormatString("%s.id", jen.ID("webhooksTableName")).MapAssign().ID("webhookID"),
+				utils.FormatString("%s.%s",
 					jen.ID("webhooksTableName"),
 					jen.ID("webhooksTableOwnershipColumn"),
 				).MapAssign().ID("userID"),
@@ -248,10 +247,10 @@ func buildBuildGetAllWebhooksCountQuery(proj *models.Project, dbvendor wordsmith
 				jen.Var().Err().Error(),
 				jen.Line(),
 				jen.List(jen.ID("getAllWebhooksCountQuery"), jen.Underscore(), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
-					Dotln("Select").Call(jen.Qual("fmt", "Sprintf").Call(jen.ID("countQuery"), jen.ID("webhooksTableName"))).
+					Dotln("Select").Call(utils.FormatStringWithArg(jen.ID("countQuery"), jen.ID("webhooksTableName"))).
 					Dotln("From").Call(jen.ID("webhooksTableName")).
 					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-					jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.ID("webhooksTableName")).MapAssign().ID("nil"))).
+					utils.FormatString("%s.archived_on", jen.ID("webhooksTableName")).MapAssign().ID("nil"))).
 					Dotln("ToSql").Call(),
 				jen.Line(),
 				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
@@ -303,7 +302,7 @@ func buildBuildGetAllWebhooksQuery(proj *models.Project, dbvendor wordsmith.Supe
 					Dotln("Select").Call(jen.ID("webhooksTableColumns").Spread()).
 					Dotln("From").Call(jen.ID("webhooksTableName")).
 					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-					jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.ID("webhooksTableName")).MapAssign().ID("nil"))).
+					utils.FormatString("%s.archived_on", jen.ID("webhooksTableName")).MapAssign().ID("nil"))).
 					Dotln("ToSql").Call(),
 				jen.Line(),
 				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
@@ -401,18 +400,17 @@ func buildBuildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 			jen.ID("builder").Assign().ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.Append(
 				jen.ID("webhooksTableColumns"),
-				jen.Qual("fmt", "Sprintf").Call(jen.ID("countQuery"), jen.ID("webhooksTableName")),
+				utils.FormatStringWithArg(jen.ID("countQuery"), jen.ID("webhooksTableName")),
 			).Spread()).
 				Dotln("From").Call(jen.ID("webhooksTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
+				utils.FormatString("%s.%s",
 					jen.ID("webhooksTableName"),
 					jen.ID("webhooksTableOwnershipColumn"),
 				).MapAssign().ID("userID"),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.ID("webhooksTableName")).MapAssign().ID("nil")),
+				utils.FormatString("%s.archived_on", jen.ID("webhooksTableName")).MapAssign().ID("nil")),
 			).
-				Dotln("GroupBy").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.ID("webhooksTableName"))),
+				Dotln("GroupBy").Call(utils.FormatString("%s.id", jen.ID("webhooksTableName"))),
 			jen.Line(),
 			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().ID("nil")).Block(
 				jen.ID("builder").Equals().ID("filter").Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.ID("webhooksTableName")),

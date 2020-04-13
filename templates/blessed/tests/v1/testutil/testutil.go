@@ -218,7 +218,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 				jen.Qual("net/http", "MethodPost"), jen.ID("firstOAuth2ClientURI"), jen.Qual("strings", "NewReader").Call(
-					jen.Qual("fmt", "Sprintf").Call(jen.Lit(`
+					utils.FormatString(`
 	{
 		"username": %q,
 		"password": %q,
@@ -227,7 +227,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		"belongs_to_user": %d,
 		"scopes": ["*"]
 	}
-		`),
+		`,
 						jen.ID("u").Dot("Username"),
 						jen.ID("u").Dot("HashedPassword"),
 						jen.ID("code"),

@@ -32,7 +32,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 				jen.Err().Assign().ID("ed").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("ex")),
 				jen.Line(),
 				utils.AssertNoError(jen.Err(), nil),
-				utils.AssertEqual(jen.ID("res").Dot("Body").Dot("String").Call(), jen.Qual("fmt", "Sprintf").Call(jen.Lit("{%q:%q}\n"), jen.Lit("name"), jen.ID("ex").Dot("Name")), nil),
+				utils.AssertEqual(jen.ID("res").Dot("Body").Dot("String").Call(), utils.FormatString("{%q:%q}\n", jen.Lit("name"), jen.ID("ex").Dot("Name")), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -46,7 +46,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Err().Assign().ID("ed").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("ex")),
 				utils.AssertNoError(jen.Err(), nil),
-				utils.AssertEqual(jen.Qual("fmt", "Sprintf").Call(jen.Lit(`<example><name>%s</name></example>`), jen.ID("expectation")), jen.ID("res").Dot("Body").Dot("String").Call(), nil),
+				utils.AssertEqual(utils.FormatString(`<example><name>%s</name></example>`, jen.ID("expectation")), jen.ID("res").Dot("Body").Dot("String").Call(), nil),
 			),
 		),
 		jen.Line(),

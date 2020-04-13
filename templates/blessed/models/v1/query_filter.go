@@ -183,7 +183,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("qf").Dot("CreatedAfter").Op(">").Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(
-						jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.ID("tableName"), jen.ID("createdOnKey")).MapAssign().ID("qf").Dot("CreatedAfter"),
+						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("createdOnKey")).MapAssign().ID("qf").Dot("CreatedAfter"),
 					),
 				),
 			),
@@ -191,7 +191,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("qf").Dot("CreatedBefore").Op(">").Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(
-						jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.ID("tableName"), jen.ID("createdOnKey")).MapAssign().ID("qf").Dot("CreatedBefore"),
+						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("createdOnKey")).MapAssign().ID("qf").Dot("CreatedBefore"),
 					),
 				),
 			),
@@ -199,7 +199,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("qf").Dot("UpdatedAfter").Op(">").Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(
-						jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.ID("tableName"), jen.ID("updatedOnKey")).MapAssign().ID("qf").Dot("UpdatedAfter"),
+						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("updatedOnKey")).MapAssign().ID("qf").Dot("UpdatedAfter"),
 					),
 				),
 			),
@@ -207,7 +207,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("qf").Dot("UpdatedBefore").Op(">").Zero()).Block(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(
-						jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.ID("tableName"), jen.ID("updatedOnKey")).MapAssign().ID("qf").Dot("UpdatedBefore"),
+						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("updatedOnKey")).MapAssign().ID("qf").Dot("UpdatedBefore"),
 					),
 				),
 			),

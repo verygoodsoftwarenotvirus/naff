@@ -157,8 +157,7 @@ func buildTestV1Client_BuildItemExistsRequest(proj *models.Project, typ models.D
 		utils.AssertTrue(
 			jen.Qual("strings", "HasSuffix").Call(
 				jen.ID("actual").Dot("URL").Dot("String").Call(),
-				jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%d"),
+				utils.FormatString("%d",
 					jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
 				),
 			),
@@ -208,11 +207,9 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 			),
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
-				jen.Qual("fmt", "Sprintf").Call(
-					append(
-						[]jen.Code{jen.Lit(buildFormatStringForSingleInstanceRoute(proj, typ))},
-						buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
-					)...,
+				utils.FormatString(
+					buildFormatStringForSingleInstanceRoute(proj, typ),
+					buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -281,8 +278,7 @@ func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models
 		utils.AssertTrue(
 			jen.Qual("strings", "HasSuffix").Call(
 				jen.ID("actual").Dot("URL").Dot("String").Call(),
-				jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%d"),
+				utils.FormatString("%d",
 					jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
 				),
 			),
@@ -332,11 +328,9 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 			),
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
-				jen.Qual("fmt", "Sprintf").Call(
-					append(
-						[]jen.Code{jen.Lit(buildFormatStringForSingleInstanceRoute(proj, typ))},
-						buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
-					)...,
+				utils.FormatString(
+					buildFormatStringForSingleInstanceRoute(proj, typ),
+					buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -380,11 +374,9 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 			),
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
-				jen.Qual("fmt", "Sprintf").Call(
-					append(
-						[]jen.Code{jen.Lit(buildFormatStringForSingleInstanceRoute(proj, typ))},
-						buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
-					)...,
+				utils.FormatString(
+					buildFormatStringForSingleInstanceRoute(proj, typ),
+					buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -463,11 +455,9 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	var uriDec *jen.Statement
 	urlFormatArgs := buildFormatCallArgsForListRoute(proj, typ)
 	if len(urlFormatArgs) > 0 {
-		uriDec = jen.Qual("fmt", "Sprintf").Call(
-			append(
-				[]jen.Code{jen.Lit(modelListRoute)},
-				urlFormatArgs...,
-			)...,
+		uriDec = utils.FormatString(
+			modelListRoute,
+			urlFormatArgs...,
 		)
 	} else {
 		uriDec = jen.Lit(modelListRoute)
@@ -624,11 +614,9 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	var uriDec *jen.Statement
 	urlFormatArgs := buildFormatCallArgsForSingleInstanceCreationRoute(proj, typ)
 	if len(urlFormatArgs) > 0 {
-		uriDec = jen.Qual("fmt", "Sprintf").Call(
-			append(
-				[]jen.Code{jen.Lit(modelListRoute)},
-				urlFormatArgs...,
-			)...,
+		uriDec = utils.FormatString(
+			modelListRoute,
+			urlFormatArgs...,
 		)
 	} else {
 		uriDec = jen.Lit(modelListRoute)
@@ -744,11 +732,9 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 			"ts",
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
-				jen.Qual("fmt", "Sprintf").Call(
-					append(
-						[]jen.Code{jen.Lit(buildFormatStringForSingleInstanceRoute(proj, typ))},
-						buildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(proj, typ)...,
-					)...,
+				utils.FormatString(
+					buildFormatStringForSingleInstanceRoute(proj, typ),
+					buildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(proj, typ)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -811,8 +797,7 @@ func buildTestV1Client_BuildArchiveSomethingRequest(proj *models.Project, typ mo
 		utils.AssertTrue(
 			jen.Qual("strings", "HasSuffix").Call(
 				jen.ID("actual").Dot("URL").Dot("String").Call(),
-				jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%d"),
+				utils.FormatString("%d",
 					jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
 				),
 			),
@@ -852,11 +837,9 @@ func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataTyp
 			"ts",
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
-				jen.Qual("fmt", "Sprintf").Call(
-					append(
-						[]jen.Code{jen.Lit(buildFormatStringForSingleInstanceRoute(proj, typ))},
-						buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)[1:]...,
-					)...,
+				utils.FormatString(
+					buildFormatStringForSingleInstanceRoute(proj, typ),
+					buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)[1:]...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),

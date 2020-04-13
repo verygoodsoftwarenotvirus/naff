@@ -190,8 +190,8 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(
-							jen.Qual("fmt", "Sprintf").Call(
-								jen.Lit("{\"name\": %q}"),
+							utils.FormatString(
+								"{\"name\": %q}",
 								jen.ID("expected"),
 							),
 						),

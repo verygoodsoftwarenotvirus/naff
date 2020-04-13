@@ -225,7 +225,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("Serve").Params().Block(
 			jen.ID("s").Dot("httpServer").Dot("Addr").Equals().Qual("fmt", "Sprintf").Call(jen.Lit(":%d"), jen.ID("s").Dot("config").Dot("Server").Dot("HTTPPort")),
-			jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("Listening for HTTP requests on %q"), jen.ID("s").Dot("httpServer").Dot("Addr"))),
+			jen.ID("s").Dot("logger").Dot("Debug").Call(utils.FormatString("Listening for HTTP requests on %q", jen.ID("s").Dot("httpServer").Dot("Addr"))),
 			jen.Line(),
 			jen.Comment("returns ErrServerClosed on graceful close"),
 			jen.If(jen.Err().Assign().ID("s").Dot("httpServer").Dot("ListenAndServe").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(

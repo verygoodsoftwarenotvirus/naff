@@ -130,7 +130,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 				Dotln("From").Call(jen.ID(utils.BuildFakeVarName("TableName"))).
 				Dotln("Where").Call(
 				jen.Qual("github.com/Masterminds/squirrel", "Eq").Values(
-					jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.condition"), jen.ID(utils.BuildFakeVarName("TableName"))).MapAssign().True(),
+					utils.FormatString("%s.condition", jen.ID(utils.BuildFakeVarName("TableName"))).MapAssign().True(),
 				),
 			),
 			jen.Line(),

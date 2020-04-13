@@ -55,8 +55,7 @@ func buildV1Client_BuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code 
 				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
+						utils.FormatString("%d",
 							jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 						),
 					),
@@ -99,8 +98,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 						nil,
 					),
 					utils.AssertEqual(
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("/api/v1/oauth2/clients/%d"),
+						utils.FormatString("/api/v1/oauth2/clients/%d",
 							jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 						),
 						jen.ID("req").Dot("URL").Dot("Path"),
@@ -456,8 +454,7 @@ func buildV1Client_BuildArchiveOAuth2ClientRequest(proj *models.Project) []jen.C
 				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
+						utils.FormatString("%d",
 							jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 						),
 					),
@@ -493,8 +490,8 @@ func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 				).Block(
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("/api/v1/oauth2/clients/%d"),
+						utils.FormatString(
+							"/api/v1/oauth2/clients/%d",
 							jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 						),
 						jen.Lit("expected and actual paths do not match"),

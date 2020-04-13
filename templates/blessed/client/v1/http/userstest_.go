@@ -42,8 +42,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
+						utils.FormatString("%d",
 							jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 						),
 					),
@@ -85,10 +84,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					),
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("/users/%d"),
-							jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-						),
+						utils.FormatString("/users/%d", jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
@@ -353,8 +349,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
+						utils.FormatString("%d",
 							jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 						),
 					),
@@ -387,10 +382,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					"ts",
 					utils.AssertEqual(
 						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("/users/%d"),
-							jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-						),
+						utils.FormatString("/users/%d", jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(

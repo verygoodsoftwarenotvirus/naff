@@ -24,15 +24,15 @@ func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File
 	ret.Add(
 		jen.Var().Defs(
 			jen.ID("usersTableColumns").Equals().Index().String().Valuesln(
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.ID("usersTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.username"), jen.ID("usersTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.hashed_password"), jen.ID("usersTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.password_last_changed_on"), jen.ID("usersTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.two_factor_secret"), jen.ID("usersTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.is_admin"), jen.ID("usersTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.created_on"), jen.ID("usersTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.updated_on"), jen.ID("usersTableName")),
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.ID("usersTableName")),
+				utils.FormatString("%s.id", jen.ID("usersTableName")),
+				utils.FormatString("%s.username", jen.ID("usersTableName")),
+				utils.FormatString("%s.hashed_password", jen.ID("usersTableName")),
+				utils.FormatString("%s.password_last_changed_on", jen.ID("usersTableName")),
+				utils.FormatString("%s.two_factor_secret", jen.ID("usersTableName")),
+				utils.FormatString("%s.is_admin", jen.ID("usersTableName")),
+				utils.FormatString("%s.created_on", jen.ID("usersTableName")),
+				utils.FormatString("%s.updated_on", jen.ID("usersTableName")),
+				utils.FormatString("%s.archived_on", jen.ID("usersTableName")),
 			),
 		),
 		jen.Line(),
@@ -167,7 +167,7 @@ func buildBuildGetUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				Dotln("Select").Call(jen.ID("usersTableColumns").Spread()).
 				Dotln("From").Call(jen.ID("usersTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.ID("usersTableName")).MapAssign().ID("userID"))).
+				utils.FormatString("%s.id", jen.ID("usersTableName")).MapAssign().ID("userID"))).
 				Dotln("ToSql").Call(),
 			jen.Line(),
 			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
@@ -218,7 +218,7 @@ func buildBuildGetUserByUsernameQuery(proj *models.Project, dbvendor wordsmith.S
 				Dotln("Select").Call(jen.ID("usersTableColumns").Spread()).
 				Dotln("From").Call(jen.ID("usersTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.username"), jen.ID("usersTableName")).MapAssign().ID("username"))).
+				utils.FormatString("%s.username", jen.ID("usersTableName")).MapAssign().ID("username"))).
 				Dotln("ToSql").Call(),
 			jen.Line(),
 			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
@@ -279,11 +279,11 @@ func buildBuildGetAllUsersCountQuery(proj *models.Project, dbvendor wordsmith.Su
 			jen.Var().Err().Error(),
 			jen.Line(),
 			jen.ID("builder").Assign().ID(dbfl).Dot("sqlBuilder").
-				Dotln("Select").Call(jen.Qual("fmt", "Sprintf").Call(jen.ID("countQuery"), jen.ID("usersTableName"))).
+				Dotln("Select").Call(utils.FormatStringWithArg(jen.ID("countQuery"), jen.ID("usersTableName"))).
 				Dotln("From").Call(jen.ID("usersTableName")).
 				Dotln("Where").Call(
 				jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-					jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.ID("usersTableName")).MapAssign().ID("nil"),
+					utils.FormatString("%s.archived_on", jen.ID("usersTableName")).MapAssign().ID("nil"),
 				),
 			),
 			jen.Line(),
@@ -343,14 +343,14 @@ func buildBuildGetUsersQuery(proj *models.Project, dbvendor wordsmith.SuperPalab
 			jen.Var().Err().Error(),
 			jen.Line(),
 			jen.ID("builder").Assign().ID(dbfl).Dot("sqlBuilder").
-				Dotln("Select").Call(jen.Append(jen.ID("usersTableColumns"), jen.Qual("fmt", "Sprintf").Call(jen.ID("countQuery"), jen.ID("usersTableName"))).Spread()).
+				Dotln("Select").Call(jen.Append(jen.ID("usersTableColumns"), utils.FormatStringWithArg(jen.ID("countQuery"), jen.ID("usersTableName"))).Spread()).
 				Dotln("From").Call(jen.ID("usersTableName")).
 				Dotln("Where").Call(
 				jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-					jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.ID("usersTableName")).MapAssign().Nil(),
+					utils.FormatString("%s.archived_on", jen.ID("usersTableName")).MapAssign().Nil(),
 				),
 			).
-				Dotln("GroupBy").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.ID("usersTableName"))),
+				Dotln("GroupBy").Call(utils.FormatString("%s.id", jen.ID("usersTableName"))),
 			jen.Line(),
 			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().Nil()).Block(
 				jen.ID("builder").Equals().ID(utils.FilterVarName).Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.ID("usersTableName")),
