@@ -333,7 +333,7 @@ func buildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(proj *models.P
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
-			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+			listParams = append(listParams, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 		}
 		if !call {
 			params = append(params, jen.List(listParams...).Uint64())
@@ -399,7 +399,7 @@ func buildParamsForMethodThatCreatesADataTypeFromStructs(proj *models.Project, t
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
-			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+			listParams = append(listParams, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 		}
 		if !call {
 			params = append(params, jen.List(listParams...).Uint64())
@@ -465,7 +465,7 @@ func buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj *models.Pro
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
-			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+			listParams = append(listParams, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 		}
 		if !call {
 			params = append(params, jen.List(listParams...).Uint64())

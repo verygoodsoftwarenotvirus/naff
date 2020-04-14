@@ -32,7 +32,7 @@ func buildIterableConstants(typ models.DataType) []jen.Code {
 	}
 
 	if typ.BelongsToUser {
-		consts = append(consts, jen.IDf("%sTableOwnershipColumn", puvn).Equals().Lit("belongs_to_user"))
+		consts = append(consts, jen.IDf("%sUserOwnershipColumn", puvn).Equals().Lit("belongs_to_user"))
 	}
 	if typ.BelongsToStruct != nil {
 		consts = append(consts, jen.IDf("%sTableOwnershipColumn", puvn).Equals().Litf("belongs_to_%s", typ.BelongsToStruct.RouteName()))
@@ -82,6 +82,10 @@ func iterablesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 	//	ret.Add(buildGetAllSomethingForUserFuncDecl(proj, dbvendor, typ)...)
 	//}
 
+	//if typ.BelongsToStruct != nil {
+	//	ret.Add(buildGetAllSomethingForSomethingElseFuncDecl(proj, dbvendor, typ)...)
+	//}
+
 	ret.Add(buildCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 	ret.Add(buildCreateSomethingFuncDecl(proj, dbvendor, typ)...)
 	ret.Add(buildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
@@ -108,8 +112,8 @@ func buildTableColumns(typ models.DataType) []jen.Code {
 		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.Lit("archived_on")),
 	)
 
-	if typ.BelongsToUser {
-		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.IDf("%sTableOwnershipColumn", puvn)))
+	if typ.BelongsToUser && typ.RestrictedToUser {
+		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.IDf("%sUserOwnershipColumn", puvn)))
 	}
 	if typ.BelongsToStruct != nil {
 		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.IDf("%sTableOwnershipColumn", puvn)))
@@ -131,7 +135,7 @@ func buildScanFields(typ models.DataType) (scanFields []jen.Code) {
 		jen.AddressOf().ID("x").Dot("ArchivedOn"),
 	)
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		scanFields = append(scanFields, jen.AddressOf().ID("x").Dot("BelongsToUser"))
 	}
 	if typ.BelongsToStruct != nil {
@@ -252,9 +256,9 @@ func buildSomethingExistsQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 		utils.FormatString("%s.id", jen.IDf("%sTableName", puvn)).MapAssign().IDf("%sID", uvn),
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		comment = fmt.Sprintf("build%sExistsQuery constructs a SQL query for checking if %s with a given ID belong to a user with a given ID exists", sn, scnwp)
-		whereValues = append(whereValues, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sTableOwnershipColumn", puvn)).MapAssign().ID("userID"))
+		whereValues = append(whereValues, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sUserOwnershipColumn", puvn)).MapAssign().ID("userID"))
 	}
 	if typ.BelongsToStruct != nil {
 		comment = fmt.Sprintf("build%sExistsQuery constructs a SQL query for checking if %s with a given ID belong to a %s with a given ID exists", sn, scnwp, typ.BelongsToStruct.SingularCommonNameWithPrefix())
@@ -331,9 +335,9 @@ func buildGetSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.Sup
 		utils.FormatString("%s.id", jen.IDf("%sTableName", puvn)).MapAssign().IDf("%sID", uvn),
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		comment = fmt.Sprintf("buildGet%sQuery constructs a SQL query for fetching %s with a given ID belong to a user with a given ID.", sn, scnwp)
-		whereValues = append(whereValues, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sTableOwnershipColumn", puvn)).MapAssign().ID("userID"))
+		whereValues = append(whereValues, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sUserOwnershipColumn", puvn)).MapAssign().ID("userID"))
 	} else if typ.BelongsToStruct != nil {
 		tsnwp := typ.BelongsToStruct.SingularCommonNameWithPrefix()
 		comment = fmt.Sprintf("buildGet%sQuery constructs a SQL query for fetching %s with a given ID belong to %s with a given ID.", sn, scnwp, tsnwp)
@@ -549,10 +553,10 @@ func buildGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmi
 	params := typ.BuildGetListOfSomethingParams(proj, false)[1:]
 
 	var firstCommentLine string
-	if typ.BelongsToUser && typ.BelongsToStruct != nil {
+	if (typ.BelongsToUser && typ.RestrictedToUser) && typ.BelongsToStruct != nil {
 		firstCommentLine = fmt.Sprintf("buildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter, and belong to a given user and %s,", pn, pcn, typ.BelongsToStruct.SingularCommonName())
-	} else if typ.BelongsToUser {
-		vals = append(vals, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sTableOwnershipColumn", puvn)).MapAssign().ID("userID"))
+	} else if typ.BelongsToUser && typ.RestrictedToUser {
+		vals = append(vals, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sUserOwnershipColumn", puvn)).MapAssign().ID("userID"))
 		firstCommentLine = fmt.Sprintf("buildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter and belong to a given user,", pn, pcn)
 	} else if typ.BelongsToStruct != nil {
 		vals = append(vals, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sTableOwnershipColumn", puvn)).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
@@ -704,7 +708,7 @@ func buildGetAllSomethingForSomethingElseFuncDecl(proj *models.Project, dbvendor
 				jen.Return().List(jen.Nil(), jen.ID("buildError").Call(jen.Err(), jen.Litf("fetching %s for %s", pcn, typ.BelongsToStruct.SingularCommonName()))),
 			),
 			jen.Line(),
-			jen.List(jen.ID("list"), jen.Err()).Assign().IDf("scan%s", pn).Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
+			jen.List(jen.ID("list"), jen.Underscore(), jen.Err()).Assign().IDf("scan%s", pn).Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("parsing database results: %w"), jen.Err())),
 			),
@@ -723,8 +727,8 @@ func determineCreationColumns(dbvendor wordsmith.SuperPalabra, typ models.DataTy
 		creationColumns = append(creationColumns, jen.Lit(field.Name.RouteName()))
 	}
 
-	if typ.BelongsToUser {
-		creationColumns = append(creationColumns, jen.IDf("%sTableOwnershipColumn", puvn))
+	if typ.BelongsToUser && typ.RestrictedToUser {
+		creationColumns = append(creationColumns, jen.IDf("%sUserOwnershipColumn", puvn))
 	}
 	if typ.BelongsToStruct != nil {
 		creationColumns = append(creationColumns, jen.IDf("%sTableOwnershipColumn", puvn))
@@ -740,7 +744,7 @@ func determineValuesColumns(dbvendor wordsmith.SuperPalabra, inputVarName string
 		valuesColumns = append(valuesColumns, jen.ID(inputVarName).Dot(field.Name.Singular()))
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		valuesColumns = append(valuesColumns, jen.ID(inputVarName).Dot("BelongsToUser"))
 	}
 	if typ.BelongsToStruct != nil {
@@ -843,7 +847,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 		createInitColumns = append(createInitColumns, jen.ID(fn).MapAssign().ID("input").Dot(fn))
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		createInitColumns = append(createInitColumns, jen.ID("BelongsToUser").MapAssign().ID("input").Dot("BelongsToUser"))
 	}
 	if typ.BelongsToStruct != nil {
@@ -917,8 +921,8 @@ func buildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 	vals := []jen.Code{
 		jen.Lit("id").MapAssign().ID(inputVarName).Dot("ID"),
 	}
-	if typ.BelongsToUser {
-		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).MapAssign().ID(inputVarName).Dot("BelongsToUser"))
+	if typ.BelongsToUser && typ.RestrictedToUser {
+		vals = append(vals, jen.IDf("%sUserOwnershipColumn", puvn).MapAssign().ID(inputVarName).Dot("BelongsToUser"))
 	}
 	if typ.BelongsToStruct != nil {
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).MapAssign().ID(inputVarName).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
@@ -1016,9 +1020,9 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 	}
 	paramsList := typ.BuildGetSomethingParams(proj)[1:]
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s belonging to a given user as archived.", sn, scn)
-		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).MapAssign().ID("userID"))
+		vals = append(vals, jen.IDf("%sUserOwnershipColumn", puvn).MapAssign().ID("userID"))
 	} else if typ.BelongsToStruct != nil {
 		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s belonging to a given %s as archived.", sn, scn, typ.BelongsToStruct.SingularCommonName())
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
@@ -1101,8 +1105,8 @@ func buildGetSomethingCountQueryFuncDecl(proj *models.Project, dbvendor wordsmit
 		utils.FormatString("%s.archived_on", jen.IDf("%sTableName", puvn)).MapAssign().Nil(),
 	}
 
-	if typ.BelongsToUser && typ.BelongsToStruct != nil {
-		vals = append(vals, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sTableOwnershipColumn", puvn)).MapAssign().ID("userID"))
+	if (typ.BelongsToUser && typ.RestrictedToUser) && typ.BelongsToStruct != nil {
+		vals = append(vals, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sUserOwnershipColumn", puvn)).MapAssign().ID("userID"))
 		vals = append(vals, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sTableOwnershipColumn", puvn)).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 
 		btsscnwp := typ.BelongsToStruct.SingularCommonNameWithPrefix()
@@ -1110,8 +1114,8 @@ func buildGetSomethingCountQueryFuncDecl(proj *models.Project, dbvendor wordsmit
 
 		commentOne = fmt.Sprintf("buildGet%sCountQuery takes a QueryFilter, a user ID, and %s ID and returns a SQL query", sn, btsscnwp)
 		commentTwo = fmt.Sprintf("(and the relevant arguments) for fetching the number of %s belonging to a given %s", pcn, btspcn)
-	} else if typ.BelongsToUser {
-		vals = append(vals, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sTableOwnershipColumn", puvn)).MapAssign().ID("userID"))
+	} else if typ.BelongsToUser && typ.RestrictedToUser {
+		vals = append(vals, utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.IDf("%sUserOwnershipColumn", puvn)).MapAssign().ID("userID"))
 
 		commentOne = fmt.Sprintf("buildGet%sCountQuery takes a QueryFilter and a user ID, and returns a SQL query", sn)
 		commentTwo = fmt.Sprintf("(and the relevant arguments) for fetching the number of %s belonging to a given user", pcn)
@@ -1161,7 +1165,7 @@ func buildGetSomethingCountFuncDecl(proj *models.Project, dbvendor wordsmith.Sup
 	params := typ.BuildGetListOfSomethingParams(proj, false)
 	queryBuildingParams := typ.BuildGetListOfSomethingArgs(proj)[1:]
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		comment = fmt.Sprintf("Get%sCount will fetch the count of %s from the database that meet a particular filter and belong to a particular user.", sn, pcn)
 	}
 	if typ.BelongsToStruct != nil {

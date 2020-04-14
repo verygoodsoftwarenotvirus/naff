@@ -256,8 +256,9 @@ var (
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct: wordsmith.FromSingularPascalCase("Subforum"),
-			BelongsToUser:   true,
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("Subforum"),
+			BelongsToUser:    true,
+			RestrictedToUser: false,
 		},
 		{
 			Name: wordsmith.FromSingularPascalCase("Post"),
@@ -270,8 +271,9 @@ var (
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct: wordsmith.FromSingularPascalCase("Thread"),
-			BelongsToUser:   true,
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thread"),
+			BelongsToUser:    true,
+			RestrictedToUser: false,
 		},
 		{
 			Name: wordsmith.FromSingularPascalCase("Notification"),
@@ -284,6 +286,8 @@ var (
 					ValidForUpdateInput:   true,
 				},
 			},
+			BelongsToUser:    true,
+			RestrictedToUser: true,
 		},
 	}
 
@@ -307,7 +311,8 @@ var (
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToUser: true,
+			BelongsToUser:    true,
+			RestrictedToUser: true,
 		},
 	}
 
@@ -326,7 +331,7 @@ var (
 	gamut = &models.Project{
 		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/gamut",
 		Name:       wordsmith.FromSingularPascalCase("Gamut"),
-		DataTypes: append(forumDataTypes,
+		DataTypes: append(todoDataTypes, append(forumDataTypes,
 			everyType,
 			models.DataType{
 				Name: wordsmith.FromSingularPascalCase("Contact"),
@@ -346,7 +351,8 @@ var (
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToUser: true,
+				BelongsToUser:    true,
+				RestrictedToUser: true,
 			},
 			models.DataType{
 				Name: wordsmith.FromSingularPascalCase("ContactAddress"),
@@ -373,9 +379,11 @@ var (
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Contact"),
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("Contact"),
+				BelongsToUser:    true,
+				RestrictedToUser: true,
 			},
-		),
+		)...),
 	}
 
 	projects = map[string]*models.Project{

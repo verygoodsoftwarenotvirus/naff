@@ -60,8 +60,12 @@ $(EXAMPLE_OUTPUT_DIR):
 clean_example_output:
 	rm -rf $(EXAMPLE_OUTPUT_DIR)
 
-.PHONY: example_project
-example_project:
+.PHONY: compare_example_project
+compare_example_project: clean_example_output $(EXAMPLE_OUTPUT_DIR)
+	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/gamut &
+
+.PHONY: example_project_from_scratch
+example_project_from_scratch:
 	(cd ../ && rm -rf gamut gamut2 && git clone git@gitlab.com:verygoodsoftwarenotvirus/gamut gamut2)
 	go run cmd/todoproj/main.go
 	cp -rf ../gamut2/.git ../gamut

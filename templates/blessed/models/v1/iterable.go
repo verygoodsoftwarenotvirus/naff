@@ -100,10 +100,10 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	//			utils.CtxParam(), jen.ID("userID").Uint64(),
 	//		).Params(jen.Index().ID(sn), jen.Error()))
 	//}
-	if typ.BelongsToStruct != nil {
-		interfaceMethods = append(interfaceMethods,
-			jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(typ.BuildGetSomethingForSomethingElseParamsForModelsPackage(proj)...).Params(jen.Index().ID(sn), jen.Error()))
-	}
+	//if typ.BelongsToStruct != nil {
+	//	interfaceMethods = append(interfaceMethods,
+	//		jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(typ.BuildGetSomethingForSomethingElseParamsForModelsPackage(proj)...).Params(jen.Index().ID(sn), jen.Error()))
+	//}
 
 	interfaceMethods = append(interfaceMethods,
 		jen.IDf("Create%s", sn).Params(typ.BuildCreateSomethingParams(proj, true)...).Params(jen.PointerTo().ID(sn), jen.Error()),

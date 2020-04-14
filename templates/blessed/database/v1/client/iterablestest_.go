@@ -50,9 +50,9 @@ func buildRequisiteIDCallArgs(proj *models.Project, typ models.DataType) []jen.C
 	}
 	lines = append(lines, jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"))
 
-	if typ.BelongsToStruct != nil {
-		lines = append(lines, jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-	}
+	//if typ.BelongsToStruct != nil {
+	//	lines = append(lines, jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	//}
 
 	if typ.BelongsToUser {
 		lines = append(lines, jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser"))
@@ -254,7 +254,12 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 		jen.Func().IDf("TestClient_Get%s", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			utils.BuildFakeVar(proj, "User"),
+			func() jen.Code {
+				if typ.BelongsToUser && typ.RestrictedToUser {
+					return utils.BuildFakeVar(proj, "User")
+				}
+				return jen.Null()
+			}(),
 			jen.Line(),
 			utils.BuildSubTest("obligatory", buildSubtest(false)...),
 			jen.Line(),

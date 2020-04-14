@@ -10,11 +10,12 @@ import (
 
 // DataType represents a data model
 type DataType struct {
-	Name            wordsmith.SuperPalabra
-	BelongsToUser   bool
-	BelongsToNobody bool
-	BelongsToStruct wordsmith.SuperPalabra
-	Fields          []DataField
+	Name             wordsmith.SuperPalabra
+	BelongsToUser    bool
+	BelongsToNobody  bool
+	RestrictedToUser bool
+	BelongsToStruct  wordsmith.SuperPalabra
+	Fields           []DataField
 }
 
 // DataField represents a data model's field
@@ -46,7 +47,7 @@ func (typ DataType) BuildGetSomethingParams(proj *Project) []jen.Code {
 	}
 	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		lp = append(lp, jen.ID("userID"))
 	}
 
@@ -64,7 +65,7 @@ func (typ DataType) BuildGetSomethingArgs(proj *Project) []jen.Code {
 	}
 	params = append(params, jen.IDf("%sID", uvn))
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		params = append(params, jen.ID("userID"))
 	}
 
@@ -79,10 +80,7 @@ func (typ DataType) BuildGetSomethingArgsWithExampleVariables(proj *Project) []j
 	}
 	params = append(params, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
 
-	if typ.BelongsToStruct != nil {
-		params = append(params, jen.IDf("example%s", typ.Name.Singular()).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-	}
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		params = append(params, jen.IDf("example%s", typ.Name.Singular()).Dot("BelongsToUser"))
 	}
 
@@ -97,7 +95,7 @@ func (typ DataType) BuildGetSomethingLogValues(proj *Project) jen.Code {
 	}
 	params = append(params, jen.Litf("%s_id", typ.Name.RouteName()).Op(":").IDf("%sID", typ.Name.UnexportedVarName()))
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		params = append(params, jen.Lit("user_id").Op(":").ID("userID"))
 	}
 
@@ -111,7 +109,7 @@ func (typ DataType) BuildGetListOfSomethingLogValues(proj *Project) jen.Code {
 		params = append(params, jen.Litf("%s_id", pt.Name.RouteName()).Op(":").IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		params = append(params, jen.Lit("user_id").Op(":").ID("userID"))
 	}
 
@@ -126,7 +124,7 @@ func (typ DataType) BuildSomethingExistsArgs(proj *Project) []jen.Code {
 	}
 	params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		params = append(params, jen.ID("userID"))
 	}
 
@@ -140,7 +138,7 @@ func (typ DataType) BuildGetListOfSomethingParams(proj *Project, isModelsPackage
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		lp = append(lp, jen.ID("userID"))
 	}
 	if len(lp) > 0 {
@@ -299,7 +297,7 @@ func (typ DataType) BuildGetListOfSomethingArgs(proj *Project) []jen.Code {
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		params = append(params, jen.ID("userID"))
 	}
 	params = append(params, jen.ID("filter"))

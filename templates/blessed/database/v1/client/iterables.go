@@ -26,9 +26,9 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret.Add(buildGetAllSomethingCount(proj, typ)...)
 	ret.Add(buildGetListOfSomething(proj, typ)...)
 
-	if typ.BelongsToStruct != nil {
-		ret.Add(buildGetAllSomethingForSomethingElse(proj, typ)...)
-	}
+	//if typ.BelongsToStruct != nil {
+	//	ret.Add(buildGetAllSomethingForSomethingElse(proj, typ)...)
+	//}
 
 	ret.Add(buildCreateSomething(proj, typ)...)
 	ret.Add(buildUpdateSomething(proj, typ)...)
@@ -50,8 +50,14 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
 		func() jen.Code {
-			if typ.BelongsToUser {
+			if typ.BelongsToUser && typ.RestrictedToUser {
 				return jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID"))
+			}
+			return jen.Null()
+		}(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 			}
 			return jen.Null()
 		}(),
@@ -92,8 +98,12 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		block = append(block, jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
+	}
+
+	if typ.BelongsToStruct != nil {
+		block = append(block, jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	}
 
 	block = append(block,
@@ -149,7 +159,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 		jen.Line(),
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		block = append(block,
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
@@ -177,7 +187,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 		jen.Line(),
 	)
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		block = append(block,
 			jen.ID("c").Dot("logger").
 				Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).
@@ -193,7 +203,9 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 			).
 				Dot("Debug").Call(jen.Litf("Get%s called", pn)),
 		)
-	} else if typ.BelongsToNobody {
+	}
+
+	if typ.BelongsToNobody {
 		block = append(block,
 			jen.ID("c").Dot("logger").
 				Dot("Debug").Call(jen.Litf("Get%s called", pn)),
@@ -354,7 +366,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 		jen.Litf("%s_id", rn).MapAssign().IDf("%sID", uvn),
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		loggerValues = append(loggerValues, jen.Lit("user_id").MapAssign().ID("userID"))
 	}
 	if typ.BelongsToStruct != nil {
@@ -367,7 +379,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 		jen.Line(),
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser {
 		block = append(block, jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 	}
 	if typ.BelongsToStruct != nil {

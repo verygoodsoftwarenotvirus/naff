@@ -100,7 +100,7 @@ func buildFormatCallArgsForSingleInstanceRoute(proj *models.Project, typ models.
 func buildFormatCallArgsForListRoute(proj *models.Project, typ models.DataType) (args []jen.Code) {
 	callArgs := []jen.Code{}
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		callArgs = append(callArgs, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 	}
 
 	return callArgs
@@ -109,7 +109,7 @@ func buildFormatCallArgsForListRoute(proj *models.Project, typ models.DataType) 
 func buildFormatCallArgsForSingleInstanceCreationRoute(proj *models.Project, typ models.DataType) (args []jen.Code) {
 	callArgs := []jen.Code{}
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		callArgs = append(callArgs, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
 	}
 
 	return callArgs
@@ -500,7 +500,8 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		utils.AssertEqual(jen.IDf("example%sList", ts), jen.ID("actual"), nil),
 	)
 
-	invalidClientURLSubtestLines := []jen.Code{
+	invalidClientURLSubtestLines := append(
+		structDecls[:len(structDecls)-1],
 		jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
@@ -511,7 +512,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		jen.Line(),
 		utils.AssertNil(jen.ID("actual"), nil),
 		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
-	}
+	)
 
 	invalidResponseSubtestLines := append(
 		structDecls[:len(structDecls)-1],
@@ -569,8 +570,11 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 		cfs = append(cfs, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
 	}
 
-	subtestLines := append(
-		buildVarDeclarationsOfDependentStructs(proj, typ),
+	subtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
+	//if len(subtestLines) > 1 {
+	//	subtestLines = subtestLines[1:]
+	//}
+	subtestLines = append(subtestLines,
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		jen.Line(),
 		utils.ExpectMethod("expectedMethod", "MethodPost"),
@@ -629,6 +633,12 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 		func() jen.Code {
 			if typ.BelongsToUser {
 				return jen.ID(utils.BuildFakeVarName("Input")).Dot("BelongsToUser").Equals().Zero()
+			}
+			return jen.Null()
+		}(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.ID(utils.BuildFakeVarName("Input")).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().Zero()
 			}
 			return jen.Null()
 		}(),
@@ -692,6 +702,9 @@ func buildTestV1Client_BuildUpdateSomethingRequest(proj *models.Project, typ mod
 	actualParams := buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)
 
 	subtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
+	if len(subtestLines) > 1 {
+		subtestLines = subtestLines[1:]
+	}
 	subtestLines = append(subtestLines,
 		utils.ExpectMethod("expectedMethod", "MethodPut"),
 		jen.Line(),
@@ -726,8 +739,13 @@ func buildTestV1Client_BuildUpdateSomethingRequest(proj *models.Project, typ mod
 func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
+	subtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
+	if len(subtestLines) > 1 {
+		subtestLines = subtestLines[1:]
+	}
+
 	happyPathSubtestLines := append(
-		buildVarDeclarationsOfDependentStructs(proj, typ),
+		subtestLines,
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -753,7 +771,7 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 	)
 
 	withInvalidClientURLSubtestLines := append(
-		buildVarDeclarationsOfDependentStructs(proj, typ),
+		subtestLines,
 		jen.Line(),
 		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot(fmt.Sprintf("Update%s", ts)).Call(
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)...,
