@@ -16,7 +16,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	buildUpdateInputColumns := func() (updateCols []jen.Code, assertCalls []jen.Code) {
 		for _, field := range typ.Fields {
 			sn := field.Name.Singular()
-			updateCols = append(updateCols, jen.ID(sn).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
+			updateCols = append(updateCols, jen.ID(sn).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
 			assertCalls = append(assertCalls, utils.AssertEqual(jen.ID("expected").Dot(sn), jen.ID("i").Dot(sn), nil))
 		}
 

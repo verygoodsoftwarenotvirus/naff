@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	postgres = "postgres"
-	sqlite   = "sqlite"
-	mariadb  = "mariadb"
+	postgres = string(models.Postgres)
+	sqlite   = string(models.Sqlite)
+	mariadb  = string(models.MariaDB)
 
 	existencePrefix = "SELECT EXISTS ("
 	existenceSuffix = ")"
@@ -28,7 +28,7 @@ const (
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
-	for _, vendor := range []string{postgres, sqlite, mariadb} {
+	for _, vendor := range proj.EnabledDatabases() {
 		if err := renderDatabasePackage(proj, vendor); err != nil {
 			return err
 		}
@@ -105,18 +105,17 @@ func renderDatabasePackage(proj *models.Project, vendor string) error {
 		vendorWord wordsmith.SuperPalabra
 	)
 
-	if vendor == postgres {
+	switch vendor {
+	case postgres:
 		dbDesc = "Postgres instances"
 		vendorWord = wordsmith.FromSingularPascalCase("Postgres")
-	} else if vendor == sqlite {
+	case sqlite:
 		dbDesc = "sqlite files"
 		vendorWord = wordsmith.FromSingularPascalCase("Sqlite")
-	} else if vendor == mariadb {
+	case mariadb:
 		dbDesc = "MariaDB instances"
 		vendorWord = buildMariaDBWord()
-	}
-
-	if vendorWord == nil {
+	default:
 		return errors.New("wtf")
 	}
 

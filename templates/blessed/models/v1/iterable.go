@@ -196,7 +196,9 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 
 	for i, field := range fields {
 		fsn := field.Name.Singular()
-		switch strings.ToLower(field.Type) {
+		tt := strings.TrimPrefix(field.Type, "*")
+
+		switch strings.ToLower(tt) {
 		case "string":
 			if field.Pointer {
 				out = append(

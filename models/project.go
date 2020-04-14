@@ -27,7 +27,13 @@ const (
 	belongsTo    = "belongs_to"
 	notCreatable = "!creatable"
 	notEditable  = "!editable"
+
+	Postgres validDatabase = "postgres"
+	MariaDB  validDatabase = "mariadb"
+	Sqlite   validDatabase = "sqlite"
 )
+
+type validDatabase string
 
 type depWrapper struct {
 	dependency string
@@ -55,6 +61,8 @@ type Project struct {
 
 	Name      wordsmith.SuperPalabra
 	DataTypes []DataType
+
+	enabledDatabases map[validDatabase]struct{}
 }
 
 func (p *Project) ParseModels() error {
@@ -124,6 +132,60 @@ func (p *Project) FindDependentsOfType(parentType DataType) []DataType {
 	}
 
 	return dependents
+}
+
+var (
+	validDatabaseMap = map[validDatabase]struct{}{
+		Postgres: {},
+		Sqlite:   {},
+		MariaDB:  {},
+	}
+)
+
+func (p *Project) ensureNoNilFields() {
+	if p.enabledDatabases == nil {
+		p.enabledDatabases = map[validDatabase]struct{}{}
+	}
+}
+
+func (p *Project) EnableDatabase(database validDatabase) {
+	p.ensureNoNilFields()
+
+	if _, ok := validDatabaseMap[database]; !ok {
+		log.Fatalf("unknown database: %q", database)
+	}
+
+	p.enabledDatabases[database] = struct{}{}
+}
+
+func (p *Project) DisableDatabase(database validDatabase) {
+	p.ensureNoNilFields()
+
+	if _, ok := validDatabaseMap[database]; !ok {
+		log.Fatalf("unknown database: %q", database)
+	}
+
+	delete(p.enabledDatabases, database)
+}
+
+func (p *Project) DatabasesIsEnabled(database validDatabase) bool {
+	p.ensureNoNilFields()
+
+	if _, ok := p.enabledDatabases[database]; ok {
+		return true
+	}
+
+	return false
+}
+
+func (p *Project) EnabledDatabases() []string {
+	p.ensureNoNilFields()
+
+	out := []string{}
+	for k := range p.enabledDatabases {
+		out = append(out, string(k))
+	}
+	return out
 }
 
 func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []DataType, imports []string, returnErr error) {

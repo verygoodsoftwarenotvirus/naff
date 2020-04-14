@@ -12,7 +12,7 @@ import (
 
 func typeToPostgresType(t string) string {
 	typeMap := map[string]string{
-		"[]string": "CHARACTER VARYING",
+		//"[]string": "CHARACTER VARYING",
 		"string":   "CHARACTER VARYING",
 		"*string":  "CHARACTER VARYING",
 		"bool":     "BOOLEAN",
@@ -52,7 +52,7 @@ func typeToPostgresType(t string) string {
 
 func typeToSqliteType(t string) string {
 	typeMap := map[string]string{
-		"[]string": "CHARACTER VARYING",
+		//"[]string": "CHARACTER VARYING",
 		"string":   "CHARACTER VARYING",
 		"*string":  "CHARACTER VARYING",
 		"bool":     "BOOLEAN",
@@ -92,7 +92,7 @@ func typeToSqliteType(t string) string {
 
 func typeToMariaDBType(t string) string {
 	typeMap := map[string]string{
-		"[]string": "LONGTEXT",
+		//"[]string": "LONGTEXT",
 		"string":   "LONGTEXT",
 		"*string":  "LONGTEXT",
 		"bool":     "BOOLEAN",
@@ -207,7 +207,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 			if !field.Pointer {
 				query += ` NOT NULL`
 			}
-			if field.DefaultAllowed {
+			if field.DefaultValue != "" {
 				query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
 			}
 
@@ -365,7 +365,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 			if !field.Pointer {
 				query += ` NOT NULL`
 			}
-			if field.DefaultAllowed {
+			if field.DefaultValue != "" {
 				query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
 			}
 
@@ -508,7 +508,7 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 			if !field.Pointer {
 				query += ` NOT NULL`
 			}
-			if field.DefaultAllowed {
+			if field.DefaultValue != "" {
 				query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
 			}
 

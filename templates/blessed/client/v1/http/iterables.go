@@ -278,7 +278,6 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructs(proj *models.Project, 
 		listParams = append(listParams, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dot("ID"))
 
 		params = append(params, listParams...)
-
 	} else {
 		params = append(params, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dot("ID"))
 	}
@@ -413,6 +412,39 @@ func buildParamsForMethodThatCreatesADataTypeFromStructs(proj *models.Project, t
 		params = append(params, jen.ID(utils.BuildFakeVarName("Input")).PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
 	} else {
 		params = append(params, jen.ID(utils.BuildFakeVarName("Input")))
+	}
+
+	return params
+}
+
+func buildParamsForMethodThatFetchesAListOfDataTypes(proj *models.Project, typ models.DataType, call bool) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{
+		func() jen.Code {
+			if call {
+				return utils.CtxVar()
+			} else {
+				return utils.CtxParam()
+			}
+		}(),
+	}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		if !call {
+			params = append(params, jen.List(listParams...).Uint64())
+		} else {
+			params = append(params, listParams...)
+		}
+	}
+
+	if !call {
+		params = append(params, jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"))
+	} else {
+		params = append(params, jen.ID(utils.FilterVarName))
 	}
 
 	return params
@@ -590,7 +622,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
-			buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, true)...,
+			buildParamsForMethodThatFetchesAListOfDataTypes(proj, typ, true)...,
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(jen.Nil(),
@@ -614,7 +646,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 	lines := []jen.Code{
 		jen.Commentf("%s retrieves a list of %s", funcName, typ.Name.PluralCommonName()),
 		jen.Line(),
-		newClientMethod(funcName).Params(buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, false)...).Params(
+		newClientMethod(funcName).Params(buildParamsForMethodThatFetchesAListOfDataTypes(proj, typ, false)...).Params(
 			jen.ID(pvn).PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", ts)),
 			jen.Err().Error(),
 		).Block(block...,

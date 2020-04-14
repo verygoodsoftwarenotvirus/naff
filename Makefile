@@ -61,7 +61,10 @@ clean_example_output:
 	rm -rf $(EXAMPLE_OUTPUT_DIR)
 
 .PHONY: example_project
-example_project: clean_example_output example_output
+example_project:
+	(cd ../ && rm -rf gamut gamut2 && git clone git@gitlab.com:verygoodsoftwarenotvirus/gamut gamut2)
+	go run cmd/todoproj/main.go
+	cp -rf ../gamut2/.git ../gamut
 
 .PHONY: install-tojen
 install-tojen:

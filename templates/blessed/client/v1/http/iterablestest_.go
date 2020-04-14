@@ -188,7 +188,8 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 
 	// routes
 	happyPathSubtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
-	actualCallArgs := []jen.Code{utils.CtxVar(), jen.ID(utils.BuildFakeVarName(ts)).Dot("ID")}
+	actualCallArgs := buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)
+	//actualCallArgs := []jen.Code{utils.CtxVar(), jen.ID(utils.BuildFakeVarName(ts)).Dot("ID")}
 
 	happyPathSubtestLines = append(happyPathSubtestLines,
 		jen.Line(),
@@ -565,7 +566,7 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 
 	cfs := []jen.Code{jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())}
 	for _, field := range typ.Fields {
-		cfs = append(cfs, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
+		cfs = append(cfs, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
 	}
 
 	subtestLines := append(

@@ -22,7 +22,6 @@ type DataField struct {
 	Name                  wordsmith.SuperPalabra
 	Type                  string
 	Pointer               bool
-	DefaultAllowed        bool
 	DefaultValue          string
 	ValidForCreationInput bool
 	ValidForUpdateInput   bool
@@ -61,13 +60,10 @@ func (typ DataType) BuildGetSomethingArgs(proj *Project) []jen.Code {
 	uvn := typ.Name.UnexportedVarName()
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		params = append(params, jen.IDf("%s", pt.Name.UnexportedVarName()))
+		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	params = append(params, jen.IDf("%sID", uvn))
 
-	if typ.BelongsToStruct != nil {
-		params = append(params, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
-	}
 	if typ.BelongsToUser {
 		params = append(params, jen.ID("userID"))
 	}

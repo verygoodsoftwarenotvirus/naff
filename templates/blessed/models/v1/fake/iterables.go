@@ -31,7 +31,7 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 	}
 
 	for _, field := range typ.Fields {
-		block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type)()))
+		block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
 	}
 
 	block = append(block,

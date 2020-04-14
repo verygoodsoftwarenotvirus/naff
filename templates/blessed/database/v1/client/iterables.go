@@ -49,7 +49,12 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
-		jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID"))
+			}
+			return jen.Null()
+		}(),
 		jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.IDf("%sID", uvn)),
 		jen.Line(),
 		jen.ID("c").Dot("logger").Dot("WithValues").Call(
@@ -146,38 +151,59 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 
 	if typ.BelongsToUser {
 		block = append(block,
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("userID"),
+			),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		block = append(block,
-			jen.IDf("Attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.Qual(
+				proj.InternalTracingV1Package(),
+				fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular()),
+			).Call(
+				jen.ID("span"),
+				jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()),
+			),
 		)
 	}
 
 	block = append(block,
-		jen.Qual(proj.InternalTracingV1Package(), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID(utils.FilterVarName)),
+		jen.Qual(proj.InternalTracingV1Package(), "AttachFilterToSpan").Call(
+			jen.ID("span"),
+			jen.ID(utils.FilterVarName),
+		),
 		jen.Line(),
 	)
 
 	if typ.BelongsToUser {
 		block = append(block,
-			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Litf("Get%s called", pn)),
+			jen.ID("c").Dot("logger").
+				Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).
+				Dot("Debug").Call(jen.Litf("Get%s called", pn)),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		block = append(block,
-			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())).Dot("Debug").Call(jen.Litf("Get%s called", pn)),
+			jen.ID("c").Dot("logger").
+				Dot("WithValue").Call(
+				jen.Litf("%s_id", typ.BelongsToStruct.RouteName()),
+				jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()),
+			).
+				Dot("Debug").Call(jen.Litf("Get%s called", pn)),
 		)
 	} else if typ.BelongsToNobody {
 		block = append(block,
-			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Litf("Get%s called", pn)),
+			jen.ID("c").Dot("logger").
+				Dot("Debug").Call(jen.Litf("Get%s called", pn)),
 		)
 	}
 
 	block = append(block,
 		jen.Line(),
-		jen.List(jen.IDf("%sList", uvn), jen.Err()).Assign().ID("c").Dot("querier").Dotf("Get%s", pn).Call(callArgs...),
+		jen.List(jen.IDf("%sList", uvn), jen.Err()).Assign().
+			ID("c").Dot("querier").Dotf("Get%s", pn).Call(callArgs...),
 		jen.Line(),
 		jen.Return().List(jen.IDf("%sList", uvn), jen.Err()),
 	)
@@ -241,7 +267,7 @@ func buildGetAllSomethingForSomethingElse(proj *models.Project, typ models.DataT
 			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Litf("GetAll%sFor%s", pn, btsns)),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.IDf("Attach%sIDToSpan", btsns).Call(jen.ID("span"), jen.IDf("%sID", btsuvn)),
+			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", btsns)).Call(jen.ID("span"), jen.IDf("%sID", btsuvn)),
 			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", btsrn), jen.IDf("%sID", btsuvn)).Dot("Debug").Call(jen.Litf("GetAll%sFor%s called", pn, btsns)),
 			jen.Line(),
 			jen.List(jen.IDf("%sList", uvn), jen.Err()).Assign().ID("c").Dot("querier").Dotf("GetAll%sFor%s", pn, btsns).Call(
@@ -345,7 +371,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 		block = append(block, jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 	}
 	if typ.BelongsToStruct != nil {
-		block = append(block, jen.IDf("Attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
+		block = append(block, jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	}
 
 	block = append(block,
