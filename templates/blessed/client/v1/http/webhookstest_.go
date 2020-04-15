@@ -2,6 +2,7 @@ package client
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -35,7 +36,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildGetWebhookRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				),
 				jen.Line(),
@@ -112,7 +113,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("GetWebhook").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				),
 				jen.Line(),
@@ -130,7 +131,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("GetWebhook").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				),
 				jen.Line(),
@@ -158,7 +159,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildGetWebhooksRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 				),
 				jen.Line(),
@@ -212,7 +213,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("GetWebhooks").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 				),
 				jen.Line(),
@@ -228,7 +229,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"with invalid client URL",
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("GetWebhooks").Call(utils.CtxVar(), jen.Nil()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("GetWebhooks").Call(constants.CtxVar(), jen.Nil()),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
@@ -256,7 +257,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildCreateWebhookRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				jen.Line(),
@@ -284,7 +285,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				"happy path",
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
-				jen.ID(utils.BuildFakeVarName("Input")).Dot("BelongsToUser").Equals().Zero(),
+				jen.ID(utils.BuildFakeVarName("Input")).Dot(constants.UserOwnershipFieldName).Equals().Zero(),
 				jen.Line(),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -309,7 +310,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateWebhook").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				jen.Line(),
@@ -323,7 +324,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
@@ -343,7 +344,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("BuildUpdateWebhookRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Webhook")),
 				),
 				jen.Line(),
@@ -385,7 +386,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot("UpdateWebhook").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Webhook")),
 				),
 				utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
@@ -396,7 +397,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
 				jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("UpdateWebhook").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Webhook")),
 				),
 				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
@@ -423,7 +424,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildArchiveWebhookRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				),
 				jen.Line(),
@@ -482,7 +483,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot("ArchiveWebhook").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				),
 				utils.AssertNoError(
@@ -496,7 +497,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
 				jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("ArchiveWebhook").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				),
 				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),

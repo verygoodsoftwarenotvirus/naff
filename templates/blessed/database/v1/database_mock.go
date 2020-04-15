@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -81,8 +82,8 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Migrate satisfies the database.Database interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("Migrate").Params(utils.CtxParam()).Params(jen.Error()).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar()),
 			jen.Return().ID("args").Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
@@ -91,8 +92,8 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("IsReady satisfies the database.Database interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("IsReady").Params(utils.CtxParam()).Params(jen.ID("ready").Bool()).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("IsReady").Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar()),
 			jen.Return().ID("args").Dot("Bool").Call(jen.Zero()),
 		),
 		jen.Line(),

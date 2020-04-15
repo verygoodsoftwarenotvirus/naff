@@ -2,6 +2,7 @@ package queriers
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -635,9 +636,9 @@ func buildMigrate(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Comment("safe (as in idempotent, though not necessarily recommended) to call this function multiple times."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).ID("Migrate").Params(utils.CtxParam()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
 			jen.ID(dbfl).Dot("logger").Dot("Info").Call(jen.Lit("migrating db")),
-			jen.If(jen.Op("!").ID(dbfl).Dot("IsReady").Call(utils.CtxVar())).Block(
+			jen.If(jen.Op("!").ID(dbfl).Dot("IsReady").Call(constants.CtxVar())).Block(
 				jen.Return().Qual("errors", "New").Call(jen.Lit("db is not ready yet")),
 			),
 			jen.Line(),

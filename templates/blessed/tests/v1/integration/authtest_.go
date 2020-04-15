@@ -2,6 +2,7 @@ package integration
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -57,14 +58,14 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to login"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+				constants.CreateCtx(),
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create a user"),
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, utils.BuildFakeVarName("UserCreationInput"), "UserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.List(jen.ID("req"), jen.Err()).Assign().ID("todoClient").Dot("BuildCreateUserRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("UserCreationInput")),
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("req"), jen.Err()),
@@ -105,13 +106,13 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to logout"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+				constants.CreateCtx(),
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, utils.BuildFakeVarName("UserCreationInput"), "UserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.List(jen.ID("req"), jen.Err()).Assign().ID("todoClient").Dot("BuildCreateUserRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("UserCreationInput")),
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("req"), jen.Err()),
@@ -180,14 +181,14 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to log in with the wrong password"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+				constants.CreateCtx(),
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create a user"),
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, utils.BuildFakeVarName("UserCreationInput"), "UserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.List(jen.ID("req"), jen.Err()).Assign().ID("todoClient").Dot("BuildCreateUserRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("UserCreationInput")),
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("req"), jen.Err()),
@@ -440,7 +441,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow users to see their own content"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+				constants.CreateCtx(),
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create user and oauth2 client A"),
@@ -451,7 +452,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.List(jen.ID("clientA"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("ca").Dot("ClientID"),
 					jen.ID("ca").Dot("ClientSecret"),
 					jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
@@ -468,7 +469,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.List(jen.ID("clientB"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("cb").Dot("ClientID"),
 					jen.ID("cb").Dot("ClientSecret"),
 					jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
@@ -479,25 +480,25 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("create webhook for user A"),
 				utils.BuildFakeVarWithCustomName(proj, "wciA", "BuildFakeWebhookCreationInput"),
-				jen.List(jen.ID("webhookA"), jen.Err()).Assign().ID("clientA").Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID("wciA")),
+				jen.List(jen.ID("webhookA"), jen.Err()).Assign().ID("clientA").Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID("wciA")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("webhookA"), jen.Err()),
 				jen.Line(),
 				jen.Comment("create webhook for user B"),
 				utils.BuildFakeVarWithCustomName(proj, "wciB", "BuildFakeWebhookCreationInput"),
-				jen.List(jen.ID("webhookB"), jen.Err()).Assign().ID("clientB").Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID("wciB")),
+				jen.List(jen.ID("webhookB"), jen.Err()).Assign().ID("clientB").Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID("wciB")),
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("webhookB"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("i"), jen.Err()).Assign().ID("clientB").Dot("GetWebhook").Call(utils.CtxVar(), jen.ID("webhookA").Dot("ID")),
+				jen.List(jen.ID("i"), jen.Err()).Assign().ID("clientB").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("webhookA").Dot("ID")),
 				utils.AssertNil(jen.ID("i"), nil),
 				utils.AssertError(jen.Err(), jen.Lit("should experience error trying to fetch entry they're not authorized for")),
 				jen.Line(),
 				jen.Comment("Clean up"),
-				utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(utils.CtxVar(), jen.ID("webhookA").Dot("ID")), nil),
-				utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(utils.CtxVar(), jen.ID("webhookB").Dot("ID")), nil),
+				utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhookA").Dot("ID")), nil),
+				utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhookB").Dot("ID")), nil),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow clients with a given scope to see that scope's content"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				utils.CreateCtx(),
+				constants.CreateCtx(),
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create user"),
@@ -511,11 +512,11 @@ func authTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("x").Dot("TwoFactorSecret"),
 				),
 				jen.ID("input").Dot("Scopes").Equals().Index().String().Values(jen.Lit("absolutelynevergonnaexistascopelikethis")),
-				jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("cookie"), jen.ID("input")),
+				jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("cookie"), jen.ID("input")),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("premade").Dot("ClientID"),
 					jen.ID("premade").Dot("ClientSecret"),
 					jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
@@ -524,7 +525,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("c"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("i"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(utils.CtxVar(), jen.Nil()),
+				jen.List(jen.ID("i"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(constants.CtxVar(), jen.Nil()),
 				utils.AssertNil(jen.ID("i"), nil),
 				utils.AssertError(jen.Err(), jen.Lit("should experience error trying to fetch entry they're not authorized for")),
 			)),

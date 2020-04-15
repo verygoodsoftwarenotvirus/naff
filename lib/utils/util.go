@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,9 +14,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 const (
@@ -56,14 +56,12 @@ func DefaultQueryFilter(proj *models.Project) jen.Code {
 	return jen.Qual(filepath.Join(proj.OutputPath, "models/v1"), "DefaultQueryFilter").Call()
 }
 
-const FilterVarName = "filter"
-
 func CreateNilQueryFilter(proj *models.Project) jen.Code {
-	return jen.ID(FilterVarName).Op(":=").Call(jen.Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
+	return jen.ID(constants.FilterVarName).Op(":=").Call(jen.Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
 }
 
 func CreateDefaultQueryFilter(proj *models.Project) jen.Code {
-	return jen.ID(FilterVarName).Op(":=").Qual(filepath.Join(proj.OutputPath, "models/v1"), "DefaultQueryFilter").Call()
+	return jen.ID(constants.FilterVarName).Op(":=").Qual(filepath.Join(proj.OutputPath, "models/v1"), "DefaultQueryFilter").Call()
 }
 
 func AppendItemsToList(list jen.Code, items ...jen.Code) jen.Code {
@@ -72,21 +70,6 @@ func AppendItemsToList(list jen.Code, items ...jen.Code) jen.Code {
 
 func FakeError() jen.Code {
 	return jen.Qual("errors", "New").Call(jen.Lit("blah"))
-}
-
-func BuildFakeVarName(typName string) string {
-	return fmt.Sprintf("example%s", typName)
-}
-
-func BuildFakeVar(proj *models.Project, typName string, args ...jen.Code) jen.Code {
-	return BuildFakeVarWithCustomName(proj, BuildFakeVarName(typName), typName, args...)
-}
-
-func BuildFakeVarWithCustomName(proj *models.Project, varName, funcName string, args ...jen.Code) jen.Code {
-	if !strings.HasPrefix(funcName, "BuildFake") {
-		funcName = fmt.Sprintf("BuildFake%s", funcName)
-	}
-	return jen.IDf(varName).Assign().Qual(proj.FakeModelsPackage(), funcName).Call(args...)
 }
 
 func buildSingleValueTestifyFunc(pkg, method string) func(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
@@ -144,7 +127,7 @@ func BuildSubTestWithoutContext(name string, testInstructions ...jen.Code) jen.C
 func _buildSubtest(name string, includeContext bool, testInstructions ...jen.Code) jen.Code {
 	insts := []jen.Code{}
 	if includeContext {
-		insts = append(insts, CreateCtx())
+		insts = append(insts, constants.CreateCtx())
 	}
 	insts = append(insts, testInstructions...)
 
@@ -165,28 +148,6 @@ func BuildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
 	)
 }
 
-const ContextVarName = "ctx"
-
-// CreateCtx calls context.Background() and assigns it to a variable called ctx
-func CreateCtx() jen.Code {
-	return CtxVar().Op(":=").Qual("context", "Background").Call()
-}
-
-// InlineCtx calls context.Background() and assigns it to a variable called ctx
-func InlineCtx() jen.Code {
-	return jen.Qual("context", "Background").Call()
-}
-
-// CtxParam is a shorthand for a context param
-func CtxParam() jen.Code {
-	return CtxVar().Qual("context", "Context")
-}
-
-// CtxParam is a shorthand for a context param
-func CtxVar() *jen.Statement {
-	return jen.ID(ContextVarName)
-}
-
 // OuterTestFunc does
 func OuterTestFunc(subjectName string) *jen.Statement {
 	return jen.Func().ID(fmt.Sprintf("Test%s", subjectName)).Params(jen.ID(T).Op("*").Qual("testing", T))
@@ -195,9 +156,9 @@ func OuterTestFunc(subjectName string) *jen.Statement {
 // QueryFilterParam does
 func QueryFilterParam(proj *models.Project) jen.Code {
 	if proj != nil {
-		return jen.ID(FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")
+		return jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")
 	}
-	return jen.ID(FilterVarName).PointerTo().ID("QueryFilter")
+	return jen.ID(constants.FilterVarName).PointerTo().ID("QueryFilter")
 }
 
 func FormatString(str string, args ...jen.Code) *jen.Statement {
@@ -220,10 +181,6 @@ func Errorf(str string, args ...interface{}) jen.Code {
 	return jen.Qual("errors", "New").Call(jen.Litf(str, args...))
 }
 
-func ObligatoryError() jen.Code {
-	return Error("blah")
-}
-
 const SpanVarName = "span"
 
 func StartSpan(proj *models.Project, saveCtx bool, spanName string) jen.Code {
@@ -240,10 +197,10 @@ func StartSpanWithVar(proj *models.Project, saveCtx bool, spanName jen.Code) jen
 	g.Add(
 		jen.List(func() jen.Code {
 			if saveCtx {
-				return CtxVar()
+				return constants.CtxVar()
 			}
 			return jen.ID("_")
-		}(), jen.ID(SpanVarName)).Op(":=").Qual(filepath.Join(proj.OutputPath, "internal", "v1", "tracing"), "StartSpan").Call(CtxVar(), spanName),
+		}(), jen.ID(SpanVarName)).Op(":=").Qual(filepath.Join(proj.OutputPath, "internal", "v1", "tracing"), "StartSpan").Call(constants.CtxVar(), spanName),
 		jen.Line(),
 		jen.Defer().ID(SpanVarName).Dot("End").Call(),
 		jen.Line(),
@@ -321,4 +278,19 @@ func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
 	}
 
 	return nil
+}
+
+func BuildFakeVarName(typName string) string {
+	return fmt.Sprintf("example%s", typName)
+}
+
+func BuildFakeVar(proj *models.Project, typName string, args ...jen.Code) jen.Code {
+	return BuildFakeVarWithCustomName(proj, BuildFakeVarName(typName), typName, args...)
+}
+
+func BuildFakeVarWithCustomName(proj *models.Project, varName, funcName string, args ...jen.Code) jen.Code {
+	if !strings.HasPrefix(funcName, "BuildFake") {
+		funcName = fmt.Sprintf("BuildFake%s", funcName)
+	}
+	return jen.IDf(varName).Assign().Qual(proj.FakeModelsPackage(), funcName).Call(args...)
 }

@@ -2,6 +2,7 @@ package metrics
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -26,7 +27,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Zero()), nil),
 				jen.Line(),
-				jen.ID("c").Dot("Increment").Call(utils.CtxVar()),
+				jen.ID("c").Dot("Increment").Call(constants.CtxVar()),
 				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.One()), nil),
 			),
 		),
@@ -48,7 +49,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Zero()), nil),
 				jen.Line(),
-				jen.ID("c").Dot("IncrementBy").Call(utils.CtxVar(), jen.Lit(666)),
+				jen.ID("c").Dot("IncrementBy").Call(constants.CtxVar(), jen.Lit(666)),
 				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Lit(666)), nil),
 			),
 		),
@@ -70,10 +71,10 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Zero()), nil),
 				jen.Line(),
-				jen.ID("c").Dot("Increment").Call(utils.CtxVar()),
+				jen.ID("c").Dot("Increment").Call(constants.CtxVar()),
 				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.One()), nil),
 				jen.Line(),
-				jen.ID("c").Dot("Decrement").Call(utils.CtxVar()),
+				jen.ID("c").Dot("Decrement").Call(constants.CtxVar()),
 				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Zero()), nil),
 			),
 		),

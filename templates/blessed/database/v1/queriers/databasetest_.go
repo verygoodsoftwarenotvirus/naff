@@ -1,6 +1,7 @@
 package queriers
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -98,7 +99,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 			utils.BuildSubTest(
 				"obligatory",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				utils.AssertTrue(jen.ID(dbfl).Dot("IsReady").Call(utils.CtxVar()), nil),
+				utils.AssertTrue(jen.ID(dbfl).Dot("IsReady").Call(constants.CtxVar()), nil),
 			),
 		),
 		jen.Line(),
@@ -111,7 +112,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID(dbfl).Dot("logQueryBuildingError").Call(utils.ObligatoryError()),
+				jen.ID(dbfl).Dot("logQueryBuildingError").Call(constants.ObligatoryError()),
 			),
 		),
 		jen.Line(),
@@ -125,7 +126,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 				utils.BuildSubTestWithoutContext(
 					"obligatory",
 					jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-					jen.ID(dbfl).Dot("logIDRetrievalError").Call(utils.ObligatoryError()),
+					jen.ID(dbfl).Dot("logIDRetrievalError").Call(constants.ObligatoryError()),
 				),
 			),
 			jen.Line(),

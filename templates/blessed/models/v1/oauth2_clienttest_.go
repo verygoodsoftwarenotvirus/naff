@@ -2,6 +2,7 @@ package v1
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -68,7 +69,7 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
 				jen.ID("expected").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expectation")),
 				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
-					jen.ID("BelongsToUser").MapAssign().ID("expectation"),
+					jen.ID(constants.UserOwnershipFieldName).MapAssign().ID("expectation"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetUserID").Call(), nil),
 			),

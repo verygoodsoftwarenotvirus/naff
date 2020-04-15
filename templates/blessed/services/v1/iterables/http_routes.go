@@ -2,6 +2,7 @@ package iterables
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -42,14 +43,14 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 	pn := typ.Name.Plural()
 
 	dbCallArgs := []jen.Code{
-		utils.CtxVar(),
+		constants.CtxVar(),
 	}
 	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ListHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ListHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("ensure query filter"),
-		jen.ID(utils.FilterVarName).Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID("req")),
+		jen.ID(constants.FilterVarName).Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID("req")),
 		jen.Line(),
 	}
 
@@ -90,7 +91,7 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		)
 	}
 
-	dbCallArgs = append(dbCallArgs, jen.ID(utils.FilterVarName))
+	dbCallArgs = append(dbCallArgs, jen.ID(constants.FilterVarName))
 
 	block = append(block,
 		jen.Line(),
@@ -127,7 +128,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	sn := typ.Name.Singular()
 
 	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreateHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreateHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -170,13 +171,13 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	block = append(block,
 		jen.Line(),
 		jen.Comment("check request context for parsed input struct"),
-		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn))),
+		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn))),
 		jen.If(jen.Op("!").ID("ok")).Block(notOkayBlock...),
 	)
 
 	errNotNilBlock := []jen.Code{}
 	if typ.BelongsToUser {
-		block = append(block, jen.ID("input").Dot("BelongsToUser").Equals().ID("userID"))
+		block = append(block, jen.ID("input").Dot(constants.UserOwnershipFieldName).Equals().ID("userID"))
 		errNotNilBlock = append(errNotNilBlock,
 			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("error creating %s", scn)),
 			utils.WriteXHeader("res", "StatusInternalServerError"),
@@ -213,11 +214,11 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	block = append(block,
 		jen.Line(),
 		jen.Commentf("create %s in database", scn),
-		jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("Create%s", sn)).Call(utils.CtxVar(), jen.ID("input")),
+		jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("Create%s", sn)).Call(constants.CtxVar(), jen.ID("input")),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(errNotNilBlock...),
 		jen.Line(),
 		jen.Comment("notify relevant parties"),
-		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Increment").Call(utils.CtxVar()),
+		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Increment").Call(constants.CtxVar()),
 		jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID("x").Dot("ID")),
 		jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 			jen.ID("Data").MapAssign().ID("x"),
@@ -254,11 +255,11 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 
 	loggerValues := []jen.Code{}
 	dbCallArgs := []jen.Code{
-		utils.CtxVar(),
+		constants.CtxVar(),
 		jen.ID(xID),
 	}
 	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ExistenceHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ExistenceHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("determine relevant information"),
@@ -355,11 +356,11 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 
 	loggerValues := []jen.Code{}
 	dbCallArgs := []jen.Code{
-		utils.CtxVar(),
+		constants.CtxVar(),
 		jen.ID(xID),
 	}
 	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ReadHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ReadHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("determine relevant information"),
@@ -457,11 +458,11 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	xID := fmt.Sprintf("%sID", uvn)
 
 	block := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("check for parsed input attached to request context"),
-		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(utils.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn))),
+		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn))),
 		jen.If(jen.Op("!").ID("ok")).Block(
 			jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
 			utils.WriteXHeader("res", "StatusBadRequest"),
@@ -472,7 +473,7 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	}
 	loggerValues := []jen.Code{}
 	dbCallArgs := []jen.Code{
-		utils.CtxVar(),
+		constants.CtxVar(),
 		jen.ID(xID),
 	}
 
@@ -518,7 +519,7 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.ID("x").Dot("Update").Call(jen.ID("input")),
 		jen.Line(),
 		jen.Commentf("update %s in database", scn),
-		jen.If(jen.Err().Equals().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Update%s", sn).Call(utils.CtxVar(), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().Equals().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Update%s", sn).Call(constants.CtxVar(), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("error encountered updating %s", scn)),
 			utils.WriteXHeader("res", "StatusInternalServerError"),
 			jen.Return(),
@@ -558,14 +559,14 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 	xID := fmt.Sprintf("%sID", uvn)
 
 	blockLines := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ArchiveHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ArchiveHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 		jen.Comment("determine relevant information"),
 	}
 
 	callArgs := []jen.Code{
-		utils.CtxVar(), jen.ID(xID),
+		constants.CtxVar(), jen.ID(xID),
 	}
 	loggerValues := []jen.Code{jen.Litf("%s_id", rn).MapAssign().ID(fmt.Sprintf("%sID", uvn))}
 
@@ -607,7 +608,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 		),
 		jen.Line(),
 		jen.Comment("notify relevant parties"),
-		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Decrement").Call(utils.CtxVar()),
+		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Decrement").Call(constants.CtxVar()),
 		jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 			jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Archive")),
 			jen.ID("Data").MapAssign().AddressOf().Qual(proj.ModelsV1Package(), sn).Values(jen.ID("ID").MapAssign().ID(fmt.Sprintf("%sID", uvn))),

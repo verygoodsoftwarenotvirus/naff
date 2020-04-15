@@ -2,6 +2,7 @@ package client
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -44,7 +45,7 @@ func buildBuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -55,7 +56,7 @@ func buildBuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code {
 		jen.Comment("BuildGetOAuth2ClientRequest builds an HTTP request for fetching an OAuth2 client"),
 		jen.Line(),
 		newClientMethod("BuildGetOAuth2ClientRequest").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("id").Uint64(),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -76,7 +77,7 @@ func buildGetOAuth2Client(proj *models.Project) []jen.Code {
 			jen.ID("req"),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildGetOAuth2ClientRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("id"),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -90,7 +91,7 @@ func buildGetOAuth2Client(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("req"),
 			jen.AddressOf().ID("oauth2Client"),
 		),
@@ -104,7 +105,7 @@ func buildGetOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Comment("GetOAuth2Client gets an OAuth2 client"),
 		jen.Line(),
 		newClientMethod("GetOAuth2Client").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("id").Uint64(),
 		).Params(
 			jen.ID("oauth2Client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
@@ -122,12 +123,12 @@ func buildBuildGetOAuth2ClientsRequest(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Call(
-			jen.ID(utils.FilterVarName).Dot("ToValues").Call(),
+			jen.ID(constants.FilterVarName).Dot("ToValues").Call(),
 			jen.ID("oauth2ClientsBasePath"),
 		),
 		jen.Line(),
 		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -138,8 +139,8 @@ func buildBuildGetOAuth2ClientsRequest(proj *models.Project) []jen.Code {
 		jen.Comment("BuildGetOAuth2ClientsRequest builds an HTTP request for fetching a list of OAuth2 clients"),
 		jen.Line(),
 		newClientMethod("BuildGetOAuth2ClientsRequest").Params(
-			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			constants.CtxParam(),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
@@ -159,8 +160,8 @@ func buildGetOAuth2Clients(proj *models.Project) []jen.Code {
 			jen.ID("req"),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildGetOAuth2ClientsRequest").Call(
-			utils.CtxVar(),
-			jen.ID(utils.FilterVarName),
+			constants.CtxVar(),
+			jen.ID(constants.FilterVarName),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(
@@ -174,7 +175,7 @@ func buildGetOAuth2Clients(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Var().ID("oauth2Clients").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("req"),
 			jen.AddressOf().ID("oauth2Clients"),
 		),
@@ -188,8 +189,8 @@ func buildGetOAuth2Clients(proj *models.Project) []jen.Code {
 		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients"),
 		jen.Line(),
 		newClientMethod("GetOAuth2Clients").Params(
-			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			constants.CtxParam(),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
 			jen.Error(),
@@ -212,7 +213,7 @@ func buildBuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("buildDataRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Qual("net/http", "MethodPost"),
 			jen.ID("uri"),
 			jen.ID("body"),
@@ -237,7 +238,7 @@ func buildBuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Code {
 		jen.Comment("BuildCreateOAuth2ClientRequest builds an HTTP request for creating OAuth2 clients"),
 		jen.Line(),
 		newClientMethod("BuildCreateOAuth2ClientRequest").Paramsln(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("cookie").PointerTo().Qual("net/http", "Cookie"),
 			jen.ID("body").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
 		).Params(jen.PointerTo().Qual("net/http", "Request"),
@@ -262,7 +263,7 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildCreateOAuth2ClientRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("cookie"),
 			jen.ID("input"),
 		),
@@ -274,7 +275,7 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.If(
-			jen.ID("resErr").Assign().ID("c").Dot("executeUnauthenticatedDataRequest").Call(utils.CtxVar(), jen.ID("req"), jen.AddressOf().ID("oauth2Client")),
+			jen.ID("resErr").Assign().ID("c").Dot("executeUnauthenticatedDataRequest").Call(constants.CtxVar(), jen.ID("req"), jen.AddressOf().ID("oauth2Client")),
 			jen.ID("resErr").DoesNotEqual().ID("nil"),
 		).Block(
 			jen.Return().List(
@@ -298,7 +299,7 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Comment("in order to receive a valid response"),
 		jen.Line(),
 		newClientMethod("CreateOAuth2Client").Paramsln(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("cookie").PointerTo().Qual("net/http", "Cookie"),
 			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
 		).Params(
@@ -327,7 +328,7 @@ func buildBuildArchiveOAuth2ClientRequest(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Qual("net/http", "MethodDelete"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -337,7 +338,7 @@ func buildBuildArchiveOAuth2ClientRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("BuildArchiveOAuth2ClientRequest builds an HTTP request for archiving an oauth2 client"),
 		jen.Line(),
-		newClientMethod("BuildArchiveOAuth2ClientRequest").Params(utils.CtxParam(), jen.ID("id").Uint64()).Params(
+		newClientMethod("BuildArchiveOAuth2ClientRequest").Params(constants.CtxParam(), jen.ID("id").Uint64()).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
@@ -356,7 +357,7 @@ func buildArchiveOAuth2Client(proj *models.Project) []jen.Code {
 			jen.ID("req"),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildArchiveOAuth2ClientRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("id"),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -367,7 +368,7 @@ func buildArchiveOAuth2Client(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Return().ID("c").Dot("executeRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("req"),
 			jen.Nil(),
 		),
@@ -376,7 +377,7 @@ func buildArchiveOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client"),
 		jen.Line(),
-		newClientMethod("ArchiveOAuth2Client").Params(utils.CtxParam(), jen.ID("id").Uint64()).Params(jen.Error()).Block(block...),
+		newClientMethod("ArchiveOAuth2Client").Params(constants.CtxParam(), jen.ID("id").Uint64()).Params(jen.Error()).Block(block...),
 		jen.Line(),
 	}
 

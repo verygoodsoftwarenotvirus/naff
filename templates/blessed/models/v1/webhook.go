@@ -2,6 +2,7 @@ package v1
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -15,13 +16,13 @@ func webhookDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("WebhookDataManager describes a structure capable of storing webhooks"),
 			jen.ID("WebhookDataManager").Interface(
-				jen.ID("GetWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().ID("Webhook"), jen.Error()),
-				jen.ID("GetAllWebhooksCount").Params(utils.CtxParam()).Params(jen.Uint64(), jen.Error()),
-				jen.ID("GetWebhooks").Params(utils.CtxParam(), jen.ID("userID").Uint64(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("WebhookList"), jen.Error()),
-				jen.ID("GetAllWebhooks").Params(utils.CtxParam()).Params(jen.PointerTo().ID("WebhookList"), jen.Error()),
-				jen.ID("CreateWebhook").Params(utils.CtxParam(), jen.ID("input").PointerTo().ID("WebhookCreationInput")).Params(jen.PointerTo().ID("Webhook"), jen.Error()),
-				jen.ID("UpdateWebhook").Params(utils.CtxParam(), jen.ID("updated").PointerTo().ID("Webhook")).Params(jen.Error()),
-				jen.ID("ArchiveWebhook").Params(utils.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.Error()),
+				jen.ID("GetWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().ID("Webhook"), jen.Error()),
+				jen.ID("GetAllWebhooksCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
+				jen.ID("GetWebhooks").Params(constants.CtxParam(), jen.ID("userID").Uint64(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("WebhookList"), jen.Error()),
+				jen.ID("GetAllWebhooks").Params(constants.CtxParam()).Params(jen.PointerTo().ID("WebhookList"), jen.Error()),
+				jen.ID("CreateWebhook").Params(constants.CtxParam(), jen.ID("input").PointerTo().ID("WebhookCreationInput")).Params(jen.PointerTo().ID("Webhook"), jen.Error()),
+				jen.ID("UpdateWebhook").Params(constants.CtxParam(), jen.ID("updated").PointerTo().ID("Webhook")).Params(jen.Error()),
+				jen.ID("ArchiveWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("WebhookDataServer describes a structure capable of serving traffic related to webhooks"),
@@ -49,7 +50,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 				jen.ID("CreatedOn").Uint64().Tag(jsonTag("created_on")),
 				jen.ID("UpdatedOn").PointerTo().Uint64().Tag(jsonTag("updated_on")),
 				jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archived_on")),
-				jen.ID("BelongsToUser").Uint64().Tag(jsonTag("belongs_to_user")),
+				jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("belongs_to_user")),
 			),
 			jen.Line(),
 			jen.Comment("WebhookCreationInput represents what a user could set as input for creating a webhook"),
@@ -61,7 +62,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 				jen.ID("Events").Index().String().Tag(jsonTag("events")),
 				jen.ID("DataTypes").Index().String().Tag(jsonTag("data_types")),
 				jen.ID("Topics").Index().String().Tag(jsonTag("topics")),
-				jen.ID("BelongsToUser").Uint64().Tag(jsonTag("-")),
+				jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")),
 			),
 			jen.Line(),
 			jen.Comment("WebhookUpdateInput represents what a user could set as input for updating a webhook"),
@@ -73,7 +74,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 				jen.ID("Events").Index().String().Tag(jsonTag("events")),
 				jen.ID("DataTypes").Index().String().Tag(jsonTag("data_types")),
 				jen.ID("Topics").Index().String().Tag(jsonTag("topics")),
-				jen.ID("BelongsToUser").Uint64().Tag(jsonTag("-")),
+				jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")),
 			),
 			jen.Line(),
 			jen.Comment("WebhookList represents a list of webhooks"),

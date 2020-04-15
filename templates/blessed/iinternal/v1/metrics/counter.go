@@ -2,6 +2,7 @@ package metrics
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -30,7 +31,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("subtractFromCount").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("value").Uint64(),
 		).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(
@@ -38,7 +39,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 				jen.BitwiseXOR().ID("value").Plus().One(),
 			),
 			jen.Qual("go.opencensus.io/stats", "Record").Call(
-				utils.CtxVar(),
+				constants.CtxVar(),
 				jen.ID(pointerVarName).Dot("measure").Dot("M").Call(
 					jen.Int64().Call(jen.Minus().ID("value")),
 				),
@@ -49,7 +50,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("addToCount").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("value").Uint64(),
 		).Block(
 			jen.Qual("sync/atomic", "AddUint64").Call(
@@ -57,7 +58,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 				jen.ID("value"),
 			),
 			jen.Qual("go.opencensus.io/stats", "Record").Call(
-				utils.CtxVar(),
+				constants.CtxVar(),
 				jen.ID(pointerVarName).Dot("measure").Dot("M").Call(jen.Int64().Call(jen.ID("value"))),
 			),
 		),
@@ -67,8 +68,8 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Decrement satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Decrement").Params(utils.CtxParam()).Block(
-			jen.ID("c").Dot("subtractFromCount").Call(utils.CtxVar(), jen.One()),
+		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Decrement").Params(constants.CtxParam()).Block(
+			jen.ID("c").Dot("subtractFromCount").Call(constants.CtxVar(), jen.One()),
 		),
 		jen.Line(),
 	)
@@ -76,8 +77,8 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Increment satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Increment").Params(utils.CtxParam()).Block(
-			jen.ID("c").Dot("addToCount").Call(utils.CtxVar(), jen.One()),
+		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Increment").Params(constants.CtxParam()).Block(
+			jen.ID("c").Dot("addToCount").Call(constants.CtxVar(), jen.One()),
 		),
 		jen.Line(),
 	)
@@ -85,8 +86,8 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("IncrementBy satisfies our Counter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("IncrementBy").Params(utils.CtxParam(), jen.ID("value").Uint64()).Block(
-			jen.ID("c").Dot("addToCount").Call(utils.CtxVar(), jen.ID("value")),
+		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("IncrementBy").Params(constants.CtxParam(), jen.ID("value").Uint64()).Block(
+			jen.ID("c").Dot("addToCount").Call(constants.CtxVar(), jen.ID("value")),
 		),
 		jen.Line(),
 	)

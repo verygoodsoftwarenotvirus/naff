@@ -2,6 +2,7 @@ package webhooks
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -104,7 +105,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("requestingUser").Dot("ID"),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList")).Call(jen.Nil()), utils.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("webhookDatabase").Equals().ID("wd"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -142,7 +143,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("webhookDatabase").Equals().ID("wd"),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(utils.ObligatoryError()),
+				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -310,7 +311,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("CreateWebhook"),
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Call(jen.Nil()), utils.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("webhookDatabase").Equals().ID("wd"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -354,7 +355,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("webhookDatabase").Equals().ID("wd"),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(utils.ObligatoryError()),
+				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -472,7 +473,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("wd").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
 				jen.ID("wd").Dot("On").Callln(
-					jen.Lit("GetWebhook"), jen.Qual(utils.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Call(jen.Nil()), utils.ObligatoryError()),
+					jen.Lit("GetWebhook"), jen.Qual(utils.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID("requestingUser").Dot("ID")).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("webhookDatabase").Equals().ID("wd"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -510,7 +511,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("webhookDatabase").Equals().ID("wd"),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(utils.ObligatoryError()),
+				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -667,7 +668,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Call(jen.Nil()), utils.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("webhookDatabase").Equals().ID("wd"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -714,7 +715,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("UpdateWebhook"),
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(utils.ObligatoryError()),
+				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("webhookDatabase").Equals().ID("wd"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -764,7 +765,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("webhookDatabase").Equals().ID("wd"),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(utils.ObligatoryError()),
+				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -893,7 +894,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 					jen.ID("requestingUser").Dot("ID"),
-				).Dot("Return").Call(utils.ObligatoryError()),
+				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("webhookDatabase").Equals().ID("wd"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),

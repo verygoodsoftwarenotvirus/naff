@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -73,7 +74,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 
 	buildProvideServerParams := func() []jen.Code {
 		lines := []jen.Code{
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("cfg").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 			jen.ID("authService").PointerTo().Qual(proj.ServiceV1AuthPackage(), "Service"),
 			jen.ID("frontendService").PointerTo().Qual(proj.ServiceV1FrontendPackage(), "Service"),
@@ -169,7 +170,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 
 		// if proj.EnableNewsman {
 		lines = append(lines,
-			jen.List(jen.ID("allWebhooks"), jen.Err()).Assign().ID("db").Dot("GetAllWebhooks").Call(utils.CtxVar()),
+			jen.List(jen.ID("allWebhooks"), jen.Err()).Assign().ID("db").Dot("GetAllWebhooks").Call(constants.CtxVar()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.Err())),
 			),

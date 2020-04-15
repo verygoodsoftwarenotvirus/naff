@@ -1,6 +1,7 @@
 package queriers
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -108,9 +109,9 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx|Stmt} objects"),
 			jen.ID("Querier").Interface(
-				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
-				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Rows"), jen.Error()),
-				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Row")),
+				jen.ID("ExecContext").Params(constants.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
+				jen.ID("QueryContext").Params(constants.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Rows"), jen.Error()),
+				jen.ID("QueryRowContext").Params(constants.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Row")),
 			),
 		),
 		jen.Line(),
@@ -175,7 +176,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				).Dot("Debug").Call(jen.Lit("IsReady called")),
 				jen.Line(),
 				jen.For(jen.Op("!").ID("ready")).Block(
-					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(utils.CtxVar()),
+					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID(dbfl).Dot("logger").Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
@@ -201,7 +202,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				).Dot("Debug").Call(jen.Lit("IsReady called")),
 				jen.Line(),
 				jen.For(jen.Op("!").ID("ready")).Block(
-					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(utils.CtxVar()),
+					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID(dbfl).Dot("logger").Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
@@ -227,7 +228,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("IsReady").Params(
 			func() jen.Code {
 				if !isSqlite(dbvendor) {
-					return utils.CtxParam()
+					return constants.CtxParam()
 				}
 				return jen.Underscore().Qual("context", "Context")
 			}(),

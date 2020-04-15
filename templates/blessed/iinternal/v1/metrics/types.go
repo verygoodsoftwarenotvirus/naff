@@ -2,6 +2,7 @@ package metrics
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -34,9 +35,9 @@ func typesDotGo(proj *models.Project) *jen.File {
 			jen.Comment("UnitCounter describes a counting interface for things like total user counts"),
 			jen.Comment("Meant to handle integers exclusively"),
 			jen.ID("UnitCounter").Interface(
-				jen.ID("Increment").Params(utils.CtxParam()),
-				jen.ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").Uint64()),
-				jen.ID("Decrement").Params(utils.CtxParam()),
+				jen.ID("Increment").Params(constants.CtxParam()),
+				jen.ID("IncrementBy").Params(constants.CtxParam(), jen.ID("val").Uint64()),
+				jen.ID("Decrement").Params(constants.CtxParam()),
 			),
 			jen.Line(),
 			jen.Comment("UnitCounterProvider is a function that provides a UnitCounter and an error"),

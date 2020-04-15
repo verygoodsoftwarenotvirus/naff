@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -29,112 +30,10 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	return ret
 }
 
-func buildVarDeclarationsOfDependentStructs(proj *models.Project, typ models.DataType) []jen.Code {
-	lines := []jen.Code{}
-
-	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		pts := pt.Name.Singular()
-		lines = append(lines, jen.ID(utils.BuildFakeVarName(pts)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
-	}
-	lines = append(lines, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
-
-	return lines
-}
-
-func buildCreationVarDeclarationsOfDependentStructs(proj *models.Project, typ models.DataType) []jen.Code {
-	lines := []jen.Code{}
-
-	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		lines = append(lines,
-			jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call(),
-		)
-	}
-
-	lines = append(lines,
-		jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call(),
-	)
-
-	return lines
-}
-
-func buildFormatStringForSingleInstanceRoute(proj *models.Project, typ models.DataType) (path string) {
-	modelRoute := "/api/v1/"
-	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		modelRoute += fmt.Sprintf("%s/", pt.Name.PluralRouteName()) + "%d/"
-	}
-	modelRoute += fmt.Sprintf("%s/", typ.Name.PluralRouteName()) + "%d"
-
-	return modelRoute
-}
-
-func buildFormatStringForListRoute(proj *models.Project, typ models.DataType) (path string) {
-	modelRoute := "/api/v1/"
-	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		modelRoute += fmt.Sprintf("%s/", pt.Name.PluralRouteName()) + "%d/"
-	}
-	modelRoute += fmt.Sprintf("%s", typ.Name.PluralRouteName())
-
-	return modelRoute
-}
-
-func buildFormatStringForSingleInstanceCreationRoute(proj *models.Project, typ models.DataType) (path string) {
-	modelRoute := "/api/v1/"
-	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		modelRoute += fmt.Sprintf("%s/", pt.Name.PluralRouteName()) + "%d/"
-	}
-	modelRoute += typ.Name.PluralRouteName()
-
-	return modelRoute
-}
-
-func buildFormatCallArgsForSingleInstanceRoute(proj *models.Project, typ models.DataType) (args []jen.Code) {
-	callArgs := []jen.Code{}
-	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
-	}
-	callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dot("ID"))
-
-	return callArgs
-}
-
-func buildFormatCallArgsForListRoute(proj *models.Project, typ models.DataType) (args []jen.Code) {
-	callArgs := []jen.Code{}
-	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
-	}
-
-	return callArgs
-}
-
-func buildFormatCallArgsForSingleInstanceCreationRoute(proj *models.Project, typ models.DataType) (args []jen.Code) {
-	callArgs := []jen.Code{}
-	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
-	}
-
-	return callArgs
-}
-
-func buildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(proj *models.Project, typ models.DataType) (args []jen.Code) {
-	callArgs := []jen.Code{}
-	owners := proj.FindOwnerTypeChain(typ)
-
-	for i, pt := range owners {
-		if typ.BelongsToStruct != nil && i == len(owners)-1 {
-			callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-		} else {
-			callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(pt.Name.Singular())).Dot("ID"))
-		}
-	}
-	callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dot("ID"))
-
-	return callArgs
-}
-
 func buildTestV1Client_BuildSomethingExistsRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	depVarDecls := buildVarDeclarationsOfDependentStructs(proj, typ)
+	depVarDecls := typ.BuildVarDeclarationsOfDependentStructs(proj)
 
 	subtestLines := []jen.Code{
 		utils.ExpectMethod("expectedMethod", "MethodHead"),
@@ -146,7 +45,7 @@ func buildTestV1Client_BuildSomethingExistsRequest(proj *models.Project, typ mod
 
 	subtestLines = append(subtestLines,
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Build%sExistsRequest", ts)).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)...,
+			typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -187,8 +86,8 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 	ts := typ.Name.Singular() // title singular
 
 	// routes
-	happyPathSubtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
-	actualCallArgs := buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)
+	happyPathSubtestLines := typ.BuildVarDeclarationsOfDependentStructs(proj)
+	actualCallArgs := typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)
 	//actualCallArgs := []jen.Code{utils.CtxVar(), jen.ID(utils.BuildFakeVarName(ts)).Dot("ID")}
 
 	happyPathSubtestLines = append(happyPathSubtestLines,
@@ -209,8 +108,8 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				utils.FormatString(
-					buildFormatStringForSingleInstanceRoute(proj, typ),
-					buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
+					typ.BuildFormatStringForSingleInstanceRoute(proj),
+					typ.BuildFormatCallArgsForSingleInstanceRoute(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -227,7 +126,7 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 		utils.AssertTrue(jen.ID("actual"), nil),
 	)
 
-	sadPathSubtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
+	sadPathSubtestLines := typ.BuildVarDeclarationsOfDependentStructs(proj)
 	sadPathSubtestLines = append(sadPathSubtestLines,
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
@@ -256,7 +155,7 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	depVarDecls := buildVarDeclarationsOfDependentStructs(proj, typ)
+	depVarDecls := typ.BuildVarDeclarationsOfDependentStructs(proj)
 
 	subtestLines := []jen.Code{
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
@@ -268,7 +167,7 @@ func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models
 
 	subtestLines = append(subtestLines,
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)...,
+			typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -309,10 +208,9 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 	ts := typ.Name.Singular() // title singular
 
 	args := typ.BuildGetSomethingArgsWithExampleVariables(proj)
-	//args = args[:len(args)-1]
 
 	happyPathSubtestLines := append(
-		buildVarDeclarationsOfDependentStructs(proj, typ),
+		typ.BuildVarDeclarationsOfDependentStructs(proj),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -330,8 +228,8 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				utils.FormatString(
-					buildFormatStringForSingleInstanceRoute(proj, typ),
-					buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
+					typ.BuildFormatStringForSingleInstanceRoute(proj),
+					typ.BuildFormatCallArgsForSingleInstanceRoute(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -348,7 +246,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 	)
 
 	invalidClientURLSubtestLines := append(
-		buildVarDeclarationsOfDependentStructs(proj, typ),
+		typ.BuildVarDeclarationsOfDependentStructs(proj),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(args...),
@@ -358,7 +256,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 	)
 
 	invalidResponseSubtestLines := append(
-		buildVarDeclarationsOfDependentStructs(proj, typ),
+		typ.BuildVarDeclarationsOfDependentStructs(proj),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -376,8 +274,8 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				utils.FormatString(
-					buildFormatStringForSingleInstanceRoute(proj, typ),
-					buildFormatCallArgsForSingleInstanceRoute(proj, typ)...,
+					typ.BuildFormatStringForSingleInstanceRoute(proj),
+					typ.BuildFormatCallArgsForSingleInstanceRoute(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -387,7 +285,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
-			typ.BuildGetSomethingArgsWithExampleVariables(proj)[:len(typ.BuildGetSomethingArgsWithExampleVariables(proj))-1]..., // lazy AF
+			args...,
 		),
 		jen.Line(),
 		utils.AssertNil(jen.ID("actual"), nil),
@@ -413,16 +311,15 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 func buildTestV1Client_BuildGetListOfSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	tp := typ.Name.Plural() // title plural
 
-	structDecls := buildVarDeclarationsOfDependentStructs(proj, typ)
-	subtestLines := structDecls[:len(structDecls)-1]
-	subtestLines = append(subtestLines,
-		jen.ID(utils.FilterVarName).Assign().Call(jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
+	subtestLines := append(
+		typ.BuildVarDeclarationsOfDependentStructsForListFunction(proj),
+		jen.ID(constants.FilterVarName).Assign().Call(jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
-			buildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(proj, typ, true)...,
+			typ.BuildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(proj, true)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -451,10 +348,10 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	tp := typ.Name.Plural()   // title plural
 	ts := typ.Name.Singular() // title singular
 
-	modelListRoute := buildFormatStringForListRoute(proj, typ)
+	modelListRoute := typ.BuildFormatStringForListRoute(proj)
 
 	var uriDec *jen.Statement
-	urlFormatArgs := buildFormatCallArgsForListRoute(proj, typ)
+	urlFormatArgs := typ.BuildFormatCallArgsForListRoute(proj)
 	if len(urlFormatArgs) > 0 {
 		uriDec = utils.FormatString(
 			modelListRoute,
@@ -464,10 +361,10 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		uriDec = jen.Lit(modelListRoute)
 	}
 
-	structDecls := buildVarDeclarationsOfDependentStructs(proj, typ)
+	structDecls := typ.BuildVarDeclarationsOfDependentStructsForListFunction(proj)
 	happyPathSubtestLines := append(
-		structDecls[:len(structDecls)-1],
-		jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
+		structDecls,
+		jen.ID(constants.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
 		jen.Line(),
 		jen.IDf("example%sList", ts).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", ts)).Call(),
 		jen.Line(),
@@ -492,7 +389,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).
 			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
-			buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, true)...,
+			typ.BuildCallForMethodThatFetchesAListOfDataTypesFromStructsForListFunction(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -501,13 +398,13 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	)
 
 	invalidClientURLSubtestLines := append(
-		structDecls[:len(structDecls)-1],
-		jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
+		structDecls,
+		jen.ID(constants.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).
 			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
-			buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, true)...,
+			typ.BuildCallForMethodThatFetchesAListOfDataTypesFromStructsForListFunction(proj)...,
 		),
 		jen.Line(),
 		utils.AssertNil(jen.ID("actual"), nil),
@@ -515,8 +412,8 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	)
 
 	invalidResponseSubtestLines := append(
-		structDecls[:len(structDecls)-1],
-		jen.ID(utils.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
+		structDecls,
+		jen.ID(constants.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -539,7 +436,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).
 			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
-			buildParamsForMethodThatFetchesAListOfDataTypesFromStructs(proj, typ, true)...,
+			typ.BuildCallForMethodThatFetchesAListOfDataTypesFromStructsForListFunction(proj)...,
 		),
 		jen.Line(),
 		utils.AssertNil(jen.ID("actual"), nil),
@@ -570,11 +467,8 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 		cfs = append(cfs, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
 	}
 
-	subtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
-	//if len(subtestLines) > 1 {
-	//	subtestLines = subtestLines[1:]
-	//}
-	subtestLines = append(subtestLines,
+	subtestLines := append(
+		typ.BuildVarDeclarationsOfDependentStructs(proj),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		jen.Line(),
 		utils.ExpectMethod("expectedMethod", "MethodPost"),
@@ -582,7 +476,7 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
-			buildParamsForMethodThatCreatesADataTypeFromStructs(proj, typ, true)...,
+			typ.BuildParamsForMethodThatCreatesADataTypeFromStructs(proj, true)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -614,10 +508,10 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	ts := typ.Name.Singular() // title singular
 
 	// routes
-	modelListRoute := buildFormatStringForSingleInstanceCreationRoute(proj, typ)
+	modelListRoute := typ.BuildFormatStringForSingleInstanceCreationRoute(proj)
 
 	var uriDec *jen.Statement
-	urlFormatArgs := buildFormatCallArgsForSingleInstanceCreationRoute(proj, typ)
+	urlFormatArgs := typ.BuildFormatCallArgsForSingleInstanceCreationRoute(proj)
 	if len(urlFormatArgs) > 0 {
 		uriDec = utils.FormatString(
 			modelListRoute,
@@ -628,11 +522,11 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	}
 
 	happyPathSubtestLines := append(
-		buildCreationVarDeclarationsOfDependentStructs(proj, typ),
+		typ.BuildCreationVarDeclarationsOfDependentStructs(proj),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		func() jen.Code {
 			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName("Input")).Dot("BelongsToUser").Equals().Zero()
+				return jen.ID(utils.BuildFakeVarName("Input")).Dot(constants.UserOwnershipFieldName).Equals().Zero()
 			}
 			return jen.Null()
 		}(),
@@ -661,7 +555,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
-			buildParamsForMethodThatCreatesADataTypeFromStructs(proj, typ, true)...,
+			typ.BuildParamsForMethodThatCreatesADataTypeFromStructs(proj, true)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -670,12 +564,12 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	)
 
 	invalidClientURLSubtestLines := append(
-		buildCreationVarDeclarationsOfDependentStructs(proj, typ),
+		typ.BuildCreationVarDeclarationsOfDependentStructsSkippingPossibleOwnerStruct(proj),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
-			buildParamsForMethodThatCreatesADataTypeFromStructs(proj, typ, true)...,
+			typ.BuildParamsForMethodThatCreatesADataTypeFromStructs(proj, true)...,
 		),
 		jen.Line(),
 		utils.AssertNil(jen.ID("actual"), nil),
@@ -699,12 +593,9 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 func buildTestV1Client_BuildUpdateSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	actualParams := buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)
+	actualParams := typ.BuildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj)
 
-	subtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
-	if len(subtestLines) > 1 {
-		subtestLines = subtestLines[1:]
-	}
+	subtestLines := typ.BuildVarDeclarationsOfDependentStructsForUpdateFunction(proj)
 	subtestLines = append(subtestLines,
 		utils.ExpectMethod("expectedMethod", "MethodPut"),
 		jen.Line(),
@@ -739,10 +630,7 @@ func buildTestV1Client_BuildUpdateSomethingRequest(proj *models.Project, typ mod
 func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	subtestLines := buildVarDeclarationsOfDependentStructs(proj, typ)
-	if len(subtestLines) > 1 {
-		subtestLines = subtestLines[1:]
-	}
+	subtestLines := typ.BuildVarDeclarationsOfDependentStructsForUpdateFunction(proj)
 
 	happyPathSubtestLines := append(
 		subtestLines,
@@ -752,8 +640,8 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				utils.FormatString(
-					buildFormatStringForSingleInstanceRoute(proj, typ),
-					buildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(proj, typ)...,
+					typ.BuildFormatStringForSingleInstanceRoute(proj),
+					typ.BuildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -765,7 +653,7 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 		),
 		jen.Line(),
 		jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Update%s", ts)).Call(
-			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)...,
+			typ.BuildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj)...,
 		),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	)
@@ -774,7 +662,7 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 		subtestLines,
 		jen.Line(),
 		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot(fmt.Sprintf("Update%s", ts)).Call(
-			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)...,
+			typ.BuildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj)...,
 		),
 		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 	)
@@ -802,13 +690,13 @@ func buildTestV1Client_BuildArchiveSomethingRequest(proj *models.Project, typ mo
 		jen.Line(),
 	}
 
-	subtestLines = append(subtestLines, buildVarDeclarationsOfDependentStructs(proj, typ)...)
+	subtestLines = append(subtestLines, typ.BuildVarDeclarationsOfDependentStructs(proj)...)
 
 	subtestLines = append(subtestLines,
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)...,
+			typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -850,15 +738,15 @@ func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataTyp
 	ts := typ.Name.Singular() // title singular
 
 	happyPathSubtestLines := append(
-		buildVarDeclarationsOfDependentStructs(proj, typ),
+		typ.BuildVarDeclarationsOfDependentStructs(proj),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				utils.FormatString(
-					buildFormatStringForSingleInstanceRoute(proj, typ),
-					buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)[1:]...,
+					typ.BuildFormatStringForSingleInstanceRoute(proj),
+					typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)[1:]...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -871,18 +759,18 @@ func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataTyp
 		),
 		jen.Line(),
 		jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)...,
+			typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)...,
 		),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	)
 
 	withInvalidClientURLSubtestLines := append(
-		buildVarDeclarationsOfDependentStructs(proj, typ),
+		typ.BuildVarDeclarationsOfDependentStructs(proj),
 		jen.Line(),
 
 		jen.Line(),
 		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)...,
+			typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)...,
 		),
 		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 	)

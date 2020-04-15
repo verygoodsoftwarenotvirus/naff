@@ -2,6 +2,7 @@ package client
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -231,7 +232,7 @@ func buildTestV1Client_TokenSource() []jen.Code {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.Err()).Assign().ID("NewClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("mustParseURL").Call(
@@ -265,7 +266,7 @@ func buildTestNewClient() []jen.Code {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.Err()).Assign().ID("NewClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("mustParseURL").Call(
@@ -288,7 +289,7 @@ func buildTestNewClient() []jen.Code {
 					jen.ID("c"),
 					jen.Err(),
 				).Assign().ID("NewClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("mustParseURL").Call(
@@ -329,7 +330,7 @@ func buildTestNewSimpleClient() []jen.Code {
 					jen.ID("c"),
 					jen.Err(),
 				).Assign().ID("NewSimpleClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("mustParseURL").Call(jen.ID(utils.BuildFakeVarName("URI"))),
 					jen.True(),
 				),
@@ -352,7 +353,7 @@ func buildTestV1Client_CloseRequestBody() []jen.Code {
 				"with error",
 				jen.Line(),
 				jen.ID("rc").Assign().ID("newMockReadCloser").Call(),
-				jen.ID("rc").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(utils.ObligatoryError()),
+				jen.ID("rc").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().ID("rc"),
@@ -363,7 +364,7 @@ func buildTestV1Client_CloseRequestBody() []jen.Code {
 					jen.ID("c"),
 					jen.Err(),
 				).Assign().ID("NewSimpleClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("mustParseURL").Call(jen.ID(utils.BuildFakeVarName("URI"))),
 					jen.True(),
 				),
@@ -402,7 +403,7 @@ func buildTestBuildURL() []jen.Code {
 					jen.ID("c"),
 					jen.Err(),
 				).Assign().ID("NewClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("u"),
@@ -503,7 +504,7 @@ func buildTestBuildVersionlessURL() []jen.Code {
 					jen.ID("c"),
 					jen.Err(),
 				).Assign().ID("NewClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("u"),
@@ -601,7 +602,7 @@ func buildTestV1Client_BuildWebsocketURL() []jen.Code {
 					jen.ID("c"),
 					jen.Err(),
 				).Assign().ID("NewClient").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("u"),
@@ -646,7 +647,7 @@ func buildTestV1Client_BuildHealthCheckRequest() []jen.Code {
 				jen.List(
 					jen.ID("actual"),
 					jen.Err(),
-				).Assign().ID("c").Dot("BuildHealthCheckRequest").Call(utils.CtxVar()),
+				).Assign().ID("c").Dot("BuildHealthCheckRequest").Call(constants.CtxVar()),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
@@ -694,7 +695,7 @@ func buildTestV1Client_IsUp() []jen.Code {
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
-				jen.ID("actual").Assign().ID("c").Dot("IsUp").Call(utils.CtxVar()),
+				jen.ID("actual").Assign().ID("c").Dot("IsUp").Call(constants.CtxVar()),
 				utils.AssertTrue(
 					jen.ID("actual"),
 					nil,
@@ -705,7 +706,7 @@ func buildTestV1Client_IsUp() []jen.Code {
 				"returns error with invalid URL",
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("actual").Assign().ID("c").Dot("IsUp").Call(utils.CtxVar()),
+				jen.ID("actual").Assign().ID("c").Dot("IsUp").Call(constants.CtxVar()),
 				utils.AssertFalse(jen.ID("actual"), nil),
 			),
 			jen.Line(),
@@ -731,7 +732,7 @@ func buildTestV1Client_IsUp() []jen.Code {
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
-				jen.ID("actual").Assign().ID("c").Dot("IsUp").Call(utils.CtxVar()),
+				jen.ID("actual").Assign().ID("c").Dot("IsUp").Call(constants.CtxVar()),
 				utils.AssertFalse(
 					jen.ID("actual"),
 					nil,
@@ -763,7 +764,7 @@ func buildTestV1Client_IsUp() []jen.Code {
 					jen.ID("ts"),
 				),
 				jen.ID("c").Dot("plainClient").Dot("Timeout").Equals().Lit(500).Times().Qual("time", "Millisecond"),
-				jen.ID("actual").Assign().ID("c").Dot("IsUp").Call(utils.CtxVar()),
+				jen.ID("actual").Assign().ID("c").Dot("IsUp").Call(constants.CtxVar()),
 				utils.AssertFalse(
 					jen.ID("actual"),
 					nil,
@@ -796,7 +797,7 @@ func buildTestV1Client_buildDataRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().ID("c").Dot("buildDataRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID(utils.BuildFakeVarName("Data")),
@@ -827,7 +828,7 @@ func buildTestV1Client_buildDataRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().ID("c").Dot("buildDataRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Qual("net/http", "MethodPost"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("x"),
@@ -848,7 +849,7 @@ func buildTestV1Client_buildDataRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().ID("c").Dot("buildDataRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Qual("net/http", "MethodPost"),
 					jen.ID("c").Dot("URL").Dot("String").Call(),
 					jen.ID(utils.BuildFakeVarName("Data")),
@@ -899,7 +900,7 @@ func buildTestV1Client_checkExistence() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -908,7 +909,7 @@ func buildTestV1Client_checkExistence() []jen.Code {
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("checkExistence").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 				),
 				utils.AssertTrue(jen.ID("actual"), nil),
@@ -942,7 +943,7 @@ func buildTestV1Client_checkExistence() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -952,7 +953,7 @@ func buildTestV1Client_checkExistence() []jen.Code {
 				jen.Line(),
 				jen.ID("c").Dot("authedClient").Dot("Timeout").Equals().Lit(500).Times().Qual("time", "Millisecond"),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("checkExistence").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 				),
 				utils.AssertFalse(jen.ID("actual"), nil),
@@ -1002,7 +1003,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1011,7 +1012,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.Err().Equals().ID("c").Dot("retrieve").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 					jen.AddressOf().ID("argleBargle").Values(),
 				),
@@ -1033,7 +1034,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Qual("net/http", "MethodPost"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1042,7 +1043,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.Err().Equals().ID("c").Dot("retrieve").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 					jen.Nil(),
 				),
@@ -1081,7 +1082,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1091,7 +1092,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 				jen.Line(),
 				jen.ID("c").Dot("authedClient").Dot("Timeout").Equals().Lit(500).Times().Qual("time", "Millisecond"),
 				jen.Err().Equals().ID("c").Dot("retrieve").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 					jen.AddressOf().ID("argleBargle").Values(),
 				),
@@ -1128,7 +1129,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1139,7 +1140,7 @@ func buildTestV1Client_retrieve() []jen.Code {
 				utils.AssertEqual(
 					jen.ID("ErrNotFound"),
 					jen.ID("c").Dot("retrieve").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("req"),
 						jen.AddressOf().ID("argleBargle").Values(),
 					),
@@ -1193,7 +1194,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1202,7 +1203,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.Err().Equals().ID("c").Dot("executeRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 					jen.AddressOf().ID("argleBargle").Values(),
 				),
@@ -1239,7 +1240,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1252,7 +1253,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 				jen.Line(),
 				jen.ID("c").Dot("authedClient").Dot("Timeout").Equals().Lit(500).Times().Qual("time", "Millisecond"),
 				jen.Err().Equals().ID("c").Dot("executeRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 					jen.AddressOf().ID("argleBargle").Values(),
 				),
@@ -1286,7 +1287,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1297,7 +1298,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 				utils.AssertEqual(
 					jen.ID("ErrUnauthorized"),
 					jen.ID("c").Dot("executeRequest").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("req"),
 						jen.AddressOf().ID("argleBargle").Values(),
 					),
@@ -1332,7 +1333,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1343,7 +1344,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 				utils.AssertEqual(
 					jen.ID("ErrNotFound"),
 					jen.ID("c").Dot("executeRequest").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("req"),
 						jen.AddressOf().ID("argleBargle").Values(),
 					),
@@ -1384,7 +1385,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1394,7 +1395,7 @@ func buildTestV1Client_executeRequest() []jen.Code {
 				jen.Line(),
 				utils.AssertError(
 					jen.ID("c").Dot("executeRequest").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("req"),
 						jen.ID("argleBargle").Values(),
 					),
@@ -1438,7 +1439,7 @@ func buildTestV1Client_executeRawRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1450,7 +1451,7 @@ func buildTestV1Client_executeRawRequest() []jen.Code {
 					jen.ID("res"),
 					jen.Err(),
 				).Assign().ID("c").Dot("executeRawRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.AddressOf().Qual("net/http", "Client").Values(
 						jen.ID("Timeout").MapAssign().Qual("time", "Second"),
 					),
@@ -1526,7 +1527,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
@@ -1535,7 +1536,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				jen.Err().Equals().ID("c").Dot("executeUnauthenticatedDataRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 					jen.ID("out"),
 				),
@@ -1590,7 +1591,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
@@ -1599,7 +1600,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				jen.Err().Equals().ID("c").Dot("executeUnauthenticatedDataRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 					jen.ID("out"),
 				),
@@ -1656,7 +1657,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
@@ -1665,7 +1666,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				jen.Err().Equals().ID("c").Dot("executeUnauthenticatedDataRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 					jen.ID("out"),
 				),
@@ -1724,7 +1725,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
@@ -1735,7 +1736,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 				jen.ID("c").Dot("plainClient").Dot("Timeout").Equals().Lit(500).Times().Qual("time", "Millisecond"),
 				utils.AssertError(
 					jen.ID("c").Dot("executeUnauthenticatedDataRequest").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("req"),
 						jen.ID("out"),
 					),
@@ -1768,7 +1769,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.ID("body"),
@@ -1777,7 +1778,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 				utils.RequireNotNil(jen.ID("req"), nil),
 				jen.Line(),
 				jen.Err().Equals().ID("c").Dot("executeUnauthenticatedDataRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("req"),
 					jen.ID("testingType").Values(),
 				),
@@ -1817,7 +1818,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().Qual("net/http", "NewRequestWithContext").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("expectedMethod"),
 					jen.ID("ts").Dot("URL"),
 					jen.Nil(),
@@ -1827,7 +1828,7 @@ func buildTestV1Client_executeUnauthenticatedDataRequest() []jen.Code {
 				jen.Line(),
 				utils.AssertError(
 					jen.ID("c").Dot("executeUnauthenticatedDataRequest").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("req"),
 						jen.ID("argleBargle").Values(),
 					),

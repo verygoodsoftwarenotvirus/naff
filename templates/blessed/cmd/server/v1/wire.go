@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -86,7 +87,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Comment("BuildServer builds a server"),
 		jen.Line(),
 		jen.Func().ID("BuildServer").Paramsln(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("cfg").PointerTo().Qual(internalConfigImp, "ServerConfig"),
 			jen.ID("logger").Qual(loggingImp, "Logger"),
 			jen.ID("database").Qual(databaseClientImp, "Database")).

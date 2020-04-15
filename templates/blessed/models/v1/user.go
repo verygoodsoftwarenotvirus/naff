@@ -2,6 +2,7 @@ package v1
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -98,13 +99,13 @@ func userDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("UserDataManager describes a structure which can manage users in permanent storage"),
 			jen.ID("UserDataManager").Interface(
-				jen.ID("GetUser").Params(utils.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().ID("User"), jen.Error()),
-				jen.ID("GetUserByUsername").Params(utils.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().ID("User"), jen.Error()),
-				jen.ID("GetAllUserCount").Params(utils.CtxParam()).Params(jen.Uint64(), jen.Error()),
-				jen.ID("GetUsers").Params(utils.CtxParam(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("UserList"), jen.Error()),
-				jen.ID("CreateUser").Params(utils.CtxParam(), jen.ID("input").ID("UserDatabaseCreationInput")).Params(jen.PointerTo().ID("User"), jen.Error()),
-				jen.ID("UpdateUser").Params(utils.CtxParam(), jen.ID("updated").PointerTo().ID("User")).Params(jen.Error()),
-				jen.ID("ArchiveUser").Params(utils.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()),
+				jen.ID("GetUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().ID("User"), jen.Error()),
+				jen.ID("GetUserByUsername").Params(constants.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().ID("User"), jen.Error()),
+				jen.ID("GetAllUserCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
+				jen.ID("GetUsers").Params(constants.CtxParam(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("UserList"), jen.Error()),
+				jen.ID("CreateUser").Params(constants.CtxParam(), jen.ID("input").ID("UserDatabaseCreationInput")).Params(jen.PointerTo().ID("User"), jen.Error()),
+				jen.ID("UpdateUser").Params(constants.CtxParam(), jen.ID("updated").PointerTo().ID("User")).Params(jen.Error()),
+				jen.ID("ArchiveUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("UserDataServer describes a structure capable of serving traffic related to users"),

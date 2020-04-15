@@ -2,6 +2,7 @@ package queriers
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -187,9 +188,9 @@ func buildGetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.C
 	lines := []jen.Code{
 		jen.Comment("GetUser fetches a user"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetUser").Params(utils.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUserQuery").Call(jen.ID("userID")),
-			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.List(jen.ID("u"), jen.Underscore(), jen.Err()).Assign().ID("scanUser").Call(jen.ID("row"), jen.False()),
 			jen.Line(),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -239,14 +240,14 @@ func buildGetUserByUsername(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Comment("GetUserByUsername fetches a user by their username"),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetUserByUsername").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("username").String(),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "User"),
 			jen.Error(),
 		).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUserByUsernameQuery").Call(jen.ID("username")),
-			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.List(jen.ID("u"), jen.Underscore(), jen.Err()).Assign().ID("scanUser").Call(jen.ID("row"), jen.False()),
 			jen.Line(),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -307,14 +308,14 @@ func buildGetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 		jen.Comment("GetAllUserCount fetches a count of users from the database"),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllUserCount").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 		).Params(
 			jen.ID("count").Uint64(),
 			jen.Err().Error(),
 		).Block(
 			jen.ID("query").Assign().ID(dbfl).Dot("buildGetAllUserCountQuery").Call(),
 			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(
-				utils.CtxVar(),
+				constants.CtxVar(),
 				jen.ID("query"),
 			).Dot("Scan").Call(jen.AddressOf().ID("count")),
 			jen.Return(),
@@ -352,8 +353,8 @@ func buildBuildGetUsersQuery(proj *models.Project, dbvendor wordsmith.SuperPalab
 			).
 				Dotln("GroupBy").Call(utils.FormatString("%s.id", jen.ID("usersTableName"))),
 			jen.Line(),
-			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().Nil()).Block(
-				jen.ID("builder").Equals().ID(utils.FilterVarName).Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.ID("usersTableName")),
+			jen.If(jen.ID(constants.FilterVarName).DoesNotEqual().Nil()).Block(
+				jen.ID("builder").Equals().ID(constants.FilterVarName).Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.ID("usersTableName")),
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID("builder").Dot("ToSql").Call(),
@@ -373,10 +374,10 @@ func buildGetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.
 	lines := []jen.Code{
 		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetUsers").Params(utils.CtxParam(), jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"), jen.Error()).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUsersQuery").Call(jen.ID(utils.FilterVarName)),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetUsers").Params(constants.CtxParam(), jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"), jen.Error()).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUsersQuery").Call(jen.ID(constants.FilterVarName)),
 			jen.Line(),
-			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.ID("buildError").Call(jen.Err(), jen.Lit("querying for user"))),
 			),
@@ -466,7 +467,7 @@ func buildCreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 	uqb := []jen.Code{}
 	if isPostgres(dbvendor) {
 		uqb = []jen.Code{
-			jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("ID"), jen.AddressOf().ID("x").Dot("CreatedOn")).Op(";").Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("ID"), jen.AddressOf().ID("x").Dot("CreatedOn")).Op(";").Err().DoesNotEqual().ID("nil")).Block(
 				jen.Switch(jen.ID("e").Assign().Err().Assert(jen.Type())).Block(
 					jen.Case(jen.PointerTo().Qual("github.com/lib/pq", "Error")).Block(
 						jen.If(jen.ID("e").Dot("Code").IsEqualTo().Qual("github.com/lib/pq", "ErrorCode").Call(jen.ID("postgresRowExistsErrorCode"))).Block(
@@ -481,7 +482,7 @@ func buildCreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 		}
 	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		uqb = []jen.Code{
-			jen.List(jen.ID("res"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+			jen.List(jen.ID("res"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing user creation query: %w"), jen.Err())),
 			),
@@ -512,7 +513,7 @@ func buildCreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 		jen.Comment("CreateUser creates a user"),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("CreateUser").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("input").Qual(proj.ModelsV1Package(), "UserDatabaseCreationInput"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "User"),
@@ -574,12 +575,12 @@ func buildUpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 		if isPostgres(dbvendor) {
 			return []jen.Code{
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("input")),
-				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("input").Dot("UpdatedOn")),
+				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("input").Dot("UpdatedOn")),
 			}
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			return []jen.Code{
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("input")),
-				jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+				jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 				jen.Return().Err(),
 			}
 		}
@@ -594,7 +595,7 @@ func buildUpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 		jen.Line(),
 		jen.Comment("anonymous structs or incomplete models at your peril."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("UpdateUser").Params(utils.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("UpdateUser").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.Error()).Block(
 			buildUpdateUserBody()...,
 		),
 		jen.Line(),
@@ -646,9 +647,9 @@ func buildArchiveUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 	lines := []jen.Code{
 		jen.Comment("ArchiveUser archives a user by their username"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("ArchiveUser").Params(utils.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("ArchiveUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildArchiveUserQuery").Call(jen.ID("userID")),
-			jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(utils.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+			jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Return().Err(),
 		),
 		jen.Line(),

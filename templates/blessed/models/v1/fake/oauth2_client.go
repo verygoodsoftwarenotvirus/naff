@@ -2,6 +2,7 @@ package fake
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -39,7 +40,7 @@ func buildBuildFakeOAuth2Client(proj *models.Project) []jen.Code {
 						utils.FakeStringFunc(),
 					),
 					jen.ID("ImplicitAllowed").MapAssign().False(),
-					jen.ID("BelongsToUser").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID(constants.UserOwnershipFieldName).MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("CreatedOn").MapAssign().Add(utils.FakeUnixTimeFunc()),
 				),
 			),
@@ -105,7 +106,7 @@ func buildBuildFakeOAuth2ClientCreationInputFromClient(proj *models.Project) []j
 					jen.ID("ClientID").MapAssign().ID("client").Dot("ClientID"),
 					jen.ID("ClientSecret").MapAssign().ID("client").Dot("ClientSecret"),
 					jen.ID("RedirectURI").MapAssign().ID("client").Dot("RedirectURI"),
-					jen.ID("BelongsToUser").MapAssign().ID("client").Dot("BelongsToUser"),
+					jen.ID(constants.UserOwnershipFieldName).MapAssign().ID("client").Dot(constants.UserOwnershipFieldName),
 				),
 			),
 		),

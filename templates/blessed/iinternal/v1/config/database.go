@@ -2,6 +2,7 @@ package config
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -27,7 +28,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideDatabase provides a database implementation dependent on the configuration"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideDatabase").Params(utils.CtxParam(), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.Error()).Block(
+		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideDatabase").Params(constants.CtxParam(), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.Error()).Block(
 			jen.Var().Defs(
 				jen.ID("debug").Equals().ID("cfg").Dot("Database").Dot("Debug").Or().ID("cfg").Dot("Meta").Dot("Debug"),
 				jen.ID("connectionDetails").Equals().ID("cfg").Dot("Database").Dot("ConnectionDetails"),
@@ -63,7 +64,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 							),
 							jen.Line(),
 							jen.Return().Qual(proj.DatabaseV1Package("client"), "ProvideDatabaseClient").Call(
-								utils.CtxVar(),
+								constants.CtxVar(),
 								jen.ID("rawDB"),
 								jen.ID("pgdb"),
 								jen.ID("debug"),
@@ -102,7 +103,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 							),
 							jen.Line(),
 							jen.Return().Qual(proj.DatabaseV1Package("client"), "ProvideDatabaseClient").Call(
-								utils.CtxVar(),
+								constants.CtxVar(),
 								jen.ID("rawDB"),
 								jen.ID("mdb"),
 								jen.ID("debug"),
@@ -140,7 +141,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 								jen.ID("debug"), jen.ID("rawDB"), jen.ID("logger")),
 							jen.Line(),
 							jen.Return().Qual(proj.DatabaseV1Package("client"), "ProvideDatabaseClient").Call(
-								utils.CtxVar(),
+								constants.CtxVar(),
 								jen.ID("rawDB"),
 								jen.ID("sdb"),
 								jen.ID("debug"),

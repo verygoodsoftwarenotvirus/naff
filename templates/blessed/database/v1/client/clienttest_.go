@@ -2,6 +2,7 @@ package client
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -33,7 +34,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
 				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
-				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
+				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(constants.CtxVar()),
 				utils.AssertNoError(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertExpectationsFor("mockDB"),
@@ -42,10 +43,10 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"bubbles up errors",
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(utils.ObligatoryError()),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
-				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(utils.CtxVar()),
+				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(constants.CtxVar()),
 				utils.AssertError(jen.ID("actual"), nil),
 				jen.Line(),
 				utils.AssertExpectationsFor("mockDB"),
@@ -64,7 +65,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("IsReady"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.True()),
 				jen.Line(),
 				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
-				jen.ID("c").Dot("IsReady").Call(utils.CtxVar()),
+				jen.ID("c").Dot("IsReady").Call(constants.CtxVar()),
 				jen.Line(),
 				utils.AssertExpectationsFor("mockDB"),
 			),
@@ -82,7 +83,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideDatabaseClient").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 					jen.ID("mockDB"),
 					jen.False(),
@@ -101,7 +102,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expected")),
 				jen.Line(),
 				jen.List(jen.ID("x"), jen.ID("actual")).Assign().ID("ProvideDatabaseClient").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 					jen.ID("mockDB"),
 					jen.False(),

@@ -2,6 +2,7 @@ package oauth2clients
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -75,7 +76,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("DecodeRequest"),
 					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*http.Request")),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(utils.ObligatoryError()),
+				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 				jen.ID("mh").Assign().AddressOf().ID("mockHTTPHandler").Values(),
@@ -145,7 +146,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), utils.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("mh"),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -175,7 +176,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), utils.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -275,7 +276,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mh").Dot("On").Callln(
 					jen.Lit("ValidationBearerToken"),
 					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*http.Request")),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), utils.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual("gopkg.in/oauth2.v3/models", "Token")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("mh"),
 				jen.Line(),
 				jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -348,7 +349,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.ID("expected"),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), utils.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("mhh").Assign().AddressOf().ID("mockHTTPHandler").Values(),
@@ -372,7 +373,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.Qual(proj.ModelsV1Package(), "OAuth2ClientKey"),
 						jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					),
@@ -402,7 +403,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("clientIDKey"),
 						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
 					),

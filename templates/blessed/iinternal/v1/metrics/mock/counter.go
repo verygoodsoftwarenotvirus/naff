@@ -2,6 +2,7 @@ package mock
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -26,8 +27,8 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Increment implements our UnitCounter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Increment").Params(utils.CtxParam()).Block(
-			jen.ID("m").Dot("Called").Call(utils.CtxVar()),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Increment").Params(constants.CtxParam()).Block(
+			jen.ID("m").Dot("Called").Call(constants.CtxVar()),
 		),
 		jen.Line(),
 	)
@@ -35,8 +36,8 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("IncrementBy implements our UnitCounter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("IncrementBy").Params(utils.CtxParam(), jen.ID("val").Uint64()).Block(
-			jen.ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("val")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("IncrementBy").Params(constants.CtxParam(), jen.ID("val").Uint64()).Block(
+			jen.ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("val")),
 		),
 		jen.Line(),
 	)
@@ -44,8 +45,8 @@ func counterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("Decrement implements our UnitCounter interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Decrement").Params(utils.CtxParam()).Block(
-			jen.ID("m").Dot("Called").Call(utils.CtxVar()),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Decrement").Params(constants.CtxParam()).Block(
+			jen.ID("m").Dot("Called").Call(constants.CtxVar()),
 		),
 		jen.Line(),
 	)

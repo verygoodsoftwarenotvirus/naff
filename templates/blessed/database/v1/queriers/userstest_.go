@@ -2,6 +2,7 @@ package queriers
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -167,7 +168,7 @@ func buildTestDB_GetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) 
 					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).
 					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromUser").Call(jen.ID(utils.BuildFakeVarName("User")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("User")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -183,7 +184,7 @@ func buildTestDB_GetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) 
 					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
@@ -251,7 +252,7 @@ func buildTestDB_GetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 						jen.AddressOf().ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.Lit(2)),
 					),
 				), jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(constants.CtxVar(), jen.ID(constants.FilterVarName)),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("UserList")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -266,7 +267,7 @@ func buildTestDB_GetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(constants.CtxVar(), jen.ID(constants.FilterVarName)),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
@@ -280,9 +281,9 @@ func buildTestDB_GetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedUsersQuery"))).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(constants.CtxVar(), jen.ID(constants.FilterVarName)),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -299,7 +300,7 @@ func buildTestDB_GetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 					jen.Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
 				)),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(utils.CtxVar(), jen.ID(utils.FilterVarName)),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUsers").Call(constants.CtxVar(), jen.ID(constants.FilterVarName)),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -357,7 +358,7 @@ func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.Supe
 					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("Username")).
 					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromUser").Call(jen.ID(utils.BuildFakeVarName("User")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("Username")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserByUsername").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("Username")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("User")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -373,7 +374,7 @@ func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.Supe
 					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("Username")).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("Username")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserByUsername").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("Username")),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
@@ -388,9 +389,9 @@ func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.Supe
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("Username")).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("Username")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserByUsername").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("Username")),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -456,7 +457,7 @@ func buildTestDB_GetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperP
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID(utils.BuildFakeVarName("Count")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllUserCount").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllUserCount").Call(constants.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Count")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -467,9 +468,9 @@ func buildTestDB_GetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperP
 				"with error querying database",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllUserCount").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllUserCount").Call(constants.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertZero(jen.ID("actual"), nil),
 				jen.Line(),
@@ -572,7 +573,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.ID("Code").MapAssign().ID("postgresRowExistsErrorCode"),
 			)),
 			jen.Line(),
-			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(utils.CtxVar(), jen.ID("expectedInput")),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(constants.CtxVar(), jen.ID("expectedInput")),
 			utils.AssertError(jen.Err(), nil),
 			utils.AssertNil(jen.ID("actual"), nil),
 			utils.AssertEqual(jen.Err(), jen.Qual(proj.DatabaseV1Package("client"), "ErrUserExists"), nil),
@@ -645,7 +646,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 
 					out = append(out,
 						jen.Line(),
-						jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(utils.CtxVar(), jen.ID("expectedInput")),
+						jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(constants.CtxVar(), jen.ID("expectedInput")),
 						utils.AssertNoError(jen.Err(), nil),
 						utils.AssertEqual(jen.ID(utils.BuildFakeVarName("User")), jen.ID("actual"), nil),
 						jen.Line(),
@@ -670,9 +671,9 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 					jen.False(),
-				).Dot("WillReturnError").Call(utils.ObligatoryError()),
+				).Dot("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(utils.CtxVar(), jen.ID("expectedInput")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(constants.CtxVar(), jen.ID("expectedInput")),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -786,7 +787,7 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot(updateUserReturnMethod).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 				jen.Line(),
-				jen.Err().Assign().ID(dbfl).Dot("UpdateUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User"))),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User"))),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -864,7 +865,7 @@ func buildTestDB_ArchiveUser(proj *models.Project, dbvendor wordsmith.SuperPalab
 					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).
 					Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.One(), jen.One())),
 				jen.Line(),
-				jen.Err().Assign().ID(dbfl).Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				jen.Err().Assign().ID(dbfl).Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),

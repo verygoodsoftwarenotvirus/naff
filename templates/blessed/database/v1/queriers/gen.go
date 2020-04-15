@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -196,7 +197,7 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
 	}
 	if includeFilter {
-		callArgs = append(callArgs, jen.ID(utils.FilterVarName))
+		callArgs = append(callArgs, jen.ID(constants.FilterVarName))
 	}
 
 	dbn := dbvendor.Singular()
@@ -208,79 +209,77 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 		log.Panicf("error building %q: %v", queryName, err)
 	}
 
+	block := []jen.Code{
+		jen.List(jen.ID(string(dbfl)), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+	}
+
+	if createUser {
+		block = append(block,
+			jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+		)
+	}
+
+	if typ.Name != nil {
+		block = append(block, typ.BuildRequisiteFakeVarDecs(proj)...)
+	}
+
+	if includeFilter {
+		block = append(block,
+			jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call(),
+		)
+	}
+	for i := range preQueryLines {
+		block = append(block, preQueryLines[i], jen.Line())
+	}
+
+	block = append(block,
+		jen.Line(),
+		jen.ID(expectedQueryVarName).Assign().Lit(expectedQuery),
+	)
+
+	if includeExpectedAndActualArgs {
+		x := jen.ID(expectedArgsVarName).Assign().Index().Interface()
+		if len(expectedArgs) > 0 {
+			block = append(block, x.Valuesln(expectedArgs...))
+		} else {
+			block = append(block, x.Values(expectedArgs...))
+		}
+	}
+
+	returnedVars := []jen.Code{jen.ID(actualQueryVarName)}
+	if includeExpectedAndActualArgs {
+		returnedVars = append(returnedVars, jen.ID(actualArgsVarName))
+	}
+
+	block = append(
+		block,
+		jen.List(returnedVars...).Assign().ID(dbi).Dotf("build%sQuery", queryName).Call(callArgs...),
+	)
+
+	block = append(block,
+		jen.Line(),
+		jen.ID("ensureArgCountMatchesQuery").Call(
+			jen.ID("t"),
+			jen.ID(actualQueryVarName),
+			func() jen.Code {
+				if includeExpectedAndActualArgs {
+					return jen.ID(actualArgsVarName)
+				}
+				return jen.Index().Interface().Values()
+			}(),
+		),
+		utils.AssertEqual(jen.ID(expectedQueryVarName), jen.ID(actualQueryVarName), nil),
+	)
+
+	if includeExpectedAndActualArgs {
+		block = append(block, utils.AssertEqual(jen.ID(expectedArgsVarName), jen.ID(actualArgsVarName), nil))
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_build%sQuery", dbn, queryName).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext(
-				"happy path",
-				jen.List(jen.ID(string(dbfl)), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				func() jen.Code {
-					if createUser {
-						return jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call()
-					}
-					return jen.Null()
-				}(),
-				func() jen.Code {
-					if createExampleVariable && !listQuery && typ.Name != nil {
-						sn := typ.Name.Singular()
-						return jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call()
-					}
-					return jen.Null()
-				}(),
-				func() jen.Code {
-					if includeFilter {
-						return jen.ID(utils.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call()
-					}
-					return jen.Null()
-				}(),
-				func() jen.Code {
-					g := &jen.Group{}
-					if len(preQueryLines) > 0 {
-						for i := range preQueryLines {
-							g.Add(preQueryLines[i], jen.Line())
-						}
-					}
-					return g
-				}(),
-				jen.Line(),
-				jen.ID(expectedQueryVarName).Assign().Lit(expectedQuery),
-				func() jen.Code {
-					if includeExpectedAndActualArgs {
-						x := jen.ID(expectedArgsVarName).Assign().Index().Interface()
-						if len(expectedArgs) > 0 {
-							return x.Valuesln(expectedArgs...)
-						}
-						return x.Values(expectedArgs...)
-					}
-					return jen.Null()
-				}(),
-				func() jen.Code {
-					returnedVars := []jen.Code{jen.ID(actualQueryVarName)}
-					if includeExpectedAndActualArgs {
-						returnedVars = append(returnedVars, jen.ID(actualArgsVarName))
-					}
-					return jen.List(returnedVars...).Assign().ID(dbi).Dotf("build%sQuery", queryName).Call(callArgs...)
-				}(),
-				jen.Line(),
-				jen.ID("ensureArgCountMatchesQuery").Call(
-					jen.ID("t"),
-					jen.ID(actualQueryVarName),
-					func() jen.Code {
-						if includeExpectedAndActualArgs {
-							return jen.ID(actualArgsVarName)
-						}
-						return jen.Index().Interface().Values()
-					}(),
-				),
-				utils.AssertEqual(jen.ID(expectedQueryVarName), jen.ID(actualQueryVarName), nil),
-				func() jen.Code {
-					if includeExpectedAndActualArgs {
-						return utils.AssertEqual(jen.ID(expectedArgsVarName), jen.ID(actualArgsVarName), nil)
-					}
-					return jen.Null()
-				}(),
-			),
+			utils.BuildSubTestWithoutContext("happy path", block...),
 		),
 		jen.Line(),
 	}

@@ -2,6 +2,7 @@ package client
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -47,9 +48,9 @@ func buildMigrate(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("%s is a simple wrapper around the core querier %s call", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(utils.CtxParam()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(constants.CtxParam()).Params(jen.Error()).Block(
 			utils.StartSpan(proj, true, funcName),
-			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(utils.CtxVar()),
+			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(constants.CtxVar()),
 		),
 		jen.Line(),
 	}
@@ -63,9 +64,9 @@ func buildIsReady(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("%s is a simple wrapper around the core querier %s call", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(utils.CtxParam()).Params(jen.ID("ready").Bool()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Block(
 			utils.StartSpan(proj, true, funcName),
-			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(utils.CtxVar()),
+			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(constants.CtxVar()),
 		),
 		jen.Line(),
 	}
@@ -80,7 +81,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 		jen.Commentf("%s provides a new Database client", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Paramsln(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
 			jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
 			jen.ID("debug").Bool(),
@@ -98,7 +99,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("migrating querier")),
-			jen.If(jen.Err().Assign().ID("c").Dot("querier").Dot("Migrate").Call(utils.CtxVar()), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("c").Dot("querier").Dot("Migrate").Call(constants.CtxVar()), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("querier migrated!")),

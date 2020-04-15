@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -86,7 +87,7 @@ func buildBuildMockRowsFromWebhook(proj *models.Project, dbvendor wordsmith.Supe
 					jen.ID("w").Dot("CreatedOn"),
 					jen.ID("w").Dot("UpdatedOn"),
 					jen.ID("w").Dot("ArchivedOn"),
-					jen.ID("w").Dot("BelongsToUser"),
+					jen.ID("w").Dot(constants.UserOwnershipFieldName),
 				),
 				jen.Line(),
 				jen.If(jen.ID("includeCount")).Block(
@@ -109,7 +110,7 @@ func buildBuildErroneousMockRowFromWebhook(proj *models.Project, dbvendor wordsm
 		jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("webhooksTableColumns")).Dot("AddRow").Callln(
 				jen.ID("w").Dot("ArchivedOn"),
-				jen.ID("w").Dot("BelongsToUser"),
+				jen.ID("w").Dot(constants.UserOwnershipFieldName),
 				jen.ID("w").Dot("Name"),
 				jen.ID("w").Dot("ContentType"),
 				jen.ID("w").Dot("URL"),
@@ -140,12 +141,12 @@ func buildTestDB_buildGetWebhookQuery(proj *models.Project, dbvendor wordsmith.S
 		})
 
 	expectedArgs := []jen.Code{
-		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 	}
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
-		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 	}
 
 	return buildQueryTest(proj,
@@ -190,10 +191,10 @@ func buildTestDB_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
 					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName)),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -206,10 +207,10 @@ func buildTestDB_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName)),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
@@ -223,10 +224,10 @@ func buildTestDB_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName)),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -239,10 +240,10 @@ func buildTestDB_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
 					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName)),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -310,7 +311,7 @@ func buildTestDB_GetAllWebhooksCount(proj *models.Project, dbvendor wordsmith.Su
 					Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").
 					Call(jen.ID(utils.BuildFakeVarName("Count")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooksCount").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooksCount").Call(constants.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Count")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -321,9 +322,9 @@ func buildTestDB_GetAllWebhooksCount(proj *models.Project, dbvendor wordsmith.Su
 				"with error from database",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooksCount").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooksCount").Call(constants.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertZero(jen.ID("actual"), nil),
 				jen.Line(),
@@ -396,7 +397,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("WebhookList")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -409,7 +410,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
@@ -421,9 +422,9 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 				"with error querying database",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -438,7 +439,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -523,9 +524,9 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-					jen.ID(utils.FilterVarName),
+					jen.ID(constants.FilterVarName),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("WebhookList")), jen.ID("actual"), nil),
@@ -542,9 +543,9 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-					jen.ID(utils.FilterVarName),
+					jen.ID(constants.FilterVarName),
 				),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
@@ -559,12 +560,12 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-					jen.ID(utils.FilterVarName),
+					jen.ID(constants.FilterVarName),
 				),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
@@ -582,9 +583,9 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook")))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-					jen.ID(utils.FilterVarName),
+					jen.ID(constants.FilterVarName),
 				),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
@@ -634,7 +635,7 @@ func buildTestDB_buildWebhookCreationQuery(proj *models.Project, dbvendor wordsm
 		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"), jen.ID("eventsSeparator")),
 		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"), jen.ID("typesSeparator")),
 		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"), jen.ID("topicsSeparator")),
-		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 	}
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("Webhook")),
@@ -729,7 +730,7 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 							jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"), jen.ID("eventsSeparator")),
 							jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"), jen.ID("typesSeparator")),
 							jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"), jen.ID("topicsSeparator")),
-							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 						).Dot(createWebhookReturnFunc).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 						jen.Line(),
 					}
@@ -744,7 +745,7 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 					}
 
 					out = append(out,
-						jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
+						jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
 						utils.AssertNoError(jen.Err(), nil),
 						utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual"), nil),
 						jen.Line(),
@@ -769,10 +770,10 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"), jen.ID("eventsSeparator")),
 					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"), jen.ID("typesSeparator")),
 					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"), jen.ID("topicsSeparator")),
-					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
-				).Dot("WillReturnError").Call(utils.ObligatoryError()),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+				).Dot("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -813,7 +814,7 @@ func buildTestDB_buildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmit
 		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"), jen.ID("eventsSeparator")),
 		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"), jen.ID("typesSeparator")),
 		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"), jen.ID("topicsSeparator")),
-		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 	}
 	callArgs := []jen.Code{
@@ -897,11 +898,11 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"),
 						jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"),
 						jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"),
-						jen.ID("topicsSeparator")), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
+						jen.ID("topicsSeparator")), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				).Dot(updateWebhookReturnFunc).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 				jen.Line(),
-				jen.Err().Assign().ID(dbfl).Dot("UpdateWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook"))),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook"))),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -920,11 +921,11 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"),
 						jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"),
 						jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"),
-						jen.ID("topicsSeparator")), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
+						jen.ID("topicsSeparator")), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
-				).Dot("WillReturnError").Call(utils.ObligatoryError()),
+				).Dot("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.Err().Assign().ID(dbfl).Dot("UpdateWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook"))),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook"))),
 				utils.AssertError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -952,12 +953,12 @@ func buildTestDB_buildArchiveWebhookQuery(proj *models.Project, dbvendor wordsmi
 	}
 
 	expectedArgs := []jen.Code{
-		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 	}
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
-		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 	}
 
 	return buildQueryTest(proj,
@@ -1007,11 +1008,11 @@ func buildTestDB_ArchiveWebhook(proj *models.Project, dbvendor wordsmith.SuperPa
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				).Dot("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.One(), jen.One())),
 				jen.Line(),
-				jen.Err().Assign().ID(dbfl).Dot("ArchiveWebhook").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser")),
+				jen.Err().Assign().ID(dbfl).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName)),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),

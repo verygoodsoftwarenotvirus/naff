@@ -2,6 +2,7 @@ package mock
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -27,14 +28,14 @@ func mockDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ValidateLogin satisfies our authenticator interface"), jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("ValidateLogin").Paramsln(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.Listln(jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 				jen.ID("twoFactorSecret"),
 				jen.ID("twoFactorCode")).String(),
 			jen.ID("salt").Index().Byte()).Params(jen.ID("valid").Bool(), jen.Err().Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Callln(
-				utils.CtxVar(),
+				constants.CtxVar(),
 				jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 				jen.ID("twoFactorSecret"),
@@ -56,8 +57,8 @@ func mockDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Comment("HashPassword satisfies our authenticator interface"), jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("password")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("HashPassword").Params(constants.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("password")),
 			jen.Return().List(jen.ID("args").Dot("String").Call(jen.Zero()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
@@ -66,13 +67,13 @@ func mockDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("PasswordMatches satisfies our authenticator interface"), jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("PasswordMatches").Paramsln(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.Listln(jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 			).String(),
 			jen.ID("salt").Index().Byte()).Params(jen.Bool()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Callln(
-				utils.CtxVar(),
+				constants.CtxVar(),
 				jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 				jen.ID("salt"),

@@ -2,6 +2,7 @@ package auth
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -42,8 +43,8 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 			jen.Comment("PasswordHasher hashes passwords"),
 			jen.ID("PasswordHasher").Interface(
 				jen.ID("PasswordIsAcceptable").Params(jen.ID("password").String()).Params(jen.Bool()),
-				jen.ID("HashPassword").Params(utils.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()),
-				jen.ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.ID("salt").Index().Byte()).Params(jen.Bool()),
+				jen.ID("HashPassword").Params(constants.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()),
+				jen.ID("PasswordMatches").Params(constants.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.ID("salt").Index().Byte()).Params(jen.Bool()),
 			),
 			jen.Line(),
 			jen.Comment("Authenticator is a poorly named Authenticator interface"),
@@ -51,7 +52,7 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 				jen.ID("PasswordHasher"),
 				jen.Line(),
 				jen.ID("ValidateLogin").Paramsln(
-					utils.CtxParam(),
+					constants.CtxParam(),
 					jen.Listln(
 						jen.ID("HashedPassword"),
 						jen.ID("ProvidedPassword"),

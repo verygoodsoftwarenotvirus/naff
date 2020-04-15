@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -163,13 +164,13 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 				jen.For().Block(
 					jen.Select().Block(
 						jen.Case(jen.Op("<-").ID("ticker").Dot("C")).Block(
-							utils.CreateCtx(),
+							constants.CreateCtx(),
 							jen.ID("startTime").Assign().Qual("time", "Now").Call(),
 							jen.ID("ms").Assign().AddressOf().Qual("runtime", "MemStats").Values(),
 							jen.Line(),
 							jen.Qual("runtime", "ReadMemStats").Call(jen.ID("ms")),
 							jen.Qual("go.opencensus.io/stats", "Record").Callln(
-								utils.CtxVar(),
+								constants.CtxVar(),
 								jen.ID("RuntimeTotalAllocMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("TotalAlloc"))),
 								jen.ID("RuntimeSysMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("Sys"))),
 								jen.ID("RuntimeLookupsMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("Lookups"))),

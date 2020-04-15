@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -57,7 +58,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 
 	buildProvideServerArgs := func(cookieSecret string) []jen.Code {
 		args := []jen.Code{
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
 				jen.ID("Auth").MapAssign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
 					jen.ID("CookieSecret").MapAssign().Lit(cookieSecret),
@@ -150,7 +151,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList")).Call(jen.Nil()),
-					utils.ObligatoryError(),
+					constants.ObligatoryError(),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideServer").Callln(

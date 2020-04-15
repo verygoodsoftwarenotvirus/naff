@@ -2,6 +2,7 @@ package auth
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -69,11 +70,11 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Comment("HashPassword takes a password and hashes it using bcrypt"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("HashPassword").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("password").String(),
 		).Params(jen.String(), jen.Error()).Block(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(
-				utils.CtxVar(),
+				constants.CtxVar(),
 				jen.Lit("HashPassword"),
 			),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -94,18 +95,18 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Comment("3. checking that the provided hashed password isn't too weak, and returning an error otherwise"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("ValidateLogin").Paramsln(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.Listln(jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 				jen.ID("twoFactorSecret"),
 				jen.ID("twoFactorCode")).String(),
 			jen.Underscore().Index().Byte(),
 		).Params(jen.ID("passwordMatches").Bool(), jen.Err().Error()).Block(
-			jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("ValidateLogin")),
+			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ValidateLogin")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("passwordMatches").Equals().ID("b").Dot("PasswordMatches").Call(utils.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),
-			jen.ID("tooWeak").Assign().ID("b").Dot("hashedPasswordIsTooWeak").Call(utils.CtxVar(), jen.ID("hashedPassword")),
+			jen.ID("passwordMatches").Equals().ID("b").Dot("PasswordMatches").Call(constants.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),
+			jen.ID("tooWeak").Assign().ID("b").Dot("hashedPasswordIsTooWeak").Call(constants.CtxVar(), jen.ID("hashedPassword")),
 			jen.Line(),
 			jen.If(jen.Op("!").Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("twoFactorCode"), jen.ID("twoFactorSecret"))).Block(
 				jen.ID("b").Dot("logger").Dot("WithValues").Call(
@@ -134,7 +135,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("PasswordMatches validates whether or not a bcrypt-hashed password matches a provided password"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(utils.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.Underscore().Index().Byte()).Params(jen.Bool()).Block(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(constants.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.Underscore().Index().Byte()).Params(jen.Bool()).Block(
 			utils.StartSpan(proj, false, "PasswordMatches"),
 			jen.Return().Qual("golang.org/x/crypto/bcrypt", "CompareHashAndPassword").Call(jen.Index().Byte().Call(jen.ID("hashedPassword")), jen.Index().Byte().Call(jen.ID("providedPassword"))).IsEqualTo().ID("nil"),
 		),
@@ -145,7 +146,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Comment("hashedPasswordIsTooWeak determines if a given hashed password was hashed with too weak a bcrypt cost"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("hashedPasswordIsTooWeak").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("hashedPassword").String(),
 		).Params(
 			jen.Bool(),

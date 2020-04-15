@@ -2,6 +2,7 @@ package v1
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -74,7 +75,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 				"obligatory",
 				jen.ID("w").Assign().AddressOf().ID("Webhook").Values(),
 				jen.ID("actual").Assign().ID("buildErrorLogFunc").Call(jen.ID("w"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("actual").Call(utils.ObligatoryError()),
+				jen.ID("actual").Call(constants.ObligatoryError()),
 			),
 		),
 		jen.Line(),

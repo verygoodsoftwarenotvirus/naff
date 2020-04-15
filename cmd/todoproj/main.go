@@ -380,7 +380,7 @@ var (
 					},
 				},
 				BelongsToStruct:  wordsmith.FromSingularPascalCase("Contact"),
-				BelongsToUser:    true,
+				BelongsToUser:    false,
 				RestrictedToUser: true,
 			},
 		)...),

@@ -2,6 +2,7 @@ package integration
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -11,7 +12,7 @@ import (
 func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj *models.Project, typ models.DataType) []jen.Code {
 	parents := proj.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
-	params := []jen.Code{utils.CtxVar()}
+	params := []jen.Code{constants.CtxVar()}
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
@@ -137,7 +138,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen
 	)
 
 	creationArgs := []jen.Code{
-		utils.CtxVar(),
+		constants.CtxVar(),
 	}
 	ca := buildCreationArguments(proj, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
@@ -178,7 +179,7 @@ func buildRequisiteCreationCodeForUpdateFunction(proj *models.Project, typ model
 	)
 
 	creationArgs := []jen.Code{
-		utils.CtxVar(),
+		constants.CtxVar(),
 	}
 	ca := buildCreationArguments(proj, createdVarPrefix, typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
@@ -240,7 +241,7 @@ func buildRequisiteCleanupCode(proj *models.Project, typ models.DataType) []jen.
 func buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj *models.Project, typ models.DataType) []jen.Code {
 	parents := proj.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
-	params := []jen.Code{utils.CtxVar()}
+	params := []jen.Code{constants.CtxVar()}
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
@@ -270,13 +271,13 @@ func buildBuildDummySomething(proj *models.Project, typ models.DataType) []jen.C
 		blockLines = append(blockLines, cc[:len(cc)-stopIndex]...)
 	}
 
-	creationArgs := []jen.Code{utils.CtxVar()}
+	creationArgs := []jen.Code{constants.CtxVar()}
 	ca := buildCreationArguments(proj, "created", typ)
 	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
 	creationArgs = append(creationArgs, jen.ID("exampleInput"))
 
 	blockLines = append(blockLines,
-		utils.CreateCtx(),
+		constants.CreateCtx(),
 		utils.BuildFakeVar(proj, sn),
 		utils.BuildFakeVarWithCustomName(
 			proj,
@@ -376,12 +377,12 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 	pcn := typ.Name.PluralCommonName()
 
 	lines := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
 
-	listArgs := []jen.Code{utils.CtxVar()}
+	listArgs := []jen.Code{constants.CtxVar()}
 	ca := buildCreationArguments(proj, "created", typ)
 	listArgs = append(listArgs, ca[:len(ca)-1]...)
 	listArgs = append(listArgs, jen.Nil())
@@ -438,7 +439,7 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -484,7 +485,7 @@ func buildTestExistenceCheckingShouldBeReadable(proj *models.Project, typ models
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -512,7 +513,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *m
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -557,7 +558,7 @@ func buildTestReadingShouldBeReadable(proj *models.Project, typ models.DataType)
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(utils.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.ID("t").Dot("Name").Call()),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
 	}
@@ -584,7 +585,7 @@ func buildTestReadingShouldBeReadable(proj *models.Project, typ models.DataType)
 
 func buildParamsForCheckingATypeThatDoesNotExist(proj *models.Project, typ models.DataType) []jen.Code {
 	parents := proj.FindOwnerTypeChain(typ)
-	params := []jen.Code{utils.CtxVar()}
+	params := []jen.Code{constants.CtxVar()}
 
 	for i, pt := range parents {
 		if i == len(parents)-1 {
@@ -603,7 +604,7 @@ func buildParamsForCheckingATypeThatDoesNotExist(proj *models.Project, typ model
 
 func buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(proj *models.Project, typ models.DataType) []jen.Code {
 	parents := proj.FindOwnerTypeChain(typ)
-	params := []jen.Code{utils.CtxVar()}
+	params := []jen.Code{constants.CtxVar()}
 
 	for _, pt := range parents {
 		params = append(params, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
@@ -618,7 +619,7 @@ func buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(proj *mod
 	parents := proj.FindOwnerTypeChain(typ)
 	sn := typ.Name.Singular()
 	listParams := []jen.Code{}
-	params := []jen.Code{utils.CtxVar()}
+	params := []jen.Code{constants.CtxVar()}
 
 	if len(parents) > 0 {
 		for i, pt := range parents {

@@ -2,6 +2,7 @@ package load
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -43,17 +44,17 @@ func actionsDotGo(proj *models.Project) *jen.File {
 						jen.PointerTo().Qual("net/http", "Request"),
 						jen.Error(),
 					).Block(
-						utils.CreateCtx(),
-						jen.Return(jen.ID("c").Dot("BuildHealthCheckRequest").Call(utils.CtxVar())),
+						constants.CreateCtx(),
+						jen.Return(jen.ID("c").Dot("BuildHealthCheckRequest").Call(constants.CtxVar())),
 					),
 					jen.ID("Weight").MapAssign().Lit(100),
 				),
 				jen.Lit("CreateUser").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("CreateUser"),
 					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
-						utils.CreateCtx(),
+						constants.CreateCtx(),
 						jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInput").Call(),
-						jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(utils.CtxVar(), jen.ID("ui")),
+						jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(constants.CtxVar(), jen.ID("ui")),
 					),
 					jen.ID("Weight").MapAssign().Lit(100),
 				),

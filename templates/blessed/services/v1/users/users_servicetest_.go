@@ -2,6 +2,7 @@ package users
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -109,7 +110,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				).Block(
 					jen.Return().List(
 						jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-						utils.ObligatoryError(),
+						constants.ObligatoryError(),
 					),
 				),
 				jen.Line(),

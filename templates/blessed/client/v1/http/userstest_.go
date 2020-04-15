@@ -2,6 +2,7 @@ package client
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -30,7 +31,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildGetUserRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -96,7 +97,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUser").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -113,7 +114,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUser").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -141,7 +142,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildGetUsersRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 				),
 				jen.Line(),
@@ -194,7 +195,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUsers").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 				),
 				jen.Line(),
@@ -207,7 +208,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				"with invalid client URL",
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUsers").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 				),
 				jen.Line(),
@@ -237,7 +238,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildCreateUserRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				jen.Line(),
@@ -295,7 +296,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				jen.Line(),
@@ -311,7 +312,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				jen.Line(),
@@ -340,7 +341,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildArchiveUserRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -393,7 +394,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot("ArchiveUser").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
@@ -404,7 +405,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
 				jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("ArchiveUser").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
@@ -426,7 +427,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				utils.RequireNotNil(jen.ID("req"), nil),
@@ -443,7 +444,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
-				jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(utils.CtxVar(), jen.Nil()),
+				jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(constants.CtxVar(), jen.Nil()),
 				utils.AssertNil(jen.ID("req"), nil),
 				utils.AssertError(jen.Err(), nil),
 			),
@@ -483,7 +484,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("c").Dot("Login").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				utils.RequireNotNil(jen.ID("cookie"), nil),
@@ -496,7 +497,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("c").Dot("Login").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 				),
 				utils.AssertNil(jen.ID("cookie"), nil),
@@ -511,7 +512,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.Line(),
 				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("c").Dot("Login").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				utils.AssertNil(jen.ID("cookie"), nil),
@@ -549,7 +550,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("cookie"),
 					jen.Err(),
 				).Assign().ID("c").Dot("Login").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				utils.RequireNil(jen.ID("cookie"), nil),
@@ -586,7 +587,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("cookie"),
 					jen.Err(),
 				).Assign().ID("c").Dot("Login").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				utils.RequireNil(jen.ID("cookie"), nil),

@@ -2,6 +2,7 @@ package queriers
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -88,7 +89,7 @@ func buildBuildMockRowsFromOAuth2Client(proj *models.Project, dbvendor wordsmith
 					jen.ID("c").Dot("CreatedOn"),
 					jen.ID("c").Dot("UpdatedOn"),
 					jen.ID("c").Dot("ArchivedOn"),
-					jen.ID("c").Dot("BelongsToUser"),
+					jen.ID("c").Dot(constants.UserOwnershipFieldName),
 				),
 				jen.Line(),
 				jen.If(jen.ID("includeCount")).Block(
@@ -118,7 +119,7 @@ func buildBuildErroneousMockRowFromOAuth2Client(proj *models.Project, dbvendor w
 				jen.ID("c").Dot("ClientSecret"),
 				jen.ID("c").Dot("CreatedOn"),
 				jen.ID("c").Dot("UpdatedOn"),
-				jen.ID("c").Dot("BelongsToUser"),
+				jen.ID("c").Dot(constants.UserOwnershipFieldName),
 				jen.ID("c").Dot("ID"),
 			),
 			jen.Line(),
@@ -179,7 +180,7 @@ func buildTestDB_GetOAuth2ClientByClientID(proj *models.Project, dbvendor wordsm
 					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromOAuth2Client").Call(jen.ID(utils.BuildFakeVarName(stn)))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientByClientID").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName(stn)).Dot("ClientID"),
 				),
 				utils.AssertNoError(jen.Err(), nil),
@@ -198,7 +199,7 @@ func buildTestDB_GetOAuth2ClientByClientID(proj *models.Project, dbvendor wordsm
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientByClientID").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName(stn)).Dot("ClientID"),
 				),
 				utils.AssertError(jen.Err(), nil),
@@ -222,7 +223,7 @@ func buildTestDB_GetOAuth2ClientByClientID(proj *models.Project, dbvendor wordsm
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientByClientID").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName(stn)).Dot("ClientID"),
 				),
 				utils.AssertError(jen.Err(), nil),
@@ -286,7 +287,7 @@ func buildTestDB_GetAllOAuth2Clients(proj *models.Project, dbvendor wordsmith.Su
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(constants.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
@@ -298,7 +299,7 @@ func buildTestDB_GetAllOAuth2Clients(proj *models.Project, dbvendor wordsmith.Su
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(constants.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
@@ -310,9 +311,9 @@ func buildTestDB_GetAllOAuth2Clients(proj *models.Project, dbvendor wordsmith.Su
 				"with error executing query",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(constants.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -327,7 +328,7 @@ func buildTestDB_GetAllOAuth2Clients(proj *models.Project, dbvendor wordsmith.Su
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(utils.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(constants.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -375,7 +376,7 @@ func buildTestDB_GetAllOAuth2ClientsForUser(proj *models.Project, dbvendor words
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromOAuth2Client").Call(jen.ID("expected").Spread())),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				jen.Line(),
@@ -390,7 +391,7 @@ func buildTestDB_GetAllOAuth2ClientsForUser(proj *models.Project, dbvendor words
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -403,9 +404,9 @@ func buildTestDB_GetAllOAuth2ClientsForUser(proj *models.Project, dbvendor words
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -421,7 +422,7 @@ func buildTestDB_GetAllOAuth2ClientsForUser(proj *models.Project, dbvendor words
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -445,12 +446,12 @@ func buildTestDB_buildGetOAuth2ClientQuery(proj *models.Project, dbvendor wordsm
 		})
 
 	expectedArgs := []jen.Code{
-		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 	}
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
-		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 	}
 
 	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "GetOAuth2Client", qb, expectedArgs, callArgs, true, false, false, false, true, false, nil)
@@ -483,10 +484,10 @@ func buildTestDB_GetOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperP
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID(fvn).Dot("BelongsToUser"), jen.ID(fvn).Dot("ID")).
+					Dotln("WithArgs").Call(jen.ID(fvn).Dot(constants.UserOwnershipFieldName), jen.ID(fvn).Dot("ID")).
 					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromOAuth2Client").Call(jen.ID(fvn))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Client").Call(utils.CtxVar(), jen.ID(fvn).Dot("ID"), jen.ID(fvn).Dot("BelongsToUser")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Client").Call(constants.CtxVar(), jen.ID(fvn).Dot("ID"), jen.ID(fvn).Dot(constants.UserOwnershipFieldName)),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(fvn), jen.ID("actual"), nil),
 				jen.Line(),
@@ -498,10 +499,10 @@ func buildTestDB_GetOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperP
 				utils.BuildFakeVar(proj, "OAuth2Client"), jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID(fvn).Dot("BelongsToUser"), jen.ID(fvn).Dot("ID")).
+					Dotln("WithArgs").Call(jen.ID(fvn).Dot(constants.UserOwnershipFieldName), jen.ID(fvn).Dot("ID")).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Client").Call(utils.CtxVar(), jen.ID(fvn).Dot("ID"), jen.ID(fvn).Dot("BelongsToUser")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Client").Call(constants.CtxVar(), jen.ID(fvn).Dot("ID"), jen.ID(fvn).Dot(constants.UserOwnershipFieldName)),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
@@ -514,10 +515,10 @@ func buildTestDB_GetOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperP
 				utils.BuildFakeVar(proj, "OAuth2Client"), jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID(fvn).Dot("BelongsToUser"), jen.ID(fvn).Dot("ID")).
+					Dotln("WithArgs").Call(jen.ID(fvn).Dot(constants.UserOwnershipFieldName), jen.ID(fvn).Dot("ID")).
 					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID(fvn))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Client").Call(utils.CtxVar(), jen.ID(fvn).Dot("ID"), jen.ID(fvn).Dot("BelongsToUser")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Client").Call(constants.CtxVar(), jen.ID(fvn).Dot("ID"), jen.ID(fvn).Dot(constants.UserOwnershipFieldName)),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -570,7 +571,7 @@ func buildTestDB_GetAllOAuth2ClientCount(proj *models.Project, dbvendor wordsmit
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 				jen.Line(),
-				jen.List(jen.ID("actualCount"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientCount").Call(utils.CtxVar()),
+				jen.List(jen.ID("actualCount"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientCount").Call(constants.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID("expectedCount"), jen.ID("actualCount"), nil),
 				jen.Line(),
@@ -658,9 +659,9 @@ func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.Super
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-					jen.ID(utils.FilterVarName),
+					jen.ID(constants.FilterVarName),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName(tn)), jen.ID("actual"), nil),
@@ -677,9 +678,9 @@ func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.Super
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-					jen.ID(utils.FilterVarName),
+					jen.ID(constants.FilterVarName),
 				),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
@@ -693,12 +694,12 @@ func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.Super
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-					jen.ID(utils.FilterVarName),
+					jen.ID(constants.FilterVarName),
 				),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
@@ -717,9 +718,9 @@ func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.Super
 				)),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-					jen.ID(utils.FilterVarName),
+					jen.ID(constants.FilterVarName),
 				),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
@@ -763,7 +764,7 @@ func buildTestDB_buildCreateOAuth2ClientQuery(proj *models.Project, dbvendor wor
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientSecret"),
 		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Scopes"), jen.ID("scopesSeparator")),
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("RedirectURI"),
-		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 	}
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")),
@@ -829,7 +830,7 @@ func buildTestDB_CreateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientSecret"),
 			jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Scopes"), jen.ID("scopesSeparator")),
 			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("RedirectURI"),
-			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 		).Dot(happyPathReturnMethodName).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 		jen.Line(),
 	}
@@ -844,7 +845,7 @@ func buildTestDB_CreateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 	}
 
 	happyPathLines = append(happyPathLines,
-		jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("expectedInput")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("expectedInput")),
 		utils.AssertNoError(jen.Err(), nil),
 		utils.AssertEqual(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.ID("actual"), nil),
 		jen.Line(),
@@ -873,10 +874,10 @@ func buildTestDB_CreateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientSecret"),
 					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Scopes"), jen.ID("scopesSeparator")),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("RedirectURI"),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
-				).Dot("WillReturnError").Call(utils.ObligatoryError()),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+				).Dot("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateOAuth2Client").Call(utils.CtxVar(), jen.ID("expectedInput")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("expectedInput")),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
@@ -911,7 +912,7 @@ func buildTestDB_buildUpdateOAuth2ClientQuery(proj *models.Project, dbvendor wor
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientSecret"),
 		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Scopes"), jen.ID("scopesSeparator")),
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("RedirectURI"),
-		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 	}
 	callArgs := []jen.Code{
@@ -972,7 +973,7 @@ func buildTestDB_UpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				mockDBExpect,
 				jen.Line(),
-				jen.Err().Assign().ID(dbfl).Dot("UpdateOAuth2Client").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateOAuth2Client").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -984,9 +985,9 @@ func buildTestDB_UpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(errFuncExpectMethod).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.Err().Assign().ID(dbfl).Dot("UpdateOAuth2Client").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateOAuth2Client").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
 				utils.AssertError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
@@ -1013,12 +1014,12 @@ func buildTestDB_buildArchiveOAuth2ClientQuery(proj *models.Project, dbvendor wo
 	}
 
 	expectedArgs := []jen.Code{
-		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 	}
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
-		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 	}
 
 	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "ArchiveOAuth2Client", qb, expectedArgs, callArgs, true, false, false, false, true, false, nil)
@@ -1052,15 +1053,15 @@ func buildTestDB_ArchiveOAuth2Client(proj *models.Project, dbvendor wordsmith.Su
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				).
 					Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.One(), jen.One())),
 				jen.Line(),
 				jen.Err().Assign().ID(dbfl).Dot("ArchiveOAuth2Client").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
@@ -1074,15 +1075,15 @@ func buildTestDB_ArchiveOAuth2Client(proj *models.Project, dbvendor wordsmith.Su
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				).
-					Dotln("WillReturnError").Call(utils.ObligatoryError()),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.Err().Assign().ID(dbfl).Dot("ArchiveOAuth2Client").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 				),
 				utils.AssertError(jen.Err(), nil),
 				jen.Line(),

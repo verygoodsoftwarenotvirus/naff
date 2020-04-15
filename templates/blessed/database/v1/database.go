@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -26,8 +27,8 @@ func databaseDotGo(proj *models.Project) *jen.File {
 
 	buildInterfaceLines := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("Migrate").Params(utils.CtxParam()).Params(jen.Error()),
-			jen.ID("IsReady").Params(utils.CtxParam()).Params(jen.ID("ready").Bool()),
+			jen.ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()),
+			jen.ID("IsReady").Params(constants.CtxParam()).Params(jen.ID("ready").Bool()),
 			jen.Line(),
 		}
 
@@ -55,9 +56,9 @@ func databaseDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx} objects"),
 			jen.ID("Querier").Interface(
-				jen.ID("ExecContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
-				jen.ID("QueryContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Rows"), jen.Error()),
-				jen.ID("QueryRowContext").Params(utils.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Row")),
+				jen.ID("ExecContext").Params(constants.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
+				jen.ID("QueryContext").Params(constants.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Rows"), jen.Error()),
+				jen.ID("QueryRowContext").Params(constants.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Row")),
 			),
 			jen.Line(),
 			jen.Comment("ConnectionDetails is a string alias for dependency injection"),

@@ -2,6 +2,7 @@ package fake
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -41,7 +42,7 @@ func buildBuildFakeWebhook(proj *models.Project) []jen.Code {
 					jen.ID("Topics").MapAssign().Index().String().Values(utils.FakeStringFunc()),
 					jen.ID("CreatedOn").MapAssign().Add(utils.FakeUnixTimeFunc()),
 					jen.ID("ArchivedOn").MapAssign().Nil(),
-					jen.ID("BelongsToUser").MapAssign().Add(utils.FakeUint64Func()),
+					jen.ID(constants.UserOwnershipFieldName).MapAssign().Add(utils.FakeUint64Func()),
 				),
 			),
 		),
@@ -104,7 +105,7 @@ func buildBuildFakeWebhookUpdateInputFromWebhook(proj *models.Project) []jen.Cod
 					jen.ID("Events").MapAssign().ID("webhook").Dot("Events"),
 					jen.ID("DataTypes").MapAssign().ID("webhook").Dot("DataTypes"),
 					jen.ID("Topics").MapAssign().ID("webhook").Dot("Topics"),
-					jen.ID("BelongsToUser").MapAssign().ID("webhook").Dot("BelongsToUser"),
+					jen.ID(constants.UserOwnershipFieldName).MapAssign().ID("webhook").Dot(constants.UserOwnershipFieldName),
 				),
 			),
 		),
@@ -154,7 +155,7 @@ func buildBuildFakeWebhookCreationInputFromWebhook(proj *models.Project) []jen.C
 					jen.ID("Events").MapAssign().ID("webhook").Dot("Events"),
 					jen.ID("DataTypes").MapAssign().ID("webhook").Dot("DataTypes"),
 					jen.ID("Topics").MapAssign().ID("webhook").Dot("Topics"),
-					jen.ID("BelongsToUser").MapAssign().ID("webhook").Dot("BelongsToUser"),
+					jen.ID(constants.UserOwnershipFieldName).MapAssign().ID("webhook").Dot(constants.UserOwnershipFieldName),
 				),
 			),
 		),

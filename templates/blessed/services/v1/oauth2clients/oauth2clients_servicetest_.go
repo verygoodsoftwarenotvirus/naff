@@ -2,6 +2,7 @@ package oauth2clients
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -86,7 +87,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error(),
 				).Block(
-					jen.Return(jen.Nil(), utils.ObligatoryError()),
+					jen.Return(jen.Nil(), constants.ObligatoryError()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideOAuth2ClientsService").Callln(

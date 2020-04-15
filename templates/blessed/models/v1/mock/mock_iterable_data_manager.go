@@ -2,6 +2,7 @@ package mock
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -119,9 +120,9 @@ func buildGetAllSomethingsCount(typ models.DataType) []jen.Code {
 		jen.Commentf("GetAll%sCount is a mock function", pn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%sCount", pn).Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 		).Params(jen.Uint64(), jen.Error()).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar()),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar()),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
@@ -166,7 +167,7 @@ func buildGetAllSomethingsForUser(proj *models.Project, typ models.DataType) []j
 			params...,
 		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn),
 			jen.Error()).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.ID("userID")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("userID")),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
@@ -189,7 +190,7 @@ func buildGetAllSomethingsForSomethingElse(proj *models.Project, typ models.Data
 			params...,
 		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn),
 			jen.Error()).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(utils.CtxVar(), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),

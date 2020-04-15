@@ -2,6 +2,7 @@ package fake
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -44,7 +45,7 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 		}(),
 		func() jen.Code {
 			if typ.BelongsToUser {
-				return jen.ID("BelongsToUser").MapAssign().Add(utils.FakeUint64Func())
+				return jen.ID(constants.UserOwnershipFieldName).MapAssign().Add(utils.FakeUint64Func())
 			}
 			return jen.Null()
 		}(),
@@ -140,7 +141,7 @@ func buildBuildFakeSomethingUpdateInputFromSomething(proj *models.Project, typ m
 		}(),
 		func() jen.Code {
 			if typ.BelongsToUser {
-				return jen.ID("BelongsToUser").MapAssign().ID(uvn).Dot("BelongsToUser")
+				return jen.ID(constants.UserOwnershipFieldName).MapAssign().ID(uvn).Dot(constants.UserOwnershipFieldName)
 			}
 			return jen.Null()
 		}(),
@@ -215,7 +216,7 @@ func buildBuildFakeSomethingCreationInputFromSomething(proj *models.Project, typ
 		}(),
 		func() jen.Code {
 			if typ.BelongsToUser {
-				return jen.ID("BelongsToUser").MapAssign().ID(uvn).Dot("BelongsToUser")
+				return jen.ID(constants.UserOwnershipFieldName).MapAssign().ID(uvn).Dot(constants.UserOwnershipFieldName)
 			}
 			return jen.Null()
 		}(),

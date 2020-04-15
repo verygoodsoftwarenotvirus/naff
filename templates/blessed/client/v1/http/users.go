@@ -2,6 +2,7 @@ package client
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -42,7 +43,7 @@ func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -53,7 +54,7 @@ func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
 		jen.Comment("BuildGetUserRequest builds an HTTP request for fetching a user"),
 		jen.Line(),
 		newClientMethod("BuildGetUserRequest").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("userID").Uint64(),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -74,7 +75,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 			jen.ID("req"),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildGetUserRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("userID"),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -88,7 +89,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("req"),
 			jen.AddressOf().ID("user"),
 		),
@@ -102,7 +103,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 		jen.Comment("GetUser retrieves a user"),
 		jen.Line(),
 		newClientMethod("GetUser").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("userID").Uint64(),
 		).Params(
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
@@ -120,12 +121,12 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.ID("uri").Assign().ID("c").Dot("buildVersionlessURL").Call(
-			jen.ID(utils.FilterVarName).Dot("ToValues").Call(),
+			jen.ID(constants.FilterVarName).Dot("ToValues").Call(),
 			jen.ID("usersBasePath"),
 		),
 		jen.Line(),
 		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Qual("net/http", "MethodGet"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -136,8 +137,8 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 		jen.Comment("BuildGetUsersRequest builds an HTTP request for fetching a user"),
 		jen.Line(),
 		newClientMethod("BuildGetUsersRequest").Params(
-			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			constants.CtxParam(),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
@@ -159,8 +160,8 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 			jen.ID("req"),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildGetUsersRequest").Call(
-			utils.CtxVar(),
-			jen.ID(utils.FilterVarName),
+			constants.CtxVar(),
+			jen.ID(constants.FilterVarName),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(
@@ -173,7 +174,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("req"),
 			jen.AddressOf().ID("users"),
 		),
@@ -184,8 +185,8 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 		jen.Comment("GetUsers retrieves a list of users"),
 		jen.Line(),
 		newClientMethod("GetUsers").Params(
-			utils.CtxParam(),
-			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			constants.CtxParam(),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"),
 			jen.Error(),
@@ -207,7 +208,7 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Return().ID("c").Dot("buildDataRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Qual("net/http", "MethodPost"),
 			jen.ID("uri"),
 			jen.ID("body"),
@@ -218,7 +219,7 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 		jen.Comment("BuildCreateUserRequest builds an HTTP request for creating a user"),
 		jen.Line(),
 		newClientMethod("BuildCreateUserRequest").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("body").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -241,7 +242,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 			jen.ID("req"),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildCreateUserRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("input"),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -255,7 +256,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Err().Equals().ID("c").Dot("executeUnauthenticatedDataRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("req"),
 			jen.AddressOf().ID("user"),
 		),
@@ -266,7 +267,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 		jen.Comment("CreateUser creates a new user"),
 		jen.Line(),
 		newClientMethod("CreateUser").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
@@ -293,7 +294,7 @@ func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Qual("net/http", "MethodDelete"),
 			jen.ID("uri"),
 			jen.Nil(),
@@ -304,7 +305,7 @@ func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 		jen.Comment("BuildArchiveUserRequest builds an HTTP request for updating a user"),
 		jen.Line(),
 		newClientMethod("BuildArchiveUserRequest").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("userID").Uint64(),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -325,7 +326,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 			jen.ID("req"),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildArchiveUserRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("userID"),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -336,7 +337,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.Return().ID("c").Dot("executeRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID("req"),
 			jen.Nil(),
 		),
@@ -346,7 +347,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 		jen.Comment("ArchiveUser archives a user"),
 		jen.Line(),
 		newClientMethod("ArchiveUser").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("userID").Uint64(),
 		).Params(jen.Error()).Block(block...),
 		jen.Line(),
@@ -382,7 +383,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 			jen.Lit("login"),
 		),
 		jen.Return().ID("c").Dot("buildDataRequest").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Qual("net/http", "MethodPost"),
 			jen.ID("uri"),
 			jen.ID("body"),
@@ -393,7 +394,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 		jen.Comment("BuildLoginRequest builds an authenticating HTTP request"),
 		jen.Line(),
 		newClientMethod("BuildLoginRequest").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -415,7 +416,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 			jen.Return(jen.Nil(), utils.Error("nil input provided")),
 		),
 		jen.Line(),
-		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(utils.CtxVar(), jen.ID("input")),
+		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(constants.CtxVar(), jen.ID("input")),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(
 				jen.Nil(),
@@ -462,7 +463,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 		jen.Comment("Login will, when provided the correct credentials, fetch a login cookie"),
 		jen.Line(),
 		newClientMethod("Login").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Cookie"),

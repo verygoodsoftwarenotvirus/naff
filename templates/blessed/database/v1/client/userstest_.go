@@ -2,6 +2,7 @@ package client
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -30,7 +31,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUser").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				utils.AssertNoError(jen.Err(), nil),
@@ -59,7 +60,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID(utils.BuildFakeVarName("User")), jen.Nil(),
 				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUserByUsername").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("Username")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUserByUsername").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("Username")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("User")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -82,12 +83,12 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID(utils.FilterVarName),
+					jen.ID(constants.FilterVarName),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUsers").Call(
-					utils.CtxVar(),
-					jen.ID(utils.FilterVarName),
+					constants.CtxVar(),
+					jen.ID(constants.FilterVarName),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("UserList")), jen.ID("actual"), nil),
@@ -104,12 +105,12 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID(utils.FilterVarName),
+					jen.ID(constants.FilterVarName),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUsers").Call(
-					utils.CtxVar(),
-					jen.ID(utils.FilterVarName),
+					constants.CtxVar(),
+					jen.ID(constants.FilterVarName),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("UserList")), jen.ID("actual"), nil),
@@ -139,7 +140,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Nil(),
 				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("User")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -167,7 +168,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("expected"),
 				),
 				jen.Line(),
-				jen.Err().Assign().ID("c").Dot("UpdateUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User"))),
+				jen.Err().Assign().ID("c").Dot("UpdateUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User"))),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertExpectationsFor("mockDB"),
@@ -191,7 +192,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
-				jen.Err().Assign().ID("c").Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				jen.Err().Assign().ID("c").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertExpectationsFor("mockDB"),

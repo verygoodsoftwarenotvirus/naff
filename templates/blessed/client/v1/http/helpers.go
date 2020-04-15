@@ -2,6 +2,7 @@ package client
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -88,7 +89,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("testing, and should never be encountered by an end-user."),
 		jen.Line(),
 		jen.Func().ID("unmarshalBody").Params(
-			utils.CtxParam(),
+			constants.CtxParam(),
 			jen.ID("res").PointerTo().Qual("net/http", "Response"),
 			jen.ID("dest").Interface(),
 		).Params(

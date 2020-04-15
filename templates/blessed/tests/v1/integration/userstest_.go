@@ -2,6 +2,7 @@ package integration
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -45,12 +46,12 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.PointerTo().Qual("net/http", "Cookie"),
 		).Block(
 			jen.ID("t").Dot("Helper").Call(),
-			utils.CreateCtx(),
+			constants.CreateCtx(),
 			jen.Line(),
 			jen.Comment("build user creation route input"),
 			jen.ID("userInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInput").Call(),
 			jen.List(jen.ID("user"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(
-				utils.CtxVar(),
+				constants.CtxVar(),
 				jen.ID("userInput"),
 			),
 			utils.AssertNotNil(jen.ID("user"), nil),
@@ -129,7 +130,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Create user"),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("exampleUserInput"),
 					),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -139,7 +140,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Clean up"),
 					utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("actual").Dot("ID")), nil),
 				),
 			)),
@@ -151,7 +152,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Fetch user"),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUser").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("nonexistentID"),
 					),
 					utils.AssertNil(jen.ID("actual"), nil),
@@ -165,7 +166,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Create user"),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
 					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("exampleUserInput"),
 					),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
@@ -173,7 +174,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Fetch user"),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUser").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("premade").Dot("ID"),
 					),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -190,7 +191,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Clean up"),
 					utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(
-						utils.CtxVar(), jen.ID("actual").Dot("ID")), nil),
+						constants.CtxVar(), jen.ID("actual").Dot("ID")), nil),
 				),
 			)),
 			jen.Line(),
@@ -202,7 +203,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Create user"),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
 					jen.List(jen.ID("u"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(
-						utils.CtxVar(),
+						constants.CtxVar(),
 						jen.ID("exampleUserInput"),
 					),
 					utils.AssertNoError(jen.Err(), nil),
@@ -214,7 +215,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("Execute"),
-					jen.Err().Equals().ID("todoClient").Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("u").Dot("ID")),
+					jen.Err().Equals().ID("todoClient").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("u").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
 				),
 			)),
@@ -233,13 +234,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("Assert user list equality"),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUsers").Call(utils.CtxVar(), jen.Nil()),
+					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUsers").Call(constants.CtxVar(), jen.Nil()),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					utils.AssertTrue(jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Users")), nil),
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.For(jen.List(jen.Underscore(), jen.ID("user")).Assign().Range().ID("actual").Dot("Users")).Block(
-						jen.Err().Equals().ID("todoClient").Dot("ArchiveUser").Call(utils.CtxVar(), jen.ID("user").Dot("ID")),
+						jen.Err().Equals().ID("todoClient").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("user").Dot("ID")),
 						utils.AssertNoError(jen.Err(), nil),
 					),
 				),

@@ -2,6 +2,7 @@ package client
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -201,7 +202,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("out").ID("testingType"),
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("res"),
 					jen.AddressOf().ID("out"),
 				),
@@ -227,7 +228,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("out").ID("testingType"),
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("res"),
 					jen.AddressOf().ID("out"),
 				),
@@ -263,7 +264,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("out").PointerTo().ID("testingType"),
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("res"),
 					jen.AddressOf().ID("out"),
 				),
@@ -288,7 +289,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("out").PointerTo().ID("testingType"),
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("res"),
 					jen.AddressOf().ID("out"),
 				),
@@ -305,7 +306,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"with nil target variable",
 				jen.Err().Assign().ID("unmarshalBody").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 					jen.Nil(),
 				),
@@ -337,7 +338,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Var().ID("out").ID("testingType"),
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("res"),
 					jen.AddressOf().ID("out"),
 				),

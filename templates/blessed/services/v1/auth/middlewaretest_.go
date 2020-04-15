@@ -2,6 +2,7 @@ package auth
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -145,7 +146,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("User")),
 					jen.Nil(),
@@ -197,7 +198,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
@@ -278,7 +279,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
-					utils.ObligatoryError(),
+					constants.ObligatoryError(),
 				),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
@@ -321,10 +322,10 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
-					utils.ObligatoryError(),
+					constants.ObligatoryError(),
 				),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
 				jen.Line(),
@@ -358,7 +359,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
-					utils.ObligatoryError(),
+					constants.ObligatoryError(),
 				),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("ocv"),
 				jen.Line(),
@@ -368,7 +369,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("CookieName"),
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
-				).Dot("Return").Call(utils.ObligatoryError()),
+				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("cb").Dot("On").Call(
 					jen.Lit("Encode"),
 					jen.ID("CookieName"),
@@ -448,7 +449,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(utils.MockPkg, "Anything"),
-					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
 					jen.Nil(),
@@ -586,7 +587,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					utils.ObligatoryError(),
+					constants.ObligatoryError(),
 				),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -626,7 +627,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					utils.ObligatoryError(),
+					constants.ObligatoryError(),
 				),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),

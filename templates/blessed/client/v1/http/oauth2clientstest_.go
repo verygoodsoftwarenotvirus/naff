@@ -2,6 +2,7 @@ package client
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -43,7 +44,7 @@ func buildV1Client_BuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code 
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildGetOAuth2ClientRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
@@ -119,7 +120,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Client").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 		),
 		jen.Line(),
@@ -133,7 +134,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Client").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 		),
 		jen.Line(),
@@ -173,7 +174,7 @@ func buildV1Client_BuildGetOAuth2ClientsRequest() []jen.Code {
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildGetOAuth2ClientsRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 				),
 				jen.Line(),
@@ -232,7 +233,7 @@ func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 			jen.ID("actual"),
 			jen.Err(),
 		).Assign().ID("c").Dot("GetOAuth2Clients").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Nil(),
 		),
 		jen.Line(),
@@ -247,7 +248,7 @@ func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 	invalidClientURLSubtestLines := []jen.Code{
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(
-			utils.CtxVar(),
+			constants.CtxVar(),
 			jen.Nil(),
 		),
 		jen.Line(),
@@ -288,7 +289,7 @@ func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Co
 					jen.ID("req"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildCreateOAuth2ClientRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.AddressOf().Qual("net/http", "Cookie").Values(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
@@ -348,7 +349,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateOAuth2Client").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.AddressOf().Qual("net/http", "Cookie").Values(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
@@ -364,7 +365,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateOAuth2Client").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.AddressOf().Qual("net/http", "Cookie").Values(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
@@ -401,7 +402,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateOAuth2Client").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.AddressOf().Qual("net/http", "Cookie").Values(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
@@ -416,7 +417,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID("c").Dot("CreateOAuth2Client").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.Nil(),
 					jen.Nil(),
 				),
@@ -445,7 +446,7 @@ func buildV1Client_BuildArchiveOAuth2ClientRequest(proj *models.Project) []jen.C
 					jen.ID("actual"),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildArchiveOAuth2ClientRequest").Call(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
@@ -510,7 +511,7 @@ func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Err().Assign().ID("buildTestClient").Call(
 			jen.ID("t"),
 			jen.ID("ts"),
-		).Dot("ArchiveOAuth2Client").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID")),
+		).Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID")),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	}
 
@@ -520,7 +521,7 @@ func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 
 		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(
 			jen.ID("t"),
-		).Dot("ArchiveOAuth2Client").Call(utils.CtxVar(), jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID")),
+		).Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID")),
 		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 	}
 

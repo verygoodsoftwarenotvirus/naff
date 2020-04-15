@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -27,7 +28,7 @@ func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 	)
 
 	if typ.BelongsToUser {
-		out = append(out, jen.ID("BelongsToUser").Uint64().Tag(jsonTag("belongs_to_user")))
+		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("belongs_to_user")))
 	}
 	if typ.BelongsToStruct != nil {
 		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
@@ -50,7 +51,7 @@ func buildUpdateModelStructFields(typ models.DataType) []jen.Code {
 	}
 
 	if typ.BelongsToUser {
-		out = append(out, jen.ID("BelongsToUser").Uint64().Tag(jsonTag("-")))
+		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")))
 	}
 	if typ.BelongsToStruct != nil {
 		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
@@ -76,7 +77,7 @@ func buildCreateModelStructFields(typ models.DataType) []jen.Code {
 		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag("-")))
 	}
 	if typ.BelongsToUser {
-		out = append(out, jen.ID("BelongsToUser").Uint64().Tag(jsonTag("-")))
+		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")))
 	}
 
 	return out
@@ -90,7 +91,7 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	interfaceMethods := []jen.Code{
 		jen.IDf("%sExists", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.Bool(), jen.Error()),
 		jen.IDf("Get%s", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
-		jen.IDf("GetAll%sCount", pn).Params(utils.CtxParam()).Params(jen.Uint64(), jen.Error()),
+		jen.IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
 		jen.IDf("Get%s", pn).Params(typ.BuildGetListOfSomethingParams(proj, true)...).Params(jen.PointerTo().IDf("%sList", sn), jen.Error()),
 	}
 

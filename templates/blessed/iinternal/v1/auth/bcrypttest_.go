@@ -2,6 +2,7 @@ package auth
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -29,9 +30,9 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("t").Dot("Parallel").Call(),
-				utils.CtxVar().Assign().Qual("context", "Background").Call(),
+				constants.CtxVar().Assign().Qual("context", "Background").Call(),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("x").Dot("HashPassword").Call(utils.CtxVar(), jen.Lit("password")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("x").Dot("HashPassword").Call(constants.CtxVar(), jen.Lit("password")),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertNotEmpty(jen.ID("actual"), nil),
 			),
@@ -48,18 +49,18 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"normal usage",
 				jen.ID("t").Dot("Parallel").Call(),
-				utils.CtxVar().Assign().Qual("context", "Background").Call(),
+				constants.CtxVar().Assign().Qual("context", "Background").Call(),
 				jen.Line(),
-				jen.ID("actual").Assign().ID("x").Dot("PasswordMatches").Call(utils.CtxVar(), jen.ID("hashedExamplePassword"), jen.ID(utils.BuildFakeVarName("Password")), jen.Nil()),
+				jen.ID("actual").Assign().ID("x").Dot("PasswordMatches").Call(constants.CtxVar(), jen.ID("hashedExamplePassword"), jen.ID(utils.BuildFakeVarName("Password")), jen.Nil()),
 				utils.AssertTrue(jen.ID("actual"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"when passwords don't match",
 				jen.ID("t").Dot("Parallel").Call(),
-				utils.CtxVar().Assign().Qual("context", "Background").Call(),
+				constants.CtxVar().Assign().Qual("context", "Background").Call(),
 				jen.Line(),
-				jen.ID("actual").Assign().ID("x").Dot("PasswordMatches").Call(utils.CtxVar(), jen.ID("hashedExamplePassword"), jen.Lit("password"), jen.Nil()),
+				jen.ID("actual").Assign().ID("x").Dot("PasswordMatches").Call(constants.CtxVar(), jen.ID("hashedExamplePassword"), jen.Lit("password"), jen.Nil()),
 				utils.AssertFalse(jen.ID("actual"), nil),
 			),
 		),
@@ -92,13 +93,13 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("t").Dot("Parallel").Call(),
-				utils.CreateCtx(),
+				constants.CreateCtx(),
 				jen.Line(),
 				jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID(utils.BuildFakeVarName("TwoFactorSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				utils.AssertNoError(jen.Err(), jen.Lit("error generating code to validate login")),
 				jen.Line(),
 				jen.List(jen.ID("valid"), jen.Err()).Assign().ID("x").Dot("ValidateLogin").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("hashedExamplePassword"),
 					jen.ID(utils.BuildFakeVarName("Password")),
 					jen.ID(utils.BuildFakeVarName("TwoFactorSecret")),
@@ -116,7 +117,7 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with weak hash",
 				jen.ID("t").Dot("Parallel").Call(),
-				utils.CreateCtx(),
+				constants.CreateCtx(),
 				jen.Line(),
 				jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
 					jen.ID(utils.BuildFakeVarName("TwoFactorSecret")),
@@ -125,7 +126,7 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.Err(), jen.Lit("error generating code to validate login")),
 				jen.Line(),
 				jen.List(jen.ID("valid"), jen.Err()).Assign().ID("x").Dot("ValidateLogin").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("weaklyHashedExamplePassword"),
 					jen.ID(utils.BuildFakeVarName("Password")),
 					jen.ID(utils.BuildFakeVarName("TwoFactorSecret")),
@@ -139,13 +140,13 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with non-matching password",
 				jen.ID("t").Dot("Parallel").Call(),
-				utils.CreateCtx(),
+				constants.CreateCtx(),
 				jen.Line(),
 				jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID(utils.BuildFakeVarName("TwoFactorSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 				utils.AssertNoError(jen.Err(), jen.Lit("error generating code to validate login")),
 				jen.Line(),
 				jen.List(jen.ID("valid"), jen.Err()).Assign().ID("x").Dot("ValidateLogin").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("hashedExamplePassword"),
 					jen.Lit("examplePassword"),
 					jen.ID(utils.BuildFakeVarName("TwoFactorSecret")),
@@ -159,10 +160,10 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with invalid code",
 				jen.ID("t").Dot("Parallel").Call(),
-				utils.CreateCtx(),
+				constants.CreateCtx(),
 				jen.Line(),
 				jen.List(jen.ID("valid"), jen.Err()).Assign().ID("x").Dot("ValidateLogin").Callln(
-					utils.CtxVar(),
+					constants.CtxVar(),
 					jen.ID("hashedExamplePassword"),
 					jen.ID(utils.BuildFakeVarName("Password")),
 					jen.ID(utils.BuildFakeVarName("TwoFactorSecret")),

@@ -2,6 +2,7 @@ package encoding
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -101,17 +102,17 @@ func buildAttachFilterToSpan(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID("AttachFilterToSpan").Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(utils.TracingLibrary, "Span"),
-			jen.ID(utils.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Block(
-			jen.If(jen.ID(utils.FilterVarName).DoesNotEqual().Nil().And().ID(utils.SpanVarName).DoesNotEqual().Nil()).Block(
+			jen.If(jen.ID(constants.FilterVarName).DoesNotEqual().Nil().And().ID(utils.SpanVarName).DoesNotEqual().Nil()).Block(
 				jen.ID(utils.SpanVarName).Dot("AddAttributes").Callln(
 					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(
 						jen.ID("filterPageSpanAttachmentKey"),
-						jen.Qual("strconv", "FormatUint").Call(jen.ID(utils.FilterVarName).Dot("QueryPage").Call(), jen.Lit(10)),
+						jen.Qual("strconv", "FormatUint").Call(jen.ID(constants.FilterVarName).Dot("QueryPage").Call(), jen.Lit(10)),
 					),
 					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(
 						jen.ID("filterLimitSpanAttachmentKey"),
-						jen.Qual("strconv", "FormatUint").Call(jen.ID(utils.FilterVarName).Dot("Limit"), jen.Lit(10)),
+						jen.Qual("strconv", "FormatUint").Call(jen.ID(constants.FilterVarName).Dot("Limit"), jen.Lit(10)),
 					),
 				),
 			),
