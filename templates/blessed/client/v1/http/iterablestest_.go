@@ -309,7 +309,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 	ts := typ.Name.Singular() // title singular
 
 	args := typ.BuildGetSomethingArgsWithExampleVariables(proj)
-	args = args[:len(args)-1]
+	//args = args[:len(args)-1]
 
 	happyPathSubtestLines := append(
 		buildVarDeclarationsOfDependentStructs(proj, typ),
