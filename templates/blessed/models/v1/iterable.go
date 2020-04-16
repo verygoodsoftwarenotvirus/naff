@@ -89,10 +89,10 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	pn := n.Plural()
 
 	interfaceMethods := []jen.Code{
-		jen.IDf("%sExists", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.Bool(), jen.Error()),
-		jen.IDf("Get%s", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
+		jen.IDf("%sExists", sn).Params(typ.BuildInterfaceDefinitionExistenceMethodParams(proj)...).Params(jen.Bool(), jen.Error()),
+		jen.IDf("Get%s", sn).Params(typ.BuildInterfaceDefinitionRetrievalMethodParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
 		jen.IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
-		jen.IDf("Get%s", pn).Params(typ.BuildGetListOfSomethingParams(proj, true)...).Params(jen.PointerTo().IDf("%sList", sn), jen.Error()),
+		jen.IDf("Get%s", pn).Params(typ.BuildInterfaceDefinitionListRetrievalMethodParams(proj)...).Params(jen.PointerTo().IDf("%sList", sn), jen.Error()),
 	}
 
 	//if typ.BelongsToUser {
@@ -107,9 +107,9 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	//}
 
 	interfaceMethods = append(interfaceMethods,
-		jen.IDf("Create%s", sn).Params(typ.BuildCreateSomethingParams(proj, true)...).Params(jen.PointerTo().ID(sn), jen.Error()),
-		jen.IDf("Update%s", sn).Params(typ.BuildUpdateSomethingParams(proj, "updated", true)...).Params(jen.Error()),
-		jen.IDf("Archive%s", sn).Params(typ.BuildGetSomethingParams(proj)...).Params(jen.Error()),
+		jen.IDf("Create%s", sn).Params(typ.BuildInterfaceDefinitionCreationMethodParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
+		jen.IDf("Update%s", sn).Params(typ.BuildInterfaceDefinitionUpdateMethodParams(proj, "updated")...).Params(jen.Error()),
+		jen.IDf("Archive%s", sn).Params(typ.BuildInterfaceDefinitionArchiveMethodParams(proj)...).Params(jen.Error()),
 	)
 
 	return interfaceMethods
@@ -125,6 +125,8 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	cnwp := n.SingularCommonNameWithPrefix()
 	pcn := n.PluralCommonName()
 	prn := n.PluralRouteName()
+
+	hf := jen.Qual("net/http", "HandlerFunc")
 
 	ret.Add(
 		jen.Type().Defs(
@@ -151,12 +153,12 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.Line(),
-				jen.ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("ExistenceHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
+				jen.ID("ListHandler").Params().Params(hf),
+				jen.ID("CreateHandler").Params().Params(hf),
+				jen.ID("ExistenceHandler").Params().Params(hf),
+				jen.ID("ReadHandler").Params().Params(hf),
+				jen.ID("UpdateHandler").Params().Params(hf),
+				jen.ID("ArchiveHandler").Params().Params(hf),
 			),
 		),
 		jen.Line(),

@@ -544,7 +544,7 @@ func buildTestDB_buildGetAllOAuth2ClientCountQuery(proj *models.Project, dbvendo
 		callArgs     []jen.Code
 	)
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetOAuth2ClientPalabra()}, "GetAllOAuth2ClientCount", qb, expectedArgs, callArgs, false, false, false, false, false, false, nil)
+	return buildQueryTest(proj, dbvendor, models.DataType{Name: nil}, "GetAllOAuth2ClientCount", qb, expectedArgs, callArgs, false, false, false, false, false, false, nil)
 }
 
 func buildTestDB_GetAllOAuth2ClientCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -603,7 +603,7 @@ func buildTestDB_buildGetOAuth2ClientsQuery(proj *models.Project, dbvendor words
 
 	lines := buildQueryTest(proj,
 		dbvendor,
-		models.DataType{Name: GetOAuth2ClientPalabra()},
+		models.DataType{Name: nil},
 		"GetOAuth2Clients",
 		qb,
 		expectedArgs,

@@ -269,7 +269,7 @@ func buildTestDB_buildGetAllWebhooksCountQuery(proj *models.Project, dbvendor wo
 
 	return buildQueryTest(proj,
 		dbvendor,
-		models.DataType{Name: GetWebhookPalabra()},
+		models.DataType{Name: nil},
 		"GetAllWebhooksCount",
 		qb,
 		expectedArgs,
@@ -350,7 +350,7 @@ func buildTestDB_buildGetAllWebhooksQuery(proj *models.Project, dbvendor wordsmi
 
 	return buildQueryTest(proj,
 		dbvendor,
-		models.DataType{Name: GetWebhookPalabra()},
+		models.DataType{Name: nil},
 		"GetAllWebhooks",
 		qb,
 		expectedArgs,
@@ -470,7 +470,7 @@ func buildTestDB_buildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.
 
 	return buildQueryTest(proj,
 		dbvendor,
-		models.DataType{Name: GetWebhookPalabra()},
+		models.DataType{Name: nil},
 		"GetWebhooks",
 		qb,
 		expectedArgs,

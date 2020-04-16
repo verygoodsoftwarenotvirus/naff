@@ -219,8 +219,8 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 		)
 	}
 
-	if typ.Name != nil {
-		block = append(block, typ.BuildRequisiteFakeVarDecs(proj)...)
+	if typ.Name != nil && !listQuery {
+		block = append(block, typ.BuildRequisiteFakeVarsForDBQuerierQueryMethodTest(proj)...)
 	}
 
 	if includeFilter {

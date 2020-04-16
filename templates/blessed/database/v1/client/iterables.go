@@ -44,8 +44,8 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
 	funcName := fmt.Sprintf("%sExists", sn)
-	params := typ.BuildGetSomethingParams(proj)
-	args := typ.BuildGetSomethingArgs(proj)
+	params := typ.BuildDBClientExistenceMethodParams(proj)
+	args := typ.BuildDBClientExistenceMethodCallArgs(proj)
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -90,8 +90,8 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	uvn := n.UnexportedVarName()
 	scnwp := n.SingularCommonNameWithPrefix()
 
-	params := typ.BuildGetSomethingParams(proj)
-	args := typ.BuildGetSomethingArgs(proj)
+	params := typ.BuildDBClientRetrievalMethodParams(proj)
+	args := typ.BuildDBClientRetrievalMethodCallArgs(proj)
 	loggerValues := typ.BuildGetSomethingLogValues(proj)
 	block := []jen.Code{
 		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("Get%s", sn)),
@@ -152,8 +152,8 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	pn := n.Plural()
 	pcn := n.PluralCommonName()
 
-	params := typ.BuildGetListOfSomethingParams(proj, false)
-	callArgs := typ.BuildGetListOfSomethingArgs(proj)
+	params := typ.BuildDBClientListRetrievalMethodParams(proj)
+	callArgs := typ.BuildDBClientListRetrievalMethodCallArgs(proj)
 	block := []jen.Code{
 		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("Get%s", pn)),
 		jen.Defer().ID("span").Dot("End").Call(),
@@ -255,51 +255,13 @@ func buildGetAllSomethingForUser(proj *models.Project, typ models.DataType) []je
 	}
 }
 
-func buildGetAllSomethingForSomethingElse(proj *models.Project, typ models.DataType) []jen.Code {
-	n := typ.Name
-	sn := n.Singular()
-	uvn := n.UnexportedVarName()
-	pn := n.Plural()
-	pcn := n.PluralCommonName()
-
-	btsn := typ.BelongsToStruct
-	btsns := btsn.Singular()
-	btsuvn := btsn.UnexportedVarName()
-	btsrn := btsn.RouteName()
-
-	params := typ.BuildGetSomethingForSomethingElseParams(proj)
-	args := typ.BuildGetSomethingForSomethingElseArgs(proj)
-
-	return []jen.Code{
-		jen.Commentf("GetAll%sFor%s fetches a list of %s from the database that meet a particular filter", pn, btsns, pcn),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("GetAll%sFor%s", pn, btsns).Params(
-			params...,
-		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn),
-			jen.Error()).Block(
-			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("GetAll%sFor%s", pn, btsns)),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
-			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", btsns)).Call(jen.ID("span"), jen.IDf("%sID", btsuvn)),
-			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", btsrn), jen.IDf("%sID", btsuvn)).Dot("Debug").Call(jen.Litf("GetAll%sFor%s called", pn, btsns)),
-			jen.Line(),
-			jen.List(jen.IDf("%sList", uvn), jen.Err()).Assign().ID("c").Dot("querier").Dotf("GetAll%sFor%s", pn, btsns).Call(
-				args...,
-			),
-			jen.Line(),
-			jen.Return().List(jen.IDf("%sList", uvn), jen.Err()),
-		),
-		jen.Line(),
-	}
-}
-
 func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
 	scnwp := n.SingularCommonNameWithPrefix()
 
-	params := typ.BuildCreateSomethingParams(proj, false)
-	args := typ.BuildCreateSomethingArgs(proj)
+	params := typ.BuildDBClientCreationMethodParams(proj)
+	args := typ.BuildDBClientCreationMethodCallArgs(proj)
 
 	return []jen.Code{
 		jen.Commentf("Create%s creates %s in the database", sn, scnwp),
@@ -329,8 +291,8 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 
 	const updatedVarName = "updated"
 
-	params := typ.BuildUpdateSomethingParams(proj, updatedVarName, false)
-	args := typ.BuildUpdateSomethingArgs(proj, updatedVarName)
+	params := typ.BuildDBClientUpdateMethodParams(proj, updatedVarName)
+	args := typ.BuildDBClientUpdateMethodCallArgs(proj, updatedVarName)
 
 	return []jen.Code{
 		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the", sn, scn, sn),
@@ -361,8 +323,8 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	uvn := n.UnexportedVarName()
 	scnwp := n.SingularCommonNameWithPrefix()
 
-	params := typ.BuildGetSomethingParams(proj)
-	callArgs := typ.BuildGetSomethingArgs(proj)
+	params := typ.BuildDBClientArchiveMethodParams(proj)
+	callArgs := typ.BuildDBClientArchiveMethodCallArgs(proj)
 	loggerValues := []jen.Code{
 		jen.Litf("%s_id", rn).MapAssign().IDf("%sID", uvn),
 	}

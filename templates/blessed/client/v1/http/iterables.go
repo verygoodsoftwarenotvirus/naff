@@ -41,7 +41,7 @@ func attachURIToSpanCall(proj *models.Project) jen.Code {
 	return jen.Qual(proj.InternalTracingV1Package(), "AttachRequestURIToSpan").Call(jen.ID("span"), jen.ID("uri"))
 }
 
-func buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj *models.Project, firstVar jen.Code, typVar jen.Code, typ models.DataType) []jen.Code {
+func buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
 	urlBuildingParams := []jen.Code{
 		firstVar,
@@ -136,7 +136,6 @@ func buildBuildSomethingExistsRequest(proj *models.Project, typ models.DataType)
 			buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(
 				proj,
 				jen.Nil(),
-				jen.IDf("%sID", typ.Name.UnexportedVarName()),
 				typ,
 			)...,
 		),
@@ -153,7 +152,7 @@ func buildBuildSomethingExistsRequest(proj *models.Project, typ models.DataType)
 	lines := []jen.Code{
 		jen.Commentf("%s builds an HTTP request for checking the existence of %s", funcName, commonNameWithPrefix),
 		jen.Line(),
-		newClientMethod(funcName).Params(typ.BuildParamsForMethodThatHandlesAnInstanceWithIDs(proj, false)...).Params(
+		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientExistenceRequestBuildingMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
@@ -170,7 +169,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
-		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dotf("Build%sExistsRequest", ts).Call(typ.BuildParamsForMethodThatHandlesAnInstanceWithIDs(proj, true)...),
+		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dotf("Build%sExistsRequest", ts).Call(typ.BuildArgsForHTTPClientExistenceRequestBuildingMethod(proj)...),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(
 				jen.False(),
@@ -184,7 +183,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	lines := []jen.Code{
 		jen.Commentf("%s retrieves whether or not %s exists", funcName, commonNameWithPrefix),
 		jen.Line(),
-		newClientMethod(funcName).Params(typ.BuildParamsForMethodThatHandlesAnInstanceWithIDs(proj, false)...).Params(
+		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientExistenceMethod(proj)...).Params(
 			jen.ID("exists").Bool(),
 			jen.Err().Error(),
 		).Block(block...,
@@ -206,7 +205,6 @@ func buildBuildGetSomethingRequestFuncDecl(proj *models.Project, typ models.Data
 			buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(
 				proj,
 				jen.Nil(),
-				jen.IDf("%sID", typ.Name.UnexportedVarName()),
 				typ,
 			)...,
 		),
@@ -223,7 +221,7 @@ func buildBuildGetSomethingRequestFuncDecl(proj *models.Project, typ models.Data
 	lines := []jen.Code{
 		jen.Commentf("%s builds an HTTP request for fetching %s", funcName, commonNameWithPrefix),
 		jen.Line(),
-		newClientMethod(funcName).Params(typ.BuildParamsForMethodThatHandlesAnInstanceWithIDs(proj, false)...).Params(
+		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientRetrievalRequestBuildingMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
@@ -241,7 +239,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
-		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(typ.BuildParamsForMethodThatHandlesAnInstanceWithIDs(proj, true)...),
+		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(typ.BuildArgsForHTTPClientRetrievalRequestBuildingMethod(proj)...),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.Err()),
@@ -258,7 +256,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 	lines := []jen.Code{
 		jen.Commentf("%s retrieves %s", funcName, commonNameWithPrefix),
 		jen.Line(),
-		newClientMethod(funcName).Params(typ.BuildParamsForMethodThatHandlesAnInstanceWithIDs(proj, false)...).Params(
+		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientRetrievalMethod(proj, false)...).Params(
 			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), ts),
 			jen.Err().Error(),
 		).Block(block...,
@@ -296,7 +294,7 @@ func buildBuildGetListOfSomethingRequestFuncDecl(proj *models.Project, typ model
 	lines := []jen.Code{
 		jen.Commentf("%s builds an HTTP request for fetching %s", funcName, typ.Name.PluralCommonName()),
 		jen.Line(),
-		newClientMethod(funcName).Params(typ.BuildParamsForMethodThatRetrievesAListOfADataType(proj, false)...).Params(
+		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientListRequestMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
@@ -315,7 +313,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
-			typ.BuildParamsForMethodThatFetchesAListOfDataTypes(proj, true)...,
+			typ.BuildArgsForHTTPClientListRequestMethod(proj)...,
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(jen.Nil(),
@@ -339,7 +337,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 	lines := []jen.Code{
 		jen.Commentf("%s retrieves a list of %s", funcName, typ.Name.PluralCommonName()),
 		jen.Line(),
-		newClientMethod(funcName).Params(typ.BuildParamsForMethodThatFetchesAListOfDataTypes(proj, false)...).Params(
+		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientMethodThatFetchesAList(proj)...).Params(
 			jen.ID(pvn).PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", ts)),
 			jen.Err().Error(),
 		).Block(block...,
@@ -378,7 +376,7 @@ func buildBuildCreateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 		jen.Commentf("%s builds an HTTP request for creating %s", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(
-			typ.BuildParamsForMethodThatCreatesADataType(proj, false)...,
+			typ.BuildParamsForHTTPClientCreateRequestBuildingMethod(proj)...,
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
@@ -404,7 +402,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 			jen.ID("req"),
 			jen.Err(),
 		).Assign().ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
-			typ.BuildParamsForMethodThatCreatesADataType(proj, true)...,
+			typ.BuildArgsForHTTPClientCreateRequestBuildingMethod(proj)...,
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(jen.Nil(),
@@ -430,7 +428,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.Commentf("%s creates %s", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(
-			typ.BuildParamsForMethodThatCreatesADataType(proj, false)...,
+			typ.BuildParamsForHTTPClientCreateMethod(proj)...,
 		).Params(
 			jen.ID(vn).PointerTo().Qual(proj.ModelsV1Package(), ts),
 			jen.Err().Error(),
@@ -466,7 +464,7 @@ func buildBuildUpdateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 		jen.Commentf("%s builds an HTTP request for updating %s", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(
-			typ.BuildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, false)...,
+			typ.BuildParamsForHTTPClientUpdateRequestBuildingMethod(proj)...,
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
@@ -490,7 +488,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 			jen.ID("req"),
 			jen.Err(),
 		).Assign().ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
-			typ.BuildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, true)...,
+			typ.BuildArgsForHTTPClientUpdateRequestBuildingMethod(proj)...,
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().Qual("fmt", "Errorf").Call(
@@ -510,7 +508,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.Commentf("%s updates %s", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(
-			typ.BuildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, false)...,
+			typ.BuildParamsForHTTPClientUpdateMethod(proj)...,
 		).Params(jen.Error()).Block(block...),
 		jen.Line(),
 	}
@@ -532,7 +530,6 @@ func buildBuildArchiveSomethingRequestFuncDecl(proj *models.Project, typ models.
 			buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(
 				proj,
 				jen.Nil(),
-				jen.IDf("%sID", typ.Name.UnexportedVarName()),
 				typ,
 			)...,
 		),
@@ -549,7 +546,7 @@ func buildBuildArchiveSomethingRequestFuncDecl(proj *models.Project, typ models.
 	lines := []jen.Code{
 		jen.Commentf("%s builds an HTTP request for updating %s", funcName, commonNameWithPrefix),
 		jen.Line(),
-		newClientMethod(funcName).Params(typ.BuildParamsForMethodThatHandlesAnInstanceWithIDs(proj, false)...).Params(
+		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientArchiveRequestBuildingMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
 		).Block(block...),
@@ -571,7 +568,7 @@ func buildArchiveSomethingFuncDecl(proj *models.Project, typ models.DataType) []
 			jen.ID("req"),
 			jen.Err(),
 		).Assign().ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
-			typ.BuildParamsForMethodThatHandlesAnInstanceWithIDs(proj, true)...,
+			typ.BuildArgsForHTTPClientArchiveRequestBuildingMethod(proj)...,
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().Qual("fmt", "Errorf").Call(
@@ -590,7 +587,7 @@ func buildArchiveSomethingFuncDecl(proj *models.Project, typ models.DataType) []
 	lines := []jen.Code{
 		jen.Commentf("%s archives %s", funcName, commonNameWithPrefix),
 		jen.Line(),
-		newClientMethod(funcName).Params(typ.BuildParamsForMethodThatHandlesAnInstanceWithIDs(proj, false)...).Params(jen.Error()).Block(block...),
+		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientArchiveMethod(proj)...).Params(jen.Error()).Block(block...),
 	}
 
 	return lines

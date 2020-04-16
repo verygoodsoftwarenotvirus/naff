@@ -540,6 +540,7 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 
 	block := []jen.Code{
 		jen.ID("T").Dot("Parallel").Call(),
+		jen.Line(),
 	}
 	block = append(block, buildRelevantOwnerVars(proj, typ)...)
 	block = append(block, buildRelevantIDFetchers(typ)...)

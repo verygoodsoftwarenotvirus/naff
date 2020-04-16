@@ -62,7 +62,7 @@ clean_example_output:
 
 .PHONY: compare_example_project
 compare_example_project: clean_example_output $(EXAMPLE_OUTPUT_DIR)
-	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/gamut &
+	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
 
 .PHONY: example_project_from_scratch
 example_project_from_scratch:

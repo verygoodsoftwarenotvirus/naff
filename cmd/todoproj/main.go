@@ -331,7 +331,7 @@ var (
 	gamut = &models.Project{
 		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/gamut",
 		Name:       wordsmith.FromSingularPascalCase("Gamut"),
-		DataTypes: append(todoDataTypes, append(forumDataTypes,
+		DataTypes: append(forumDataTypes,
 			everyType,
 			models.DataType{
 				Name: wordsmith.FromSingularPascalCase("Contact"),
@@ -383,7 +383,7 @@ var (
 				BelongsToUser:    false,
 				RestrictedToUser: true,
 			},
-		)...),
+		),
 	}
 
 	projects = map[string]*models.Project{
@@ -393,11 +393,19 @@ var (
 	}
 )
 
+func init() {
+	projects[projectGamut].EnableDatabase(models.Postgres)
+
+	projects[projectDiscussion].EnableDatabase(models.Postgres)
+
+	projects[projectTodo].EnableDatabase(models.Postgres)
+	projects[projectTodo].EnableDatabase(models.Sqlite)
+	projects[projectTodo].EnableDatabase(models.MariaDB)
+}
+
 func main() {
 	const chosenProjectKey = projectGamut
 	chosenProject := projects[chosenProjectKey]
-
-	chosenProject.EnableDatabase(models.Postgres)
 
 	if err := project.RenderProject(chosenProject); err != nil {
 		log.Fatal(err)

@@ -138,7 +138,7 @@ func buildTestDB_buildGetUserQuery(proj *models.Project, dbvendor wordsmith.Supe
 	}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetUserPalabra()}, "GetUser", qb, expectedArgs, callArgs, true, false, false, true, false, false, nil)
+	return buildQueryTest(proj, dbvendor, models.DataType{Name: nil}, "GetUser", qb, expectedArgs, callArgs, true, false, false, true, false, false, nil)
 }
 
 func buildTestDB_GetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -212,7 +212,7 @@ func buildTestDB_buildGetUsersQuery(proj *models.Project, dbvendor wordsmith.Sup
 	qb = applyFleshedOutQueryFilter(qb, usersTableName)
 	expectedArgs = appendFleshedOutQueryFilterArgs(expectedArgs)
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetUserPalabra()}, "GetUsers", qb, expectedArgs, callArgs, true, true, true, false, false, false, nil)
+	return buildQueryTest(proj, dbvendor, models.DataType{Name: nil}, "GetUsers", qb, expectedArgs, callArgs, true, true, true, false, false, false, nil)
 }
 
 func buildTestDB_GetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -328,7 +328,7 @@ func buildTestDB_buildGetUserByUsernameQuery(proj *models.Project, dbvendor word
 		jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 	}
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: GetUserPalabra()}, "GetUserByUsername", qb, expectedArgs, callArgs, true, false, false, true, false, true, nil)
+	return buildQueryTest(proj, dbvendor, models.DataType{Name: nil}, "GetUserByUsername", qb, expectedArgs, callArgs, true, false, false, true, false, true, nil)
 }
 
 func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -417,7 +417,7 @@ func buildTestDB_buildGetAllUserCountQuery(proj *models.Project, dbvendor wordsm
 
 	return buildQueryTest(proj,
 		dbvendor,
-		models.DataType{Name: GetUserPalabra()},
+		models.DataType{Name: nil},
 		"GetAllUserCount",
 		qb,
 		expectedArgs,
@@ -713,7 +713,7 @@ func buildTestDB_buildUpdateUserQuery(proj *models.Project, dbvendor wordsmith.S
 
 	return buildQueryTest(proj,
 		dbvendor,
-		models.DataType{Name: GetUserPalabra()},
+		models.DataType{Name: nil},
 		"UpdateUser",
 		qb,
 		expectedArgs,
@@ -819,7 +819,7 @@ func buildTestDB_buildArchiveUserQuery(proj *models.Project, dbvendor wordsmith.
 
 	return buildQueryTest(proj,
 		dbvendor,
-		models.DataType{Name: GetUserPalabra()},
+		models.DataType{Name: nil},
 		"ArchiveUser",
 		qb,
 		expectedArgs,

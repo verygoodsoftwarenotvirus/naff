@@ -33,7 +33,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 func buildTestV1Client_BuildSomethingExistsRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	depVarDecls := typ.BuildVarDeclarationsOfDependentStructs(proj)
+	depVarDecls := typ.BuildDependentObjectsForHTTPClientBuildExistenceRequestMethodTest(proj)
 
 	subtestLines := []jen.Code{
 		utils.ExpectMethod("expectedMethod", "MethodHead"),
@@ -45,7 +45,7 @@ func buildTestV1Client_BuildSomethingExistsRequest(proj *models.Project, typ mod
 
 	subtestLines = append(subtestLines,
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Build%sExistsRequest", ts)).Call(
-			typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)...,
+			typ.BuildArgsForHTTPClientExistenceRequestBuildingMethodTest(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -86,8 +86,8 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 	ts := typ.Name.Singular() // title singular
 
 	// routes
-	happyPathSubtestLines := typ.BuildVarDeclarationsOfDependentStructs(proj)
-	actualCallArgs := typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)
+	happyPathSubtestLines := typ.BuildDependentObjectsForHTTPClientExistenceMethodTest(proj)
+	actualCallArgs := typ.BuildArgsForHTTPClientExistenceMethodTest(proj)
 	//actualCallArgs := []jen.Code{utils.CtxVar(), jen.ID(utils.BuildFakeVarName(ts)).Dot("ID")}
 
 	happyPathSubtestLines = append(happyPathSubtestLines,
@@ -108,8 +108,8 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				utils.FormatString(
-					typ.BuildFormatStringForSingleInstanceRoute(proj),
-					typ.BuildFormatCallArgsForSingleInstanceRoute(proj)...,
+					typ.BuildFormatStringForHTTPClientExistenceMethodTest(proj),
+					typ.BuildFormatCallArgsForHTTPClientExistenceMethodTest(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -126,7 +126,7 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 		utils.AssertTrue(jen.ID("actual"), nil),
 	)
 
-	sadPathSubtestLines := typ.BuildVarDeclarationsOfDependentStructs(proj)
+	sadPathSubtestLines := typ.BuildDependentObjectsForHTTPClientExistenceMethodTest(proj)
 	sadPathSubtestLines = append(sadPathSubtestLines,
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
@@ -155,7 +155,7 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	depVarDecls := typ.BuildVarDeclarationsOfDependentStructs(proj)
+	depVarDecls := typ.BuildDependentObjectsForHTTPClientBuildRetrievalRequestMethodTest(proj)
 
 	subtestLines := []jen.Code{
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
@@ -167,7 +167,7 @@ func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models
 
 	subtestLines = append(subtestLines,
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
-			typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)...,
+			typ.BuildArgsForHTTPClientRetrievalRequestBuilderMethodTest(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -207,10 +207,10 @@ func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models
 func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	args := typ.BuildGetSomethingArgsWithExampleVariables(proj)
+	args := typ.BuildHTTPClientRetrievalTestCallArgs(proj)
 
 	happyPathSubtestLines := append(
-		typ.BuildVarDeclarationsOfDependentStructs(proj),
+		typ.BuildDependentObjectsForHTTPClientRetrievalMethodTest(proj),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -228,8 +228,8 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				utils.FormatString(
-					typ.BuildFormatStringForSingleInstanceRoute(proj),
-					typ.BuildFormatCallArgsForSingleInstanceRoute(proj)...,
+					typ.BuildFormatStringForHTTPClientRetrievalMethodTest(proj),
+					typ.BuildFormatCallArgsForHTTPClientRetrievalMethodTest(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -246,7 +246,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 	)
 
 	invalidClientURLSubtestLines := append(
-		typ.BuildVarDeclarationsOfDependentStructs(proj),
+		typ.BuildDependentObjectsForHTTPClientRetrievalMethodTest(proj),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(args...),
@@ -256,7 +256,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 	)
 
 	invalidResponseSubtestLines := append(
-		typ.BuildVarDeclarationsOfDependentStructs(proj),
+		typ.BuildDependentObjectsForHTTPClientRetrievalMethodTest(proj),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -274,8 +274,8 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				utils.FormatString(
-					typ.BuildFormatStringForSingleInstanceRoute(proj),
-					typ.BuildFormatCallArgsForSingleInstanceRoute(proj)...,
+					typ.BuildFormatStringForHTTPClientRetrievalMethodTest(proj),
+					typ.BuildFormatCallArgsForHTTPClientRetrievalMethodTest(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -312,14 +312,14 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(proj *models.Project, typ 
 	tp := typ.Name.Plural() // title plural
 
 	subtestLines := append(
-		typ.BuildVarDeclarationsOfDependentStructsForListFunction(proj),
+		typ.BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMethodTest(proj),
 		jen.ID(constants.FilterVarName).Assign().Call(jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
-			typ.BuildParamsForMethodThatRetrievesAListOfADataTypeFromStructs(proj, true)...,
+			typ.BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTest(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -348,10 +348,10 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	tp := typ.Name.Plural()   // title plural
 	ts := typ.Name.Singular() // title singular
 
-	modelListRoute := typ.BuildFormatStringForListRoute(proj)
+	modelListRoute := typ.BuildFormatStringForHTTPClientListMethodTest(proj)
 
 	var uriDec *jen.Statement
-	urlFormatArgs := typ.BuildFormatCallArgsForListRoute(proj)
+	urlFormatArgs := typ.BuildFormatCallArgsForHTTPClientListMethodTest(proj)
 	if len(urlFormatArgs) > 0 {
 		uriDec = utils.FormatString(
 			modelListRoute,
@@ -361,7 +361,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		uriDec = jen.Lit(modelListRoute)
 	}
 
-	structDecls := typ.BuildVarDeclarationsOfDependentStructsForListFunction(proj)
+	structDecls := typ.BuildDependentObjectsForHTTPClientListRetrievalTest(proj)
 	happyPathSubtestLines := append(
 		structDecls,
 		jen.ID(constants.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
@@ -389,7 +389,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).
 			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
-			typ.BuildCallForMethodThatFetchesAListOfDataTypesFromStructsForListFunction(proj)...,
+			typ.BuildCallArgsForHTTPClientListRetrievalMethodTest(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -404,7 +404,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).
 			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
-			typ.BuildCallForMethodThatFetchesAListOfDataTypesFromStructsForListFunction(proj)...,
+			typ.BuildCallArgsForHTTPClientListRetrievalMethodTest(proj)...,
 		),
 		jen.Line(),
 		utils.AssertNil(jen.ID("actual"), nil),
@@ -436,7 +436,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).
 			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
-			typ.BuildCallForMethodThatFetchesAListOfDataTypesFromStructsForListFunction(proj)...,
+			typ.BuildCallArgsForHTTPClientListRetrievalMethodTest(proj)...,
 		),
 		jen.Line(),
 		utils.AssertNil(jen.ID("actual"), nil),
@@ -468,7 +468,7 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 	}
 
 	subtestLines := append(
-		typ.BuildVarDeclarationsOfDependentStructs(proj),
+		typ.BuildDependentObjectsForHTTPClientBuildCreationRequestMethodTest(proj),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		jen.Line(),
 		utils.ExpectMethod("expectedMethod", "MethodPost"),
@@ -476,7 +476,7 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
-			typ.BuildParamsForMethodThatCreatesADataTypeFromStructs(proj, true)...,
+			typ.BuildHTTPClientCreationRequestBuildingMethodArgsForTest(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -508,10 +508,10 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	ts := typ.Name.Singular() // title singular
 
 	// routes
-	modelListRoute := typ.BuildFormatStringForSingleInstanceCreationRoute(proj)
+	modelListRoute := typ.BuildFormatStringForHTTPClientCreateMethodTest(proj)
 
 	var uriDec *jen.Statement
-	urlFormatArgs := typ.BuildFormatCallArgsForSingleInstanceCreationRoute(proj)
+	urlFormatArgs := typ.BuildFormatCallArgsForHTTPClientCreationMethodTest(proj)
 	if len(urlFormatArgs) > 0 {
 		uriDec = utils.FormatString(
 			modelListRoute,
@@ -522,7 +522,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	}
 
 	happyPathSubtestLines := append(
-		typ.BuildCreationVarDeclarationsOfDependentStructs(proj),
+		typ.BuildDependentObjectsForHTTPClientCreationMethodTest(proj),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		func() jen.Code {
 			if typ.BelongsToUser {
@@ -555,7 +555,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
-			typ.BuildParamsForMethodThatCreatesADataTypeFromStructs(proj, true)...,
+			typ.BuildHTTPClientCreationMethodArgsForTest(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -564,12 +564,12 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	)
 
 	invalidClientURLSubtestLines := append(
-		typ.BuildCreationVarDeclarationsOfDependentStructsSkippingPossibleOwnerStruct(proj),
+		typ.BuildDependentObjectsForHTTPClientCreationMethodTest(proj),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
-			typ.BuildParamsForMethodThatCreatesADataTypeFromStructs(proj, true)...,
+			typ.BuildHTTPClientCreationMethodArgsForTest(proj)...,
 		),
 		jen.Line(),
 		utils.AssertNil(jen.ID("actual"), nil),
@@ -593,9 +593,9 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 func buildTestV1Client_BuildUpdateSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	actualParams := typ.BuildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj)
+	actualParams := typ.BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(proj)
 
-	subtestLines := typ.BuildVarDeclarationsOfDependentStructsForUpdateFunction(proj)
+	subtestLines := typ.BuildDependentObjectsForHTTPClientBuildUpdateRequestMethodTest(proj)
 	subtestLines = append(subtestLines,
 		utils.ExpectMethod("expectedMethod", "MethodPut"),
 		jen.Line(),
@@ -630,7 +630,7 @@ func buildTestV1Client_BuildUpdateSomethingRequest(proj *models.Project, typ mod
 func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
-	subtestLines := typ.BuildVarDeclarationsOfDependentStructsForUpdateFunction(proj)
+	subtestLines := typ.BuildDependentObjectsForHTTPClientUpdateMethodTest(proj)
 
 	happyPathSubtestLines := append(
 		subtestLines,
@@ -640,8 +640,8 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				utils.FormatString(
-					typ.BuildFormatStringForSingleInstanceRoute(proj),
-					typ.BuildFormatCallArgsForSingleInstanceRouteThatIncludesItsOwnType(proj)...,
+					typ.BuildFormatStringForHTTPClientUpdateMethodTest(proj),
+					typ.BuildFormatCallArgsForHTTPClientUpdateTest(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -653,7 +653,7 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 		),
 		jen.Line(),
 		jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Update%s", ts)).Call(
-			typ.BuildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj)...,
+			typ.BuildCallArgsForHTTPClientUpdateMethodTest(proj)...,
 		),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	)
@@ -662,7 +662,7 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 		subtestLines,
 		jen.Line(),
 		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot(fmt.Sprintf("Update%s", ts)).Call(
-			typ.BuildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj)...,
+			typ.BuildCallArgsForHTTPClientUpdateMethodTest(proj)...,
 		),
 		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 	)
@@ -690,13 +690,13 @@ func buildTestV1Client_BuildArchiveSomethingRequest(proj *models.Project, typ mo
 		jen.Line(),
 	}
 
-	subtestLines = append(subtestLines, typ.BuildVarDeclarationsOfDependentStructs(proj)...)
+	subtestLines = append(subtestLines, typ.BuildDependentObjectsForHTTPClientBuildArchiveRequestMethodTest(proj)...)
 
 	subtestLines = append(subtestLines,
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
-			typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)...,
+			typ.BuildArgsForHTTPClientArchiveRequestBuildingMethodTest(proj)...,
 		),
 		jen.Line(),
 		utils.RequireNotNil(jen.ID("actual"), nil),
@@ -738,15 +738,15 @@ func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataTyp
 	ts := typ.Name.Singular() // title singular
 
 	happyPathSubtestLines := append(
-		typ.BuildVarDeclarationsOfDependentStructs(proj),
+		typ.BuildDependentObjectsForHTTPClientArchiveMethodTest(proj),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
 			utils.AssertEqual(
 				jen.ID("req").Dot("URL").Dot("Path"),
 				utils.FormatString(
-					typ.BuildFormatStringForSingleInstanceRoute(proj),
-					typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)[1:]...,
+					typ.BuildFormatStringForHTTPClientArchiveMethodTest(proj),
+					typ.BuildArgsForHTTPClientArchiveMethodTestURLFormatCall(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
@@ -759,18 +759,16 @@ func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataTyp
 		),
 		jen.Line(),
 		jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
-			typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)...,
+			typ.BuildArgsForHTTPClientArchiveMethodTest(proj)...,
 		),
 		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	)
 
 	withInvalidClientURLSubtestLines := append(
-		typ.BuildVarDeclarationsOfDependentStructs(proj),
-		jen.Line(),
-
+		typ.BuildDependentObjectsForHTTPClientArchiveMethodTest(proj),
 		jen.Line(),
 		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
-			typ.BuildParamsForMethodThatHandlesAnInstanceWithStructs(proj)...,
+			typ.BuildArgsForHTTPClientArchiveMethodTest(proj)...,
 		),
 		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 	)
