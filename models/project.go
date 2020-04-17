@@ -95,7 +95,7 @@ func (p *Project) ParseModels() error {
 func (p *Project) FindOwnerTypeChain(typ DataType) []DataType {
 	parentTypes := []DataType{}
 
-	var parentType *DataType = &typ
+	var parentType = &typ
 
 	for parentType != nil && parentType.BelongsToStruct != nil {
 		newParent := p.FindType(parentType.BelongsToStruct.Singular())

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -180,7 +179,7 @@ type sqlBuilder interface {
 	ToSql() (string, []interface{}, error)
 }
 
-func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType, queryName string, queryBuilder sqlBuilder, expectedArgs, callArgs []jen.Code, includeExpectedAndActualArgs, listQuery, includeFilter, createUser, createExampleVariable, excludeUserID bool, preQueryLines []jen.Code) []jen.Code {
+func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, queryName string, queryBuilder sqlBuilder, expectedArgs, callArgs, preQueryLines []jen.Code) []jen.Code {
 	const (
 		expectedQueryVarName = "expectedQuery"
 		expectedArgsVarName  = "expectedArgs"
@@ -193,13 +192,6 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 		queryName = queryName[:len(queryName)-len(uhOh)]
 	}
 
-	if createUser && !excludeUserID {
-		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
-	}
-	if includeFilter {
-		callArgs = append(callArgs, jen.ID(constants.FilterVarName))
-	}
-
 	dbn := dbvendor.Singular()
 	dbi := dbvendor.LowercaseAbbreviation()
 	dbfl := dbi[0]
@@ -209,35 +201,19 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 		log.Panicf("error building %q: %v", queryName, err)
 	}
 
-	block := []jen.Code{
-		jen.List(jen.ID(string(dbfl)), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-	}
-
-	if createUser {
-		block = append(block,
-			jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
-		)
-	}
-
-	if typ.Name != nil && !listQuery {
-		block = append(block, typ.BuildRequisiteFakeVarsForDBQuerierQueryMethodTest(proj)...)
-	}
-
-	if includeFilter {
-		block = append(block,
-			jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call(),
-		)
-	}
-	for i := range preQueryLines {
-		block = append(block, preQueryLines[i], jen.Line())
-	}
-
+	block := append(
+		[]jen.Code{
+			jen.List(jen.ID(string(dbfl)), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+		},
+		preQueryLines...,
+	)
 	block = append(block,
 		jen.Line(),
 		jen.ID(expectedQueryVarName).Assign().Lit(expectedQuery),
 	)
 
-	if includeExpectedAndActualArgs {
+	expectArguments := len(expectedArgs) > 0
+	if expectArguments {
 		x := jen.ID(expectedArgsVarName).Assign().Index().Interface()
 		if len(expectedArgs) > 0 {
 			block = append(block, x.Valuesln(expectedArgs...))
@@ -247,33 +223,32 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 	}
 
 	returnedVars := []jen.Code{jen.ID(actualQueryVarName)}
-	if includeExpectedAndActualArgs {
+	if expectArguments {
 		returnedVars = append(returnedVars, jen.ID(actualArgsVarName))
 	}
 
 	block = append(
 		block,
 		jen.List(returnedVars...).Assign().ID(dbi).Dotf("build%sQuery", queryName).Call(callArgs...),
-	)
-
-	block = append(block,
 		jen.Line(),
 		jen.ID("ensureArgCountMatchesQuery").Call(
 			jen.ID("t"),
 			jen.ID(actualQueryVarName),
 			func() jen.Code {
-				if includeExpectedAndActualArgs {
+				if expectArguments {
 					return jen.ID(actualArgsVarName)
 				}
 				return jen.Index().Interface().Values()
 			}(),
 		),
 		utils.AssertEqual(jen.ID(expectedQueryVarName), jen.ID(actualQueryVarName), nil),
+		func() jen.Code {
+			if expectArguments {
+				return utils.AssertEqual(jen.ID(expectedArgsVarName), jen.ID(actualArgsVarName), nil)
+			}
+			return jen.Null()
+		}(),
 	)
-
-	if includeExpectedAndActualArgs {
-		block = append(block, utils.AssertEqual(jen.ID(expectedArgsVarName), jen.ID(actualArgsVarName), nil))
-	}
 
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_build%sQuery", dbn, queryName).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(

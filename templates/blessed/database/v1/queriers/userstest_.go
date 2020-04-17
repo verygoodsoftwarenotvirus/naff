@@ -136,9 +136,14 @@ func buildTestDB_buildGetUserQuery(proj *models.Project, dbvendor wordsmith.Supe
 	expectedArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 	}
-	callArgs := []jen.Code{}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+	}
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: nil}, "GetUser", qb, expectedArgs, callArgs, true, false, false, true, false, false, nil)
+	return buildQueryTest(proj, dbvendor, "GetUser", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -207,12 +212,17 @@ func buildTestDB_buildGetUsersQuery(proj *models.Project, dbvendor wordsmith.Sup
 		})
 
 	expectedArgs := []jen.Code{}
-	callArgs := []jen.Code{}
+	callArgs := []jen.Code{
+		jen.ID(constants.FilterVarName),
+	}
 
 	qb = applyFleshedOutQueryFilter(qb, usersTableName)
 	expectedArgs = appendFleshedOutQueryFilterArgs(expectedArgs)
+	pql := []jen.Code{
+		jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call(),
+	}
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: nil}, "GetUsers", qb, expectedArgs, callArgs, true, true, true, false, false, false, nil)
+	return buildQueryTest(proj, dbvendor, "GetUsers", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -327,8 +337,11 @@ func buildTestDB_buildGetUserByUsernameQuery(proj *models.Project, dbvendor word
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+	}
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: nil}, "GetUserByUsername", qb, expectedArgs, callArgs, true, false, false, true, false, true, nil)
+	return buildQueryTest(proj, dbvendor, "GetUserByUsername", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -415,21 +428,7 @@ func buildTestDB_buildGetAllUserCountQuery(proj *models.Project, dbvendor wordsm
 	expectedArgs := []jen.Code{}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: nil},
-		"GetAllUserCount",
-		qb,
-		expectedArgs,
-		callArgs,
-		false,
-		false,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
+	return buildQueryTest(proj, dbvendor, "GetAllUserCount", qb, expectedArgs, callArgs, nil)
 }
 
 func buildTestDB_GetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -512,24 +511,17 @@ func buildTestDB_buildCreateUserQuery(proj *models.Project, dbvendor wordsmith.S
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("Input")),
 	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+		utils.BuildFakeVarWithCustomName(
+			proj,
+			utils.BuildFakeVarName("Input"),
+			"BuildFakeUserDatabaseCreationInputFromUser",
+			jen.ID(utils.BuildFakeVarName("User")),
+		),
+	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: GetUserPalabra()},
-		"CreateUser",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		false,
-		true,
-		false,
-		[]jen.Code{
-			utils.BuildFakeVarWithCustomName(proj, "exampleInput", "BuildFakeUserDatabaseCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
-		},
-	)
+	return buildQueryTest(proj, dbvendor, "CreateUser", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -710,22 +702,11 @@ func buildTestDB_buildUpdateUserQuery(proj *models.Project, dbvendor wordsmith.S
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("User")),
 	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: nil},
-		"UpdateUser",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		true,
-		false,
-		true,
-		nil,
-	)
+	return buildQueryTest(proj, dbvendor, "UpdateUser", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -815,23 +796,14 @@ func buildTestDB_buildArchiveUserQuery(proj *models.Project, dbvendor wordsmith.
 	expectedArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 	}
-	callArgs := []jen.Code{}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: nil},
-		"ArchiveUser",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		true,
-		false,
-		false,
-		nil,
-	)
+	return buildQueryTest(proj, dbvendor, "ArchiveUser", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_ArchiveUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {

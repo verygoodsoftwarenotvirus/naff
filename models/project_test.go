@@ -383,10 +383,9 @@ func TestProject_containsCyclicOwnerships(T *testing.T) {
 			},
 		}
 
-		expected := false
 		actual := p.containsCyclicOwnerships()
 
-		assert.Equal(t, expected, actual)
+		assert.True(t, actual)
 	})
 
 	T.Run("with violation", func(t *testing.T) {
@@ -407,10 +406,9 @@ func TestProject_containsCyclicOwnerships(T *testing.T) {
 			},
 		}
 
-		expected := true
 		actual := p.containsCyclicOwnerships()
 
-		assert.Equal(t, expected, actual)
+		assert.True(t, actual)
 	})
 }
 

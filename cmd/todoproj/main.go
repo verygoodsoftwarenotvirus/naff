@@ -404,7 +404,7 @@ func init() {
 }
 
 func main() {
-	const chosenProjectKey = projectGamut
+	const chosenProjectKey = projectTodo
 	chosenProject := projects[chosenProjectKey]
 
 	if err := project.RenderProject(chosenProject); err != nil {

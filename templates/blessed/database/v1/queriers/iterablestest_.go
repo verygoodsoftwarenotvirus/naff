@@ -272,8 +272,9 @@ func buildTestDBBuildSomethingExistsQuery(proj *models.Project, dbvendor wordsmi
 		jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 	}
 	callArgs := typ.BuildDBBuildSomethingExistsQueryTestCallArgs(proj)
+	pql := typ.BuildDBQuerierSomethingExistsQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, typ, fmt.Sprintf("%sExists", sn), qb, expectationArgs, callArgs[1:], true, false, false, false, true, false, nil)
+	return buildQueryTest(proj, dbvendor, fmt.Sprintf("%sExists", sn), qb, expectationArgs, callArgs, pql)
 }
 
 func buildTestDBSomethingExists(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -377,8 +378,9 @@ func buildTestDBBuildGetSomethingQuery(proj *models.Project, dbvendor wordsmith.
 		jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 	}
 	callArgs := typ.BuildDBQuerierRetrievalQueryTestCallArgs(proj)
+	pql := typ.BuildDBQuerierGetSomethingQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, typ, fmt.Sprintf("Get%s", sn), qb, expectationArgs, callArgs[1:], true, false, false, false, true, false, nil)
+	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Get%s", sn), qb, expectationArgs, callArgs, pql)
 }
 
 func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -509,7 +511,7 @@ func buildTestDBBuildGetAllSomethingCountQuery(proj *models.Project, dbvendor wo
 			fmt.Sprintf("%s.archived_on", tableName): nil,
 		})
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: nil}, fmt.Sprintf("GetAll%sCount", pn), qb, []jen.Code{}, []jen.Code{}, false, false, false, false, false, false, nil)
+	return buildQueryTest(proj, dbvendor, fmt.Sprintf("GetAll%sCount", pn), qb, []jen.Code{}, []jen.Code{}, nil)
 }
 
 func buildTestDBGetAllSomethingCount(_ *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -564,8 +566,9 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 	expectedArgs = appendFleshedOutQueryFilterArgs(expectedArgs)
 
 	callArgs := typ.BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(proj)
+	pql := typ.BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, models.DataType{Name: nil}, fmt.Sprintf("Get%s", pn), qb, expectedArgs, callArgs, true, true, true, false, false, false, typ.BuildRequisiteFakeVarsForDBQuerierQueryMethodTest(proj))
+	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Get%s", pn), qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -805,8 +808,9 @@ func buildTestDBCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor word
 	if isPostgres(dbvendor) {
 		qb = qb.Suffix("RETURNING id, created_on")
 	}
+	pql := typ.BuildDBQuerierCreateSomethingQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, typ, fmt.Sprintf("Create%s", sn), qb, expectedArgs, callArgs, true, false, false, false, true, false, nil)
+	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Create%s", sn), qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -1040,8 +1044,9 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 
 	qb, expectedArgs := buildTestBuildUpdateSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
 	callArgs := typ.BuildArgsForDBQuerierTestOfUpdateQueryBuilder(proj)
+	pql := typ.BuildDBQuerierUpdateSomethingQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, typ, fmt.Sprintf("Update%s", sn), qb, expectedArgs, callArgs, true, false, false, false, true, false, nil)
+	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Update%s", sn), qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -1212,8 +1217,9 @@ func buildTestDBArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wor
 	sn := typ.Name.Singular()
 
 	qb, expectedArgs, callArgs := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
+	pql := typ.BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, typ, fmt.Sprintf("Archive%s", sn), qb, expectedArgs, callArgs, true, false, false, false, true, false, nil)
+	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Archive%s", sn), qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {

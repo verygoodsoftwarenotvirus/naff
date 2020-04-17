@@ -175,8 +175,12 @@ func (typ DataType) BuildInterfaceDefinitionArchiveMethodCallArgs(proj *Project)
 	return typ.buildGetSomethingArgs(proj)
 }
 
-func (typ DataType) buildGetSomethingArgsWithExampleVariables(proj *Project) []jen.Code {
-	params := []jen.Code{ctxVar()}
+func (typ DataType) buildGetSomethingArgsWithExampleVariables(proj *Project, includeCtx bool) []jen.Code {
+	params := []jen.Code{}
+
+	if includeCtx {
+		params = append(params, ctxVar())
+	}
 
 	owners := proj.FindOwnerTypeChain(typ)
 	sn := typ.Name.Singular()
@@ -199,11 +203,11 @@ func (typ DataType) buildGetSomethingArgsWithExampleVariables(proj *Project) []j
 }
 
 func (typ DataType) BuildHTTPClientRetrievalTestCallArgs(proj *Project) []jen.Code {
-	return typ.buildGetSomethingArgsWithExampleVariables(proj)
+	return typ.buildGetSomethingArgsWithExampleVariables(proj, true)
 }
 
 func (typ DataType) BuildDBQuerierRetrievalQueryTestCallArgs(proj *Project) []jen.Code {
-	params := typ.buildGetSomethingArgsWithExampleVariables(proj)
+	params := typ.buildGetSomethingArgsWithExampleVariables(proj, false)
 
 	if typ.BelongsToUser && typ.RestrictedToUser {
 		params = append(params, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot(constants.UserOwnershipFieldName))
@@ -213,13 +217,50 @@ func (typ DataType) BuildDBQuerierRetrievalQueryTestCallArgs(proj *Project) []je
 }
 
 func (typ DataType) BuildDBBuildSomethingExistsQueryTestCallArgs(proj *Project) []jen.Code {
-	params := typ.buildGetSomethingArgsWithExampleVariables(proj)
+	params := typ.buildGetSomethingArgsWithExampleVariables(proj, false)
 
 	if typ.BelongsToUser && typ.RestrictedToUser {
 		params = append(params, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot(constants.UserOwnershipFieldName))
 	}
 
 	return params
+}
+
+func (typ DataType) BuildDBQuerierSomethingExistsQueryBuilderTestPreQueryLines(proj *Project) []jen.Code {
+	return typ.buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(proj)
+}
+
+func (typ DataType) BuildDBQuerierGetSomethingQueryBuilderTestPreQueryLines(proj *Project) []jen.Code {
+	return typ.buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(proj)
+}
+
+func (typ DataType) BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(proj *Project) []jen.Code {
+	lines := []jen.Code{}
+
+	owners := proj.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		pts := pt.Name.Singular()
+		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+	}
+
+	if typ.BelongsToUser && typ.RestrictedToUser {
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
+	}
+	lines = append(lines, jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call())
+
+	return lines
+}
+
+func (typ DataType) BuildDBQuerierCreateSomethingQueryBuilderTestPreQueryLines(proj *Project) []jen.Code {
+	return typ.buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(proj)
+}
+
+func (typ DataType) BuildDBQuerierUpdateSomethingQueryBuilderTestPreQueryLines(proj *Project) []jen.Code {
+	return typ.buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(proj)
+}
+
+func (typ DataType) BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(proj *Project) []jen.Code {
+	return typ.buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(proj)
 }
 
 func (typ DataType) BuildGetSomethingLogValues(proj *Project) jen.Code {
@@ -393,9 +434,19 @@ func (typ DataType) BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(proj *P
 
 	lp := []jen.Code{}
 	owners := proj.FindOwnerTypeChain(typ)
-	for _, pt := range owners {
-		lp = append(lp, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
+	for i, pt := range owners {
+		if i == len(owners)-1 && typ.BelongsToStruct != nil {
+			lp = append(lp, jen.ID(buildFakeVarName(typ.Name.Singular())).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+		} else {
+			lp = append(lp, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
+		}
 	}
+
+	if typ.BelongsToUser {
+		lp = append(lp, jen.ID(buildFakeVarName("User")).Dot("ID"))
+	}
+	lp = append(lp, jen.ID(constants.FilterVarName))
+
 	params = append(params, lp...)
 
 	return params
@@ -1440,7 +1491,7 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientArchiveMethodTest(proj *Pro
 }
 
 func (typ DataType) BuildRequisiteFakeVarsForDBQuerierQueryMethodTest(proj *Project) []jen.Code {
-	return typ.buildRequisiteFakeVarDecs(proj, false)
+	return typ.buildRequisiteFakeVarDecsForListFunction(proj)
 }
 
 func (typ DataType) BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(proj *Project) []jen.Code {

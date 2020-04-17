@@ -148,22 +148,11 @@ func buildTestDB_buildGetWebhookQuery(proj *models.Project, dbvendor wordsmith.S
 		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "Webhook"),
+	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: GetWebhookPalabra()},
-		"GetWebhook",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		false,
-		true,
-		false,
-		nil,
-	)
+	return buildQueryTest(proj, dbvendor, "GetWebhook", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -267,21 +256,7 @@ func buildTestDB_buildGetAllWebhooksCountQuery(proj *models.Project, dbvendor wo
 	expectedArgs := []jen.Code{}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: nil},
-		"GetAllWebhooksCount",
-		qb,
-		expectedArgs,
-		callArgs,
-		false,
-		false,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
+	return buildQueryTest(proj, dbvendor, "GetAllWebhooksCount", qb, expectedArgs, callArgs, nil)
 }
 
 func buildTestDB_GetAllWebhooksCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -348,21 +323,7 @@ func buildTestDB_buildGetAllWebhooksQuery(proj *models.Project, dbvendor wordsmi
 	expectedArgs := []jen.Code{}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: nil},
-		"GetAllWebhooks",
-		qb,
-		expectedArgs,
-		callArgs,
-		false,
-		false,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
+	return buildQueryTest(proj, dbvendor, "GetAllWebhooks", qb, expectedArgs, callArgs, nil)
 }
 
 func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -466,23 +427,16 @@ func buildTestDB_buildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.
 	expectedArgs := appendFleshedOutQueryFilterArgs([]jen.Code{
 		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 	})
-	callArgs := []jen.Code{}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+		jen.ID(constants.FilterVarName),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+		jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call(),
+	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: nil},
-		"GetWebhooks",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		true,
-		true,
-		false,
-		false,
-		nil,
-	)
+	return buildQueryTest(proj, dbvendor, "GetWebhooks", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -640,22 +594,11 @@ func buildTestDB_buildWebhookCreationQuery(proj *models.Project, dbvendor wordsm
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("Webhook")),
 	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "Webhook"),
+	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: GetWebhookPalabra()},
-		"WebhookCreation",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		false,
-		true,
-		false,
-		nil,
-	)
+	return buildQueryTest(proj, dbvendor, "WebhookCreation", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -820,22 +763,11 @@ func buildTestDB_buildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmit
 	callArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("Webhook")),
 	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "Webhook"),
+	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: GetWebhookPalabra()},
-		"UpdateWebhook",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		false,
-		true,
-		false,
-		nil,
-	)
+	return buildQueryTest(proj, dbvendor, "UpdateWebhook", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -960,22 +892,11 @@ func buildTestDB_buildArchiveWebhookQuery(proj *models.Project, dbvendor wordsmi
 		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
 	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "Webhook"),
+	}
 
-	return buildQueryTest(proj,
-		dbvendor,
-		models.DataType{Name: GetWebhookPalabra()},
-		"ArchiveWebhook",
-		qb,
-		expectedArgs,
-		callArgs,
-		true,
-		false,
-		false,
-		false,
-		true,
-		false,
-		nil,
-	)
+	return buildQueryTest(proj, dbvendor, "ArchiveWebhook", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_ArchiveWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
