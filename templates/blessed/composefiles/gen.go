@@ -59,7 +59,7 @@ func RenderPackage(project *models.Project) error {
 		"compose-files/production.json":           productionDotJSON(project.Name),
 	}
 
-	for _, db := range []string{"postgres", "sqlite", "mariadb"} {
+	for _, db := range project.EnabledDatabases() {
 		files[fmt.Sprintf("compose-files/integration-tests-%s.json", db)] = integrationTestsDotJSON(project.Name, GetDatabasePalabra(db))
 		files[fmt.Sprintf("compose-files/load-tests-%s.json", db)] = loadTestsDotJSON(project.Name, GetDatabasePalabra(db))
 	}

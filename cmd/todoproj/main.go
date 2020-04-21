@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -276,6 +277,19 @@ var (
 			RestrictedToUser: false,
 		},
 		{
+			Name: wordsmith.FromSingularPascalCase("ReactionIcon"),
+			Fields: []models.DataField{
+				{
+					Name:                  wordsmith.FromSingularPascalCase("Icon"),
+					Type:                  "string",
+					Pointer:               false,
+					ValidForCreationInput: true,
+					ValidForUpdateInput:   true,
+				},
+			},
+			BelongsToStruct: wordsmith.FromSingularPascalCase("Subforum"),
+		},
+		{
 			Name: wordsmith.FromSingularPascalCase("Notification"),
 			Fields: []models.DataField{
 				{
@@ -329,61 +343,9 @@ var (
 	}
 
 	gamut = &models.Project{
-		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/gamut",
+		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
 		Name:       wordsmith.FromSingularPascalCase("Gamut"),
-		DataTypes: append(forumDataTypes,
-			everyType,
-			models.DataType{
-				Name: wordsmith.FromSingularPascalCase("Contact"),
-				Fields: []models.DataField{
-					{
-						Name:                  wordsmith.FromSingularPascalCase("FirstName"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-					{
-						Name:                  wordsmith.FromSingularPascalCase("LastName"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-				},
-				BelongsToUser:    true,
-				RestrictedToUser: true,
-			},
-			models.DataType{
-				Name: wordsmith.FromSingularPascalCase("ContactAddress"),
-				Fields: []models.DataField{
-					{
-						Name:                  wordsmith.FromSingularPascalCase("StreetNumber"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-					{
-						Name:                  wordsmith.FromSingularPascalCase("StreetName"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-					{
-						Name:                  wordsmith.FromSingularPascalCase("State"),
-						Type:                  "string",
-						Pointer:               false,
-						ValidForCreationInput: true,
-						ValidForUpdateInput:   true,
-					},
-				},
-				BelongsToStruct:  wordsmith.FromSingularPascalCase("Contact"),
-				BelongsToUser:    false,
-				RestrictedToUser: true,
-			},
-		),
+		DataTypes:  append(forumDataTypes, everyType),
 	}
 
 	projects = map[string]*models.Project{
@@ -404,10 +366,17 @@ func init() {
 }
 
 func main() {
-	const chosenProjectKey = projectTodo
-	chosenProject := projects[chosenProjectKey]
+	if chosenProjectKey := os.Getenv("PROJECT"); chosenProjectKey != "" {
+		chosenProject := projects[chosenProjectKey]
 
-	if err := project.RenderProject(chosenProject); err != nil {
-		log.Fatal(err)
+		if outputDir := os.Getenv("OUTPUT_DIR"); outputDir != "" {
+			chosenProject.OutputPath = "gitlab.com/verygoodsoftwarenotvirus/naff/" + outputDir
+		}
+
+		if err := project.RenderProject(chosenProject); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		log.Fatal("no project selected")
 	}
 }

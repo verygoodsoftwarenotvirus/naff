@@ -38,9 +38,24 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("dbDebug").Equals().Lit("database.debug"),
 			jen.ID("dbProvider").Equals().Lit("database.provider"),
 			jen.ID("dbDeets").Equals().Lit("database.connection_details"),
-			jen.ID("postgres").Equals().Lit("postgres"),
-			jen.ID("sqlite").Equals().Lit("sqlite"),
-			jen.ID("mariadb").Equals().Lit("mariadb"),
+			func() jen.Code {
+				if proj.DatabasesIsEnabled(models.Postgres) {
+					return jen.ID("postgres").Equals().Lit("postgres")
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if proj.DatabasesIsEnabled(models.Sqlite) {
+					return jen.ID("sqlite").Equals().Lit("sqlite")
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if proj.DatabasesIsEnabled(models.MariaDB) {
+					return jen.ID("mariadb").Equals().Lit("mariadb")
+				}
+				return jen.Null()
+			}(),
 		),
 		jen.Line(),
 	)
@@ -55,9 +70,24 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("files").Equals().Map(jen.String()).ID("configFunc").Valuesln(
 				jen.Lit("config_files/coverage.toml").MapAssign().ID("coverageConfig"),
 				jen.Lit("config_files/development.toml").MapAssign().ID("developmentConfig"),
-				jen.Lit("config_files/integration-tests-postgres.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("postgres"), jen.ID("postgresDBConnDetails")),
-				jen.Lit("config_files/integration-tests-sqlite.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("sqlite"), jen.Lit("/tmp/db")),
-				jen.Lit("config_files/integration-tests-mariadb.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("mariadb"), jen.Lit("dbuser:hunter2@tcp(database:3306)/todo")),
+				func() jen.Code {
+					if proj.DatabasesIsEnabled(models.Postgres) {
+						return jen.Lit("config_files/integration-tests-postgres.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("postgres"), jen.ID("postgresDBConnDetails"))
+					}
+					return jen.Null()
+				}(),
+				func() jen.Code {
+					if proj.DatabasesIsEnabled(models.Sqlite) {
+						return jen.Lit("config_files/integration-tests-sqlite.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("sqlite"), jen.Lit("/tmp/db"))
+					}
+					return jen.Null()
+				}(),
+				func() jen.Code {
+					if proj.DatabasesIsEnabled(models.MariaDB) {
+						return jen.Lit("config_files/integration-tests-mariadb.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("mariadb"), jen.Lit("dbuser:hunter2@tcp(database:3306)/todo"))
+					}
+					return jen.Null()
+				}(),
 				jen.Lit("config_files/production.toml").MapAssign().ID("productionConfig")),
 		),
 		jen.Line(),
@@ -161,9 +191,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("cfg").Dot("Set").Call(jen.ID("metaDebug"), jen.False()),
 				jen.Line(),
 				jen.ID("sd").Assign().Qual("time", "Minute"),
-				jen.If(jen.ID("dbprov").IsEqualTo().ID("mariadb")).Block(
-					jen.ID("sd").Equals().Lit(5).Times().Qual("time", "Minute"),
-				),
+				func() jen.Code {
+					if proj.DatabasesIsEnabled(models.MariaDB) {
+						jen.If(jen.ID("dbprov").IsEqualTo().ID("mariadb")).Block(
+							jen.ID("sd").Equals().Lit(5).Times().Qual("time", "Minute"),
+						)
+					}
+					return jen.Null()
+				}(),
 				jen.ID("cfg").Dot("Set").Call(jen.ID("metaStartupDeadline"), jen.ID("sd")),
 				jen.Line(),
 				jen.ID("cfg").Dot("Set").Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),

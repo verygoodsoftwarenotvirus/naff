@@ -67,6 +67,34 @@ func buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj *models.Pro
 	return urlBuildingParams
 }
 
+func buildV1ClientURLBuildingParamsForCreatingSomething(proj *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
+	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
+	urlBuildingParams := []jen.Code{
+		firstVar,
+	}
+
+	parents := proj.FindOwnerTypeChain(typ)
+	for i, pt := range parents {
+		urlBuildingParams = append(urlBuildingParams,
+			jen.IDf("%sBasePath", pt.Name.PluralUnexportedVarName()),
+			jen.Qual("strconv", "FormatUint").Call(
+				func() jen.Code {
+					if i == len(parents)-1 && typ.BelongsToStruct != nil {
+						return jen.ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular())
+					}
+					return jen.IDf("%sID", pt.Name.UnexportedVarName())
+				}(),
+				jen.Lit(10),
+			),
+		)
+	}
+	urlBuildingParams = append(urlBuildingParams,
+		jen.ID(basePath),
+	)
+
+	return urlBuildingParams
+}
+
 func buildV1ClientURLBuildingParamsForListOfSomething(proj *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
 	urlBuildingParams := []jen.Code{
@@ -356,7 +384,7 @@ func buildBuildCreateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Callln(
-			buildV1ClientURLBuildingParamsForListOfSomething(
+			buildV1ClientURLBuildingParamsForCreatingSomething(
 				proj,
 				jen.Nil(),
 				typ,

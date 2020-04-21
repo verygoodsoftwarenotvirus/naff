@@ -4,8 +4,11 @@ INSTALL_PATH       := ~/.bin
 EMBEDDED_PACKAGE   := embedded
 GO_FORMAT          := gofmt -s -w
 THIS_PKG           := gitlab.com/verygoodsoftwarenotvirus/naff
-VERSION            := $(shell git rev-parse HEAD)
 EXAMPLE_OUTPUT_DIR := example_output
+CURRENT_PROJECT    := gamut
+NOW                := $(shell date +%s%N)
+VERSION            := $(shell git rev-parse HEAD)
+VERSION_FLAG       := -ldflags "-X main.Version=$(VERSION)_$(NOW)"
 
 ## Project prerequisites
 .PHONY: deps
@@ -47,32 +50,30 @@ test-http-client:
 
 .PHONY: install
 install:
-	go build -o $(INSTALL_PATH)/naff -ldflags "-X main.Version=$(VERSION)" $(THIS_PKG)/cmd/cli
+	go build -o $(INSTALL_PATH)/naff $(VERSION_FLAG) $(THIS_PKG)/cmd/cli
 
 .PHONY: example_output_subdirs
 example_output_subdirs:
 	for dir in `go list gitlab.com/verygoodsoftwarenotvirus/todo/...`; do mkdir -p `echo $$dir | sed -r 's/gitlab\.com\/verygoodsoftwarenotvirus\/todo/example_output/g')`; done
 
-$(EXAMPLE_OUTPUT_DIR):
-	go run cmd/todoproj/main.go
-
 .PHONY: clean_example_output
 clean_example_output:
 	rm -rf $(EXAMPLE_OUTPUT_DIR)
 
-.PHONY: compare_example_project
-compare_example_project: clean_example_output $(EXAMPLE_OUTPUT_DIR)
-	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
+$(EXAMPLE_OUTPUT_DIR):
+	mkdir -p $(EXAMPLE_OUTPUT_DIR)
 
-.PHONY: example_project_from_scratch
-example_project_from_scratch:
-	(cd ../ && rm -rf gamut)
-	go run cmd/todoproj/main.go
-	cp -rf ../gamut2/.git ../gamut
+.PHONY: clean_gamut
+clean_gamut: clean_example_output $(EXAMPLE_OUTPUT_DIR)
+	PROJECT=gamut OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run cmd/todoproj/main.go
+
+.PHONY: compare_gamut
+compare_gamut: clean_gamut
+	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/gamut &
 
 .PHONY: install-tojen
 install-tojen:
-	go build -o $(INSTALL_PATH)/tojen -ldflags "-X main.Version=$(VERSION)" $(THIS_PKG)/forks/tojen
+	go build -o $(INSTALL_PATH)/tojen $(VERSION_FLAG) $(THIS_PKG)/forks/tojen
 
 .PHONY: format
 format:

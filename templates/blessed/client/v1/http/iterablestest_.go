@@ -161,11 +161,12 @@ func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
-		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 	}
 	subtestLines = append(subtestLines, depVarDecls...)
 
 	subtestLines = append(subtestLines,
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
 			typ.BuildArgsForHTTPClientRetrievalRequestBuilderMethodTest(proj)...,
 		),
@@ -524,18 +525,6 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	happyPathSubtestLines := append(
 		typ.BuildDependentObjectsForHTTPClientCreationMethodTest(proj),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
-		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName("Input")).Dot(constants.UserOwnershipFieldName).Equals().Zero()
-			}
-			return jen.Null()
-		}(),
-		func() jen.Code {
-			if typ.BelongsToStruct != nil {
-				return jen.ID(utils.BuildFakeVarName("Input")).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().Zero()
-			}
-			return jen.Null()
-		}(),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -548,6 +537,19 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 			jen.Line(),
 			jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")), nil),
+			jen.Line(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName("Input")).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().Zero()
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if typ.BelongsToUser {
+					return jen.ID(utils.BuildFakeVarName("Input")).Dot(constants.UserOwnershipFieldName).Equals().Zero()
+				}
+				return jen.Null()
+			}(),
 			utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Input")), jen.ID("x"), nil),
 			jen.Line(),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))), nil),
