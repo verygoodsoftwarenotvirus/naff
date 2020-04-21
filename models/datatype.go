@@ -43,6 +43,16 @@ func ctxVar() *jen.Statement {
 	return jen.ID("ctx")
 }
 
+func (typ DataType) RestrictedToUserAtSomeLevel(proj *Project) bool {
+	for _, o := range proj.FindOwnerTypeChain(typ) {
+		if o.BelongsToUser && o.RestrictedToUser {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (typ DataType) buildGetSomethingParams(proj *Project) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
@@ -50,6 +60,24 @@ func (typ DataType) buildGetSomethingParams(proj *Project) []jen.Code {
 	owners := proj.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.BelongsToUser && typ.RestrictedToUser {
+		lp = append(lp, jen.ID("userID"))
+	}
+
+	params = append(params, jen.List(lp...).ID("uint64"))
+
+	return params
+}
+
+func (typ DataType) buildArchiveSomethingParams(proj *Project) []jen.Code {
+	params := []jen.Code{ctxParam()}
+
+	lp := []jen.Code{}
+	if typ.BelongsToStruct != nil {
+		lp = append(lp, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
 	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 
@@ -71,11 +99,11 @@ func (typ DataType) BuildInterfaceDefinitionRetrievalMethodParams(proj *Project)
 }
 
 func (typ DataType) BuildInterfaceDefinitionArchiveMethodParams(proj *Project) []jen.Code {
-	return typ.buildGetSomethingParams(proj)
+	return typ.buildArchiveSomethingParams(proj)
 }
 
 func (typ DataType) BuildDBClientArchiveMethodParams(proj *Project) []jen.Code {
-	return typ.buildGetSomethingParams(proj)
+	return typ.buildArchiveSomethingParams(proj)
 }
 
 func (typ DataType) BuildDBClientRetrievalMethodParams(proj *Project) []jen.Code {
@@ -87,7 +115,7 @@ func (typ DataType) BuildDBClientExistenceMethodParams(proj *Project) []jen.Code
 }
 
 func (typ DataType) BuildDBQuerierArchiveMethodParams(proj *Project) []jen.Code {
-	return typ.buildGetSomethingParams(proj)
+	return typ.buildArchiveSomethingParams(proj)
 }
 
 func (typ DataType) BuildDBQuerierArchiveQueryMethodParams(proj *Project) []jen.Code {
@@ -133,6 +161,22 @@ func (typ DataType) buildGetSomethingArgs(proj *Project) []jen.Code {
 	return params
 }
 
+func (typ DataType) buildArchiveSomethingArgs(proj *Project) []jen.Code {
+	params := []jen.Code{ctxVar()}
+	uvn := typ.Name.UnexportedVarName()
+
+	if typ.BelongsToStruct != nil {
+		params = append(params, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	}
+	params = append(params, jen.IDf("%sID", uvn))
+
+	if typ.BelongsToUser && typ.RestrictedToUser {
+		params = append(params, jen.ID("userID"))
+	}
+
+	return params
+}
+
 func (typ DataType) BuildDBClientExistenceMethodCallArgs(proj *Project) []jen.Code {
 	return typ.buildGetSomethingArgs(proj)
 }
@@ -142,7 +186,7 @@ func (typ DataType) BuildDBClientRetrievalMethodCallArgs(proj *Project) []jen.Co
 }
 
 func (typ DataType) BuildDBClientArchiveMethodCallArgs(proj *Project) []jen.Code {
-	return typ.buildGetSomethingArgs(proj)
+	return typ.buildArchiveSomethingArgs(proj)
 }
 
 func (typ DataType) BuildDBQuerierExistenceQueryBuildingArgs(proj *Project) []jen.Code {
@@ -172,7 +216,7 @@ func (typ DataType) BuildInterfaceDefinitionRetrievalMethodCallArgs(proj *Projec
 }
 
 func (typ DataType) BuildInterfaceDefinitionArchiveMethodCallArgs(proj *Project) []jen.Code {
-	return typ.buildGetSomethingArgs(proj)
+	return typ.buildArchiveSomethingArgs(proj)
 }
 
 func (typ DataType) buildGetSomethingArgsWithExampleVariables(proj *Project, includeCtx bool) []jen.Code {
@@ -380,16 +424,6 @@ const creationObjectVarName = "input"
 func (typ DataType) buildCreateSomethingParams(proj *Project, isModelsPackage bool) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
-	lp := []jen.Code{}
-	owners := proj.FindOwnerTypeChain(typ)
-	for _, pt := range owners {
-		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
-	}
-
-	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
-	}
-
 	sn := typ.Name.Singular()
 	if isModelsPackage {
 		params = append(params, jen.ID(creationObjectVarName).Op("*").IDf("%sCreationInput", sn))
@@ -440,16 +474,7 @@ func (typ DataType) BuildDBQuerierCreationQueryBuildingMethodParams(proj *Projec
 }
 
 func (typ DataType) buildCreateSomethingArgs(proj *Project) []jen.Code {
-	params := []jen.Code{ctxVar()}
-
-	lp := []jen.Code{}
-	owners := proj.FindOwnerTypeChain(typ)
-	for _, pt := range owners {
-		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
-	}
-
-	params = append(params, lp...)
-	params = append(params, jen.ID(creationObjectVarName))
+	params := []jen.Code{ctxVar(), jen.ID(creationObjectVarName)}
 
 	return params
 }
@@ -574,15 +599,6 @@ func (typ DataType) buildUpdateSomethingParams(proj *Project, updatedVarName str
 		panic("buildUpdateSomethingParams called with empty updatedVarName")
 	}
 
-	lp := []jen.Code{}
-	owners := proj.FindOwnerTypeChain(typ)
-	for _, pt := range owners {
-		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
-	}
-	if len(lp) > 1 {
-		params = append(params, jen.List(lp[:len(lp)-1]...).ID("uint64"))
-	}
-
 	sn := typ.Name.Singular()
 	if isModelsPackage {
 		params = append(params, jen.ID(updatedVarName).Op("*").ID(sn))
@@ -632,17 +648,7 @@ func (typ DataType) buildUpdateSomethingArgsWithExampleVars(proj *Project, updat
 }
 
 func (typ DataType) buildUpdateSomethingArgs(proj *Project, updatedVarName string) []jen.Code {
-	params := []jen.Code{ctxVar()}
-
-	lp := []jen.Code{}
-	owners := proj.FindOwnerTypeChain(typ)
-	for _, pt := range owners {
-		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
-	}
-	if len(lp) >= 1 {
-		params = append(params, jen.List(lp[:len(lp)-1]...))
-	}
-	params = append(params, jen.ID(updatedVarName))
+	params := []jen.Code{ctxVar(), jen.ID(updatedVarName)}
 
 	return params
 }
@@ -1574,6 +1580,18 @@ func (typ DataType) buildRequisiteFakeVarDecs(proj *Project, createCtx bool) []j
 	return lines
 }
 
+func (typ DataType) buildRequisiteFakeVarDecForModifierFuncs(proj *Project, createCtx bool) []jen.Code {
+	lines := []jen.Code{}
+
+	if createCtx {
+		lines = append(lines, constants.CreateCtx())
+	}
+
+	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+
+	return lines
+}
+
 func (typ DataType) BuildRequisiteFakeVarsForDBClientExistenceMethodTest(proj *Project) []jen.Code {
 	return typ.buildRequisiteFakeVarDecs(proj, true)
 }
@@ -1583,15 +1601,11 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientRetrievalMethodTest(proj *P
 }
 
 func (typ DataType) BuildRequisiteFakeVarsForDBClientCreateMethodTest(proj *Project) []jen.Code {
-	return typ.buildRequisiteFakeVarDecs(proj, false)
+	return typ.buildRequisiteFakeVarDecForModifierFuncs(proj, true)
 }
 
 func (typ DataType) BuildRequisiteFakeVarsForDBClientArchiveMethodTest(proj *Project) []jen.Code {
-	return typ.buildRequisiteFakeVarDecs(proj, true)
-}
-
-func (typ DataType) BuildRequisiteFakeVarsForDBQuerierQueryMethodTest(proj *Project) []jen.Code {
-	return typ.buildRequisiteFakeVarDecsForListFunction(proj)
+	return typ.buildRequisiteFakeVarDecForModifierFuncs(proj, true)
 }
 
 func (typ DataType) BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(proj *Project) []jen.Code {
@@ -1689,7 +1703,19 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(
 }
 
 func (typ DataType) BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest(proj *Project) []jen.Code {
-	return typ.buildRequisiteFakeVarCallArgs(proj)
+	lines := []jen.Code{}
+	sn := typ.Name.Singular()
+
+	if typ.BelongsToStruct != nil {
+		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+	lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("ID"))
+
+	if typ.BelongsToUser && typ.RestrictedToUser {
+		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
+	}
+
+	return lines
 }
 
 func (typ DataType) BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(proj *Project) []jen.Code {
@@ -1746,17 +1772,14 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest(
 }
 
 func (typ DataType) BuildCallArgsForDBClientCreationMethodTest(proj *Project) []jen.Code {
-	lines := []jen.Code{}
-	sn := typ.Name.Singular()
+	lines := []jen.Code{constants.CtxVar()}
+	//sn := typ.Name.Singular()
 
-	owners := proj.FindOwnerTypeChain(typ)
-	for i, pt := range owners {
-		if i == len(owners)-1 && typ.BelongsToStruct != nil {
-			lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-		} else {
-			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
-		}
-	}
+	const (
+		inputVarName = "exampleInput"
+	)
+
+	lines = append(lines, jen.ID(inputVarName))
 
 	return lines
 }
@@ -1777,32 +1800,15 @@ func (typ DataType) BuildCallArgsForDBClientListRetrievalMethodTest(proj *Projec
 }
 
 func (typ DataType) BuildRequisiteVarsForDBClientUpdateMethodTest(proj *Project) []jen.Code {
-	lines := []jen.Code{constants.CreateCtx()}
-
-	owners := proj.FindOwnerTypeChain(typ)
-
-	for i, pt := range owners {
-		if i == len(owners)-1 && typ.BelongsToStruct != nil {
-			continue
-		} else {
-			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
-		}
+	lines := []jen.Code{
+		constants.CreateCtx(),
+		jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call(),
 	}
-	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 
 	return lines
 }
 func (typ DataType) BuildCallArgsForDBClientUpdateMethodTest(proj *Project) []jen.Code {
-	lines := []jen.Code{}
-
-	owners := proj.FindOwnerTypeChain(typ)
-	for i, pt := range owners {
-		if i == len(owners)-1 && typ.BelongsToStruct != nil {
-			continue
-		} else {
-			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
-		}
-	}
+	lines := []jen.Code{jen.ID(buildFakeVarName(typ.Name.Singular()))}
 
 	return lines
 }

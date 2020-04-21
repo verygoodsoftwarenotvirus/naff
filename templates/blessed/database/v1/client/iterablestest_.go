@@ -194,20 +194,12 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 		jen.Qual(utils.MockPkg, "Anything"),
 	}
 
-	idDeclarations := typ.BuildRequisiteFakeVarsForDBClientCreateMethodTest(proj)
-	idDeclarations = idDeclarations[:len(idDeclarations)-1]
-	idCallArgs := typ.BuildCallArgsForDBClientCreationMethodTest(proj)
+	lines := typ.BuildRequisiteFakeVarsForDBClientCreateMethodTest(proj)
+	callArgs := typ.BuildCallArgsForDBClientCreationMethodTest(proj)
 
-	lines := append([]jen.Code{constants.CreateCtx()}, idDeclarations...)
-	callArgs := append([]jen.Code{constants.CtxVar()}, idCallArgs...)
-
-	callArgs = append(callArgs, jen.ID(inputVarName))
-
-	mockCalls = append(mockCalls, idCallArgs...)
-	mockCalls = append(mockCalls, jen.ID(inputVarName))
+	mockCalls = append(mockCalls, callArgs[1:]...)
 
 	lines = append(lines,
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		jen.ID(inputVarName).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
@@ -238,8 +230,6 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 	n := typ.Name
 	sn := n.Singular()
 
-	inputVarName := fmt.Sprintf("example%s", sn) //refactorme
-
 	mockArgs := []jen.Code{
 		jen.Litf("Update%s", sn),
 		jen.Qual(utils.MockPkg, "Anything"),
@@ -247,7 +237,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 
 	lines := typ.BuildRequisiteVarsForDBClientUpdateMethodTest(proj)
 
-	callArgs := append(typ.BuildCallArgsForDBClientUpdateMethodTest(proj), jen.ID(inputVarName))
+	callArgs := append(typ.BuildCallArgsForDBClientUpdateMethodTest(proj))
 	mockArgs = append(mockArgs, callArgs...)
 
 	lines = append(lines,
