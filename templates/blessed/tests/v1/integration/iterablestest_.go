@@ -160,7 +160,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen
 			fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
 			jen.ID(utils.BuildFakeVarName(sn)),
 		),
-		jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
+		jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
 			creationArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()),
@@ -203,7 +203,7 @@ func buildRequisiteCreationCodeForUpdateFunction(proj *models.Project, typ model
 			fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
 			jen.ID(utils.BuildFakeVarName(sn)),
 		),
-		jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
+		jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
 			creationArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()),
@@ -285,7 +285,7 @@ func buildBuildDummySomething(proj *models.Project, typ models.DataType) []jen.C
 			fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
 			jen.ID(utils.BuildFakeVarName(sn)),
 		),
-		jen.List(jen.ID("y"), jen.Err()).Assign().ID("todoClient").Dotf("Create%s", sn).Call(
+		jen.List(jen.ID("y"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
 			creationArgs...,
 		),
 		utils.RequireNoError(jen.Err(), nil),
@@ -352,12 +352,12 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName(sn)), jen.IDf("created%s", typ.Name.Singular())),
 		jen.Line(),
 		jen.Comment("Clean up"),
-		jen.Err().Equals().ID("todoClient").Dotf("Archive%s", sn).Call(
+		jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
 		jen.Line(),
-		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -402,7 +402,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Line(),
 		jen.Commentf("Assert %s list equality", scn),
-		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", pn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", pn).Call(
 			listArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -415,7 +415,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Line(),
 		jen.Comment("Clean up"),
 		jen.For(jen.List(jen.Underscore(), jen.IDf("created%s", sn)).Assign().Range().ID("actual").Dot(pn)).Block(
-			jen.Err().Equals().ID("todoClient").Dotf("Archive%s", sn).Call(
+			jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
 				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 			),
 			utils.AssertNoError(jen.Err(), nil),
@@ -460,7 +460,7 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 			} else {
 				return "="
 			}
-		}()).ID("todoClient").Dotf("%sExists", sn).Call(
+		}()).IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("%sExists", sn).Call(
 			args...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
@@ -495,7 +495,7 @@ func buildTestExistenceCheckingShouldBeReadable(proj *models.Project, typ models
 	lines = append(lines,
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
-		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("%sExists", sn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("%sExists", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
@@ -534,7 +534,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *m
 			} else {
 				return "="
 			}
-		}()).ID("todoClient").Dotf("Get%s", sn).Call(
+		}()).IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", sn).Call(
 			args...,
 		),
 		utils.AssertError(jen.Err(), nil),
@@ -568,7 +568,7 @@ func buildTestReadingShouldBeReadable(proj *models.Project, typ models.DataType)
 	lines = append(lines,
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
-		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
@@ -691,13 +691,13 @@ func buildTestUpdatingShouldBeUpdateable(proj *models.Project, typ models.DataTy
 	lines = append(lines, jen.Line(),
 		jen.Commentf("Change %s", scn),
 		jen.List(jen.IDf("created%s", sn).Dot("Update").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ToUpdateInput").Call())),
-		jen.Err().Equals().ID("todoClient").Dotf("Update%s", sn).Call(
+		jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
 		jen.Line(),
 		jen.Commentf("Fetch %s", scn),
-		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dotf("Get%s", sn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),

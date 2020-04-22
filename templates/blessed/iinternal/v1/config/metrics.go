@@ -2,6 +2,7 @@ package config
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -55,20 +56,20 @@ func metricsDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(
-			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 		).Params(
 			jen.Qual(proj.InternalMetricsV1Package(), "InstrumentationHandler"),
 			jen.Error(),
 		).Block(
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(jen.Lit("metrics_provider"), jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")),
-			jen.ID("logger").Dot("Debug").Call(jen.Lit("setting metrics provider")),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("metrics_provider"), jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")),
+			jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("setting metrics provider")),
 			jen.Line(),
 			jen.Switch(jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")).Block(
 				jen.Case(jen.ID("Prometheus")).Block(
 					jen.List(jen.ID("p"), jen.Err()).Assign().Qual("contrib.go.opencensus.io/exporter/prometheus", "NewExporter").Callln(
 						jen.Qual("contrib.go.opencensus.io/exporter/prometheus", "Options").Valuesln(
 							jen.ID("OnError").MapAssign().Func().Params(jen.Err().Error()).Block(
-								jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("setting up prometheus export")),
+								jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("setting up prometheus export")),
 							),
 							jen.ID("Namespace").MapAssign().ID("MetricsNamespace"),
 						),
@@ -76,7 +77,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to create Prometheus exporter: %w"), jen.Err())),
 					),
-					jen.Qual("go.opencensus.io/stats/view", "RegisterExporter").Call(jen.ID("p")), jen.ID("logger").Dot("Debug").Call(jen.Lit("metrics provider registered")),
+					jen.Qual("go.opencensus.io/stats/view", "RegisterExporter").Call(jen.ID("p")), jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("metrics provider registered")),
 					jen.Line(),
 					jen.If(jen.Err().Assign().Qual(proj.InternalMetricsV1Package(), "RegisterDefaultViews").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("registering default metric views: %w"), jen.Err())),
@@ -100,12 +101,12 @@ func metricsDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideTracing provides an instrumentation handler"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideTracing").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1",
-			"Logger",
-		)).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideTracing").Params(
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+		).Params(jen.Error()).Block(
 			jen.Qual("go.opencensus.io/trace", "ApplyConfig").Call(jen.Qual("go.opencensus.io/trace", "Config").Values(jen.ID("DefaultSampler").MapAssign().Qual("go.opencensus.io/trace", "ProbabilitySampler").Call(jen.One()))),
 			jen.Line(),
-			jen.ID("log").Assign().ID("logger").Dot("WithValue").Call(jen.Lit("tracing_provider"), jen.ID("cfg").Dot("Metrics").Dot("TracingProvider")),
+			jen.ID("log").Assign().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("tracing_provider"), jen.ID("cfg").Dot("Metrics").Dot("TracingProvider")),
 			jen.ID("log").Dot("Info").Call(jen.Lit("setting tracing provider")),
 			jen.Line(),
 			jen.Switch(jen.ID("cfg").Dot("Metrics").Dot("TracingProvider")).Block(

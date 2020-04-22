@@ -83,7 +83,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 				jen.ID("y").Dot("Password"),
 				jen.ID("x").Dot("TwoFactorSecret"),
 			),
-			jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateOAuth2Client").Call(jen.ID("_ctx"), jen.ID("cookie"), jen.ID("input")),
+			jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateOAuth2Client").Call(jen.ID("_ctx"), jen.ID("cookie"), jen.ID("input")),
 			jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 			jen.Line(),
 			jen.List(jen.ID("testClient"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
@@ -177,7 +177,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 						jen.ID("createdUserInput").Dot("Password"),
 						jen.ID("createdUser").Dot("TwoFactorSecret"),
 					),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("cookie"), jen.ID("input")),
+					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("cookie"), jen.ID("input")),
 					jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 					jen.Line(),
 					jen.Comment("ArchiveHandler oauth2Client"),

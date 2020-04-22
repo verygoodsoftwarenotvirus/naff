@@ -2,6 +2,7 @@ package auth
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -15,7 +16,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("logger").Assign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID(constants.LoggerVarName).Assign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
 				jen.ID("Auth").MapAssign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
 					jen.ID("CookieSecret").MapAssign().Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),
@@ -30,7 +31,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("ed").Assign().Qual(proj.InternalEncodingV1Package(), "ProvideResponseEncoder").Call(),
 			jen.Line(),
 			jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideAuthService").Callln(
-				jen.ID("logger"),
+				jen.ID(constants.LoggerVarName),
 				jen.ID("cfg"),
 				jen.ID("auth"),
 				jen.ID("userDB"),

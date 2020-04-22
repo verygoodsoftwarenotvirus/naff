@@ -2,6 +2,7 @@ package frontend
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -54,7 +55,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.If(jen.Err().Equals().ID("f").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("closing file while setting up static dir")),
+					jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("closing file while setting up static dir")),
 				),
 			),
 			jen.ID("afs").Equals().Qual("github.com/spf13/afero", "NewReadOnlyFs").Call(jen.ID("afs")),
@@ -112,14 +113,14 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 
 	buildIndexRoute := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("rl").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+			jen.ID("rl").Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.ID("rl").Dot("Debug").Call(jen.Lit("static file requested")),
-			jen.Switch(jen.ID("req").Dot("URL").Dot("Path")).Block(
+			jen.Switch(jen.ID(constants.RequestVarName).Dot("URL").Dot("Path")).Block(
 				jen.Comment("list your frontend history routes here"),
 				jen.Caseln(
 					buildHistoryRoutes()...,
 				).Block(jen.ID("rl").Dot("Debug").Call(jen.Lit("rerouting")),
-					jen.ID("req").Dot("URL").Dot("Path").Equals().Lit("/"),
+					jen.ID(constants.RequestVarName).Dot("URL").Dot("Path").Equals().Lit("/"),
 				),
 			),
 		}
@@ -127,16 +128,16 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		for _, typ := range proj.DataTypes {
 			tpuvn := typ.Name.PluralUnexportedVarName()
 			lines = append(lines,
-				jen.If(jen.IDf("%sFrontendPathRegex", tpuvn).Dot("MatchString").Call(jen.ID("req").Dot("URL").Dot("Path"))).Block(
+				jen.If(jen.IDf("%sFrontendPathRegex", tpuvn).Dot("MatchString").Call(jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"))).Block(
 					jen.ID("rl").Dot("Debug").Call(jen.Litf("rerouting %s request", typ.Name.SingularCommonName())),
-					jen.ID("req").Dot("URL").Dot("Path").Equals().Lit("/"),
+					jen.ID(constants.RequestVarName).Dot("URL").Dot("Path").Equals().Lit("/"),
 				),
 			)
 		}
 
 		lines = append(lines,
 			jen.Line(),
-			jen.ID("fs").Dot("ServeHTTP").Call(jen.ID("res"), jen.ID("req")),
+			jen.ID("fs").Dot("ServeHTTP").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		)
 
 		return lines
@@ -156,10 +157,10 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("establishing static server filesystem: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("static_dir"), jen.ID("fileDir")).Dot("Debug").Call(jen.Lit("setting static file server")),
+			jen.ID("s").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("static_dir"), jen.ID("fileDir")).Dot("Debug").Call(jen.Lit("setting static file server")),
 			jen.ID("fs").Assign().Qual("net/http", "StripPrefix").Call(jen.Lit("/"), jen.Qual("net/http", "FileServer").Call(jen.ID("httpFs").Dot("Dir").Call(jen.ID("fileDir")))),
 			jen.Line(),
-			jen.Return().List(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(
+			jen.Return().List(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
 				buildIndexRoute()...,
 			), jen.Nil()),
 		),

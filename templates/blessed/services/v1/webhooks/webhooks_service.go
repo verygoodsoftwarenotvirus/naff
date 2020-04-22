@@ -2,6 +2,7 @@ package webhooks
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -43,7 +44,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("Service handles TODO ListHandler webhooks"),
 			jen.ID("Service").Struct(
-				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 				jen.ID("webhookCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 				jen.ID("webhookDatabase").Qual(proj.ModelsV1Package(), "WebhookDataManager"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
@@ -66,7 +67,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ProvideWebhooksService builds a new WebhooksService"),
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksService").Paramsln(
-			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("webhookDatabase").Qual(proj.ModelsV1Package(), "WebhookDataManager"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 			jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
@@ -80,7 +81,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
-				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
+				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("webhookDatabase").MapAssign().ID("webhookDatabase"),
 				jen.ID("encoderDecoder").MapAssign().ID("encoder"),
 				jen.ID("webhookCounter").MapAssign().ID("webhookCounter"),

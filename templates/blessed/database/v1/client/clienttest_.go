@@ -16,7 +16,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabaseV1Package(), "MockDatabase")).Block(
 			jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
-				jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID("querier").MapAssign().ID("db"),
 			),
 			jen.Return(jen.List(jen.ID("c"), jen.ID("db"))),
@@ -86,7 +86,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 					constants.CtxVar(),
 					jen.Nil(),
 					jen.ID("mockDB"),
-					jen.False(),
+					jen.True(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				utils.AssertNotNil(jen.ID("actual"), nil),
@@ -105,7 +105,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 					constants.CtxVar(),
 					jen.Nil(),
 					jen.ID("mockDB"),
-					jen.False(),
+					jen.True(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				utils.AssertNil(jen.ID("x"), nil),

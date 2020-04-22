@@ -24,11 +24,11 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	return ret
 }
+
 func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
 
-	block := typ.BuildRequisiteFakeVarsForDBClientExistenceMethodTest(proj)
 	mockCallArgs := []jen.Code{
 		jen.Litf("%sExists", sn),
 		jen.Qual(utils.MockPkg, "Anything"),
@@ -37,7 +37,8 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 	mockCallArgs = append(mockCallArgs, idCallArgs...)
 	callArgs := append([]jen.Code{constants.CtxVar()}, idCallArgs...)
 
-	block = append(block,
+	block := append(
+		typ.BuildRequisiteFakeVarsForDBClientExistenceMethodTest(proj),
 		jen.Line(),
 		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(mockCallArgs...).Dot("Return").Call(jen.True(), jen.Nil()),

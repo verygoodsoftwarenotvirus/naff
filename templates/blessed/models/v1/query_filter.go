@@ -2,6 +2,7 @@ package v1
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -220,9 +221,9 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ExtractQueryFilter can extract a QueryFilter from a request"),
 		jen.Line(),
-		jen.Func().ID("ExtractQueryFilter").Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().ID("QueryFilter")).Block(
+		jen.Func().ID("ExtractQueryFilter").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().ID("QueryFilter")).Block(
 			jen.ID("qf").Assign().AddressOf().ID("QueryFilter").Values(),
-			jen.ID("qf").Dot("FromParams").Call(jen.ID("req").Dot("URL").Dot("Query").Call()),
+			jen.ID("qf").Dot("FromParams").Call(jen.ID(constants.RequestVarName).Dot("URL").Dot("Query").Call()),
 			jen.Return().ID("qf"),
 		),
 		jen.Line(),

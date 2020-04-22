@@ -70,21 +70,21 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("IsUp").Params(jen.ID("address").String()).Params(jen.Bool()).Block(
 			jen.ID("uri").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%s/_meta_/ready"), jen.ID("address")),
-			jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.ID("uri"), jen.Nil()),
+			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.ID("uri"), jen.Nil()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("res"), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
+			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID(constants.RequestVarName)),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().False(),
 			),
 			jen.Line(),
-			jen.If(jen.Err().Equals().ID("res").Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Equals().ID(constants.ResponseVarName).Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Qual("log", "Println").Call(jen.Lit("error closing body")),
 			),
 			jen.Line(),
-			jen.Return().ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusOK"),
+			jen.Return().ID(constants.ResponseVarName).Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusOK"),
 		),
 		jen.Line(),
 	)
@@ -164,7 +164,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("generating totp token: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
+			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 				jen.Qual("net/http", "MethodPost"), jen.ID("uri"), jen.Qual("strings", "NewReader").Callln(
 					jen.Qual("fmt", "Sprintf").Callln(
 						jen.Lit(`
@@ -184,16 +184,16 @@ func testutilDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.List(jen.ID("res"), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
+			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID(constants.RequestVarName)),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("executing request: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.If(jen.Err().Equals().ID("res").Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Equals().ID(constants.ResponseVarName).Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Qual("log", "Println").Call(jen.Lit("error closing body")),
 			),
 			jen.Line(),
-			jen.ID("cookies").Assign().ID("res").Dot("Cookies").Call(),
+			jen.ID("cookies").Assign().ID(constants.ResponseVarName).Dot("Cookies").Call(),
 			jen.If(jen.Len(jen.ID("cookies")).GreaterThan().Zero()).Block(
 				jen.Return().List(jen.ID("cookies").Index(jen.Zero()), jen.Nil()),
 			),
@@ -217,7 +217,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
+			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 				jen.Qual("net/http", "MethodPost"), jen.ID("firstOAuth2ClientURI"), jen.Qual("strings", "NewReader").Call(
 					utils.FormatString(`
 	{
@@ -248,33 +248,33 @@ cookie problems!
 			  err: %v
 	`), jen.ID("cookie").IsEqualTo().ID("nil"), jen.Err()),
 			),
-			jen.ID("req").Dot("AddCookie").Call(jen.ID("cookie")),
+			jen.ID(constants.RequestVarName).Dot("AddCookie").Call(jen.ID("cookie")),
 			jen.Var().ID("o").Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Line(),
 			jen.Var().ID("command").Qual("fmt", "Stringer"),
-			jen.If(jen.List(jen.ID("command"), jen.Err()).Equals().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID("req")), jen.Err().IsEqualTo().ID("nil")).Block(
+			jen.If(jen.List(jen.ID("command"), jen.Err()).Equals().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID(constants.RequestVarName)), jen.Err().IsEqualTo().ID("nil")).Block(
 				jen.Qual("log", "Println").Call(jen.ID("command").Dot("String").Call()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("res"), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID("req")),
+			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID(constants.RequestVarName)),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
-			).Else().If(jen.ID("res").Dot("StatusCode").DoesNotEqual().Qual("net/http", "StatusCreated")).Block(
-				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("bad status: %d"), jen.ID("res").Dot("StatusCode"))),
+			).Else().If(jen.ID(constants.ResponseVarName).Dot("StatusCode").DoesNotEqual().Qual("net/http", "StatusCreated")).Block(
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("bad status: %d"), jen.ID(constants.ResponseVarName).Dot("StatusCode"))),
 			),
 			jen.Line(),
 			jen.Defer().Func().Params().Block(
-				jen.If(jen.Err().Equals().ID("res").Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Equals().ID(constants.ResponseVarName).Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.Qual("log", "Fatal").Call(jen.Err()),
 				),
 			).Call(),
 			jen.Line(),
-			jen.List(jen.ID("bdump"), jen.Err()).Assign().ID("httputil").Dot("DumpResponse").Call(jen.ID("res"), jen.True()),
-			jen.If(jen.Err().IsEqualTo().ID("nil").And().ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
+			jen.List(jen.ID("bdump"), jen.Err()).Assign().ID("httputil").Dot("DumpResponse").Call(jen.ID(constants.ResponseVarName), jen.True()),
+			jen.If(jen.Err().IsEqualTo().ID("nil").And().ID(constants.RequestVarName).Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
 				jen.Qual("log", "Println").Call(jen.String().Call(jen.ID("bdump"))),
 			),
 			jen.Line(),
-			jen.Return().List(jen.AddressOf().ID("o"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("res").Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("o"))),
+			jen.Return().List(jen.AddressOf().ID("o"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.ResponseVarName).Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("o"))),
 		),
 		jen.Line(),
 	)

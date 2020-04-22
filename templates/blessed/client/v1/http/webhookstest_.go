@@ -77,7 +77,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					"ts",
 					utils.AssertTrue(
 						jen.Qual("strings", "HasSuffix").Call(
-							jen.ID("req").Dot("URL").Dot("String").Call(),
+							jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
 							jen.Qual("strconv", "Itoa").Call(
 								jen.Int().Call(
 									jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
@@ -87,7 +87,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						nil,
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						utils.FormatString(
 							webhookRoute,
 							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
@@ -95,12 +95,12 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 						nil,
 					),
 				),
@@ -190,17 +190,17 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						jen.Lit(webhooksListRoute),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("WebhookList"))),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("WebhookList"))),
 						nil,
 					),
 				),
@@ -290,12 +290,12 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
-					utils.AssertEqual(jen.ID("req").Dot("URL").Dot("Path"), jen.Lit(webhooksListRoute), jen.Lit("expected and actual paths do not match")),
-					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
+					utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"), jen.Lit(webhooksListRoute), jen.Lit("expected and actual paths do not match")),
+					utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 					jen.Line(),
 					jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(
+						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")).Dot("Decode").Call(
 							jen.AddressOf().ID("x"),
 						),
 						nil,
@@ -303,7 +303,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Input")), jen.ID("x"), nil),
 					jen.Line(),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 						nil,
 					),
 				),
@@ -372,16 +372,16 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						utils.FormatString(
 							webhookRoute,
 							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
 						jen.Lit("expected and actual paths do not match"),
 					),
-					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
+					utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
 					utils.AssertNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 						nil),
 				),
 				jen.Line(),
@@ -468,7 +468,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						utils.FormatString(
 							webhookRoute,
 							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
@@ -476,7 +476,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodDelete"),
 						nil,
 					),

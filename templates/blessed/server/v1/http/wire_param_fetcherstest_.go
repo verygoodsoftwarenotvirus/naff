@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -122,23 +123,23 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				"obligatory",
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
-				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
 						jen.ID("expected"),
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Assign().ID("UserIDFetcher").Call(jen.ID("req")),
+				jen.ID("actual").Assign().ID("UserIDFetcher").Call(jen.ID(constants.RequestVarName)),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"without attached value",
-				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("actual").Assign().ID("UserIDFetcher").Call(jen.ID("req")),
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID("actual").Assign().ID("UserIDFetcher").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
 				utils.AssertZero(jen.ID("actual"), nil),
 			),
@@ -155,10 +156,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("fn").Assign().ID("buildChiUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
-				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
@@ -169,7 +170,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 			jen.Line(),
@@ -179,10 +180,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("fn").Assign().ID("buildChiUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
-				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
@@ -193,7 +194,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 		),
@@ -211,10 +212,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("fn").Assign().IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 					jen.Line(),
-					jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
-					jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
+					jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+					jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 						jen.Qual("context", "WithValue").Callln(
-							jen.ID("req").Dot("Context").Call(),
+							jen.ID(constants.RequestVarName).Dot("Context").Call(),
 							jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 							jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 								jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
@@ -225,7 +226,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 						),
 					),
 					jen.Line(),
-					jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
+					jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
 					utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				),
 				jen.Line(),
@@ -235,10 +236,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("fn").Assign().IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 					jen.Line(),
-					jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
-					jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
+					jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+					jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 						jen.Qual("context", "WithValue").Callln(
-							jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
+							jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 							jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 								jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
 									jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
@@ -248,7 +249,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 						),
 					),
 					jen.Line(),
-					jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
+					jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
 					utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 				),
 			),
@@ -265,10 +266,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("fn").Assign().ID("buildChiWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
-				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
@@ -279,7 +280,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 			jen.Line(),
@@ -289,10 +290,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("fn").Assign().ID("buildChiWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
-				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
@@ -303,7 +304,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 		),
@@ -319,10 +320,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("fn").Assign().ID("buildChiOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
-				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
 								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
@@ -332,7 +333,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 			jen.Line(),
@@ -342,10 +343,10 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("fn").Assign().ID("buildChiOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
-				jen.ID("req").Assign().ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Equals().ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
@@ -356,7 +357,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Assign().ID("fn").Call(jen.ID("req")),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 		),

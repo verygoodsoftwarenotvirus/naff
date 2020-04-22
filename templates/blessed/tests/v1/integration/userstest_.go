@@ -50,7 +50,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("build user creation route input"),
 			jen.ID("userInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInput").Call(),
-			jen.List(jen.ID("user"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(
+			jen.List(jen.ID("user"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateUser").Call(
 				constants.CtxVar(),
 				jen.ID("userInput"),
 			),
@@ -129,7 +129,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateUser").Call(
 						constants.CtxVar(),
 						jen.ID("exampleUserInput"),
 					),
@@ -151,7 +151,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Fetch user"),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUser").Call(
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetUser").Call(
 						constants.CtxVar(),
 						jen.ID("nonexistentID"),
 					),
@@ -165,7 +165,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateUser").Call(
 						constants.CtxVar(),
 						jen.ID("exampleUserInput"),
 					),
@@ -173,7 +173,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertNotEmpty(jen.ID("premade").Dot("TwoFactorSecret"), nil),
 					jen.Line(),
 					jen.Comment("Fetch user"),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUser").Call(
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetUser").Call(
 						constants.CtxVar(),
 						jen.ID("premade").Dot("ID"),
 					),
@@ -202,7 +202,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Create user"),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
-					jen.List(jen.ID("u"), jen.Err()).Assign().ID("todoClient").Dot("CreateUser").Call(
+					jen.List(jen.ID("u"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateUser").Call(
 						constants.CtxVar(),
 						jen.ID("exampleUserInput"),
 					),
@@ -215,7 +215,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("Execute"),
-					jen.Err().Equals().ID("todoClient").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("u").Dot("ID")),
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("u").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
 				),
 			)),
@@ -234,13 +234,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("Assert user list equality"),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetUsers").Call(constants.CtxVar(), jen.Nil()),
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetUsers").Call(constants.CtxVar(), jen.Nil()),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					utils.AssertTrue(jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Users")), nil),
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.For(jen.List(jen.Underscore(), jen.ID("user")).Assign().Range().ID("actual").Dot("Users")).Block(
-						jen.Err().Equals().ID("todoClient").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("user").Dot("ID")),
+						jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("user").Dot("ID")),
 						utils.AssertNoError(jen.Err(), nil),
 					),
 				),

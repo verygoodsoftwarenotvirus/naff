@@ -2,6 +2,7 @@ package client
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -43,17 +44,17 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 		jen.Comment("RoundTrip implements the http.RoundTripper interface"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("t").PointerTo().ID("defaultRoundTripper")).ID("RoundTrip").Params(
-			jen.ID("req").PointerTo().Qual("net/http", "Request"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Response"),
 			jen.Error(),
 		).Block(
-			jen.ID("req").Dot("Header").Dot("Set").Call(
+			jen.ID(constants.RequestVarName).Dot("Header").Dot("Set").Call(
 				jen.ID("userAgentHeader"),
 				jen.ID("userAgent"),
 			),
 			jen.Return().ID("t").Dot("baseTransport").Dot("RoundTrip").Call(
-				jen.ID("req"),
+				jen.ID(constants.RequestVarName),
 			),
 		),
 	)

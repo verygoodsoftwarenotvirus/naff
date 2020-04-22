@@ -71,6 +71,32 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
+		jen.Func().ID("TestClient_GetAllUserCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				jen.ID(utils.BuildFakeVarName("Count")).Assign().Uint64().Call(jen.Lit(123)),
+				jen.Line(),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("GetAllUserCount"),
+					jen.Qual(utils.MockPkg, "Anything"),
+				).Dot("Return").Call(
+					jen.ID(utils.BuildFakeVarName("Count")), jen.Nil(),
+				),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetAllUserCount").Call(constants.CtxVar()),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Count")), jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
+		),
+		jen.Line(),
+	)
+
+	ret.Add(
 		jen.Func().ID("TestClient_GetUsers").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),

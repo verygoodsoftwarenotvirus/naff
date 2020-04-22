@@ -74,7 +74,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					"ts",
 					utils.AssertTrue(
 						jen.Qual("strings", "HasSuffix").Call(
-							jen.ID("req").Dot("URL").Dot("String").Call(),
+							jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
 							jen.Qual("strconv", "Itoa").Call(
 								jen.Int().Call(
 									jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
@@ -84,13 +84,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						nil,
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						utils.FormatString("/users/%d", jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 						jen.Lit("expected and actual paths do not match"),
 					),
-					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
+					utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("User"))),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("User"))),
 						nil,
 					),
 				),
@@ -178,17 +178,17 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						jen.Lit("/users"),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("UserList"))),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("UserList"))),
 						nil,
 					),
 				),
@@ -271,25 +271,25 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						jen.Lit("/users"),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodPost"),
 						nil,
 					),
 					jen.Line(),
 					jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")),
+						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")),
 						nil,
 					),
 					utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Input")), jen.ID("x"), nil),
 					jen.Line(),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID("expected")),
 						nil,
 					),
 				),
@@ -382,12 +382,12 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						utils.FormatString("/users/%d", jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodDelete"),
 						nil,
 					),
@@ -426,13 +426,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildFakeVar(proj, "User"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
-				jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(
 					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
-				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.AssertEqual(
-					jen.ID("req").Dot("Method"),
+					jen.ID(constants.RequestVarName).Dot("Method"),
 					jen.Qual("net/http", "MethodPost"),
 					nil,
 				),
@@ -444,8 +444,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
-				jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(constants.CtxVar(), jen.Nil()),
-				utils.AssertNil(jen.ID("req"), nil),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(constants.CtxVar(), jen.Nil()),
+				utils.AssertNil(jen.ID(constants.RequestVarName), nil),
 				utils.AssertError(jen.Err(), nil),
 			),
 		),
@@ -464,18 +464,18 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						jen.Lit("/users/login"),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodPost"),
 						nil,
 					),
 					jen.Line(),
 					jen.Qual("net/http", "SetCookie").Call(
-						jen.ID("res"),
+						jen.ID(constants.ResponseVarName),
 						jen.AddressOf().Qual("net/http", "Cookie").Values(
 							jen.ID("Name").MapAssign().ID("exampleUser").Dot("Username"),
 						),
@@ -527,12 +527,12 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						jen.Lit("/users/login"),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodPost"),
 						nil,
 					),
@@ -568,12 +568,12 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						jen.Lit("/users/login"),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodPost"),
 						nil,
 					),

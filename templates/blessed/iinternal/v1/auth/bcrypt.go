@@ -41,7 +41,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("BcryptAuthenticator is our bcrypt-based authenticator"),
 			jen.ID("BcryptAuthenticator").Struct(
-				jen.ID("logger").Qual(loggingImport, "Logger"),
+				jen.ID(constants.LoggerVarName).Qual(loggingImport, "Logger"),
 				jen.ID("hashCost").ID("uint"),
 				jen.ID("minimumPasswordSize").ID("uint"),
 			),
@@ -55,9 +55,12 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ProvideBcryptAuthenticator returns a bcrypt powered Authenticator"),
 		jen.Line(),
-		jen.Func().ID("ProvideBcryptAuthenticator").Params(jen.ID("hashCost").ID("BcryptHashCost"), jen.ID("logger").Qual(loggingImport, "Logger")).Params(jen.ID("Authenticator")).Block(
+		jen.Func().ID("ProvideBcryptAuthenticator").Params(
+			jen.ID("hashCost").ID("BcryptHashCost"),
+			jen.ID(constants.LoggerVarName).Qual(loggingImport, "Logger"),
+		).Params(jen.ID("Authenticator")).Block(
 			jen.ID("ba").Assign().AddressOf().ID("BcryptAuthenticator").Valuesln(
-				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.Lit("bcrypt")),
+				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("bcrypt")),
 				jen.ID("hashCost").MapAssign().ID("uint").Call(jen.Qual("math", "Min").Call(jen.ID("float64").Call(jen.ID("DefaultBcryptHashCost")), jen.ID("float64").Call(jen.ID("hashCost")))),
 				jen.ID("minimumPasswordSize").MapAssign().ID("defaultMinimumPasswordSize"),
 			),
@@ -109,7 +112,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.ID("tooWeak").Assign().ID("b").Dot("hashedPasswordIsTooWeak").Call(constants.CtxVar(), jen.ID("hashedPassword")),
 			jen.Line(),
 			jen.If(jen.Op("!").Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("twoFactorCode"), jen.ID("twoFactorSecret"))).Block(
-				jen.ID("b").Dot("logger").Dot("WithValues").Call(
+				jen.ID("b").Dot(constants.LoggerVarName).Dot("WithValues").Call(
 					jen.Map(jen.String()).Interface().Valuesln(
 						jen.Lit("password_matches").MapAssign().ID("passwordMatches"),
 						jen.Lit("2fa_secret").MapAssign().ID("twoFactorSecret"),

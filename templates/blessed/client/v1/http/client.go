@@ -45,7 +45,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Type().ID(v1).Struct(
 			jen.ID("plainClient").PointerTo().Qual("net/http", "Client"),
 			jen.ID("authedClient").PointerTo().Qual("net/http", "Client"),
-			jen.ID("logger").Qual(utils.LoggingPkg, "Logger"),
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("Debug").Bool(),
 			jen.ID("URL").PointerTo().Qual("net/url", "URL"),
 			jen.ID("Scopes").Index().String(),
@@ -128,7 +128,7 @@ func buildNewClient() []jen.Code {
 				jen.ID("clientSecret"),
 			).String(),
 			jen.ID("address").PointerTo().Qual("net/url", "URL"),
-			jen.ID("logger").Qual(utils.LoggingPkg, "Logger"),
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("hclient").PointerTo().Qual("net/http", "Client"),
 			jen.ID("scopes").Index().String(),
 			jen.ID("debug").Bool(),
@@ -147,10 +147,10 @@ func buildNewClient() []jen.Code {
 			),
 			jen.Line(),
 			jen.If(jen.ID("debug")).Block(
-				jen.ID("logger").Dot("SetLevel").Call(
+				jen.ID(constants.LoggerVarName).Dot("SetLevel").Call(
 					jen.Qual(utils.LoggingPkg, "DebugLevel"),
 				),
-				jen.ID("logger").Dot("Debug").Call(
+				jen.ID(constants.LoggerVarName).Dot("Debug").Call(
 					jen.Lit("log level set to debug!"),
 				),
 			),
@@ -169,13 +169,13 @@ func buildNewClient() []jen.Code {
 			jen.ID("c").Assign().AddressOf().ID(v1).Valuesln(
 				jen.ID("URL").MapAssign().ID("address"),
 				jen.ID("plainClient").MapAssign().ID("client"),
-				jen.ID("logger").MapAssign().Qual("logger", "WithName").Call(jen.ID("clientName")),
+				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.LoggerVarName, "WithName").Call(jen.ID("clientName")),
 				jen.ID("Debug").MapAssign().ID("debug"),
 				jen.ID("authedClient").MapAssign().ID("ac"),
 				jen.ID("tokenSource").MapAssign().ID("ts"),
 			),
 			jen.Line(),
-			jen.ID("logger").Dot("WithValue").Call(
+			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(
 				jen.Lit("url"),
 				jen.ID("address").Dot("String").Call(),
 			).Dot("Debug").Call(
@@ -317,10 +317,10 @@ func buildCloseResponseBody() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("closeResponseBody takes a given HTTP response and closes its body, logging if an error occurs"),
 		jen.Line(),
-		newClientMethod("closeResponseBody").Params(jen.ID("res").PointerTo().Qual("net/http", "Response")).Block(
-			jen.If(jen.ID("res").DoesNotEqual().Nil()).Block(
-				jen.If(jen.Err().Assign().ID("res").Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().Nil()).Block(
-					jen.ID("c").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("closing response body")),
+		newClientMethod("closeResponseBody").Params(jen.ID(constants.ResponseVarName).PointerTo().Qual("net/http", "Response")).Block(
+			jen.If(jen.ID(constants.ResponseVarName).DoesNotEqual().Nil()).Block(
+				jen.If(jen.Err().Assign().ID(constants.ResponseVarName).Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().Nil()).Block(
+					jen.ID("c").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("closing response body")),
 				),
 			),
 		),
@@ -333,26 +333,26 @@ func buildCloseResponseBody() []jen.Code {
 func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, "executeRawRequest"),
-		jen.Var().ID("logger").Equals().ID("c").Dot("logger"),
+		jen.Var().ID(constants.LoggerVarName).Equals().ID("c").Dot(constants.LoggerVarName),
 		jen.If(jen.List(
 			jen.ID("command"),
 			jen.Err(),
 		).Assign().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 		),
 			jen.Err().IsEqualTo().ID("nil").And().ID("c").Dot("Debug"),
 		).Block(
-			jen.ID("logger").Equals().ID("c").Dot("logger").Dot("WithValue").Call(
+			jen.ID(constants.LoggerVarName).Equals().ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(
 				jen.Lit("curl"),
 				jen.ID("command").Dot("String").Call(),
 			),
 		),
 		jen.Line(),
 		jen.List(
-			jen.ID("res"),
+			jen.ID(constants.ResponseVarName),
 			jen.Err(),
 		).Assign().ID("client").Dot("Do").Call(
-			jen.ID("req").Dot("WithContext").Call(
+			jen.ID(constants.RequestVarName).Dot("WithContext").Call(
 				constants.CtxVar(),
 			),
 		),
@@ -371,23 +371,23 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 				jen.ID("bdump"),
 				jen.Err(),
 			).Assign().Qual("net/http/httputil", "DumpResponse").Call(
-				jen.ID("res"),
+				jen.ID(constants.ResponseVarName),
 				jen.True(),
 			),
-			jen.If(jen.Err().IsEqualTo().ID("nil").And().ID("req").Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
-				jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
+			jen.If(jen.Err().IsEqualTo().ID("nil").And().ID(constants.RequestVarName).Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(
 					jen.Lit("response_body"),
 					jen.String().Call(
 						jen.ID("bdump"),
 					),
 				),
 			),
-			jen.ID("logger").Dot("Debug").Call(
+			jen.ID(constants.LoggerVarName).Dot("Debug").Call(
 				jen.Lit("request executed"),
 			),
 		),
 		jen.Line(),
-		jen.Return().List(jen.ID("res"), jen.Nil()),
+		jen.Return().List(jen.ID(constants.ResponseVarName), jen.Nil()),
 	}
 
 	lines := []jen.Code{
@@ -398,7 +398,7 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 		newClientMethod("executeRawRequest").Params(
 			constants.CtxParam(),
 			jen.ID("client").PointerTo().Qual("net/http", "Client"),
-			jen.ID("req").PointerTo().Qual("net/http", "Request"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 		).Params(jen.PointerTo().Qual("net/http", "Response"), jen.Error()).Block(block...),
 		jen.Line(),
 	}
@@ -459,7 +459,7 @@ func buildUnexportedBuildURL() []jen.Code {
 				),
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.ID("c").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("building URL")),
+				jen.ID("c").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("building URL")),
 				jen.Return(jen.Nil()),
 			),
 			jen.Line(),
@@ -498,7 +498,7 @@ func buildBuildVersionlessURL() []jen.Code {
 				),
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.ID("c").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("building URL")),
+				jen.ID("c").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("building URL")),
 				jen.Return(jen.EmptyString()),
 			),
 			jen.Line(),
@@ -571,11 +571,11 @@ func buildIsUp() []jen.Code {
 		jen.Line(),
 		newClientMethod("IsUp").Params(constants.CtxParam()).Params(jen.Bool()).Block(
 			jen.List(
-				jen.ID("req"),
+				jen.ID(constants.RequestVarName),
 				jen.Err(),
 			).Assign().ID("c").Dot("BuildHealthCheckRequest").Call(constants.CtxVar()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.ID("c").Dot("logger").Dot("Error").Call(
+				jen.ID("c").Dot(constants.LoggerVarName).Dot("Error").Call(
 					jen.Err(),
 					jen.Lit("building request"),
 				),
@@ -583,21 +583,21 @@ func buildIsUp() []jen.Code {
 			),
 			jen.Line(),
 			jen.List(
-				jen.ID("res"),
+				jen.ID(constants.ResponseVarName),
 				jen.Err(),
 			).Assign().ID("c").Dot("plainClient").Dot("Do").Call(
-				jen.ID("req"),
+				jen.ID(constants.RequestVarName),
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.ID("c").Dot("logger").Dot("Error").Call(
+				jen.ID("c").Dot(constants.LoggerVarName).Dot("Error").Call(
 					jen.Err(),
 					jen.Lit("health check"),
 				),
 				jen.Return().False(),
 			),
-			jen.ID("c").Dot("closeResponseBody").Call(jen.ID("res")),
+			jen.ID("c").Dot("closeResponseBody").Call(jen.ID(constants.ResponseVarName)),
 			jen.Line(),
-			jen.Return().ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusOK"),
+			jen.Return().ID(constants.ResponseVarName).Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusOK"),
 		),
 		jen.Line(),
 	}
@@ -619,7 +619,7 @@ func buildBuildDataRequest(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.List(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Err(),
 		).Assign().Qual("net/http", "NewRequestWithContext").Call(
 			constants.CtxVar(),
@@ -634,11 +634,11 @@ func buildBuildDataRequest(proj *models.Project) []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.ID("req").Dot("Header").Dot("Set").Call(
+		jen.ID(constants.RequestVarName).Dot("Header").Dot("Set").Call(
 			jen.Lit("Content-type"),
 			jen.Lit("application/json"),
 		),
-		jen.Return().List(jen.ID("req"), jen.Nil()),
+		jen.Return().List(jen.ID(constants.RequestVarName), jen.Nil()),
 	}
 
 	lines := []jen.Code{
@@ -661,13 +661,13 @@ func buildBuildDataRequest(proj *models.Project) []jen.Code {
 func buildCheckExistence(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, "checkExistence"),
-		jen.List(jen.ID("res"), jen.Err()).Assign().ID("c").Dot("executeRawRequest").Call(constants.CtxVar(), jen.ID("c").Dot("authedClient"), jen.ID("req")),
+		jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().ID("c").Dot("executeRawRequest").Call(constants.CtxVar(), jen.ID("c").Dot("authedClient"), jen.ID(constants.RequestVarName)),
 		jen.If(jen.Err().DoesNotEqual().Nil()).Block(
 			jen.Return(jen.False(), jen.Err()),
 		),
-		jen.ID("c").Dot("closeResponseBody").Call(jen.ID("res")),
+		jen.ID("c").Dot("closeResponseBody").Call(jen.ID(constants.ResponseVarName)),
 		jen.Line(),
-		jen.Return(jen.ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusOK"), jen.Nil()),
+		jen.Return(jen.ID(constants.ResponseVarName).Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusOK"), jen.Nil()),
 	}
 
 	lines := []jen.Code{
@@ -675,7 +675,7 @@ func buildCheckExistence(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod("checkExistence").Params(
 			constants.CtxParam(),
-			jen.ID("req").PointerTo().Qual("net/http", "Request"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 		).Params(jen.Bool(), jen.Error()).Block(block...),
 		jen.Line(),
 	}
@@ -700,12 +700,12 @@ func buildRetrieve(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.List(
-			jen.ID("res"),
+			jen.ID(constants.ResponseVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("executeRawRequest").Call(
 			constants.CtxVar(),
 			jen.ID("c").Dot("authedClient"),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().Qual("fmt", "Errorf").Call(
@@ -714,11 +714,11 @@ func buildRetrieve(proj *models.Project) []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.If(jen.ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusNotFound")).Block(
+		jen.If(jen.ID(constants.ResponseVarName).Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusNotFound")).Block(
 			jen.Return().ID("ErrNotFound"),
 		),
 		jen.Line(),
-		jen.Return().ID("unmarshalBody").Call(constants.CtxVar(), jen.ID("res"), jen.AddressOf().ID("obj")),
+		jen.Return().ID("unmarshalBody").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName), jen.AddressOf().ID("obj")),
 	}
 
 	lines := []jen.Code{
@@ -726,7 +726,7 @@ func buildRetrieve(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("req").PointerTo().Qual("net/http", "Request"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 			jen.ID("obj").Interface(),
 		).Params(jen.Error()).Block(block...),
 		jen.Line(),
@@ -741,12 +741,12 @@ func buildExecuteRequest(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(
-			jen.ID("res"),
+			jen.ID(constants.ResponseVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("executeRawRequest").Call(
 			constants.CtxVar(),
 			jen.ID("c").Dot("authedClient"),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().Qual("fmt", "Errorf").Call(
@@ -755,7 +755,7 @@ func buildExecuteRequest(proj *models.Project) []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.Switch(jen.ID("res").Dot("StatusCode")).Block(
+		jen.Switch(jen.ID(constants.ResponseVarName).Dot("StatusCode")).Block(
 			jen.Case(jen.Qual("net/http", "StatusNotFound")).Block(
 				jen.Return().ID("ErrNotFound"),
 			),
@@ -766,7 +766,7 @@ func buildExecuteRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.If(jen.ID("out").DoesNotEqual().ID("nil")).Block(
 			jen.If(
-				jen.ID("resErr").Assign().ID("unmarshalBody").Call(constants.CtxVar(), jen.ID("res"), jen.ID("out")),
+				jen.ID("resErr").Assign().ID("unmarshalBody").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName), jen.ID("out")),
 				jen.ID("resErr").DoesNotEqual().ID("nil"),
 			).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -786,7 +786,7 @@ func buildExecuteRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("req").PointerTo().Qual("net/http", "Request"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 			jen.ID("out").Interface(),
 		).Params(jen.Error()).Block(block...,
 		),
@@ -803,12 +803,12 @@ func buildExecuteUnauthenticatedDataRequest(proj *models.Project) []jen.Code {
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
 		jen.List(
-			jen.ID("res"),
+			jen.ID(constants.ResponseVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("executeRawRequest").Call(
 			constants.CtxVar(),
 			jen.ID("c").Dot("plainClient"),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().Qual("fmt", "Errorf").Call(
@@ -817,7 +817,7 @@ func buildExecuteUnauthenticatedDataRequest(proj *models.Project) []jen.Code {
 			),
 		),
 		jen.Line(),
-		jen.Switch(jen.ID("res").Dot("StatusCode")).Block(
+		jen.Switch(jen.ID(constants.ResponseVarName).Dot("StatusCode")).Block(
 			jen.Case(jen.Qual("net/http", "StatusNotFound")).Block(
 				jen.Return().ID("ErrNotFound"),
 			),
@@ -828,7 +828,7 @@ func buildExecuteUnauthenticatedDataRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.If(jen.ID("out").DoesNotEqual().ID("nil")).Block(
 			jen.If(
-				jen.ID("resErr").Assign().ID("unmarshalBody").Call(constants.CtxVar(), jen.ID("res"), jen.ID("out")),
+				jen.ID("resErr").Assign().ID("unmarshalBody").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName), jen.ID("out")),
 				jen.ID("resErr").DoesNotEqual().ID("nil"),
 			).Block(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -846,7 +846,7 @@ func buildExecuteUnauthenticatedDataRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("req").PointerTo().Qual("net/http", "Request"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 			jen.ID("out").Interface(),
 		).Params(jen.Error()).Block(block...),
 		jen.Line(),

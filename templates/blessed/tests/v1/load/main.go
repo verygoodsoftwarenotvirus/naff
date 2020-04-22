@@ -2,6 +2,7 @@ package load
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -39,8 +40,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Comment("The context is used to cancel the request on timeout."),
 			jen.ID("act").Assign().ID("RandomAction").Call(jen.ID("a").Dot("todoClient")),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.Err()).Assign().ID("act").Dot("Action").Call(),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("req").IsEqualTo().ID("nil")).Block(
+			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("act").Dot("Action").Call(),
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID(constants.RequestVarName).IsEqualTo().ID("nil")).Block(
 				jen.If(jen.Err().IsEqualTo().ID("ErrUnavailableYet")).Block(
 					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Valuesln(
 						jen.ID("RequestLabel").MapAssign().ID("act").Dot("Name"),
@@ -56,19 +57,19 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("bo").ID("int64"),
 				jen.ID("bi").Index().Byte(),
 			),
-			jen.If(jen.ID("req").Dot("Body").DoesNotEqual().ID("nil")).Block(
-				jen.List(jen.ID("bi"), jen.Err()).Equals().Qual("io/ioutil", "ReadAll").Call(jen.ID("req").Dot("Body")),
+			jen.If(jen.ID(constants.RequestVarName).Dot("Body").DoesNotEqual().ID("nil")).Block(
+				jen.List(jen.ID("bi"), jen.Err()).Equals().Qual("io/ioutil", "ReadAll").Call(jen.ID(constants.RequestVarName).Dot("Body")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Values(jen.ID("Error").MapAssign().Err()),
 				),
 				jen.ID("rdr").Assign().Qual("io/ioutil", "NopCloser").Call(jen.Qual("bytes", "NewBuffer").Call(jen.ID("bi"))),
-				jen.ID("req").Dot("Body").Equals().ID("rdr"),
+				jen.ID(constants.RequestVarName).Dot("Body").Equals().ID("rdr"),
 			),
 			jen.Line(),
-			jen.List(jen.ID("res"), jen.Err()).Assign().ID("a").Dot("todoClient").Dot("AuthenticatedClient").Call().Dot("Do").Call(jen.ID("req")),
-			jen.If(jen.ID("res").DoesNotEqual().ID("nil")).Block(
-				jen.ID("sc").Equals().ID("res").Dot("StatusCode"),
-				jen.ID("bo").Equals().ID("res").Dot("ContentLength"),
+			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().ID("a").Dot("todoClient").Dot("AuthenticatedClient").Call().Dot("Do").Call(jen.ID(constants.RequestVarName)),
+			jen.If(jen.ID(constants.ResponseVarName).DoesNotEqual().ID("nil")).Block(
+				jen.ID("sc").Equals().ID(constants.ResponseVarName).Dot("StatusCode"),
+				jen.ID("bo").Equals().ID(constants.ResponseVarName).Dot("ContentLength"),
 			),
 			jen.Line(),
 			jen.ID("dr").Assign().Qual("github.com/emicklei/hazana", "DoResult").Valuesln(

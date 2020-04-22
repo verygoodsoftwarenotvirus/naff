@@ -188,7 +188,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"expected use",
 				jen.ID("expected").Assign().Lit("whatever"),
-				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
+				jen.ID(constants.ResponseVarName).Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(
 							utils.FormatString(
@@ -203,7 +203,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					constants.CtxVar(),
-					jen.ID("res"),
+					jen.ID(constants.ResponseVarName),
 					jen.AddressOf().ID("out"),
 				),
 				utils.AssertEqual(
@@ -219,7 +219,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with good status but unmarshallable response",
-				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
+				jen.ID(constants.ResponseVarName).Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(jen.Lit("BLAH")),
 					),
@@ -229,7 +229,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					constants.CtxVar(),
-					jen.ID("res"),
+					jen.ID(constants.ResponseVarName),
 					jen.AddressOf().ID("out"),
 				),
 				utils.AssertError(
@@ -240,7 +240,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with an erroneous error code",
-				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
+				jen.ID(constants.ResponseVarName).Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().Qual("io/ioutil", "NopCloser").Callln(
 						jen.Qual("strings", "NewReader").Callln(
 							jen.Func().Params().Params(
@@ -265,7 +265,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					constants.CtxVar(),
-					jen.ID("res"),
+					jen.ID(constants.ResponseVarName),
 					jen.AddressOf().ID("out"),
 				),
 				utils.AssertNil(
@@ -280,7 +280,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with an erroneous error code and unmarshallable body",
-				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
+				jen.ID(constants.ResponseVarName).Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().Qual("io/ioutil", "NopCloser").Call(
 						jen.Qual("strings", "NewReader").Call(jen.Lit("BLAH")),
 					),
@@ -290,7 +290,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					constants.CtxVar(),
-					jen.ID("res"),
+					jen.ID(constants.ResponseVarName),
 					jen.AddressOf().ID("out"),
 				),
 				utils.AssertNil(
@@ -331,7 +331,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("expected"),
 				),
 				jen.Line(),
-				jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
+				jen.ID(constants.ResponseVarName).Assign().AddressOf().Qual("net/http", "Response").Valuesln(
 					jen.ID("Body").MapAssign().ID("rc"),
 					jen.ID("StatusCode").MapAssign().Qual("net/http", "StatusOK"),
 				),
@@ -339,7 +339,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Err().Assign().ID("unmarshalBody").Call(
 					constants.CtxVar(),
-					jen.ID("res"),
+					jen.ID(constants.ResponseVarName),
 					jen.AddressOf().ID("out"),
 				),
 				utils.AssertEqual(jen.ID("expected"), jen.Err(), nil),

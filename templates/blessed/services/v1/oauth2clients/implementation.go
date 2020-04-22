@@ -24,16 +24,16 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Comment("OAuth2InternalErrorHandler fulfills a role for the OAuth2 server-side provider"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("OAuth2InternalErrorHandler").Params(jen.Err().Error()).Params(jen.PointerTo().Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
-			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("OAuth2 Internal Error")),
+			jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("OAuth2 Internal Error")),
 			jen.Line(),
-			jen.ID("res").Assign().AddressOf().Qual("gopkg.in/oauth2.v3/errors", "Response").Valuesln(
+			jen.ID(constants.ResponseVarName).Assign().AddressOf().Qual("gopkg.in/oauth2.v3/errors", "Response").Valuesln(
 				jen.ID("Error").MapAssign().Err(),
 				jen.ID("Description").MapAssign().Lit("Internal error"),
 				jen.ID("ErrorCode").MapAssign().Qual("net/http", "StatusInternalServerError"),
 				jen.ID("StatusCode").MapAssign().Qual("net/http", "StatusInternalServerError"),
 			),
 			jen.Line(),
-			jen.Return().ID("res"),
+			jen.Return().ID(constants.ResponseVarName),
 		),
 		jen.Line(),
 	)
@@ -47,7 +47,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Comment("OAuth2ResponseErrorHandler fulfills a role for the OAuth2 server-side provider"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("OAuth2ResponseErrorHandler").Params(jen.ID("re").PointerTo().Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
-			jen.ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+			jen.ID("s").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 				jen.Lit("error_code").MapAssign().ID("re").Dot("ErrorCode"),
 				jen.Lit("description").MapAssign().ID("re").Dot("Description"),
 				jen.Lit("uri").MapAssign().ID("re").Dot("URI"),
@@ -65,40 +65,42 @@ func implementationDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("AuthorizeScopeHandler satisfies the oauth2server AuthorizeScopeHandler interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("AuthorizeScopeHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.ID("scope").String(), jen.Err().Error()).Block(
-			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("AuthorizeScopeHandler")),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("AuthorizeScopeHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.ID("scope").String(), jen.Err().Error()).Block(
+			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("AuthorizeScopeHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("scope").Equals().ID("determineScope").Call(jen.ID("req")),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("scope"), jen.ID("scope")).Dot("WithRequest").Call(jen.ID("req")),
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+			jen.Line(),
+			jen.ID("scope").Equals().ID("determineScope").Call(jen.ID(constants.RequestVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("scope"), jen.ID("scope")).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
 			jen.Comment("check for client and return if valid"),
-			jen.Var().ID("client").Equals().ID("s").Dot("fetchOAuth2ClientFromRequest").Call(jen.ID("req")),
+			jen.Var().ID("client").Equals().ID("s").Dot("fetchOAuth2ClientFromRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.If(jen.ID("client").DoesNotEqual().ID("nil").And().ID("client").Dot("HasScope").Call(jen.ID("scope"))).Block(
-				jen.ID("res").Dot(
+				jen.ID(constants.ResponseVarName).Dot(
 					"WriteHeader",
 				).Call(jen.Qual("net/http", "StatusOK")),
 				jen.Return().List(jen.ID("scope"), jen.Nil()),
 			),
 			jen.Line(),
 			jen.Comment("check to see if the client ID is present instead"),
-			jen.If(jen.ID("clientID").Assign().ID("s").Dot("fetchOAuth2ClientIDFromRequest").Call(jen.ID("req")), jen.ID("clientID").DoesNotEqual().EmptyString()).Block(
+			jen.If(jen.ID("clientID").Assign().ID("s").Dot("fetchOAuth2ClientIDFromRequest").Call(jen.ID(constants.RequestVarName)), jen.ID("clientID").DoesNotEqual().EmptyString()).Block(
 				jen.Comment("fetch oauth2 client from database"),
 				jen.List(jen.ID("client"), jen.Err()).Equals().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(constants.CtxVar(), jen.ID("clientID")),
 				jen.Line(),
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 Client")),
-					utils.WriteXHeader("res", "StatusNotFound"),
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 Client")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 					jen.Return().List(jen.EmptyString(), jen.Err()),
 				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 Client")),
-					utils.WriteXHeader("res", "StatusInternalServerError"),
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 Client")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return().List(jen.EmptyString(), jen.Err()),
 				),
 				jen.Line(),
 				jen.Comment("authorization check"),
 				jen.If(jen.Op("!").ID("client").Dot("HasScope").Call(jen.ID("scope"))).Block(
-					utils.WriteXHeader("res", "StatusUnauthorized"),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return().List(jen.EmptyString(), utils.Error("not authorized for scope")),
 				),
 				jen.Line(),
@@ -106,7 +108,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("invalid credentials"),
-			utils.WriteXHeader("res", "StatusBadRequest"),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 			jen.Return().List(jen.EmptyString(), utils.Error("no scope information found")),
 		),
 		jen.Line(),
@@ -122,20 +124,22 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UserAuthorizationHandler").Params(
 			jen.Underscore().Qual("net/http", "ResponseWriter"),
-			jen.ID("req").PointerTo().Qual("net/http", "Request"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 		).Params(
 			jen.ID("userID").String(),
 			jen.Err().Error(),
 		).Block(
-			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UserAuthorizationHandler")),
+			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UserAuthorizationHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Line(),
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Var().ID("uid").Uint64(),
 			jen.Line(),
 			jen.Comment("check context for client"),
 			jen.If(jen.List(jen.ID("client"), jen.ID("clientOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.Op("!").ID("clientOk")).Block(
 				jen.Comment("check for user instead"),
 				jen.List(jen.ID("user"), jen.ID("userOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")),
-				jen.If(jen.Op("!").ID("userOk")).Block(jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("no user attached to this request")),
+				jen.If(jen.Op("!").ID("userOk")).Block(jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user attached to this request")),
 					jen.Return().List(jen.EmptyString(), utils.Error("user not found")),
 				),
 				jen.ID("uid").Equals().ID("user").Dot("ID"),
@@ -161,7 +165,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.InlineCtx(), jen.Lit("ClientAuthorizedHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 				jen.Lit("grant").MapAssign().ID("grant"), jen.Lit("client_id").MapAssign().ID("clientID"))),
 			jen.Line(),
 			jen.Comment("reject invalid grant type"),
@@ -172,7 +176,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.Comment("fetch client data"),
 			jen.List(jen.ID("client"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(constants.CtxVar(), jen.ID("clientID")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("fetching oauth2 client from database")),
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("fetching oauth2 client from database")),
 				jen.Return().List(jen.False(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching oauth2 client from database: %w"), jen.Err())),
 			),
 			jen.Line(),
@@ -199,7 +203,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.InlineCtx(), jen.Lit("UserAuthorizationHandler")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Line(),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 				jen.Lit("client_id").MapAssign().ID("clientID"),
 				jen.Lit("scope").MapAssign().ID("scope")),
 			),
@@ -207,7 +211,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.Comment("fetch client info"),
 			jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(constants.CtxVar(), jen.ID("clientID")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 client for ClientScopeHandler")),
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 client for ClientScopeHandler")),
 				jen.Return().List(jen.False(), jen.Err()),
 			),
 			jen.Line(),

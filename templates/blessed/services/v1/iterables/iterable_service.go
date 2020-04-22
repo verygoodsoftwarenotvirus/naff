@@ -2,6 +2,7 @@ package iterables
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -54,7 +55,7 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 	uvn := typ.Name.UnexportedVarName()
 
 	serviceLines := []jen.Code{
-		jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+		jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 		jen.ID(fmt.Sprintf("%sDatabase", uvn)).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
 	}
@@ -115,11 +116,11 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	uvn := typ.Name.UnexportedVarName()
 
 	params := []jen.Code{
-		jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+		jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 		jen.ID("db").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
 	}
 	serviceValues := []jen.Code{
-		jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
+		jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),
 		jen.ID(fmt.Sprintf("%sDatabase", uvn)).MapAssign().ID("db"),
 		jen.ID("encoderDecoder").MapAssign().ID("encoder"),
 		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().ID(fmt.Sprintf("%sCounter", uvn)),

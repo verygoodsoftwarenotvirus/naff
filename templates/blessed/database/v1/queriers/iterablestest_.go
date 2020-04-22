@@ -2,12 +2,12 @@ package queriers
 
 import (
 	"fmt"
-	"github.com/Masterminds/squirrel"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"log"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -56,7 +56,7 @@ func buildGeneralFields(varName string, typ models.DataType) []jen.Code {
 		jen.ID(varName).Dot("ArchivedOn"),
 	)
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
+	if typ.BelongsToUser {
 		fields = append(fields, jen.ID(varName).Dot(constants.UserOwnershipFieldName))
 	}
 	if typ.BelongsToStruct != nil {
@@ -78,11 +78,11 @@ func buildBadFields(varName string, typ models.DataType) []jen.Code {
 		jen.ID(varName).Dot("UpdatedOn"),
 	)
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		fields = append(fields, jen.ID(varName).Dot(constants.UserOwnershipFieldName))
-	}
 	if typ.BelongsToStruct != nil {
 		fields = append(fields, jen.ID(varName).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+	if typ.BelongsToUser {
+		fields = append(fields, jen.ID(varName).Dot(constants.UserOwnershipFieldName))
 	}
 
 	fields = append(fields, jen.ID(varName).Dot("ID"))
@@ -99,7 +99,7 @@ func buildPrefixedStringColumns(typ models.DataType) []string {
 	}
 
 	out = append(out, fmt.Sprintf("%s.created_on", tableName), fmt.Sprintf("%s.updated_on", tableName), fmt.Sprintf("%s.archived_on", tableName))
-	if typ.BelongsToUser && typ.RestrictedToUser {
+	if typ.BelongsToUser {
 		out = append(out, fmt.Sprintf("%s.belongs_to_user", tableName))
 	}
 	if typ.BelongsToStruct != nil {
@@ -242,6 +242,50 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 	return ret
 }
 
+/*
+package main
+
+import (
+	"log"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/dave/jennifer/jen"
+)
+
+type Coder interface {
+	Code() jen.Code
+}
+
+type snippet struct {
+	repr jen.Code
+}
+
+func (s snippet) Code() jen.Code {
+	return s.repr
+}
+
+func main() {
+	sqlBuilder := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
+
+	c := snippet{
+		repr: jen.Id("farts").Op(":=").Lit("butts"),
+	}
+
+	q, args, err := sqlBuilder.Select("things", "and", "stuff").From("table").Where(squirrel.Eq{
+		"things": c,
+	}).ToSql()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(q)
+	if cdr, ok := args[0].(Coder); ok {
+		log.Printf("%#v", cdr.Code())
+	}
+}
+*/
+
 func buildTestDBBuildSomethingExistsQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
@@ -256,11 +300,15 @@ func buildTestDBBuildSomethingExistsQuery(proj *models.Project, dbvendor wordsmi
 		eqArgs[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = whateverValue
 	}
 
+	whereValues := typ.BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(proj)
 	qb := queryBuilderForDatabase(dbvendor).Select(fmt.Sprintf("%s.id", tableName)).
 		Prefix(existencePrefix).
-		From(tableName).
-		Where(eqArgs).
-		Suffix(existenceSuffix)
+		From(tableName)
+
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
+
+	qb = qb.Suffix(existenceSuffix).
+		Where(whereValues)
 
 	expectedArgs := typ.BuildDBQuerierBuildSomethingExistsQueryTestExpectedArgs(proj)
 	callArgs := typ.BuildDBQuerierBuildSomethingExistsQueryTestCallArgs(proj)

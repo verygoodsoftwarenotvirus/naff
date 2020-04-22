@@ -11,6 +11,12 @@ const (
 	ContextVarName = "ctx"
 
 	FilterVarName = "filter"
+
+	LoggerVarName = "logger"
+
+	RequestVarName = "req"
+
+	ResponseVarName = "res"
 )
 
 // CreateCtx calls context.Background() and assigns it to a variable called ctx

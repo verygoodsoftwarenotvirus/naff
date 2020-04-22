@@ -90,7 +90,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("unmarshalBody").Params(
 			constants.CtxParam(),
-			jen.ID("res").PointerTo().Qual("net/http", "Response"),
+			jen.ID(constants.ResponseVarName).PointerTo().Qual("net/http", "Response"),
 			jen.ID("dest").Interface(),
 		).Params(
 			jen.Error(),
@@ -104,12 +104,12 @@ func helpersDotGo(proj *models.Project) *jen.File {
 				jen.ID("bodyBytes"),
 				jen.Err(),
 			).Assign().Qual("io/ioutil", "ReadAll").
-				Call(jen.ID("res").Dot("Body")),
+				Call(jen.ID(constants.ResponseVarName).Dot("Body")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().Err(),
 			),
 			jen.Line(),
-			jen.If(jen.ID("res").Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(
+			jen.If(jen.ID(constants.ResponseVarName).Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(
 				jen.ID("apiErr").Assign().AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
 				jen.If(jen.Err().Equals().Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),

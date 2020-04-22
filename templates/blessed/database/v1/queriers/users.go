@@ -109,7 +109,7 @@ func buildScanUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen
 		jen.Comment("scanUsers takes database rows and loads them into a slice of User structs"),
 		jen.Line(),
 		jen.Func().ID("scanUsers").Params(
-			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("rows").PointerTo().Qual("database/sql", "Rows"),
 		).Params(
 			jen.Index().Qual(proj.ModelsV1Package(), "User"),
@@ -143,7 +143,7 @@ func buildScanUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen
 			),
 			jen.Line(),
 			jen.If(jen.Err().Assign().ID("rows").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("closing rows")),
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("closing rows")),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("list"), jen.ID("count"), jen.Nil()),
@@ -382,15 +382,15 @@ func buildGetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.
 				jen.Return().List(jen.Nil(), jen.ID("buildError").Call(jen.Err(), jen.Lit("querying for user"))),
 			),
 			jen.Line(),
-			jen.List(jen.ID("userList"), jen.ID("count"), jen.Err()).Assign().ID("scanUsers").Call(jen.ID(dbfl).Dot("logger"), jen.ID("rows")),
+			jen.List(jen.ID("userList"), jen.ID("count"), jen.Err()).Assign().ID("scanUsers").Call(jen.ID(dbfl).Dot(constants.LoggerVarName), jen.ID("rows")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("loading response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserList").Valuesln(
 				jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
-					jen.ID("Page").MapAssign().ID("filter").Dot("Page"),
-					jen.ID("Limit").MapAssign().ID("filter").Dot("Limit"),
+					jen.ID("Page").MapAssign().ID(constants.FilterVarName).Dot("Page"),
+					jen.ID("Limit").MapAssign().ID(constants.FilterVarName).Dot("Limit"),
 					jen.ID("TotalCount").MapAssign().ID("count"),
 				),
 				jen.ID("Users").MapAssign().ID("userList"),
@@ -482,13 +482,13 @@ func buildCreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 		}
 	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		uqb = []jen.Code{
-			jen.List(jen.ID("res"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing user creation query: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Comment("fetch the last inserted ID"),
-			jen.List(jen.ID("id"), jen.ID("err")).Assign().ID("res").Dot("LastInsertId").Call(),
+			jen.List(jen.ID("id"), jen.ID("err")).Assign().ID(constants.ResponseVarName).Dot("LastInsertId").Call(),
 			jen.ID(dbfl).Dot("logIDRetrievalError").Call(jen.Err()),
 			jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
 			jen.Line(),

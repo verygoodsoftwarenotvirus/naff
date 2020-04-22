@@ -89,7 +89,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("BuildServer").Paramsln(
 			constants.CtxParam(),
 			jen.ID("cfg").PointerTo().Qual(internalConfigImp, "ServerConfig"),
-			jen.ID("logger").Qual(loggingImp, "Logger"),
+			jen.ID(constants.LoggerVarName).Qual(loggingImp, "Logger"),
 			jen.ID("database").Qual(databaseClientImp, "Database")).
 			Params(jen.PointerTo().Qual(serverImp, "Server"), jen.Error()).Block(
 			jen.Qual("github.com/google/wire", "Build").Callln(

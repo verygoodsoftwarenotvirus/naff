@@ -49,7 +49,7 @@ func ParallelTest(tee *jen.Statement) jen.Code {
 }
 
 func NilQueryFilter(proj *models.Project) jen.Code {
-	return jen.Call(jen.Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
+	return jen.Call(jen.PointerTo().Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
 }
 
 func DefaultQueryFilter(proj *models.Project) jen.Code {
@@ -57,7 +57,7 @@ func DefaultQueryFilter(proj *models.Project) jen.Code {
 }
 
 func CreateNilQueryFilter(proj *models.Project) jen.Code {
-	return jen.ID(constants.FilterVarName).Op(":=").Call(jen.Op("*").Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
+	return jen.ID(constants.FilterVarName).Op(":=").Call(jen.PointerTo().Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
 }
 
 func CreateDefaultQueryFilter(proj *models.Project) jen.Code {
@@ -127,12 +127,12 @@ func BuildSubTestWithoutContext(name string, testInstructions ...jen.Code) jen.C
 func _buildSubtest(name string, includeContext bool, testInstructions ...jen.Code) jen.Code {
 	insts := []jen.Code{}
 	if includeContext {
-		insts = append(insts, constants.CreateCtx())
+		insts = append(insts, constants.CreateCtx(), jen.Line())
 	}
 	insts = append(insts, testInstructions...)
 
 	return jen.ID(T).Dot("Run").Call(
-		jen.Lit(name), jen.Func().Params(jen.ID(t).Op("*").Qual("testing", T)).Block(insts...),
+		jen.Lit(name), jen.Func().Params(jen.ID(t).PointerTo().Qual("testing", T)).Block(insts...),
 	)
 }
 
@@ -142,7 +142,7 @@ func BuildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
 		jen.Qual("net/http", "HandlerFunc").Callln(
 			jen.Func().Params(
 				jen.ID("res").Qual("net/http", "ResponseWriter"),
-				jen.ID("req").Op("*").Qual("net/http", "Request"),
+				jen.ID("req").PointerTo().Qual("net/http", "Request"),
 			).Block(handlerLines...),
 		),
 	)
@@ -150,7 +150,7 @@ func BuildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
 
 // OuterTestFunc does
 func OuterTestFunc(subjectName string) *jen.Statement {
-	return jen.Func().ID(fmt.Sprintf("Test%s", subjectName)).Params(jen.ID(T).Op("*").Qual("testing", T))
+	return jen.Func().ID(fmt.Sprintf("Test%s", subjectName)).Params(jen.ID(T).PointerTo().Qual("testing", T))
 }
 
 // QueryFilterParam does

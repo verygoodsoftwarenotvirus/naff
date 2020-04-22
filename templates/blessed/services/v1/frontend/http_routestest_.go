@@ -3,6 +3,7 @@ package frontend
 import (
 	"fmt"
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -16,15 +17,15 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
+			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 				jen.Qual("net/http", "MethodGet"),
 				jen.Lit("https://verygoodsoftwarenotvirus.ru"),
 				jen.Nil(),
 			),
 			jen.Line(),
-			utils.RequireNotNil(jen.ID("req"), nil),
+			utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 			utils.AssertNoError(jen.Err(), nil),
-			jen.Return().ID("req"),
+			jen.Return().ID(constants.RequestVarName),
 		),
 		jen.Line(),
 	)
@@ -73,7 +74,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 		jen.Line(),
 		utils.BuildSubTestWithoutContext(
 			"happy path",
-			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.List(jen.ID("cwd"), jen.Err()).Assign().Qual("os", "Getwd").Call(),
 			utils.RequireNoError(jen.Err(), nil),
@@ -82,27 +83,27 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 			utils.AssertNoError(jen.Err(), nil),
 			utils.AssertNotNil(jen.ID("hf"), nil),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
-			jen.ID("req").Dot("URL").Dot("Path").Equals().Lit("/http_routes_test.go"),
-			jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
+			jen.List(jen.ID(constants.RequestVarName), jen.ID(constants.ResponseVarName)).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
+			jen.ID(constants.RequestVarName).Dot("URL").Dot("Path").Equals().Lit("/http_routes_test.go"),
+			jen.ID("hf").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 			jen.Line(),
-			utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
+			utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
 		),
 		jen.Line(),
 		utils.BuildSubTestWithoutContext(
 			"with frontend routing path",
-			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.ID(utils.BuildFakeVarName("Dir")).Assign().Lit("."),
 			jen.Line(),
 			jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID(utils.BuildFakeVarName("Dir"))),
 			utils.AssertNoError(jen.Err(), nil),
 			utils.AssertNotNil(jen.ID("hf"), nil),
 			jen.Line(),
-			jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
-			jen.ID("req").Dot("URL").Dot("Path").Equals().Lit("/login"),
-			jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
+			jen.List(jen.ID(constants.RequestVarName), jen.ID(constants.ResponseVarName)).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
+			jen.ID(constants.RequestVarName).Dot("URL").Dot("Path").Equals().Lit("/login"),
+			jen.ID("hf").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 			jen.Line(),
-			utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
+			utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
 		),
 		jen.Line(),
 	}
@@ -114,18 +115,18 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 			jen.Line(), jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				fmt.Sprintf("with frontend %s routing path", tpcn),
-				jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID(utils.BuildFakeVarName("Dir")).Assign().Lit("."),
 				jen.Line(),
 				jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID(utils.BuildFakeVarName("Dir"))),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertNotNil(jen.ID("hf"), nil),
 				jen.Line(),
-				jen.List(jen.ID("req"), jen.ID("res")).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
-				jen.ID("req").Dot("URL").Dot("Path").Equals().Lit(fmt.Sprintf("/%s/123", typ.Name.PluralRouteName())),
-				jen.ID("hf").Call(jen.ID("res"), jen.ID("req")),
+				jen.List(jen.ID(constants.RequestVarName), jen.ID(constants.ResponseVarName)).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path").Equals().Lit(fmt.Sprintf("/%s/123", typ.Name.PluralRouteName())),
+				jen.ID("hf").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 				jen.Line(),
-				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID("res").Dot("Code"), nil),
+				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
 			),
 		)
 	}

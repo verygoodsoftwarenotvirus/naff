@@ -54,7 +54,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						"BuildFakeWebhookCreationInputFromWebhook",
 						jen.ID(utils.BuildFakeVarName("Webhook")),
 					),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateWebhook").Call(
 						constants.CtxVar(),
 						jen.ID("exampleWebhookInput"),
 					),
@@ -64,13 +64,13 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("premade")),
 					jen.Line(),
 					jen.Comment("Clean up"),
-					jen.Err().Equals().ID("todoClient").Dot("ArchiveWebhook").Call(
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(
 						constants.CtxVar(),
 						jen.ID("premade").Dot("ID"),
 					),
 					utils.AssertNoError(jen.Err(), nil),
 					jen.Line(),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetWebhook").Call(
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhook").Call(
 						constants.CtxVar(),
 						jen.ID("premade").Dot("ID"),
 					),
@@ -95,7 +95,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 							"BuildFakeWebhookCreationInputFromWebhook",
 							jen.ID(utils.BuildFakeVarName("Webhook")),
 						),
-						jen.List(jen.ID("createdWebhook"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(
+						jen.List(jen.ID("createdWebhook"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateWebhook").Call(
 							constants.CtxVar(),
 							jen.ID("exampleWebhookInput"),
 						),
@@ -105,13 +105,13 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("Assert webhook list equality"),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetWebhooks").Call(constants.CtxVar(), jen.Nil()),
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhooks").Call(constants.CtxVar(), jen.Nil()),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					utils.AssertTrue(jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Webhooks")), nil),
 					jen.Line(),
 					jen.Comment("Clean up"),
 					jen.For(jen.List(jen.Underscore(), jen.ID("webhook")).Assign().Range().ID("actual").Dot("Webhooks")).Block(
-						jen.Err().Equals().ID("todoClient").Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhook").Dot("ID")),
+						jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhook").Dot("ID")),
 						utils.AssertNoError(jen.Err(), nil),
 					),
 				),
@@ -123,7 +123,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Fetch webhook"),
-					jen.List(jen.Underscore(), jen.Err()).Assign().ID("todoClient").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("nonexistentID")),
+					jen.List(jen.Underscore(), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("nonexistentID")),
 					utils.AssertError(jen.Err(), nil),
 				),
 				jen.Line(),
@@ -138,21 +138,21 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						"BuildFakeWebhookCreationInputFromWebhook",
 						jen.ID(utils.BuildFakeVarName("Webhook")),
 					),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateWebhook").Call(
 						constants.CtxVar(),
 						jen.ID("exampleWebhookInput"),
 					),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
 					jen.Line(),
 					jen.Comment("Fetch webhook"),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.Line(),
 					jen.Comment("Assert webhook equality"),
 					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual")),
 					jen.Line(),
 					jen.Comment("Clean up"),
-					jen.Err().Equals().ID("todoClient").Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("actual").Dot("ID")),
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("actual").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
 				),
 			)),
@@ -165,7 +165,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					utils.BuildFakeVar(proj, "Webhook"),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID").Equals().ID("nonexistentID"),
 					jen.Line(),
-					jen.Err().Assign().ID("todoClient").Dot("UpdateWebhook").Call(
+					jen.Err().Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("UpdateWebhook").Call(
 						constants.CtxVar(),
 						jen.ID(utils.BuildFakeVarName("Webhook")),
 					),
@@ -184,7 +184,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						"BuildFakeWebhookCreationInputFromWebhook",
 						jen.ID(utils.BuildFakeVarName("Webhook")),
 					),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateWebhook").Call(
 						constants.CtxVar(),
 						jen.ID("exampleWebhookInput"),
 					),
@@ -193,11 +193,11 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Change webhook"),
 					jen.ID("premade").Dot("Name").Equals().ID("reverse").Call(jen.ID("premade").Dot("Name")),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Name").Equals().ID("premade").Dot("Name"),
-					jen.Err().Equals().ID("todoClient").Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID("premade")),
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID("premade")),
 					utils.AssertNoError(jen.Err(), nil),
 					jen.Line(),
 					jen.Comment("Fetch webhook"),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("todoClient").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.Line(),
 					jen.Comment("Assert webhook equality"),
@@ -205,7 +205,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertNotNil(jen.ID("actual").Dot("UpdatedOn"), nil),
 					jen.Line(),
 					jen.Comment("Clean up"),
-					jen.Err().Equals().ID("todoClient").Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("actual").Dot("ID")),
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("actual").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
 				),
 			)),
@@ -223,14 +223,14 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 						"BuildFakeWebhookCreationInputFromWebhook",
 						jen.ID(utils.BuildFakeVarName("Webhook")),
 					),
-					jen.List(jen.ID("premade"), jen.Err()).Assign().ID("todoClient").Dot("CreateWebhook").Call(
+					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateWebhook").Call(
 						constants.CtxVar(),
 						jen.ID("exampleWebhookInput"),
 					),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
 					jen.Line(),
 					jen.Comment("Clean up"),
-					jen.Err().Equals().ID("todoClient").Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
 				),
 			)),

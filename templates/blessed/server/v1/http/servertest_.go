@@ -21,7 +21,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("config").MapAssign().AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Values(),
 			jen.ID("encoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 			jen.ID("httpServer").MapAssign().ID("provideHTTPServer").Call(),
-			jen.ID("logger").MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("frontendService").MapAssign().Qual(proj.ServiceV1FrontendPackage(), "ProvideFrontendService").Callln(
 				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.Qual(proj.InternalConfigV1Package(), "FrontendSettings").Values(),

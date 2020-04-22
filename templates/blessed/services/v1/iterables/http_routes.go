@@ -46,11 +46,13 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		constants.CtxVar(),
 	}
 	block := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ListHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ListHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Line(),
+		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+		jen.Line(),
 		jen.Comment("ensure query filter"),
-		jen.ID(constants.FilterVarName).Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID("req")),
+		jen.ID(constants.FilterVarName).Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
 	}
 
@@ -59,34 +61,34 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 	if typ.BelongsToUser {
 		block = append(block,
 			jen.Comment("determine user ID"),
-			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 		)
 		dbCallArgs = append(dbCallArgs, jen.ID("userID"))
 		elseErrBlock = append(elseErrBlock,
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("error encountered fetching %s", pcn)),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error encountered fetching %s", pcn)),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		block = append(block,
 			jen.Commentf("determine %s ID", typ.BelongsToStruct.SingularCommonName()),
-			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")),
+			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 		)
 		dbCallArgs = append(dbCallArgs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 		elseErrBlock = append(elseErrBlock,
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("error encountered fetching %s", pcn)),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error encountered fetching %s", pcn)),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		)
 	} else if typ.BelongsToNobody {
 		elseErrBlock = append(elseErrBlock,
-			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Litf("error encountered fetching %s", pcn)),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error encountered fetching %s", pcn)),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		)
 	}
@@ -105,8 +107,8 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(elseErrBlock...),
 		jen.Line(),
 		jen.Comment("encode our response and peace"),
-		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID(puvn)), jen.Err().DoesNotEqual().ID("nil")).Block(
-			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
+		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID(puvn)), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 		),
 	)
 
@@ -114,7 +116,7 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		jen.Comment("ListHandler is our list route"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(block...),
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		),
 		jen.Line(),
 	}
@@ -128,8 +130,10 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	sn := typ.Name.Singular()
 
 	block := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreateHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CreateHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Line(),
+		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
 	}
 
@@ -138,32 +142,32 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	if typ.BelongsToUser {
 		block = append(block,
 			jen.Comment("determine user ID"),
-			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
 		)
 		notOkayBlock = append(notOkayBlock,
-			jen.ID("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
-			utils.WriteXHeader("res", "StatusBadRequest"),
+			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to request")),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 			jen.Return(),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		block = append(block,
 			jen.Commentf("determine %s ID", typ.BelongsToStruct.SingularCommonName()),
-			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")),
+			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Litf("%s_id", typ.BelongsToStruct.RouteName()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
 		)
 		notOkayBlock = append(notOkayBlock,
-			jen.ID("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
-			utils.WriteXHeader("res", "StatusBadRequest"),
+			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to request")),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 			jen.Return(),
 		)
 	} else if typ.BelongsToNobody {
 		notOkayBlock = append(notOkayBlock,
-			jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
-			utils.WriteXHeader("res", "StatusBadRequest"),
+			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to request")),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 			jen.Return(),
 		)
 	}
@@ -179,34 +183,34 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	if typ.BelongsToUser {
 		block = append(block, jen.ID("input").Dot(constants.UserOwnershipFieldName).Equals().ID("userID"))
 		errNotNilBlock = append(errNotNilBlock,
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("error creating %s", scn)),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error creating %s", scn)),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		)
 
 		block = append(block,
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(jen.Lit("input"), jen.ID("input")),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("input"), jen.ID("input")),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		block = append(block, jen.ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 		errNotNilBlock = append(errNotNilBlock,
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("error creating %s", scn)),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error creating %s", scn)),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		)
 
 		block = append(block,
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(jen.Lit("input"), jen.ID("input")),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("input"), jen.ID("input")),
 		)
 	} else if typ.BelongsToNobody {
 		block = append(block,
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("input"), jen.ID("input")),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("input"), jen.ID("input")),
 		)
 
 		errNotNilBlock = append(errNotNilBlock,
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("error creating %s", scn)),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error creating %s", scn)),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		)
 	}
@@ -227,9 +231,9 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		)),
 		jen.Line(),
 		jen.Comment("encode our response and peace"),
-		utils.WriteXHeader("res", "StatusCreated"),
-		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
-			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
+		utils.WriteXHeader(constants.ResponseVarName, "StatusCreated"),
+		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 		),
 	)
 
@@ -237,7 +241,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Commentf("CreateHandler is our %s creation route", scn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(block...),
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		),
 		jen.Line(),
 	}
@@ -259,8 +263,10 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 		jen.ID(xID),
 	}
 	block := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ExistenceHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ExistenceHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Line(),
+		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
 		jen.Comment("determine relevant information"),
 	}
@@ -272,9 +278,9 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 		)
 		dbCallArgs = append(dbCallArgs, jen.ID("userID"))
 		block = append(block,
-			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
-			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
+			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID(constants.RequestVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 		)
 	}
@@ -285,14 +291,14 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 		)
 		dbCallArgs = append(dbCallArgs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 		block = append(block,
-			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")),
-			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
+			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)),
+			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID(constants.RequestVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 		)
 	} else if typ.BelongsToNobody {
 		block = append(block,
-			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
+			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID(constants.RequestVarName)),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 		)
 	}
@@ -301,22 +307,22 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 	if typ.BelongsToUser {
 		block = append(block, jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 		elseErrBlock = append(elseErrBlock,
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
-			utils.WriteXHeader("res", "StatusNotFound"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 			jen.Return(),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		block = append(block, jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 		elseErrBlock = append(elseErrBlock,
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
-			utils.WriteXHeader("res", "StatusNotFound"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 			jen.Return(),
 		)
 	} else if typ.BelongsToNobody {
 		elseErrBlock = append(elseErrBlock,
-			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
-			utils.WriteXHeader("res", "StatusNotFound"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error checking %s existence in database", scn))),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 			jen.Return(),
 		)
 	}
@@ -328,9 +334,9 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 		jen.If(jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual("database/sql", "ErrNoRows")).Block(elseErrBlock...),
 		jen.Line(),
 		jen.If(jen.ID("exists")).Block(
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
+			jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
 		).Else().Block(
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+			jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
 		),
 	)
 
@@ -338,7 +344,7 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 		jen.Commentf("ExistenceHandler returns a HEAD handler that returns 200 if %s exists, 404 otherwise", scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ExistenceHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(block...),
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		),
 		jen.Line(),
 	}
@@ -360,8 +366,10 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		jen.ID(xID),
 	}
 	block := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ReadHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ReadHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Line(),
+		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
 		jen.Comment("determine relevant information"),
 	}
@@ -373,9 +381,9 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		)
 		dbCallArgs = append(dbCallArgs, jen.ID("userID"))
 		block = append(block,
-			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
-			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
+			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID(constants.RequestVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 		)
 	}
@@ -386,14 +394,14 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		)
 		dbCallArgs = append(dbCallArgs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 		block = append(block,
-			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")),
-			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
-			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
+			jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)),
+			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID(constants.RequestVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 		)
 	} else if typ.BelongsToNobody {
 		block = append(block,
-			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
+			jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID(constants.RequestVarName)),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 		)
 	}
@@ -402,22 +410,22 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 	if typ.BelongsToUser {
 		block = append(block, jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
 		elseErrBlock = append(elseErrBlock,
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error fetching %s from database", scn))),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error fetching %s from database", scn))),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		)
 	}
 	if typ.BelongsToStruct != nil {
 		block = append(block, jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 		elseErrBlock = append(elseErrBlock,
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error fetching %s from database", scn))),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error fetching %s from database", scn))),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		)
 	} else if typ.BelongsToNobody {
 		elseErrBlock = append(elseErrBlock,
-			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error fetching %s from database", scn))),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit(fmt.Sprintf("error fetching %s from database", scn))),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		)
 	}
@@ -427,13 +435,13 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		jen.Commentf("fetch %s from database", scn),
 		jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dot(fmt.Sprintf("Get%s", sn)).Call(dbCallArgs...),
 		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
-			utils.WriteXHeader("res", "StatusNotFound"),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 			jen.Return(),
 		).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(elseErrBlock...),
 		jen.Line(),
 		jen.Comment("encode our response and peace"),
-		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
-			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
+		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 		),
 	)
 
@@ -441,7 +449,7 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		jen.Commentf("ReadHandler returns a GET handler that returns %s", scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(block...),
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		),
 		jen.Line(),
 	}
@@ -458,14 +466,16 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	xID := fmt.Sprintf("%sID", uvn)
 
 	block := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UpdateHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Line(),
+		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
 		jen.Comment("check for parsed input attached to request context"),
 		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn))),
 		jen.If(jen.Op("!").ID("ok")).Block(
-			jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
-			utils.WriteXHeader("res", "StatusBadRequest"),
+			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("no input attached to request")),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -478,20 +488,20 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	}
 
 	if typ.BelongsToUser {
-		block = append(block, jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID("req")))
+		block = append(block, jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)))
 		loggerValues = append(loggerValues, jen.Lit("user_id").MapAssign().ID("userID"))
 		dbCallArgs = append(dbCallArgs, jen.ID("userID"))
 	}
 	if typ.BelongsToStruct != nil {
-		block = append(block, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")))
+		block = append(block, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)))
 		loggerValues = append(loggerValues, jen.Litf("%s_id", typ.BelongsToStruct.RouteName()).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 		dbCallArgs = append(dbCallArgs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
 	loggerValues = append(loggerValues, jen.Litf("%s_id", rn).MapAssign().ID(fmt.Sprintf("%sID", uvn)))
 
 	block = append(block,
-		jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
-		jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
+		jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID(constants.RequestVarName)),
+		jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
 		jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 	)
 
@@ -507,11 +517,11 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Commentf("fetch %s from database", scn),
 		jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Get%s", sn).Call(dbCallArgs...),
 		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
-			utils.WriteXHeader("res", "StatusNotFound"),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 			jen.Return(),
 		).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("error encountered getting %s", scn)),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error encountered getting %s", scn)),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -520,8 +530,8 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Line(),
 		jen.Commentf("update %s in database", scn),
 		jen.If(jen.Err().Equals().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Update%s", sn).Call(constants.CtxVar(), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("error encountered updating %s", scn)),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error encountered updating %s", scn)),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -533,8 +543,8 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		)),
 		jen.Line(),
 		jen.Comment("encode our response and peace"),
-		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
-			jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
+		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 		),
 	)
 
@@ -542,7 +552,7 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Commentf("UpdateHandler returns a handler that updates %s", scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(block...),
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		),
 		jen.Line(),
 	}
@@ -559,8 +569,10 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 	xID := fmt.Sprintf("%sID", uvn)
 
 	blockLines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ArchiveHandler")),
+		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ArchiveHandler")),
 		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Line(),
+		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
 		jen.Comment("determine relevant information"),
 	}
@@ -572,18 +584,18 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 
 	if typ.BelongsToUser {
 		loggerValues = append(loggerValues, jen.Lit("user_id").MapAssign().ID("userID"))
-		blockLines = append(blockLines, jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID("req")))
+		blockLines = append(blockLines, jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)))
 		callArgs = append(callArgs, jen.ID("userID"))
 	}
 	if typ.BelongsToStruct != nil {
 		loggerValues = append(loggerValues, jen.Litf("%s_id", typ.BelongsToStruct.RouteName()).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
-		blockLines = append(blockLines, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")))
+		blockLines = append(blockLines, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)))
 		callArgs = append(callArgs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
 
 	blockLines = append(blockLines,
-		jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID("req")),
-		jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
+		jen.ID(xID).Assign().ID("s").Dot(fmt.Sprintf("%sIDFetcher", uvn)).Call(jen.ID(constants.RequestVarName)),
+		jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)),
 		jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(xID)),
 	)
 
@@ -599,11 +611,11 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 		jen.Commentf("archive the %s in the database", scn),
 		jen.Err().Assign().ID("s").Dot(fmt.Sprintf("%sDatabase", uvn)).Dotf("Archive%s", sn).Call(callArgs...),
 		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
-			utils.WriteXHeader("res", "StatusNotFound"),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 			jen.Return(),
 		).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
-			jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Litf("error encountered deleting %s", scn)),
-			utils.WriteXHeader("res", "StatusInternalServerError"),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error encountered deleting %s", scn)),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		),
 		jen.Line(),
@@ -616,14 +628,14 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 		)),
 		jen.Line(),
 		jen.Comment("encode our response and peace"),
-		utils.WriteXHeader("res", "StatusNoContent"),
+		utils.WriteXHeader(constants.ResponseVarName, "StatusNoContent"),
 	)
 
 	lines := []jen.Code{
 		jen.Commentf("ArchiveHandler returns a handler that archives %s", scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Block(blockLines...),
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(blockLines...),
 		),
 		jen.Line(),
 	}

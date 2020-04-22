@@ -2,6 +2,7 @@ package v1
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -239,12 +240,12 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("sortByKey").MapAssign().Index().String().Values(jen.String().Call(jen.ID("expected").Dot("SortBy"))),
 				),
 				jen.Line(),
-				jen.List(jen.ID("req"), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("https://verygoodsoftwarenotvirus.ru"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("https://verygoodsoftwarenotvirus.ru"), jen.Nil()),
 				utils.AssertNoError(jen.Err(), nil),
-				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				jen.Line(),
-				jen.ID("req").Dot("URL").Dot("RawQuery").Equals().ID("exampleInput").Dot("Encode").Call(),
-				jen.ID("actual").Assign().ID("ExtractQueryFilter").Call(jen.ID("req")),
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("RawQuery").Equals().ID("exampleInput").Dot("Encode").Call(),
+				jen.ID("actual").Assign().ID("ExtractQueryFilter").Call(jen.ID(constants.RequestVarName)),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 		),

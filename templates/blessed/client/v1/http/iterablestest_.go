@@ -96,7 +96,7 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 			"ts",
 			utils.AssertTrue(
 				jen.Qual("strings", "HasSuffix").Call(
-					jen.ID("req").Dot("URL").Dot("String").Call(),
+					jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
 					jen.Qual("strconv", "Itoa").Call(
 						jen.Int().Call(
 							jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
@@ -106,15 +106,15 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 				nil,
 			),
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 				utils.FormatString(
 					typ.BuildFormatStringForHTTPClientExistenceMethodTest(proj),
 					typ.BuildFormatCallArgsForHTTPClientExistenceMethodTest(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
-			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodHead"), nil),
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
+			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodHead"), nil),
+			jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
 		),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
@@ -217,7 +217,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 			"ts",
 			utils.AssertTrue(
 				jen.Qual("strings", "HasSuffix").Call(
-					jen.ID("req").Dot("URL").Dot("String").Call(),
+					jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
 					jen.Qual("strconv", "Itoa").Call(
 						jen.Int().Call(
 							jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
@@ -227,15 +227,15 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 				nil,
 			),
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 				utils.FormatString(
 					typ.BuildFormatStringForHTTPClientRetrievalMethodTest(proj),
 					typ.BuildFormatCallArgsForHTTPClientRetrievalMethodTest(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
-			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
-			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))), nil),
+			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))), nil),
 		),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
@@ -263,7 +263,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 			"ts",
 			utils.AssertTrue(
 				jen.Qual("strings", "HasSuffix").Call(
-					jen.ID("req").Dot("URL").Dot("String").Call(),
+					jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
 					jen.Qual("strconv", "Itoa").Call(
 						jen.Int().Call(
 							jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
@@ -273,15 +273,15 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 				nil,
 			),
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 				utils.FormatString(
 					typ.BuildFormatStringForHTTPClientRetrievalMethodTest(proj),
 					typ.BuildFormatCallArgsForHTTPClientRetrievalMethodTest(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
-			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
-			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Lit("BLAH")), nil),
+			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.Lit("BLAH")), nil),
 		),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
@@ -372,17 +372,17 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		utils.BuildTestServer(
 			"ts",
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 				uriDec,
 				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(
-				jen.ID("req").Dot("Method"),
+				jen.ID(constants.RequestVarName).Dot("Method"),
 				jen.Qual("net/http", "MethodGet"),
 				nil,
 			),
 			utils.RequireNoError(
-				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.IDf("example%sList", ts)),
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.IDf("example%sList", ts)),
 				nil,
 			),
 		),
@@ -419,17 +419,17 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		utils.BuildTestServer(
 			"ts",
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 				uriDec,
 				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(
-				jen.ID("req").Dot("Method"),
+				jen.ID(constants.RequestVarName).Dot("Method"),
 				jen.Qual("net/http", "MethodGet"),
 				nil,
 			),
 			utils.RequireNoError(
-				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Lit("BLAH")),
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.Lit("BLAH")),
 				nil,
 			),
 		),
@@ -529,14 +529,14 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 		utils.BuildTestServer(
 			"ts",
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 				uriDec,
 				jen.Lit("expected and actual paths do not match"),
 			),
-			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
+			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 			jen.Line(),
 			jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)),
-			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")), nil),
 			jen.Line(),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
@@ -552,7 +552,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 			}(),
 			utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Input")), jen.ID("x"), nil),
 			jen.Line(),
-			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))), nil),
 		),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
@@ -640,16 +640,16 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 		utils.BuildTestServer(
 			"ts",
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 				utils.FormatString(
 					typ.BuildFormatStringForHTTPClientUpdateMethodTest(proj),
 					typ.BuildFormatCallArgsForHTTPClientUpdateTest(proj)...,
 				),
 				jen.Lit("expected and actual paths do not match"),
 			),
-			utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
+			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
 			utils.AssertNoError(
-				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))),
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))),
 				nil,
 			),
 		),
@@ -745,7 +745,7 @@ func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataTyp
 		utils.BuildTestServer(
 			"ts",
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Path"),
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 				utils.FormatString(
 					typ.BuildFormatStringForHTTPClientArchiveMethodTest(proj),
 					typ.BuildArgsForHTTPClientArchiveMethodTestURLFormatCall(proj)...,
@@ -753,7 +753,7 @@ func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataTyp
 				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(
-				jen.ID("req").Dot("Method"),
+				jen.ID(constants.RequestVarName).Dot("Method"),
 				jen.Qual("net/http", "MethodDelete"),
 				nil,
 			),

@@ -84,12 +84,12 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 			jen.Qual("net/http", "HandlerFunc").Callln(
 				jen.Func().Params(
-					jen.ID("res").Qual("net/http", "ResponseWriter"),
-					jen.ID("req").PointerTo().Qual("net/http", "Request"),
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 				).Block(
 					utils.AssertTrue(
 						jen.Qual("strings", "HasSuffix").Call(
-							jen.ID("req").Dot("URL").Dot("String").Call(),
+							jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
 							jen.Qual("strconv", "Itoa").Call(
 								jen.Int().Call(
 									jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
@@ -102,16 +102,16 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 						utils.FormatString("/api/v1/oauth2/clients/%d",
 							jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 						),
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
 						nil,
 					),
 				),
@@ -204,21 +204,21 @@ func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 			jen.Qual("net/http", "HandlerFunc").Callln(
 				jen.Func().Params(
-					jen.ID("res").Qual("net/http", "ResponseWriter"),
-					jen.ID("req").PointerTo().Qual("net/http", "Request"),
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 				).Block(
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						jen.Lit("/api/v1/oauth2/clients"),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("OAuth2ClientList"))),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("OAuth2ClientList"))),
 						nil,
 					),
 				),
@@ -286,7 +286,7 @@ func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Co
 				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2ClientCreationInputFromClient").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
 				jen.List(
-					jen.ID("req"),
+					jen.ID(constants.RequestVarName),
 					jen.Err(),
 				).Assign().ID("c").Dot("BuildCreateOAuth2ClientRequest").Call(
 					constants.CtxVar(),
@@ -294,14 +294,14 @@ func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Co
 					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				jen.Line(),
-				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.AssertNoError(
 					jen.Err(),
 					nil,
 				),
 				utils.AssertEqual(
 					jen.Qual("net/http", "MethodPost"),
-					jen.ID("req").Dot("Method"),
+					jen.ID(constants.RequestVarName).Dot("Method"),
 					nil,
 				),
 			),
@@ -326,21 +326,21 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
-							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").PointerTo().Qual("net/http", "Request"),
+							jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+							jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
 								jen.Lit("/oauth2/client"),
-								jen.ID("req").Dot("URL").Dot("Path"),
+								jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 								jen.Lit("expected and actual paths do not match"),
 							),
 							utils.AssertEqual(
-								jen.ID("req").Dot("Method"),
+								jen.ID(constants.RequestVarName).Dot("Method"),
 								jen.Qual("net/http", "MethodPost"),
 								nil,
 							),
 							utils.RequireNoError(
-								jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
+								jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
 								nil,
 							),
 						),
@@ -381,20 +381,20 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 					jen.Qual("net/http", "HandlerFunc").Callln(
 						jen.Func().Params(
-							jen.ID("res").Qual("net/http", "ResponseWriter"),
-							jen.ID("req").PointerTo().Qual("net/http", "Request"),
+							jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+							jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 						).Block(
 							utils.AssertEqual(
-								jen.ID("req").Dot("URL").Dot("Path"),
+								jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 								jen.Lit("/oauth2/client"),
 								jen.Lit("expected and actual paths do not match"),
 							),
 							utils.AssertEqual(
-								jen.ID("req").Dot("Method"),
+								jen.ID(constants.RequestVarName).Dot("Method"),
 								jen.Qual("net/http", "MethodPost"),
 								nil,
 							),
-							jen.List(jen.Underscore(), jen.Err()).Assign().ID("res").Dot("Write").Call(jen.Index().Byte().Call(jen.Lit("BLAH"))),
+							jen.List(jen.Underscore(), jen.Err()).Assign().ID(constants.ResponseVarName).Dot("Write").Call(jen.Index().Byte().Call(jen.Lit("BLAH"))),
 							utils.AssertNoError(jen.Err(), nil),
 						),
 					),
@@ -486,11 +486,11 @@ func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 			jen.Qual("net/http", "HandlerFunc").Callln(
 				jen.Func().Params(
-					jen.ID("res").Qual("net/http", "ResponseWriter"),
-					jen.ID("req").PointerTo().Qual("net/http", "Request"),
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 				).Block(
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						utils.FormatString(
 							"/api/v1/oauth2/clients/%d",
 							jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
@@ -498,7 +498,7 @@ func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodDelete"),
 						nil,
 					),

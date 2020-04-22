@@ -72,7 +72,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildGetUserRequest").Call(
 			constants.CtxVar(),
@@ -90,7 +90,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			constants.CtxVar(),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.AddressOf().ID("user"),
 		),
 		jen.Return().List(
@@ -157,7 +157,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 		jen.ID("users").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserList").Values(),
 		jen.Line(),
 		jen.List(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildGetUsersRequest").Call(
 			constants.CtxVar(),
@@ -175,7 +175,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			constants.CtxVar(),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.AddressOf().ID("users"),
 		),
 		jen.Return().List(jen.ID("users"), jen.Err()),
@@ -239,7 +239,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 		jen.ID("user").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
 		jen.Line(),
 		jen.List(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildCreateUserRequest").Call(
 			constants.CtxVar(),
@@ -257,7 +257,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Err().Equals().ID("c").Dot("executeUnauthenticatedDataRequest").Call(
 			constants.CtxVar(),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.AddressOf().ID("user"),
 		),
 		jen.Return().List(jen.ID("user"), jen.Err()),
@@ -323,7 +323,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildArchiveUserRequest").Call(
 			constants.CtxVar(),
@@ -338,7 +338,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Return().ID("c").Dot("executeRequest").Call(
 			constants.CtxVar(),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Nil(),
 		),
 	}
@@ -416,7 +416,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 			jen.Return(jen.Nil(), utils.Error("nil input provided")),
 		),
 		jen.Line(),
-		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(constants.CtxVar(), jen.ID("input")),
+		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(constants.CtxVar(), jen.ID("input")),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(
 				jen.Nil(),
@@ -425,10 +425,10 @@ func buildLogin(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 		jen.List(
-			jen.ID("res"),
+			jen.ID(constants.ResponseVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("plainClient").Dot("Do").Call(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(
@@ -439,9 +439,9 @@ func buildLogin(proj *models.Project) []jen.Code {
 				),
 			),
 		),
-		jen.ID("c").Dot("closeResponseBody").Call(jen.ID("res")),
+		jen.ID("c").Dot("closeResponseBody").Call(jen.ID(constants.ResponseVarName)),
 		jen.Line(),
-		jen.ID("cookies").Assign().ID("res").Dot("Cookies").Call(),
+		jen.ID("cookies").Assign().ID(constants.ResponseVarName).Dot("Cookies").Call(),
 		jen.If(jen.Len(
 			jen.ID("cookies"),
 		).GreaterThan().Zero(),

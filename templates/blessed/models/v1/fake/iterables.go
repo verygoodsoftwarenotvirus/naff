@@ -121,7 +121,7 @@ func buildBuildFakeSomethingUpdateInputFromSomething(proj *models.Project, typ m
 	sn := typ.Name.Singular()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 	uvn := typ.Name.UnexportedVarName()
-	funcName := fmt.Sprintf("BuildFakeItemUpdateInputFrom%s", sn)
+	funcName := fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)
 
 	var block []jen.Code
 	for _, field := range typ.Fields {

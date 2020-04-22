@@ -117,9 +117,9 @@ func webhookDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("buildErrorLogFunc").Params(jen.ID("w").PointerTo().ID("Webhook"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Func().Params(jen.Error())).Block(
+		jen.Func().ID("buildErrorLogFunc").Params(jen.ID("w").PointerTo().ID("Webhook"), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Func().Params(jen.Error())).Block(
 			jen.Return().Func().Params(jen.Err().Error()).Block(
-				jen.ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+				jen.ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 					jen.Lit("url").MapAssign().ID("w").Dot("URL"),
 					jen.Lit("method").MapAssign().ID("w").Dot("Method"),
 					jen.Lit("content_type").MapAssign().ID("w").Dot("ContentType")),
@@ -133,9 +133,9 @@ func webhookDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("ToListener creates a newsman Listener from a Webhook"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("ToListener").Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Block(
+		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("ToListener").Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Block(
 			jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewWebhookListener").Callln(
-				jen.ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID("logger")),
+				jen.ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID(constants.LoggerVarName)),
 				jen.AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebhookConfig").Valuesln(
 					jen.ID("Method").MapAssign().ID("w").Dot("Method"),
 					jen.ID("URL").MapAssign().ID("w").Dot("URL"),

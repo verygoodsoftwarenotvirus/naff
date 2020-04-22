@@ -49,7 +49,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 			jen.ID("config").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 			jen.ID("router").PointerTo().Qual("github.com/go-chi/chi", "Mux"),
 			jen.ID("httpServer").PointerTo().Qual("net/http", "Server"),
-			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		)
 
@@ -89,7 +89,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 			jen.ID("oauth2Service").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer"),
 			jen.ID("webhooksService").Qual(proj.ModelsV1Package(), "WebhookDataServer"),
 			jen.ID("db").Qual(proj.DatabaseV1Package(), "Database"),
-			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		)
 
@@ -110,7 +110,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 			jen.ID("config").MapAssign().ID("cfg"),
 			jen.ID("encoder").MapAssign().ID("encoder"),
 			jen.ID("httpServer").MapAssign().ID("provideHTTPServer").Call(),
-			jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.Lit("api_server")),
+			jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("api_server")),
 		}
 
 		// if proj.EnableNewsman {
@@ -141,7 +141,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		lines := []jen.Code{
 			jen.If(jen.Len(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).LessThan().Lit(32)).Block(
 				jen.Err().Assign().Qual("errors", "New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
-				jen.ID("logger").Dot("Error").Call(jen.Err(), jen.Lit("cookie secret failure")),
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("cookie secret failure")),
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
@@ -149,11 +149,11 @@ func serverDotGo(proj *models.Project) *jen.File {
 				buildServerDecLines()...,
 			),
 			jen.Line(),
-			jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID("logger")), jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidTracingProvider")).Block(
+			jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID(constants.LoggerVarName)), jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidTracingProvider")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("ih"), jen.Err()).Assign().ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID("logger")),
+			jen.List(jen.ID("ih"), jen.Err()).Assign().ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID(constants.LoggerVarName)),
 			jen.If(jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidMetricsProvider")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
@@ -179,7 +179,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 				jen.ID("wh").Assign().ID("allWebhooks").Dot("Webhooks").Index(jen.ID("i")),
 				jen.Comment("NOTE: we must guarantee that whatever is stored in the database is valid, otherwise"),
 				jen.Comment("newsman will try (and fail) to execute requests constantly"),
-				jen.ID("l").Assign().ID("wh").Dot("ToListener").Call(jen.ID("srv").Dot("logger")),
+				jen.ID("l").Assign().ID("wh").Dot("ToListener").Call(jen.ID("srv").Dot(constants.LoggerVarName)),
 				jen.ID("srv").Dot("newsManager").Dot("TuneIn").Call(jen.ID("l")),
 			),
 			jen.Line(),
@@ -226,11 +226,11 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("Serve").Params().Block(
 			jen.ID("s").Dot("httpServer").Dot("Addr").Equals().Qual("fmt", "Sprintf").Call(jen.Lit(":%d"), jen.ID("s").Dot("config").Dot("Server").Dot("HTTPPort")),
-			jen.ID("s").Dot("logger").Dot("Debug").Call(utils.FormatString("Listening for HTTP requests on %q", jen.ID("s").Dot("httpServer").Dot("Addr"))),
+			jen.ID("s").Dot(constants.LoggerVarName).Dot("Debug").Call(utils.FormatString("Listening for HTTP requests on %q", jen.ID("s").Dot("httpServer").Dot("Addr"))),
 			jen.Line(),
 			jen.Comment("returns ErrServerClosed on graceful close"),
 			jen.If(jen.Err().Assign().ID("s").Dot("httpServer").Dot("ListenAndServe").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.ID("s").Dot("logger").Dot("Error").Call(jen.Err(), jen.Lit("server shutting down")),
+				jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("server shutting down")),
 				jen.If(jen.Err().IsEqualTo().Qual("net/http", "ErrServerClosed")).Block(
 					jen.Comment("NOTE: there is a chance that next line won't have time to run,"),
 					jen.Comment("as main() doesn't wait for this goroutine to stop."),

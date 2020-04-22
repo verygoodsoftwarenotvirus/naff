@@ -2,6 +2,7 @@ package oauth2clients
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -96,13 +97,13 @@ func oauth2HandlerMockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("ValidationBearerToken").Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Qual("gopkg.in/oauth2.v3",
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("ValidationBearerToken").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Qual("gopkg.in/oauth2.v3",
 			"TokenInfo",
 		),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot(
 				"Called",
-			).Call(jen.ID("req")),
+			).Call(jen.ID(constants.RequestVarName)),
 			jen.Return().List(
 				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("gopkg.in/oauth2.v3", "TokenInfo")),
 				jen.ID("args").Dot("Error").Call(jen.One()),
@@ -112,19 +113,19 @@ func oauth2HandlerMockTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("HandleAuthorizeRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot(
 				"Called",
-			).Call(jen.ID("res"), jen.ID("req")).Dot("Error").Call(jen.Zero()),
+			).Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("HandleTokenRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot(
 				"Called",
-			).Call(jen.ID("res"), jen.ID("req")).Dot("Error").Call(jen.Zero()),
+			).Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)

@@ -2,6 +2,7 @@ package encoding
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -60,19 +61,19 @@ func encodingDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("EncodeResponse encodes responses"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("EncodeResponse").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.Error()).Block(
-			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID("res").Dot("Header").Call().Dot("Get").Call(jen.ID("ContentTypeHeader"))),
+		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("EncodeResponse").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.Error()).Block(
+			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID(constants.ResponseVarName).Dot("Header").Call().Dot("Get").Call(jen.ID("ContentTypeHeader"))),
 			jen.If(jen.ID("ct").IsEqualTo().EmptyString()).Block(
 				jen.ID("ct").Equals().ID("DefaultContentType"),
 			),
 			jen.Line(),
 			jen.Var().ID("e").ID("encoder"),
 			jen.Switch(jen.ID("ct")).Block(
-				jen.Case(jen.ID("XMLContentType")).Block(jen.ID("e").Equals().Qual("encoding/xml", "NewEncoder").Call(jen.ID("res"))),
-				jen.Default().Block(jen.ID("e").Equals().Qual("encoding/json", "NewEncoder").Call(jen.ID("res"))),
+				jen.Case(jen.ID("XMLContentType")).Block(jen.ID("e").Equals().Qual("encoding/xml", "NewEncoder").Call(jen.ID(constants.ResponseVarName))),
+				jen.Default().Block(jen.ID("e").Equals().Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName))),
 			),
 			jen.Line(),
-			jen.ID("res").Dot("Header").Call().Dot("Set").Call(jen.ID("ContentTypeHeader"), jen.ID("ct")),
+			jen.ID(constants.ResponseVarName).Dot("Header").Call().Dot("Set").Call(jen.ID("ContentTypeHeader"), jen.ID("ct")),
 			jen.Return().ID("e").Dot("Encode").Call(jen.ID("v")),
 		),
 		jen.Line(),
@@ -81,8 +82,8 @@ func encodingDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Comment("DecodeRequest decodes responses"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("DecodeRequest").Params(jen.ID("req").PointerTo().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
-			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID("req").Dot("Header").Dot("Get").Call(jen.ID("ContentTypeHeader"))),
+		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("DecodeRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
+			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID(constants.RequestVarName).Dot("Header").Dot("Get").Call(jen.ID("ContentTypeHeader"))),
 			jen.If(jen.ID("ct").IsEqualTo().EmptyString()).Block(
 				jen.ID("ct").Equals().ID("DefaultContentType"),
 			),
@@ -90,10 +91,10 @@ func encodingDotGo(proj *models.Project) *jen.File {
 			jen.Var().ID("d").ID("decoder"),
 			jen.Switch(jen.ID("ct")).Block(
 				jen.Case(jen.ID("XMLContentType")).Block(
-					jen.ID("d").Equals().Qual("encoding/xml", "NewDecoder").Call(jen.ID("req").Dot("Body")),
+					jen.ID("d").Equals().Qual("encoding/xml", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")),
 				),
 				jen.Default().Block(
-					jen.ID("d").Equals().Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")),
+					jen.ID("d").Equals().Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")),
 				),
 			),
 			jen.Line(),

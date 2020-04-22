@@ -73,7 +73,7 @@ func buildGetWebhook(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildGetWebhookRequest").Call(
 			constants.CtxVar(),
@@ -90,7 +90,7 @@ func buildGetWebhook(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			constants.CtxVar(),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.AddressOf().ID("webhook"),
 		),
 		jen.Return().List(
@@ -153,7 +153,7 @@ func buildGetWebhooks(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildGetWebhooksRequest").Call(
 			constants.CtxVar(),
@@ -171,7 +171,7 @@ func buildGetWebhooks(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Err().Equals().ID("c").Dot("retrieve").Call(
 			constants.CtxVar(),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.AddressOf().ID("webhooks"),
 		),
 		jen.Return().List(
@@ -234,7 +234,7 @@ func buildCreateWebhook(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildCreateWebhookRequest").Call(
 			constants.CtxVar(),
@@ -252,7 +252,7 @@ func buildCreateWebhook(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Err().Equals().ID("c").Dot("executeRequest").Call(
 			constants.CtxVar(),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.AddressOf().ID("webhook"),
 		),
 		jen.Return().List(
@@ -319,7 +319,7 @@ func buildUpdateWebhook(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildUpdateWebhookRequest").Call(
 			constants.CtxVar(),
@@ -334,7 +334,7 @@ func buildUpdateWebhook(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Return().ID("c").Dot("executeRequest").Call(
 			constants.CtxVar(),
-			jen.ID("req"), jen.AddressOf().ID("updated"),
+			jen.ID(constants.RequestVarName), jen.AddressOf().ID("updated"),
 		),
 	}
 
@@ -394,7 +394,7 @@ func buildArchiveWebhook(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildArchiveWebhookRequest").Call(
 			constants.CtxVar(),
@@ -409,7 +409,7 @@ func buildArchiveWebhook(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Return().ID("c").Dot("executeRequest").Call(
 			constants.CtxVar(),
-			jen.ID("req"),
+			jen.ID(constants.RequestVarName),
 			jen.Nil(),
 		),
 	}

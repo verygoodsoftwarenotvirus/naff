@@ -24,7 +24,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			jen.Comment("OAuth2ClientValidator is a stand-in interface, where we needed to abstract"),
 			jen.Comment("a regular structure with an interface for testing purposes"),
 			jen.ID("OAuth2ClientValidator").Interface(
-				jen.ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()),
+				jen.ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("cookieEncoderDecoder is a stand-in interface for gorilla/securecookie"),
@@ -39,7 +39,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			jen.Comment("Service handles authentication service-wide"),
 			jen.ID("Service").Struct(
 				jen.ID("config").Qual(proj.InternalConfigV1Package(), "AuthSettings"),
-				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID("userDB").Qual(proj.ModelsV1Package(), "UserDataManager"),
@@ -55,7 +55,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ProvideAuthService builds a new AuthService"),
 		jen.Line(),
 		jen.Func().ID("ProvideAuthService").Paramsln(
-			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("cfg").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 			jen.ID("database").Qual(proj.ModelsV1Package(), "UserDataManager"),
@@ -68,7 +68,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
-				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.ID("serviceName")),
+				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("encoderDecoder").MapAssign().ID("encoder"),
 				jen.ID("config").MapAssign().ID("cfg").Dot("Auth"),
 				jen.ID("userDB").MapAssign().ID("database"),

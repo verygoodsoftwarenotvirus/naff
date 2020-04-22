@@ -31,7 +31,7 @@ func clientDotGo(proj *models.Project) *jen.File {
 		jen.Comment("the actual database querying is performed."),
 		jen.Line(),
 		jen.Type().ID("Client").Struct(jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
-			jen.ID("debug").Bool(), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")),
+			jen.ID("debug").Bool(), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")),
 		jen.Line(),
 	)
 
@@ -85,24 +85,24 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
 			jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
 			jen.ID("debug").Bool(),
-			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 		).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.Error()).Block(
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("querier").MapAssign().ID("querier"),
 				jen.ID("debug").MapAssign().ID("debug"),
-				jen.ID("logger").MapAssign().ID("logger").Dot("WithName").Call(jen.Lit("db_client")),
+				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("db_client")),
 			),
 			jen.Line(),
 			jen.If(jen.ID("debug")).Block(
-				jen.ID("c").Dot("logger").Dot("SetLevel").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "DebugLevel")),
+				jen.ID("c").Dot(constants.LoggerVarName).Dot("SetLevel").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "DebugLevel")),
 			),
 			jen.Line(),
-			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("migrating querier")),
+			jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("migrating querier")),
 			jen.If(jen.Err().Assign().ID("c").Dot("querier").Dot("Migrate").Call(constants.CtxVar()), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
-			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("querier migrated!")),
+			jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("querier migrated!")),
 			jen.Line(),
 			jen.Return().List(jen.ID("c"), jen.Nil()),
 		),

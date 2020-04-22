@@ -69,14 +69,14 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 							jen.Return().ID("c").Dot("BuildHealthCheckRequest").Call(constants.CtxVar()),
 						),
 						jen.Line(),
-						jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildCreateOAuth2ClientRequest").Callln(
+						jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot("BuildCreateOAuth2ClientRequest").Callln(
 							constants.CtxVar(),
 							jen.ID("cookie"),
 							jen.AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
 								jen.ID("UserLoginInput").MapAssign().PointerTo().ID("uli"),
 							),
 						),
-						jen.Return().List(jen.ID("req"), jen.Err()),
+						jen.Return().List(jen.ID(constants.RequestVarName), jen.Err()),
 					),
 					jen.ID("Weight").MapAssign().Lit(100)), jen.Lit("GetOAuth2Client").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("GetOAuth2Client"), jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(

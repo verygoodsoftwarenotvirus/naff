@@ -345,7 +345,54 @@ var (
 	gamut = &models.Project{
 		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
 		Name:       wordsmith.FromSingularPascalCase("Gamut"),
-		DataTypes:  append(forumDataTypes, everyType),
+		//DataTypes:  append(forumDataTypes, everyType),
+		DataTypes: append(append(forumDataTypes, everyType),
+			models.DataType{
+				Name:             wordsmith.FromSingularPascalCase("Recipe"),
+				BelongsToUser:    true,
+				RestrictedToUser: true,
+				BelongsToStruct:  nil,
+				Fields: []models.DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Title"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+			},
+			models.DataType{
+				Name:             wordsmith.FromSingularPascalCase("RecipeStep"),
+				BelongsToUser:    false,
+				RestrictedToUser: false,
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("Recipe"),
+				Fields: []models.DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Action"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+			},
+			models.DataType{
+				Name:             wordsmith.FromSingularPascalCase("RecipeStepIngredient"),
+				BelongsToUser:    false,
+				RestrictedToUser: false,
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("RecipeStep"),
+				Fields: []models.DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+			},
+		),
 	}
 
 	projects = map[string]*models.Project{
