@@ -179,6 +179,15 @@ type sqlBuilder interface {
 	ToSql() (string, []interface{}, error)
 }
 
+func convertArgsToCode(args []interface{}) (code []jen.Code) {
+	for _, arg := range args {
+		if c, ok := arg.(models.Coder); ok {
+			code = append(code, c.Code())
+		}
+	}
+	return
+}
+
 func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, queryName string, queryBuilder sqlBuilder, expectedArgs, callArgs, preQueryLines []jen.Code) []jen.Code {
 	const (
 		expectedQueryVarName = "expectedQuery"
@@ -201,13 +210,7 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, query
 		log.Panicf("error building %q: %v", queryName, err)
 	}
 
-	coderArgs := []jen.Code{}
-	for _, arg := range args {
-		if c, ok := arg.(models.Coder); ok {
-			coderArgs = append(coderArgs, c.Code())
-		}
-	}
-	if len(coderArgs) == len(args) {
+	if coderArgs := convertArgsToCode(args); len(coderArgs) == len(args) {
 		expectedArgs = coderArgs
 	}
 

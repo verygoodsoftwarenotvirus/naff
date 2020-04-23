@@ -242,50 +242,6 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 	return ret
 }
 
-/*
-package main
-
-import (
-	"log"
-
-	"github.com/Masterminds/squirrel"
-	"github.com/dave/jennifer/jen"
-)
-
-type Coder interface {
-	Code() jen.Code
-}
-
-type snippet struct {
-	repr jen.Code
-}
-
-func (s snippet) Code() jen.Code {
-	return s.repr
-}
-
-func main() {
-	sqlBuilder := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
-
-	c := snippet{
-		repr: jen.Id("farts").Op(":=").Lit("butts"),
-	}
-
-	q, args, err := sqlBuilder.Select("things", "and", "stuff").From("table").Where(squirrel.Eq{
-		"things": c,
-	}).ToSql()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println(q)
-	if cdr, ok := args[0].(Coder); ok {
-		log.Printf("%#v", cdr.Code())
-	}
-}
-*/
-
 func buildTestDBBuildSomethingExistsQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
@@ -322,21 +278,34 @@ func buildTestDBSomethingExists(proj *models.Project, dbvendor wordsmith.SuperPa
 		eqArgs[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = whateverValue
 	}
 
-	qb := queryBuilderForDatabase(dbvendor)
-	query, _, _ := qb.Select(fmt.Sprintf("%s.id", tableName)).
+	whereValues := typ.BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(proj)
+	qb := queryBuilderForDatabase(dbvendor).Select(fmt.Sprintf("%s.id", tableName)).
 		Prefix(existencePrefix).
-		From(tableName).
-		Where(eqArgs).
-		Suffix(existenceSuffix).
-		ToSql()
+		From(tableName)
+
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
+
+	qb = qb.Suffix(existenceSuffix).
+		Where(whereValues)
+
+	query, args, _ := qb.ToSql()
 	actualCallArgs := typ.BuildArgsForDBQuerierExistenceMethodTest(proj)
+	mockDBCallArgs := convertArgsToCode(args)
 
 	buildFirstSubtestBlock := func(typ models.DataType) []jen.Code {
 		lines := typ.BuildDependentObjectsForDBQueriersExistenceMethodTest(proj)
 
-		mockDBCall := jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-			Dotln("WithArgs").Call(actualCallArgs[1:]...).
-			Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("exists"))).Dot("AddRow").Call(jen.True()))
+		mockDBCall := jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dotln("WithArgs")
+
+		if len(mockDBCallArgs) > 4 {
+			mockDBCall = mockDBCall.Callln(mockDBCallArgs...)
+		} else {
+			mockDBCall = mockDBCall.Call(mockDBCallArgs...)
+		}
+
+		mockDBCall = mockDBCall.Dotln("WillReturnRows").
+			Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").
+				Call(jen.Index().String().Values(jen.Lit("exists"))).Dot("AddRow").Call(jen.True()))
 
 		lines = append(lines,
 			jen.Line(),
