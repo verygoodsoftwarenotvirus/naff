@@ -7,6 +7,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"path/filepath"
+	"strings"
 )
 
 // DataType represents a data model
@@ -30,6 +31,7 @@ type DataField struct {
 }
 
 func buildFakeVarName(typName string) string {
+	typName = strings.ToUpper(string(typName[0])) + typName[1:]
 	return fmt.Sprintf("example%s", typName)
 }
 
@@ -238,14 +240,6 @@ func (typ DataType) BuildDBQuerierExistenceQueryMethodConditionalClauses(proj *P
 	return typ.buildDBQuerierSingleInstanceQueryMethodConditionalClauses(proj)
 }
 
-func (typ DataType) BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(proj *Project) squirrel.Eq {
-	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(proj)
-}
-
-func (typ DataType) BuildDBQuerierRetrievalQueryMethodConditionalClauses(proj *Project) []jen.Code {
-	return typ.buildDBQuerierSingleInstanceQueryMethodConditionalClauses(proj)
-}
-
 type Coder interface {
 	Code() jen.Code
 }
@@ -256,8 +250,8 @@ type codeWrapper struct {
 	repr jen.Code
 }
 
-func NewCodeWrapper(c jen.Code) Coder {
-	return codeWrapper{}
+func newCodeWrapper(c jen.Code) Coder {
+	return codeWrapper{repr: c}
 }
 
 func (c codeWrapper) Code() jen.Code {
@@ -266,35 +260,41 @@ func (c codeWrapper) Code() jen.Code {
 
 func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(proj *Project) squirrel.Eq {
 	n := typ.Name
-	uvn := n.UnexportedVarName()
-	puvn := n.PluralUnexportedVarName()
+	sn := n.Singular()
 	tableName := typ.Name.PluralRouteName()
 
 	whereValues := squirrel.Eq{
-		fmt.Sprintf("%s.id", tableName): fmt.Sprintf("%sID", uvn),
+		fmt.Sprintf("%s.id", tableName): newCodeWrapper(jen.ID(buildFakeVarName(sn)).Dot("ID")),
 	}
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
-		whereValues[fmt.Sprintf("%s.id", tableName)] = fmt.Sprintf("%sID", pt.Name.UnexportedVarName())
+		pTableName := pt.Name.PluralRouteName()
+		whereValues[fmt.Sprintf("%s.id", pTableName)] = newCodeWrapper(jen.ID(buildFakeVarName(pt.Name.UnexportedVarName())).Dot("ID"))
 
 		if pt.BelongsToUser && pt.RestrictedToUser {
-			whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = "userID"
+			whereValues[fmt.Sprintf("%s.belongs_to_user", pTableName)] = newCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
 		}
 
 		if pt.BelongsToStruct != nil {
-			whereValues[fmt.Sprintf("%s.belongs_to_%s",
-				tableName, pt.Name.RouteName(),
-			)] = fmt.Sprintf("%sID", pt.BelongsToStruct.UnexportedVarName())
+			whereValues[fmt.Sprintf("%s.belongs_to_%s", pTableName, pt.BelongsToStruct.RouteName())] = newCodeWrapper(jen.ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
 		}
 	}
 
 	if typ.BelongsToStruct != nil {
-		whereValues[fmt.Sprintf("%s.%s", fmt.Sprintf("%sTableName", puvn), fmt.Sprintf("%sTableOwnershipColumn", puvn))] = fmt.Sprintf("%sID", typ.BelongsToStruct.UnexportedVarName())
+		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = newCodeWrapper(jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
 	}
 	if typ.BelongsToUser && typ.RestrictedToUser {
-		whereValues[fmt.Sprintf("%s.%s", fmt.Sprintf("%sTableName", puvn), fmt.Sprintf("%sUserOwnershipColumn", puvn))] = "userID"
+		whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = newCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
 	return whereValues
+}
+
+func (typ DataType) BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(proj *Project) squirrel.Eq {
+	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(proj)
+}
+
+func (typ DataType) BuildDBQuerierRetrievalQueryMethodConditionalClauses(proj *Project) []jen.Code {
+	return typ.buildDBQuerierSingleInstanceQueryMethodConditionalClauses(proj)
 }
 
 func (typ DataType) BuildDBQuerierListRetrievalQueryMethodConditionalClauses(proj *Project) []jen.Code {
@@ -474,13 +474,9 @@ func (typ DataType) buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj *Pr
 	owners := proj.FindOwnerTypeChain(typ)
 	sn := typ.Name.Singular()
 
-	for i, pt := range owners {
-		if i == len(owners)-1 && typ.BelongsToStruct != nil {
-			params = append(params, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-		} else {
-			pts := pt.Name.Singular()
-			params = append(params, jen.ID(buildFakeVarName(pts)).Dot("ID"))
-		}
+	for _, pt := range owners {
+		pts := pt.Name.Singular()
+		params = append(params, jen.ID(buildFakeVarName(pts)).Dot("ID"))
 	}
 	params = append(params, jen.ID(buildFakeVarName(sn)).Dot("ID"))
 
@@ -492,10 +488,6 @@ func (typ DataType) buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj *Pr
 }
 
 func (typ DataType) BuildDBQuerierBuildSomethingExistsQueryTestCallArgs(proj *Project) []jen.Code {
-	return typ.buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj)
-}
-
-func (typ DataType) BuildDBQuerierBuildSomethingExistsQueryTestExpectedArgs(proj *Project) []jen.Code {
 	return typ.buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj)
 }
 

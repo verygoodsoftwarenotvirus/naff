@@ -196,9 +196,19 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, query
 	dbi := dbvendor.LowercaseAbbreviation()
 	dbfl := dbi[0]
 
-	expectedQuery, _, err := queryBuilder.ToSql()
+	expectedQuery, args, err := queryBuilder.ToSql()
 	if err != nil {
 		log.Panicf("error building %q: %v", queryName, err)
+	}
+
+	coderArgs := []jen.Code{}
+	for _, arg := range args {
+		if c, ok := arg.(models.Coder); ok {
+			coderArgs = append(coderArgs, c.Code())
+		}
+	}
+	if len(coderArgs) == len(args) {
+		expectedArgs = coderArgs
 	}
 
 	block := append(

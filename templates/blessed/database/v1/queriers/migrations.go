@@ -198,7 +198,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 
 		scriptParts := []string{
 			fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
-			`				"id" BIGSERIAL NOT NULL PRIMARY KEY,`,
+			`				"id" BIGSERIAL NOT NULL PRIMARY KEY`,
 		}
 
 		for _, field := range typ.Fields {
@@ -212,26 +212,52 @@ func makePostgresMigrations(proj *models.Project) []migration {
 				query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
 			}
 
-			scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
+			scriptParts = append(scriptParts, fmt.Sprintf("%s", query))
 		}
 
 		scriptParts = append(scriptParts,
-			`				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),`,
-			`				"updated_on" BIGINT DEFAULT NULL,`,
-			`				"archived_on" BIGINT DEFAULT NULL,`,
+			`				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW())`,
+			`				"updated_on" BIGINT DEFAULT NULL`,
 		)
+
+		if !typ.BelongsToUser && typ.BelongsToStruct == nil {
+			scriptParts = append(scriptParts,
+				`				"archived_on" BIGINT DEFAULT NULL`,
+			)
+		} else {
+			scriptParts = append(scriptParts,
+				`				"archived_on" BIGINT DEFAULT NULL`, // note the comma
+			)
+		}
 
 		if typ.BelongsToUser {
 			scriptParts = append(scriptParts,
-				`				"belongs_to_user" BIGINT NOT NULL,`,
+				`				"belongs_to_user" BIGINT NOT NULL`,
+			)
+		}
+		if typ.BelongsToStruct != nil {
+			scriptParts = append(scriptParts,
+				fmt.Sprintf(`				"belongs_to_%s" BIGINT NOT NULL`, typ.BelongsToStruct.RouteName()),
+			)
+		}
+
+		if typ.BelongsToUser {
+			scriptParts = append(scriptParts,
 				`				FOREIGN KEY("belongs_to_user") REFERENCES users(id)`,
 			)
 		}
 		if typ.BelongsToStruct != nil {
 			scriptParts = append(scriptParts,
-				fmt.Sprintf(`				"belongs_to_%s" BIGINT NOT NULL,`, typ.BelongsToStruct.RouteName()),
 				fmt.Sprintf(`				FOREIGN KEY ("belongs_to_%s") REFERENCES "%s"("id")`, typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),
 			)
+		}
+
+		for i, sp := range scriptParts {
+			if i != len(scriptParts)-1 {
+				if !strings.HasSuffix(sp, "(") {
+					scriptParts[i] = fmt.Sprintf("%s,", sp)
+				}
+			}
 		}
 
 		scriptParts = append(scriptParts,

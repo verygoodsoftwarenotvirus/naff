@@ -290,16 +290,6 @@ func buildTestDBBuildSomethingExistsQuery(proj *models.Project, dbvendor wordsmi
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
-	eqArgs := squirrel.Eq{
-		fmt.Sprintf("%s.id", tableName): whateverValue,
-	}
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		eqArgs[fmt.Sprintf("%s.belongs_to_user", tableName)] = whateverValue
-	}
-	if typ.BelongsToStruct != nil {
-		eqArgs[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = whateverValue
-	}
-
 	whereValues := typ.BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(proj)
 	qb := queryBuilderForDatabase(dbvendor).Select(fmt.Sprintf("%s.id", tableName)).
 		Prefix(existencePrefix).
@@ -310,11 +300,10 @@ func buildTestDBBuildSomethingExistsQuery(proj *models.Project, dbvendor wordsmi
 	qb = qb.Suffix(existenceSuffix).
 		Where(whereValues)
 
-	expectedArgs := typ.BuildDBQuerierBuildSomethingExistsQueryTestExpectedArgs(proj)
 	callArgs := typ.BuildDBQuerierBuildSomethingExistsQueryTestCallArgs(proj)
 	pql := typ.BuildDBQuerierSomethingExistsQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("%sExists", sn), qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(proj, dbvendor, fmt.Sprintf("%sExists", sn), qb, nil, callArgs, pql)
 }
 
 func buildTestDBSomethingExists(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
