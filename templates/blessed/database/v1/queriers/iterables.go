@@ -848,15 +848,24 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 	}
 	paramsList := typ.BuildDBQuerierArchiveQueryMethodParams(proj)
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s belonging to a given user as archived.", sn, scn)
-		vals = append(vals, jen.IDf("%sUserOwnershipColumn", puvn).MapAssign().ID("userID"))
-	} else if typ.BelongsToStruct != nil {
-		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s belonging to a given %s as archived.", sn, scn, typ.BelongsToStruct.SingularCommonName())
-		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	if typ.BelongsToNobody {
+		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s ", sn, scn)
 	} else {
-		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s as archived.", sn, scn)
+		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s belonging to ", sn, scn)
+		if typ.BelongsToStruct != nil {
+			comment += fmt.Sprintf("a given %s ", typ.BelongsToStruct.SingularCommonName())
+			vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+		}
+		if typ.BelongsToUser {
+			if typ.BelongsToStruct != nil {
+				comment += "and a given user "
+			} else {
+				comment += "a given user "
+			}
+			vals = append(vals, jen.IDf("%sUserOwnershipColumn", puvn).MapAssign().ID("userID"))
+		}
 	}
+	comment += "as archived."
 
 	_qs := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
 		Dotln("Update").Call(jen.IDf("%sTableName", puvn)).
@@ -908,8 +917,22 @@ func buildArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Supe
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildArchive%sQuery", sn).Call(
 				queryBuildingArgs...,
 			),
-			jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
-			jen.Return().Err(),
+			jen.Line(),
+			jen.List(jen.ID("res"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+				jen.Return(jen.Err()),
+			),
+			jen.Line(),
+			jen.If(jen.ID("res").DoesNotEqual().Nil()).Block(
+				jen.If(
+					jen.List(jen.ID("rowCount"), jen.ID("rowCountErr")).Assign().ID("res").Dot("RowsAffected").Call(),
+					jen.ID("rowCountErr").IsEqualTo().Nil().And().ID("rowCount").IsEqualTo().Zero(),
+				).Block(
+					jen.Return(jen.Qual("database/sql", "ErrNoRows")),
+				),
+			),
+			jen.Line(),
+			jen.Return().Nil(),
 		),
 		jen.Line(),
 	}

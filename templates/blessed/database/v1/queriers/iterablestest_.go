@@ -32,6 +32,30 @@ func applyFleshedOutQueryFilter(qb squirrel.SelectBuilder, tableName string) squ
 	return qb
 }
 
+func applyFleshedOutQueryFilterWithCode(qb squirrel.SelectBuilder, tableName string, eq squirrel.Eq) squirrel.SelectBuilder {
+	if eq != nil {
+		qb = qb.Where(eq)
+	}
+	qb = qb.
+		Where(squirrel.Gt{fmt.Sprintf("%s.created_on", tableName): models.NewCodeWrapper(
+			jen.ID(constants.FilterVarName).Dot("CreatedAfter"),
+		)}).
+		Where(squirrel.Lt{fmt.Sprintf("%s.created_on", tableName): models.NewCodeWrapper(
+			jen.ID(constants.FilterVarName).Dot("CreatedBefore"),
+		)}).
+		Where(squirrel.Gt{fmt.Sprintf("%s.updated_on", tableName): models.NewCodeWrapper(
+			jen.ID(constants.FilterVarName).Dot("UpdatedAfter"),
+		)}).
+		Where(squirrel.Lt{fmt.Sprintf("%s.updated_on", tableName): models.NewCodeWrapper(
+			jen.ID(constants.FilterVarName).Dot("UpdatedBefore"),
+		)}).
+		GroupBy(fmt.Sprintf("%s.id", tableName)).
+		Limit(20).
+		Offset(180)
+
+	return qb
+}
+
 func appendFleshedOutQueryFilterArgs(args []jen.Code) []jen.Code {
 	args = append(args,
 		jen.ID(constants.FilterVarName).Dot("CreatedAfter"),
@@ -113,7 +137,7 @@ func buildPrefixedStringColumnsAsString(typ models.DataType) string {
 	return strings.Join(buildPrefixedStringColumns(typ), ", ")
 }
 
-func buildCreationSringColumnsAndArgs(proj *models.Project, typ models.DataType) (cols []string, args []jen.Code) {
+func buildCreationStringColumnsAndArgs(proj *models.Project, typ models.DataType) (cols []string, args []jen.Code) {
 	cols, args = []string{}, []jen.Code{}
 
 	for _, field := range typ.Fields {
@@ -123,14 +147,14 @@ func buildCreationSringColumnsAndArgs(proj *models.Project, typ models.DataType)
 		}
 	}
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		cols = append(cols, "belongs_to_user")
-		args = append(args, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dot(constants.UserOwnershipFieldName))
-	}
-
 	if typ.BelongsToStruct != nil {
 		cols = append(cols, fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))
 		args = append(args, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+
+	if typ.BelongsToUser {
+		cols = append(cols, "belongs_to_user")
+		args = append(args, jen.ID(utils.BuildFakeVarName(typ.Name.Singular())).Dot(constants.UserOwnershipFieldName))
 	}
 
 	return
@@ -242,6 +266,8 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 	return ret
 }
 
+const maxMockDBCallArgs = 3
+
 func buildTestDBBuildSomethingExistsQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
@@ -295,17 +321,10 @@ func buildTestDBSomethingExists(proj *models.Project, dbvendor wordsmith.SuperPa
 	buildFirstSubtestBlock := func(typ models.DataType) []jen.Code {
 		lines := typ.BuildDependentObjectsForDBQueriersExistenceMethodTest(proj)
 
-		mockDBCall := jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dotln("WithArgs")
-
-		if len(mockDBCallArgs) > 4 {
-			mockDBCall = mockDBCall.Callln(mockDBCallArgs...)
-		} else {
-			mockDBCall = mockDBCall.Call(mockDBCallArgs...)
-		}
-
-		mockDBCall = mockDBCall.Dotln("WillReturnRows").
-			Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").
-				Call(jen.Index().String().Values(jen.Lit("exists"))).Dot("AddRow").Call(jen.True()))
+		mockDBCall := jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+			Dotln("WithArgs").Callln(mockDBCallArgs...).
+			Dotln("WillReturnRows").
+			Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("exists"))).Dot("AddRow").Call(jen.True()))
 
 		lines = append(lines,
 			jen.Line(),
@@ -340,47 +359,40 @@ func buildTestDBBuildGetSomethingQuery(proj *models.Project, dbvendor wordsmith.
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
-	eqArgs := squirrel.Eq{fmt.Sprintf("%s.id", tableName): whateverValue}
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		eqArgs[fmt.Sprintf("%s.belongs_to_user", tableName)] = whateverValue
-	}
-	if typ.BelongsToStruct != nil {
-		eqArgs[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = whateverValue
-	}
-
+	whereValues := typ.BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(proj)
 	qb := queryBuilderForDatabase(dbvendor).Select(buildPrefixedStringColumnsAsString(typ)).
-		From(tableName).
-		Where(eqArgs)
+		From(tableName)
 
-	expectationArgs := []jen.Code{
-		func() jen.Code {
-			if typ.BelongsToUser && typ.RestrictedToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName)
-			}
-			return jen.Null()
-		}(),
-		jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"),
-	}
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
+
+	qb = qb.Where(whereValues)
+
 	callArgs := typ.BuildDBQuerierRetrievalQueryTestCallArgs(proj)
 	pql := typ.BuildDBQuerierGetSomethingQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Get%s", sn), qb, expectationArgs, callArgs, pql)
+	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Get%s", sn), qb, []jen.Code{}, callArgs, pql)
 }
 
 func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbfl := dbvendor.LowercaseAbbreviation()
 	sn := typ.Name.Singular()
-	rn := typ.Name.RouteName()
 	dbvsn := dbvendor.Singular()
 	tableName := typ.Name.PluralRouteName()
 
+	whereValues := typ.BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(proj)
+	qb := queryBuilderForDatabase(dbvendor).Select(buildPrefixedStringColumnsAsString(typ)).
+		From(tableName)
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
+	qb = qb.Where(whereValues)
+	query, args, _ := qb.ToSql()
+	mockDBCallArgs := convertArgsToCode(args)
 	actualCallArgs := typ.BuildArgsForDBQuerierRetrievalMethodTest(proj)
 
 	buildFirstSubtestBlock := func() []jen.Code {
 		lines := typ.BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(proj)
 
 		mockDBCall := jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-			Dotln("WithArgs").Call(actualCallArgs[1:]...).
+			Dotln("WithArgs").Callln(mockDBCallArgs...).
 			Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", sn).Call(jen.ID(utils.BuildFakeVarName(sn))))
 
 		lines = append(lines,
@@ -401,21 +413,9 @@ func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalab
 	buildSecondSubtestBlock := func() []jen.Code {
 		lines := typ.BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(proj)
 
-		var mockDBCall jen.Code
-		if typ.BelongsToUser && typ.RestrictedToUser {
-			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-				Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName), jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")).
-				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
-		}
-		if typ.BelongsToStruct != nil {
-			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-				Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"), jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")).
-				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
-		} else if typ.BelongsToNobody {
-			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-				Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")).
-				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
-		}
+		mockDBCall := jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+			Dotln("WithArgs").Callln(mockDBCallArgs...).
+			Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
 
 		lines = append(lines,
 			jen.Line(),
@@ -433,32 +433,10 @@ func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalab
 		return lines
 	}
 
-	eqArgs := squirrel.Eq{
-		fmt.Sprintf("%s.id", tableName): whateverValue,
-	}
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		eqArgs[fmt.Sprintf("%s.belongs_to_user", tableName)] = whateverValue
-	}
-	if typ.BelongsToStruct != nil {
-		eqArgs[fmt.Sprintf("%s.belongs_to_%s", tableName, rn)] = whateverValue
-	}
-
-	qb := queryBuilderForDatabase(dbvendor)
-	query, _, _ := qb.Select(buildPrefixedStringColumnsAsString(typ)).
-		From(tableName).
-		Where(eqArgs).
-		ToSql()
-
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_Get%s", dbvsn, sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			func() jen.Code {
-				if typ.BelongsToUser {
-					return utils.BuildFakeVar(proj, "User")
-				}
-				return jen.Null()
-			}(),
 			jen.ID("expectedQuery").Assign().Lit(query),
 			jen.Line(),
 			utils.BuildSubTest("happy path", buildFirstSubtestBlock()...),
@@ -522,24 +500,19 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 	pn := typ.Name.Plural()
 	tableName := typ.Name.PluralRouteName()
 	cols := buildPrefixedStringColumns(typ)
-	expectedArgs := []jen.Code{}
-	equals := squirrel.Eq{fmt.Sprintf("%s.archived_on", tableName): nil}
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		equals[fmt.Sprintf("%s.belongs_to_user", tableName)] = whateverValue
-		expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
-	}
+	whereValues := typ.BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(proj)
 
 	qb := queryBuilderForDatabase(dbvendor).Select(append(cols, fmt.Sprintf(countQuery, tableName))...).
-		From(tableName).
-		Where(equals)
-	qb = applyFleshedOutQueryFilter(qb, tableName)
-	expectedArgs = appendFleshedOutQueryFilterArgs(expectedArgs)
+		From(tableName)
+
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
+	qb = applyFleshedOutQueryFilterWithCode(qb, tableName, whereValues)
 
 	callArgs := typ.BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(proj)
 	pql := typ.BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Get%s", pn), qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Get%s", pn), qb, nil, callArgs, pql)
 }
 
 func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -555,23 +528,32 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 	if typ.BelongsToUser && typ.RestrictedToUser {
 		equals[fmt.Sprintf("%s.belongs_to_user", tableName)] = whateverValue
 	}
-	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).Select(append(cols, fmt.Sprintf(countQuery, tableName))...).
-		From(tableName).
-		Where(equals).
+
+	whereValues := typ.BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(proj)
+
+	qb := queryBuilderForDatabase(dbvendor).Select(append(cols, fmt.Sprintf(countQuery, tableName))...).
+		From(tableName)
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
+
+	expectedQuery, args, _ := qb.
+		Where(whereValues).
 		GroupBy(fmt.Sprintf("%s.id", tableName)).
 		Limit(20).
 		ToSql()
 
-	expectedQueryArgs := typ.BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(proj)
+	withArgs := convertArgsToCode(args)
 	actualCallArgs := typ.BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMethodTest(proj)
 
 	buildFirstSubtest := func() []jen.Code {
 		lines := typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj)
 
 		expectQueryMock := jen.ID("mockDB").Dot("ExpectQuery").
-			Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-			Dotln("WithArgs").Call(expectedQueryArgs...).
-			Dotln("WillReturnRows").Callln(
+			Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery")))
+
+		if len(withArgs) > 0 {
+			expectQueryMock = expectQueryMock.Dotln("WithArgs").Callln(withArgs...)
+		}
+		expectQueryMock = expectQueryMock.Dotln("WillReturnRows").Callln(
 			jen.IDf("buildMockRowsFrom%s", sn).Callln(
 				jen.AddressOf().ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Dot(pn).Index(jen.Zero()),
 				jen.AddressOf().ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Dot(pn).Index(jen.One()),
@@ -580,6 +562,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		)
 
 		lines = append(lines,
+			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			utils.CreateDefaultQueryFilter(proj),
 			jen.Line(),
@@ -600,19 +583,22 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 
 	buildSecondSubtest := func() []jen.Code {
 		lines := typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj)
-		var mockDBCall jen.Code
+		var mockDBCall *jen.Statement
 
-		if (typ.BelongsToUser && typ.RestrictedToUser) || typ.BelongsToStruct != nil {
-			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-				Dotln("WithArgs").Call(expectedQueryArgs...).
-				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
-
-		} else if typ.BelongsToNobody {
+		if typ.BelongsToNobody {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
+		} else {
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery")))
+			if len(withArgs) > 0 {
+				mockDBCall = mockDBCall.Dotln("WithArgs").Callln(withArgs...)
+			}
+			mockDBCall = mockDBCall.Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
+
 		}
 
 		lines = append(lines,
+			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			utils.CreateDefaultQueryFilter(proj),
 			jen.Line(),
@@ -631,18 +617,22 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 
 	buildThirdSubtest := func() []jen.Code {
 		lines := typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj)
-		var mockDBCall jen.Code
+		var mockDBCall *jen.Statement
 
 		if (typ.BelongsToUser && typ.RestrictedToUser) || typ.BelongsToStruct != nil {
-			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-				Dotln("WithArgs").Call(expectedQueryArgs...).
-				Dotln("WillReturnError").Call(constants.ObligatoryError())
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery")))
+
+			if len(withArgs) > 0 {
+				mockDBCall = mockDBCall.Dotln("WithArgs").Callln(withArgs...)
+			}
+			mockDBCall = mockDBCall.Dotln("WillReturnError").Call(constants.ObligatoryError())
 		} else if typ.BelongsToNobody {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WillReturnError").Call(constants.ObligatoryError())
 		}
 
 		lines = append(lines,
+			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			utils.CreateDefaultQueryFilter(proj),
 			jen.Line(),
@@ -660,12 +650,15 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 
 	buildFourthSubtest := func() []jen.Code {
 		lines := typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj)
-		var mockDBCall jen.Code
+		var mockDBCall *jen.Statement
 
 		if (typ.BelongsToUser && typ.RestrictedToUser) || typ.BelongsToStruct != nil {
-			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-				Dotln("WithArgs").Call(expectedQueryArgs...).
-				Dotln("WillReturnRows").Call(
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery")))
+
+			if len(withArgs) > 0 {
+				mockDBCall = mockDBCall.Dotln("WithArgs").Callln(withArgs...)
+			}
+			mockDBCall = mockDBCall.Dotln("WillReturnRows").Call(
 				jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID(utils.BuildFakeVarName(sn))),
 			)
 		} else if typ.BelongsToNobody {
@@ -676,6 +669,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		}
 
 		lines = append(lines,
+			jen.Line(),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			utils.CreateDefaultQueryFilter(proj),
 			utils.BuildFakeVar(proj, sn),
@@ -696,12 +690,6 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		jen.Func().IDf("Test%s_Get%s", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			func() jen.Code {
-				if typ.BelongsToUser && typ.RestrictedToUser {
-					return utils.BuildFakeVar(proj, "User")
-				}
-				return jen.Null()
-			}(),
 			jen.ID("expectedListQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
 			utils.BuildSubTest("happy path", buildFirstSubtest()...),
@@ -720,7 +708,7 @@ func buildTestDBCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor word
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
-	fieldCols, expectedArgs := buildCreationSringColumnsAndArgs(proj, typ)
+	fieldCols, expectedArgs := buildCreationStringColumnsAndArgs(proj, typ)
 	valueArgs := []interface{}{}
 	for range expectedArgs {
 		valueArgs = append(valueArgs, whateverValue)
@@ -750,7 +738,7 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 		expectedQueryVarName = "expectedCreationQuery"
 	)
 
-	fieldCols, expectedArgs := buildCreationSringColumnsAndArgs(proj, typ)
+	fieldCols, expectedArgs := buildCreationStringColumnsAndArgs(proj, typ)
 	callArgs := typ.BuildDBQuerierCreationMethodArgsToUseFromMethodTest(proj)
 
 	valueArgs := []interface{}{}
@@ -800,11 +788,11 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			nef = append(nef, jen.ID(utils.BuildFakeVarName(sn)).Dot(field.Name.Singular()))
 		}
 
-		if typ.BelongsToUser && typ.RestrictedToUser {
-			nef = append(nef, jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
-		}
 		if typ.BelongsToStruct != nil {
 			nef = append(nef, jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+		}
+		if typ.BelongsToUser {
+			nef = append(nef, jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
 		}
 
 		if isPostgres(dbvendor) {
@@ -874,11 +862,11 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 			nef = append(nef, jen.ID(utils.BuildFakeVarName(sn)).Dot(field.Name.Singular()))
 		}
 
-		if typ.BelongsToUser && typ.RestrictedToUser {
-			nef = append(nef, jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
-		}
 		if typ.BelongsToStruct != nil {
 			nef = append(nef, jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+		}
+		if typ.BelongsToUser {
+			nef = append(nef, jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
 		}
 
 		if isPostgres(dbvendor) {
@@ -946,13 +934,13 @@ func buildTestBuildUpdateSomethingQueryFuncDeclQueryBuilder(dbvendor wordsmith.S
 		}
 	}
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		eq["belongs_to_user"] = whateverValue
-		expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
-	}
 	if typ.BelongsToStruct != nil {
 		eq[fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName())] = whateverValue
 		expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+	if typ.BelongsToUser {
+		eq["belongs_to_user"] = whateverValue
+		expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
 	}
 	expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"))
 
@@ -1079,7 +1067,7 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 	}
 }
 
-func buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor wordsmith.SuperPalabra, typ models.DataType) (qb squirrel.UpdateBuilder, expectedArgs []jen.Code, callArgs []jen.Code) {
+func buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) (qb squirrel.UpdateBuilder, expectedArgs []jen.Code, callArgs []jen.Code) {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -1093,19 +1081,23 @@ func buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor wordsmith.
 		"id":          whateverValue,
 		"archived_on": nil,
 	}
-	if typ.BelongsToUser && typ.RestrictedToUser {
+	if typ.BelongsToStruct != nil {
+		btssn := typ.BelongsToStruct.Singular()
+		eq[fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName())] = whateverValue
+		expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(btssn)).Dot("ID"))
+		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(btssn)).Dot("ID"))
+	}
+	if typ.BelongsToUser {
 		eq["belongs_to_user"] = whateverValue
-		expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
+
+		if len(proj.FindOwnerTypeChain(typ)) > 1 {
+			expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
+		} else {
+			expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
+		}
 	}
 	callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"))
-	if typ.BelongsToStruct != nil {
-		eq[fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName())] = whateverValue
-		expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-	}
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
-	}
+
 	expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"))
 
 	qb = queryBuilderForDatabase(dbvendor).
@@ -1124,7 +1116,7 @@ func buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor wordsmith.
 func buildTestDBArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
-	qb, expectedArgs, _ := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
+	qb, expectedArgs, _ := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj, dbvendor, typ)
 	pql := typ.BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(proj)
 	callArgs := typ.BuildArgsForDBQuerierTestOfArchiveQueryBuilder(proj)
 
@@ -1136,7 +1128,7 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 	dbfl := dbvendor.LowercaseAbbreviation()
 	sn := typ.Name.Singular()
 
-	qb, dbQueryExpectationArgs, _ := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
+	qb, dbQueryExpectationArgs, _ := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj, dbvendor, typ)
 	actualCallArgs := typ.BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest(proj)
 
 	dbQuery, _, _ := qb.ToSql()
@@ -1149,8 +1141,8 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 			jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 				Dotln("WithArgs").Callln(dbQueryExpectationArgs...).Dot("WillReturnResult").Call(
 				jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(
-					jen.Lit(1),
-					jen.Lit(1),
+					jen.One(),
+					jen.One(),
 				),
 			),
 			jen.Line(),
@@ -1164,6 +1156,29 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 	}
 
 	buildSubtestTwo := func() []jen.Code {
+		block := append(
+			typ.BuildDBQuerierArchiveSomethingTestPrerequisiteVariables(proj),
+			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+			jen.Line(),
+			jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+				Dotln("WithArgs").Callln(dbQueryExpectationArgs...).Dot("WillReturnResult").Call(
+				jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(
+					jen.Zero(),
+					jen.Zero(),
+				),
+			),
+			jen.Line(),
+			jen.Err().Assign().ID(dbfl).Dotf("Archive%s", sn).Call(actualCallArgs...),
+			utils.AssertError(jen.Err(), nil),
+			utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
+			jen.Line(),
+			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+		)
+
+		return block
+	}
+
+	buildSubtestThree := func() []jen.Code {
 		block := append(
 			typ.BuildDBQuerierArchiveSomethingTestPrerequisiteVariables(proj),
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -1192,7 +1207,9 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 			jen.Line(),
 			utils.BuildSubTest("happy path", buildSubtestOne()...),
 			jen.Line(),
-			utils.BuildSubTest("with error writing to database", buildSubtestTwo()...),
+			utils.BuildSubTest("returns sql.ErrNoRows with no rows affected", buildSubtestTwo()...),
+			jen.Line(),
+			utils.BuildSubTest("with error writing to database", buildSubtestThree()...),
 		),
 		jen.Line(),
 	}

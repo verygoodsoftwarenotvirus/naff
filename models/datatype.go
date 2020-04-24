@@ -45,14 +45,48 @@ func ctxVar() *jen.Statement {
 	return jen.ID("ctx")
 }
 
+func (typ DataType) OwnedByAUserAtSomeLevel(proj *Project) bool {
+	if typ.BelongsToUser {
+		return true
+	}
+
+	for _, o := range proj.FindOwnerTypeChain(typ) {
+		if o.BelongsToUser {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (typ DataType) RestrictedToUserAtSomeLevel(proj *Project) bool {
+	if typ.BelongsToUser && typ.RestrictedToUser {
+		return true
+	}
+
 	for _, o := range proj.FindOwnerTypeChain(typ) {
 		if o.BelongsToUser && o.RestrictedToUser {
 			return true
 		}
 	}
 
-	return typ.BelongsToUser && typ.RestrictedToUser
+	return false
+}
+
+func (typ DataType) MultipleTypesBelongingToUser(proj *Project) bool {
+	var count, baseline uint
+
+	if typ.BelongsToUser {
+		count += 1
+	}
+
+	for _, o := range proj.FindOwnerTypeChain(typ) {
+		if o.BelongsToUser {
+			count += 1
+		}
+	}
+
+	return count > baseline
 }
 
 func (typ DataType) buildGetSomethingParams(proj *Project) []jen.Code {
@@ -85,7 +119,7 @@ func (typ DataType) buildArchiveSomethingParams(proj *Project) []jen.Code {
 	}
 	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
+	if typ.BelongsToUser {
 		lp = append(lp, jen.ID("userID"))
 	}
 
@@ -165,11 +199,16 @@ func (typ DataType) ModifyQueryBuildingStatementWithJoinClauses(proj *Project, q
 	return qbStmt
 }
 
+func (typ DataType) buildJoinClause(fromTableName, onTableName, fkColumnName string) string {
+	if typ.BelongsToStruct != nil {
+		return fmt.Sprintf("%s ON %s.%s=%s.id", fromTableName, onTableName, fmt.Sprintf("belongs_to_%s", fkColumnName), fromTableName)
+	}
+	panic("AAAAA")
+}
+
 func (typ DataType) ModifyQueryBuilderWithJoinClauses(proj *Project, qb squirrel.SelectBuilder) squirrel.SelectBuilder {
 	if typ.BelongsToStruct != nil {
-		qb = qb.Join(
-			fmt.Sprintf("%s ON %s.%s=%s.id", typ.BelongsToStruct.PluralRouteName(), typ.Name.PluralRouteName(), fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()), typ.BelongsToStruct.PluralRouteName()),
-		)
+		qb = qb.Join(typ.buildJoinClause(typ.BelongsToStruct.PluralRouteName(), typ.Name.PluralRouteName(), typ.BelongsToStruct.RouteName()))
 	}
 
 	owners := proj.FindOwnerTypeChain(typ)
@@ -178,7 +217,7 @@ func (typ DataType) ModifyQueryBuilderWithJoinClauses(proj *Project, qb squirrel
 
 		if pt.BelongsToStruct != nil {
 			qb = qb.Join(
-				fmt.Sprintf("%s ON %s.%s=%s.id", pt.BelongsToStruct.PluralUnexportedVarName(), pt.Name.PluralRouteName(), fmt.Sprintf("belongs_to_%s", pt.BelongsToStruct.RouteName()), pt.BelongsToStruct.PluralUnexportedVarName()),
+				typ.buildJoinClause(pt.BelongsToStruct.PluralUnexportedVarName(), pt.Name.PluralRouteName(), pt.BelongsToStruct.RouteName()),
 			)
 		}
 	}
@@ -250,7 +289,8 @@ type codeWrapper struct {
 	repr jen.Code
 }
 
-func newCodeWrapper(c jen.Code) Coder {
+// NewCodeWrapper creates a new codeWrapper from some code
+func NewCodeWrapper(c jen.Code) Coder {
 	return codeWrapper{repr: c}
 }
 
@@ -258,39 +298,103 @@ func (c codeWrapper) Code() jen.Code {
 	return c.repr
 }
 
+/*
+
+	owners := proj.FindOwnerTypeChain(typ)
+	if typ.MultipleTypesBelongingToUser(proj) || (typ.RestrictedToUserAtSomeLevel(proj) && !typ.RestrictedToUser) {
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
+	}
+
+	for _, pt := range owners {
+		pts := pt.Name.Singular()
+		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+
+		if pt.BelongsToUser {
+			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+		}
+		if pt.BelongsToStruct != nil {
+			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsTo%s", pt.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
+		}
+	}
+	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
+
+	if typ.BelongsToStruct != nil {
+		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
+	}
+	if typ.BelongsToUser && typ.MultipleTypesBelongingToUser(proj) {
+		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+	}
+
+*/
+
 func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(proj *Project) squirrel.Eq {
 	n := typ.Name
 	sn := n.Singular()
 	tableName := typ.Name.PluralRouteName()
 
 	whereValues := squirrel.Eq{
-		fmt.Sprintf("%s.id", tableName): newCodeWrapper(jen.ID(buildFakeVarName(sn)).Dot("ID")),
+		fmt.Sprintf("%s.id", tableName): NewCodeWrapper(jen.ID(buildFakeVarName(sn)).Dot("ID")),
 	}
-	for _, pt := range proj.FindOwnerTypeChain(typ) {
+
+	owners := proj.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
 		pTableName := pt.Name.PluralRouteName()
-		whereValues[fmt.Sprintf("%s.id", pTableName)] = newCodeWrapper(jen.ID(buildFakeVarName(pt.Name.UnexportedVarName())).Dot("ID"))
+		whereValues[fmt.Sprintf("%s.id", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName(pt.Name.UnexportedVarName())).Dot("ID"))
 
 		if pt.BelongsToUser && pt.RestrictedToUser {
-			whereValues[fmt.Sprintf("%s.belongs_to_user", pTableName)] = newCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
+			whereValues[fmt.Sprintf("%s.belongs_to_user", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
 		}
 
 		if pt.BelongsToStruct != nil {
-			whereValues[fmt.Sprintf("%s.belongs_to_%s", pTableName, pt.BelongsToStruct.RouteName())] = newCodeWrapper(jen.ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
+			whereValues[fmt.Sprintf("%s.belongs_to_%s", pTableName, pt.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
 		}
 	}
 
 	if typ.BelongsToStruct != nil {
-		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = newCodeWrapper(jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
+		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
 	}
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = newCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
-	}
+	//if typ.RestrictedToUserAtSomeLevel(proj) {
+	//	whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
+	//}
 
 	return whereValues
 }
 
 func (typ DataType) BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(proj *Project) squirrel.Eq {
 	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(proj)
+}
+
+func (typ DataType) BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(proj *Project) squirrel.Eq {
+	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(proj)
+}
+
+func (typ DataType) BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(proj *Project) squirrel.Eq {
+	tableName := typ.Name.PluralRouteName()
+
+	whereValues := squirrel.Eq{
+		fmt.Sprintf("%s.archived_on", tableName): nil,
+	}
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
+		pTableName := pt.Name.PluralRouteName()
+		whereValues[fmt.Sprintf("%s.id", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName(pt.Name.UnexportedVarName())).Dot("ID"))
+
+		if pt.BelongsToUser && pt.RestrictedToUser {
+			whereValues[fmt.Sprintf("%s.belongs_to_user", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
+		}
+
+		if pt.BelongsToStruct != nil {
+			whereValues[fmt.Sprintf("%s.belongs_to_%s", pTableName, pt.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
+		}
+	}
+
+	if typ.BelongsToStruct != nil {
+		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
+	}
+	if typ.BelongsToUser && typ.RestrictedToUser {
+		whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
+	}
+
+	return whereValues
 }
 
 func (typ DataType) BuildDBQuerierRetrievalQueryMethodConditionalClauses(proj *Project) []jen.Code {
@@ -377,7 +481,7 @@ func (typ DataType) buildArchiveSomethingArgs(proj *Project) []jen.Code {
 	}
 	params = append(params, jen.IDf("%sID", uvn))
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
+	if typ.BelongsToUser {
 		params = append(params, jen.ID("userID"))
 	}
 
@@ -468,6 +572,45 @@ func (typ DataType) buildSingleInstanceQueryTestCallArgs(proj *Project) []jen.Co
 	return params
 }
 
+func (typ DataType) buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(proj *Project) []jen.Code {
+	owners := proj.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	args := []jen.Code{constants.CtxVar()}
+
+	if len(owners) > 0 {
+		for _, pt := range owners {
+			listParams = append(listParams, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
+		}
+		listParams = append(listParams, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("ID"))
+
+		if len(listParams) > 0 {
+			args = append(args, listParams...)
+		}
+	} else {
+		args = append(args, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("ID"))
+	}
+
+	if typ.RestrictedToUserAtSomeLevel(proj) {
+		args = append(args, jen.ID(buildFakeVarName("User")).Dot("ID"))
+	} else if typ.BelongsToUser && typ.RestrictedToUser {
+		args = append(args, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot(constants.UserOwnershipFieldName))
+	}
+
+	return args
+}
+
+func (typ DataType) BuildArgsForDBQuerierExistenceMethodTest(proj *Project) []jen.Code {
+	params := typ.buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(proj)
+
+	return params
+}
+
+func (typ DataType) BuildArgsForDBQuerierRetrievalMethodTest(proj *Project) []jen.Code {
+	params := typ.buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(proj)
+
+	return params
+}
+
 func (typ DataType) buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj *Project) []jen.Code {
 	params := []jen.Code{}
 
@@ -480,7 +623,11 @@ func (typ DataType) buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj *Pr
 	}
 	params = append(params, jen.ID(buildFakeVarName(sn)).Dot("ID"))
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
+	if typ.RestrictedToUserAtSomeLevel(proj) {
+		if typ.MultipleTypesBelongingToUser(proj) {
+			params = append(params, jen.ID(buildFakeVarName("User")).Dot("ID"))
+		}
+	} else if typ.BelongsToUser && typ.RestrictedToUser {
 		params = append(params, jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
 	}
 
@@ -507,13 +654,21 @@ func (typ DataType) BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLine
 	lines := []jen.Code{}
 
 	owners := proj.FindOwnerTypeChain(typ)
+	if typ.RestrictedToUserAtSomeLevel(proj) {
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
+	}
+
 	for _, pt := range owners {
 		pts := pt.Name.Singular()
 		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
-	}
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
+		if pt.BelongsToUser && typ.RestrictedToUser {
+			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+		}
+		if pt.BelongsToStruct != nil {
+			btssn := pt.BelongsToStruct.Singular()
+			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsTo%s", btssn).Equals().ID(buildFakeVarName(btssn)).Dot("ID"))
+		}
 	}
 
 	lines = append(lines, jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call())
@@ -692,7 +847,7 @@ func (typ DataType) BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(proj *P
 		lp = append(lp, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
 	}
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
+	if typ.RestrictedToUserAtSomeLevel(proj) {
 		lp = append(lp, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 	lp = append(lp, jen.ID(constants.FilterVarName))
@@ -703,81 +858,45 @@ func (typ DataType) BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(proj *P
 }
 
 func (typ DataType) BuildArgsForDBQuerierTestOfUpdateQueryBuilder(proj *Project) []jen.Code {
-	params := []jen.Code{}
-
-	lp := []jen.Code{}
-	owners := proj.FindOwnerTypeChain(typ)
-	for i, pt := range owners {
-		if i == len(owners)-1 && typ.BelongsToStruct != nil {
-			continue
-		} else {
-			lp = append(lp, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
-		}
-	}
-
-	params = append(params, lp...)
-	params = append(params, jen.ID(buildFakeVarName(typ.Name.Singular())))
+	params := []jen.Code{jen.ID(buildFakeVarName(typ.Name.Singular()))}
 
 	return params
 }
 
 func (typ DataType) BuildArgsForDBQuerierTestOfArchiveQueryBuilder(proj *Project) []jen.Code {
-	return typ.buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj)
-}
+	args := []jen.Code{}
 
-func (typ DataType) BuildArgsForDBQuerierTestOfUpdateMethod(proj *Project) []jen.Code {
-	params := []jen.Code{ctxVar()}
+	if typ.BelongsToStruct != nil {
+		args = append(args, jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
+	}
 
-	lp := []jen.Code{}
-	owners := proj.FindOwnerTypeChain(typ)
-	for i, pt := range owners {
-		if i == len(owners)-1 && typ.BelongsToStruct != nil {
-			continue
+	args = append(args, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("ID"))
+
+	if typ.BelongsToUser {
+		if len(proj.FindOwnerTypeChain(typ)) > 1 {
+			args = append(args, jen.ID(buildFakeVarName("User")).Dot("ID"))
 		} else {
-			lp = append(lp, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
+			args = append(args, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot(constants.UserOwnershipFieldName))
 		}
 	}
 
-	params = append(params, lp...)
-	params = append(params, jen.ID(buildFakeVarName(typ.Name.Singular())))
+	return args
+}
+
+func (typ DataType) BuildArgsForDBQuerierTestOfUpdateMethod(proj *Project) []jen.Code {
+	params := []jen.Code{ctxVar(), jen.ID(buildFakeVarName(typ.Name.Singular()))}
 
 	return params
 }
 
 func (typ DataType) BuildDBQuerierCreationMethodArgsToUseFromMethodTest(proj *Project) []jen.Code {
-	params := []jen.Code{ctxVar()}
-
-	lp := []jen.Code{}
-	owners := proj.FindOwnerTypeChain(typ)
-	for i, pt := range owners {
-		if i == len(owners)-1 && typ.BelongsToStruct != nil {
-			lp = append(lp, jen.ID(buildFakeVarName(typ.Name.Singular())).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-		} else {
-			lp = append(lp, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
-		}
-	}
-
-	params = append(params, lp...)
-	params = append(params, jen.ID(buildFakeVarName("Input")))
+	params := []jen.Code{ctxVar(), jen.ID(buildFakeVarName("Input"))}
 
 	return params
 }
 
 func (typ DataType) BuildArgsToUseForDBQuerierCreationQueryBuildingTest(proj *Project) []jen.Code {
-	params := []jen.Code{}
-
-	lp := []jen.Code{}
-	owners := proj.FindOwnerTypeChain(typ)
-	for i, pt := range owners {
-		if i == len(owners)-1 && typ.BelongsToStruct != nil {
-			lp = append(lp, jen.ID(buildFakeVarName(typ.Name.Singular())).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-		} else {
-			lp = append(lp, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
-		}
-	}
-
-	params = append(params, lp...)
-	params = append(params, jen.ID(buildFakeVarName(typ.Name.Singular())))
+	params := []jen.Code{jen.ID(buildFakeVarName(typ.Name.Singular()))}
 
 	return params
 }
@@ -909,17 +1028,28 @@ func (typ DataType) buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruc
 	sn := typ.Name.Singular()
 
 	owners := proj.FindOwnerTypeChain(typ)
+	if typ.MultipleTypesBelongingToUser(proj) || (typ.RestrictedToUserAtSomeLevel(proj) && !typ.RestrictedToUser) {
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
+	}
+
 	for _, pt := range owners {
 		pts := pt.Name.Singular()
 		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
 
+		if pt.BelongsToUser {
+			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+		}
 		if pt.BelongsToStruct != nil {
 			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsTo%s", pt.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
 		}
 	}
 	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
+
 	if typ.BelongsToStruct != nil {
 		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
+	}
+	if typ.BelongsToUser && typ.MultipleTypesBelongingToUser(proj) {
+		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
 	return lines
@@ -934,25 +1064,10 @@ func (typ DataType) BuildDependentObjectsForDBQueriersExistenceMethodTest(proj *
 }
 
 func (typ DataType) BuildDependentObjectsForDBQueriersCreationMethodTest(proj *Project) []jen.Code {
-	lines := []jen.Code{}
+	lines := typ.buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(proj)
+
 	sn := typ.Name.Singular()
-
-	owners := proj.FindOwnerTypeChain(typ)
-	for i, pt := range owners {
-		if i == len(owners)-1 && typ.BelongsToStruct != nil {
-			continue
-		} else {
-			pts := pt.Name.Singular()
-			lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
-		}
-	}
-	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
-
-	lines = append(lines,
-		jen.IDf(buildFakeVarName("Input")).Assign().
-			Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).
-			Call(jen.ID(buildFakeVarName(sn))),
-	)
+	lines = append(lines, jen.ID(buildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(buildFakeVarName(sn))))
 
 	return lines
 }
@@ -1168,24 +1283,22 @@ func (typ DataType) BuildFormatCallArgsForHTTPClientRetrievalMethodTest(proj *Pr
 }
 
 func (typ DataType) BuildFormatCallArgsForHTTPClientExistenceMethodTest(proj *Project) (args []jen.Code) {
-	callArgs := []jen.Code{}
 	owners := proj.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
-		callArgs = append(callArgs, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
+		args = append(args, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
 	}
-	callArgs = append(callArgs, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("ID"))
+	args = append(args, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("ID"))
 
-	return callArgs
+	return args
 }
 
 func (typ DataType) BuildFormatCallArgsForHTTPClientListMethodTest(proj *Project) (args []jen.Code) {
-	callArgs := []jen.Code{}
 	owners := proj.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
-		callArgs = append(callArgs, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
+		args = append(args, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
 	}
 
-	return callArgs
+	return args
 }
 
 func (typ DataType) BuildFormatCallArgsForHTTPClientCreationMethodTest(proj *Project) (args []jen.Code) {
@@ -1548,26 +1661,6 @@ func (typ DataType) BuildArgsForHTTPClientExistenceRequestBuildingMethodTest(pro
 	return typ.buildParamsForMethodThatHandlesAnInstanceWithStructs(proj)
 }
 
-func (typ DataType) BuildArgsForDBQuerierExistenceMethodTest(proj *Project) []jen.Code {
-	params := typ.buildParamsForMethodThatHandlesAnInstanceWithStructs(proj)
-
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		params = append(params, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot(constants.UserOwnershipFieldName))
-	}
-
-	return params
-}
-
-func (typ DataType) BuildArgsForDBQuerierRetrievalMethodTest(proj *Project) []jen.Code {
-	params := typ.buildParamsForMethodThatHandlesAnInstanceWithStructs(proj)
-
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		params = append(params, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot(constants.UserOwnershipFieldName))
-	}
-
-	return params
-}
-
 func (typ DataType) BuildArgsForHTTPClientExistenceMethodTest(proj *Project) []jen.Code {
 	return typ.buildParamsForMethodThatHandlesAnInstanceWithStructs(proj)
 }
@@ -1808,18 +1901,29 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientArchiveMethodTest(proj *Pro
 func (typ DataType) BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(proj *Project) []jen.Code {
 	lines := []jen.Code{}
 	sn := typ.Name.Singular()
-
 	owners := proj.FindOwnerTypeChain(typ)
+
+	fakeUserCreated := false
+	if typ.MultipleTypesBelongingToUser(proj) || typ.RestrictedToUserAtSomeLevel(proj) {
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
+		fakeUserCreated = true
+	}
+
 	for _, pt := range owners {
 		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
-
+		if pt.BelongsToStruct != nil {
+			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dotf("BelongsTo%s", pt.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
+		}
+		if pt.BelongsToUser {
+			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+		}
 	}
 	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 
 	if typ.BelongsToStruct != nil {
 		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
 	}
-	if typ.BelongsToUser {
+	if typ.BelongsToUser && fakeUserCreated {
 		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName).Equals().ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
@@ -1846,7 +1950,13 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(pro
 }
 
 func (typ DataType) BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj *Project) []jen.Code {
-	return typ.buildRequisiteFakeVarDecsForListFunction(proj)
+	lines := typ.BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(proj)
+
+	//if typ.RestrictedToUserAtSomeLevel(proj) {
+	//	lines = lines[1:]
+	//}
+
+	return lines[:len(lines)-1]
 }
 
 func (typ DataType) buildRequisiteFakeVarCallArgsForCreation(proj *Project) []jen.Code {
@@ -1906,7 +2016,7 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest(pr
 	}
 	lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("ID"))
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
+	if typ.BelongsToUser {
 		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
 	}
 
@@ -1936,7 +2046,7 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMetho
 		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
 	}
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
+	if typ.RestrictedToUserAtSomeLevel(proj) {
 		lines = append(lines, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
@@ -1948,19 +2058,20 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMetho
 func (typ DataType) BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest(proj *Project) []jen.Code {
 	lines := []jen.Code{constants.CtxVar()}
 
-	owners := proj.FindOwnerTypeChain(typ)
 	sn := typ.Name.Singular()
-	for i, pt := range owners {
-		if i == len(owners)-1 && typ.BelongsToStruct != nil {
-			lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
-		} else {
-			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
-		}
+
+	if typ.BelongsToStruct != nil {
+		lines = append(lines, jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
 	}
+
 	lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("ID"))
 
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
+	if typ.BelongsToUser {
+		if len(proj.FindOwnerTypeChain(typ)) > 1 {
+			lines = append(lines, jen.ID(buildFakeVarName("User")).Dot("ID"))
+		} else {
+			lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
+		}
 	}
 
 	return lines

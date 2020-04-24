@@ -26,6 +26,10 @@ func init() {
 }
 
 func main() {
+	if err := os.RemoveAll(os.Getenv("GOPATH") + "src/gitlab.com/verygoodsoftwarenotvirus/naff/example_output"); err != nil {
+		log.Printf("error removing output dir: %v", err)
+	}
+
 	if chosenProjectKey := os.Getenv("PROJECT"); chosenProjectKey != "" {
 		chosenProject := projects[chosenProjectKey]
 

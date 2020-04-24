@@ -210,13 +210,15 @@ func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, query
 		log.Panicf("error building %q: %v", queryName, err)
 	}
 
-	if coderArgs := convertArgsToCode(args); len(coderArgs) == len(args) {
+	coderArgs := convertArgsToCode(args)
+	if len(coderArgs) == len(args) {
 		expectedArgs = coderArgs
 	}
 
 	block := append(
 		[]jen.Code{
 			jen.List(jen.ID(string(dbfl)), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+			jen.Line(),
 		},
 		preQueryLines...,
 	)
