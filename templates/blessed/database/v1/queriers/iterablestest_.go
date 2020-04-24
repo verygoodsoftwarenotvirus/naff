@@ -1089,12 +1089,7 @@ func buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj *models.Projec
 	}
 	if typ.BelongsToUser {
 		eq["belongs_to_user"] = whateverValue
-
-		if len(proj.FindOwnerTypeChain(typ)) > 1 {
-			expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
-		} else {
-			expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
-		}
+		expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
 	}
 	callArgs = append(callArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"))
 
