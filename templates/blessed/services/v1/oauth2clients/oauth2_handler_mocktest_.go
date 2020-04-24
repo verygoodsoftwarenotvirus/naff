@@ -129,5 +129,6 @@ func oauth2HandlerMockTestDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

@@ -76,11 +76,11 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			constants.CtxParam(),
 			jen.ID("password").String(),
 		).Params(jen.String(), jen.Error()).Block(
-			jen.List(jen.Underscore(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(
+			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(
 				constants.CtxVar(),
 				jen.Lit("HashPassword"),
 			),
-			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.List(jen.ID("hashedPass"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "GenerateFromPassword").Call(jen.Index().Byte().Call(jen.ID("password")), jen.ID("int").Call(jen.ID("b").Dot("hashCost"))),
 			jen.Return().List(jen.String().Call(jen.ID("hashedPass")), jen.Err()),
@@ -105,8 +105,8 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 				jen.ID("twoFactorCode")).String(),
 			jen.Underscore().Index().Byte(),
 		).Params(jen.ID("passwordMatches").Bool(), jen.Err().Error()).Block(
-			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ValidateLogin")),
-			jen.Defer().ID("span").Dot("End").Call(),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ValidateLogin")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID("passwordMatches").Equals().ID("b").Dot("PasswordMatches").Call(constants.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),
 			jen.ID("tooWeak").Assign().ID("b").Dot("hashedPasswordIsTooWeak").Call(constants.CtxVar(), jen.ID("hashedPassword")),
@@ -170,5 +170,6 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

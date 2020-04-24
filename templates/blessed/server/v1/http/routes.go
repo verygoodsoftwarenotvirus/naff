@@ -54,42 +54,61 @@ func routesDotGo(proj *models.Project) *jen.File {
 	return ret
 }
 
-func buildIterableAPIRoutes(proj *models.Project) jen.Code {
-	g := &jen.Group{}
-
-	generatedTypes := map[string]bool{}
+func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
+	g := []jen.Code{}
 
 	for _, typ := range proj.DataTypes {
 		n := typ.Name
+		uvn := typ.Name.UnexportedVarName()
+		puvn := n.PluralUnexportedVarName()
+		singleRouteVar := jen.IDf("%sRouteParam", n.UnexportedVarName())
 
-		if _, ok := generatedTypes[n.Singular()]; !ok {
-			uvn := typ.Name.UnexportedVarName()
-			g.Add(
-				jen.Comment(n.Plural()),
-				jen.Line(),
-				jen.IDf("%sPath", uvn).Assign().Lit(typ.Name.PluralRouteName()),
-				jen.Line(),
-				jen.IDf("%sPathWithPrefix", uvn).Assign().Qual("fmt", "Sprintf").Call(
-					jen.Lit("/%s"),
-					jen.IDf("%sPath", uvn),
-				),
-				jen.Line(),
-				jen.IDf("%sRouteParam", uvn).Assign().Qual("fmt", "Sprintf").Call(
-					jen.ID("numericIDPattern"),
-					jen.Qual(proj.ServiceV1Package(typ.Name.PackageName()), "URIParamKey"),
-				),
-				jen.Line(),
-				jen.IDf("%sRouter", "v1").Dot("Route").Call(
-					jen.IDf("%sPathWithPrefix", uvn),
-					jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual("github.com/go-chi/chi", "Router")).Block(
-						buildIterableAPIRoutesBlock(proj, generatedTypes, "", typ)...,
-					),
-				),
-				jen.Line(),
+		pathParts := []jen.Code{}
+		for _, pt := range proj.FindOwnerTypeChain(typ) {
+			pathParts = append(pathParts,
+				jen.IDf("%sPath", pt.Name.UnexportedVarName()),
+				jen.IDf("%sRouteParam", pt.Name.UnexportedVarName()),
 			)
-
-			generatedTypes[typ.Name.Singular()] = true
 		}
+
+		g = append(g,
+			jen.Comment(n.Plural()),
+			jen.IDf("%sPath", uvn).Assign().Lit(typ.Name.PluralRouteName()),
+			jen.IDf("%sRouteParam", uvn).Assign().Qual("fmt", "Sprintf").Call(
+				jen.ID("numericIDPattern"),
+				jen.Qual(proj.ServiceV1Package(typ.Name.PackageName()), "URIParamKey"),
+			),
+			func() jen.Code {
+				if len(pathParts) > 0 {
+					pathParts = append(pathParts, jen.IDf("%sPath", uvn))
+					return jen.IDf("%sRoute", puvn).Assign().Qual("path/filepath", "Join").Callln(
+						pathParts...,
+					)
+				}
+				return jen.Null()
+			}(),
+			jen.IDf("%sRouteWithPrefix", puvn).Assign().Qual("fmt", "Sprintf").Call(
+				jen.Lit("/%s"),
+				func() jen.Code {
+					if typ.BelongsToStruct != nil {
+						return jen.IDf("%sRoute", puvn)
+					}
+					return jen.IDf("%sPath", uvn)
+				}(),
+			),
+			jen.IDf("%sRouter", "v1").Dot("Route").Call(
+				jen.IDf("%sRouteWithPrefix", puvn),
+				jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual("github.com/go-chi/chi", "Router")).Block(
+					jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("CreateHandler").Call()),
+					jen.IDf("%sRouter", puvn).Dot("Get").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler").Call()),
+					jen.IDf("%sRouter", puvn).Dot("Head").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler").Call()),
+					jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("UpdateInputMiddleware")).Dot("Put").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("UpdateHandler").Call()),
+					jen.IDf("%sRouter", puvn).Dot("Delete").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ArchiveHandler").Call()),
+					jen.IDf("%sRouter", puvn).Dot("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ListHandler").Call()),
+				),
+			),
+			jen.Line(),
+		)
 	}
 
 	return g
@@ -108,10 +127,9 @@ func buildSubRouterDecl(proj *models.Project, doneMap map[string]bool, routerPre
 func buildIterableAPIRoutesBlock(proj *models.Project, doneMap map[string]bool, routerPrefix string, typ models.DataType) []jen.Code {
 	n := typ.Name
 	puvn := n.PluralUnexportedVarName()
+	singleRouteVar := jen.IDf("%sRouteParam", n.UnexportedVarName())
 
 	lines := []jen.Code{}
-
-	singleRouteVar := jen.IDf("single%sRoute", typ.Name.Singular())
 
 	if routerPrefix != "" {
 		lines = append(lines,
@@ -123,7 +141,6 @@ func buildIterableAPIRoutesBlock(proj *models.Project, doneMap map[string]bool, 
 		)
 	} else {
 		lines = append(lines,
-			jen.IDf("single%sRoute", typ.Name.Singular()).Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
 			jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("CreateHandler").Call()),
 			jen.IDf("%sRouter", puvn).Dot("Get").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler").Call()),
 			jen.IDf("%sRouter", puvn).Dot("Head").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler").Call()),
@@ -154,12 +171,12 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 	}
 	block = append(block, buildCORSHandlerDef()...)
 
-	v1RouterBlock := []jen.Code{
+	v1RouterBlock := append(
 		buildIterableAPIRoutes(proj),
 		jen.Line(),
 		buildWebhookAPIRoutes(proj),
 		jen.Line(),
-	}
+	)
 	v1RouterBlock = append(v1RouterBlock, buildOAuth2ClientsAPIRoutes(proj)...)
 
 	block = append(block,

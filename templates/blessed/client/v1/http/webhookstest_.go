@@ -504,5 +504,6 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 	)
+
 	return ret
 }

@@ -49,5 +49,6 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

@@ -377,8 +377,8 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 	pcn := typ.Name.PluralCommonName()
 
 	lines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
-		jen.Defer().ID("span").Dot("End").Call(),
+		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
+		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 		jen.Line(),
 	}
 
@@ -439,8 +439,8 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
-		jen.Defer().ID("span").Dot("End").Call(),
+		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
+		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 		jen.Line(),
 	}
 
@@ -485,8 +485,8 @@ func buildTestExistenceCheckingShouldBeReadable(proj *models.Project, typ models
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
-		jen.Defer().ID("span").Dot("End").Call(),
+		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
+		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 		jen.Line(),
 	}
 
@@ -513,8 +513,8 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *m
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
-		jen.Defer().ID("span").Dot("End").Call(),
+		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
+		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 		jen.Line(),
 	}
 
@@ -558,8 +558,8 @@ func buildTestReadingShouldBeReadable(proj *models.Project, typ models.DataType)
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
-		jen.Defer().ID("span").Dot("End").Call(),
+		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
+		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 		jen.Line(),
 	}
 

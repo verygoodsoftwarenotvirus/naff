@@ -106,5 +106,6 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

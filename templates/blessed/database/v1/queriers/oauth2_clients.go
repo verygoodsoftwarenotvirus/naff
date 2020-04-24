@@ -687,5 +687,6 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

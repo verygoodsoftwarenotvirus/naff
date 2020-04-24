@@ -426,5 +426,6 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 	)
+
 	return ret
 }

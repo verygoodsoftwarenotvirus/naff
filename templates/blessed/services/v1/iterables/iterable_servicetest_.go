@@ -27,7 +27,7 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 	serviceValues := []jen.Code{
 		jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-		jen.ID(fmt.Sprintf("%sDatabase", uvn)).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+		jen.ID(fmt.Sprintf("%sDataManager", uvn)).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 	}
 
 	if typ.BelongsToUser {

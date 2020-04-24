@@ -17,5 +17,6 @@ func cookieauthDotGo(proj *models.Project) *jen.File {
 		jen.Type().ID("CookieAuth").Struct(jen.ID("UserID").Uint64(), jen.ID("Admin").Bool(), jen.ID("Username").String()),
 		jen.Line(),
 	)
+
 	return ret
 }

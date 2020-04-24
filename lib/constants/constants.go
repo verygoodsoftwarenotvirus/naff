@@ -14,6 +14,8 @@ const (
 
 	LoggerVarName = "logger"
 
+	SpanVarName = "span"
+
 	RequestVarName = "req"
 
 	ResponseVarName = "res"

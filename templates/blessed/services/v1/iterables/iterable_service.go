@@ -57,7 +57,7 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 	serviceLines := []jen.Code{
 		jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-		jen.ID(fmt.Sprintf("%sDatabase", uvn)).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
+		jen.ID(fmt.Sprintf("%sDataManager", uvn)).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
 	}
 
 	if typ.BelongsToUser {
@@ -121,7 +121,7 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	}
 	serviceValues := []jen.Code{
 		jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),
-		jen.ID(fmt.Sprintf("%sDatabase", uvn)).MapAssign().ID("db"),
+		jen.ID(fmt.Sprintf("%sDataManager", uvn)).MapAssign().ID("db"),
 		jen.ID("encoderDecoder").MapAssign().ID("encoder"),
 		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().ID(fmt.Sprintf("%sCounter", uvn)),
 	}

@@ -122,5 +122,6 @@ func mockUserDataServerDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

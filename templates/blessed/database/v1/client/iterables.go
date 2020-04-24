@@ -44,12 +44,12 @@ func buildTracerAttachmentsForMethodWithParents(proj *models.Project, typ models
 
 	out := []jen.Code{}
 	for _, o := range owners {
-		out = append(out, jen.Qual(tp, fmt.Sprintf("Attach%sIDToSpan", o.Name.Singular())).Call(jen.ID("span"), jen.IDf("%sID", o.Name.UnexportedVarName())))
+		out = append(out, jen.Qual(tp, fmt.Sprintf("Attach%sIDToSpan", o.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", o.Name.UnexportedVarName())))
 	}
-	out = append(out, jen.Qual(tp, fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.Name.UnexportedVarName())))
+	out = append(out, jen.Qual(tp, fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.Name.UnexportedVarName())))
 
 	if typ.RestrictedToUserAtSomeLevel(proj) {
-		out = append(out, jen.Qual(tp, "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
+		out = append(out, jen.Qual(tp, "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")))
 	}
 
 	return out
@@ -61,12 +61,12 @@ func buildTracerAttachmentsForListMethodWithParents(proj *models.Project, typ mo
 
 	out := []jen.Code{}
 	for _, o := range owners {
-		out = append(out, jen.Qual(tp, fmt.Sprintf("Attach%sIDToSpan", o.Name.Singular())).Call(jen.ID("span"), jen.IDf("%sID", o.Name.UnexportedVarName())))
+		out = append(out, jen.Qual(tp, fmt.Sprintf("Attach%sIDToSpan", o.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", o.Name.UnexportedVarName())))
 	}
-	out = append(out, jen.Qual(tp, "AttachFilterToSpan").Call(jen.ID("span"), jen.ID(constants.FilterVarName)))
+	out = append(out, jen.Qual(tp, "AttachFilterToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.FilterVarName)))
 
 	if typ.RestrictedToUserAtSomeLevel(proj) {
-		out = append(out, jen.Qual(tp, "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
+		out = append(out, jen.Qual(tp, "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")))
 	}
 
 	return out
@@ -148,8 +148,8 @@ func buildGetAllSomethingCount(proj *models.Project, typ models.DataType) []jen.
 		jen.Commentf("GetAll%sCount fetches the count of %s from the database that meet a particular filter", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
-			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("GetAll%sCount", pn)),
-			jen.Defer().ID("span").Dot("End").Call(),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("GetAll%sCount", pn)),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Litf("GetAll%sCount called", pn)),
 			jen.Line(),
@@ -214,8 +214,8 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			params...,
 		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
 			jen.Error()).Block(
-			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("Create%s", sn)),
-			jen.Defer().ID("span").Dot("End").Call(),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("Create%s", sn)),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("input"), jen.ID("input")).Dot("Debug").Call(jen.Litf("Create%s called", sn)),
 			jen.Line(),
@@ -246,10 +246,10 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Update%s", sn).Params(
 			params...,
 		).Params(jen.Error()).Block(
-			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("Update%s", sn)),
-			jen.Defer().ID("span").Dot("End").Call(),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("Update%s", sn)),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.ID(updatedVarName).Dot("ID")),
+			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID(constants.SpanVarName), jen.ID(updatedVarName).Dot("ID")),
 			jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Litf("%s_id", rn), jen.ID(updatedVarName).Dot("ID")).Dot("Debug").Call(jen.Litf("Update%s called", sn)),
 			jen.Line(),
 			jen.Return().ID("c").Dot("querier").Dotf("Update%s", sn).Call(
@@ -281,20 +281,20 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	}
 
 	block := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("Archive%s", sn)),
-		jen.Defer().ID("span").Dot("End").Call(),
+		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("Archive%s", sn)),
+		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 		jen.Line(),
 	}
 
 	if typ.BelongsToUser {
-		block = append(block, jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")))
+		block = append(block, jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")))
 	}
 	if typ.BelongsToStruct != nil {
-		block = append(block, jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID("span"), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
+		block = append(block, jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())))
 	}
 
 	block = append(block,
-		jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID("span"), jen.IDf("%sID", uvn)),
+		jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", uvn)),
 		jen.Line(),
 		jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(loggerValues...)).Dot("Debug").Call(jen.Litf("Archive%s called", sn)),
 		jen.Line(),
@@ -322,10 +322,10 @@ func buildGetAllSomethingForUser(proj *models.Project, typ models.DataType) []je
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("GetAll%sForUser", pn).Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Index().Qual(proj.ModelsV1Package(), sn),
 			jen.Error()).Block(
-			jen.List(constants.CtxVar(), jen.ID("span")).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("GetAll%sForUser", pn)),
-			jen.Defer().ID("span").Dot("End").Call(),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("GetAll%sForUser", pn)),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
 			jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Litf("GetAll%sForUser called", pn)),
 			jen.Line(),
 			jen.List(jen.IDf("%sList", uvn), jen.Err()).Assign().ID("c").Dot("querier").Dotf("GetAll%sForUser", pn).Call(constants.CtxVar(), jen.ID("userID")),

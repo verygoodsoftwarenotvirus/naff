@@ -94,5 +94,6 @@ func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

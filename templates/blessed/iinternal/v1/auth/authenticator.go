@@ -77,5 +77,6 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 
 		jen.Line(),
 	)
+
 	return ret
 }

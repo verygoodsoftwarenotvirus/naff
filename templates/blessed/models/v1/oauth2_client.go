@@ -151,5 +151,6 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

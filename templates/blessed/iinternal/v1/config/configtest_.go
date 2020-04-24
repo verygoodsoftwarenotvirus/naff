@@ -95,5 +95,6 @@ connection_details = "%s"
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

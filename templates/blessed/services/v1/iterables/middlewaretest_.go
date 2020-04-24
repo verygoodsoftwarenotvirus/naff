@@ -143,5 +143,6 @@ func middlewareTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

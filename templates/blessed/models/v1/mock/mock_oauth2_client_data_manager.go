@@ -135,5 +135,6 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

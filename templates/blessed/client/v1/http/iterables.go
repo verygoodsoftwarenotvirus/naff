@@ -38,7 +38,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 }
 
 func attachURIToSpanCall(proj *models.Project) jen.Code {
-	return jen.Qual(proj.InternalTracingV1Package(), "AttachRequestURIToSpan").Call(jen.ID("span"), jen.ID("uri"))
+	return jen.Qual(proj.InternalTracingV1Package(), "AttachRequestURIToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("uri"))
 }
 
 func buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
