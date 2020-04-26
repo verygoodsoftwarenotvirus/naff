@@ -21,72 +21,72 @@ func FakeFuncForType(typ string, isPointer bool) func() jen.Code {
 	switch typ {
 	case "string":
 		if isPointer {
-			return pointerWrapper(typ, FakeStringFunc())
+			return ValuePointerWrapper(typ, FakeStringFunc())
 		}
 		return FakeStringFunc
 	case "bool":
 		if isPointer {
-			return pointerWrapper(typ, FakeBoolFunc())
+			return ValuePointerWrapper(typ, FakeBoolFunc())
 		}
 		return FakeBoolFunc
 	case "int":
 		if isPointer {
-			return pointerWrapper(typ, FakeIntFunc())
+			return ValuePointerWrapper(typ, FakeIntFunc())
 		}
 		return FakeIntFunc
 	case "int8":
 		if isPointer {
-			return pointerWrapper(typ, FakeInt8Func())
+			return ValuePointerWrapper(typ, FakeInt8Func())
 		}
 		return FakeInt8Func
 	case "int16":
 		if isPointer {
-			return pointerWrapper(typ, FakeInt16Func())
+			return ValuePointerWrapper(typ, FakeInt16Func())
 		}
 		return FakeInt16Func
 	case "int32":
 		if isPointer {
-			return pointerWrapper(typ, FakeInt32Func())
+			return ValuePointerWrapper(typ, FakeInt32Func())
 		}
 		return FakeInt32Func
 	case "int64":
 		if isPointer {
-			return pointerWrapper(typ, FakeInt64Func())
+			return ValuePointerWrapper(typ, FakeInt64Func())
 		}
 		return FakeInt64Func
 	case "uint":
 		if isPointer {
-			return pointerWrapper(typ, FakeUintFunc())
+			return ValuePointerWrapper(typ, FakeUintFunc())
 		}
 		return FakeUintFunc
 	case "uint8":
 		if isPointer {
-			return pointerWrapper(typ, FakeUint8Func())
+			return ValuePointerWrapper(typ, FakeUint8Func())
 		}
 		return FakeUint8Func
 	case "uint16":
 		if isPointer {
-			return pointerWrapper(typ, FakeUint16Func())
+			return ValuePointerWrapper(typ, FakeUint16Func())
 		}
 		return FakeUint16Func
 	case "uint32":
 		if isPointer {
-			return pointerWrapper(typ, FakeUint32Func())
+			return ValuePointerWrapper(typ, FakeUint32Func())
 		}
 		return FakeUint32Func
 	case "uint64":
 		if isPointer {
-			return pointerWrapper(typ, FakeUint64Func())
+			return ValuePointerWrapper(typ, FakeUint64Func())
 		}
 		return FakeUint64Func
 	case "float32":
 		if isPointer {
-			return pointerWrapper(typ, FakeFloat32Func())
+			return ValuePointerWrapper(typ, FakeFloat32Func())
 		}
 		return FakeFloat32Func
 	case "float64":
 		if isPointer {
-			return pointerWrapper(typ, FakeFloat64Func())
+			return ValuePointerWrapper(typ, FakeFloat64Func())
 		}
 		return FakeFloat64Func
 	default:
@@ -94,7 +94,7 @@ func FakeFuncForType(typ string, isPointer bool) func() jen.Code {
 	}
 }
 
-func pointerWrapper(typ string, c jen.Code) func() jen.Code {
+func ValuePointerWrapper(typ string, c jen.Code) func() jen.Code {
 	return func() jen.Code {
 		return jen.Func().Params(jen.ID("x").ID(typ)).Params(jen.PointerTo().ID(typ)).SingleLineBlock(jen.Return(jen.AddressOf().ID("x"))).Call(c)
 	}
@@ -143,6 +143,11 @@ func FakeInt32Func() jen.Code {
 func FakeInt64Func() jen.Code {
 	return jen.Qual(FakeLibrary, "Int64").Call()
 }
+
+func FakeInt64WhichIsReallyAnInt32Func() jen.Code {
+	return jen.Int64().Call(jen.Qual(FakeLibrary, "Int32").Call())
+}
+
 func FakeUintFunc() jen.Code {
 	return jen.Uint().Call(jen.Qual(FakeLibrary, "Uint32").Call())
 }
@@ -159,12 +164,20 @@ func FakeUint32Func() jen.Code {
 	return jen.Qual(FakeLibrary, "Uint32").Call()
 }
 
+func FakeUint64WhichIsActuallyAUint32Func() jen.Code {
+	return jen.Uint64().Call(jen.Qual(FakeLibrary, "Uint32").Call())
+}
+
 func FakeUint64Func() jen.Code {
 	return jen.Qual(FakeLibrary, "Uint64").Call()
 }
 
 func FakeFloat32Func() jen.Code {
 	return jen.Qual(FakeLibrary, "Float32").Call()
+}
+
+func FakeFloat64WhichIsActuallyAFloat32Func() jen.Code {
+	return jen.Float64().Call(jen.Qual(FakeLibrary, "Float32").Call())
 }
 
 func FakeFloat64Func() jen.Code {

@@ -32,7 +32,27 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 	}
 
 	for _, field := range typ.Fields {
-		block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
+		if field.Type == "uint64" {
+			if field.Pointer {
+				block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.ValuePointerWrapper(field.Type, utils.FakeUint64WhichIsActuallyAUint32Func())()))
+			} else {
+				block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeUint64WhichIsActuallyAUint32Func()))
+			}
+		} else if field.Type == "int64" {
+			if field.Pointer {
+				block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.ValuePointerWrapper(field.Type, utils.FakeInt64WhichIsReallyAnInt32Func())()))
+			} else {
+				block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeInt64WhichIsReallyAnInt32Func()))
+			}
+		} else if field.Type == "float64" {
+			if field.Pointer {
+				block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.ValuePointerWrapper(field.Type, utils.FakeFloat64WhichIsActuallyAFloat32Func())()))
+			} else {
+				block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFloat64WhichIsActuallyAFloat32Func()))
+			}
+		} else {
+			block = append(block, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
+		}
 	}
 
 	block = append(block,

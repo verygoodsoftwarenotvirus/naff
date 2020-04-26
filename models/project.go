@@ -6,6 +6,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"hash/fnv"
 	"log"
 	"math"
@@ -188,6 +189,23 @@ func (p *Project) EnabledDatabases() []string {
 	return out
 }
 
+func fieldsToVars(fields []DataField) []*types.Var {
+	out := []*types.Var{}
+
+	for _, field := range fields {
+		out = append(out,
+			types.NewVar(
+				field.Pos,
+				nil,
+				field.Name.Singular(),
+				field.UnderlyingType,
+			),
+		)
+	}
+
+	return out
+}
+
 func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []DataType, imports []string, returnErr error) {
 	for _, file := range pkgFiles {
 		ast.Inspect(file, func(n ast.Node) bool {
@@ -209,6 +227,7 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 						Name:                  wordsmith.FromSingularPascalCase(fn),
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						Pos:                   field.Pos(),
 					}
 
 					if x, identOK := field.Type.(*ast.Ident); identOK {
@@ -217,6 +236,7 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 						df.Pointer = true
 						df.Type = y.X.(*ast.Ident).Name
 					}
+					df.UnderlyingType = GetTypeForTypeName(df.Type)
 
 					// check if this is the meta flag
 					if fn == metaFlag && df.Type == "uintptr" {
@@ -409,4 +429,43 @@ func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, 
 		OutputPath:    p.OutputRepository,
 		sourcePackage: p.ModelsPackage,
 	}, nil
+}
+
+// GetTypeForTypeName blah
+func GetTypeForTypeName(name string) types.Type {
+	switch name {
+	case "bool":
+		return types.Typ[types.Bool]
+	case "int":
+		return types.Typ[types.Int]
+	case "int8":
+		return types.Typ[types.Int8]
+	case "int16":
+		return types.Typ[types.Int16]
+	case "int32":
+		return types.Typ[types.Int32]
+	case "int64":
+		return types.Typ[types.Int64]
+	case "uint":
+		return types.Typ[types.Uint]
+	case "uint8":
+		return types.Typ[types.Uint8]
+	case "uint16":
+		return types.Typ[types.Uint16]
+	case "uint32":
+		return types.Typ[types.Uint32]
+	case "uint64":
+		return types.Typ[types.Uint64]
+	case "uintptr":
+		return types.Typ[types.Uintptr]
+	case "float32":
+		return types.Typ[types.Float32]
+	case "float64":
+		return types.Typ[types.Float64]
+	case "string":
+		return types.Typ[types.String]
+	default:
+		log.Panicf("invalid type: %q", name)
+		return nil
+	}
 }

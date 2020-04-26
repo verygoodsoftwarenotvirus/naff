@@ -2,17 +2,22 @@ package models
 
 import (
 	"fmt"
-	"github.com/Masterminds/squirrel"
+	"go/token"
+	"go/types"
+	"path/filepath"
+	"strings"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	"path/filepath"
-	"strings"
+
+	"github.com/Masterminds/squirrel"
 )
 
 // DataType represents a data model
 type DataType struct {
 	Name             wordsmith.SuperPalabra
+	Struct           *types.Struct
 	BelongsToUser    bool
 	BelongsToNobody  bool
 	RestrictedToUser bool
@@ -24,6 +29,8 @@ type DataType struct {
 type DataField struct {
 	Name                  wordsmith.SuperPalabra
 	Type                  string
+	UnderlyingType        types.Type
+	Pos                   token.Pos
 	Pointer               bool
 	DefaultValue          string
 	ValidForCreationInput bool
