@@ -584,6 +584,28 @@ func (s *Statement) IsEqualTo() *Statement {
 	return s
 }
 
+// Not renders the provided operator / token.
+func Not() *Statement {
+	return newStatement().Not()
+}
+
+// Not renders the provided operator / token.
+func (g *Group) Not() *Statement {
+	s := Not()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Not renders the provided operator / token.
+func (s *Statement) Not() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "!",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // DoesNotEqual renders the provided operator / token.
 func DoesNotEqual() *Statement {
 	return newStatement().DoesNotEqual()

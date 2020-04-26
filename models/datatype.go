@@ -620,6 +620,32 @@ func (typ DataType) BuildArgsForDBQuerierRetrievalMethodTest(proj *Project) []je
 	return params
 }
 
+func (typ DataType) BuildArgsForServiceRouteExistenceCheck(proj *Project) []jen.Code {
+	owners := proj.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	args := []jen.Code{constants.CtxVar()}
+
+	uvn := typ.Name.UnexportedVarName()
+	if len(owners) > 0 {
+		for _, pt := range owners {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		listParams = append(listParams, jen.IDf("%sID", uvn))
+
+		if len(listParams) > 0 {
+			args = append(args, listParams...)
+		}
+	} else {
+		args = append(args, jen.IDf("%sID", uvn))
+	}
+
+	if typ.RestrictedToUserAtSomeLevel(proj) {
+		args = append(args, jen.ID("userID"))
+	}
+
+	return args
+}
+
 func (typ DataType) buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj *Project) []jen.Code {
 	params := []jen.Code{}
 
