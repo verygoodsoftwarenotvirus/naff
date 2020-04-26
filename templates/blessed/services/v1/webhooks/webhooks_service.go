@@ -46,7 +46,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("Service").Struct(
 				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 				jen.ID("webhookCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-				jen.ID("webhookDatabase").Qual(proj.ModelsV1Package(), "WebhookDataManager"),
+				jen.ID("webhookDataManager").Qual(proj.ModelsV1Package(), "WebhookDataManager"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
 				jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
@@ -68,7 +68,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksService").Paramsln(
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
-			jen.ID("webhookDatabase").Qual(proj.ModelsV1Package(), "WebhookDataManager"),
+			jen.ID("webhookDataManager").Qual(proj.ModelsV1Package(), "WebhookDataManager"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 			jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
@@ -82,7 +82,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),
-				jen.ID("webhookDatabase").MapAssign().ID("webhookDatabase"),
+				jen.ID("webhookDataManager").MapAssign().ID("webhookDataManager"),
 				jen.ID("encoderDecoder").MapAssign().ID("encoder"),
 				jen.ID("webhookCounter").MapAssign().ID("webhookCounter"),
 				jen.ID("userIDFetcher").MapAssign().ID("userIDFetcher"),

@@ -38,11 +38,13 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("Service handles our users"),
 			jen.ID("Service").Struct(
-				jen.ID("cookieSecret").Index().Byte(), jen.ID("database").Qual(proj.DatabaseV1Package(), "Database"),
+				jen.ID("cookieSecret").Index().Byte(),
+				jen.ID("userDataManager").Qual(proj.ModelsV1Package(), "UserDataManager"),
 				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 				jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
-				jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("userCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+				jen.ID("userIDFetcher").ID("UserIDFetcher"),
+				jen.ID("userCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 				jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 				jen.ID("userCreationEnabled").Bool(),
 			),
@@ -59,7 +61,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("ProvideUsersService").Paramsln(
 			jen.ID("authSettings").Qual(proj.InternalConfigV1Package(), "AuthSettings"),
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
-			jen.ID("db").Qual(proj.DatabaseV1Package(), "Database"),
+			jen.ID("userDataManager").Qual(proj.ModelsV1Package(), "UserDataManager"),
 			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 			jen.ID("counterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
@@ -80,7 +82,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID("cookieSecret").MapAssign().Index().Byte().Call(jen.ID("authSettings").Dot("CookieSecret")),
 				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),
-				jen.ID("database").MapAssign().ID("db"),
+				jen.ID("userDataManager").MapAssign().ID("userDataManager"),
 				jen.ID("authenticator").MapAssign().ID("authenticator"),
 				jen.ID("userIDFetcher").MapAssign().ID("userIDFetcher"),
 				jen.ID("encoderDecoder").MapAssign().ID("encoder"),

@@ -17,7 +17,7 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().AddressOf().ID("Service").Valuesln(
 				jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID("webhookCounter").MapAssign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("webhookDatabase").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
+				jen.ID("webhookDataManager").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
 				jen.ID("userIDFetcher").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 				jen.ID("webhookIDFetcher").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 				jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),

@@ -65,7 +65,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
 			jen.Line(),
 			jen.Comment("fetch user data"),
-			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetUser").Call(constants.CtxVar(), jen.ID("userID")),
+			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("GetUser").Call(constants.CtxVar(), jen.ID("userID")),
 			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("net/http", "StatusNotFound")),
 			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -110,7 +110,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID("qf").Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
 				jen.Comment("fetch user data"),
-				jen.List(jen.ID("users"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetUsers").Call(constants.CtxVar(), jen.ID("qf")),
+				jen.List(jen.ID("users"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("GetUsers").Call(constants.CtxVar(), jen.ID("qf")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error fetching users for ListHandler route")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
@@ -183,7 +183,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("create the user"),
-				jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("database").Dot("CreateUser").Call(constants.CtxVar(), jen.ID("input")),
+				jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("CreateUser").Call(constants.CtxVar(), jen.ID("input")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.If(jen.Err().IsEqualTo().Qual(proj.DatabaseV1Package("client"), "ErrUserExists")).Block(
 						jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("duplicate username attempted")),
@@ -291,7 +291,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("fetch user data"),
-				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetUser").Call(constants.CtxVar(), jen.ID("userID")),
+				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("GetUser").Call(constants.CtxVar(), jen.ID("userID")),
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no such user")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
@@ -370,7 +370,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID("user").Dot("TwoFactorSecret").Equals().ID("tfs"),
 				jen.Line(),
 				jen.Comment("update the user in the database"),
-				jen.If(jen.Err().Assign().ID("s").Dot("database").Dot("UpdateUser").Call(constants.CtxVar(), jen.ID("user")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("userDataManager").Dot("UpdateUser").Call(constants.CtxVar(), jen.ID("user")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered updating TOTP token")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
@@ -442,7 +442,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("update the user"),
-				jen.If(jen.Err().Equals().ID("s").Dot("database").Dot("UpdateUser").Call(constants.CtxVar(), jen.ID("user")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Equals().ID("s").Dot("userDataManager").Dot("UpdateUser").Call(constants.CtxVar(), jen.ID("user")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered updating user")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
@@ -471,7 +471,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("do the deed"),
-				jen.If(jen.Err().Assign().ID("s").Dot("database").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("userID")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("userDataManager").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("userID")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("deleting user from database")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),

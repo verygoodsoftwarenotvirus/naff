@@ -27,22 +27,29 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 	serviceValues := []jen.Code{
 		jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-		jen.ID(fmt.Sprintf("%sDataManager", uvn)).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 	}
 
-	if typ.BelongsToUser {
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		serviceValues = append(serviceValues,
+			jen.ID(fmt.Sprintf("%sDataManager", ot.Name.UnexportedVarName())).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", ot.Name.Singular())).Values(),
+		)
+	}
+	serviceValues = append(serviceValues, jen.ID(fmt.Sprintf("%sDataManager", uvn)).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values())
+
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		serviceValues = append(serviceValues,
+			jen.IDf("%sIDFetcher", ot.Name.UnexportedVarName()).MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
+		)
+	}
+	serviceValues = append(serviceValues, jen.IDf("%sIDFetcher", uvn).MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
+
+	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
 		serviceValues = append(serviceValues,
 			jen.ID("userIDFetcher").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 		)
 	}
-	if typ.BelongsToStruct != nil {
-		serviceValues = append(serviceValues,
-			jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-		)
-	}
 
 	serviceValues = append(serviceValues,
-		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 		jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 		jen.ID("reporter").MapAssign().ID("nil"),
 	)
@@ -68,6 +75,29 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 
+	provideServiceLines := []jen.Code{
+		jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+	}
+
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		provideServiceLines = append(provideServiceLines, jen.AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", ot.Name.Singular())).Values())
+	}
+	provideServiceLines = append(provideServiceLines, jen.AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values())
+
+	for range proj.FindOwnerTypeChain(typ) {
+		provideServiceLines = append(provideServiceLines, jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
+	}
+	provideServiceLines = append(provideServiceLines, jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
+	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
+		provideServiceLines = append(provideServiceLines, jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
+	}
+
+	provideServiceLines = append(provideServiceLines,
+		jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+		jen.ID("ucp"),
+		jen.Nil(),
+	)
+
 	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("TestProvide%sService", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -83,13 +113,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-					relevantIDFetcherParam(typ),
-					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-					jen.ID("ucp"),
-					jen.Nil(),
+					provideServiceLines...,
 				),
 				jen.Line(),
 				utils.AssertNotNil(jen.ID("s"), nil),
@@ -106,13 +130,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-					relevantIDFetcherParam(typ),
-					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-					jen.ID("ucp"),
-					jen.Nil(),
+					provideServiceLines...,
 				),
 				jen.Line(),
 				utils.AssertNil(jen.ID("s"), nil),

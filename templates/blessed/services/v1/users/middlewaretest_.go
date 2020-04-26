@@ -142,7 +142,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual(utils.MockPkg, "Anything"),
 					jen.Qual(utils.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Uint64().Call(jen.Lit(123)), jen.Nil()),
-				jen.ID("s").Dot("database").Equals().ID("mockDB"),
+				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(

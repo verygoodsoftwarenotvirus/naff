@@ -54,45 +54,60 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 	pcn := typ.Name.PluralCommonName()
 	uvn := typ.Name.UnexportedVarName()
 
-	serviceLines := []jen.Code{
+	structFields := []jen.Code{
 		jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
-		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-		jen.ID(fmt.Sprintf("%sDataManager", uvn)).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
 	}
 
-	if typ.BelongsToUser {
-		serviceLines = append(serviceLines,
+	// data managers
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		structFields = append(structFields,
+			jen.ID(fmt.Sprintf("%sDataManager", ot.Name.UnexportedVarName())).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", ot.Name.Singular())),
+		)
+	}
+	structFields = append(structFields, jen.ID(fmt.Sprintf("%sDataManager", uvn)).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)))
+
+	// id fetchers
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		structFields = append(structFields,
+			jen.IDf("%sIDFetcher", ot.Name.UnexportedVarName()).IDf("%sIDFetcher", ot.Name.Singular()),
+		)
+	}
+
+	structFields = append(structFields, jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)))
+	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
+		structFields = append(structFields,
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 		)
 	}
-	if typ.BelongsToStruct != nil {
-		serviceLines = append(serviceLines,
-			jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).IDf("%sIDFetcher", typ.BelongsToStruct.Singular()),
-		)
-	}
 
-	serviceLines = append(serviceLines,
-		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
+	structFields = append(structFields,
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+	)
+
+	structFields = append(structFields,
 		jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 
 	typeDefs := []jen.Code{
 		jen.Commentf("Service handles to-do list %s", pcn),
-		jen.ID("Service").Struct(serviceLines...),
+		jen.ID("Service").Struct(structFields...),
 		jen.Line(),
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
 		typeDefs = append(typeDefs,
 			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
 			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
+			jen.Line(),
 		)
 	}
-	if typ.BelongsToStruct != nil {
+
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
 		typeDefs = append(typeDefs,
-			jen.Commentf("%sIDFetcher is a function that fetches %s IDs", typ.BelongsToStruct.Singular(), typ.BelongsToStruct.SingularCommonName()),
-			jen.IDf("%sIDFetcher", typ.BelongsToStruct.Singular()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
+			jen.Commentf("%sIDFetcher is a function that fetches %s IDs", ot.Name.Singular(), ot.Name.SingularCommonName()),
+			jen.IDf("%sIDFetcher", ot.Name.Singular()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
+			jen.Line(),
 		)
 	}
 
@@ -117,32 +132,45 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 
 	params := []jen.Code{
 		jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
-		jen.ID("db").Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)),
-	}
-	serviceValues := []jen.Code{
-		jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),
-		jen.ID(fmt.Sprintf("%sDataManager", uvn)).MapAssign().ID("db"),
-		jen.ID("encoderDecoder").MapAssign().ID("encoder"),
-		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().ID(fmt.Sprintf("%sCounter", uvn)),
 	}
 
-	if typ.BelongsToUser {
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		params = append(params, jen.IDf("%sDataManager", ot.Name.UnexportedVarName()).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", ot.Name.Singular())))
+	}
+	params = append(params, jen.IDf("%sDataManager", uvn).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)))
+
+	serviceValues := []jen.Code{
+		jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),
+	}
+
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		params = append(params, jen.IDf("%sIDFetcher", ot.Name.UnexportedVarName()).IDf("%sIDFetcher", ot.Name.Singular()))
+		serviceValues = append(serviceValues, jen.IDf("%sIDFetcher", ot.Name.UnexportedVarName()).MapAssign().IDf("%sIDFetcher", ot.Name.UnexportedVarName()))
+	}
+	params = append(params, jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)))
+	serviceValues = append(serviceValues, jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).MapAssign().ID(fmt.Sprintf("%sIDFetcher", uvn)))
+
+	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
 		params = append(params, jen.ID("userIDFetcher").ID("UserIDFetcher"))
 		serviceValues = append(serviceValues, jen.ID("userIDFetcher").MapAssign().ID("userIDFetcher"))
 	}
-	if typ.BelongsToStruct != nil {
-		params = append(params, jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).IDf("%sIDFetcher", typ.BelongsToStruct.Singular()))
-		serviceValues = append(serviceValues, jen.IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).MapAssign().IDf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()))
+
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		serviceValues = append(serviceValues, jen.IDf("%sDataManager", ot.Name.UnexportedVarName()).MapAssign().IDf("%sDataManager", ot.Name.UnexportedVarName()))
 	}
 
+	serviceValues = append(serviceValues,
+		jen.IDf("%sDataManager", uvn).MapAssign().IDf("%sDataManager", uvn),
+		jen.ID("encoderDecoder").MapAssign().ID("encoder"),
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().ID(fmt.Sprintf("%sCounter", uvn)),
+	)
+
 	params = append(params,
-		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)),
 		jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 	serviceValues = append(serviceValues,
-		jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).MapAssign().ID(fmt.Sprintf("%sIDFetcher", uvn)),
 		jen.ID("reporter").MapAssign().ID("reporter"),
 	)
 

@@ -39,7 +39,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
 				jen.Line(),
 				jen.Comment("find the webhooks"),
-				jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("s").Dot("webhookDatabase").Dot("GetWebhooks").Call(constants.CtxVar(), jen.ID("userID"), jen.ID(constants.FilterVarName)),
+				jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("GetWebhooks").Call(constants.CtxVar(), jen.ID("userID"), jen.ID(constants.FilterVarName)),
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID("webhooks").Equals().AddressOf().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
 						jen.ID("Webhooks").MapAssign().Index().Qual(proj.ModelsV1Package(), "Webhook").Values()),
@@ -126,7 +126,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("create the webhook"),
-				jen.List(jen.ID("wh"), jen.Err()).Assign().ID("s").Dot("webhookDatabase").Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID("input")),
+				jen.List(jen.ID("wh"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID("input")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error creating webhook")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
@@ -178,13 +178,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				)),
 				jen.Line(),
 				jen.Comment("fetch the webhook from the database"),
-				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("webhookDatabase").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
+				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("No rows found in webhookDatabase")),
+					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("No rows found in webhook database")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 					jen.Return(),
 				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("Error fetching webhook from webhookDatabase")),
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("Error fetching webhook from webhook database")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
 				),
@@ -229,7 +229,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("fetch the webhook in question"),
-				jen.List(jen.ID("wh"), jen.Err()).Assign().ID("s").Dot("webhookDatabase").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
+				jen.List(jen.ID("wh"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no rows found for webhook")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
@@ -244,7 +244,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID("wh").Dot("Update").Call(jen.ID("input")),
 				jen.Line(),
 				jen.Comment("save the update in the database"),
-				jen.If(jen.Err().Equals().ID("s").Dot("webhookDatabase").Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Equals().ID("s").Dot("webhookDataManager").Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered updating webhook")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
@@ -290,7 +290,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("do the deed"),
-				jen.Err().Assign().ID("s").Dot("webhookDatabase").Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
+				jen.Err().Assign().ID("s").Dot("webhookDataManager").Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no rows found for webhook")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
