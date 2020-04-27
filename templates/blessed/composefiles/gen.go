@@ -53,15 +53,15 @@ func GetDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
 	files := map[string]models.DockerComposeFile{
-		"compose-files/development.json":          developmentDotJSON(project.Name),
-		"compose-files/frontend-tests.json":       frontendTestsDotJSON(project.Name),
-		"compose-files/integration-coverage.json": integrationCoverageDotJSON(project.Name),
-		"compose-files/production.json":           productionDotJSON(project.Name),
+		"compose_files/development.json":          developmentDotJSON(project.Name),
+		"compose_files/frontend-tests.json":       frontendTestsDotJSON(project.Name),
+		"compose_files/integration-coverage.json": integrationCoverageDotJSON(project.Name),
+		"compose_files/production.json":           productionDotJSON(project.Name),
 	}
 
 	for _, db := range project.EnabledDatabases() {
-		files[fmt.Sprintf("compose-files/integration-tests-%s.json", db)] = integrationTestsDotJSON(project.Name, GetDatabasePalabra(db))
-		files[fmt.Sprintf("compose-files/load-tests-%s.json", db)] = loadTestsDotJSON(project.Name, GetDatabasePalabra(db))
+		files[fmt.Sprintf("compose_files/integration-tests-%s.json", db)] = integrationTestsDotJSON(project.Name, GetDatabasePalabra(db))
+		files[fmt.Sprintf("compose_files/load-tests-%s.json", db)] = loadTestsDotJSON(project.Name, GetDatabasePalabra(db))
 	}
 
 	for filename, file := range files {
