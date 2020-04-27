@@ -63,6 +63,14 @@ clean_example_output:
 $(EXAMPLE_OUTPUT_DIR):
 	mkdir -p $(EXAMPLE_OUTPUT_DIR)
 
+.PHONY: clean_todo
+clean_todo: clean_example_output $(EXAMPLE_OUTPUT_DIR)
+	PROJECT=todo OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run cmd/todoproj/main.go
+
+.PHONY: compare_todo
+compare_todo: clean_todo
+	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
+
 .PHONY: clean_gamut
 clean_gamut: clean_example_output $(EXAMPLE_OUTPUT_DIR)
 	PROJECT=gamut OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run cmd/todoproj/main.go

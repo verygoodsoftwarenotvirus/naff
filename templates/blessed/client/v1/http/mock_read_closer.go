@@ -6,7 +6,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockReadCloserDotGo(proj *models.Project) *jen.File {
+func mockReadCloserTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile(packageName)
 
 	utils.AddImports(proj, ret)
