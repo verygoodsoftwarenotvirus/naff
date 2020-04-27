@@ -276,7 +276,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 		jen.Litf("Archive%s", sn),
 		jen.Qual(utils.MockPkg, "Anything"),
 	}
-	idCallArgs := typ.BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest(proj)
+	idCallArgs := typ.BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest()
 	mockCallArgs = append(mockCallArgs, idCallArgs...)
 	callArgs := append([]jen.Code{constants.CtxVar()}, idCallArgs...)
 

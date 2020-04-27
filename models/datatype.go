@@ -2001,10 +2001,6 @@ func (typ DataType) buildRequisiteFakeVarCallArgsForCreation(proj *Project) []je
 	return lines
 }
 
-func (typ DataType) BuildRequisiteFakeVarCallArgsForDBQuerierCreationMethodTest(proj *Project) []jen.Code {
-	return typ.buildRequisiteFakeVarCallArgsForCreation(proj)
-}
-
 func (typ DataType) buildRequisiteFakeVarCallArgs(proj *Project) []jen.Code {
 	lines := []jen.Code{}
 	sn := typ.Name.Singular()
@@ -2032,7 +2028,7 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(
 	return typ.buildRequisiteFakeVarCallArgs(proj)
 }
 
-func (typ DataType) BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest(proj *Project) []jen.Code {
+func (typ DataType) BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest() []jen.Code {
 	lines := []jen.Code{}
 	sn := typ.Name.Singular()
 
@@ -2043,6 +2039,22 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest(pr
 
 	if typ.BelongsToUser {
 		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
+	}
+
+	return lines
+}
+
+func (typ DataType) BuildRequisiteFakeVarCallArgsForServiceArchiveHandlerTest() []jen.Code {
+	lines := []jen.Code{}
+	sn := typ.Name.Singular()
+
+	if typ.BelongsToStruct != nil {
+		lines = append(lines, jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
+	}
+	lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("ID"))
+
+	if typ.BelongsToUser {
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
 	return lines
