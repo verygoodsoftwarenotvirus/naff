@@ -229,7 +229,7 @@ func configDotGo(proj *models.Project) *jen.File {
 				jen.Return().Err(),
 			),
 			jen.Line(),
-			jen.Return().Qual("io/ioutil", "WriteFile").Call(jen.ID("path"), jen.ID("byteSlice"), jen.Op("0644")),
+			jen.Return().Qual("io/ioutil", "WriteFile").Call(jen.ID("path"), jen.ID("byteSlice"), jen.Op("0600")),
 		),
 		jen.Line(),
 	)

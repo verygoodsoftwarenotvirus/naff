@@ -2020,6 +2020,56 @@ func (typ DataType) buildRequisiteFakeVarCallArgs(proj *Project) []jen.Code {
 	return lines
 }
 
+func (typ DataType) buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(proj *Project) []jen.Code {
+
+	lines := []jen.Code{}
+	sn := typ.Name.Singular()
+
+	owners := proj.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
+	}
+	lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("ID"))
+
+	if (typ.BelongsToUser && typ.RestrictedToUser) || typ.RestrictedToUserAtSomeLevel(proj) {
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Dot("ID"))
+	}
+
+	return lines
+}
+
+func (typ DataType) BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(proj *Project) []jen.Code {
+	return typ.buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(proj)
+}
+
+func (typ DataType) BuildRequisiteFakeVarCallArgsForServiceReadHandlerTest(proj *Project) []jen.Code {
+	return typ.buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(proj)
+}
+
+func (typ DataType) BuildRequisiteFakeVarCallArgsForServiceCreateHandlerTest(proj *Project) []jen.Code {
+	return typ.buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(proj)
+}
+
+func (typ DataType) BuildRequisiteFakeVarCallArgsForServiceUpdateHandlerTest(proj *Project) []jen.Code {
+	return typ.buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(proj)
+}
+
+func (typ DataType) BuildRequisiteFakeVarCallArgsForServiceArchiveHandlerTest() []jen.Code {
+	lines := []jen.Code{}
+	sn := typ.Name.Singular()
+
+	if typ.BelongsToStruct != nil {
+		lines = append(lines, jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
+	}
+	lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("ID"))
+
+	if typ.BelongsToUser {
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Dot("ID"))
+	}
+
+	return lines
+}
+
 func (typ DataType) BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(proj *Project) []jen.Code {
 	return typ.buildRequisiteFakeVarCallArgs(proj)
 }
@@ -2039,22 +2089,6 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest() 
 
 	if typ.BelongsToUser {
 		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
-	}
-
-	return lines
-}
-
-func (typ DataType) BuildRequisiteFakeVarCallArgsForServiceArchiveHandlerTest() []jen.Code {
-	lines := []jen.Code{}
-	sn := typ.Name.Singular()
-
-	if typ.BelongsToStruct != nil {
-		lines = append(lines, jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
-	}
-	lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("ID"))
-
-	if typ.BelongsToUser {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
 	return lines

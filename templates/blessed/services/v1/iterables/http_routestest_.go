@@ -24,35 +24,10 @@ func httpRoutesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	return ret
 }
 
-func buildOwnerVarName(typ models.DataType) string {
-	if typ.BelongsToUser {
-		return "exampleUser"
-	} else if typ.BelongsToStruct != nil {
-		return fmt.Sprintf(utils.BuildFakeVarName(typ.BelongsToStruct.Singular()))
-	}
-
-	return ""
-}
-
-func includeUserFetcher(typ models.DataType) jen.Code {
-	if typ.BelongsToUser {
-		return jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher")
-	}
-	return jen.Null()
-}
-
-func includeOwnerFetcher(typ models.DataType) jen.Code {
-	if typ.BelongsToStruct != nil {
-		btsuvn := typ.BelongsToStruct.UnexportedVarName()
-		return jen.ID("s").Dotf("%sIDFetcher", btsuvn).Equals().IDf("%sIDFetcher", btsuvn)
-	}
-	return jen.Null()
-}
-
 func includeOwnerFetchers(proj *models.Project, typ models.DataType) []jen.Code {
 	out := []jen.Code{jen.Line()}
 
-	if typ.BelongsToUser {
+	if typ.OwnedByAUserAtSomeLevel(proj) {
 		out = append(out,
 			jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher"),
 		)
@@ -67,22 +42,9 @@ func includeOwnerFetchers(proj *models.Project, typ models.DataType) []jen.Code 
 	return out
 }
 
-func buildDBCallOwnerVars(proj *models.Project, typ models.DataType) []jen.Code {
-	out := []jen.Code{}
-
-	if typ.BelongsToUser {
-		out = append(out, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
-	}
-	for _, ot := range proj.FindOwnerTypeChain(typ) {
-		out = append(out, jen.ID(utils.BuildFakeVarName(ot.Name.Singular())).Dot("ID"))
-	}
-
-	return out
-}
-
 func buildRelevantIDFetchers(proj *models.Project, typ models.DataType) []jen.Code {
 	out := []jen.Code{}
-	if typ.BelongsToUser {
+	if typ.OwnedByAUserAtSomeLevel(proj) {
 		out = append(out,
 			utils.BuildFakeVar(proj, "User"),
 			jen.ID("userIDFetcher").Assign().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
@@ -117,7 +79,7 @@ func buildRelevantIDFetchers(proj *models.Project, typ models.DataType) []jen.Co
 	return out
 }
 
-func setupDataManagersForModifiers(proj *models.Project, typ models.DataType, actualCallArgs, returnValues []jen.Code, indexToReturnFalse int, returnErr bool) (out []jen.Code) {
+func setupDataManagersForCreation(proj *models.Project, typ models.DataType, actualCallArgs, returnValues []jen.Code, indexToReturnFalse int, returnErr bool) (out []jen.Code) {
 	owners := proj.FindOwnerTypeChain(typ)
 	for i, ot := range owners {
 		sn := ot.Name.Singular()
@@ -140,7 +102,7 @@ func setupDataManagersForModifiers(proj *models.Project, typ models.DataType, ac
 
 		callArgs := append(
 			[]jen.Code{jen.Litf("%sExists", sn), jen.Qual(utils.MockPkg, "Anything")},
-			ot.BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(proj)...,
+			ot.BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(proj)...,
 		)
 
 		out = append(out,
@@ -337,6 +299,18 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		lines := append([]jen.Code{jen.ID("s").Assign().ID("buildTestService").Call()}, includeOwnerFetchers(proj, typ)...)
 		lines = append(lines,
 			jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if typ.BelongsToUser {
+					return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+				}
+				return jen.Null()
+			}(),
 			jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 			jen.Line(),
 		)
@@ -349,7 +323,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			returnValues[1] = constants.ObligatoryError()
 		}
 
-		lines = append(lines, setupDataManagersForModifiers(proj, typ, actualCallArgs, returnValues, index, returnErr)...)
+		lines = append(lines, setupDataManagersForCreation(proj, typ, actualCallArgs, returnValues, index, returnErr)...)
 		if index < 0 {
 			lines = append(lines,
 				jen.Line(),
@@ -454,6 +428,18 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 	thirdSubtestLines := append([]jen.Code{jen.ID("s").Assign().ID("buildTestService").Call()}, includeOwnerFetchers(proj, typ)...)
 	thirdSubtestLines = append(thirdSubtestLines,
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 	)
@@ -462,7 +448,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.ID(utils.BuildFakeVarName(sn)),
 		constants.ObligatoryError(),
 	}
-	thirdSubtestLines = append(thirdSubtestLines, setupDataManagersForModifiers(proj, typ, actualCallArgs, returnValues, -1, true)...)
+	thirdSubtestLines = append(thirdSubtestLines, setupDataManagersForCreation(proj, typ, actualCallArgs, returnValues, -1, true)...)
 	thirdSubtestLines = append(thirdSubtestLines,
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
@@ -486,6 +472,18 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 	fourthSubtestLines := append([]jen.Code{jen.ID("s").Assign().ID("buildTestService").Call()}, includeOwnerFetchers(proj, typ)...)
 	fourthSubtestLines = append(fourthSubtestLines,
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 	)
@@ -494,7 +492,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.ID(utils.BuildFakeVarName(sn)),
 		jen.Nil(),
 	}
-	fourthSubtestLines = append(fourthSubtestLines, setupDataManagersForModifiers(proj, typ, actualCallArgs, returnValues, -1, false)...)
+	fourthSubtestLines = append(fourthSubtestLines, setupDataManagersForCreation(proj, typ, actualCallArgs, returnValues, -1, false)...)
 	fourthSubtestLines = append(fourthSubtestLines,
 		jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 		jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(utils.MockPkg, "Anything")),
@@ -557,7 +555,7 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 			jen.Litf("%sExists", sn),
 			jen.Qual(utils.MockPkg, "Anything"),
 		},
-		typ.BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(proj)...,
+		typ.BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(proj)...,
 	)
 
 	firstSubtestLines := append(
@@ -739,7 +737,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.Litf("Get%s", sn),
 		jen.Qual(utils.MockPkg, "Anything"),
 	}
-	getSomethingExpectationArgs = append(getSomethingExpectationArgs, typ.BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(proj)...)
+	getSomethingExpectationArgs = append(getSomethingExpectationArgs, typ.BuildRequisiteFakeVarCallArgsForServiceReadHandlerTest(proj)...)
 
 	firstSubtestLines := append(
 		[]jen.Code{
@@ -974,7 +972,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Litf("Get%s", sn),
 		jen.Qual(utils.MockPkg, "Anything"),
 	}
-	expectedDBRetrievalCallArgs = append(expectedDBRetrievalCallArgs, typ.BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(proj)...)
+	expectedDBRetrievalCallArgs = append(expectedDBRetrievalCallArgs, typ.BuildRequisiteFakeVarCallArgsForServiceUpdateHandlerTest(proj)...)
 
 	firstSubtestLines := append(
 		[]jen.Code{
@@ -986,6 +984,18 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	firstSubtestLines = append(firstSubtestLines,
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
@@ -1061,6 +1071,18 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	thirdSubtestLines = append(thirdSubtestLines,
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
@@ -1100,6 +1122,18 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	fourthSubtestLines = append(fourthSubtestLines,
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
@@ -1139,6 +1173,18 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	fifthSubtestLines = append(fifthSubtestLines,
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
@@ -1180,6 +1226,18 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	sixthSubtestLines = append(sixthSubtestLines,
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
@@ -1246,13 +1304,65 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	return lines
 }
 
+func setupDataManagersForDeletion(proj *models.Project, typ models.DataType, actualCallArgs, returnValues []jen.Code, indexToReturnFalse int, returnErr, returnFalse bool) (out []jen.Code) {
+	owners := proj.FindOwnerTypeChain(typ)
+	for i, ot := range owners {
+		sn := ot.Name.Singular()
+		uvn := ot.Name.UnexportedVarName()
+		dataManagerVarName := fmt.Sprintf("%sDataManager", ot.Name.UnexportedVarName())
+
+		if i > indexToReturnFalse && indexToReturnFalse > -1 {
+			return
+		}
+
+		returnVals := []jen.Code{
+			jen.True(),
+			jen.Nil(),
+		}
+		if i == indexToReturnFalse && returnFalse {
+			returnVals[0] = jen.False()
+		}
+		if i == indexToReturnFalse && returnErr {
+			returnVals[1] = constants.ObligatoryError()
+		}
+
+		callArgs := append(
+			[]jen.Code{jen.Litf("%sExists", sn), jen.Qual(utils.MockPkg, "Anything")},
+			ot.BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(proj)...,
+		)
+
+		out = append(out,
+			jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+			jen.ID(dataManagerVarName).Dot("On").Call(callArgs...).Dot("Return").Call(returnVals...),
+			jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
+			jen.Line(),
+		)
+	}
+
+	sn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
+	dataManagerVarName := fmt.Sprintf("%sDataManager", typ.Name.UnexportedVarName())
+
+	if indexToReturnFalse == len(owners)-1 && len(owners) > 0 {
+		return
+	}
+
+	out = append(out,
+		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+		jen.ID(dataManagerVarName).Dot("On").Call(actualCallArgs...).Dot("Return").Call(returnValues...),
+		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
+		jen.Line(),
+	)
+
+	return
+}
+
 func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scn := typ.Name.SingularCommonName()
 	uvn := typ.Name.UnexportedVarName()
-
-	dataManagerVarName := fmt.Sprintf("%sDataManager", typ.Name.UnexportedVarName())
+	subtests := []jen.Code{}
 
 	expectedCallArgs := []jen.Code{
 		jen.Litf("Archive%s", sn),
@@ -1260,7 +1370,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 	}
 	expectedCallArgs = append(expectedCallArgs, typ.BuildRequisiteFakeVarCallArgsForServiceArchiveHandlerTest()...)
 
-	buildHappyPathSubtestVariant := func(name string, index int, returnFalse, returnErr bool) jen.Code {
+	buildHappyPathSubtestVariant := func(name string, index int, returnFalse, returnErr, includeSelf, includeAfterEffects bool) jen.Code {
 		lines := append(
 			[]jen.Code{
 				jen.ID("s").Assign().ID("buildTestService").Call(),
@@ -1268,42 +1378,68 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 			},
 			includeOwnerFetchers(proj, typ)...,
 		)
-		lines = append(lines,
-			jen.Line(),
-			jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-			func() jen.Code {
-				if typ.BelongsToStruct != nil {
-					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
-				}
-				return jen.Null()
-			}(),
-			func() jen.Code {
-				if typ.BelongsToUser {
-					return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
-				}
-				return jen.Null()
-			}(),
-			jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-				jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
-			),
-			jen.Line(),
-		)
+		lines = append(lines, jen.Line())
+
+		if includeSelf {
+			lines = append(lines,
+				jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				func() jen.Code {
+					if typ.BelongsToStruct != nil {
+						return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
+					}
+					return jen.Null()
+				}(),
+				func() jen.Code {
+					if typ.BelongsToUser {
+						return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+					}
+					return jen.Null()
+				}(),
+				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+					jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
+				),
+				jen.Line(),
+			)
+		}
 
 		returnValues := []jen.Code{
-			jen.ID(utils.BuildFakeVarName(sn)),
 			jen.Nil(),
 		}
 
-		lines = append(lines, setupDataManagersForModifiers(proj, typ, expectedCallArgs, returnValues, -1, false)...)
+		var expectedStatus string
+		if index < 0 {
+			expectedStatus = "StatusNoContent"
+		} else {
+			expectedStatus = "StatusNotFound"
+		}
+		if returnErr {
+			expectedStatus = "StatusInternalServerError"
+		}
+
+		var elems []string
+		if index == -1 && includeAfterEffects {
+			elems = []string{
+				"mc",
+				"r",
+			}
+		}
+
+		lines = append(lines, setupDataManagersForDeletion(proj, typ, expectedCallArgs, returnValues, index, returnErr, returnFalse)...)
+
+		if includeAfterEffects {
+			lines = append(lines,
+				jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
+				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(),
+				jen.ID("s").Dot("reporter").Equals().ID("r"),
+				jen.Line(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(),
+				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
+				jen.Line(),
+			)
+		}
+
 		lines = append(lines,
-			jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
-			jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(),
-			jen.ID("s").Dot("reporter").Equals().ID("r"),
-			jen.Line(),
-			jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-			jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(),
-			jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
-			jen.Line(),
 			jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 				jen.Qual("net/http", "MethodGet"),
@@ -1315,20 +1451,19 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 			jen.Line(),
 			jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 			jen.Line(),
-			utils.AssertEqual(jen.Qual("net/http", "StatusNoContent"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
+			utils.AssertEqual(jen.Qual("net/http", expectedStatus), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
 			jen.Line(),
-			utils.AssertExpectationsFor(append(determineMockExpecters(proj, typ, -1))...),
+			utils.AssertExpectationsFor(append(determineMockExpecters(proj, typ, index), elems...)...),
 		)
 
 		return utils.BuildSubTestWithoutContext(name, lines...)
 	}
-	firstSubtest := buildHappyPathSubtestVariant("happy path", -1, false, false)
 
-	//subtests = append(subtests, buildHappyPathSubtestVariant("happy path", -1, false))
-	//for i, ot := range proj.FindOwnerTypeChain(typ) {
-	//	subtests = append(subtests, buildHappyPathSubtestVariant(fmt.Sprintf("with nonexistent %s", ot.Name.SingularCommonName()), i, false))
-	//	subtests = append(subtests, buildHappyPathSubtestVariant(fmt.Sprintf("with error checking %s existence", ot.Name.SingularCommonName()), i, true))
-	//}
+	subtests = append(subtests, buildHappyPathSubtestVariant("happy path", -1, false, false, true, true))
+	for i, ot := range proj.FindOwnerTypeChain(typ) {
+		subtests = append(subtests, buildHappyPathSubtestVariant(fmt.Sprintf("with nonexistent %s", ot.Name.SingularCommonName()), i, true, false, false, false))
+		subtests = append(subtests, buildHappyPathSubtestVariant(fmt.Sprintf("with error checking %s existence", ot.Name.SingularCommonName()), i, false, true, false, false))
+	}
 
 	secondSubtestLines := append(
 		[]jen.Code{
@@ -1352,19 +1487,14 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 			}
 			return jen.Null()
 		}(),
+		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+			jen.Return(jen.IDf(utils.BuildFakeVarName(sn)).Dot("ID")),
+		),
+		jen.Line(), jen.Line(),
 	)
 
-	returnValues := []jen.Code{
-		jen.ID(utils.BuildFakeVarName(sn)),
-		jen.Nil(),
-	}
-
-	secondSubtestLines = append(secondSubtestLines, setupDataManagersForModifiers(proj, typ, expectedCallArgs, returnValues, -1, false)...)
+	secondSubtestLines = append(secondSubtestLines, setupDataManagersForDeletion(proj, typ, expectedCallArgs, []jen.Code{jen.Qual("database/sql", "ErrNoRows")}, -1, false, false)...)
 	secondSubtestLines = append(secondSubtestLines,
-		jen.Line(),
-		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-		jen.ID(dataManagerVarName).Dot("On").Call(expectedCallArgs...).Dot("Return").Call(jen.Qual("database/sql", "ErrNoRows")),
-		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
@@ -1381,6 +1511,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.Line(),
 		utils.AssertExpectationsFor(append(determineMockExpecters(proj, typ, -1))...),
 	)
+	subtests = append(subtests, utils.BuildSubTestWithoutContext(fmt.Sprintf("with no %s in database", scn), secondSubtestLines...))
 
 	thirdSubtestLines := append(
 		[]jen.Code{
@@ -1404,9 +1535,13 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 			}
 			return jen.Null()
 		}(),
+		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+			jen.Return(jen.IDf(utils.BuildFakeVarName(sn)).Dot("ID")),
+		),
+		jen.Line(), jen.Line(),
 	)
 
-	thirdSubtestLines = append(thirdSubtestLines, setupDataManagersForModifiers(proj, typ, expectedCallArgs, returnValues, -1, false)...)
+	thirdSubtestLines = append(thirdSubtestLines, setupDataManagersForDeletion(proj, typ, expectedCallArgs, []jen.Code{constants.ObligatoryError()}, -1, false, false)...)
 	thirdSubtestLines = append(thirdSubtestLines,
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -1424,6 +1559,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.Line(),
 		utils.AssertExpectationsFor(append(determineMockExpecters(proj, typ, -1))...),
 	)
+	subtests = append(subtests, utils.BuildSubTestWithoutContext("with error writing to database", thirdSubtestLines...))
 
 	block := []jen.Code{
 		jen.ID("T").Dot("Parallel").Call(),
@@ -1432,14 +1568,9 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 
 	block = append(block, buildRelevantIDFetchers(proj, typ)...)
 
-	block = append(block,
-		jen.Line(),
-		firstSubtest,
-		jen.Line(),
-		utils.BuildSubTestWithoutContext(fmt.Sprintf("with no %s in database", scn), secondSubtestLines...),
-		jen.Line(),
-		utils.BuildSubTestWithoutContext("with error writing to database", thirdSubtestLines...),
-	)
+	for _, st := range subtests {
+		block = append(block, jen.Line(), st)
+	}
 
 	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("Test%sService_ArchiveHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
