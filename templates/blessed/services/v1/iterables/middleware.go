@@ -16,7 +16,7 @@ func middlewareDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	sn := typ.Name.Singular() // singular name, PascalCased by default
 
 	ret.Add(
-		jen.Commentf("CreationInputMiddleware is a middleware for fetching, parsing, and attaching an %sInput struct from a request", sn),
+		jen.Commentf("CreationInputMiddleware is a middleware for fetching, parsing, and attaching an %sInput struct from a request.", sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(
@@ -43,7 +43,7 @@ func middlewareDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Commentf("UpdateInputMiddleware is a middleware for fetching, parsing, and attaching an %sInput struct from a request", sn),
+		jen.Commentf("UpdateInputMiddleware is a middleware for fetching, parsing, and attaching an %sInput struct from a request.", sn),
 		jen.Line(),
 		jen.Comment("This is the same as the creation one, but that won't always be the case."),
 		jen.Line(),

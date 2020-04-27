@@ -15,7 +15,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 	ret.Add(jen.Line())
 
 	ret.Add(
-		jen.Comment("argIsNotPointer checks an argument and returns whether or not it is a pointer"),
+		jen.Comment("argIsNotPointer checks an argument and returns whether or not it is a pointer."),
 		jen.Line(),
 		jen.Func().ID("argIsNotPointer").Params(jen.ID("i").Interface()).Params(
 			jen.ID("notAPointer").Bool(),
@@ -36,7 +36,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("argIsNotNil checks an argument and returns whether or not it is nil"),
+		jen.Comment("argIsNotNil checks an argument and returns whether or not it is nil."),
 		jen.Line(),
 		jen.Func().ID("argIsNotNil").Params(jen.ID("i").Interface()).Params(
 			jen.ID("isNil").Bool(),
@@ -59,7 +59,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("is primarily useful for detecting if a destination value is valid"),
 		jen.Line(),
-		jen.Comment("before decoding an HTTP response, for instance"),
+		jen.Comment("before decoding an HTTP response, for instance."),
 		jen.Line(),
 		jen.Func().ID("argIsNotPointerOrNil").Params(jen.ID("i").Interface()).Params(jen.Error()).Block(
 			jen.If(

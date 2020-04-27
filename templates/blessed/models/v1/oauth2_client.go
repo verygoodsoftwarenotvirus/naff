@@ -14,7 +14,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Comment("OAuth2ClientKey is a ContextKey for use with contexts involving OAuth2 clients"),
+			jen.Comment("OAuth2ClientKey is a ContextKey for use with contexts involving OAuth2 clients."),
 			jen.ID("OAuth2ClientKey").ID("ContextKey").Equals().Lit("oauth2_client"),
 		),
 		jen.Line(),
@@ -22,7 +22,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.Comment("OAuth2ClientDataManager handles OAuth2 clients"),
+			jen.Comment("OAuth2ClientDataManager handles OAuth2 clients."),
 			jen.ID("OAuth2ClientDataManager").Interface(
 				jen.ID("GetOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
 				jen.ID("GetOAuth2ClientByClientID").Params(constants.CtxParam(), jen.ID("clientID").String()).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
@@ -33,19 +33,19 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 				jen.ID("ArchiveOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.Error()),
 			),
 			jen.Line(),
-			jen.Comment("OAuth2ClientDataServer describes a structure capable of serving traffic related to oauth2 clients"),
+			jen.Comment("OAuth2ClientDataServer describes a structure capable of serving traffic related to oauth2 clients."),
 			jen.ID("OAuth2ClientDataServer").Interface(
 				jen.ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
 				jen.ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
 				jen.ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.Comment("There is deliberately no update function"),
+				jen.Comment("There is deliberately no update function."),
 				jen.ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
 				jen.Line(),
 				jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("OAuth2ClientInfoMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
 				jen.Line(),
-				jen.Comment("wrappers for our implementation library"),
+				jen.Comment("wrappers for our implementation library."),
 				jen.ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()),
 				jen.ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()),
 			),
@@ -65,7 +65,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("belongs_to_user")),
 			),
 			jen.Line(),
-			jen.Comment("OAuth2ClientList is a response struct containing a list of OAuth2Clients"),
+			jen.Comment("OAuth2ClientList is a response struct containing a list of OAuth2Clients."),
 			jen.ID("OAuth2ClientList").Struct(
 				jen.ID("Pagination"),
 				jen.ID("Clients").Index().ID("OAuth2Client").Tag(jsonTag("clients")),
@@ -82,7 +82,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 				jen.ID("Scopes").Index().String().Tag(jsonTag("scopes")),
 			),
 			jen.Line(),
-			jen.Comment("OAuth2ClientUpdateInput is a struct for use when updating OAuth2 clients"),
+			jen.Comment("OAuth2ClientUpdateInput is a struct for use when updating OAuth2 clients."),
 			jen.ID("OAuth2ClientUpdateInput").Struct(
 				jen.ID("RedirectURI").String().Tag(jsonTag("redirect_uri")),
 				jen.ID("Scopes").Index().String().Tag(jsonTag("scopes")),
@@ -106,7 +106,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetSecret returns the ClientSecret"),
+		jen.Comment("GetSecret returns the ClientSecret."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetSecret").Params().Params(jen.String()).Block(
 			jen.Return().ID("c").Dot("ClientSecret"),
@@ -115,7 +115,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetDomain returns the client's domain"),
+		jen.Comment("GetDomain returns the client's domain."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetDomain").Params().Params(jen.String()).Block(
 			jen.Return().ID("c").Dot("RedirectURI"),
@@ -124,7 +124,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetUserID returns the client's UserID"),
+		jen.Comment("GetUserID returns the client's UserID."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetUserID").Params().Params(jen.String()).Block(
 			jen.Return().Qual("strconv", "FormatUint").Call(jen.ID("c").Dot(constants.UserOwnershipFieldName), jen.Lit(10)),
@@ -133,7 +133,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("HasScope returns whether or not the provided scope is included in the scope list"),
+		jen.Comment("HasScope returns whether or not the provided scope is included in the scope list."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("HasScope").Params(jen.ID("scope").String()).Params(jen.ID("found").Bool()).Block(
 			jen.ID("scope").Equals().Qual("strings", "TrimSpace").Call(jen.ID("scope")),

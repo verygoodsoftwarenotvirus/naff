@@ -14,7 +14,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("Test_randString").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
-			jen.Comment("obligatory"),
+			jen.Comment("obligatory."),
 			jen.Line(),
 			jen.ID("actual").Assign().ID("randString").Call(),
 			utils.AssertNotEmpty(jen.ID("actual"), nil),
@@ -26,7 +26,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Func().ID("Test_buildConfig").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
-			jen.Comment("obligatory"),
+			jen.Comment("obligatory."),
 			jen.Line(),
 			jen.ID("actual").Assign().ID("BuildConfig").Call(),
 			utils.AssertNotNil(jen.ID("actual"), nil),

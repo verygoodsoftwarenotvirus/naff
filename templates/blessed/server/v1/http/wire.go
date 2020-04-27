@@ -27,7 +27,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("Providers is our wire superset of providers this package offers"),
+			jen.Comment("Providers is our wire superset of providers this package offers."),
 			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
 				buildProviderSet()...,
 			),
@@ -36,7 +36,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideNamespace provides a namespace"),
+		jen.Comment("ProvideNamespace provides a namespace."),
 		jen.Line(),
 		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(proj.InternalMetricsV1Package(), "Namespace")).Block(
 			jen.Return().ID("serverNamespace"),
@@ -46,7 +46,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	// if proj.EnableNewsman {
 	ret.Add(
-		jen.Comment("ProvideNewsmanTypeNameManipulationFunc provides an WebhookIDFetcher"),
+		jen.Comment("ProvideNewsmanTypeNameManipulationFunc provides an WebhookIDFetcher."),
 		jen.Line(),
 		jen.Func().ID("ProvideNewsmanTypeNameManipulationFunc").Params().Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "TypeNameManipulationFunc")).Block(
 			jen.Return().Func().Params(jen.ID("s").String()).Params(jen.String()).Block(

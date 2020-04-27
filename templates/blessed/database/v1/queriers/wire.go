@@ -25,7 +25,7 @@ func wireDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File 
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("Providers is what we provide for dependency injection"),
+			jen.Comment("Providers is what we provide for dependency injection."),
 			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
 				jen.IDf("Provide%s%s", sn, dbTrail),
 				jen.IDf("Provide%s", sn),

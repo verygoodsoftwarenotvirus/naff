@@ -19,7 +19,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Commentf("URIParamKey is a standard string that we'll use to refer to %s IDs with", scn),
+			jen.Commentf("URIParamKey is a standard string that we'll use to refer to %s IDs with.", scn),
 			jen.ID("URIParamKey").Equals().Lit(fmt.Sprintf("%sID", uvn)),
 		),
 		jen.Line(),
@@ -40,7 +40,7 @@ func buildRequisiteLoggerAndTracingStatementsForListOfEntities(proj *models.Proj
 
 	if typ.OwnedByAUserAtSomeLevel(proj) {
 		lines = append(lines,
-			jen.Comment("determine user ID"),
+			jen.Comment("determine user ID."),
 			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
@@ -51,7 +51,7 @@ func buildRequisiteLoggerAndTracingStatementsForListOfEntities(proj *models.Proj
 	owners := proj.FindOwnerTypeChain(typ)
 	for _, o := range owners {
 		lines = append(lines,
-			jen.Commentf("determine %s ID", o.Name.SingularCommonName()),
+			jen.Commentf("determine %s ID.", o.Name.SingularCommonName()),
 			jen.IDf("%sID", o.Name.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", o.Name.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", o.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", o.Name.UnexportedVarName())),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Litf("%s_id", o.Name.RouteName()), jen.IDf("%sID", o.Name.UnexportedVarName())),
@@ -67,7 +67,7 @@ func buildRequisiteLoggerAndTracingStatementsForSingleEntity(proj *models.Projec
 
 	if typ.OwnedByAUserAtSomeLevel(proj) {
 		lines = append(lines,
-			jen.Comment("determine user ID"),
+			jen.Comment("determine user ID."),
 			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
@@ -78,7 +78,7 @@ func buildRequisiteLoggerAndTracingStatementsForSingleEntity(proj *models.Projec
 	owners := proj.FindOwnerTypeChain(typ)
 	for _, o := range owners {
 		lines = append(lines,
-			jen.Commentf("determine %s ID", o.Name.SingularCommonName()),
+			jen.Commentf("determine %s ID.", o.Name.SingularCommonName()),
 			jen.IDf("%sID", o.Name.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", o.Name.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", o.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", o.Name.UnexportedVarName())),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Litf("%s_id", o.Name.RouteName()), jen.IDf("%sID", o.Name.UnexportedVarName())),
@@ -87,7 +87,7 @@ func buildRequisiteLoggerAndTracingStatementsForSingleEntity(proj *models.Projec
 	}
 
 	lines = append(lines,
-		jen.Commentf("determine %s ID", typ.Name.SingularCommonName()),
+		jen.Commentf("determine %s ID.", typ.Name.SingularCommonName()),
 		jen.IDf("%sID", typ.Name.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.Name.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)),
 		jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.Name.UnexportedVarName())),
 		jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Litf("%s_id", typ.Name.RouteName()), jen.IDf("%sID", typ.Name.UnexportedVarName())),
@@ -110,7 +110,7 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 		jen.Line(),
 		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
-		jen.Comment("ensure query filter"),
+		jen.Comment("ensure query filter."),
 		jen.ID(constants.FilterVarName).Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
 	}
@@ -120,10 +120,10 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 
 	block = append(block,
 		jen.Line(),
-		jen.Commentf("fetch %s from database", pcn),
+		jen.Commentf("fetch %s from database.", pcn),
 		jen.List(jen.ID(puvn), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Dot(fmt.Sprintf("Get%s", pn)).Call(dbCallArgs...),
 		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
-			jen.Comment("in the event no rows exist return an empty list"),
+			jen.Comment("in the event no rows exist return an empty list."),
 			jen.ID(puvn).Equals().AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
 				jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Values(),
 			),
@@ -133,14 +133,14 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 			jen.Return(),
 		),
 		jen.Line(),
-		jen.Comment("encode our response and peace"),
+		jen.Comment("encode our response and peace."),
 		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID(puvn)), jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 		),
 	)
 
 	lines := []jen.Code{
-		jen.Comment("ListHandler is our list route"),
+		jen.Comment("ListHandler is our list route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
@@ -156,7 +156,7 @@ func buildRequisiteLoggerAndTracingStatementsForModification(proj *models.Projec
 
 	if typ.OwnedByAUserAtSomeLevel(proj) {
 		lines = append(lines,
-			jen.Comment("determine user ID"),
+			jen.Comment("determine user ID."),
 			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
@@ -174,7 +174,7 @@ func buildRequisiteLoggerAndTracingStatementsForModification(proj *models.Projec
 	for _, o := range owners {
 		existenceCallArgs := o.BuildArgsForServiceRouteExistenceCheck(proj)
 		lines = append(lines,
-			jen.Commentf("determine %s ID", o.Name.SingularCommonName()),
+			jen.Commentf("determine %s ID.", o.Name.SingularCommonName()),
 			jen.IDf("%sID", o.Name.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", o.Name.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Litf("%s_id", o.Name.RouteName()), jen.IDf("%sID", o.Name.UnexportedVarName())),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", o.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", o.Name.UnexportedVarName())),
@@ -200,7 +200,7 @@ func buildRequisiteLoggerAndTracingStatementsForModification(proj *models.Projec
 
 	if includeSelf {
 		lines = append(lines,
-			jen.Commentf("determine %s ID", typ.Name.SingularCommonName()),
+			jen.Commentf("determine %s ID.", typ.Name.SingularCommonName()),
 			jen.IDf("%sID", typ.Name.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.Name.UnexportedVarName()).Call(jen.ID(constants.RequestVarName)),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Litf("%s_id", typ.Name.RouteName()), jen.IDf("%sID", typ.Name.UnexportedVarName())),
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.Name.UnexportedVarName())),
@@ -222,7 +222,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Line(),
 		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
-		jen.Comment("check request context for parsed input struct"),
+		jen.Comment("check request context for parsed input struct."),
 		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn))),
 		jen.If(jen.Op("!").ID("ok")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to request")),
@@ -245,14 +245,14 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 
 	block = append(block,
 		jen.Line(),
-		jen.Commentf("create %s in database", scn),
+		jen.Commentf("create %s in database.", scn),
 		jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Dot(fmt.Sprintf("Create%s", sn)).Call(constants.CtxVar(), jen.ID("input")),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(errNotNilBlock...),
 		jen.Line(),
 		jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(jen.ID(constants.SpanVarName), jen.ID("x").Dot("ID")),
 		jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Litf("%s_id", typ.Name.RouteName()), jen.ID("x").Dot("ID")),
 		jen.Line(),
-		jen.Comment("notify relevant parties"),
+		jen.Comment("notify relevant parties."),
 		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Increment").Call(constants.CtxVar()),
 		jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 			jen.ID("Data").MapAssign().ID("x"),
@@ -260,7 +260,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 			jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Create")),
 		)),
 		jen.Line(),
-		jen.Comment("encode our response and peace"),
+		jen.Comment("encode our response and peace."),
 		utils.WriteXHeader(constants.ResponseVarName, "StatusCreated"),
 		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
@@ -268,7 +268,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("CreateHandler is our %s creation route", scn),
+		jen.Commentf("CreateHandler is our %s creation route.", scn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
@@ -303,7 +303,7 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 
 	block = append(block,
 		jen.Line(),
-		jen.Commentf("fetch %s from database", scn),
+		jen.Commentf("fetch %s from database.", scn),
 		jen.List(jen.ID("exists"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Dotf("%sExists", sn).Call(dbCallArgs...),
 		jen.If(jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual("database/sql", "ErrNoRows")).Block(elseErrBlock...),
 		jen.Line(),
@@ -315,7 +315,7 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("ExistenceHandler returns a HEAD handler that returns 200 if %s exists, 404 otherwise", scnwp),
+		jen.Commentf("ExistenceHandler returns a HEAD handler that returns 200 if %s exists, 404 otherwise.", scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ExistenceHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
@@ -350,21 +350,21 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 	dbCallArgs := typ.BuildDBClientRetrievalMethodCallArgs(proj)
 	block = append(block,
 		jen.Line(),
-		jen.Commentf("fetch %s from database", scn),
+		jen.Commentf("fetch %s from database.", scn),
 		jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Dotf("Get%s", sn).Call(dbCallArgs...),
 		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 			utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 			jen.Return(),
 		).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(elseErrBlock...),
 		jen.Line(),
-		jen.Comment("encode our response and peace"),
+		jen.Comment("encode our response and peace."),
 		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 		),
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("ReadHandler returns a GET handler that returns %s", scnwp),
+		jen.Commentf("ReadHandler returns a GET handler that returns %s.", scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
@@ -395,7 +395,7 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 
 	block = append(block,
 		jen.Line(),
-		jen.Comment("check for parsed input attached to request context"),
+		jen.Comment("check for parsed input attached to request context."),
 		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn))),
 		jen.If(jen.Op("!").ID("ok")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("no input attached to request")),
@@ -421,7 +421,7 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 
 	block = append(block,
 		jen.Line(),
-		jen.Commentf("fetch %s from database", scn),
+		jen.Commentf("fetch %s from database.", scn),
 		jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Dotf("Get%s", sn).Call(fetchCallArgs...),
 		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 			utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
@@ -432,31 +432,31 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 			jen.Return(),
 		),
 		jen.Line(),
-		jen.Comment("update the data structure"),
+		jen.Comment("update the data structure."),
 		jen.ID("x").Dot("Update").Call(jen.ID("input")),
 		jen.Line(),
-		jen.Commentf("update %s in database", scn),
+		jen.Commentf("update %s in database.", scn),
 		jen.If(jen.Err().Equals().ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Dotf("Update%s", sn).Call(constants.CtxVar(), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error encountered updating %s", scn)),
 			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 			jen.Return(),
 		),
 		jen.Line(),
-		jen.Comment("notify relevant parties"),
+		jen.Comment("notify relevant parties."),
 		jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 			jen.ID("Data").MapAssign().ID("x"),
 			jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName")),
 			jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Update")),
 		)),
 		jen.Line(),
-		jen.Comment("encode our response and peace"),
+		jen.Comment("encode our response and peace."),
 		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 		),
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("UpdateHandler returns a handler that updates %s", scnwp),
+		jen.Commentf("UpdateHandler returns a handler that updates %s.", scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
@@ -486,7 +486,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 
 	blockLines = append(blockLines,
 		jen.Line(),
-		jen.Commentf("archive the %s in the database", scn),
+		jen.Commentf("archive the %s in the database.", scn),
 		jen.Err().Equals().ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Dotf("Archive%s", sn).Call(callArgs...),
 		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 			utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
@@ -497,7 +497,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 			jen.Return(),
 		),
 		jen.Line(),
-		jen.Comment("notify relevant parties"),
+		jen.Comment("notify relevant parties."),
 		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Dot("Decrement").Call(constants.CtxVar()),
 		jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 			jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Archive")),
@@ -505,12 +505,12 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 			jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName")),
 		)),
 		jen.Line(),
-		jen.Comment("encode our response and peace"),
+		jen.Comment("encode our response and peace."),
 		utils.WriteXHeader(constants.ResponseVarName, "StatusNoContent"),
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("ArchiveHandler returns a handler that archives %s", scnwp),
+		jen.Commentf("ArchiveHandler returns a handler that archives %s.", scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(blockLines...),

@@ -23,7 +23,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("randString produces a random string"),
+		jen.Comment("randString produces a random string."),
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
 		jen.Line(),
@@ -48,7 +48,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("t").Dot("Helper").Call(),
 			constants.CreateCtx(),
 			jen.Line(),
-			jen.Comment("build user creation route input"),
+			jen.Comment("build user creation route input."),
 			jen.ID("userInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInput").Call(),
 			jen.List(jen.ID("user"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateUser").Call(
 				constants.CtxVar(),
@@ -127,7 +127,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					"should be creatable",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
-					jen.Comment("Create user"),
+					jen.Comment("Create user."),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateUser").Call(
 						constants.CtxVar(),
@@ -135,10 +135,10 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.Line(),
-					jen.Comment("Assert user equality"),
+					jen.Comment("Assert user equality."),
 					jen.ID("checkUserCreationEquality").Call(jen.ID("t"), jen.ID("exampleUserInput"), jen.ID("actual")),
 					jen.Line(),
-					jen.Comment("Clean up"),
+					jen.Comment("Clean up."),
 					utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(
 						constants.CtxVar(),
 						jen.ID("actual").Dot("ID")), nil),
@@ -150,7 +150,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					"it should return an error when trying to read something that doesn't exist",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
-					jen.Comment("Fetch user"),
+					jen.Comment("Fetch user."),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetUser").Call(
 						constants.CtxVar(),
 						jen.ID("nonexistentID"),
@@ -163,7 +163,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					"it should be readable",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
-					jen.Comment("Create user"),
+					jen.Comment("Create user."),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
 					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateUser").Call(
 						constants.CtxVar(),
@@ -172,7 +172,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
 					utils.AssertNotEmpty(jen.ID("premade").Dot("TwoFactorSecret"), nil),
 					jen.Line(),
-					jen.Comment("Fetch user"),
+					jen.Comment("Fetch user."),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetUser").Call(
 						constants.CtxVar(),
 						jen.ID("premade").Dot("ID"),
@@ -186,10 +186,10 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					jen.Line(),
-					jen.Comment("Assert user equality"),
+					jen.Comment("Assert user equality."),
 					jen.ID("checkUserEquality").Call(jen.ID("t"), jen.ID("exampleUserInput"), jen.ID("actual")),
 					jen.Line(),
-					jen.Comment("Clean up"),
+					jen.Comment("Clean up."),
 					utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(
 						constants.CtxVar(), jen.ID("actual").Dot("ID")), nil),
 				),
@@ -200,7 +200,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					"should be able to be deleted",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
-					jen.Comment("Create user"),
+					jen.Comment("Create user."),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
 					jen.List(jen.ID("u"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateUser").Call(
 						constants.CtxVar(),
@@ -214,7 +214,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("t").Dot("FailNow").Call(),
 					),
 					jen.Line(),
-					jen.Comment("Execute"),
+					jen.Comment("Execute."),
 					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("u").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
 				),
@@ -225,7 +225,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					"should be able to be read in a list",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
-					jen.Comment("Create users"),
+					jen.Comment("Create users."),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 					jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
 						jen.List(jen.ID("user"), jen.Underscore(), jen.ID("c")).Assign().ID("buildDummyUser").Call(jen.ID("t")),
@@ -233,12 +233,12 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.ID("user")),
 					),
 					jen.Line(),
-					jen.Comment("Assert user list equality"),
+					jen.Comment("Assert user list equality."),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetUsers").Call(constants.CtxVar(), jen.Nil()),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 					utils.AssertTrue(jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Users")), nil),
 					jen.Line(),
-					jen.Comment("Clean up"),
+					jen.Comment("Clean up."),
 					jen.For(jen.List(jen.Underscore(), jen.ID("user")).Assign().Range().ID("actual").Dot("Users")).Block(
 						jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("user").Dot("ID")),
 						utils.AssertNoError(jen.Err(), nil),

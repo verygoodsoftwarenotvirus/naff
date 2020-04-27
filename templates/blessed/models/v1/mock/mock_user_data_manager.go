@@ -25,7 +25,7 @@ func mockUserDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetUser is a mock function"),
+		jen.Comment("GetUser is a mock function."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"),
 			jen.Error()).Block(
@@ -36,7 +36,7 @@ func mockUserDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetUserByUsername is a mock function"),
+		jen.Comment("GetUserByUsername is a mock function."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUserByUsername").Params(constants.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"),
 			jen.Error()).Block(
@@ -47,7 +47,7 @@ func mockUserDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetAllUserCount is a mock function"),
+		jen.Comment("GetAllUserCount is a mock function."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetAllUserCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar()),
@@ -57,7 +57,7 @@ func mockUserDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetUsers is a mock function"),
+		jen.Comment("GetUsers is a mock function."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUsers").Params(constants.CtxParam(), jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"),
 			jen.Error()).Block(
@@ -68,7 +68,7 @@ func mockUserDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreateUser is a mock function"),
+		jen.Comment("CreateUser is a mock function."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("CreateUser").Params(constants.CtxParam(), jen.ID("input").Qual(proj.ModelsV1Package(), "UserDatabaseCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"),
 			jen.Error()).Block(
@@ -79,7 +79,7 @@ func mockUserDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("UpdateUser is a mock function"),
+		jen.Comment("UpdateUser is a mock function."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("UpdateUser").Params(constants.CtxParam(), jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("updated")).Dot("Error").Call(jen.Zero()),
@@ -88,7 +88,7 @@ func mockUserDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ArchiveUser is a mock function"),
+		jen.Comment("ArchiveUser is a mock function."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("ArchiveUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("userID")).Dot("Error").Call(jen.Zero()),

@@ -72,7 +72,7 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, scn),
+		jen.Commentf("%s builds a faked %s.", funcName, scn),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
 			jen.Return(jen.AddressOf().Qual(proj.ModelsV1Package(), sn).Valuesln(block...)),
@@ -110,7 +110,7 @@ func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []je
 	funcName := fmt.Sprintf("BuildFake%sList", sn)
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %sList", funcName, sn),
+		jen.Commentf("%s builds a faked %sList.", funcName, sn),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Block(
 			jen.IDf("example%s1", sn).Assign().IDf("BuildFake%s", sn).Call(),
@@ -168,7 +168,7 @@ func buildBuildFakeSomethingUpdateInputFromSomething(proj *models.Project, typ m
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %sUpdateInput from %s", funcName, sn, scnwp),
+		jen.Commentf("%s builds a faked %sUpdateInput from %s.", funcName, sn, scnwp),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
 			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), sn),
@@ -188,7 +188,7 @@ func buildBuildFakeSomethingCreationInput(proj *models.Project, typ models.DataT
 	funcName := fmt.Sprintf("BuildFake%sCreationInput", sn)
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %sCreationInput", funcName, sn),
+		jen.Commentf("%s builds a faked %sCreationInput.", funcName, sn),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)),
@@ -243,7 +243,7 @@ func buildBuildFakeSomethingCreationInputFromSomething(proj *models.Project, typ
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %sCreationInput from %s", funcName, sn, scnwp),
+		jen.Commentf("%s builds a faked %sCreationInput from %s.", funcName, sn, scnwp),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
 			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), sn),

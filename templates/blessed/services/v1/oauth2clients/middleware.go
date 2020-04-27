@@ -21,7 +21,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreationInputMiddleware is a middleware for attaching OAuth2 client info to a request"),
+		jen.Comment("CreationInputMiddleware is a middleware for attaching OAuth2 client info to a request."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -29,7 +29,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")),
 				jen.Line(),
-				jen.Comment("decode value from request"),
+				jen.Comment("decode value from request."),
 				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
@@ -44,7 +44,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ExtractOAuth2ClientFromRequest extracts OAuth2 client data from a request"),
+		jen.Comment("ExtractOAuth2ClientFromRequest extracts OAuth2 client data from a request."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ExtractOAuth2ClientFromRequest")),
@@ -52,23 +52,23 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
-			jen.Comment("validate bearer token"),
+			jen.Comment("validate bearer token."),
 			jen.List(jen.ID("token"), jen.Err()).Assign().ID("s").Dot("oauth2Handler").Dot("ValidationBearerToken").Call(jen.ID(constants.RequestVarName)),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("validating bearer token: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.Comment("fetch client ID"),
+			jen.Comment("fetch client ID."),
 			jen.ID("clientID").Assign().ID("token").Dot("GetClientID").Call(),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("client_id"), jen.ID("clientID")),
 			jen.Line(),
-			jen.Comment("fetch client by client ID"),
+			jen.Comment("fetch client by client ID."),
 			jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(constants.CtxVar(), jen.ID("clientID")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error fetching OAuth2 Client")),
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.Comment("determine the scope"),
+			jen.Comment("determine the scope."),
 			jen.ID("scope").Assign().ID("determineScope").Call(jen.ID(constants.RequestVarName)),
 			jen.ID("hasScope").Assign().ID("c").Dot("HasScope").Call(jen.ID("scope")),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("scope"), jen.ID("scope")).Dot("WithValue").Call(jen.Lit("scopes"), jen.Qual("strings", "Join").Call(jen.ID("c").Dot("Scopes"), jen.ID("scopesSeparator"))),
@@ -84,11 +84,11 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("determineScope determines the scope of a request by its URL"),
+		jen.Comment("determineScope determines the scope of a request by its URL."),
 		jen.Line(),
-		jen.Comment("this may be more ideally embedded as a struct field and placed"),
+		jen.Comment("this may be more ideally embedded as a struct field and placed."),
 		jen.Line(),
-		jen.Comment("in the HTTP server's package instead"),
+		jen.Comment("in the HTTP server's package instead."),
 		jen.Line(),
 		jen.Func().ID("determineScope").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.String()).Block(
 			jen.If(jen.Qual("strings", "HasPrefix").Call(jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
@@ -106,7 +106,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("OAuth2TokenAuthenticationMiddleware authenticates Oauth tokens"),
+		jen.Comment("OAuth2TokenAuthenticationMiddleware authenticates Oauth tokens."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("OAuth2TokenAuthenticationMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -125,7 +125,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 				jen.Qual(proj.InternalTracingV1Package(), "AttachOAuth2ClientDatabaseIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("c").Dot("ID")),
 				jen.Line(),
 				jen.Comment("attach both the user ID and the client object to the request. it might seem"),
-				jen.Comment("superfluous, but some things should only need to know to look for user IDs"),
+				jen.Comment("superfluous, but some things should only need to know to look for user IDs."),
 				constants.CtxVar().Equals().Qual("context", "WithValue").Call(constants.CtxVar(), jen.Qual(proj.ModelsV1Package(), "OAuth2ClientKey"), jen.ID("c")),
 				constants.CtxVar().Equals().Qual("context", "WithValue").Call(constants.CtxVar(), jen.Qual(proj.ModelsV1Package(), "UserIDKey"), jen.ID("c").Dot(constants.UserOwnershipFieldName)),
 				jen.Line(),
@@ -136,7 +136,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("OAuth2ClientInfoMiddleware fetches clientOAuth2Client info from requests and attaches it explicitly to a request"),
+		jen.Comment("OAuth2ClientInfoMiddleware fetches clientOAuth2Client info from requests and attaches it explicitly to a request."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("OAuth2ClientInfoMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(

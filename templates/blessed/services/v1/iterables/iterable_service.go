@@ -22,9 +22,9 @@ func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Commentf("CreateMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts", cn),
+			jen.Commentf("CreateMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts.", cn),
 			jen.ID("CreateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
-			jen.Commentf("UpdateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts", cn),
+			jen.Commentf("UpdateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts.", cn),
 			jen.ID("UpdateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
 			jen.Line(),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit(puvn),
@@ -97,7 +97,7 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 
 	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
 		typeDefs = append(typeDefs,
-			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
+			jen.Comment("UserIDFetcher is a function that fetches user IDs."),
 			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 			jen.Line(),
 		)
@@ -105,7 +105,7 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 
 	for _, ot := range proj.FindOwnerTypeChain(typ) {
 		typeDefs = append(typeDefs,
-			jen.Commentf("%sIDFetcher is a function that fetches %s IDs", ot.Name.Singular(), ot.Name.SingularCommonName()),
+			jen.Commentf("%sIDFetcher is a function that fetches %s IDs.", ot.Name.Singular(), ot.Name.SingularCommonName()),
 			jen.IDf("%sIDFetcher", ot.Name.Singular()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 			jen.Line(),
 		)
@@ -113,7 +113,7 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 
 	typeDefs = append(typeDefs,
 		jen.Line(),
-		jen.Commentf("%sIDFetcher is a function that fetches %s IDs", sn, cn),
+		jen.Commentf("%sIDFetcher is a function that fetches %s IDs.", sn, cn),
 		jen.ID(fmt.Sprintf("%sIDFetcher", sn)).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 	)
 
@@ -175,7 +175,7 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("Provide%sService builds a new %sService", pn, pn),
+		jen.Commentf("Provide%sService builds a new %sService.", pn, pn),
 		jen.Line(),
 		jen.Func().ID(fmt.Sprintf("Provide%sService", pn)).Paramsln(params...).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
 			jen.List(jen.ID(fmt.Sprintf("%sCounter", uvn)), jen.Err()).Assign().ID(fmt.Sprintf("%sCounterProvider", uvn)).Call(jen.ID("counterName"), jen.ID("counterDescription")),

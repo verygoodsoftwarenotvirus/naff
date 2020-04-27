@@ -24,7 +24,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Comment("CreationMiddlewareCtxKey is a string alias for referring to OAuth2 client creation data"),
+			jen.Comment("CreationMiddlewareCtxKey is a string alias for referring to OAuth2 client creation data."),
 			jen.ID("CreationMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("create_oauth2_client"),
 			jen.Line(),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit("oauth2_clients"),
@@ -58,10 +58,10 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()),
 			),
 			jen.Line(),
-			jen.Comment("ClientIDFetcher is a function for fetching client IDs out of requests"),
+			jen.Comment("ClientIDFetcher is a function for fetching client IDs out of requests."),
 			jen.ID("ClientIDFetcher").Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 			jen.Line(),
-			jen.Comment("Service manages our OAuth2 clients via HTTP"),
+			jen.Comment("Service manages our OAuth2 clients via HTTP."),
 			jen.ID("Service").Struct(
 				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 				jen.ID("database").Qual(proj.DatabaseV1Package(), "Database"),
@@ -107,7 +107,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideOAuth2ClientsService builds a new OAuth2ClientsService"),
+		jen.Comment("ProvideOAuth2ClientsService builds a new OAuth2ClientsService."),
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientsService").Paramsln(
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
@@ -147,7 +147,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("initializeOAuth2Handler"),
+		jen.Comment("initializeOAuth2Handler."),
 		jen.Line(),
 		jen.Func().ID("initializeOAuth2Handler").Params(
 			jen.ID("svc").PointerTo().ID("Service"),
@@ -161,7 +161,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("svc").Dot("oauth2Handler").Dot("SetInternalErrorHandler").Call(jen.ID("svc").Dot("OAuth2InternalErrorHandler")),
 			jen.ID("svc").Dot("oauth2Handler").Dot("SetUserAuthorizationHandler").Call(jen.ID("svc").Dot("UserAuthorizationHandler")),
 			jen.Line(),
-			jen.Comment("this sad type cast is here because I have an arbitrary"),
+			jen.Comment("this sad type cast is here because I have an arbitrary."),
 			jen.Comment("test-only interface for OAuth2 interactions."),
 			jen.If(jen.List(jen.ID("x"), jen.ID("ok")).Assign().ID("svc").Dot("oauth2Handler").Assert(jen.PointerTo().Qual("gopkg.in/oauth2.v3/server", "Server")), jen.ID("ok")).Block(
 				jen.ID("x").Dot("Config").Dot("AllowedGrantTypes").Equals().Index().Qual("gopkg.in/oauth2.v3", "GrantType").Valuesln(
@@ -176,7 +176,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("HandleAuthorizeRequest is a simple wrapper around the internal server's HandleAuthorizeRequest"),
+		jen.Comment("HandleAuthorizeRequest is a simple wrapper around the internal server's HandleAuthorizeRequest."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.Return().ID("s").Dot(
@@ -189,7 +189,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("HandleTokenRequest is a simple wrapper around the internal server's HandleTokenRequest"),
+		jen.Comment("HandleTokenRequest is a simple wrapper around the internal server's HandleTokenRequest."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.Return().ID("s").Dot(

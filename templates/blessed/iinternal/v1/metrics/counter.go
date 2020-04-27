@@ -18,7 +18,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Comment("opencensusCounter is a Counter that interfaces with opencensus"),
+		jen.Comment("opencensusCounter is a Counter that interfaces with opencensus."),
 		jen.Line(),
 		jen.Type().ID(typeName).Struct(
 			jen.ID("name").String(),
@@ -66,7 +66,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Decrement satisfies our Counter interface"),
+		jen.Comment("Decrement satisfies our Counter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Decrement").Params(constants.CtxParam()).Block(
 			jen.ID("c").Dot("subtractFromCount").Call(constants.CtxVar(), jen.One()),
@@ -75,7 +75,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Increment satisfies our Counter interface"),
+		jen.Comment("Increment satisfies our Counter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Increment").Params(constants.CtxParam()).Block(
 			jen.ID("c").Dot("addToCount").Call(constants.CtxVar(), jen.One()),
@@ -84,7 +84,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("IncrementBy satisfies our Counter interface"),
+		jen.Comment("IncrementBy satisfies our Counter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("IncrementBy").Params(constants.CtxParam(), jen.ID("value").Uint64()).Block(
 			jen.ID("c").Dot("addToCount").Call(constants.CtxVar(), jen.ID("value")),
@@ -93,7 +93,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideUnitCounter provides a new counter"),
+		jen.Comment("ProvideUnitCounter provides a new counter."),
 		jen.Line(),
 		jen.Func().ID("ProvideUnitCounter").Params(jen.ID("counterName").ID("CounterName"), jen.ID("description").String()).Params(jen.ID("UnitCounter"), jen.Error()).Block(
 			jen.ID("name").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%s_count"), jen.String().Call(jen.ID("counterName"))),

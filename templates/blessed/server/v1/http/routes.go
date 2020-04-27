@@ -29,7 +29,7 @@ func buildCORSHandlerDef() []jen.Code {
 			),
 			jen.ID("ExposedHeaders").MapAssign().Index().String().Values(jen.Lit("Link")),
 			jen.ID("AllowCredentials").MapAssign().True(),
-			jen.Comment("Maximum value not ignored by any of major browsers"),
+			jen.Comment("Maximum value not ignored by any of major browsers."),
 			jen.ID("MaxAge").MapAssign().Lit(300),
 		)),
 	}
@@ -188,7 +188,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 			jen.ID("ch").Dot("Handler"),
 		),
 		jen.Line(),
-		jen.Comment("all middleware must be defined before routes on a mux"),
+		jen.Comment("all middleware must be defined before routes on a mux."),
 		jen.Line(),
 		jen.ID("router").Dot("Route").Call(jen.Lit("/_meta_"), jen.Func().Params(jen.ID("metaRouter").Qual("github.com/go-chi/chi", "Router")).Block(
 			jen.ID("health").Assign().Qual("github.com/heptiolabs/healthcheck", "NewHandler").Call(),
@@ -203,7 +203,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 			jen.ID("router").Dot("Handle").Call(jen.Lit("/metrics"), jen.ID("metricsHandler")),
 		),
 		jen.Line(),
-		jen.Comment("Frontend routes"),
+		jen.Comment("Frontend routes."),
 		jen.If(jen.ID("s").Dot("config").Dot("Frontend").Dot("StaticFilesDirectory").DoesNotEqual().EmptyString()).Block(
 			jen.ID("s").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("setting static file server")),
 			jen.List(jen.ID("staticFileServer"), jen.Err()).Assign().ID("s").Dot("frontendService").Dot("StaticDir").Call(jen.ID("frontendConfig").Dot("StaticFilesDirectory")),
@@ -285,7 +285,7 @@ func buildWebhookAPIRoutes(proj *models.Project) jen.Code {
 	g := &jen.Group{}
 
 	g.Add(
-		jen.Comment("Webhooks"),
+		jen.Comment("Webhooks."),
 		jen.Line(),
 		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/webhooks"), jen.Func().Params(jen.ID("webhookRouter").Qual("github.com/go-chi/chi", "Router")).Block(
 			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
@@ -302,10 +302,10 @@ func buildWebhookAPIRoutes(proj *models.Project) jen.Code {
 
 func buildOAuth2ClientsAPIRoutes(proj *models.Project) []jen.Code {
 	return []jen.Code{
-		jen.Comment("OAuth2 Clients"),
+		jen.Comment("OAuth2 Clients."),
 		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/oauth2/clients"), jen.Func().Params(jen.ID("clientRouter").Qual("github.com/go-chi/chi", "Router")).Block(
 			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
-			jen.Comment("CreateHandler is not bound to an OAuth2 authentication token"),
+			jen.Comment("CreateHandler is not bound to an OAuth2 authentication token."),
 			jen.Comment("UpdateHandler not supported for OAuth2 clients."),
 			jen.ID("clientRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("oauth2ClientsService").Dot("ReadHandler").Call()),
 			jen.ID("clientRouter").Dot("Delete").Call(jen.ID("sr"), jen.ID("s").Dot("oauth2ClientsService").Dot("ArchiveHandler").Call()),

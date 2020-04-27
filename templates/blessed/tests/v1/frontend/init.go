@@ -33,7 +33,7 @@ func initDotGo(proj *models.Project) *jen.File {
 			jen.Qual(proj.TestutilV1Package(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
 			jen.Line(),
 			jen.Comment("NOTE: this is sad, but also the only thing that consistently works"),
-			jen.Comment("see above for my vain attempts at a real solution to this problem"),
+			jen.Comment("see above for my vain attempts at a real solution to this problem."),
 			jen.Qual("time", "Sleep").Call(jen.Lit(10).Times().Qual("time", "Second")),
 			jen.Line(),
 			jen.ID("fiftySpaces").Assign().Qual("strings", "Repeat").Call(jen.Lit("\n"), jen.Lit(50)),

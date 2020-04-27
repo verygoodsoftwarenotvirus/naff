@@ -31,7 +31,7 @@ func frontendServiceDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection"),
+		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection."),
 		jen.Line(),
 		jen.Func().ID("ProvideFrontendService").Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"), jen.ID("cfg").Qual(proj.InternalConfigV1Package(), "FrontendSettings")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(

@@ -14,13 +14,13 @@ func encodingDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Comment("ContentTypeHeader is the HTTP standard header name for content type"),
+			jen.Comment("ContentTypeHeader is the HTTP standard header name for content type."),
 			jen.ID("ContentTypeHeader").Equals().Lit("Content-type"),
-			jen.Comment("XMLContentType represents the XML content type"),
+			jen.Comment("XMLContentType represents the XML content type."),
 			jen.ID("XMLContentType").Equals().Lit("application/xml"),
-			jen.Comment("JSONContentType represents the JSON content type"),
+			jen.Comment("JSONContentType represents the JSON content type."),
 			jen.ID("JSONContentType").Equals().Lit("application/json"),
-			jen.Comment("DefaultContentType is what the library defaults to"),
+			jen.Comment("DefaultContentType is what the library defaults to."),
 			jen.ID("DefaultContentType").Equals().ID("JSONContentType"),
 		),
 		jen.Line(),
@@ -28,7 +28,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("Providers provides ResponseEncoders for dependency injection"),
+			jen.Comment("Providers provides ResponseEncoders for dependency injection."),
 			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
 				jen.ID("ProvideResponseEncoder"),
 			),
@@ -38,13 +38,13 @@ func encodingDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.Comment("EncoderDecoder is an interface that allows for multiple implementations of HTTP response formats"),
+			jen.Comment("EncoderDecoder is an interface that allows for multiple implementations of HTTP response formats."),
 			jen.ID("EncoderDecoder").Interface(
 				jen.ID("EncodeResponse").Params(jen.Qual("net/http", "ResponseWriter"), jen.Interface()).Params(jen.Error()),
 				jen.ID("DecodeRequest").Params(jen.PointerTo().Qual("net/http", "Request"), jen.Interface()).Params(jen.Error()),
 			),
 			jen.Line(),
-			jen.Comment("ServerEncoderDecoder is our concrete implementation of EncoderDecoder"),
+			jen.Comment("ServerEncoderDecoder is our concrete implementation of EncoderDecoder."),
 			jen.ID("ServerEncoderDecoder").Struct(),
 			jen.Line(),
 			jen.ID("encoder").Interface(
@@ -59,7 +59,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("EncodeResponse encodes responses"),
+		jen.Comment("EncodeResponse encodes responses."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("EncodeResponse").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.Error()).Block(
 			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID(constants.ResponseVarName).Dot("Header").Call().Dot("Get").Call(jen.ID("ContentTypeHeader"))),
@@ -80,7 +80,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("DecodeRequest decodes responses"),
+		jen.Comment("DecodeRequest decodes responses."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("DecodeRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
 			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID(constants.RequestVarName).Dot("Header").Dot("Get").Call(jen.ID("ContentTypeHeader"))),
@@ -104,7 +104,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideResponseEncoder provides a jsonResponseEncoder"),
+		jen.Comment("ProvideResponseEncoder provides a jsonResponseEncoder."),
 		jen.Line(),
 		jen.Func().ID("ProvideResponseEncoder").Params().Params(jen.ID("EncoderDecoder")).Block(
 			jen.Return().AddressOf().ID("ServerEncoderDecoder").Values(),

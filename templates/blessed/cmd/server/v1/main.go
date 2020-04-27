@@ -17,32 +17,32 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("main").Params().Block(
-			jen.Comment("initialize our logger of choice"),
+			jen.Comment("initialize our logger of choice."),
 			jen.ID(constants.LoggerVarName).Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.Line(),
-			jen.Comment("find and validate our configuration filepath"),
+			jen.Comment("find and validate our configuration filepath."),
 			jen.ID("configFilepath").Assign().Qual("os", "Getenv").Call(jen.Lit("CONFIGURATION_FILEPATH")),
 			jen.If(jen.ID("configFilepath").IsEqualTo().EmptyString()).Block(
 				jen.ID(constants.LoggerVarName).Dot("Fatal").Call(utils.Error("no configuration file provided")),
 			),
 			jen.Line(),
-			jen.Comment("parse our config file"),
+			jen.Comment("parse our config file."),
 			jen.List(jen.ID("cfg"), jen.Err()).Assign().Qual(internalConfigImp, "ParseConfigFile").Call(jen.ID("configFilepath")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("cfg").IsEqualTo().ID("nil")).Block(
 				jen.ID(constants.LoggerVarName).Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.Comment("only allow initialization to take so long"),
+			jen.Comment("only allow initialization to take so long."),
 			jen.List(constants.CtxVar(), jen.ID("cancel")).Assign().Qual("context", "WithTimeout").Call(jen.Qual("context", "Background").Call(), jen.ID("cfg").Dot("Meta").Dot("StartupDeadline")),
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("initialization")),
 			jen.Line(),
-			jen.Comment("connect to our database"),
+			jen.Comment("connect to our database."),
 			jen.List(jen.ID("db"), jen.Err()).Assign().ID("cfg").Dot("ProvideDatabase").Call(constants.CtxVar(), jen.ID(constants.LoggerVarName)),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID(constants.LoggerVarName).Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.Comment("build our server struct"),
+			jen.Comment("build our server struct."),
 			jen.List(jen.ID("server"), jen.Err()).Assign().ID("BuildServer").Call(constants.CtxVar(), jen.ID("cfg"), jen.ID(constants.LoggerVarName), jen.ID("db")),
 			jen.ID(constants.SpanVarName).Dot("End").Call(),
 			jen.ID("cancel").Call(),

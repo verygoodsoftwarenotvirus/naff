@@ -53,7 +53,7 @@ func buildBuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildGetOAuth2ClientRequest builds an HTTP request for fetching an OAuth2 client"),
+		jen.Comment("BuildGetOAuth2ClientRequest builds an HTTP request for fetching an OAuth2 client."),
 		jen.Line(),
 		newClientMethod("BuildGetOAuth2ClientRequest").Params(
 			constants.CtxParam(),
@@ -102,7 +102,7 @@ func buildGetOAuth2Client(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("GetOAuth2Client gets an OAuth2 client"),
+		jen.Comment("GetOAuth2Client gets an OAuth2 client."),
 		jen.Line(),
 		newClientMethod("GetOAuth2Client").Params(
 			constants.CtxParam(),
@@ -136,7 +136,7 @@ func buildBuildGetOAuth2ClientsRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildGetOAuth2ClientsRequest builds an HTTP request for fetching a list of OAuth2 clients"),
+		jen.Comment("BuildGetOAuth2ClientsRequest builds an HTTP request for fetching a list of OAuth2 clients."),
 		jen.Line(),
 		newClientMethod("BuildGetOAuth2ClientsRequest").Params(
 			constants.CtxParam(),
@@ -186,7 +186,7 @@ func buildGetOAuth2Clients(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients"),
+		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients."),
 		jen.Line(),
 		newClientMethod("GetOAuth2Clients").Params(
 			constants.CtxParam(),
@@ -235,7 +235,7 @@ func buildBuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildCreateOAuth2ClientRequest builds an HTTP request for creating OAuth2 clients"),
+		jen.Comment("BuildCreateOAuth2ClientRequest builds an HTTP request for creating OAuth2 clients."),
 		jen.Line(),
 		newClientMethod("BuildCreateOAuth2ClientRequest").Paramsln(
 			constants.CtxParam(),
@@ -296,7 +296,7 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("CreateOAuth2Client creates an OAuth2 client. Note that cookie must not be nil"),
 		jen.Line(),
-		jen.Comment("in order to receive a valid response"),
+		jen.Comment("in order to receive a valid response."),
 		jen.Line(),
 		newClientMethod("CreateOAuth2Client").Paramsln(
 			constants.CtxParam(),
@@ -336,7 +336,7 @@ func buildBuildArchiveOAuth2ClientRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildArchiveOAuth2ClientRequest builds an HTTP request for archiving an oauth2 client"),
+		jen.Comment("BuildArchiveOAuth2ClientRequest builds an HTTP request for archiving an oauth2 client."),
 		jen.Line(),
 		newClientMethod("BuildArchiveOAuth2ClientRequest").Params(constants.CtxParam(), jen.ID("id").Uint64()).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -375,7 +375,7 @@ func buildArchiveOAuth2Client(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client"),
+		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client."),
 		jen.Line(),
 		newClientMethod("ArchiveOAuth2Client").Params(constants.CtxParam(), jen.ID("id").Uint64()).Params(jen.Error()).Block(block...),
 		jen.Line(),

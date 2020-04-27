@@ -152,7 +152,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen
 	}
 
 	lines = append(lines,
-		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
+		jen.Commentf("Create %s.", typ.Name.SingularCommonName()),
 		utils.BuildFakeVar(proj, sn),
 		utils.BuildFakeVarWithCustomName(
 			proj,
@@ -195,7 +195,7 @@ func buildRequisiteCreationCodeForUpdateFunction(proj *models.Project, typ model
 	}
 
 	lines = append(lines,
-		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
+		jen.Commentf("Create %s.", typ.Name.SingularCommonName()),
 		utils.BuildFakeVar(proj, sn),
 		utils.BuildFakeVarWithCustomName(
 			proj,
@@ -219,7 +219,7 @@ func buildRequisiteCleanupCode(proj *models.Project, typ models.DataType) []jen.
 
 	lines = append(lines,
 		jen.Line(),
-		jen.Commentf("Clean up %s", typ.Name.SingularCommonName()),
+		jen.Commentf("Clean up %s.", typ.Name.SingularCommonName()),
 		utils.AssertNoError(
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
 				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
@@ -348,10 +348,10 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
 	lines = append(lines,
-		jen.Commentf("Assert %s equality", scn),
+		jen.Commentf("Assert %s equality.", scn),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName(sn)), jen.IDf("created%s", typ.Name.Singular())),
 		jen.Line(),
-		jen.Comment("Clean up"),
+		jen.Comment("Clean up."),
 		jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
@@ -395,13 +395,13 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 	cc = append(cc, jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.IDf("created%s", typ.Name.Singular())))
 
 	lines = append(lines,
-		jen.Commentf("Create %s", pcn),
+		jen.Commentf("Create %s.", pcn),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
 		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
 			jen.ID("expected").Equals().Append(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
 		),
 		jen.Line(),
-		jen.Commentf("Assert %s list equality", scn),
+		jen.Commentf("Assert %s list equality.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", pn).Call(
 			listArgs...,
 		),
@@ -413,7 +413,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Len(jen.ID("actual").Dot(pn)),
 		),
 		jen.Line(),
-		jen.Comment("Clean up"),
+		jen.Comment("Clean up."),
 		jen.For(jen.List(jen.Underscore(), jen.IDf("created%s", sn)).Assign().Range().ID("actual").Dot(pn)).Block(
 			jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
 				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
@@ -453,7 +453,7 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 	}
 
 	lines = append(lines,
-		jen.Commentf("Attempt to fetch nonexistent %s", scn),
+		jen.Commentf("Attempt to fetch nonexistent %s.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Op(func() string {
 			if typ.BelongsToStruct == nil {
 				return ":="
@@ -494,7 +494,7 @@ func buildTestExistenceCheckingShouldBeReadable(proj *models.Project, typ models
 
 	lines = append(lines,
 		jen.Line(),
-		jen.Commentf("Fetch %s", scn),
+		jen.Commentf("Fetch %s.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("%sExists", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
@@ -527,7 +527,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *m
 	}
 
 	lines = append(lines,
-		jen.Commentf("Attempt to fetch nonexistent %s", scn),
+		jen.Commentf("Attempt to fetch nonexistent %s.", scn),
 		jen.List(jen.Underscore(), jen.Err()).Op(func() string {
 			if typ.BelongsToStruct == nil {
 				return ":="
@@ -567,13 +567,13 @@ func buildTestReadingShouldBeReadable(proj *models.Project, typ models.DataType)
 
 	lines = append(lines,
 		jen.Line(),
-		jen.Commentf("Fetch %s", scn),
+		jen.Commentf("Fetch %s.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 		jen.Line(),
-		jen.Commentf("Assert %s equality", scn),
+		jen.Commentf("Assert %s equality.", scn),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName(sn)), jen.ID("actual")),
 		jen.Line(),
 	)
@@ -689,20 +689,20 @@ func buildTestUpdatingShouldBeUpdateable(proj *models.Project, typ models.DataTy
 	lines = append(lines, creationCode...)
 
 	lines = append(lines, jen.Line(),
-		jen.Commentf("Change %s", scn),
+		jen.Commentf("Change %s.", scn),
 		jen.List(jen.IDf("created%s", sn).Dot("Update").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ToUpdateInput").Call())),
 		jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
 		jen.Line(),
-		jen.Commentf("Fetch %s", scn),
+		jen.Commentf("Fetch %s.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 		jen.Line(),
-		jen.Commentf("Assert %s equality", scn),
+		jen.Commentf("Assert %s equality.", scn),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName(sn)), jen.ID("actual")),
 		utils.AssertNotNil(jen.ID("actual").Dot("UpdatedOn"), nil),
 		jen.Line(),

@@ -25,7 +25,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ListHandler is the obligatory implementation for our interface"),
+		jen.Comment("ListHandler is the obligatory implementation for our interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -35,7 +35,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreateHandler is the obligatory implementation for our interface"),
+		jen.Comment("CreateHandler is the obligatory implementation for our interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -45,7 +45,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ReadHandler is the obligatory implementation for our interface"),
+		jen.Comment("ReadHandler is the obligatory implementation for our interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -55,7 +55,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ArchiveHandler is the obligatory implementation for our interface"),
+		jen.Comment("ArchiveHandler is the obligatory implementation for our interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -65,7 +65,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreationInputMiddleware is the obligatory implementation for our interface"),
+		jen.Comment("CreationInputMiddleware is the obligatory implementation for our interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
@@ -75,7 +75,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("OAuth2ClientInfoMiddleware is the obligatory implementation for our interface"),
+		jen.Comment("OAuth2ClientInfoMiddleware is the obligatory implementation for our interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("OAuth2ClientInfoMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
@@ -85,7 +85,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ExtractOAuth2ClientFromRequest is the obligatory implementation for our interface"),
+		jen.Comment("ExtractOAuth2ClientFromRequest is the obligatory implementation for our interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Error()).Block(
@@ -96,7 +96,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("HandleAuthorizeRequest is the obligatory implementation for our interface"),
+		jen.Comment("HandleAuthorizeRequest is the obligatory implementation for our interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -106,7 +106,7 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("HandleTokenRequest is the obligatory implementation for our interface"),
+		jen.Comment("HandleTokenRequest is the obligatory implementation for our interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),

@@ -52,7 +52,7 @@ func buildBuildGetWebhookRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for fetching a webhook", funcName),
+		jen.Commentf("%s builds an HTTP request for fetching a webhook.", funcName),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
@@ -100,7 +100,7 @@ func buildGetWebhook(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s retrieves a webhook", funcName),
+		jen.Commentf("%s retrieves a webhook.", funcName),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
@@ -133,7 +133,7 @@ func buildBuildGetWebhooksRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for fetching webhooks", funcName),
+		jen.Commentf("%s builds an HTTP request for fetching webhooks.", funcName),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
@@ -181,7 +181,7 @@ func buildGetWebhooks(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s gets a list of webhooks", funcName),
+		jen.Commentf("%s gets a list of webhooks.", funcName),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
@@ -214,7 +214,7 @@ func buildBuildCreateWebhookRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for creating a webhook", funcName),
+		jen.Commentf("%s builds an HTTP request for creating a webhook.", funcName),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
@@ -262,7 +262,7 @@ func buildCreateWebhook(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s creates a webhook", funcName),
+		jen.Commentf("%s creates a webhook.", funcName),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
@@ -299,7 +299,7 @@ func buildBuildUpdateWebhookRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for updating a webhook", funcName),
+		jen.Commentf("%s builds an HTTP request for updating a webhook.", funcName),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
@@ -339,7 +339,7 @@ func buildUpdateWebhook(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s updates a webhook", funcName),
+		jen.Commentf("%s updates a webhook.", funcName),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
@@ -374,7 +374,7 @@ func buildBuildArchiveWebhookRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for updating a webhook", funcName),
+		jen.Commentf("%s builds an HTTP request for updating a webhook.", funcName),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
@@ -415,7 +415,7 @@ func buildArchiveWebhook(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s archives a webhook", funcName),
+		jen.Commentf("%s archives a webhook.", funcName),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),

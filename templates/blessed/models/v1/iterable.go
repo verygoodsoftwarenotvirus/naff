@@ -130,25 +130,25 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.Commentf("%s represents %s", sn, cnwp),
+			jen.Commentf("%s represents %s.", sn, cnwp),
 			jen.ID(sn).Struct(buildBaseModelStructFields(typ)...),
 			jen.Line(),
-			jen.Commentf("%sList represents a list of %s", sn, pcn),
+			jen.Commentf("%sList represents a list of %s.", sn, pcn),
 			jen.IDf("%sList", sn).Struct(
 				jen.ID("Pagination"),
 				jen.ID(pn).Index().ID(sn).Tag(jsonTag(prn)),
 			),
 			jen.Line(),
-			jen.Commentf("%sCreationInput represents what a user could set as input for creating %s", sn, pcn),
+			jen.Commentf("%sCreationInput represents what a user could set as input for creating %s.", sn, pcn),
 			jen.IDf("%sCreationInput", sn).Struct(buildCreateModelStructFields(typ)...),
 			jen.Line(),
-			jen.Commentf("%sUpdateInput represents what a user could set as input for updating %s", sn, pcn),
+			jen.Commentf("%sUpdateInput represents what a user could set as input for updating %s.", sn, pcn),
 			jen.IDf("%sUpdateInput", sn).Struct(buildUpdateModelStructFields(typ)...),
 			jen.Line(),
-			jen.Commentf("%sDataManager describes a structure capable of storing %s permanently", sn, pcn),
+			jen.Commentf("%sDataManager describes a structure capable of storing %s permanently.", sn, pcn),
 			jen.IDf("%sDataManager", sn).Interface(buildInterfaceMethods(proj, typ)...),
 			jen.Line(),
-			jen.Commentf("%sDataServer describes a structure capable of serving traffic related to %s", sn, pcn),
+			jen.Commentf("%sDataServer describes a structure capable of serving traffic related to %s.", sn, pcn),
 			jen.IDf("%sDataServer", sn).Interface(
 				jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
@@ -165,7 +165,7 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	ret.Add(
-		jen.Commentf("Update merges an %sInput with %s", sn, cnwp),
+		jen.Commentf("Update merges an %sInput with %s.", sn, cnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Block(buildUpdateFunctionLogic(typ.Fields)...),
 		jen.Line(),
@@ -185,7 +185,7 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	ret.Add(
-		jen.Commentf("ToUpdateInput creates a %sUpdateInput struct for %s", sn, cnwp),
+		jen.Commentf("ToUpdateInput creates a %sUpdateInput struct for %s.", sn, cnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToUpdateInput").Params().Params(jen.PointerTo().IDf("%sUpdateInput", sn)).Block(buildToUpdateInput()),
 		jen.Line(),

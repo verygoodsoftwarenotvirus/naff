@@ -13,7 +13,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("Providers represents what we provide to dependency injectors"),
+			jen.Comment("Providers represents what we provide to dependency injectors."),
 			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
 				jen.ID("ProvideDatabaseClient"),
 			),

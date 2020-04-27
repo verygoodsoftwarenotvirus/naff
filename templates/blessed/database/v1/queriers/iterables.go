@@ -210,7 +210,7 @@ func buildScanListOfSomethingFuncDecl(proj *models.Project, typ models.DataType)
 	pcn := typ.Name.PluralCommonName()
 
 	return []jen.Code{
-		jen.Commentf("scan%s takes a logger and some database rows and turns them into a slice of %s", pn, pcn),
+		jen.Commentf("scan%s takes a logger and some database rows and turns them into a slice of %s.", pn, pcn),
 		jen.Line(),
 		jen.Func().IDf("scan%s", pn).Params(
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
@@ -315,7 +315,7 @@ func buildSomethingExistsFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	buildQueryParams := typ.BuildDBQuerierExistenceQueryBuildingArgs(proj)
 
 	return []jen.Code{
-		jen.Commentf("%sExists queries the database to see if a given %s belonging to a given user exists", sn, cn),
+		jen.Commentf("%sExists queries the database to see if a given %s belonging to a given user exists.", sn, cn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("%sExists", sn).Params(
 			params...,
@@ -402,7 +402,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPal
 	buildQueryParams := typ.BuildDBQuerierRetrievalQueryBuildingArgs(proj)
 
 	return []jen.Code{
-		jen.Commentf("Get%s fetches %s from the database", sn, scnwp),
+		jen.Commentf("Get%s fetches %s from the database.", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Get%s", sn).Params(params...).
 			Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Block(
@@ -430,7 +430,7 @@ func buildSomethingAllCountQueryDecls(dbvendor wordsmith.SuperPalabra, typ model
 		),
 		jen.Line(),
 		jen.Line(),
-		jen.Commentf("buildGetAll%sCountQuery returns a query that fetches the total number of %s in the database.", pn, pcn),
+		jen.Commentf("buildGetAll%sCountQuery returns a query that fetches the total number of %s in the database..", pn, pcn),
 		jen.Line(),
 		jen.Comment("This query only gets generated once, and is otherwise returned from cache."),
 		jen.Line(),
@@ -462,7 +462,7 @@ func buildGetAllSomethingCountFuncDecl(dbvendor wordsmith.SuperPalabra, typ mode
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
 	return []jen.Code{
-		jen.Commentf("GetAll%sCount will fetch the count of %s from the database", pn, pcn),
+		jen.Commentf("GetAll%sCount will fetch the count of %s from the database.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
 			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call()).Dot("Scan").Call(jen.AddressOf().ID("count")),
@@ -510,7 +510,7 @@ func buildGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmi
 	return []jen.Code{
 		jen.Comment(firstCommentLine),
 		jen.Line(),
-		jen.Commentf("and returns both the query and the relevant args to pass to the query executor."),
+		jen.Commentf("and returns both the query and the relevant args to pass to the query executor.."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildGet%sQuery", pn).Params(
 			params...,
@@ -544,7 +544,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Su
 	queryBuildingParams := typ.BuildDBQuerierListRetrievalMethodArgs(proj)
 
 	return []jen.Code{
-		jen.Commentf("Get%s fetches a list of %s from the database that meet a particular filter", pn, pcn),
+		jen.Commentf("Get%s fetches a list of %s from the database that meet a particular filter.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Get%s", pn).Params(
 			params...,
@@ -642,7 +642,7 @@ func buildCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 	}
 
 	return []jen.Code{
-		jen.Commentf("buildCreate%sQuery takes %s and returns a creation query for that %s and the relevant arguments", sn, scnwp, scn),
+		jen.Commentf("buildCreate%sQuery takes %s and returns a creation query for that %s and the relevant arguments.", sn, scnwp, scn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildCreate%sQuery", sn).Params(
 			params...,
@@ -689,7 +689,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 			queryBuildingArgs...,
 		),
 		jen.Line(),
-		jen.Commentf("create the %s", scn),
+		jen.Commentf("create the %s.", scn),
 	}
 
 	if isPostgres(dbvendor) {
@@ -713,19 +713,19 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 
 	if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		baseCreateFuncBody = append(baseCreateFuncBody,
-			jen.Comment("fetch the last inserted ID"),
+			jen.Comment("fetch the last inserted ID."),
 			jen.List(jen.ID("id"), jen.ID("err")).Assign().ID(constants.ResponseVarName).Dot("LastInsertId").Call(),
 			jen.ID(dbfl).Dot("logIDRetrievalError").Call(jen.Err()),
 			jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
 			jen.Line(),
-			jen.Comment("this won't be completely accurate, but it will suffice"),
+			jen.Comment("this won't be completely accurate, but it will suffice."),
 			jen.ID("x").Dot("CreatedOn").Equals().ID(dbfl).Dot("timeTeller").Dot("Now").Call(),
 		)
 	}
 	baseCreateFuncBody = append(baseCreateFuncBody, jen.Line(), jen.Return().List(jen.ID("x"), jen.Nil()))
 
 	return []jen.Code{
-		jen.Commentf("Create%s creates %s in the database", sn, scnwp),
+		jen.Commentf("Create%s creates %s in the database.", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Create%s", sn).Params(
 			params...,
@@ -757,7 +757,7 @@ func buildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 	}
 
 	return []jen.Code{
-		jen.Commentf("buildUpdate%sQuery takes %s and returns an update SQL query, with the relevant query parameters", sn, scnwp),
+		jen.Commentf("buildUpdate%sQuery takes %s and returns an update SQL query, with the relevant query parameters.", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildUpdate%sQuery", sn).Params(
 			params...,
@@ -827,7 +827,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	params := typ.BuildDBQuerierUpdateMethodParams(proj, updatedVarName)
 
 	return []jen.Code{
-		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the provided input to have a valid ID.", sn, scn, sn),
+		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the provided input to have a valid ID..", sn, scn, sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Update%s", sn).Params(params...).Params(jen.Error()).Block(block...),
 	}
@@ -909,7 +909,7 @@ func buildArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Supe
 	queryBuildingArgs := typ.BuildDBQuerierArchiveQueryBuildingArgs(proj)
 
 	return []jen.Code{
-		jen.Commentf("Archive%s marks %s as archived in the database", sn, scnwp),
+		jen.Commentf("Archive%s marks %s as archived in the database.", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Archive%s", sn).Params(
 			params...,

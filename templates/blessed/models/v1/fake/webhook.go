@@ -25,7 +25,7 @@ func buildBuildFakeWebhook(proj *models.Project) []jen.Code {
 	typeName := "Webhook"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
@@ -56,7 +56,7 @@ func buildBuildFakeWebhookList(proj *models.Project) []jen.Code {
 	typeName := "WebhookList"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
@@ -89,7 +89,7 @@ func buildBuildFakeWebhookUpdateInputFromWebhook(proj *models.Project) []jen.Cod
 	typeName := "WebhookUpdateInput"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
 			jen.ID("webhook").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
@@ -119,7 +119,7 @@ func buildBuildFakeWebhookCreationInput(proj *models.Project) []jen.Code {
 	typeName := "WebhookCreationInput"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
@@ -139,7 +139,7 @@ func buildBuildFakeWebhookCreationInputFromWebhook(proj *models.Project) []jen.C
 	typeName := "WebhookCreationInput"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
 			jen.ID("webhook").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),

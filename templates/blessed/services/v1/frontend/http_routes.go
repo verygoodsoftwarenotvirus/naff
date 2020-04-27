@@ -13,7 +13,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Comment("Routes returns a map of route to HandlerFunc for the parent router to set"),
+		jen.Comment("Routes returns a map of route to HandlerFunc for the parent router to set."),
 		jen.Line(),
 		jen.Comment("this keeps routing logic in the frontend service and not in the server itself."),
 		jen.Line(),
@@ -71,7 +71,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	buildRegexPairs := func() []jen.Code {
 		pairs := []jen.Code{
 			jen.Comment("Here is where you should put route regexes that need to be ignored by the static file server."),
-			jen.Comment("For instance, if you allow someone to see an event in the frontend via a URL that contains dynamic"),
+			jen.Comment("For instance, if you allow someone to see an event in the frontend via a URL that contains dynamic."),
 			jen.Comment("information, such as `/event/123`, you would want to put something like this below:"),
 			jen.Comment("		eventsFrontendPathRegex = regexp.MustCompile(`/event/\\d+`)"),
 			jen.Line(),
@@ -80,7 +80,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		for _, typ := range proj.DataTypes {
 			tuvn := typ.Name.PluralUnexportedVarName()
 			pairs = append(pairs,
-				jen.Commentf("%sFrontendPathRegex matches URLs against our frontend router's specification for specific %s routes", tuvn, typ.Name.SingularCommonName()),
+				jen.Commentf("%sFrontendPathRegex matches URLs against our frontend router's specification for specific %s routes.", tuvn, typ.Name.SingularCommonName()),
 				jen.IDf("%sFrontendPathRegex", tuvn).Equals().Qual("regexp", "MustCompile").Call(jen.RawStringf(`/%s/\d+`, typ.Name.PluralRouteName())),
 			)
 		}
@@ -116,7 +116,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.ID("rl").Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.ID("rl").Dot("Debug").Call(jen.Lit("static file requested")),
 			jen.Switch(jen.ID(constants.RequestVarName).Dot("URL").Dot("Path")).Block(
-				jen.Comment("list your frontend history routes here"),
+				jen.Comment("list your frontend history routes here."),
 				jen.Caseln(
 					buildHistoryRoutes()...,
 				).Block(jen.ID("rl").Dot("Debug").Call(jen.Lit("rerouting")),
@@ -144,7 +144,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		jen.Comment("StaticDir builds a static directory handler"),
+		jen.Comment("StaticDir builds a static directory handler."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("StaticDir").Params(jen.ID("staticFilesDirectory").String()).Params(jen.Qual("net/http", "HandlerFunc"), jen.Error()).Block(
 			jen.List(jen.ID("fileDir"), jen.Err()).Assign().Qual("path/filepath", "Abs").Call(jen.ID("staticFilesDirectory")),

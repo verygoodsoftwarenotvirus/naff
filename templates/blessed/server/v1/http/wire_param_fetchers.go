@@ -63,7 +63,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 
 		if typ.OwnedByAUserAtSomeLevel(proj) {
 			ret.Add(
-				jen.Commentf("Provide%sServiceUserIDFetcher provides a UserIDFetcher", pn),
+				jen.Commentf("Provide%sServiceUserIDFetcher provides a UserIDFetcher.", pn),
 				jen.Line(),
 				jen.Func().IDf("Provide%sServiceUserIDFetcher", pn).Params().Params(jen.Qual(proj.ServiceV1Package(pkgN), "UserIDFetcher")).Block(
 					jen.Return().ID("userIDFetcherFromRequestContext"),
@@ -75,7 +75,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 		for _, ot := range proj.FindOwnerTypeChain(typ) {
 			ots := ot.Name.Singular()
 			ret.Add(
-				jen.Commentf("Provide%sService%sIDFetcher provides %s %sIDFetcher", pn, ots, wordsmith.AOrAn(ots), ots),
+				jen.Commentf("Provide%sService%sIDFetcher provides %s %sIDFetcher.", pn, ots, wordsmith.AOrAn(ots), ots),
 				jen.Line(),
 				jen.Func().IDf("Provide%sService%sIDFetcher", pn, ots).Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual(proj.ServiceV1Package(pkgN), fmt.Sprintf("%sIDFetcher", ots))).Block(
 					jen.Return().IDf("buildRouteParam%sIDFetcher", ots).Call(jen.ID(constants.LoggerVarName)),
@@ -85,7 +85,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 		}
 
 		ret.Add(
-			jen.Commentf("Provide%sService%sIDFetcher provides %s %sIDFetcher", pn, sn, wordsmith.AOrAn(sn), sn),
+			jen.Commentf("Provide%sService%sIDFetcher provides %s %sIDFetcher.", pn, sn, wordsmith.AOrAn(sn), sn),
 			jen.Line(),
 			jen.Func().IDf("Provide%sService%sIDFetcher", pn, sn).Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual(proj.ServiceV1Package(pkgN), fmt.Sprintf("%sIDFetcher", sn))).Block(
 				jen.Return().IDf("buildRouteParam%sIDFetcher", sn).Call(jen.ID(constants.LoggerVarName)),
@@ -95,7 +95,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		jen.Comment("ProvideUsersServiceUserIDFetcher provides a UsernameFetcher"),
+		jen.Comment("ProvideUsersServiceUserIDFetcher provides a UsernameFetcher."),
 		jen.Line(),
 		jen.Func().ID("ProvideUsersServiceUserIDFetcher").Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual(proj.ServiceV1UsersPackage(), "UserIDFetcher")).Block(
 			jen.Return().ID("buildRouteParamUserIDFetcher").Call(jen.ID(constants.LoggerVarName)),
@@ -104,7 +104,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideAuthServiceUserIDFetcher provides a UsernameFetcher"),
+		jen.Comment("ProvideAuthServiceUserIDFetcher provides a UsernameFetcher."),
 		jen.Line(),
 		jen.Func().ID("ProvideAuthServiceUserIDFetcher").Params().Params(jen.Qual(proj.ServiceV1AuthPackage(), "UserIDFetcher")).Block(
 			jen.Return().ID("userIDFetcherFromRequestContext"),
@@ -113,7 +113,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideWebhooksServiceUserIDFetcher provides a UserIDFetcher"),
+		jen.Comment("ProvideWebhooksServiceUserIDFetcher provides a UserIDFetcher."),
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksServiceUserIDFetcher").Params().Params(jen.Qual(proj.ServiceV1WebhooksPackage(), "UserIDFetcher")).Block(
 			jen.Return().ID("userIDFetcherFromRequestContext"),
@@ -122,7 +122,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideWebhooksServiceWebhookIDFetcher provides an WebhookIDFetcher"),
+		jen.Comment("ProvideWebhooksServiceWebhookIDFetcher provides an WebhookIDFetcher."),
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksServiceWebhookIDFetcher").Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual(proj.ServiceV1WebhooksPackage(), "WebhookIDFetcher")).Block(
 			jen.Return().ID("buildRouteParamWebhookIDFetcher").Call(jen.ID(constants.LoggerVarName)),
@@ -131,7 +131,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideOAuth2ClientsServiceClientIDFetcher provides a ClientIDFetcher"),
+		jen.Comment("ProvideOAuth2ClientsServiceClientIDFetcher provides a ClientIDFetcher."),
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientsServiceClientIDFetcher").Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "ClientIDFetcher")).Block(
 			jen.Return().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.ID(constants.LoggerVarName)),
@@ -172,11 +172,11 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 		pn := n.PackageName()
 
 		ret.Add(
-			jen.Commentf("buildRouteParam%sIDFetcher builds a function that fetches a %sID from a request routed by chi.", sn, sn),
+			jen.Commentf("buildRouteParam%sIDFetcher builds a function that fetches a %sID from a request routed by chi..", sn, sn),
 			jen.Line(),
 			jen.Func().IDf("buildRouteParam%sIDFetcher", sn).Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64())).Block(
 				jen.Return().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Comment("we can generally disregard this error only because we should be able to validate"),
+					jen.Comment("we can generally disregard this error only because we should be able to validate."),
 					jen.Comment("that the string only contains numbers via chi's regex url param feature."),
 					jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID(constants.RequestVarName), jen.Qual(proj.ServiceV1Package(pn), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -195,7 +195,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("buildRouteParamWebhookIDFetcher").Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64())).Block(
 			jen.Return().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-				jen.Comment("we can generally disregard this error only because we should be able to validate"),
+				jen.Comment("we can generally disregard this error only because we should be able to validate."),
 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
 				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID(constants.RequestVarName), jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -212,7 +212,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("buildRouteParamOAuth2ClientIDFetcher").Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64())).Block(
 			jen.Return().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-				jen.Comment("we can generally disregard this error only because we should be able to validate"),
+				jen.Comment("we can generally disregard this error only because we should be able to validate."),
 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
 				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID(constants.RequestVarName), jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(

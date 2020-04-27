@@ -28,7 +28,7 @@ func buildBuildFakeUser(proj *models.Project) []jen.Code {
 	typeName := "User"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
@@ -55,7 +55,7 @@ func buildBuildDatabaseCreationResponse(proj *models.Project) []jen.Code {
 	typeName := "UserCreationResponse"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
@@ -85,7 +85,7 @@ func buildBuildFakeUserList(proj *models.Project) []jen.Code {
 	typeName := "UserList"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
@@ -119,7 +119,7 @@ func buildBuildFakeUserCreationInput(proj *models.Project) []jen.Code {
 	typeName := "UserCreationInput"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
@@ -142,7 +142,7 @@ func buildBuildFakeUserCreationInputFromUser(proj *models.Project) []jen.Code {
 	typeName := "UserCreationInput"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
@@ -166,7 +166,7 @@ func buildBuildFakeUserDatabaseCreationInputFromUser(proj *models.Project) []jen
 	typeName := "UserDatabaseCreationInput"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
@@ -191,7 +191,7 @@ func buildBuildFakeUserLoginInputFromUser(proj *models.Project) []jen.Code {
 	typeName := "UserLoginInput"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
@@ -216,7 +216,7 @@ func buildBuildFakePasswordUpdateInput(proj *models.Project) []jen.Code {
 	typeName := "PasswordUpdateInput"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
@@ -239,7 +239,7 @@ func buildBuildFakeTOTPSecretRefreshInput(proj *models.Project) []jen.Code {
 	typeName := "TOTPSecretRefreshInput"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked %s", funcName, typeName),
+		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),

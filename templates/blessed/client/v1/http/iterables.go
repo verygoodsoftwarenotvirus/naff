@@ -178,7 +178,7 @@ func buildBuildSomethingExistsRequest(proj *models.Project, typ models.DataType)
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for checking the existence of %s", funcName, commonNameWithPrefix),
+		jen.Commentf("%s builds an HTTP request for checking the existence of %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientExistenceRequestBuildingMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -209,7 +209,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s retrieves whether or not %s exists", funcName, commonNameWithPrefix),
+		jen.Commentf("%s retrieves whether or not %s exists.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientExistenceMethod(proj)...).Params(
 			jen.ID("exists").Bool(),
@@ -247,7 +247,7 @@ func buildBuildGetSomethingRequestFuncDecl(proj *models.Project, typ models.Data
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for fetching %s", funcName, commonNameWithPrefix),
+		jen.Commentf("%s builds an HTTP request for fetching %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientRetrievalRequestBuildingMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -282,7 +282,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s retrieves %s", funcName, commonNameWithPrefix),
+		jen.Commentf("%s retrieves %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientRetrievalMethod(proj, false)...).Params(
 			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), ts),
@@ -320,7 +320,7 @@ func buildBuildGetListOfSomethingRequestFuncDecl(proj *models.Project, typ model
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for fetching %s", funcName, typ.Name.PluralCommonName()),
+		jen.Commentf("%s builds an HTTP request for fetching %s.", funcName, typ.Name.PluralCommonName()),
 		jen.Line(),
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientListRequestMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -363,7 +363,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s retrieves a list of %s", funcName, typ.Name.PluralCommonName()),
+		jen.Commentf("%s retrieves a list of %s.", funcName, typ.Name.PluralCommonName()),
 		jen.Line(),
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientMethodThatFetchesAList(proj)...).Params(
 			jen.ID(pvn).PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", ts)),
@@ -401,7 +401,7 @@ func buildBuildCreateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for creating %s", funcName, commonNameWithPrefix),
+		jen.Commentf("%s builds an HTTP request for creating %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			typ.BuildParamsForHTTPClientCreateRequestBuildingMethod(proj)...,
@@ -453,7 +453,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s creates %s", funcName, commonNameWithPrefix),
+		jen.Commentf("%s creates %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			typ.BuildParamsForHTTPClientCreateMethod(proj)...,
@@ -489,7 +489,7 @@ func buildBuildUpdateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for updating %s", funcName, commonNameWithPrefix),
+		jen.Commentf("%s builds an HTTP request for updating %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			typ.BuildParamsForHTTPClientUpdateRequestBuildingMethod(proj)...,
@@ -533,7 +533,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s updates %s", funcName, commonNameWithPrefix),
+		jen.Commentf("%s updates %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			typ.BuildParamsForHTTPClientUpdateMethod(proj)...,
@@ -572,7 +572,7 @@ func buildBuildArchiveSomethingRequestFuncDecl(proj *models.Project, typ models.
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds an HTTP request for updating %s", funcName, commonNameWithPrefix),
+		jen.Commentf("%s builds an HTTP request for updating %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientArchiveRequestBuildingMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -613,7 +613,7 @@ func buildArchiveSomethingFuncDecl(proj *models.Project, typ models.DataType) []
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s archives %s", funcName, commonNameWithPrefix),
+		jen.Commentf("%s archives %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientArchiveMethod(proj)...).Params(jen.Error()).Block(block...),
 	}

@@ -27,7 +27,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("Providers is our collection of what we provide to other services"),
+			jen.Comment("Providers is our collection of what we provide to other services."),
 			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
 				buildProviderSet()...,
 			),
@@ -37,7 +37,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	// if proj.EnableNewsman {
 	ret.Add(
-		jen.Comment("ProvideWebsocketAuthFunc provides a WebsocketAuthFunc"),
+		jen.Comment("ProvideWebsocketAuthFunc provides a WebsocketAuthFunc."),
 		jen.Line(),
 		jen.Func().ID("ProvideWebsocketAuthFunc").Params(jen.ID("svc").PointerTo().ID("Service")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebsocketAuthFunc")).Block(
 			jen.Return().ID("svc").Dot("WebsocketAuthFunction"),

@@ -51,7 +51,7 @@ func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildGetUserRequest builds an HTTP request for fetching a user"),
+		jen.Comment("BuildGetUserRequest builds an HTTP request for fetching a user."),
 		jen.Line(),
 		newClientMethod("BuildGetUserRequest").Params(
 			constants.CtxParam(),
@@ -100,7 +100,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("GetUser retrieves a user"),
+		jen.Comment("GetUser retrieves a user."),
 		jen.Line(),
 		newClientMethod("GetUser").Params(
 			constants.CtxParam(),
@@ -134,7 +134,7 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildGetUsersRequest builds an HTTP request for fetching a user"),
+		jen.Comment("BuildGetUsersRequest builds an HTTP request for fetching a user."),
 		jen.Line(),
 		newClientMethod("BuildGetUsersRequest").Params(
 			constants.CtxParam(),
@@ -182,7 +182,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("GetUsers retrieves a list of users"),
+		jen.Comment("GetUsers retrieves a list of users."),
 		jen.Line(),
 		newClientMethod("GetUsers").Params(
 			constants.CtxParam(),
@@ -216,7 +216,7 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildCreateUserRequest builds an HTTP request for creating a user"),
+		jen.Comment("BuildCreateUserRequest builds an HTTP request for creating a user."),
 		jen.Line(),
 		newClientMethod("BuildCreateUserRequest").Params(
 			constants.CtxParam(),
@@ -264,7 +264,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("CreateUser creates a new user"),
+		jen.Comment("CreateUser creates a new user."),
 		jen.Line(),
 		newClientMethod("CreateUser").Params(
 			constants.CtxParam(),
@@ -302,7 +302,7 @@ func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildArchiveUserRequest builds an HTTP request for updating a user"),
+		jen.Comment("BuildArchiveUserRequest builds an HTTP request for updating a user."),
 		jen.Line(),
 		newClientMethod("BuildArchiveUserRequest").Params(
 			constants.CtxParam(),
@@ -344,7 +344,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("ArchiveUser archives a user"),
+		jen.Comment("ArchiveUser archives a user."),
 		jen.Line(),
 		newClientMethod("ArchiveUser").Params(
 			constants.CtxParam(),
@@ -391,7 +391,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildLoginRequest builds an authenticating HTTP request"),
+		jen.Comment("BuildLoginRequest builds an authenticating HTTP request."),
 		jen.Line(),
 		newClientMethod("BuildLoginRequest").Params(
 			constants.CtxParam(),
@@ -460,7 +460,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("Login will, when provided the correct credentials, fetch a login cookie"),
+		jen.Comment("Login will, when provided the correct credentials, fetch a login cookie."),
 		jen.Line(),
 		newClientMethod("Login").Params(
 			constants.CtxParam(),

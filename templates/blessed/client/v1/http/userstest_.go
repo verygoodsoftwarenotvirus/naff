@@ -67,7 +67,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.BuildFakeVar(proj, "User"),
-				jen.Comment("the hashed password is never transmitted over the wire"),
+				jen.Comment("the hashed password is never transmitted over the wire."),
 				jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword").Equals().EmptyString(),
 				jen.Line(),
 				utils.BuildTestServer(
@@ -170,7 +170,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.BuildFakeVar(proj, "UserList"),
-				jen.Comment("the hashed password is never transmitted over the wire"),
+				jen.Comment("the hashed password is never transmitted over the wire."),
 				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.Zero()).Dot("HashedPassword").Equals().EmptyString(),
 				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.One()).Dot("HashedPassword").Equals().EmptyString(),
 				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.Lit(2)).Dot("HashedPassword").Equals().EmptyString(),

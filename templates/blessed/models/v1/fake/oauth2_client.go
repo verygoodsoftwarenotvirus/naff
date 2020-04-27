@@ -22,7 +22,7 @@ func buildBuildFakeOAuth2Client(proj *models.Project) []jen.Code {
 	funcName := "BuildFakeOAuth2Client"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked OAuth2Client", funcName),
+		jen.Commentf("%s builds a faked OAuth2Client.", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
@@ -54,7 +54,7 @@ func buildBuildFakeOAuth2ClientList(proj *models.Project) []jen.Code {
 	funcName := "BuildFakeOAuth2ClientList"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked OAuth2ClientList", funcName),
+		jen.Commentf("%s builds a faked OAuth2ClientList.", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
@@ -87,7 +87,7 @@ func buildBuildFakeOAuth2ClientCreationInputFromClient(proj *models.Project) []j
 	funcName := "BuildFakeOAuth2ClientCreationInputFromClient"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a faked OAuth2ClientCreationInput", funcName),
+		jen.Commentf("%s builds a faked OAuth2ClientCreationInput.", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
 			jen.ID("client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),

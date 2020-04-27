@@ -46,7 +46,7 @@ func buildMigrate(proj *models.Project) []jen.Code {
 	funcName := "Migrate"
 
 	lines := []jen.Code{
-		jen.Commentf("%s is a simple wrapper around the core querier %s call", funcName, funcName),
+		jen.Commentf("%s is a simple wrapper around the core querier %s call.", funcName, funcName),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(constants.CtxParam()).Params(jen.Error()).Block(
 			utils.StartSpan(proj, true, funcName),
@@ -62,7 +62,7 @@ func buildIsReady(proj *models.Project) []jen.Code {
 	funcName := "IsReady"
 
 	lines := []jen.Code{
-		jen.Commentf("%s is a simple wrapper around the core querier %s call", funcName, funcName),
+		jen.Commentf("%s is a simple wrapper around the core querier %s call.", funcName, funcName),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Block(
 			utils.StartSpan(proj, true, funcName),
@@ -78,7 +78,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 	funcName := "ProvideDatabaseClient"
 
 	lines := []jen.Code{
-		jen.Commentf("%s provides a new Database client", funcName),
+		jen.Commentf("%s provides a new Database client.", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Paramsln(
 			constants.CtxParam(),

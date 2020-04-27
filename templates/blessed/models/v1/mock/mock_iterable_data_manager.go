@@ -23,7 +23,7 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 	)
 
 	ret.Add(
-		jen.Commentf("%sDataManager is a mocked models.%sDataManager for testing", sn, sn),
+		jen.Commentf("%sDataManager is a mocked models.%sDataManager for testing.", sn, sn),
 		jen.Line(),
 		jen.Type().IDf("%sDataManager", sn).Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
@@ -49,7 +49,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	callArgs := typ.BuildInterfaceDefinitionExistenceMethodCallArgs(proj)
 
 	lines := []jen.Code{
-		jen.Commentf("%s is a mock function", funcName),
+		jen.Commentf("%s is a mock function.", funcName),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).ID(funcName).Params(params...).Params(jen.Bool(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
@@ -69,7 +69,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	callArgs := typ.BuildInterfaceDefinitionRetrievalMethodCallArgs(proj)
 
 	lines := []jen.Code{
-		jen.Commentf("Get%s is a mock function", sn),
+		jen.Commentf("Get%s is a mock function.", sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", sn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
 			jen.Error()).Block(
@@ -88,7 +88,7 @@ func buildGetAllSomethingsCount(typ models.DataType) []jen.Code {
 	pn := n.Plural()
 
 	lines := []jen.Code{
-		jen.Commentf("GetAll%sCount is a mock function", pn),
+		jen.Commentf("GetAll%sCount is a mock function.", pn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%sCount", pn).Params(
 			constants.CtxParam(),
@@ -111,7 +111,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	callArgs := typ.BuildMockDataManagerListRetrievalMethodCallArgs(proj)
 
 	lines := []jen.Code{
-		jen.Commentf("Get%s is a mock function", pn),
+		jen.Commentf("Get%s is a mock function.", pn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().ID("models").Dotf("%sList", sn),
 			jen.Error()).Block(
@@ -132,7 +132,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	args := typ.BuildMockInterfaceDefinitionCreationMethodCallArgs(proj)
 
 	lines := []jen.Code{
-		jen.Commentf("Create%s is a mock function", sn),
+		jen.Commentf("Create%s is a mock function.", sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Create%s", sn).Params(
 			params...,
@@ -157,7 +157,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	args := typ.BuildMockDataManagerUpdateMethodCallArgs(proj, "updated")
 
 	lines := []jen.Code{
-		jen.Commentf("Update%s is a mock function", sn),
+		jen.Commentf("Update%s is a mock function.", sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Update%s", sn).Params(
 			params...,
@@ -180,7 +180,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	callArgs := typ.BuildInterfaceDefinitionArchiveMethodCallArgs(proj)
 
 	lines := []jen.Code{
-		jen.Commentf("Archive%s is a mock function", sn),
+		jen.Commentf("Archive%s is a mock function.", sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Archive%s", sn).Params(params...).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot("Called").Call(callArgs...).Dot("Error").Call(jen.Zero()),

@@ -19,7 +19,7 @@ func buildBuildFleshedOutQueryFilter(proj *models.Project) []jen.Code {
 	funcName := "BuildFleshedOutQueryFilter"
 
 	lines := []jen.Code{
-		jen.Commentf("%s builds a fully fleshed out QueryFilter", funcName),
+		jen.Commentf("%s builds a fully fleshed out QueryFilter.", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),

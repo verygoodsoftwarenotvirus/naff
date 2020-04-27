@@ -18,19 +18,19 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 	)
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("ErrInvalidTwoFactorCode indicates that a provided two factor code is invalid"),
+			jen.Comment("ErrInvalidTwoFactorCode indicates that a provided two factor code is invalid."),
 			jen.ID("ErrInvalidTwoFactorCode").Equals().Qual("errors", "New").Call(jen.Lit("invalid two factor code")),
-			jen.Comment("ErrPasswordHashTooWeak indicates that a provided password hash is too weak"),
+			jen.Comment("ErrPasswordHashTooWeak indicates that a provided password hash is too weak."),
 			jen.ID("ErrPasswordHashTooWeak").Equals().Qual("errors", "New").Call(jen.Lit("password's hash is too weak")),
 			jen.Line(),
-			jen.Comment("Providers represents what this package offers to external libraries in the way of constructors"),
+			jen.Comment("Providers represents what this package offers to external libraries in the way of constructors."),
 			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(jen.ID("ProvideBcryptAuthenticator"), jen.ID("ProvideBcryptHashCost")),
 			jen.Line(),
 		),
 	)
 
 	ret.Add(
-		jen.Comment("ProvideBcryptHashCost provides a BcryptHashCost"),
+		jen.Comment("ProvideBcryptHashCost provides a BcryptHashCost."),
 		jen.Line(),
 		jen.Func().ID("ProvideBcryptHashCost").Params().Params(jen.ID("BcryptHashCost")).Block(
 			jen.Return().ID("DefaultBcryptHashCost"),
@@ -40,14 +40,14 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.Comment("PasswordHasher hashes passwords"),
+			jen.Comment("PasswordHasher hashes passwords."),
 			jen.ID("PasswordHasher").Interface(
 				jen.ID("PasswordIsAcceptable").Params(jen.ID("password").String()).Params(jen.Bool()),
 				jen.ID("HashPassword").Params(constants.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()),
 				jen.ID("PasswordMatches").Params(constants.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.ID("salt").Index().Byte()).Params(jen.Bool()),
 			),
 			jen.Line(),
-			jen.Comment("Authenticator is a poorly named Authenticator interface"),
+			jen.Comment("Authenticator is a poorly named Authenticator interface."),
 			jen.ID("Authenticator").Interface(
 				jen.ID("PasswordHasher"),
 				jen.Line(),

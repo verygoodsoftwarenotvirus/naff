@@ -95,7 +95,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	)
 
 	lines := []jen.Code{
-		jen.Commentf("%s fetches whether or not %s exists from the database", funcName, scnwp),
+		jen.Commentf("%s fetches whether or not %s exists from the database.", funcName, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(
 			params...,
@@ -132,7 +132,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	)
 
 	return []jen.Code{
-		jen.Commentf("Get%s fetches %s from the database", sn, scnwp),
+		jen.Commentf("Get%s fetches %s from the database.", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Block(block...),
 		jen.Line(),
@@ -145,7 +145,7 @@ func buildGetAllSomethingCount(proj *models.Project, typ models.DataType) []jen.
 	pcn := n.PluralCommonName()
 
 	return []jen.Code{
-		jen.Commentf("GetAll%sCount fetches the count of %s from the database that meet a particular filter", pn, pcn),
+		jen.Commentf("GetAll%sCount fetches the count of %s from the database that meet a particular filter.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("GetAll%sCount", pn)),
@@ -192,7 +192,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	)
 
 	return []jen.Code{
-		jen.Commentf("Get%s fetches a list of %s from the database that meet a particular filter", pn, pcn),
+		jen.Commentf("Get%s fetches a list of %s from the database that meet a particular filter.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)), jen.Error()).Block(block...),
 		jen.Line(),
@@ -208,7 +208,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	args := typ.BuildDBClientCreationMethodCallArgs(proj)
 
 	return []jen.Code{
-		jen.Commentf("Create%s creates %s in the database", sn, scnwp),
+		jen.Commentf("Create%s creates %s in the database.", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Create%s", sn).Params(
 			params...,
@@ -303,7 +303,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	// we don't need to worry about the blonging to nobody case
 
 	return []jen.Code{
-		jen.Commentf("Archive%s archives %s from the database by its ID", sn, scnwp),
+		jen.Commentf("Archive%s archives %s from the database by its ID.", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Archive%s", sn).Params(params...).Params(jen.Error()).Block(block...),
 		jen.Line(),
@@ -318,7 +318,7 @@ func buildGetAllSomethingForUser(proj *models.Project, typ models.DataType) []je
 	pcn := n.PluralCommonName()
 
 	return []jen.Code{
-		jen.Commentf("GetAll%sForUser fetches a list of %s from the database that meet a particular filter", pn, pcn),
+		jen.Commentf("GetAll%sForUser fetches a list of %s from the database that meet a particular filter.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("GetAll%sForUser", pn).Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Index().Qual(proj.ModelsV1Package(), sn),
 			jen.Error()).Block(

@@ -13,7 +13,7 @@ func spansDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Comment("StartSpan starts a span"),
+		jen.Comment("StartSpan starts a span."),
 		jen.Line(),
 		jen.Func().ID("StartSpan").Params(
 			constants.CtxParam(),

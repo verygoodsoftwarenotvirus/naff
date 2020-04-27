@@ -29,10 +29,10 @@ func mainDotGo(proj *models.Project) *jen.File {
 	// vars
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("ErrNotFound is a handy error to return when we receive a 404 response"),
+			jen.Comment("ErrNotFound is a handy error to return when we receive a 404 response."),
 			jen.ID("ErrNotFound").Equals().Qual("errors", "New").Call(jen.Lit("404: not found")),
 			jen.Line(),
-			jen.Comment("ErrUnauthorized is a handy error to return when we receive a 404 response"),
+			jen.Comment("ErrUnauthorized is a handy error to return when we receive a 404 response."),
 			jen.ID("ErrUnauthorized").Equals().Qual("errors", "New").Call(jen.Lit("401: not authorized")),
 		),
 		jen.Line(),
@@ -40,7 +40,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	// types
 	ret.Add(
-		jen.Commentf("%s is a client for interacting with v1 of our REST API", v1),
+		jen.Commentf("%s is a client for interacting with v1 of our HTTP API.", v1),
 		jen.Line(),
 		jen.Type().ID(v1).Struct(
 			jen.ID("plainClient").PointerTo().Qual("net/http", "Client"),
@@ -80,7 +80,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 func buildAuthenticatedClient() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("AuthenticatedClient returns the authenticated *http.Client that we use to make most requests"),
+		jen.Comment("AuthenticatedClient returns the authenticated *http.Client that we use to make most requests."),
 		jen.Line(),
 		newClientMethod("AuthenticatedClient").Params().Params(jen.PointerTo().Qual("net/http", "Client")).Block(
 			jen.Return().ID("c").Dot("authedClient"),
@@ -93,7 +93,7 @@ func buildAuthenticatedClient() []jen.Code {
 
 func buildPlainClient() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("PlainClient returns the unauthenticated *http.Client that we use to make certain requests"),
+		jen.Comment("PlainClient returns the unauthenticated *http.Client that we use to make certain requests."),
 		jen.Line(),
 		newClientMethod("PlainClient").Params().Params(jen.PointerTo().Qual("net/http", "Client")).Block(
 			jen.Return().ID("c").Dot("plainClient"),
@@ -106,7 +106,7 @@ func buildPlainClient() []jen.Code {
 
 func buildTokenSource() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("TokenSource provides the client's token source"),
+		jen.Comment("TokenSource provides the client's token source."),
 		jen.Line(),
 		newClientMethod("TokenSource").Params().Params(jen.ID("oauth2").Dot("TokenSource")).Block(
 			jen.Return().ID("c").Dot("tokenSource"),
@@ -119,7 +119,7 @@ func buildTokenSource() []jen.Code {
 
 func buildNewClient() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("NewClient builds a new API client for us"),
+		jen.Comment("NewClient builds a new API client for us."),
 		jen.Line(),
 		jen.Func().ID("NewClient").Paramsln(
 			constants.CtxParam(),
@@ -192,7 +192,7 @@ func buildNewClient() []jen.Code {
 
 func buildBuildOAuthClient() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("buildOAuthClient does too much"),
+		jen.Comment("buildOAuthClient takes care of all the OAuth2 noise and returns a nice pretty *http.Client for us to use."),
 		jen.Line(),
 		jen.Func().ID("buildOAuthClient").Paramsln(
 			constants.CtxParam(),
@@ -246,7 +246,7 @@ func buildBuildOAuthClient() []jen.Code {
 
 func buildTokenEndpoint() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("tokenEndpoint provides the oauth2 Endpoint for a given host"),
+		jen.Comment("tokenEndpoint provides the oauth2 Endpoint for a given host."),
 		jen.Line(),
 		jen.Func().ID("tokenEndpoint").Params(
 			jen.ID("baseURL").PointerTo().Qual("net/url", "URL"),
@@ -284,7 +284,7 @@ func buildNewSimpleClient() []jen.Code {
 		jen.Line(),
 		jen.Comment("Its purpose at the time of this writing is merely so I can make users (which"),
 		jen.Line(),
-		jen.Comment("is a route that doesn't require authentication)"),
+		jen.Comment("is a route that doesn't require authentication.)"),
 		jen.Line(),
 		jen.Func().ID("NewSimpleClient").Params(
 			constants.CtxParam(),
@@ -315,7 +315,7 @@ func buildNewSimpleClient() []jen.Code {
 
 func buildCloseResponseBody() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("closeResponseBody takes a given HTTP response and closes its body, logging if an error occurs"),
+		jen.Comment("closeResponseBody takes a given HTTP response and closes its body, logging if an error occurs."),
 		jen.Line(),
 		newClientMethod("closeResponseBody").Params(jen.ID(constants.ResponseVarName).PointerTo().Qual("net/http", "Response")).Block(
 			jen.If(jen.ID(constants.ResponseVarName).DoesNotEqual().Nil()).Block(
@@ -391,7 +391,7 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("executeRawRequest takes a given *http.Request and executes it with the provided"),
+		jen.Comment("executeRawRequest takes a given *http.Request and executes it with the provided."),
 		jen.Line(),
 		jen.Comment("client, alongside some debugging logging."),
 		jen.Line(),
@@ -409,7 +409,7 @@ func buildExecuteRawRequest(proj *models.Project) []jen.Code {
 func buildExportedBuildURL() []jen.Code {
 
 	lines := []jen.Code{
-		jen.Comment("BuildURL builds standard service URLs"),
+		jen.Comment("BuildURL builds standard service URLs."),
 		jen.Line(),
 		newClientMethod("BuildURL").Params(
 			jen.ID("qp").Qual("net/url", "Values"),
@@ -435,7 +435,7 @@ func buildExportedBuildURL() []jen.Code {
 
 func buildUnexportedBuildURL() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("buildURL takes a given set of query parameters and URL parts, and returns"),
+		jen.Comment("buildURL takes a given set of query parameters and URL parts, and returns."),
 		jen.Line(),
 		jen.Comment("a parsed URL object from them."),
 		jen.Line(),
@@ -481,7 +481,7 @@ func buildBuildVersionlessURL() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("buildVersionlessURL builds a URL without the `/api/v1/` prefix. It should"),
 		jen.Line(),
-		jen.Comment("otherwise be identical to buildURL"),
+		jen.Comment("otherwise be identical to buildURL."),
 		jen.Line(),
 		newClientMethod("buildVersionlessURL").Params(
 			jen.ID("qp").Qual("net/url", "Values"),
@@ -518,7 +518,7 @@ func buildBuildVersionlessURL() []jen.Code {
 
 func buildBuildWebsocketURL() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("BuildWebsocketURL builds a standard URL and then converts its scheme to the websocket protocol"),
+		jen.Comment("BuildWebsocketURL builds a standard URL and then converts its scheme to the websocket protocol."),
 		jen.Line(),
 		newClientMethod("BuildWebsocketURL").Params(
 			jen.ID("parts").Spread().String(),
@@ -539,7 +539,7 @@ func buildBuildWebsocketURL() []jen.Code {
 
 func buildBuildHealthCheckRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("BuildHealthCheckRequest builds a health check HTTP Request"),
+		jen.Comment("BuildHealthCheckRequest builds a health check HTTP request."),
 		jen.Line(),
 		newClientMethod("BuildHealthCheckRequest").Params(constants.CtxParam()).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
@@ -567,7 +567,7 @@ func buildBuildHealthCheckRequest() []jen.Code {
 
 func buildIsUp() []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("IsUp returns whether or not the service's health endpoint is returning 200s"),
+		jen.Comment("IsUp returns whether or not the service's health endpoint is returning 200s."),
 		jen.Line(),
 		newClientMethod("IsUp").Params(constants.CtxParam()).Params(jen.Bool()).Block(
 			jen.List(
@@ -671,7 +671,7 @@ func buildCheckExistence(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("checkExistence executes an HTTP request and loads the response content into a bool"),
+		jen.Comment("checkExistence executes an HTTP request and loads the response content into a bool."),
 		jen.Line(),
 		newClientMethod("checkExistence").Params(
 			constants.CtxParam(),
@@ -722,7 +722,9 @@ func buildRetrieve(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("%s executes an HTTP request and loads the response content into a struct", funcName),
+		jen.Commentf("%s executes an HTTP request and loads the response content into a struct. In the event of a 404,", funcName),
+		jen.Line(),
+		jen.Comment("the provided ErrNotFound is returned."),
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),

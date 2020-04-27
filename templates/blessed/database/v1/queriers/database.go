@@ -48,10 +48,10 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Line(),
 			jen.List(jen.ID("existencePrefix"), jen.ID("existenceSuffix")).Equals().List(jen.Lit("SELECT EXISTS ("), jen.Lit(")")),
 			jen.Line(),
-			jen.Comment("countQuery is a generic counter query used in a few query builders"),
+			jen.Comment("countQuery is a generic counter query used in a few query builders."),
 			jen.ID("countQuery").Equals().Lit("COUNT(%s.id)"),
 			jen.Line(),
-			jen.Commentf("currentUnixTimeQuery is the query %s uses to determine the current unix time", cn),
+			jen.Commentf("currentUnixTimeQuery is the query %s uses to determine the current unix time.", cn),
 			jen.ID("currentUnixTimeQuery").Equals().Lit(getTimeQuery(dbvendor)),
 		),
 		jen.Line(),
@@ -70,7 +70,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
-			jen.Commentf("Explicitly wrap the %s driver with ocsql", sn),
+			jen.Commentf("Explicitly wrap the %s driver with ocsql.", sn),
 			jen.ID("driver").Assign().Qual("contrib.go.opencensus.io/integrations/ocsql", "Wrap").Callln(
 				driverInit,
 				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQuery").Call(jen.True()),
@@ -80,7 +80,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQueryParams").Call(jen.True()),
 			),
 			jen.Line(),
-			jen.Comment("Register our ocsql wrapper as a db driver"),
+			jen.Comment("Register our ocsql wrapper as a db driver."),
 			jen.Qual("database/sql", "Register").Call(jen.IDf("%sDriverName", uvn), jen.ID("driver")),
 		),
 		jen.Line(),
@@ -90,7 +90,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "Database").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
 		jen.Line(),
 		jen.Type().Defs(
-			jen.Commentf("%s is our main %s interaction db", sn, sn),
+			jen.Commentf("%s is our main %s interaction db.", sn, sn),
 			jen.ID(sn).Struct(
 				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 				jen.ID("db").PointerTo().Qual("database/sql", "DB"),
@@ -104,7 +104,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				jen.ID("migrateOnce").Qual("sync", "Once"), jen.ID("debug").Bool(),
 			),
 			jen.Line(),
-			jen.Commentf("ConnectionDetails is a string alias for a %s url", sn),
+			jen.Commentf("ConnectionDetails is a string alias for a %s url.", sn),
 			jen.ID("ConnectionDetails").String(),
 			jen.Line(),
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx|Stmt} objects"),
@@ -128,7 +128,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	}
 
 	ret.Add(
-		jen.Commentf("Provide%s%s provides an instrumented %s db", sn, dbTrail, cn),
+		jen.Commentf("Provide%s%s provides an instrumented %s db.", sn, dbTrail, cn),
 		jen.Line(),
 		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Block(
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
@@ -144,7 +144,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	}
 
 	ret.Add(
-		jen.Commentf("Provide%s provides a %s%s controller", sn, cn, dbTrail),
+		jen.Commentf("Provide%s provides a %s%s controller.", sn, cn, dbTrail),
 		jen.Line(),
 		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "Database")).Block(
 			jen.Return().AddressOf().IDf(sn).Valuesln(
@@ -223,7 +223,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	}
 
 	ret.Add(
-		jen.Comment("IsReady reports whether or not the db is ready"),
+		jen.Comment("IsReady reports whether or not the db is ready."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("IsReady").Params(
 			func() jen.Code {
@@ -241,11 +241,11 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	ret.Add(
 		jen.Comment("logQueryBuildingError logs errors that may occur during query construction."),
 		jen.Line(),
-		jen.Comment("Such errors should be few and far between, as the generally only occur with"),
+		jen.Comment("Such errors should be few and far between, as the generally only occur with."),
 		jen.Line(),
 		jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 		jen.Line(),
-		jen.Comment("any log entries with the given name, and those alerts should be investigated"),
+		jen.Comment("any log entries with the given name, and those alerts should be investigated."),
 		jen.Line(),
 		jen.Comment("with the utmost priority."),
 		jen.Line(),
@@ -261,11 +261,11 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		ret.Add(
 			jen.Comment("logIDRetrievalError logs errors that may occur during created db row ID retrieval."),
 			jen.Line(),
-			jen.Comment("Such errors should be few and far between, as the generally only occur with"),
+			jen.Comment("Such errors should be few and far between, as the generally only occur with."),
 			jen.Line(),
 			jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 			jen.Line(),
-			jen.Comment("any log entries with the given name, and those alerts should be investigated"),
+			jen.Comment("any log entries with the given name, and those alerts should be investigated."),
 			jen.Line(),
 			jen.Comment("with the utmost priority."),
 			jen.Line(),
@@ -279,7 +279,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	}
 
 	ret.Add(
-		jen.Comment("buildError takes a given error and wraps it with a message, provided that it"),
+		jen.Comment("buildError takes a given error and wraps it with a message, provided that it."),
 		jen.Line(),
 		jen.Comment("IS NOT sql.ErrNoRows, which we want to preserve and surface to the services."),
 		jen.Line(),

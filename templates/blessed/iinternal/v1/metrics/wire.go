@@ -13,7 +13,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("Providers represents what this library offers to external users in the form of dependencies"),
+			jen.Comment("Providers represents what this library offers to external users in the form of dependencies."),
 			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
 				jen.ID("ProvideUnitCounter"),
 				jen.ID("ProvideUnitCounterProvider"),
@@ -23,7 +23,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideUnitCounterProvider provides UnitCounter providers"),
+		jen.Comment("ProvideUnitCounterProvider provides UnitCounter providers."),
 		jen.Line(),
 		jen.Func().ID("ProvideUnitCounterProvider").Params().Params(jen.ID("UnitCounterProvider")).Block(
 			jen.Return().ID("ProvideUnitCounter"),

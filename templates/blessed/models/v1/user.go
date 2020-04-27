@@ -26,7 +26,7 @@ func userDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.Comment("User represents a user"),
+			jen.Comment("User represents a user."),
 			jen.ID("User").Struct(
 				jen.ID("ID").Uint64().Tag(jsonTag("id")),
 				jen.ID("Username").String().Tag(jsonTag("username")),
@@ -40,33 +40,33 @@ func userDotGo(proj *models.Project) *jen.File {
 				jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archived_on")),
 			),
 			jen.Line(),
-			jen.Comment("UserList represents a list of users"),
+			jen.Comment("UserList represents a list of users."),
 			jen.ID("UserList").Struct(
 				jen.ID("Pagination"),
 				jen.ID("Users").Index().ID("User").Tag(jsonTag("users")),
 			),
 			jen.Line(),
-			jen.Comment("UserLoginInput represents the payload used to log in a user"),
+			jen.Comment("UserLoginInput represents the payload used to log in a user."),
 			jen.ID("UserLoginInput").Struct(
 				jen.ID("Username").String().Tag(jsonTag("username")),
 				jen.ID("Password").String().Tag(jsonTag("password")),
 				jen.ID("TOTPToken").String().Tag(jsonTag("totp_token")),
 			),
 			jen.Line(),
-			jen.Comment("UserCreationInput represents the input required from users to register an account"),
+			jen.Comment("UserCreationInput represents the input required from users to register an account."),
 			jen.ID("UserCreationInput").Struct(
 				jen.ID("Username").String().Tag(jsonTag("username")),
 				jen.ID("Password").String().Tag(jsonTag("password")),
 			),
 			jen.Line(),
-			jen.Comment("UserDatabaseCreationInput is used by the user creation route to communicate with the database"),
+			jen.Comment("UserDatabaseCreationInput is used by the user creation route to communicate with the database."),
 			jen.ID("UserDatabaseCreationInput").Struct(
 				jen.ID("Username").String(),
 				jen.ID("HashedPassword").String(),
 				jen.ID("TwoFactorSecret").String(),
 			),
 			jen.Line(),
-			jen.Comment("UserCreationResponse is a response structure for Users that doesn't contain password fields, but does contain the two factor secret"),
+			jen.Comment("UserCreationResponse is a response structure for Users that doesn't contain password fields, but does contain the two factor secret."),
 			jen.ID("UserCreationResponse").Struct(
 				jen.ID("ID").Uint64().Tag(jsonTag("id")),
 				jen.ID("Username").String().Tag(jsonTag("username")),
@@ -79,25 +79,25 @@ func userDotGo(proj *models.Project) *jen.File {
 				jen.ID("TwoFactorQRCode").String().Tag(jsonTag("qr_code")),
 			),
 			jen.Line(),
-			jen.Comment("PasswordUpdateInput represents input a user would provide when updating their password"),
+			jen.Comment("PasswordUpdateInput represents input a user would provide when updating their password."),
 			jen.ID("PasswordUpdateInput").Struct(
 				jen.ID("NewPassword").String().Tag(jsonTag("new_password")),
 				jen.ID("CurrentPassword").String().Tag(jsonTag("current_password")),
 				jen.ID("TOTPToken").String().Tag(jsonTag("totp_token")),
 			),
 			jen.Line(),
-			jen.Comment("TOTPSecretRefreshInput represents input a user would provide when updating their 2FA secret"),
+			jen.Comment("TOTPSecretRefreshInput represents input a user would provide when updating their 2FA secret."),
 			jen.ID("TOTPSecretRefreshInput").Struct(
 				jen.ID("CurrentPassword").String().Tag(jsonTag("current_password")),
 				jen.ID("TOTPToken").String().Tag(jsonTag("totp_token")),
 			),
 			jen.Line(),
-			jen.Comment("TOTPSecretRefreshResponse represents the response we provide to a user when updating their 2FA secret"),
+			jen.Comment("TOTPSecretRefreshResponse represents the response we provide to a user when updating their 2FA secret."),
 			jen.ID("TOTPSecretRefreshResponse").Struct(
 				jen.ID("TwoFactorSecret").String().Tag(jsonTag("two_factor_secret")),
 			),
 			jen.Line(),
-			jen.Comment("UserDataManager describes a structure which can manage users in permanent storage"),
+			jen.Comment("UserDataManager describes a structure which can manage users in permanent storage."),
 			jen.ID("UserDataManager").Interface(
 				jen.ID("GetUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().ID("User"), jen.Error()),
 				jen.ID("GetUserByUsername").Params(constants.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().ID("User"), jen.Error()),
@@ -108,7 +108,7 @@ func userDotGo(proj *models.Project) *jen.File {
 				jen.ID("ArchiveUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()),
 			),
 			jen.Line(),
-			jen.Comment("UserDataServer describes a structure capable of serving traffic related to users"),
+			jen.Comment("UserDataServer describes a structure capable of serving traffic related to users."),
 			jen.ID("UserDataServer").Interface(
 				jen.ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
@@ -126,7 +126,7 @@ func userDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Update accepts a User as input and merges those values if they're set"),
+		jen.Comment("Update accepts a User as input and merges those values if they're set."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("Update").Params(jen.ID("input").PointerTo().ID("User")).Block(
 			jen.If(jen.ID("input").Dot("Username").DoesNotEqual().EmptyString().And().ID("input").Dot("Username").DoesNotEqual().ID("u").Dot("Username")).Block(

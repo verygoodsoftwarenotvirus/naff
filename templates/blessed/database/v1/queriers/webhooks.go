@@ -69,7 +69,7 @@ func webhooksDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 
 func buildScanWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("scanWebhook is a consistent way to turn a *sql.Row into a webhook struct"),
+		jen.Comment("scanWebhook is a consistent way to turn a *sql.Row into a webhook struct."),
 		jen.Line(),
 		jen.Func().ID("scanWebhook").Params(
 			jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner"),
@@ -132,7 +132,7 @@ func buildScanWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 
 func buildScanWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("scanWebhooks provides a consistent way to turn sql rows into a slice of webhooks"),
+		jen.Comment("scanWebhooks provides a consistent way to turn sql rows into a slice of webhooks."),
 		jen.Line(),
 		jen.Func().ID("scanWebhooks").Params(
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
@@ -210,7 +210,7 @@ func build_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("GetWebhook fetches a webhook from the database"),
+		jen.Comment("GetWebhook fetches a webhook from the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 			jen.Error()).Block(
@@ -270,7 +270,7 @@ func build_GetAllWebhooksCount(proj *models.Project, dbvendor wordsmith.SuperPal
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("GetAllWebhooksCount will fetch the count of every active webhook in the database"),
+		jen.Comment("GetAllWebhooksCount will fetch the count of every active webhook in the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllWebhooksCount").Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
 			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID(dbfl).Dot("buildGetAllWebhooksCountQuery").Call()).Dot("Scan").Call(jen.AddressOf().ID("count")),
@@ -293,7 +293,7 @@ func buildBuildGetAllWebhooksQuery(proj *models.Project, dbvendor wordsmith.Supe
 		),
 		jen.Line(),
 		jen.Line(),
-		jen.Comment("buildGetAllWebhooksQuery returns a SQL query which will return all webhooks, regardless of ownership"),
+		jen.Comment("buildGetAllWebhooksQuery returns a SQL query which will return all webhooks, regardless of ownership."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetAllWebhooksQuery").Params().Params(jen.String()).Block(
 			jen.ID("getAllWebhooksQueryBuilder").Dot("Do").Call(jen.Func().Params().Block(
@@ -322,7 +322,7 @@ func build_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("GetAllWebhooks fetches a list of all webhooks from the database"),
+		jen.Comment("GetAllWebhooks fetches a list of all webhooks from the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllWebhooks").Params(constants.CtxParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"), jen.Error()).Block(
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(constants.CtxVar(), jen.ID(dbfl).Dot("buildGetAllWebhooksQuery").Call()),
@@ -359,7 +359,7 @@ func build_GetAllWebhooksForUser(proj *models.Project, dbvendor wordsmith.SuperP
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("GetAllWebhooksForUser fetches a list of all webhooks from the database"),
+		jen.Comment("GetAllWebhooksForUser fetches a list of all webhooks from the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllWebhooksForUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Index().Qual(proj.ModelsV1Package(), "Webhook"), jen.Error()).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetWebhooksQuery").Call(jen.ID("userID"), jen.Nil()),
@@ -433,7 +433,7 @@ func buildGetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("GetWebhooks fetches a list of webhooks from the database that meet a particular filter"),
+		jen.Comment("GetWebhooks fetches a list of webhooks from the database that meet a particular filter."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetWebhooks").Params(
 			constants.CtxParam(),
@@ -562,12 +562,12 @@ func buildCreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 					jen.Return(jen.List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing webhook creation query: %w"), jen.Err()))),
 				),
 				jen.Line(),
-				jen.Comment("fetch the last inserted ID"),
+				jen.Comment("fetch the last inserted ID."),
 				jen.List(jen.ID("id"), jen.ID("err")).Assign().ID(constants.ResponseVarName).Dot("LastInsertId").Call(),
 				jen.ID(dbfl).Dot("logIDRetrievalError").Call(jen.Err()),
 				jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
 				jen.Line(),
-				jen.Comment("this won't be completely accurate, but it will suffice"),
+				jen.Comment("this won't be completely accurate, but it will suffice."),
 				jen.ID("x").Dot("CreatedOn").Equals().ID(dbfl).Dot("timeTeller").Dot("Now").Call(),
 				jen.Line(),
 			)
@@ -582,7 +582,7 @@ func buildCreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 	}
 
 	lines := []jen.Code{
-		jen.Comment("CreateWebhook creates a webhook in the database"),
+		jen.Comment("CreateWebhook creates a webhook in the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("CreateWebhook").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"), jen.Error()).Block(
 			buildCreateWebhookQuery()...,
@@ -623,7 +623,7 @@ func buildBuildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmith.Super
 	}
 
 	lines := []jen.Code{
-		jen.Comment("buildUpdateWebhookQuery takes a given webhook and returns a SQL query to update"),
+		jen.Comment("buildUpdateWebhookQuery takes a given webhook and returns a SQL query to update."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildUpdateWebhookQuery").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
 			jen.Var().Err().Error(),
@@ -719,7 +719,7 @@ func buildArchiveWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) 
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("ArchiveWebhook archives a webhook from the database by its ID"),
+		jen.Comment("ArchiveWebhook archives a webhook from the database by its ID."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("ArchiveWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.Error()).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildArchiveWebhookQuery").Call(jen.ID("webhookID"), jen.ID("userID")),

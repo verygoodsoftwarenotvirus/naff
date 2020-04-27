@@ -22,7 +22,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Type().Defs(
 			jen.Comment("OAuth2ClientValidator is a stand-in interface, where we needed to abstract"),
-			jen.Comment("a regular structure with an interface for testing purposes"),
+			jen.Comment("a regular structure with an interface for testing purposes."),
 			jen.ID("OAuth2ClientValidator").Interface(
 				jen.ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()),
 			),
@@ -33,7 +33,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("Decode").Params(jen.List(jen.ID("name"), jen.ID("value")).String(), jen.ID("dst").Interface()).Params(jen.Error()),
 			),
 			jen.Line(),
-			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
+			jen.Comment("UserIDFetcher is a function that fetches user IDs."),
 			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 			jen.Line(),
 			jen.Comment("Service handles authentication service-wide"),
@@ -52,7 +52,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideAuthService builds a new AuthService"),
+		jen.Comment("ProvideAuthService builds a new AuthService."),
 		jen.Line(),
 		jen.Func().ID("ProvideAuthService").Paramsln(
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),

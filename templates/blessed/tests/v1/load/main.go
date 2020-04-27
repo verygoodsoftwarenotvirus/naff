@@ -13,7 +13,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Comment("ServiceAttacker implements hazana's Attacker interface"),
+		jen.Comment("ServiceAttacker implements hazana's Attacker interface."),
 		jen.Line(),
 		jen.Type().ID("ServiceAttacker").Struct(
 			jen.ID("todoClient").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
@@ -22,7 +22,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Setup implement's hazana's Attacker interface"),
+		jen.Comment("Setup implement's hazana's Attacker interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Setup").Params(jen.Underscore().Qual("github.com/emicklei/hazana", "Config")).Params(jen.Error()).Block(
 			jen.Return().ID("nil"),
@@ -31,7 +31,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Do implement's hazana's Attacker interface"),
+		jen.Comment("Do implement's hazana's Attacker interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Do").Params(
 			jen.Underscore().Qual("context", "Context"),
@@ -84,7 +84,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Teardown implements hazana's Attacker interface"),
+		jen.Comment("Teardown implements hazana's Attacker interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Teardown").Params().Params(jen.Error()).Block(
 			jen.Return().ID("nil"),
@@ -93,7 +93,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Clone implements hazana's Attacker interface"),
+		jen.Comment("Clone implements hazana's Attacker interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Clone").Params().Params(jen.Qual("github.com/emicklei/hazana", "Attack")).Block(
 			jen.Return().ID("a"),
@@ -126,7 +126,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("r").Assign().Qual("github.com/emicklei/hazana", "Run").Call(jen.ID("attacker"), jen.ID("cfg")),
 			jen.Line(),
-			jen.Comment("inspect the report and compute whether the test has failed"),
+			jen.Comment("inspect the report and compute whether the test has failed."),
 			jen.Comment("e.g by looking at the success percentage and mean response time of each metric."),
 			jen.ID("r").Dot("Failed").Equals().False(),
 			jen.Line(),

@@ -33,7 +33,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	// if proj.EnableNewsman {
 	ret.Add(
-		jen.Comment("ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day"),
+		jen.Comment("ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day."),
 		jen.Line(),
 		jen.Func().ID("ProvideReporter").Params(jen.ID("n").PointerTo().Qual(newsmanImp, "Newsman")).Params(jen.Qual(newsmanImp, "Reporter")).Block(
 			jen.Return().ID("n"),
@@ -55,11 +55,11 @@ func wireDotGo(proj *models.Project) *jen.File {
 			jen.Comment("external libs"),
 		}
 
-		// if proj.EnableNewsman {
+		//if proj.EnableNewsman {
 		args = append(args,
 			jen.Qual(newsmanImp, "NewNewsman"),
 		)
-		// }
+		//}
 
 		args = append(args,
 			jen.ID("ProvideReporter"),
@@ -84,7 +84,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		jen.Comment("BuildServer builds a server"),
+		jen.Comment("BuildServer builds a server."),
 		jen.Line(),
 		jen.Func().ID("BuildServer").Paramsln(
 			constants.CtxParam(),

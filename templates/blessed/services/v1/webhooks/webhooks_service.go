@@ -14,9 +14,9 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Comment("CreateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts"),
+			jen.Comment("CreateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts."),
 			jen.ID("CreateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_create_input"),
-			jen.Comment("UpdateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts"),
+			jen.Comment("UpdateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts."),
 			jen.ID("UpdateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_update_input"),
 			jen.Line(),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit("webhooks"),
@@ -42,7 +42,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("TuneIn").Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")),
 			),
 			jen.Line(),
-			jen.Comment("Service handles TODO ListHandler webhooks"),
+			jen.Comment("Service handles TODO ListHandler webhooks."),
 			jen.ID("Service").Struct(
 				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 				jen.ID("webhookCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
@@ -53,10 +53,10 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("eventManager").ID("eventManager"),
 			),
 			jen.Line(),
-			jen.Comment("UserIDFetcher is a function that fetches user IDs"),
+			jen.Comment("UserIDFetcher is a function that fetches user IDs."),
 			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 			jen.Line(),
-			jen.Comment("WebhookIDFetcher is a function that fetches webhook IDs"),
+			jen.Comment("WebhookIDFetcher is a function that fetches webhook IDs."),
 			jen.ID("WebhookIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 		),
 
@@ -64,7 +64,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideWebhooksService builds a new WebhooksService"),
+		jen.Comment("ProvideWebhooksService builds a new WebhooksService."),
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksService").Paramsln(
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),

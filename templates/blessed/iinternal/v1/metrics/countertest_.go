@@ -85,7 +85,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestProvideUnitCounterProvider").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.Comment("obligatory"),
+			jen.Comment("obligatory."),
 			utils.AssertNotNil(jen.ID("ProvideUnitCounterProvider").Call(), nil),
 		),
 		jen.Line(),

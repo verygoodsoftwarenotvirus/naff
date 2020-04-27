@@ -60,7 +60,7 @@ func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.
 	callArgs := append(buildParamsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj, typ, true), jen.Nil())
 
 	lines := []jen.Code{
-		jen.Commentf("fetchRandom%s retrieves a random %s from the list of available %s", sn, scn, pcn),
+		jen.Commentf("fetchRandom%s retrieves a random %s from the list of available %s.", sn, scn, pcn),
 		jen.Line(),
 		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
 			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
@@ -144,7 +144,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen
 	}
 
 	lines = append(lines,
-		jen.Commentf("Create %s", typ.Name.SingularCommonName()),
+		jen.Commentf("Create %s.", typ.Name.SingularCommonName()),
 		jen.IDf("%s%s", sourceVarPrefix, typ.Name.Singular()).Assign().AddressOf().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(
 			buildFakeCallForCreationInput(proj, typ)...,
 		),

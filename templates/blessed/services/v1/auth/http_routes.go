@@ -14,7 +14,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Comment("CookieName is the name of the cookie we attach to requests"),
+			jen.Comment("CookieName is the name of the cookie we attach to requests."),
 			jen.ID("CookieName").Equals().Lit("todocookie"),
 			jen.ID("cookieErrorLogName").Equals().Lit("_COOKIE_CONSTRUCTION_ERROR_"),
 		),
@@ -22,7 +22,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("DecodeCookieFromRequest takes a request object and fetches the cookie data if it is present"),
+		jen.Comment("DecodeCookieFromRequest takes a request object and fetches the cookie data if it is present."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("DecodeCookieFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.ID("ca").PointerTo().Qual(proj.ModelsV1Package(), "CookieAuth"), jen.Err().Error()).Block(
 			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("DecodeCookieFromRequest")),
@@ -46,7 +46,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 
 	// if proj.EnableNewsman {
 	ret.Add(
-		jen.Comment("WebsocketAuthFunction is provided to Newsman to determine if a user has access to websockets"),
+		jen.Comment("WebsocketAuthFunction is provided to Newsman to determine if a user has access to websockets."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("WebsocketAuthFunction").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Bool()).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("WebsocketAuthFunction")),
@@ -59,14 +59,14 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Return().True(),
 			),
 			jen.Line(),
-			jen.Comment("In the event there's not a valid OAuth2 token attached to the request, or there is some other OAuth2 issue,"),
-			jen.Comment("we next check to see if a valid cookie is attached to the request"),
+			jen.Comment("In the event there's not a valid OAuth2 token attached to the request, or there is some other OAuth2 issue,."),
+			jen.Comment("we next check to see if a valid cookie is attached to the request."),
 			jen.List(jen.ID("cookieAuth"), jen.ID("cookieErr")).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(constants.CtxVar(), jen.ID(constants.RequestVarName)),
 			jen.If(jen.ID("cookieErr").IsEqualTo().ID("nil").And().ID("cookieAuth").DoesNotEqual().ID("nil")).Block(
 				jen.Return().True(),
 			),
 			jen.Line(),
-			jen.Comment("If your request gets here, you're likely either trying to get here, or desperately trying to get anywhere"),
+			jen.Comment("If your request gets here, you're likely either trying to get here, or desperately trying to get anywhere."),
 			jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error authenticated token-authenticated request")),
 			jen.Return().False(),
 		),
@@ -75,7 +75,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	// }
 
 	ret.Add(
-		jen.Comment("FetchUserFromRequest takes a request object and fetches the cookie, and then the user for that cookie"),
+		jen.Comment("FetchUserFromRequest takes a request object and fetches the cookie, and then the user for that cookie."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("FetchUserFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("FetchUserFromRequest")),
@@ -99,7 +99,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("LoginHandler is our login route"),
+		jen.Comment("LoginHandler is our login route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("LoginHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -160,7 +160,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("LogoutHandler is our logout route"),
+		jen.Comment("LogoutHandler is our logout route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("LogoutHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -185,7 +185,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CycleSecretHandler rotates the cookie building secret with a new random secret"),
+		jen.Comment("CycleSecretHandler rotates the cookie building secret with a new random secret."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CycleSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -212,9 +212,9 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("fetchLoginDataFromRequest searches a given HTTP request for parsed login input data, and"),
+		jen.Comment("fetchLoginDataFromRequest searches a given HTTP request for parsed login input data, and."),
 		jen.Line(),
-		jen.Comment("returns a helper struct with the relevant login information"),
+		jen.Comment("returns a helper struct with the relevant login information."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchLoginDataFromRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().ID("loginData"), jen.PointerTo().Qual(proj.ModelsV1Package(), "ErrorResponse")).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("fetchLoginDataFromRequest")),
@@ -233,8 +233,8 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.ID("username").Assign().ID("loginInput").Dot("Username"),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("username")),
 			jen.Line(),
-			jen.Comment("you could ensure there isn't an unsatisfied password reset token"),
-			jen.Comment("requested before allowing login here"),
+			jen.Comment("you could ensure there isn't an unsatisfied password reset token."),
+			jen.Comment("requested before allowing login here."),
 			jen.Line(),
 			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("userDB").Dot("GetUserByUsername").Call(constants.CtxVar(), jen.ID("username")),
 			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
@@ -265,11 +265,11 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("validateLogin")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.Comment("alias the relevant data"),
+			jen.Comment("alias the relevant data."),
 			jen.List(jen.ID("user"), jen.ID("loginInput")).Assign().List(jen.ID("loginInfo").Dot("user"), jen.ID("loginInfo").Dot("loginInput")),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("username"), jen.ID("user").Dot("Username")),
 			jen.Line(),
-			jen.Comment("check for login validity"),
+			jen.Comment("check for login validity."),
 			jen.List(jen.ID("loginValid"), jen.Err()).Assign().ID("s").Dot("authenticator").Dot("ValidateLogin").Callln(
 				constants.CtxVar(),
 				jen.ID("user").Dot("HashedPassword"),
@@ -289,7 +289,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 					jen.Return().List(jen.False(), jen.Qual("fmt", "Errorf").Call(jen.Lit("updating password hash: %w"), jen.ID("hashErr"))),
 				),
 				jen.Line(),
-				jen.Comment("update stored hashed password in the database"),
+				jen.Comment("update stored hashed password in the database."),
 				jen.ID("user").Dot("HashedPassword").Equals().ID("updated"),
 				jen.If(jen.ID("updateErr").Assign().ID("s").Dot("userDB").Dot("UpdateUser").Call(constants.CtxVar(), jen.ID("user")), jen.ID("updateErr").DoesNotEqual().ID("nil")).Block(
 					jen.Return().List(jen.False(), jen.Qual("fmt", "Errorf").Call(jen.Lit("saving updated password hash: %w"), jen.ID("updateErr"))),
@@ -307,12 +307,12 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("buildAuthCookie returns an authentication cookie for a given user"),
+		jen.Comment("buildAuthCookie returns an authentication cookie for a given user."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildAuthCookie").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual("net/http", "Cookie"), jen.Error()).Block(
 			jen.Comment("NOTE: code here is duplicated into the unit tests for"),
-			jen.Comment("DecodeCookieFromRequest any changes made here might need"),
-			jen.Comment("to be reflected there"),
+			jen.Comment("DecodeCookieFromRequest any changes made here might need."),
+			jen.Comment("to be reflected there."),
 			jen.List(jen.ID("encoded"), jen.Err()).Assign().ID("s").Dot("cookieManager").Dot("Encode").Callln(
 				jen.ID("CookieName"),
 				jen.Qual(proj.ModelsV1Package(), "CookieAuth").Valuesln(
@@ -334,7 +334,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("buildCookie provides a consistent way of constructing an HTTP cookie"),
+		jen.Comment("buildCookie provides a consistent way of constructing an HTTP cookie."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildCookie").Params(jen.ID("value").String()).Params(jen.PointerTo().Qual("net/http", "Cookie")).Block(
 			jen.Comment("https://www.calhoun.io/securing-cookies-in-go/"),

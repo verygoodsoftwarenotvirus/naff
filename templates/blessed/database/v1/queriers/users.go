@@ -61,7 +61,7 @@ func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File
 
 func buildScanUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("scanUser provides a consistent way to scan something like a *sql.Row into a User struct"),
+		jen.Comment("scanUser provides a consistent way to scan something like a *sql.Row into a User struct."),
 		jen.Line(),
 		jen.Func().ID("scanUser").Params(
 			jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner"),
@@ -106,7 +106,7 @@ func buildScanUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.
 
 func buildScanUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
-		jen.Comment("scanUsers takes database rows and loads them into a slice of User structs"),
+		jen.Comment("scanUsers takes database rows and loads them into a slice of User structs."),
 		jen.Line(),
 		jen.Func().ID("scanUsers").Params(
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
@@ -186,7 +186,7 @@ func buildGetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.C
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("GetUser fetches a user"),
+		jen.Comment("GetUser fetches a user."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUserQuery").Call(jen.ID("userID")),
@@ -237,7 +237,7 @@ func buildGetUserByUsername(proj *models.Project, dbvendor wordsmith.SuperPalabr
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("GetUserByUsername fetches a user by their username"),
+		jen.Comment("GetUserByUsername fetches a user by their username."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetUserByUsername").Params(
 			constants.CtxParam(),
@@ -305,7 +305,7 @@ func buildGetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("GetAllUserCount fetches a count of users from the database"),
+		jen.Comment("GetAllUserCount fetches a count of users from the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllUserCount").Params(
 			constants.CtxParam(),
@@ -372,7 +372,7 @@ func buildGetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter"),
+		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetUsers").Params(constants.CtxParam(), jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"), jen.Error()).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUsersQuery").Call(jen.ID(constants.FilterVarName)),
@@ -447,8 +447,8 @@ func buildBuildCreateUserQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 			jen.Line(),
 			jen.Comment("NOTE: we always default is_admin to false, on the assumption that"),
 			jen.Comment("admins have DB access and will change that value via SQL query."),
-			jen.Comment("There should also be no way to update a user via this structure"),
-			jen.Comment("such that they would have admin privileges"),
+			jen.Comment("There should also be no way to update a user via this structure."),
+			jen.Comment("such that they would have admin privileges."),
 			jen.Line(),
 			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			jen.Line(),
@@ -487,12 +487,12 @@ func buildCreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing user creation query: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.Comment("fetch the last inserted ID"),
+			jen.Comment("fetch the last inserted ID."),
 			jen.List(jen.ID("id"), jen.ID("err")).Assign().ID(constants.ResponseVarName).Dot("LastInsertId").Call(),
 			jen.ID(dbfl).Dot("logIDRetrievalError").Call(jen.Err()),
 			jen.ID("x").Dot("ID").Equals().Uint64().Call(jen.ID("id")),
 			jen.Line(),
-			jen.Comment("this won't be completely accurate, but it will suffice"),
+			jen.Comment("this won't be completely accurate, but it will suffice."),
 			jen.ID("x").Dot("CreatedOn").Equals().ID(dbfl).Dot("timeTeller").Dot("Now").Call(),
 		}
 	}
@@ -504,13 +504,13 @@ func buildCreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 			jen.ID("TwoFactorSecret").MapAssign().ID("input").Dot("TwoFactorSecret")),
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildCreateUserQuery").Call(jen.ID("input")),
 		jen.Line(),
-		jen.Comment("create the user"),
+		jen.Comment("create the user."),
 	}
 	createUserBlock = append(createUserBlock, uqb...)
 	createUserBlock = append(createUserBlock, jen.Line(), jen.Return().List(jen.ID("x"), jen.Nil()))
 
 	lines := []jen.Code{
-		jen.Comment("CreateUser creates a user"),
+		jen.Comment("CreateUser creates a user."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("CreateUser").Params(
 			constants.CtxParam(),
@@ -645,7 +645,7 @@ func buildArchiveUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("ArchiveUser archives a user by their username"),
+		jen.Comment("ArchiveUser archives a user by their username."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("ArchiveUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildArchiveUserQuery").Call(jen.ID("userID")),

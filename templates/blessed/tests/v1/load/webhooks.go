@@ -13,7 +13,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Comment("fetchRandomWebhook retrieves a random webhook from the list of available webhooks"),
+		jen.Comment("fetchRandomWebhook retrieves a random webhook from the list of available webhooks."),
 		jen.Line(),
 		jen.Func().ID("fetchRandomWebhook").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
 			jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("c").Dot("GetWebhooks").Call(constants.InlineCtx(), jen.Nil()),

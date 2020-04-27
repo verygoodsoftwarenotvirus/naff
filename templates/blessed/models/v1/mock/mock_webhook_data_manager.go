@@ -25,7 +25,7 @@ func mockWebhookDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetWebhook satisfies our WebhookDataManager interface"),
+		jen.Comment("GetWebhook satisfies our WebhookDataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataManager")).ID("GetWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 			jen.Error()).Block(
@@ -36,7 +36,7 @@ func mockWebhookDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetAllWebhooksCount satisfies our WebhookDataManager interface"),
+		jen.Comment("GetAllWebhooksCount satisfies our WebhookDataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataManager")).ID("GetAllWebhooksCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar()),
@@ -46,7 +46,7 @@ func mockWebhookDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetWebhooks satisfies our WebhookDataManager interface"),
+		jen.Comment("GetWebhooks satisfies our WebhookDataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataManager")).ID("GetWebhooks").Params(
 			constants.CtxParam(),
@@ -60,7 +60,7 @@ func mockWebhookDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetAllWebhooks satisfies our WebhookDataManager interface"),
+		jen.Comment("GetAllWebhooks satisfies our WebhookDataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataManager")).ID("GetAllWebhooks").Params(constants.CtxParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"),
 			jen.Error()).Block(
@@ -71,7 +71,7 @@ func mockWebhookDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreateWebhook satisfies our WebhookDataManager interface"),
+		jen.Comment("CreateWebhook satisfies our WebhookDataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataManager")).ID("CreateWebhook").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 			jen.Error()).Block(
@@ -82,7 +82,7 @@ func mockWebhookDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("UpdateWebhook satisfies our WebhookDataManager interface"),
+		jen.Comment("UpdateWebhook satisfies our WebhookDataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataManager")).ID("UpdateWebhook").Params(constants.CtxParam(), jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("updated")).Dot("Error").Call(jen.Zero()),
@@ -91,7 +91,7 @@ func mockWebhookDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ArchiveWebhook satisfies our WebhookDataManager interface"),
+		jen.Comment("ArchiveWebhook satisfies our WebhookDataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataManager")).ID("ArchiveWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID("userID")).Dot("Error").Call(jen.Zero()),

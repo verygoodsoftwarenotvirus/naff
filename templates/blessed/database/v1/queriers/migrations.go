@@ -639,7 +639,7 @@ func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	return []jen.Code{
 		jen.Comment("buildMigrationFunc returns a sync.Once compatible function closure that will"),
 		jen.Line(),
-		jen.Commentf("migrate a %s database", dbcn),
+		jen.Commentf("migrate a %s database.", dbcn),
 		jen.Line(),
 		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").PointerTo().Qual("database/sql", "DB")).Params(jen.Func().Params()).Block(
 			jen.Return().Func().Params().Block(

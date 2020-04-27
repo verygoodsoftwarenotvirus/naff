@@ -20,7 +20,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("DetermineServiceURL returns the URL, if properly configured"),
+		jen.Comment("DetermineServiceURL returns the URL, if properly configured."),
 		jen.Line(),
 		jen.Func().ID("DetermineServiceURL").Params().Params(jen.String()).Block(
 			jen.ID("ta").Assign().Qual("os", "Getenv").Call(jen.Lit("TARGET_ADDRESS")),
@@ -39,7 +39,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("EnsureServerIsUp checks that a server is up and doesn't return until it's certain one way or the other"),
+		jen.Comment("EnsureServerIsUp checks that a server is up and doesn't return until it's certain one way or the other."),
 		jen.Line(),
 		jen.Func().ID("EnsureServerIsUp").Params(jen.ID("address").String()).Block(
 			jen.Var().Defs(
@@ -66,7 +66,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("IsUp can check if an instance of our server is alive"),
+		jen.Comment("IsUp can check if an instance of our server is alive."),
 		jen.Line(),
 		jen.Func().ID("IsUp").Params(jen.ID("address").String()).Params(jen.Bool()).Block(
 			jen.ID("uri").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%s/_meta_/ready"), jen.ID("address")),
@@ -90,7 +90,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreateObligatoryUser creates a user for the sake of having an OAuth2 client"),
+		jen.Comment("CreateObligatoryUser creates a user for the sake of having an OAuth2 client."),
 		jen.Line(),
 		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").String(), jen.ID("debug").Bool()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
@@ -123,7 +123,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.ID("u").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 				jen.ID("ID").MapAssign().ID("ucr").Dot("ID"),
 				jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
-				jen.Comment("this is a dirty trick to reuse most of this model"),
+				jen.Comment("this is a dirty trick to reuse most of this model."),
 				jen.ID("HashedPassword").MapAssign().ID("in").Dot("Password"),
 				jen.ID("TwoFactorSecret").MapAssign().ID("ucr").Dot("TwoFactorSecret"),
 				jen.ID("PasswordLastChangedOn").MapAssign().ID("ucr").Dot("PasswordLastChangedOn"),
@@ -204,7 +204,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests"),
+		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests."),
 		jen.Line(),
 		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
 			jen.ID("firstOAuth2ClientURI").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("oauth2"), jen.Lit("client")),

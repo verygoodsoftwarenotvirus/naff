@@ -18,7 +18,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Authenticator is a mock Authenticator"), jen.Line(),
+		jen.Comment("Authenticator is a mock Authenticator."), jen.Line(),
 		jen.Type().ID("Authenticator").Struct(jen.Qual(utils.MockPkg,
 			"Mock",
 		)),
@@ -26,7 +26,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ValidateLogin satisfies our authenticator interface"), jen.Line(),
+		jen.Comment("ValidateLogin satisfies our authenticator interface."), jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("ValidateLogin").Paramsln(
 			constants.CtxParam(),
 			jen.Listln(jen.ID("hashedPassword"),
@@ -48,7 +48,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("PasswordIsAcceptable satisfies our authenticator interface"), jen.Line(),
+		jen.Comment("PasswordIsAcceptable satisfies our authenticator interface."), jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("PasswordIsAcceptable").Params(jen.ID("password").String()).Params(jen.Bool()).Block(
 			jen.Return().ID("m").Dot("Called").Call(jen.ID("password")).Dot("Bool").Call(jen.Zero()),
 		),
@@ -56,7 +56,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("HashPassword satisfies our authenticator interface"), jen.Line(),
+		jen.Comment("HashPassword satisfies our authenticator interface."), jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("HashPassword").Params(constants.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("password")),
 			jen.Return().List(jen.ID("args").Dot("String").Call(jen.Zero()), jen.ID("args").Dot("Error").Call(jen.One())),
@@ -65,7 +65,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("PasswordMatches satisfies our authenticator interface"), jen.Line(),
+		jen.Comment("PasswordMatches satisfies our authenticator interface."), jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("PasswordMatches").Paramsln(
 			constants.CtxParam(),
 			jen.Listln(jen.ID("hashedPassword"),

@@ -9,6 +9,7 @@ CURRENT_PROJECT    := gamut
 NOW                := $(shell date +%s%N)
 VERSION            := $(shell git rev-parse HEAD)
 VERSION_FLAG       := -ldflags "-X main.Version=$(VERSION)_$(NOW)"
+EXAMPLE_APP        := cmd/example_proj/main.go
 
 ## Project prerequisites
 .PHONY: deps
@@ -65,7 +66,7 @@ $(EXAMPLE_OUTPUT_DIR):
 
 .PHONY: clean_todo
 clean_todo: clean_example_output $(EXAMPLE_OUTPUT_DIR)
-	PROJECT=todo OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run cmd/todoproj/main.go
+	PROJECT=todo OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run $(EXAMPLE_APP)
 
 .PHONY: compare_todo
 compare_todo: clean_todo
@@ -73,7 +74,7 @@ compare_todo: clean_todo
 
 .PHONY: clean_gamut
 clean_gamut: clean_example_output $(EXAMPLE_OUTPUT_DIR)
-	PROJECT=gamut OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run cmd/todoproj/main.go
+	PROJECT=gamut OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run $(EXAMPLE_APP)
 
 .PHONY: compare_gamut
 compare_gamut: clean_gamut

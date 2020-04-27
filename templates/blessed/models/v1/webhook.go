@@ -14,7 +14,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.Comment("WebhookDataManager describes a structure capable of storing webhooks"),
+			jen.Comment("WebhookDataManager describes a structure capable of storing webhooks."),
 			jen.ID("WebhookDataManager").Interface(
 				jen.ID("GetWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().ID("Webhook"), jen.Error()),
 				jen.ID("GetAllWebhooksCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
@@ -25,7 +25,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 				jen.ID("ArchiveWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.Error()),
 			),
 			jen.Line(),
-			jen.Comment("WebhookDataServer describes a structure capable of serving traffic related to webhooks"),
+			jen.Comment("WebhookDataServer describes a structure capable of serving traffic related to webhooks."),
 			jen.ID("WebhookDataServer").Interface(
 				jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
@@ -37,7 +37,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 				jen.ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
 			),
 			jen.Line(),
-			jen.Comment("Webhook represents a webhook listener, an endpoint to send an HTTP request to upon an event"),
+			jen.Comment("Webhook represents a webhook listener, an endpoint to send an HTTP request to upon an event."),
 			jen.ID("Webhook").Struct(
 				jen.ID("ID").Uint64().Tag(jsonTag("id")),
 				jen.ID("Name").String().Tag(jsonTag("name")),
@@ -53,7 +53,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("belongs_to_user")),
 			),
 			jen.Line(),
-			jen.Comment("WebhookCreationInput represents what a user could set as input for creating a webhook"),
+			jen.Comment("WebhookCreationInput represents what a user could set as input for creating a webhook."),
 			jen.ID("WebhookCreationInput").Struct(
 				jen.ID("Name").String().Tag(jsonTag("name")),
 				jen.ID("ContentType").String().Tag(jsonTag("content_type")),
@@ -65,7 +65,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")),
 			),
 			jen.Line(),
-			jen.Comment("WebhookUpdateInput represents what a user could set as input for updating a webhook"),
+			jen.Comment("WebhookUpdateInput represents what a user could set as input for updating a webhook."),
 			jen.ID("WebhookUpdateInput").Struct(
 				jen.ID("Name").String().Tag(jsonTag("name")),
 				jen.ID("ContentType").String().Tag(jsonTag("content_type")),
@@ -77,7 +77,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")),
 			),
 			jen.Line(),
-			jen.Comment("WebhookList represents a list of webhooks"),
+			jen.Comment("WebhookList represents a list of webhooks."),
 			jen.ID("WebhookList").Struct(
 				jen.ID("Pagination"),
 				jen.ID("Webhooks").Index().ID("Webhook").Tag(jsonTag("webhooks")),
@@ -87,7 +87,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Update merges an WebhookCreationInput with an Webhook"),
+		jen.Comment("Update merges an WebhookCreationInput with an Webhook."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("Update").Params(jen.ID("input").PointerTo().ID("WebhookUpdateInput")).Block(
 			jen.If(jen.ID("input").Dot("Name").DoesNotEqual().EmptyString()).Block(
@@ -131,7 +131,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 
 	// if proj.EnableNewsman {
 	ret.Add(
-		jen.Comment("ToListener creates a newsman Listener from a Webhook"),
+		jen.Comment("ToListener creates a newsman Listener from a Webhook."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("ToListener").Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Block(
 			jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewWebhookListener").Callln(

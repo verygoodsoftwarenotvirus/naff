@@ -29,14 +29,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("ContextKey").String(),
 			jen.ID("sortType").String(),
 			jen.Line(),
-			jen.Comment("Pagination represents a pagination request"),
+			jen.Comment("Pagination represents a pagination request."),
 			jen.ID("Pagination").Struct(
 				jen.ID("Page").Uint64().Tag(map[string]string{"json": "page"}),
 				jen.ID("Limit").Uint64().Tag(map[string]string{"json": "limit"}),
 				jen.ID("TotalCount").Uint64().Tag(map[string]string{"json": "total_count"}),
 			),
 			jen.Line(),
-			jen.Comment("CountResponse is what we respond with when a user requests a count of data types"),
+			jen.Comment("CountResponse is what we respond with when a user requests a count of data types."),
 			jen.ID("CountResponse").Struct(
 				jen.ID("Count").Uint64().Tag(map[string]string{"json": "count"}),
 			),
@@ -50,7 +50,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ErrorResponse represents a response we might send to the user in the event of an error"),
+		jen.Comment("ErrorResponse represents a response we might send to the user in the event of an error."),
 		jen.Line(),
 		jen.Type().ID("ErrorResponse").Struct(
 			jen.ID("Message").String().Tag(map[string]string{"json": "message"}),

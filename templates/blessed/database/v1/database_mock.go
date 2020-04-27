@@ -41,7 +41,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		jen.Comment("BuildMockDatabase builds a mock database"),
+		jen.Comment("BuildMockDatabase builds a mock database."),
 		jen.Line(),
 		jen.Func().ID("BuildMockDatabase").Params().Params(jen.PointerTo().ID("MockDatabase")).Block(
 			jen.Return().AddressOf().ID("MockDatabase").Valuesln(
@@ -71,7 +71,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		jen.Comment("MockDatabase is our mock database structure"),
+		jen.Comment("MockDatabase is our mock database structure."),
 		jen.Line(),
 		jen.Type().ID("MockDatabase").Struct(
 			buildMockDBLines()...,

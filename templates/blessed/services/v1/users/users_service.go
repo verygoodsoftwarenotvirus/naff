@@ -31,12 +31,12 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.Comment("RequestValidator validates request"),
+			jen.Comment("RequestValidator validates request."),
 			jen.ID("RequestValidator").Interface(
 				jen.ID("Validate").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Bool(), jen.Error()),
 			),
 			jen.Line(),
-			jen.Comment("Service handles our users"),
+			jen.Comment("Service handles our users."),
 			jen.ID("Service").Struct(
 				jen.ID("cookieSecret").Index().Byte(),
 				jen.ID("userDataManager").Qual(proj.ModelsV1Package(), "UserDataManager"),
@@ -49,14 +49,14 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("userCreationEnabled").Bool(),
 			),
 			jen.Line(),
-			jen.Comment("UserIDFetcher fetches usernames from requests"),
+			jen.Comment("UserIDFetcher fetches usernames from requests."),
 			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("ProvideUsersService builds a new UsersService"),
+		jen.Comment("ProvideUsersService builds a new UsersService."),
 		jen.Line(),
 		jen.Func().ID("ProvideUsersService").Paramsln(
 			jen.ID("authSettings").Qual(proj.InternalConfigV1Package(), "AuthSettings"),

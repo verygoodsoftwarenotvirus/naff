@@ -225,7 +225,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_OAuth2TokenAuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.Comment("These tests have a lot of overlap to those of ExtractOAuth2ClientFromRequest, which is deliberate"),
+			jen.Comment("These tests have a lot of overlap to those of ExtractOAuth2ClientFromRequest, which is deliberate."),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",

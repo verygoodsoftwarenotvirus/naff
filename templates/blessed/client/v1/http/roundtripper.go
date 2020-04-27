@@ -27,7 +27,7 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("newDefaultRoundTripper constructs a new http.RoundTripper"),
+		jen.Comment("newDefaultRoundTripper constructs a new http.RoundTripper."),
 		jen.Line(),
 		jen.Func().ID("newDefaultRoundTripper").Params().Params(jen.PointerTo().ID("defaultRoundTripper")).Block(
 			jen.Return(
@@ -41,7 +41,7 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 	ret.Add(jen.Line())
 
 	ret.Add(
-		jen.Comment("RoundTrip implements the http.RoundTripper interface"),
+		jen.Comment("RoundTrip implements the http.RoundTripper interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("t").PointerTo().ID("defaultRoundTripper")).ID("RoundTrip").Params(
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
@@ -61,7 +61,7 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 	ret.Add(jen.Line())
 
 	ret.Add(
-		jen.Comment("buildDefaultTransport constructs a new http.Transport"),
+		jen.Comment("buildDefaultTransport constructs a new http.Transport."),
 		jen.Line(),
 		jen.Func().ID("buildDefaultTransport").Params().Params(jen.PointerTo().Qual("net/http", "Transport")).Block(
 			jen.Return().AddressOf().Qual("net/http", "Transport").Valuesln(

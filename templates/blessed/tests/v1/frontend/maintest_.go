@@ -37,16 +37,16 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestLoginPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("runTestOnAllSupportedBrowsers").Call(jen.ID("T"), jen.Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				jen.Return().Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-					jen.Comment("Navigate to the login page"),
+					jen.Comment("Navigate to the login page."),
 					utils.RequireNoError(jen.ID("driver").Dot("Get").Call(jen.ID("urlToUse").Plus().Lit("/login")), nil),
 					jen.Line(),
-					jen.Comment("fetch the button"),
+					jen.Comment("fetch the button."),
 					jen.List(jen.ID("elem"), jen.Err()).Assign().ID("driver").Dot("FindElement").Call(jen.Qual("github.com/tebeka/selenium", "ByID"), jen.Lit("loginButton")),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID("panic").Call(jen.Err()),
 					),
 					jen.Line(),
-					jen.Comment("check that it is visible"),
+					jen.Comment("check that it is visible."),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("elem").Dot("IsDisplayed").Call(),
 					utils.AssertNoError(jen.Err(), nil),
 					utils.AssertTrue(jen.ID("actual"), nil),

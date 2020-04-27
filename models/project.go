@@ -156,7 +156,9 @@ func (p *Project) EnableDatabase(database validDatabase) {
 		log.Fatalf("unknown database: %q", database)
 	}
 
-	p.enabledDatabases[database] = struct{}{}
+	if _, ok := p.enabledDatabases[database]; !ok {
+		p.enabledDatabases[database] = struct{}{}
+	}
 }
 
 func (p *Project) DisableDatabase(database validDatabase) {
@@ -166,17 +168,17 @@ func (p *Project) DisableDatabase(database validDatabase) {
 		log.Fatalf("unknown database: %q", database)
 	}
 
-	delete(p.enabledDatabases, database)
+	if _, ok := p.enabledDatabases[database]; ok {
+		delete(p.enabledDatabases, database)
+	}
 }
 
-func (p *Project) DatabasesIsEnabled(database validDatabase) bool {
+func (p *Project) DatabaseIsEnabled(database validDatabase) bool {
 	p.ensureNoNilFields()
 
-	if _, ok := p.enabledDatabases[database]; ok {
-		return true
-	}
+	_, present := p.enabledDatabases[database]
 
-	return false
+	return present
 }
 
 func (p *Project) EnabledDatabases() []string {
@@ -186,23 +188,6 @@ func (p *Project) EnabledDatabases() []string {
 	for k := range p.enabledDatabases {
 		out = append(out, string(k))
 	}
-	return out
-}
-
-func fieldsToVars(fields []DataField) []*types.Var {
-	out := []*types.Var{}
-
-	for _, field := range fields {
-		out = append(out,
-			types.NewVar(
-				field.Pos,
-				nil,
-				field.Name.Singular(),
-				field.UnderlyingType,
-			),
-		)
-	}
-
 	return out
 }
 

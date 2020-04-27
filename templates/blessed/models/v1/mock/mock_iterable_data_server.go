@@ -21,14 +21,14 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 	)
 
 	ret.Add(
-		jen.Commentf("%sDataServer is a mocked models.%sDataServer for testing", sn, sn),
+		jen.Commentf("%sDataServer is a mocked models.%sDataServer for testing.", sn, sn),
 		jen.Line(),
 		jen.Type().IDf("%sDataServer", sn).Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("CreationInputMiddleware implements our interface requirements"),
+		jen.Comment("CreationInputMiddleware implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
@@ -38,7 +38,7 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 	)
 
 	ret.Add(
-		jen.Comment("UpdateInputMiddleware implements our interface requirements"),
+		jen.Comment("UpdateInputMiddleware implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
@@ -48,7 +48,7 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 	)
 
 	ret.Add(
-		jen.Comment("ListHandler implements our interface requirements"),
+		jen.Comment("ListHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -58,7 +58,7 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 	)
 
 	ret.Add(
-		jen.Comment("CreateHandler implements our interface requirements"),
+		jen.Comment("CreateHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -68,7 +68,7 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 	)
 
 	ret.Add(
-		jen.Comment("ExistenceHandler implements our interface requirements"),
+		jen.Comment("ExistenceHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("ExistenceHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -78,7 +78,7 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 	)
 
 	ret.Add(
-		jen.Comment("ReadHandler implements our interface requirements"),
+		jen.Comment("ReadHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -88,7 +88,7 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 	)
 
 	ret.Add(
-		jen.Comment("UpdateHandler implements our interface requirements"),
+		jen.Comment("UpdateHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -98,7 +98,7 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 	)
 
 	ret.Add(
-		jen.Comment("ArchiveHandler implements our interface requirements"),
+		jen.Comment("ArchiveHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),

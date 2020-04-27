@@ -27,7 +27,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		lines := []jen.Code{
 			jen.ID("DebugMode").Bool(),
 			jen.Line(),
-			jen.Comment("Services"),
+			jen.Comment("Services."),
 			jen.ID("authService").PointerTo().Qual(proj.ServiceV1AuthPackage(), "Service"),
 			jen.ID("frontendService").PointerTo().Qual(proj.ServiceV1FrontendPackage(), "Service"),
 			jen.ID("usersService").Qual(proj.ModelsV1Package(), "UserDataServer"),
@@ -44,7 +44,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 
 		lines = append(lines,
 			jen.Line(),
-			jen.Comment("infra things"),
+			jen.Comment("infra things."),
 			jen.ID("db").Qual(proj.DatabaseV1Package(), "Database"),
 			jen.ID("config").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 			jen.ID("router").PointerTo().Qual("github.com/go-chi/chi", "Mux"),
@@ -64,7 +64,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.Comment("Server is our API httpServer"),
+			jen.Comment("Server is our API httpServer."),
 			jen.ID("Server").Struct(
 				makeServerStructDeclLines()...,
 			),
@@ -105,7 +105,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 	buildServerDecLines := func() []jen.Code {
 		lines := []jen.Code{
 			jen.ID("DebugMode").MapAssign().ID("cfg").Dot("Server").Dot("Debug"),
-			jen.Comment("infra things"),
+			jen.Comment("infra things."),
 			jen.ID("db").MapAssign().ID("db"),
 			jen.ID("config").MapAssign().ID("cfg"),
 			jen.ID("encoder").MapAssign().ID("encoder"),
@@ -120,7 +120,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		// }
 
 		lines = append(lines,
-			jen.Comment("services"),
+			jen.Comment("services."),
 			jen.ID("webhooksService").MapAssign().ID("webhooksService"),
 			jen.ID("frontendService").MapAssign().ID("frontendService"),
 			jen.ID("usersService").MapAssign().ID("usersService"),
@@ -194,7 +194,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		jen.Comment("ProvideServer builds a new Server instance"),
+		jen.Comment("ProvideServer builds a new Server instance."),
 		jen.Line(),
 		jen.Func().ID("ProvideServer").Paramsln(
 			buildProvideServerParams()...,
@@ -222,13 +222,13 @@ func serverDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Serve serves HTTP traffic"),
+		jen.Comment("Serve serves HTTP traffic."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("Serve").Params().Block(
 			jen.ID("s").Dot("httpServer").Dot("Addr").Equals().Qual("fmt", "Sprintf").Call(jen.Lit(":%d"), jen.ID("s").Dot("config").Dot("Server").Dot("HTTPPort")),
 			jen.ID("s").Dot(constants.LoggerVarName).Dot("Debug").Call(utils.FormatString("Listening for HTTP requests on %q", jen.ID("s").Dot("httpServer").Dot("Addr"))),
 			jen.Line(),
-			jen.Comment("returns ErrServerClosed on graceful close"),
+			jen.Comment("returns ErrServerClosed on graceful close."),
 			jen.If(jen.Err().Assign().ID("s").Dot("httpServer").Dot("ListenAndServe").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("server shutting down")),
 				jen.If(jen.Err().IsEqualTo().Qual("net/http", "ErrServerClosed")).Block(
@@ -242,7 +242,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("provideHTTPServer provides an HTTP httpServer"),
+		jen.Comment("provideHTTPServer provides an HTTP httpServer."),
 		jen.Line(),
 		jen.Func().ID("provideHTTPServer").Params().Params(jen.PointerTo().Qual("net/http", "Server")).Block(
 			jen.Comment("heavily inspired by https://blog.cloudflare.com/exposing-go-on-the-internet/"),

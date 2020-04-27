@@ -24,7 +24,7 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreationInputMiddleware implements our interface requirements"),
+		jen.Comment("CreationInputMiddleware implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
@@ -34,7 +34,7 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("UpdateInputMiddleware implements our interface requirements"),
+		jen.Comment("UpdateInputMiddleware implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
@@ -44,7 +44,7 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ListHandler implements our interface requirements"),
+		jen.Comment("ListHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -54,7 +54,7 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreateHandler implements our interface requirements"),
+		jen.Comment("CreateHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -64,7 +64,7 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ReadHandler implements our interface requirements"),
+		jen.Comment("ReadHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -74,7 +74,7 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("UpdateHandler implements our interface requirements"),
+		jen.Comment("UpdateHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
@@ -84,7 +84,7 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ArchiveHandler implements our interface requirements"),
+		jen.Comment("ArchiveHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),

@@ -14,11 +14,11 @@ func metricsDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Comment("MetricsNamespace is the namespace under which we register metrics"),
+			jen.Comment("MetricsNamespace is the namespace under which we register metrics."),
 			jen.ID("MetricsNamespace").Equals().Lit("todo_server"),
 			jen.Line(),
-			jen.Comment("MinimumRuntimeCollectionInterval is the smallest interval we can collect metrics at"),
-			jen.Comment("this value is used to guard against zero values"),
+			jen.Comment("MinimumRuntimeCollectionInterval is the smallest interval we can collect metrics at."),
+			jen.Comment("this value is used to guard against zero values."),
 			jen.ID("MinimumRuntimeCollectionInterval").Equals().Qual("time", "Second"),
 			jen.Line(),
 		),
@@ -35,25 +35,25 @@ func metricsDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("ErrInvalidMetricsProvider is a sentinel error value"),
+			jen.Comment("ErrInvalidMetricsProvider is a sentinel error value."),
 			jen.ID("ErrInvalidMetricsProvider").Equals().Qual("errors", "New").Call(jen.Lit("invalid metrics provider")),
-			jen.Comment("Prometheus represents the popular time series database"),
+			jen.Comment("Prometheus represents the popular time series database."),
 			jen.ID("Prometheus").ID("metricsProvider").Equals().Lit("prometheus"),
-			jen.Comment("DefaultMetricsProvider indicates what the preferred metrics provider is"),
+			jen.Comment("DefaultMetricsProvider indicates what the preferred metrics provider is."),
 			jen.ID("DefaultMetricsProvider").Equals().ID("Prometheus"),
 			jen.Line(),
-			jen.Comment("ErrInvalidTracingProvider is a sentinel error value"),
+			jen.Comment("ErrInvalidTracingProvider is a sentinel error value."),
 			jen.ID("ErrInvalidTracingProvider").Equals().Qual("errors", "New").Call(jen.Lit("invalid tracing provider")),
-			jen.Comment("Jaeger represents the popular distributed tracing server"),
+			jen.Comment("Jaeger represents the popular distributed tracing server."),
 			jen.ID("Jaeger").ID("tracingProvider").Equals().Lit("jaeger"),
-			jen.Comment("DefaultTracingProvider indicates what the preferred tracing provider is"),
+			jen.Comment("DefaultTracingProvider indicates what the preferred tracing provider is."),
 			jen.ID("DefaultTracingProvider").Equals().ID("Jaeger"),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler"),
+		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
@@ -99,7 +99,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideTracing provides an instrumentation handler"),
+		jen.Comment("ProvideTracing provides an instrumentation handler."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideTracing").Params(
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),

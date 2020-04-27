@@ -13,20 +13,20 @@ func databaseDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	var constDefs []jen.Code
-	if proj.DatabasesIsEnabled(models.Postgres) {
+	if proj.DatabaseIsEnabled(models.Postgres) {
 		constDefs = append(constDefs, jen.ID("postgresProviderKey").Equals().Lit("postgres"))
 	}
-	if proj.DatabasesIsEnabled(models.Sqlite) {
+	if proj.DatabaseIsEnabled(models.Sqlite) {
 		constDefs = append(constDefs, jen.ID("mariaDBProviderKey").Equals().Lit("mariadb"))
 	}
-	if proj.DatabasesIsEnabled(models.MariaDB) {
+	if proj.DatabaseIsEnabled(models.MariaDB) {
 		constDefs = append(constDefs, jen.ID("sqliteProviderKey").Equals().Lit("sqlite"))
 	}
 
 	ret.Add(jen.Const().Defs(constDefs...), jen.Line())
 
 	ret.Add(
-		jen.Comment("ProvideDatabase provides a database implementation dependent on the configuration"),
+		jen.Comment("ProvideDatabase provides a database implementation dependent on the configuration."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideDatabase").Params(
 			constants.CtxParam(),
@@ -38,7 +38,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Switch(jen.ID("cfg").Dot("Database").Dot("Provider")).Block(
 				func() jen.Code {
-					if proj.DatabasesIsEnabled(models.Postgres) {
+					if proj.DatabaseIsEnabled(models.Postgres) {
 						return jen.Case(jen.ID("postgresProviderKey")).Block(
 							jen.List(jen.ID("rawDB"), jen.Err()).Assign().Qual(proj.DatabaseV1Package("queriers", "postgres"), "ProvidePostgresDB").Call(
 								jen.ID(constants.LoggerVarName),
@@ -79,7 +79,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 
 				}(),
 				func() jen.Code {
-					if proj.DatabasesIsEnabled(models.MariaDB) {
+					if proj.DatabaseIsEnabled(models.MariaDB) {
 						return jen.Case(jen.ID("mariaDBProviderKey")).Block(
 							jen.List(jen.ID("rawDB"), jen.Err()).Assign().Qual(proj.DatabaseV1Package("queriers", "mariadb"), "ProvideMariaDBConnection").Call(
 								jen.ID(constants.LoggerVarName),
@@ -118,7 +118,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 
 				}(),
 				func() jen.Code {
-					if proj.DatabasesIsEnabled(models.Sqlite) {
+					if proj.DatabaseIsEnabled(models.Sqlite) {
 						return jen.Case(jen.ID("sqliteProviderKey")).Block(
 							jen.List(jen.ID("rawDB"), jen.Err()).Assign().Qual(proj.DatabaseV1Package("queriers", "sqlite"), "ProvideSqliteDB").Call(
 								jen.ID(constants.LoggerVarName),

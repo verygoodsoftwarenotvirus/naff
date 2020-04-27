@@ -20,7 +20,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetOAuth2Client gets an OAuth2 client from the database"),
+		jen.Comment("GetOAuth2Client gets an OAuth2 client from the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
 			utils.StartSpan(proj, true, "GetOAuth2Client"),
@@ -69,7 +69,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("GetAllOAuth2ClientCount gets the count of OAuth2 clients that match the current filter"),
+		jen.Comment("GetAllOAuth2ClientCount gets the count of OAuth2 clients that match the current filter."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllOAuth2ClientCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetAllOAuth2ClientCount")),
@@ -100,7 +100,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	//)
 
 	ret.Add(
-		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients"),
+		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetOAuth2Clients").Params(
 			constants.CtxParam(),
@@ -121,7 +121,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreateOAuth2Client creates an OAuth2 client"),
+		jen.Comment("CreateOAuth2Client creates an OAuth2 client."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("CreateOAuth2Client").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("CreateOAuth2Client")),
@@ -160,7 +160,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client"),
+		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.Error()).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ArchiveOAuth2Client")),

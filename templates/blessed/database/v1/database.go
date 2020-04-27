@@ -61,10 +61,10 @@ func databaseDotGo(proj *models.Project) *jen.File {
 				jen.ID("QueryRowContext").Params(constants.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Row")),
 			),
 			jen.Line(),
-			jen.Comment("ConnectionDetails is a string alias for dependency injection"),
+			jen.Comment("ConnectionDetails is a string alias for dependency injection."),
 			jen.ID("ConnectionDetails").String(),
 			jen.Line(),
-			jen.Comment("Database describes anything that stores data for our services"),
+			jen.Comment("Database describes anything that stores data for our services."),
 			jen.ID("Database").Interface(
 				buildInterfaceLines()...,
 			),

@@ -13,7 +13,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Comment("fetchRandomOAuth2Client retrieves a random client from the list of available clients"),
+		jen.Comment("fetchRandomOAuth2Client retrieves a random client from the list of available clients."),
 		jen.Line(),
 		jen.Func().ID("fetchRandomOAuth2Client").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
 			"OAuth2Client",
