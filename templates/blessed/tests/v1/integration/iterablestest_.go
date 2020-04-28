@@ -58,6 +58,25 @@ func buildListArguments(proj *models.Project, varPrefix string, typ models.DataT
 	return creationArgs
 }
 
+func buildListOfFailureFuncsForCreation(proj *models.Project, typ models.DataType) []jen.Code {
+	out := []jen.Code{}
+
+	for i, ot := range proj.FindOwnerTypeChain(typ) {
+		_ = i
+		scn := ot.Name.SingularCommonName()
+		out = append(out,
+			jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(fmt.Sprintf("should fail to create %s", scn), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					jen.Line(),
+				)),
+			),
+		)
+	}
+
+	return out
+}
+
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("integration")
 
@@ -76,9 +95,10 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	ret.Add(
 		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext("should be createable", buildTestCreating(proj, typ)...),
-			)),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"),
+				jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+					utils.BuildSubTestWithoutContext("should be createable", buildTestCreating(proj, typ)...),
+				)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext("should be able to be read in a list", buildTestListing(proj, typ)...),
@@ -123,9 +143,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	return ret
 }
 
-func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen.Code {
-	var lines []jen.Code
-
+func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) (lines []jen.Code) {
 	const (
 		createdVarPrefix = "created"
 	)
@@ -440,14 +458,10 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
 		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
 			jen.Commentf("Create %s.", scn),
-			utils.BuildFakeVarWithCustomName(
-				proj,
-				fmt.Sprintf("%s%s", createdVarPrefix, sn),
-				fmt.Sprintf("BuildFake%s", sn),
-			),
+			utils.BuildFakeVar(proj, sn),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
-					return jen.ID(fmt.Sprintf("%s%s", createdVarPrefix, sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, typ.BelongsToStruct.Singular()).Dot("ID")
+					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, typ.BelongsToStruct.Singular()).Dot("ID")
 				}
 				return jen.Null()
 			}(),
@@ -455,7 +469,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 				proj,
 				fmt.Sprintf("example%sInput", sn),
 				fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
-				jen.ID(fmt.Sprintf("%s%s", createdVarPrefix, sn)),
+				jen.ID(utils.BuildFakeVarName(sn)),
 			),
 			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
 				creationArgs...,
