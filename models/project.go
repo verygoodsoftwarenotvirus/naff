@@ -114,6 +114,24 @@ func (p *Project) FindOwnerTypeChain(typ DataType) []DataType {
 	return parentTypes
 }
 
+// FindOwnerTypeChain returns the owner chain of a given object from highest ancestor to lowest
+// so if C belongs to B belongs to A, then calling `FindOwnerTypeChain` for C would yield [A, B]
+func (p *Project) FindOwnerTypeChainWithoutReversing(typ DataType) []DataType {
+	parentTypes := []DataType{}
+
+	var parentType = &typ
+
+	for parentType != nil && parentType.BelongsToStruct != nil {
+		newParent := p.FindType(parentType.BelongsToStruct.Singular())
+		if newParent != nil {
+			parentTypes = append(parentTypes, *newParent)
+		}
+		parentType = newParent
+	}
+
+	return parentTypes
+}
+
 func (p *Project) FindType(name string) *DataType {
 	for _, typ := range p.DataTypes {
 		if typ.Name.Singular() == name {

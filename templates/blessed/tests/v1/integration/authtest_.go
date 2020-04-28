@@ -30,7 +30,9 @@ func authTestDotGo(proj *models.Project) *jen.File {
 		"password": %q,
 		"totp_token": %q
 	}
-`), jen.ID("username"), jen.ID("password"), jen.ID("code")),
+`),
+				jen.ID("username"), jen.ID("password"), jen.ID("code"),
+			),
 			jen.Line(),
 			jen.ID("body").Assign().Qual("strings", "NewReader").Call(jen.ID("bodyStr")),
 			jen.List(jen.ID(constants.RequestVarName), jen.Underscore()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodPost"), jen.ID("loginURL"), jen.ID("body")),
