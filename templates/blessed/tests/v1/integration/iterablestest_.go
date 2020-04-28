@@ -30,17 +30,30 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj
 }
 
 func buildCreationArguments(proj *models.Project, varPrefix string, typ models.DataType) []jen.Code {
-	creationArgs := []jen.Code{}
+	creationArgs := []jen.Code{constants.CtxVar()}
 
-	if typ.BelongsToStruct != nil {
-		parentTyp := proj.FindType(typ.BelongsToStruct.Singular())
-		if parentTyp != nil {
-			nca := buildCreationArguments(proj, varPrefix, *parentTyp)
-			creationArgs = append(creationArgs, nca...)
+	owners := proj.FindOwnerTypeChain(typ)
+	for i, ot := range owners {
+		if i == len(owners)-1 && typ.BelongsToStruct != nil {
+			continue
+		} else {
+			creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, ot.Name.Singular()).Dot("ID"))
 		}
 	}
+	//creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, typ.Name.Singular()).Dot("ID"))
 
-	creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, typ.Name.Singular()).Dot("ID"))
+	return creationArgs
+}
+
+func buildListArguments(proj *models.Project, varPrefix string, typ models.DataType) []jen.Code {
+	creationArgs := []jen.Code{constants.CtxVar()}
+
+	owners := proj.FindOwnerTypeChain(typ)
+	for _, ot := range owners {
+		creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, ot.Name.Singular()).Dot("ID"))
+
+	}
+	//creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, typ.Name.Singular()).Dot("ID"))
 
 	return creationArgs
 }
@@ -61,67 +74,48 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(buildBuildDummySomething(proj, typ)...)
-
 	ret.Add(
 		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("test").Dot("Parallel").Call(),
-			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTest(
-					"should be createable",
-					buildTestCreating(proj, typ)...,
-				),
+				utils.BuildSubTestWithoutContext("should be createable", buildTestCreating(proj, typ)...),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTest(
-					"should be able to be read in a list",
-					buildTestListing(proj, typ)...,
-				),
+				utils.BuildSubTestWithoutContext("should be able to be read in a list", buildTestListing(proj, typ)...),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTest(
+				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to check something that does not exist",
 					buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
 				),
 				jen.Line(),
-				utils.BuildSubTest(
+				utils.BuildSubTestWithoutContext(
 					fmt.Sprintf("it should return 200 when the relevant %s exists", scn),
 					buildTestExistenceCheckingShouldBeReadable(proj, typ)...,
 				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTest(
+				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to read something that does not exist",
 					buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
 				),
 				jen.Line(),
-				utils.BuildSubTest(
-					"it should be readable",
-					buildTestReadingShouldBeReadable(proj, typ)...,
-				),
+				utils.BuildSubTestWithoutContext("it should be readable", buildTestReadingShouldBeReadable(proj, typ)...),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTest(
+				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to update something that does not exist",
 					buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, typ)...,
 				),
 				jen.Line(),
-				utils.BuildSubTest(
-					"it should be updatable",
-					buildTestUpdatingShouldBeUpdateable(proj, typ)...,
-				),
+				utils.BuildSubTestWithoutContext("it should be updatable", buildTestUpdatingShouldBeUpdateable(proj, typ)...),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTest(
-					"should be able to be deleted",
-					buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)...,
-				),
+				utils.BuildSubTestWithoutContext("should be able to be deleted", buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)...),
 			)),
 		),
 	)
@@ -131,29 +125,51 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen.Code {
 	var lines []jen.Code
-	sn := typ.Name.Singular()
 
 	const (
 		createdVarPrefix = "created"
 	)
 
-	creationArgs := []jen.Code{
-		constants.CtxVar(),
-	}
-	ca := buildCreationArguments(proj, createdVarPrefix, typ)
-	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
-	creationArgs = append(creationArgs, jen.IDf("example%sInput", sn))
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		ots := ot.Name.Singular()
 
-	if typ.BelongsToStruct != nil {
-		if parentTyp := proj.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
-			newLines := buildRequisiteCreationCode(proj, *parentTyp)
-			lines = append(lines, newLines...)
-		}
+		creationArgs := append(buildCreationArguments(proj, createdVarPrefix, ot), jen.IDf("example%sInput", ots))
+
+		lines = append(lines,
+			jen.Commentf("Create %s.", ot.Name.SingularCommonName()),
+			utils.BuildFakeVar(proj, ots),
+			func() jen.Code {
+				if ot.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(ots)).Dotf("BelongsTo%s", ot.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, ot.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				fmt.Sprintf("example%sInput", ots),
+				fmt.Sprintf("BuildFake%sCreationInputFrom%s", ots, ots),
+				jen.ID(utils.BuildFakeVarName(ots)),
+			),
+			jen.List(jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", ots).Call(
+				creationArgs...,
+			),
+			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()),
+			jen.Line(),
+		)
 	}
+
+	sn := typ.Name.Singular()
+	creationArgs := append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))
 
 	lines = append(lines,
 		jen.Commentf("Create %s.", typ.Name.SingularCommonName()),
 		utils.BuildFakeVar(proj, sn),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		utils.BuildFakeVarWithCustomName(
 			proj,
 			fmt.Sprintf("example%sInput", sn),
@@ -170,48 +186,82 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen
 	return lines
 }
 
-func buildRequisiteCreationCodeForUpdateFunction(proj *models.Project, typ models.DataType) []jen.Code {
+func buildRequisiteCreationCodeWithoutType(proj *models.Project, typ models.DataType) []jen.Code {
 	var lines []jen.Code
-	sn := typ.Name.Singular()
 
 	const (
 		createdVarPrefix = "created"
 	)
 
-	creationArgs := []jen.Code{
-		constants.CtxVar(),
-	}
-	ca := buildCreationArguments(proj, createdVarPrefix, typ)
-	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
-	creationArgs = append(creationArgs,
-		jen.IDf("example%sInput", sn),
-	)
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		ots := ot.Name.Singular()
 
-	if typ.BelongsToStruct != nil {
-		if parentTyp := proj.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
-			newLines := buildRequisiteCreationCode(proj, *parentTyp)
-			lines = append(lines, newLines...)
-		}
-	}
+		creationArgs := append(buildCreationArguments(proj, createdVarPrefix, ot), jen.IDf("example%sInput", ots))
 
-	lines = append(lines,
-		jen.Commentf("Create %s.", typ.Name.SingularCommonName()),
-		utils.BuildFakeVar(proj, sn),
-		utils.BuildFakeVarWithCustomName(
-			proj,
-			fmt.Sprintf("example%sInput", sn),
-			fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
-			jen.ID(utils.BuildFakeVarName(sn)),
-		),
-		jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
-			creationArgs...,
-		),
-		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()),
-		jen.Line(),
-	)
+		lines = append(lines,
+			jen.Commentf("Create %s.", ot.Name.SingularCommonName()),
+			utils.BuildFakeVar(proj, ots),
+			func() jen.Code {
+				if ot.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(ots)).Dotf("BelongsTo%s", ot.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, ot.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				fmt.Sprintf("example%sInput", ots),
+				fmt.Sprintf("BuildFake%sCreationInputFrom%s", ots, ots),
+				jen.ID(utils.BuildFakeVarName(ots)),
+			),
+			jen.List(jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", ots).Call(
+				creationArgs...,
+			),
+			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()),
+			jen.Line(),
+		)
+	}
 
 	return lines
 }
+
+//func buildRequisiteCreationCodeForUpdateFunction(proj *models.Project, typ models.DataType) []jen.Code {
+//	var lines []jen.Code
+//	sn := typ.Name.Singular()
+//
+//	const (
+//		createdVarPrefix = "created"
+//	)
+//
+//	creationArgs := append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))
+//
+//	for _, ot := range proj.FindOwnerTypeChain(typ) {
+//		lines = append(lines, buildRequisiteCreationCode(proj, ot)...)
+//	}
+//
+//	lines = append(lines,
+//		jen.Commentf("Create %s.", typ.Name.SingularCommonName()),
+//		utils.BuildFakeVar(proj, sn),
+//		func() jen.Code {
+//			if typ.BelongsToStruct != nil {
+//				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, typ.BelongsToStruct.Singular()).Dot("ID")
+//			}
+//			return jen.Null()
+//		}(),
+//		utils.BuildFakeVarWithCustomName(
+//			proj,
+//			fmt.Sprintf("example%sInput", sn),
+//			fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
+//			jen.ID(utils.BuildFakeVarName(sn)),
+//		),
+//		jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
+//			creationArgs...,
+//		),
+//		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()),
+//		jen.Line(),
+//	)
+//
+//	return lines
+//}
 
 func buildRequisiteCleanupCode(proj *models.Project, typ models.DataType) []jen.Code {
 	var lines []jen.Code
@@ -271,10 +321,7 @@ func buildBuildDummySomething(proj *models.Project, typ models.DataType) []jen.C
 		blockLines = append(blockLines, cc[:len(cc)-stopIndex]...)
 	}
 
-	creationArgs := []jen.Code{constants.CtxVar()}
-	ca := buildCreationArguments(proj, "created", typ)
-	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
-	creationArgs = append(creationArgs, jen.ID("exampleInput"))
+	creationArgs := append(buildCreationArguments(proj, "created", typ), jen.ID("exampleInput"))
 
 	blockLines = append(blockLines,
 		constants.CreateCtx(),
@@ -362,6 +409,7 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName(sn)), jen.ID("actual")),
+		utils.AssertNotNil(jen.ID("actual").Dot("ArchivedOn"), nil),
 		utils.AssertNotZero(jen.ID("actual").Dot("ArchivedOn"), nil),
 	)
 
@@ -373,32 +421,48 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
+	uvn := typ.Name.UnexportedVarName()
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
 
 	lines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
-		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-		jen.Line(),
+		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
+	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
 
-	listArgs := []jen.Code{constants.CtxVar()}
-	ca := buildCreationArguments(proj, "created", typ)
-	listArgs = append(listArgs, ca[:len(ca)-1]...)
-	listArgs = append(listArgs, jen.Nil())
+	const createdVarPrefix = "created"
+	listArgs := append(buildListArguments(proj, createdVarPrefix, typ), jen.Nil())
 
-	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
-	cc := buildRequisiteCreationCode(proj, typ)
-	if len(cc) > stopIndex {
-		lines = append(lines, cc[:len(cc)-stopIndex]...)
-	}
-	cc = append(cc, jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.IDf("created%s", typ.Name.Singular())))
+	creationArgs := append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))
 
 	lines = append(lines,
 		jen.Commentf("Create %s.", pcn),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
 		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
-			jen.ID("expected").Equals().Append(jen.ID("expected"), jen.IDf("buildDummy%s", sn).Call(jen.ID("t"))),
+			jen.Commentf("Create %s.", scn),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				fmt.Sprintf("%s%s", createdVarPrefix, sn),
+				fmt.Sprintf("BuildFake%s", sn),
+			),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID(fmt.Sprintf("%s%s", createdVarPrefix, sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, typ.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				fmt.Sprintf("example%sInput", sn),
+				fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
+				jen.ID(fmt.Sprintf("%s%s", createdVarPrefix, sn)),
+			),
+			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
+				creationArgs...,
+			),
+			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)),
+			jen.Line(),
+			utils.AppendItemsToList(jen.ID("expected"), jen.IDf("%s%s", createdVarPrefix, sn)),
 		),
 		jen.Line(),
 		jen.Commentf("Assert %s list equality.", scn),
@@ -414,7 +478,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Line(),
 		jen.Comment("Clean up."),
-		jen.For(jen.List(jen.Underscore(), jen.IDf("created%s", sn)).Assign().Range().ID("actual").Dot(pn)).Block(
+		jen.For(jen.List(jen.Underscore(), jen.IDf("%s%s", createdVarPrefix, sn)).Assign().Range().ID("actual").Dot(pn)).Block(
 			jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
 				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 			),
@@ -439,28 +503,15 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
-		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-		jen.Line(),
+		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
+	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
 
 	args := buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(proj, typ)
 
-	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
-	cc := buildRequisiteCreationCode(proj, typ)
-	if len(cc) > stopIndex {
-		lines = append(lines, cc[:len(cc)-stopIndex]...)
-	}
-
 	lines = append(lines,
 		jen.Commentf("Attempt to fetch nonexistent %s.", scn),
-		jen.List(jen.ID("actual"), jen.Err()).Op(func() string {
-			if typ.BelongsToStruct == nil {
-				return ":="
-			} else {
-				return "="
-			}
-		}()).IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("%sExists", sn).Call(
+		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("%sExists", sn).Call(
 			args...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
@@ -485,9 +536,7 @@ func buildTestExistenceCheckingShouldBeReadable(proj *models.Project, typ models
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
-		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-		jen.Line(),
+		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
 
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
@@ -513,18 +562,11 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *m
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
-		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-		jen.Line(),
+		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
+	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
 
 	args := buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(proj, typ)
-
-	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
-	cc := buildRequisiteCreationCode(proj, typ)
-	if len(cc) > stopIndex {
-		lines = append(lines, cc[:len(cc)-stopIndex]...)
-	}
 
 	lines = append(lines,
 		jen.Commentf("Attempt to fetch nonexistent %s.", scn),
@@ -558,11 +600,8 @@ func buildTestReadingShouldBeReadable(proj *models.Project, typ models.DataType)
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.ID("t").Dot("Name").Call()),
-		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-		jen.Line(),
+		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
-
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
 	lines = append(lines,
@@ -641,13 +680,19 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj
 
 	lines := []jen.Code{
 		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
-		jen.Line(),
 	}
+	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
 
 	args := buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(proj, typ)
 
 	lines = append(lines,
 		utils.BuildFakeVar(proj, sn),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.ID(utils.BuildFakeVarName(sn)).Dot("ID").Equals().ID("nonexistentID"),
 		jen.Line(),
 		utils.AssertError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(args...), nil),
@@ -672,21 +717,8 @@ func buildTestUpdatingShouldBeUpdateable(proj *models.Project, typ models.DataTy
 
 	lines := []jen.Code{
 		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
-		jen.Line(),
 	}
-
-	creationCode := buildRequisiteCreationCodeForUpdateFunction(proj, typ)
-	//stopIndex := 5 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
-
-	//if len(creationCode) > stopIndex {
-	//	precursorCode := creationCode[:len(creationCode)-stopIndex]
-	//	postcursorCode := creationCode[len(creationCode)-stopIndex:]
-	//
-	//	lines = append(lines, precursorCode...)
-	//	lines = append(lines, postcursorCode...)
-	//} else {
-	//}
-	lines = append(lines, creationCode...)
+	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
 	lines = append(lines, jen.Line(),
 		jen.Commentf("Change %s.", scn),

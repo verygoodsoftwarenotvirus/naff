@@ -70,7 +70,6 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("TestOAuth2Clients").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("test").Dot("Parallel").Call(),
 			jen.ID("_ctx").Assign().Add(constants.InlineCtx()),
 			jen.Line(),
 			jen.Comment("create user."),
@@ -99,7 +98,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("test"), jen.Err(), jen.Lit("error setting up auxiliary client")),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTest(
+				utils.BuildSubTestWithoutContext(
 					"should be creatable",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
@@ -117,7 +116,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTest(
+				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to read one that doesn't exist",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
@@ -126,7 +125,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					utils.AssertError(jen.Err(), nil),
 				),
 				jen.Line(),
-				utils.BuildSubTest(
+				utils.BuildSubTestWithoutContext(
 					"it should be readable",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
@@ -149,7 +148,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTest(
+				utils.BuildSubTestWithoutContext(
 					"should be able to be deleted",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
@@ -163,7 +162,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					utils.AssertNoError(jen.Err(), nil),
 				),
 				jen.Line(),
-				utils.BuildSubTest(
+				utils.BuildSubTestWithoutContext(
 					"should be unable to authorize after being deleted",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
@@ -202,7 +201,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTest(
+				utils.BuildSubTestWithoutContext(
 					"should be able to be read in a list",
 					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),

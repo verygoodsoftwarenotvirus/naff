@@ -55,10 +55,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Func().ID("TestAuth").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("test").Dot("Parallel").Call(),
-			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to login"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				constants.CreateCtx(),
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create a user."),
@@ -106,7 +103,6 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to logout"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				constants.CreateCtx(),
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
@@ -181,7 +177,6 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to log in with the wrong password"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				constants.CreateCtx(),
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create a user."),
@@ -441,7 +436,6 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow users to see their own content"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				constants.CreateCtx(),
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create user and oauth2 client A."),
@@ -498,7 +492,6 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow clients with a given scope to see that scope's content"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				constants.CreateCtx(),
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create user."),
