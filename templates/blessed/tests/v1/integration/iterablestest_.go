@@ -990,6 +990,69 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj
 	return lines
 }
 
+func buildRequisiteCreationCodeFor404DeletionTests(proj *models.Project, typ models.DataType, indexToStop int) (lines []jen.Code) {
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		ots := ot.Name.Singular()
+
+		creationArgs := append(buildCreationArguments(proj, createdVarPrefix, ot), jen.IDf("example%sInput", ots))
+
+		lines = append(lines,
+			jen.Commentf("Create %s.", ot.Name.SingularCommonName()),
+			utils.BuildFakeVar(proj, ots),
+			func() jen.Code {
+				if ot.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(ots)).Dotf("BelongsTo%s", ot.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, ot.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				fmt.Sprintf("example%sInput", ots),
+				fmt.Sprintf("BuildFake%sCreationInputFrom%s", ots, ots),
+				jen.ID(utils.BuildFakeVarName(ots)),
+			),
+			jen.List(jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", ots).Call(
+				creationArgs...,
+			),
+			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()),
+			jen.Line(),
+		)
+	}
+
+	return lines
+}
+
+func buildRequisiteCleanupCodeFor404DeletionTests(proj *models.Project, typ models.DataType, indexToStop int) (lines []jen.Code) {
+	var typesToCleanup []models.DataType
+
+	for i, ot := range proj.FindOwnerTypeChain(typ) {
+		if i >= indexToStop {
+			break
+		}
+		typesToCleanup = append(typesToCleanup, ot)
+	}
+
+	// reverse it
+	for i, j := 0, len(typesToCleanup)-1; i < j; i, j = i+1, j-1 {
+		typesToCleanup[i], typesToCleanup[j] = typesToCleanup[j], typesToCleanup[i]
+	}
+
+	for _, t := range typesToCleanup {
+		lines = append(lines,
+			jen.Line(),
+			jen.Commentf("Clean up %s.", t.Name.SingularCommonName()),
+			utils.AssertNoError(
+				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", t.Name.Singular()).Call(
+					buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, t)...,
+				),
+				nil,
+			),
+		)
+	}
+
+	return lines
+}
+
 func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType) []jen.Code {
 	var subtests []jen.Code
 	sn := typ.Name.Singular()
@@ -1000,7 +1063,7 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 			[]jen.Code{
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 			},
-			buildRequisiteCreationCodeFor404Tests(proj, ot, i)...,
+			buildRequisiteCreationCodeFor404DeletionTests(proj, ot, i)...,
 		)
 
 		archiveArgs := buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)
@@ -1028,7 +1091,7 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 			utils.AssertError(jen.Err(), nil),
 		)
 
-		lines = append(lines, buildRequisiteCleanupCodeFor404s(proj, typ, i)...)
+		lines = append(lines, buildRequisiteCleanupCodeFor404DeletionTests(proj, typ, i)...)
 
 		subtests = append(subtests,
 			jen.Line(),
