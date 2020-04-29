@@ -888,7 +888,11 @@ func buildSubtestsForUpdate404Tests(proj *models.Project, typ models.DataType) [
 			}
 		}
 
-		lines = append(lines, buildRequisiteCleanupCodeForUpdate404s(proj, typ)...)
+		cleanupCode := buildRequisiteCleanupCodeForUpdate404s(proj, typ)
+		if len(cleanupCode) > 0 {
+			lines = append(lines, jen.Line())
+		}
+		lines = append(lines, cleanupCode...)
 
 		subtests = append(subtests,
 			jen.Line(),
@@ -953,10 +957,13 @@ func buildTestUpdatingShouldBeUpdatable(proj *models.Project, typ models.DataTyp
 			),
 			nil,
 		),
-		jen.Line(),
 	)
 
-	lines = append(lines, buildRequisiteCleanupCode(proj, typ, false)...)
+	cleanupCode := buildRequisiteCleanupCode(proj, typ, false)
+	if len(cleanupCode) > 0 {
+		lines = append(lines, jen.Line())
+	}
+	lines = append(lines, cleanupCode...)
 
 	return lines
 }
@@ -982,15 +989,20 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj
 		jen.ID(utils.BuildFakeVarName(sn)).Dot("ID").Equals().ID("nonexistentID"),
 		jen.Line(),
 		utils.AssertError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(args...), nil),
-		jen.Line(),
 	)
 
-	lines = append(lines, buildRequisiteCleanupCode(proj, typ, false)...)
+	cleanupCode := buildRequisiteCleanupCode(proj, typ, false)
+	if len(cleanupCode) > 0 {
+		lines = append(lines, jen.Line())
+	}
+	lines = append(lines, cleanupCode...)
 
 	return lines
 }
 
-func buildRequisiteCreationCodeFor404DeletionTests(proj *models.Project, typ models.DataType, indexToStop int) (lines []jen.Code) {
+func buildRequisiteCreationCodeFor404DeletionTests(proj *models.Project, typ models.DataType, nonexistentArgIndex int) (lines []jen.Code) {
+	pkguvn := proj.Name.UnexportedVarName()
+
 	for _, ot := range proj.FindOwnerTypeChain(typ) {
 		ots := ot.Name.Singular()
 
@@ -1011,7 +1023,7 @@ func buildRequisiteCreationCodeFor404DeletionTests(proj *models.Project, typ mod
 				fmt.Sprintf("BuildFake%sCreationInputFrom%s", ots, ots),
 				jen.ID(utils.BuildFakeVarName(ots)),
 			),
-			jen.List(jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", ots).Call(
+			jen.List(jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()).Assign().IDf("%sClient", pkguvn).Dotf("Create%s", ots).Call(
 				creationArgs...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()),
@@ -1025,12 +1037,10 @@ func buildRequisiteCreationCodeFor404DeletionTests(proj *models.Project, typ mod
 func buildRequisiteCleanupCodeFor404DeletionTests(proj *models.Project, typ models.DataType, indexToStop int) (lines []jen.Code) {
 	var typesToCleanup []models.DataType
 
-	for i, ot := range proj.FindOwnerTypeChain(typ) {
-		if i >= indexToStop {
-			break
-		}
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
 		typesToCleanup = append(typesToCleanup, ot)
 	}
+	typesToCleanup = append(typesToCleanup, typ)
 
 	// reverse it
 	for i, j := 0, len(typesToCleanup)-1; i < j; i, j = i+1, j-1 {
@@ -1053,6 +1063,29 @@ func buildRequisiteCleanupCodeFor404DeletionTests(proj *models.Project, typ mode
 	return lines
 }
 
+func buildParamsForDeletionWithNonexistentID(proj *models.Project, typ models.DataType, indexToNotExist int) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
+	var listParams []jen.Code
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for i, pt := range parents {
+			if i == indexToNotExist {
+				listParams = append(listParams, jen.ID("nonexistentID"))
+			} else {
+				listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
+			}
+		}
+		listParams = append(listParams, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
+
+		params = append(params, listParams...)
+	} else {
+		params = append(params, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
+	}
+
+	return params
+}
+
 func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType) []jen.Code {
 	var subtests []jen.Code
 	sn := typ.Name.Singular()
@@ -1063,17 +1096,19 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 			[]jen.Code{
 				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
 			},
-			buildRequisiteCreationCodeFor404DeletionTests(proj, ot, i)...,
+			buildRequisiteCreationCodeFor404DeletionTests(proj, typ, i)...,
 		)
 
-		archiveArgs := buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)
+		creationArgs := append(buildCreationArguments(proj, "created", typ), jen.IDf("example%sInput", sn))
+		archiveArgs := buildParamsForDeletionWithNonexistentID(proj, typ, i)
+
 		lines = append(lines,
 			jen.Line(),
 			jen.Commentf("Create %s.", scn),
 			utils.BuildFakeVar(proj, sn),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
-					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID("nonexistentID")
+					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, typ.BelongsToStruct.Singular()).Dot("ID")
 				}
 				return jen.Null()
 			}(),
@@ -1083,12 +1118,14 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 				fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
 				jen.ID(utils.BuildFakeVarName(sn)),
 			),
-			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
-				archiveArgs...,
+			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
+				creationArgs...,
 			),
+			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()),
 			jen.Line(),
-			utils.AssertNil(jen.IDf("%s%s", createdVarPrefix, sn), nil),
-			utils.AssertError(jen.Err(), nil),
+			utils.AssertError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
+				archiveArgs...,
+			), nil),
 		)
 
 		lines = append(lines, buildRequisiteCleanupCodeFor404DeletionTests(proj, typ, i)...)
@@ -1107,9 +1144,13 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 func buildTestDeleting(proj *models.Project, typ models.DataType) jen.Code {
 	subtests := []jen.Code{
 		utils.BuildSubTestWithoutContext("should be able to be deleted", buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)...),
-		jen.Line(),
 	}
-	subtests = append(subtests, buildSubtestsForDeletion404Tests(proj, typ)...)
+
+	notFoundSubtests := buildSubtestsForDeletion404Tests(proj, typ)
+	if len(notFoundSubtests) > 0 {
+		subtests = append(subtests, jen.Line())
+	}
+	subtests = append(subtests, notFoundSubtests...)
 
 	return jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 		subtests...,
@@ -1135,7 +1176,11 @@ func buildTestDeletingShouldBeAbleToBeDeleted(proj *models.Project, typ models.D
 		),
 	)
 
-	lines = append(lines, buildRequisiteCleanupCode(proj, typ, false)...)
+	cleanupCode := buildRequisiteCleanupCode(proj, typ, false)
+	if len(cleanupCode) > 0 {
+		lines = append(lines, jen.Line())
+	}
+	lines = append(lines, cleanupCode...)
 
 	return lines
 }
