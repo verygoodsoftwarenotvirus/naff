@@ -44,7 +44,6 @@ func buildCreationArguments(proj *models.Project, varPrefix string, typ models.D
 			creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, ot.Name.Singular()).Dot("ID"))
 		}
 	}
-	//creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, typ.Name.Singular()).Dot("ID"))
 
 	return creationArgs
 }
@@ -60,25 +59,6 @@ func buildListArguments(proj *models.Project, varPrefix string, typ models.DataT
 	//creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, typ.Name.Singular()).Dot("ID"))
 
 	return creationArgs
-}
-
-func buildListOfFailureFuncsForCreation(proj *models.Project, typ models.DataType) []jen.Code {
-	out := []jen.Code{}
-
-	for i, ot := range proj.FindOwnerTypeChain(typ) {
-		_ = i
-		scn := ot.Name.SingularCommonName()
-		out = append(out,
-			jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(fmt.Sprintf("should fail to create %s", scn), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
-					jen.Line(),
-				)),
-			),
-		)
-	}
-
-	return out
 }
 
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
@@ -126,18 +106,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				utils.BuildSubTestWithoutContext("it should be readable", buildTestReadingShouldBeReadable(proj, typ)...),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
-					"it should return an error when trying to update something that does not exist",
-					buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, typ)...,
-				),
-				jen.Line(),
-				utils.BuildSubTestWithoutContext("it should be updatable", buildTestUpdatingShouldBeUpdatable(proj, typ)...),
-			)),
+			buildTestUpdating(proj, typ),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext("should be able to be deleted", buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)...),
-			)),
+			buildTestDeleting(proj, typ),
 		),
 	)
 
@@ -275,7 +246,7 @@ func buildRequisiteCleanupCode(proj *models.Project, typ models.DataType, includ
 
 func buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj *models.Project, typ models.DataType) []jen.Code {
 	parents := proj.FindOwnerTypeChain(typ)
-	listParams := []jen.Code{}
+	var listParams []jen.Code
 	params := []jen.Code{constants.CtxVar()}
 
 	if len(parents) > 0 {
@@ -405,7 +376,7 @@ func buildRequisiteCreationCodeFor404Tests(proj *models.Project, typ models.Data
 }
 
 func buildRequisiteCleanupCodeFor404s(proj *models.Project, typ models.DataType, indexToStop int) (lines []jen.Code) {
-	typesToCleanup := []models.DataType{}
+	var typesToCleanup []models.DataType
 
 	for i, ot := range proj.FindOwnerTypeChain(typ) {
 		if i >= indexToStop {
@@ -454,7 +425,7 @@ func buildCreationArgumentsFor404s(proj *models.Project, varPrefix string, typ m
 }
 
 func buildSubtestsForModification404s(proj *models.Project, typ models.DataType) []jen.Code {
-	subtests := []jen.Code{}
+	var subtests []jen.Code
 	scn := typ.Name.SingularCommonName()
 
 	for i, ot := range proj.FindOwnerTypeChain(typ) {
@@ -772,6 +743,17 @@ func buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(proj *mod
 	return params
 }
 
+func buildTestUpdating(proj *models.Project, typ models.DataType) jen.Code {
+	return jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		utils.BuildSubTestWithoutContext(
+			"it should return an error when trying to update something that does not exist",
+			buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, typ)...,
+		),
+		jen.Line(),
+		utils.BuildSubTestWithoutContext("it should be updatable", buildTestUpdatingShouldBeUpdatable(proj, typ)...),
+	))
+}
+
 func buildTestUpdatingShouldBeUpdatable(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -841,6 +823,12 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj
 	lines = append(lines, buildRequisiteCleanupCode(proj, typ, false)...)
 
 	return lines
+}
+
+func buildTestDeleting(proj *models.Project, typ models.DataType) jen.Code {
+	return jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		utils.BuildSubTestWithoutContext("should be able to be deleted", buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)...),
+	))
 }
 
 func buildTestDeletingShouldBeAbleToBeDeleted(proj *models.Project, typ models.DataType) []jen.Code {
