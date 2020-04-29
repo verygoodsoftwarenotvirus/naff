@@ -1405,7 +1405,7 @@ func Test_buildTestUpdatingShouldBeUpdateable(T *testing.T) {
 		ret := jen.NewFile("farts")
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
-				buildTestUpdatingShouldBeUpdateable(proj, c)...,
+				buildTestUpdatingShouldBeUpdatable(proj, c)...,
 			),
 		)
 
@@ -1497,7 +1497,7 @@ func doSomething() {
 		ret := jen.NewFile("farts")
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
-				buildTestUpdatingShouldBeUpdateable(proj, b)...,
+				buildTestUpdatingShouldBeUpdatable(proj, b)...,
 			),
 		)
 
@@ -1576,7 +1576,7 @@ func doSomething() {
 		ret := jen.NewFile("farts")
 		ret.Add(
 			jen.Func().ID("doSomething").Params().Block(
-				buildTestUpdatingShouldBeUpdateable(proj, a)...,
+				buildTestUpdatingShouldBeUpdatable(proj, a)...,
 			),
 		)
 
