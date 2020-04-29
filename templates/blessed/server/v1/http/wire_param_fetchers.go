@@ -172,7 +172,7 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 		pn := n.PackageName()
 
 		ret.Add(
-			jen.Commentf("buildRouteParam%sIDFetcher builds a function that fetches a %sID from a request routed by chi..", sn, sn),
+			jen.Commentf("buildRouteParam%sIDFetcher builds a function that fetches a %sID from a request routed by chi.", sn, sn),
 			jen.Line(),
 			jen.Func().IDf("buildRouteParam%sIDFetcher", sn).Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64())).Block(
 				jen.Return().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(

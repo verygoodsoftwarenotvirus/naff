@@ -123,7 +123,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be creatable",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create user."),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
@@ -146,7 +146,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to read something that doesn't exist",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Fetch user."),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetUser").Call(
@@ -159,7 +159,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildSubTestWithoutContext(
 					"it should be readable",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create user."),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
@@ -196,7 +196,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be able to be deleted",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create user."),
 					utils.BuildFakeVarWithCustomName(proj, "exampleUserInput", "BuildFakeUserCreationInput"),
@@ -221,7 +221,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be able to be read in a list",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create users."),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),

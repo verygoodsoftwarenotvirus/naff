@@ -37,8 +37,6 @@ func main() {
 			chosenProject.OutputPath = "gitlab.com/verygoodsoftwarenotvirus/naff/" + outputDir
 		}
 
-		log.Println(chosenProject.EnabledDatabases())
-
 		if err := project.RenderProject(chosenProject); err != nil {
 			log.Fatal(err)
 		}

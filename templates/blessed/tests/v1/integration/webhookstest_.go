@@ -42,7 +42,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be createable",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create webhook."),
 					utils.BuildFakeVar(proj, "Webhook"),
@@ -81,7 +81,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be able to be read in a list",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create webhooks."),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
@@ -118,7 +118,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to read something that doesn't exist",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Fetch webhook."),
 					jen.List(jen.Underscore(), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("nonexistentID")),
@@ -127,7 +127,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildSubTestWithoutContext(
 					"it should be readable",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create webhook."), utils.BuildFakeVar(proj, "Webhook"),
 					utils.BuildFakeVarWithCustomName(
@@ -158,7 +158,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to update something that doesn't exist",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					utils.BuildFakeVar(proj, "Webhook"),
 					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID").Equals().ID("nonexistentID"),
@@ -172,7 +172,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildSubTestWithoutContext(
 					"it should be updatable",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create webhook."),
 					utils.BuildFakeVar(proj, "Webhook"),
@@ -211,7 +211,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be able to be deleted",
-					utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create webhook."),
 					utils.BuildFakeVar(proj, "Webhook"),

@@ -241,11 +241,11 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	ret.Add(
 		jen.Comment("logQueryBuildingError logs errors that may occur during query construction."),
 		jen.Line(),
-		jen.Comment("Such errors should be few and far between, as the generally only occur with."),
+		jen.Comment("Such errors should be few and far between, as the generally only occur with"),
 		jen.Line(),
 		jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 		jen.Line(),
-		jen.Comment("any log entries with the given name, and those alerts should be investigated."),
+		jen.Comment("any log entries with the given name, and those alerts should be investigated"),
 		jen.Line(),
 		jen.Comment("with the utmost priority."),
 		jen.Line(),
@@ -261,11 +261,11 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		ret.Add(
 			jen.Comment("logIDRetrievalError logs errors that may occur during created db row ID retrieval."),
 			jen.Line(),
-			jen.Comment("Such errors should be few and far between, as the generally only occur with."),
+			jen.Comment("Such errors should be few and far between, as the generally only occur with"),
 			jen.Line(),
 			jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
 			jen.Line(),
-			jen.Comment("any log entries with the given name, and those alerts should be investigated."),
+			jen.Comment("any log entries with the given name, and those alerts should be investigated"),
 			jen.Line(),
 			jen.Comment("with the utmost priority."),
 			jen.Line(),
@@ -279,7 +279,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	}
 
 	ret.Add(
-		jen.Comment("buildError takes a given error and wraps it with a message, provided that it."),
+		jen.Comment("buildError takes a given error and wraps it with a message, provided that it"),
 		jen.Line(),
 		jen.Comment("IS NOT sql.ErrNoRows, which we want to preserve and surface to the services."),
 		jen.Line(),

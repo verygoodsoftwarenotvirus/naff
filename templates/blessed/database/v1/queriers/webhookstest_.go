@@ -8,6 +8,7 @@ import (
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"strings"
 )
 
 const (
@@ -41,6 +42,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 
 	ret.Add(buildBuildMockRowsFromWebhook(proj, dbvendor)...)
 	ret.Add(buildBuildErroneousMockRowFromWebhook(proj, dbvendor)...)
+	ret.Add(buildTestScanWebhooks(proj, dbvendor)...)
 	ret.Add(buildTestDB_buildGetWebhookQuery(proj, dbvendor)...)
 	ret.Add(buildTestDB_GetWebhook(proj, dbvendor)...)
 	ret.Add(buildTestDB_buildGetAllWebhooksCountQuery(proj, dbvendor)...)
@@ -124,6 +126,53 @@ func buildBuildErroneousMockRowFromWebhook(proj *models.Project, dbvendor wordsm
 			),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestScanWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_ScanWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"surfaces row errors",
+				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.Line(),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.List(
+					jen.Underscore(),
+					jen.Underscore(),
+					jen.Err(),
+				).Assign().ID(dbfl).Dot("scanWebhooks").Call(jen.ID("mockRows")),
+				utils.AssertError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"logs row closing errors",
+				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.Line(),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Nil()),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.List(
+					jen.Underscore(),
+					jen.Underscore(),
+					jen.Err(),
+				).Assign().ID(dbfl).Dot("scanWebhooks").Call(jen.ID("mockRows")),
+				utils.AssertNoError(jen.Err(), nil),
+			),
 		),
 		jen.Line(),
 	}
@@ -680,9 +729,9 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 
 					if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 						out = append(out,
-							jen.ID("mtt").Assign().AddressOf().ID("mockTimeTeller").Values(),
-							jen.ID("mtt").Dot("On").Call(jen.Lit("Now")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("CreatedOn")),
-							jen.ID(dbfl).Dot("timeTeller").Equals().ID("mtt"),
+							jen.IDf("%stt", dbfl).Assign().AddressOf().ID("mockTimeTeller").Values(),
+							jen.IDf("%stt", dbfl).Dot("On").Call(jen.Lit("Now")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("CreatedOn")),
+							jen.ID(dbfl).Dot("timeTeller").Equals().IDf("%stt", dbfl),
 							jen.Line(),
 						)
 					}
@@ -692,6 +741,12 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 						utils.AssertNoError(jen.Err(), nil),
 						utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual"), nil),
 						jen.Line(),
+						func() jen.Code {
+							if isMariaDB(dbvendor) || isSqlite(dbvendor) {
+								return utils.AssertExpectationsFor(fmt.Sprintf("%stt", dbfl))
+							}
+							return jen.Null()
+						}(),
 						utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 					)
 

@@ -59,7 +59,7 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 	ret.Add(
 		jen.Comment("scanOAuth2Client takes a Scanner (i.e. *sql.Row) and scans its results into an OAuth2Client struct."),
 		jen.Line(),
-		jen.Func().ID("scanOAuth2Client").Params(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("scanOAuth2Client").Params(
 			jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner"),
 			jen.ID("includeCount").Bool(),
 		).Params(
@@ -111,7 +111,7 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 		jen.Comment("scanOAuth2Clients takes sql rows and turns them into a slice of OAuth2Clients."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("scanOAuth2Clients").Params(
-			jen.ID("rows").PointerTo().Qual("database/sql", "Rows"),
+			jen.ID("rows").Qual(proj.DatabaseV1Package(), "ResultIterator"),
 		).Params(
 			jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Uint64(),
@@ -123,7 +123,7 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 			),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
-				jen.List(jen.ID("client"), jen.ID("c"), jen.Err()).Assign().ID("scanOAuth2Client").Call(
+				jen.List(jen.ID("client"), jen.ID("c"), jen.Err()).Assign().ID(dbfl).Dot("scanOAuth2Client").Call(
 					jen.ID("rows"),
 					jen.True(),
 				),
@@ -158,7 +158,7 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetOAuth2ClientByClientIDQuery").Params(jen.ID("clientID").String()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
 			jen.Var().Err().Error(),
 			jen.Line(),
-			jen.Comment("This query is more or less the same as the normal OAuth2 client retrieval query, only that it doesn't."),
+			jen.Comment("This query is more or less the same as the normal OAuth2 client retrieval query, only that it doesn't"),
 			jen.Comment("care about ownership. It does still care about archived status"),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("oauth2ClientsTableColumns").Spread()).
@@ -190,7 +190,7 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetOAuth2ClientByClientIDQuery").Call(jen.ID("clientID")),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Line(),
-			jen.List(jen.ID("client"), jen.Underscore(), jen.Err()).Assign().ID("scanOAuth2Client").Call(jen.ID("row"), jen.False()),
+			jen.List(jen.ID("client"), jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("scanOAuth2Client").Call(jen.ID("row"), jen.False()),
 			jen.Return().List(jen.ID("client"), jen.Err()),
 		),
 		jen.Line(),
@@ -321,7 +321,7 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetOAuth2ClientQuery").Call(jen.ID("clientID"), jen.ID("userID")),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Line(),
-			jen.List(jen.ID("client"), jen.Underscore(), jen.Err()).Assign().ID("scanOAuth2Client").Call(jen.ID("row"), jen.False()),
+			jen.List(jen.ID("client"), jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("scanOAuth2Client").Call(jen.ID("row"), jen.False()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.Return().List(jen.Nil(), jen.Err()),
@@ -347,7 +347,7 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 	////////////
 
 	ret.Add(
-		jen.Comment("buildGetAllOAuth2ClientCountQuery returns a SQL query for the number of OAuth2 clients."),
+		jen.Comment("buildGetAllOAuth2ClientCountQuery returns a SQL query for the number of OAuth2 clients"),
 		jen.Line(),
 		jen.Comment("in the database, regardless of ownership."),
 		jen.Line(),

@@ -1943,17 +1943,18 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientCreateMethodTest(proj *Proj
 }
 
 func (typ DataType) BuildRequisiteFakeVarsForDBClientArchiveMethodTest(proj *Project) []jen.Code {
-	return typ.buildRequisiteFakeVarDecForModifierFuncs(proj, true)
+	return append([]jen.Code{
+		constants.CreateCtx(),
+		jen.Line(),
+		jen.Var().ID("expected").Error(),
+		jen.Line(),
+	}, typ.buildRequisiteFakeVarDecForModifierFuncs(proj, false)...)
 }
 
 func (typ DataType) BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(proj *Project) []jen.Code {
 	lines := []jen.Code{}
 	sn := typ.Name.Singular()
 	owners := proj.FindOwnerTypeChain(typ)
-
-	if typ.OwnedByAUserAtSomeLevel(proj) {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
-	}
 
 	for _, pt := range owners {
 		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
@@ -1995,14 +1996,29 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(pro
 	return typ.buildRequisiteFakeVarDecsForListFunction(proj)
 }
 
-func (typ DataType) BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj *Project) []jen.Code {
-	lines := typ.BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(proj)
+func (typ DataType) BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj *Project, includeFilter bool) []jen.Code {
+	lines := []jen.Code{}
 
-	//if typ.RestrictedToUserAtSomeLevel(proj) {
-	//	lines = lines[1:]
-	//}
+	owners := proj.FindOwnerTypeChain(typ)
 
-	return lines[:len(lines)-1]
+	for _, pt := range owners {
+		pts := pt.Name.Singular()
+		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+
+		if pt.BelongsToUser && typ.RestrictedToUser {
+			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+		}
+		if pt.BelongsToStruct != nil {
+			btssn := pt.BelongsToStruct.Singular()
+			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsTo%s", btssn).Equals().ID(buildFakeVarName(btssn)).Dot("ID"))
+		}
+	}
+
+	if includeFilter {
+		lines = append(lines, jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call())
+	}
+
+	return lines
 }
 
 func (typ DataType) buildRequisiteFakeVarCallArgsForCreation(proj *Project) []jen.Code {
@@ -2195,7 +2211,22 @@ func (typ DataType) BuildCallArgsForDBClientListRetrievalMethodTest(proj *Projec
 func (typ DataType) BuildRequisiteVarsForDBClientUpdateMethodTest(proj *Project) []jen.Code {
 	lines := []jen.Code{
 		constants.CreateCtx(),
+		jen.Var().ID("expected").Error(),
+		jen.Line(),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call()
+			}
+			return jen.Null()
+		}(),
 		jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call(),
+		func() jen.Code {
+			if typ.BelongsToUser {
+				return jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		jen.Line(),
 	}
 
 	return lines

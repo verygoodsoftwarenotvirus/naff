@@ -189,6 +189,35 @@ func StartSpan(proj *models.Project, saveCtx bool, spanName string) jen.Code {
 
 func StartSpanWithVar(proj *models.Project, saveCtx bool, spanName jen.Code) jen.Code {
 	/*
+		ctx, span := trace.StartSpan(ctx, "UpdateItem")
+		defer span.End()
+	*/
+	g := &jen.Group{}
+
+	g.Add(
+		jen.List(
+			func() jen.Code {
+				if saveCtx {
+					return constants.CtxVar()
+				}
+				return jen.Underscore()
+			}(),
+			jen.ID(SpanVarName),
+		).Op(":=").Qual(filepath.Join(proj.OutputPath, "internal", "v1", "tracing"), "StartSpan").Call(
+			constants.CtxVar(),
+			spanName,
+		),
+		jen.Line(),
+		jen.Defer().ID(SpanVarName).Dot("End").Call(),
+		jen.Line(),
+		jen.Line(),
+	)
+
+	return g
+}
+
+func StartSpanWithInlineCtx(proj *models.Project, saveCtx bool, spanName jen.Code) jen.Code {
+	/*
 		ctx, span := trace.StartSpan(context.Background(), "UpdateItem")
 		defer span.End()
 	*/

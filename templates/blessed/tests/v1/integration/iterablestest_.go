@@ -433,7 +433,7 @@ func buildSubtestsForCreation404Tests(proj *models.Project, typ models.DataType)
 	for i, ot := range proj.FindOwnerTypeChain(typ) {
 		lines := append(
 			[]jen.Code{
-				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 			},
 			buildRequisiteCreationCodeFor404Tests(proj, ot, i)...,
 		)
@@ -482,7 +482,7 @@ func buildTestCreating(proj *models.Project, typ models.DataType) jen.Code {
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 		jen.Line(),
 	}
 
@@ -532,7 +532,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 	pcn := typ.Name.PluralCommonName()
 
 	lines := []jen.Code{
-		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
 	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
 
@@ -596,7 +596,7 @@ func buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExi
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
 	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
 
@@ -621,7 +621,7 @@ func buildTestExistenceCheckingShouldBeReadable(proj *models.Project, typ models
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
 
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
@@ -654,7 +654,7 @@ func buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj *m
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
 	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
 
@@ -684,7 +684,7 @@ func buildTestReadingShouldBeReadable(proj *models.Project, typ models.DataType)
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
@@ -873,7 +873,7 @@ func buildSubtestsForUpdate404Tests(proj *models.Project, typ models.DataType) [
 	for i, ot := range proj.FindOwnerTypeChain(typ) {
 		lines := append(
 			[]jen.Code{
-				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 			},
 			buildRequisiteCreationCodeForUpdate404Tests(proj, typ, i)...,
 		)
@@ -928,7 +928,7 @@ func buildTestUpdatingShouldBeUpdatable(proj *models.Project, typ models.DataTyp
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
-		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
@@ -972,7 +972,7 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj
 	sn := typ.Name.Singular()
 
 	lines := []jen.Code{
-		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 	}
 	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
 
@@ -1094,7 +1094,7 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 	for i, ot := range proj.FindOwnerTypeChain(typ) {
 		lines := append(
 			[]jen.Code{
-				utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 			},
 			buildRequisiteCreationCodeFor404DeletionTests(proj, typ, i)...,
 		)
@@ -1159,7 +1159,7 @@ func buildTestDeleting(proj *models.Project, typ models.DataType) jen.Code {
 
 func buildTestDeletingShouldBeAbleToBeDeleted(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
-		utils.StartSpanWithVar(proj, true, jen.ID("t").Dot("Name").Call()),
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 		jen.Line(),
 	}
 

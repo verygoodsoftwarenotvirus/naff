@@ -54,8 +54,8 @@ func badgesDotJSON() []byte {
         {
             "name": "godoc",
             "gitlab": {
-                "link": "https://godoc.org/gitlab.com/%{project_path}",
-                "badge_image_url": "https://godoc.org/gitlab.com/%{project_path}?status.svg"
+                "link": "https://pkg.go.dev/gitlab.com/%{project_path}",
+                "badge_image_url": "https://pkg.go.dev/gitlab.com/%{project_path}?status.svg"
             }
         },
         {
