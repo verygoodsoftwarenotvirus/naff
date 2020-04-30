@@ -653,3 +653,49 @@ func fetchRandomGrandparent(c *http.V1Client) *v1.Grandparent {
 		assert.Equal(t, expected, actual)
 	})
 }
+
+func Test_buildNestedDependentIDFetchers(T *testing.T) {
+	T.Parallel()
+
+	T.Run("normal operation", func(t *testing.T) {
+		proj := &models.Project{
+			DataTypes: []models.DataType{a, b, c},
+		}
+
+		ret := jen.NewFile("farts")
+
+		ret.Add(
+			jen.Func().ID("doSomething").Params().Block(
+				buildNestedDependentIDFetchers(proj, c)...,
+			),
+		)
+
+		var b bytes.Buffer
+		err := ret.Render(&b)
+		require.NoError(t, err)
+
+		expected := `package farts
+
+import (
+	"context"
+)
+
+func doSomething() {
+	ctx := context.Background()
+
+	if grandparent := fetchRandomGrandparent(); grandparent != nil {
+		if parent := fetchRandomParent(grandparent.ID); parent != nil {
+			if child := fetchRandomChild(grandparent.ID, parent.ID); child != nil {
+				return c.BuildGetChildRequest(grandparent.ID, parent.ID, child.ID)
+			}
+		}
+	}
+
+	return nil, ErrUnavailableYet
+}
+`
+		actual := b.String()
+
+		assert.Equal(t, expected, actual)
+	})
+}

@@ -2,9 +2,9 @@ package load
 
 import (
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -80,83 +80,54 @@ func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.
 }
 
 func buildCreationArguments(proj *models.Project, varPrefix string, typ models.DataType) []jen.Code {
-	creationArgs := []jen.Code{}
+	creationArgs := []jen.Code{constants.CtxVar()}
 
-	if typ.BelongsToStruct != nil {
-		parentTyp := proj.FindType(typ.BelongsToStruct.Singular())
-		if parentTyp != nil {
-			nca := buildCreationArguments(proj, varPrefix, *parentTyp)
-			creationArgs = append(creationArgs, nca...)
+	owners := proj.FindOwnerTypeChain(typ)
+	for i, ot := range owners {
+		if i == len(owners)-1 && typ.BelongsToStruct != nil {
+			continue
+		} else {
+			creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, ot.Name.Singular()).Dot("ID"))
 		}
 	}
-
-	creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, typ.Name.Singular()).Dot("ID"))
 
 	return creationArgs
 }
 
-func fieldToExpectedDotField(varName string, typ models.DataType) []jen.Code {
-	lines := []jen.Code{}
-
-	for _, field := range typ.Fields {
-		sn := field.Name.Singular()
-		lines = append(lines, jen.ID(sn).MapAssign().ID(varName).Dot(sn))
-	}
-
-	return lines
-}
-
-func buildFakeCallForCreationInput(proj *models.Project, typ models.DataType) []jen.Code {
-	lines := []jen.Code{}
-
-	for _, field := range typ.Fields {
-		lines = append(lines, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeCallForField(proj.OutputPath, field)))
-	}
-
-	return lines
-}
-
 func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen.Code {
-	var lines []jen.Code
-	sn := typ.Name.Singular()
+	lines := []jen.Code{}
 
-	const (
-		sourceVarPrefix  = "example"
-		createdVarPrefix = "created"
-	)
+	const createdVarPrefix = "created"
 
-	creationArgs := []jen.Code{
-		constants.CtxVar(),
+	for _, t := range proj.FindOwnerTypeChain(typ) {
+		sn := t.Name.Singular()
+
+		creationArgs := append(buildCreationArguments(proj, "created", t), jen.IDf("example%sInput", sn))
+		lines = append(lines,
+			jen.Commentf("Create %s.", t.Name.SingularCommonName()),
+			utils.BuildFakeVar(proj, sn),
+			func() jen.Code {
+				if t.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", t.BelongsToStruct.Singular()).Equals().IDf("created%s", t.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				utils.BuildFakeVarName(fmt.Sprintf("%sInput", sn)),
+				fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
+				jen.ID(utils.BuildFakeVarName(sn)),
+			),
+			jen.List(jen.IDf("%s%s", createdVarPrefix, t.Name.Singular()), jen.Err()).Assign().ID("c").Dotf("Create%s", sn).Call(
+				creationArgs...,
+			),
+			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+				jen.Return(jen.Nil(), jen.Err()),
+			),
+			jen.Line(),
+		)
+
 	}
-	ca := buildCreationArguments(proj, createdVarPrefix, typ)
-	creationArgs = append(creationArgs, ca[:len(ca)-1]...)
-	creationArgs = append(creationArgs,
-		jen.AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(
-			fieldToExpectedDotField(fmt.Sprintf("%s%s", sourceVarPrefix, typ.Name.Singular()), typ)...,
-		),
-	)
-
-	if typ.BelongsToStruct != nil {
-		if parentTyp := proj.FindType(typ.BelongsToStruct.Singular()); parentTyp != nil {
-			newLines := buildRequisiteCreationCode(proj, *parentTyp)
-			lines = append(lines, newLines...)
-		}
-	}
-
-	lines = append(lines,
-		jen.Commentf("Create %s.", typ.Name.SingularCommonName()),
-		jen.IDf("%s%s", sourceVarPrefix, typ.Name.Singular()).Assign().AddressOf().Qual(proj.ModelsV1Package(), typ.Name.Singular()).Valuesln(
-			buildFakeCallForCreationInput(proj, typ)...,
-		),
-		jen.Line(),
-		jen.List(jen.IDf("%s%s", createdVarPrefix, typ.Name.Singular()), jen.Err()).Assign().ID("c").Dotf("Create%s", sn).Call(
-			creationArgs...,
-		),
-		jen.If(jen.Err().DoesNotEqual().Nil()).Block(
-			jen.Return(jen.Nil(), jen.Err()),
-		),
-		jen.Line(),
-	)
 
 	return lines
 }
@@ -167,8 +138,12 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructs(proj *models.Project, 
 	params := []jen.Code{constants.CtxVar()}
 
 	if len(parents) > 0 {
-		for _, pt := range parents {
-			listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
+		for i, pt := range parents {
+			if i == len(parents)-1 && typ.BelongsToStruct != nil {
+				continue
+			} else {
+				listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
+			}
 		}
 		listParams = append(listParams, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
 
@@ -188,14 +163,14 @@ func buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj *model
 
 	if len(parents) > 0 {
 		for _, pt := range parents {
-			listParams = append(listParams, jen.ID(pt.Name.UnexportedVarName()).Dot("ID"))
+			listParams = append(listParams, jen.IDf("random%s", pt.Name.Singular()).Dot("ID"))
 		}
-		listParams = append(listParams, jen.ID(typ.Name.UnexportedVarName()).Dot("ID"))
+		listParams = append(listParams, jen.IDf("random%s", typ.Name.Singular()).Dot("ID"))
 
 		params = append(params, listParams...)
 
 	} else {
-		params = append(params, jen.ID(typ.Name.UnexportedVarName()).Dot("ID"))
+		params = append(params, jen.IDf("random%s", typ.Name.Singular()).Dot("ID"))
 	}
 
 	return params
@@ -255,23 +230,25 @@ func buildCreateSomethingBlock(proj *models.Project, typ models.DataType) []jen.
 	sn := typ.Name.Singular()
 	uvn := typ.Name.UnexportedVarName()
 
-	stopIndex := 6
-	lines := buildRequisiteCreationCode(proj, typ)
-	if len(lines) >= stopIndex {
-		lines = lines[:len(lines)-stopIndex]
-	}
+	lines := append([]jen.Code{constants.CreateCtx(), jen.Line()}, buildRequisiteCreationCode(proj, typ)...)
 
 	args := buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)
 	args = args[:len(args)-1]
 	args = append(args, jen.IDf("%sInput", uvn))
 
 	lines = append(lines,
-		constants.CreateCtx(),
 		utils.BuildFakeVarWithCustomName(
 			proj,
 			fmt.Sprintf("%sInput", uvn),
 			fmt.Sprintf("BuildFake%sCreationInput", sn),
 		),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.IDf("%sInput", uvn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		jen.Line(),
 		jen.Return(jen.ID("c").Dotf("BuildCreate%sRequest", sn).Call(args...)),
 	)
 
@@ -279,7 +256,7 @@ func buildCreateSomethingBlock(proj *models.Project, typ models.DataType) []jen.
 }
 
 func buildRandomDependentIDFetchers(proj *models.Project, typ models.DataType) []jen.Code {
-	lines := []jen.Code{}
+	lines := []jen.Code{constants.CreateCtx()}
 	parentTypes := proj.FindOwnerTypeChain(typ)
 
 	callArgs := []jen.Code{
@@ -292,7 +269,11 @@ func buildRandomDependentIDFetchers(proj *models.Project, typ models.DataType) [
 		callArgs = append([]jen.Code{constants.CtxVar(), jen.ID("c")}, ca...)
 
 		lines = append(lines,
-			jen.ID(pt.Name.UnexportedVarName()).Assign().IDf("fetchRandom%s", pt.Name.Singular()).Call(callArgs...),
+			jen.Line(),
+			jen.IDf("random%s", pt.Name.Singular()).Assign().IDf("fetchRandom%s", pt.Name.Singular()).Call(callArgs...),
+			jen.If(jen.IDf("random%s", pt.Name.Singular()).IsEqualTo().Nil()).Block(
+				jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("retrieving random %s", pt.Name.SingularCommonName())+": %w"), jen.ID("ErrUnavailableYet"))),
+			),
 		)
 	}
 
@@ -310,6 +291,15 @@ func buildGetSomethingBlock(proj *models.Project, typ models.DataType) []jen.Cod
 	requestBuildingArgs = append(requestBuildingArgs, jen.IDf("random%s", sn).Dot("ID"))
 
 	lines := buildRandomDependentIDFetchers(proj, typ)
+
+	lines = append(lines,
+		jen.Line(),
+		jen.IDf("random%s", typ.Name.Singular()).Assign().IDf("fetchRandom%s", typ.Name.Singular()).Call(callArgs...),
+		jen.If(jen.IDf("random%s", typ.Name.Singular()).IsEqualTo().Nil()).Block(
+			jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("retrieving random %s", typ.Name.SingularCommonName())+": %w"), jen.ID("ErrUnavailableYet"))),
+		),
+	)
+
 	lines = append(lines,
 		func() jen.Code {
 			if len(lines) > 0 {
@@ -317,11 +307,7 @@ func buildGetSomethingBlock(proj *models.Project, typ models.DataType) []jen.Cod
 			}
 			return nil
 		}(),
-		constants.CreateCtx(),
-		jen.If(jen.IDf("random%s", sn).Assign().IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).DoesNotEqual().ID("nil")).Block(
-			jen.Return().ID("c").Dotf("BuildGet%sRequest", sn).Call(requestBuildingArgs...),
-		),
-		jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
+		jen.Return().ID("c").Dotf("BuildGet%sRequest", sn).Call(requestBuildingArgs...),
 	)
 
 	return lines
@@ -344,7 +330,6 @@ func buildGetListOfSomethingBlock(proj *models.Project, typ models.DataType) []j
 			}
 			return nil
 		}(),
-		constants.CreateCtx(),
 		jen.Return().ID("c").Dotf("BuildGet%sRequest", pn).Call(requestBuildingArgs...),
 	)
 
@@ -388,10 +373,10 @@ func buildUpdateChildBlock(proj *models.Project, typ models.DataType) []jen.Code
 	}
 
 	lines = append(lines,
-		constants.CreateCtx(),
 		jen.If(jen.IDf("random%s", sn).Assign().IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).DoesNotEqual().ID("nil")).Block(
 			ifRandomExistsBlock...,
 		),
+		jen.Line(),
 		jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
 	)
 
@@ -409,6 +394,15 @@ func buildArchiveSomethingBlock(proj *models.Project, typ models.DataType) []jen
 	requestBuildingArgs = append(requestBuildingArgs, jen.IDf("random%s", sn).Dot("ID"))
 
 	lines := buildRandomDependentIDFetchers(proj, typ)
+
+	lines = append(lines,
+		jen.Line(),
+		jen.IDf("random%s", typ.Name.Singular()).Assign().IDf("fetchRandom%s", typ.Name.Singular()).Call(callArgs...),
+		jen.If(jen.IDf("random%s", typ.Name.Singular()).IsEqualTo().Nil()).Block(
+			jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("retrieving random %s", typ.Name.SingularCommonName())+": %w"), jen.ID("ErrUnavailableYet"))),
+		),
+	)
+
 	lines = append(lines,
 		func() jen.Code {
 			if len(lines) > 0 {
@@ -416,11 +410,7 @@ func buildArchiveSomethingBlock(proj *models.Project, typ models.DataType) []jen
 			}
 			return nil
 		}(),
-		constants.CreateCtx(),
-		jen.If(jen.IDf("random%s", sn).Assign().IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).DoesNotEqual().ID("nil")).Block(
-			jen.Return().ID("c").Dotf("BuildArchive%sRequest", sn).Call(requestBuildingArgs...),
-		),
-		jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
+		jen.Return().ID("c").Dotf("BuildArchive%sRequest", sn).Call(requestBuildingArgs...),
 	)
 
 	return lines
