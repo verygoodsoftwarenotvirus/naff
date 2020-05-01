@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
@@ -20,7 +19,7 @@ func RenderPackage(project *models.Project) error {
 		".gitignore":              gitIgnore,
 	}
 
-	files["Makefile"] = makefile(project.OutputPath, project.Name.KebabName())
+	files["Makefile"] = makefile(project)
 	files[".gitlab-ci.yml"] = gitlabCIDotYAML(project.OutputPath)
 	files["README.md"] = readmeDotMD(project.Name)
 	files[".golangci.yml"] = golancCILintDotYAML(project.OutputPath)
@@ -89,44 +88,6 @@ func dockerIgnore() []byte {
 `)
 }
 
-func readmeDotMD(projectName wordsmith.SuperPalabra) func() []byte {
-	f := fmt.Sprintf(`# %s
-
-replace me with a good description
-
-## dev dependencies
-
-you'll need:
-
-- make
-- go >= 1.12
-- docker
-- docker-compose
-
-the following tools are occasionally required for development:
-
-- [wire](https://github.com/google/wire) for dependency management
-- [golangci-lint](https://github.com/golangci/golangci-lint) for linting (see included config file)
-- [gocov](https://github.com/axw/gocov) for coverage report generation
-
-assuming you have go installed, you can install these by running `+"`"+`make dev-tools`+"`"+`
-
-## running the server
-
-1. clone this repository
-2. run `+"`"+`make dev`+"`"+`
-3. [http://localhost](http://localhost)
-
-## working on the frontend
-
-1. run `+"`"+`make dev`+"`"+`
-2. in a different terminal, cd into `+"`"+`frontend/v1`+"`"+` and run `+"`"+`npm run autobuild`+"`"+`
-3. edit and have fun
-`, projectName.Singular())
-
-	return func() []byte { return []byte(f) }
-}
-
 func gitIgnore() []byte {
 	return []byte(`# Binaries for programs and plugins
 *.exe
@@ -176,247 +137,6 @@ frontend/v1/public/bundle.*
 *.profile`)
 }
 
-func makefile(projRoot string, projectNameKebab string) func() []byte {
-	f := fmt.Sprintf(`PWD           := $(shell pwd)
-GOPATH        := $(GOPATH)
-ARTIFACTS_DIR := artifacts
-COVERAGE_OUT  := $(ARTIFACTS_DIR)/coverage.out
-CONFIG_DIR    := config_files
-GO_FORMAT     := gofmt -s -w
-
-SERVER_DOCKER_IMAGE_NAME := %s-server
-SERVER_DOCKER_REPO_NAME  := docker.io/verygoodsoftwarenotvirus/$(SERVER_DOCKER_IMAGE_NAME)
-
-$(ARTIFACTS_DIR):
-	mkdir -p $(ARTIFACTS_DIR)
-
-## Go-specific prerequisite stuff
-
-ensure-wire:
-ifndef $(shell command -v wire 2> /dev/null)
-	$(shell GO111MODULE=off go get -u github.com/google/wire/cmd/wire)
-endif
-
-ensure-gocov:
-ifndef $(shell command -v gocov 2> /dev/null)
-	$(shell GO111MODULE=off go get -u github.com/axw/gocov/gocov)
-endif
-
-.PHONY: dev-tools
-dev-tools: ensure-wire ensure-gocov
-
-.PHONY: vendor-clean
-vendor-clean:
-	rm -rf vendor go.sum
-
-.PHONY: vendor
-vendor:
-	if [ ! -f go.mod ]; then go mod init; fi
-	go mod vendor
-
-.PHONY: revendor
-revendor: vendor-clean vendor
-
-## dependency injection
-
-.PHONY: wire-clean
-wire-clean:
-	rm -f cmd/server/v1/wire_gen.go
-
-.PHONY: wire
-wire: ensure-wire
-	wire gen %s/cmd/server/v1
-
-.PHONY: rewire
-rewire: ensure-wire wire-clean wire
-
-## Config
-
-clean-configs:
-	rm -rf $(CONFIG_DIR)
-
-$(CONFIG_DIR):
-	mkdir -p $(CONFIG_DIR)
-	go run cmd/config_gen/v1/main.go
-
-## Testing things
-
-.PHONY: lint
-lint:
-	@docker pull golangci/golangci-lint:latest
-	docker run \
-		--rm \
-		--volume `+"`"+`pwd`+"`"+`:`+"`"+`pwd`+"`"+` \
-		--workdir=`+"`"+`pwd`+"`"+` \
-		--env=GO111MODULE=on \
-		golangci/golangci-lint:latest golangci-lint run --config=.golangci.yml ./...
-
-$(COVERAGE_OUT): $(ARTIFACTS_DIR) ensure-gocov
-	set -ex; \
-	echo "mode: set" > $(COVERAGE_OUT);
-	for pkg in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
-		go test -coverprofile=profile.out -v -count 5 -race -failfast $$pkg; \
-		if [ $$? -ne 0 ]; then exit 1; fi; \
-		cat profile.out | grep -v "mode: atomic" >> $(COVERAGE_OUT); \
-	rm -f profile.out; \
-	done || exit 1
-	gocov convert $(COVERAGE_OUT) | gocov report
-
-.PHONY: quicktest # basically the same as coverage.out, only running once instead of with `+"`"+`-count`+"`"+` set
-quicktest: $(ARTIFACTS_DIR) ensure-gocov
-	@set -ex; \
-	echo "mode: set" > $(COVERAGE_OUT);
-	for pkg in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
-		go test -coverprofile=profile.out -race -failfast $$pkg; \
-		if [ $$? -ne 0 ]; then exit 1; fi; \
-		cat profile.out | grep -v "mode: atomic" >> $(COVERAGE_OUT); \
-	rm -f profile.out; \
-	done || exit 1
-	gocov convert $(COVERAGE_OUT) | gocov report
-
-.PHONY: coverage-clean
-coverage-clean:
-	@rm -f $(COVERAGE_OUT) profile.out;
-
-.PHONY: coverage
-coverage: coverage-clean $(COVERAGE_OUT)
-
-.PHONY: format
-format:
-	for file in `+"`"+`find $(PWD) -name '*.go'`+"`"+`; do $(GO_FORMAT) $$file; done
-
-.PHONY: check_formatting
-check_formatting:
-	docker build --tag check_formatting:latest --file dockerfiles/formatting.Dockerfile .
-	docker run check_formatting:latest
-
-.PHONY: frontend-tests
-frontend-tests:
-	docker-compose --file compose-files/frontend-tests.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
-
-## DELETE ME
-
-.PHONY: gamut
-gamut: revendor rewire config_files quicktest lint integration-tests-postgres integration-tests-sqlite integration-tests-mariadb frontend-tests
-
-## Integration tests
-
-.PHONY: lintegration-tests # this is just a handy lil' helper I use sometimes
-lintegration-tests: integration-tests lint
-`,
-		projectNameKebab,
-		projRoot,
-		projRoot,
-		projRoot,
-	)
-
-	var (
-		integrationTestTargets []string
-		integrationTests       []string
-	)
-
-	for _, db := range []string{"postgres", "sqlite", "mariadb"} {
-
-		integrationTestTargets = append(integrationTestTargets, fmt.Sprintf("integration-tests-%s", db))
-		integrationTests = append(integrationTests, fmt.Sprintf(`
-.PHONY: integration-tests-%s
-integration-tests-%s:
-	docker-compose --file compose-files/integration-tests-%s.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
-`, db, db, db))
-	}
-
-	f += fmt.Sprintf(`
-.PHONY: integration-tests
-integration-tests: %s
-`, strings.Join(integrationTestTargets, " "))
-
-	f += strings.Join(integrationTests, "")
-
-	f += `
-.PHONY: integration-coverage
-integration-coverage:
-	@# big thanks to https://blog.cloudflare.com/go-coverage-with-external-tests/
-	rm -f ./artifacts/integration-coverage.out
-	mkdir -p ./artifacts
-	docker-compose --file compose-files/integration-coverage.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
-	go tool cover -html=./artifacts/integration-coverage.out
-
-## Load tests
-`
-
-	f += fmt.Sprintf(`
-.PHONY: load-tests
-load-tests: load-tests-postgres load-tests-sqlite load-tests-mariadb
-`)
-
-	for _, db := range []string{"postgres", "sqlite", "mariadb"} {
-		f += fmt.Sprintf(`
-.PHONY: load-tests-%s
-load-tests-%s:
-	docker-compose --file compose-files/load-tests-%s.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
-`, db, db, db)
-	}
-
-	f += `
-## Docker things
-
-.PHONY: server-docker-image
-server-docker-image: wire
-	docker build --tag $(SERVER_DOCKER_IMAGE_NAME):latest --file dockerfiles/server.Dockerfile .
-
-.PHONY: push-server-to-docker
-push-server-to-docker: prod-server-docker-image
-	docker push $(SERVER_DOCKER_REPO_NAME):latest
-
-## Running
-
-.PHONY: dev
-dev:
-	docker-compose --file compose-files/development.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
-
-.PHONY: run
-run:
-	docker-compose --file compose-files/production.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit`
-
-	return func() []byte { return []byte(f) }
-}
-
 func gitlabCIDotYAML(projRoot string) func() []byte {
 	projParts := strings.Split(projRoot, "/")
 
@@ -455,8 +175,19 @@ coverage:
     GOPATH: "/go"
   script:
     - apt-get update -y && apt-get install -y make git gcc musl-dev
-    - GO111MODULES=off go get github.com/axw/gocov/gocov
-    - make artifacts/coverage.out
+    - make coverage
+
+unit-tests:
+    stage: quality
+    image: golang:stretch
+    variables:
+      GOPATH: "/go"
+    script:
+      - apt-get update -y && apt-get install -y make git gcc musl-dev
+      - make gitlab-ci-junit-report
+    artifacts:
+      reports:
+        junit: test_artifacts/unit_test_report.xml
 
 linting:
   stage: quality
