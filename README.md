@@ -21,7 +21,7 @@ NAFF is primarily meant to generate CRUD code for a number of custom data types.
 
 I'm gonna write a blog post about this eventually, but the long and short of it is: I have an irrational distaste towards so-called "batteries included" web frameworks, and ORMS (almost equally).
 
-The goal for NAFF is to generate well-tested, fleshed-out web server repositories, so you can focus on the actual business logic of whatever you're trying to build, because you're not writing boilerplate.
+The goal for NAFF is to generate well-tested, fleshed-out web server repositories that don't have these sorts of dependencies.
 
 NAFF doesn't just generate primary application logic, it also generates:
 
