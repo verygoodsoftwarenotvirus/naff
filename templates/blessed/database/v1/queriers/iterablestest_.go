@@ -728,8 +728,8 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 
 	buildFourthSubtest := func() []jen.Code {
 		lines := typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)
-		var mockDBCall *jen.Statement
 
+		var mockDBCall *jen.Statement
 		if (typ.BelongsToUser && typ.RestrictedToUser) || typ.BelongsToStruct != nil {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery")))
 
@@ -743,6 +743,13 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WillReturnRows").Call(
 				jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID(utils.BuildFakeVarName(sn))),
+			)
+		}
+		if mockDBCall == nil {
+			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").
+				Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				Dotln("WillReturnRows").Callln(
+				jen.IDf("buildMockRowsFrom%s", sn).Call(jen.IDf("example%s", sn)),
 			)
 		}
 

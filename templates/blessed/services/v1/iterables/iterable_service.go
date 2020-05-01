@@ -74,7 +74,7 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 	}
 
 	structFields = append(structFields, jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)))
-	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
+	if typ.OwnedByAUserAtSomeLevel(proj) {
 		structFields = append(structFields,
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 		)
@@ -95,7 +95,7 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Line(),
 	}
 
-	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
+	if typ.OwnedByAUserAtSomeLevel(proj) {
 		typeDefs = append(typeDefs,
 			jen.Comment("UserIDFetcher is a function that fetches user IDs."),
 			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
@@ -150,7 +150,7 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	params = append(params, jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).ID(fmt.Sprintf("%sIDFetcher", sn)))
 	serviceValues = append(serviceValues, jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).MapAssign().ID(fmt.Sprintf("%sIDFetcher", uvn)))
 
-	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
+	if typ.OwnedByAUserAtSomeLevel(proj) {
 		params = append(params, jen.ID("userIDFetcher").ID("UserIDFetcher"))
 		serviceValues = append(serviceValues, jen.ID("userIDFetcher").MapAssign().ID("userIDFetcher"))
 	}

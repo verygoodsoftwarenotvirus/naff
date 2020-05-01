@@ -491,8 +491,6 @@ func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, 
 		os.RemoveAll(targetDestination)
 	}
 
-	println(p.OutputRepository)
-
 	proj := &Project{
 		EnableNewsman: true,
 		Name:          wordsmith.FromSingularPascalCase(p.Name),

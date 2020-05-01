@@ -43,7 +43,7 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 	}
 	serviceValues = append(serviceValues, jen.IDf("%sIDFetcher", uvn).MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
 
-	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
+	if typ.OwnedByAUserAtSomeLevel(proj) {
 		serviceValues = append(serviceValues,
 			jen.ID("userIDFetcher").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 		)
@@ -88,7 +88,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 		provideServiceLines = append(provideServiceLines, jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
 	}
 	provideServiceLines = append(provideServiceLines, jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
-	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
+	if typ.OwnedByAUserAtSomeLevel(proj) {
 		provideServiceLines = append(provideServiceLines, jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
 	}
 
