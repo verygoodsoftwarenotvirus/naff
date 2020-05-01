@@ -14,11 +14,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gonum/graph/simple"
-	"github.com/gonum/graph/topo"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
+	"github.com/gonum/graph/simple"
+	"github.com/gonum/graph/topo"
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
@@ -93,12 +92,12 @@ func (p *Project) ParseModels() error {
 
 	for _, pkg := range packages {
 		dts, imps, err := parseModels(p.OutputPath, pkg.Files)
+		p.DataTypes = append(p.DataTypes, dts...)
 		if err != nil {
 			return fmt.Errorf("attempting to read package %s: %w", pkg.Name, err)
 		}
 		p.Validate() // trust by verify
 
-		p.DataTypes = append(p.DataTypes, dts...)
 		if p.containsCyclicOwnerships() {
 			return errors.New("error: cyclic ownership detected")
 		}
@@ -176,6 +175,12 @@ var (
 		Postgres: {},
 		Sqlite:   {},
 		MariaDB:  {},
+	}
+
+	nameToValidDBMap = map[string]validDatabase{
+		string(Postgres): Postgres,
+		string(Sqlite):   Sqlite,
+		string(MariaDB):  MariaDB,
 	}
 )
 
@@ -469,6 +474,16 @@ func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, 
 		return nil, surveyErr
 	}
 
+	supportedDBs := []string{}
+	dbSupportPrompt := &survey.MultiSelect{
+		Message: "Which databases would you like to generate code for?",
+		Options: []string{string(Postgres), string(Sqlite), string(MariaDB)},
+	}
+
+	if dbPromptErr := survey.AskOne(dbSupportPrompt, &supportedDBs, nil); dbPromptErr != nil {
+		return nil, dbPromptErr
+	}
+
 	targetDestination := filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository)
 	if strings.HasSuffix(targetDestination, "verygoodsoftwarenotvirus") {
 		log.Fatal("I don't think you actually want to do that.")
@@ -476,12 +491,19 @@ func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, 
 		os.RemoveAll(targetDestination)
 	}
 
-	return &Project{
+	println(p.OutputRepository)
+
+	proj := &Project{
 		EnableNewsman: true,
 		Name:          wordsmith.FromSingularPascalCase(p.Name),
 		OutputPath:    p.OutputRepository,
 		sourcePackage: p.ModelsPackage,
-	}, nil
+	}
+	for _, db := range supportedDBs {
+		proj.EnableDatabase(nameToValidDBMap[db])
+	}
+
+	return proj, nil
 }
 
 // GetTypeForTypeName blah

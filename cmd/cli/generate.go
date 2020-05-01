@@ -29,6 +29,10 @@ var (
 	sourceModels  string
 	outputPackage string
 
+	//postgresEnabled bool
+	//sqliteEnabled   bool
+	//mariaDBEnabled  bool
+
 	// generateCmd represents the generate command
 	generateCmd = &cobra.Command{
 		Use:   "gen",
@@ -36,7 +40,8 @@ var (
 		Long: `This command will prompt the user for a few things:
 	1. The name of the project
 	2. The directory where the files should end up
-	3. The directory where the input models are kept
+	3. The directory where the input models are kept	
+	4. Which databases you care about supporting
 
 INPUT:
 	As input, NAFF accepts a package that, when combined with the location of
@@ -88,7 +93,7 @@ files. If it's not creating a file you think should be there, make sure it
 didn't barf any errors out, and make sure the file does not exist.
 	Once NAFF does its thing, you will likely want to enter into the directory
 and run:
-		` + "`" + `make revendor rewire` + "`" + `
+		` + "`" + `make gamut` + "`" + `
 
 	That will set your dependencies up, and then you should be good to code.
 `,
@@ -98,11 +103,11 @@ and run:
 				return err
 			}
 
-			if strings.HasPrefix(strings.TrimSpace(p.OutputPath), "gitlab.com/verygoodsoftwarenotvirus/naff") {
+			if strings.TrimSpace(p.OutputPath) == "gitlab.com/verygoodsoftwarenotvirus/naff" {
 				return errors.New("you want me to erase myself?")
 			}
 
-			if err := p.ParseModels(p.OutputPath); err != nil {
+			if err := p.ParseModels(); err != nil {
 				return err
 			}
 
@@ -116,9 +121,13 @@ and run:
 )
 
 func init() {
-	generateCmd.Flags().StringVarP(&projectName, "name", "n", "", "project name.")
-	generateCmd.Flags().StringVarP(&sourceModels, "source-models", "m", "", "sources models package")
-	generateCmd.Flags().StringVarP(&outputPackage, "output-dir", "o", "", "Package to generate.")
+	generateCmd.Flags().StringVarP(&projectName, "name", "n", "", "project name")
+	generateCmd.Flags().StringVarP(&sourceModels, "source-models", "m", "", "input models package")
+	generateCmd.Flags().StringVarP(&outputPackage, "output-dir", "o", "", "package to generate")
+
+	//generateCmd.Flags().BoolVarP(&postgresEnabled, "enable-postgres", "", false, "enable postgres support")
+	//generateCmd.Flags().BoolVarP(&sqliteEnabled, "enable-sqlite", "", false, "enable sqlite support")
+	//generateCmd.Flags().BoolVarP(&mariaDBEnabled, "enable-mariadb", "", false, "enable mariadb support")
 
 	rootCmd.AddCommand(generateCmd)
 }

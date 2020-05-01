@@ -65,7 +65,7 @@ require (
 	github.com/uber/jaeger-client-go v2.22.1+incompatible // indirect
 	gitlab.com/verygoodsoftwarenotvirus/logging v1.0.2
 	gitlab.com/verygoodsoftwarenotvirus/newsman v0.0.0-20190528023929-c49dc073f989
-	gitlab.com/verygoodsoftwarenotvirus/todo v0.0.0-20191014052256-b072a0a5a6f1 // indirect
+	gitlab.com/verygoodsoftwarenotvirus/todo v0.0.0-20191014052256-b072a0a5a6f1
 	go.opencensus.io v0.22.0
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45

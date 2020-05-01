@@ -13,32 +13,26 @@ NAFF was built by myself, for myself. If NAFF is useful to you too, I consider t
 
 I wasn't even going to make this code public (see the below section), I was just going to provide binaries, but I don't run binaries on my machine whose code I'm not allowed to read, and I don't suggest you do so either.
 
-I'm honestly not interested in feature ideas/pull requests/complaints/suggestions/etc and have consequently turned those features off in Gitlab. As far as I am personally concerned, NAFF has exactly one user, and I am them. Even this README is for my own self (save for this section). 
-
-## state of the codebase
-
-The codebase is rough, and will probably remain rough for a very long time. It started life as mostly generated, and has been mangled many hundreds of times by poorly constructed regular expressions. 
-
-By the time this README is in master, the code will be generating everything appropriately. At some point I will go back and add unit tests for all the functions to test all the cases and only then will I consider refactoring the codebase.
-
-There are some unit tests for things I just had to verify, but they're not run in CI or anything (another thing on my todo list), so they're likely broken.
+I'm honestly not interested in feature ideas/pull requests/complaints/suggestions/etc and have consequently turned those features off in Gitlab. As far as I am personally concerned, NAFF has exactly one user, and I am them. Even this README is for my own self (save for this section).
 
 ## motivation
 
+NAFF is primarily meant to generate CRUD code for a number of custom data types. The idea is you think of what your individual database tables might look like as plain objects, and write your input package accordingly.
+
+I'm gonna write a blog post about this eventually, but the long and short of it is: I have an irrational distaste towards so-called "batteries included" web frameworks, and ORMS (almost equally).
+
 The goal for NAFF is to generate well-tested, fleshed-out web server repositories, so you can focus on the actual business logic of whatever you're trying to build, because you're not writing boilerplate.
 
-I'm gonna write a blog post about this eventually, but the long and short of it is: I have an irrational distaste towards so-called "batteries included" web frameworks, and ORMS (almost equally). 
-
-So I wrote an example CRUD server in Go, and then I wrote this tool to generate server codebases that are similar in (personally determined) quality to the example CRUD server codebase.
-
-NAFF doesn't just generate code, it also generates:
+NAFF doesn't just generate primary application logic, it also generates:
 
 - the Makefile and all relevant targets
 - A service client
-- Unit tests
-- Integration tests
-- Load tests
-- Frontend (browser-driven) tests
+- Unit tests with 90+% code coverage
+- Integration tests for all databases
+- Load tests for all databases
+- Frontend (browser-driven) tests for multiple browsers
+- Mandatory user 2FA
+- OAuth2 authentication
 - Database migrations/querying code
 - All dependency injection code
 - Dockerfiles
@@ -47,22 +41,33 @@ NAFF doesn't just generate code, it also generates:
 - CI scripts
 - a very very basic frontend in Svelte
 - Telemetry (tracing/logging/metrics collection)
+- Configuration parsing/rendering
 - Prometheus and Grafana configuration files
-- Linter configuration
+- Fairly strict linter configuration
 
 NAFF has support for multiple database providers. Currently those are:
-   
+
 - PostgreSQL
 - Sqlite3
 - MariaDB
 
 Each of these may be (de)activated to your liking.
 
+## state of the codebase
+
+The codebase is rough, and will probably remain rough for a very long time. It started life as mostly generated, and has been mangled many hundreds of times by poorly constructed regular expressions.
+
+By the time this README is in master, the code will be generating everything appropriately. At some point I will go back and add unit tests for all the functions to test all the cases and only then will I consider refactoring the codebase.
+
+There are some unit tests for things I just had to verify, but they're not run in CI or anything (another thing on my todo list), so they're likely broken.
+
 ## usage
 
 Start by defining any arbitrary Go package with some types in it. For instance, say I have a Go package `gitlab.com/verygoodsoftwarenotvirus/addressbook`, with a file `types.go` with the following:
 
-```
+```go
+package addressbook
+
 type Friend struct {
     FirstName string
     LastName string
@@ -73,10 +78,10 @@ type Friend struct {
 ```
 
 Running `naff gen gitlab.com/verygoodsoftwarenotvirus/addressbook` will trigger a series of prompts from the CLI, and then it will generate code.
- 
+
 NAFF writes code only on clean slates, and as such will nuke the output directory from orbit. So if I tell NAFF to write output to some precious path, I'm going to have a bad time.
 
-The structs you defined can only have a small selection of types, basically anything that can be defined as a constant in Go. No type aliases, no embedded structs, no `time.Time`, no slices. Pointers are allowed, though. Here are all the allowed types:
+The structs you defined can only have a small selection of types, basically anything that can be defined as a constant in Go. No type aliases, no embedded structs, no `time.Time`*, no slices. Pointers are allowed, though. Here are all the allowed types:
 
 ```
 bool
@@ -90,19 +95,32 @@ uint8
 uint16
 uint32
 uint64
-uintptr  // should only be used for the _META_ field
 float32
 float64
 string
+uintptr  // only allowed for the _META_ field
 ```
 
 After generating a codebase, it's a good idea to run `make gamut`, which will generate all the initial files you're going to need to start writing the real code.
+
+<sub><sub>*by default, the code generated by NAFF keeps time as uint64s representing epoch time</sub></sub>
+
+## flag prompts
+
+When you run NAFF, it will ask you a series of questions, namely:
+
+1. What the project is called
+1. Where the input data models are stored
+1. Where the project should go
+1. Which databases you'd like to support
 
 ## advanced usage (ownership)
 
 NAFF looks for a small, inconsistent smattering of flags in types. Let's say we wanted users to be able to set a birth year for their friend on creation, but not to change that birth year ever. You could accomplish something like that with this:
 
-```
+```go
+package addressbook
+
 type Friend struct {
     FirstName string
     LastName string
@@ -116,7 +134,9 @@ A similar flag `!creatable` is also supported.
 
 NAFF is capable of generating code that accounts for "ownership" between structs. The example I've been using is an old-school web discussion board, where you have the hierarchy `Forums > Subforums > Threads > Posts`. That hierarchy can be represented to NAFF like so:
 
-```
+```go
+package discussion
+
 type Forum struct {
     Name string
 }
@@ -141,8 +161,9 @@ Note the `_META_` field. NAFF won't generate anything around this field, but loo
 
 By default, all objects belong to a user, so you only need to indicate user ownership in the `_META_` field if the struct also belongs to another struct. You can indicate that an object belongs to nobody (effectively an enumeration) with the struct tag `belongs_to:"__nobody__"`:
 
+```go
+package postalservice
 
-```
 type ValidZipCode struct {
     Code string
     _META_ uintptr `belongs_to:"__nobody__"`
@@ -151,13 +172,15 @@ type ValidZipCode struct {
 
 Note that `Thread` and `Post` both belong to users and other structs. In this example, ordinary users can query posts and threads despite their ownership, because that matches the real-world analog. You can restrict something to a user with another tag:
 
-```
+```go
+package addressbook
+
 type Friend struct {
     FirstName string
     LastName string
     YearOfBirth uint `naff:"!editable"`
     MonthOfBirth uint
-    DayOfBirth uintstring
+    DayOfBirth uint
    _META_ uintptr `belongs_to:"Post,User"`
 }
 
