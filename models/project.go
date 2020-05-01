@@ -26,6 +26,7 @@ const (
 	metaFieldName = "_META_"
 
 	belongsTo    = "belongs_to"
+	restricted   = "restricted_to_user"
 	notCreatable = "!creatable"
 	notEditable  = "!editable"
 
@@ -66,6 +67,22 @@ type Project struct {
 	enabledDatabases map[validDatabase]struct{}
 }
 
+func (p *Project) Validate() {
+	if len(p.EnabledDatabases()) == 0 {
+		log.Panic("no databases enabled!")
+	}
+
+	if len(p.DataTypes) == 0 {
+		log.Panic("no types defined!")
+	}
+
+	for _, dt := range p.DataTypes {
+		if len(dt.Fields) == 0 {
+			log.Panicf("no fields defined for type %q!", dt.Name.Singular())
+		}
+	}
+}
+
 func (p *Project) ParseModels() error {
 	fullModelsPath := filepath.Join(os.Getenv("GOPATH"), "src", p.sourcePackage)
 
@@ -79,6 +96,7 @@ func (p *Project) ParseModels() error {
 		if err != nil {
 			return fmt.Errorf("attempting to read package %s: %w", pkg.Name, err)
 		}
+		p.Validate() // trust by verify
 
 		p.DataTypes = append(p.DataTypes, dts...)
 		if p.containsCyclicOwnerships() {
@@ -243,47 +261,55 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 					// this line doubles as a validation against invalid types
 					df.UnderlyingType = GetTypeForTypeName(df.Type)
 
+					if fieldName != metaFieldName && df.Type == "uintptr" {
+						log.Panic("invalid type!")
+					}
+
 					// check if this is the meta flag
 					if fieldName == metaFieldName && df.Type == "uintptr" {
 						// since found the meta flag, process its directives
-						var tag string
+						var tags string
 						if field != nil && field.Tag != nil {
-							tag = field.Tag.Value
+							tags = field.Tag.Value
 						}
 
-						// check belonging
-						var alsoBelongsToUser bool
-						if strings.Contains(tag, "belongs_to") {
+						for _, tag := range strings.Split(tags, " ") {
+							// check belonging
+							var alsoBelongsToUser bool
 							tagWithoutBackticks := strings.ReplaceAll(tag, "`", "")
-							tagWithoutBelongsTo := strings.ReplaceAll(tagWithoutBackticks, fmt.Sprintf("%s:", belongsTo), "")
-							properOwner := strings.ReplaceAll(tagWithoutBelongsTo, `"`, ``)
 
-							if strings.Contains(properOwner, ",") {
-								properOwnerParts := strings.Split(properOwner, ",")
+							if strings.Contains(tag, belongsTo) {
+								tagWithoutBelongsTo := strings.ReplaceAll(tagWithoutBackticks, fmt.Sprintf("%s:", belongsTo), "")
+								properOwner := strings.ReplaceAll(tagWithoutBelongsTo, `"`, ``)
 
-								if len(properOwnerParts) != 2 {
-									panic("too many owners, a type may only be owned by another type and a user!")
+								if strings.Contains(properOwner, ",") {
+									properOwnerParts := strings.Split(properOwner, ",")
+
+									if len(properOwnerParts) != 2 {
+										panic("too many owners, a type may only be owned by another type and a user!")
+									}
+
+									if strings.ToLower(properOwnerParts[0]) != "user" && strings.ToLower(properOwnerParts[1]) != "user" {
+										panic("too many owners, a type may only be owned by another type and a user!")
+									}
+
+									if strings.ToLower(properOwnerParts[0]) == "user" {
+										properOwner = properOwnerParts[1]
+									} else if strings.ToLower(properOwnerParts[1]) == "user" {
+										properOwner = properOwnerParts[0]
+									}
+									alsoBelongsToUser = true
 								}
 
-								if strings.ToLower(properOwnerParts[0]) != "user" && strings.ToLower(properOwnerParts[1]) != "user" {
-									panic("too many owners, a type may only be owned by another type and a user!")
+								if properOwner == "__nobody__" {
+									dt.BelongsToUser = false
+									dt.BelongsToNobody = true
+								} else if properOwner != "" {
+									dt.BelongsToStruct = wordsmith.FromSingularPascalCase(properOwner)
+									dt.BelongsToUser = alsoBelongsToUser
 								}
-
-								alsoBelongsToUser = true
-
-								if strings.ToLower(properOwnerParts[0]) == "user" {
-									properOwner = properOwnerParts[1]
-								} else if strings.ToLower(properOwnerParts[0]) == "user" {
-									properOwner = properOwnerParts[0]
-								}
-							}
-
-							if properOwner == "__nobody__" {
-								dt.BelongsToUser = false
-								dt.BelongsToNobody = true
-							} else if properOwner != "" {
-								dt.BelongsToStruct = wordsmith.FromSingularPascalCase(properOwner)
-								dt.BelongsToUser = alsoBelongsToUser
+							} else if tagWithoutBackticks == `restricted_to_user:"true"` {
+								dt.RestrictedToUser = true
 							}
 						}
 					} else {
@@ -460,7 +486,7 @@ func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, 
 
 // GetTypeForTypeName blah
 func GetTypeForTypeName(name string) types.Type {
-	switch name {
+	switch strings.ToLower(name) {
 	case "bool":
 		return types.Typ[types.Bool]
 	case "int":

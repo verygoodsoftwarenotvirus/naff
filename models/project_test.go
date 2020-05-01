@@ -42,6 +42,8 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(39),
+						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
@@ -49,6 +51,8 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(52),
+						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
 				BelongsToUser: true,
@@ -94,6 +98,8 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(58),
+						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
@@ -101,6 +107,8 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(71),
+						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
 				BelongsToUser: true,
@@ -144,6 +152,8 @@ type Item struct{
 						Pointer:               true,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(39),
+						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
@@ -151,6 +161,8 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(53),
+						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
 				BelongsToUser: true,
@@ -194,6 +206,8 @@ type Item struct{
 						Pointer:               true,
 						ValidForCreationInput: false,
 						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(39),
+						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
@@ -201,6 +215,8 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   false,
+						Pos:                   token.Pos(73),
+						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
 				BelongsToUser: true,
@@ -326,6 +342,8 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						UnderlyingType:        GetTypeForTypeName("string"),
+						Pos:                   token.Pos(41),
 					},
 				},
 				BelongsToUser: true,
@@ -339,6 +357,8 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						UnderlyingType:        GetTypeForTypeName("string"),
+						Pos:                   token.Pos(80),
 					},
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
@@ -346,10 +366,90 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						UnderlyingType:        GetTypeForTypeName("string"),
+						Pos:                   token.Pos(93),
 					},
 				},
 				BelongsToUser:   true,
 				BelongsToStruct: wordsmith.FromSingularPascalCase("Owner"),
+			},
+		}
+		expectedImports := []string{
+			fmt.Sprintf("%s/services/v1/owners", exampleOutputPath),
+			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+		}
+
+		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		assert.NoError(t, err)
+
+		assert.Equal(t, expectedImports, actualImports)
+		assert.Equal(t, len(expectedDataTypes), len(actualDataTypes))
+		assert.Equal(t, expectedDataTypes, actualDataTypes)
+	})
+
+	T.Run("with meta field indicating belonging to another object and a user, restricted to that user", func(t *testing.T) {
+		exampleOutputPath := "things/stuff"
+		exampleCode := `
+package whatever
+
+type Owner struct {
+	FirstName string
+}
+
+type Item struct{
+	Name string
+	Details string
+	_META_ uintptr ` + "`" + `belongs_to:"Owner,User" restricted_to_user:"true"` + "`" + `
+}
+`
+		fset := token.NewFileSet()
+		f, err := parser.ParseFile(fset, "", exampleCode, parser.AllErrors)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		expectedDataTypes := []DataType{
+			{
+				Name: wordsmith.FromSingularPascalCase("Owner"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("FirstName"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+						UnderlyingType:        GetTypeForTypeName("string"),
+						Pos:                   token.Pos(41),
+					},
+				},
+				BelongsToUser: true,
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("Item"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+						UnderlyingType:        GetTypeForTypeName("string"),
+						Pos:                   token.Pos(80),
+					},
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Details"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+						UnderlyingType:        GetTypeForTypeName("string"),
+						Pos:                   token.Pos(93),
+					},
+				},
+				BelongsToUser:    true,
+				RestrictedToUser: true,
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("Owner"),
 			},
 		}
 		expectedImports := []string{
@@ -393,6 +493,8 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(39),
+						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
@@ -400,9 +502,12 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(52),
+						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: false,
+				BelongsToUser:   false,
+				BelongsToNobody: true,
 			},
 		}
 		expectedImports := []string{
@@ -462,7 +567,7 @@ func TestProject_containsCyclicOwnerships(T *testing.T) {
 
 		actual := p.containsCyclicOwnerships()
 
-		assert.True(t, actual)
+		assert.False(t, actual)
 	})
 
 	T.Run("with violation", func(t *testing.T) {
