@@ -72,7 +72,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
 			jen.ID("scope").Equals().ID("determineScope").Call(jen.ID(constants.RequestVarName)),
-			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("scope"), jen.ID("scope")).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("scope"), jen.ID("scope")),
 			jen.Line(),
 			jen.Comment("check for client and return if valid."),
 			jen.Var().ID("client").Equals().ID("s").Dot("fetchOAuth2ClientFromRequest").Call(jen.ID(constants.RequestVarName)),

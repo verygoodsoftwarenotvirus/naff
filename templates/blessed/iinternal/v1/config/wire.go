@@ -18,7 +18,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideConfigServerSettings is an obligatory function that."),
+		jen.Comment("ProvideConfigServerSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
@@ -31,7 +31,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideConfigAuthSettings is an obligatory function that."),
+		jen.Comment("ProvideConfigAuthSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
@@ -44,7 +44,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideConfigDatabaseSettings is an obligatory function that."),
+		jen.Comment("ProvideConfigDatabaseSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
@@ -57,7 +57,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ProvideConfigFrontendSettings is an obligatory function that."),
+		jen.Comment("ProvideConfigFrontendSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),

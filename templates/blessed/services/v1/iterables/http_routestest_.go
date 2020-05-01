@@ -158,7 +158,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.Qual(utils.MockPkg, "Anything"), // ctx
 	}
 	getSomethingExpectedArgs = append(getSomethingExpectedArgs, typ.BuildCallArgsForDBClientListRetrievalMethodTest(proj)...)
-	getSomethingExpectedArgs = append(getSomethingExpectedArgs, jen.Qual(utils.MockPkg, "Anything"))
+	getSomethingExpectedArgs = append(getSomethingExpectedArgs, jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.QueryFilter")))
 
 	firstSubtestLines := append([]jen.Code{jen.ID("s").Assign().ID("buildTestService").Call()}, includeOwnerFetchers(proj, typ)...)
 	firstSubtestLines = append(firstSubtestLines,
@@ -169,7 +169,11 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-		jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
+		jen.ID("ed").Dot("On").Call(
+			jen.Lit("EncodeResponse"),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sList", sn)),
+		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -191,11 +195,16 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 	secondSubtestLines := append([]jen.Code{jen.ID("s").Assign().ID("buildTestService").Call()}, includeOwnerFetchers(proj, typ)...)
 	secondSubtestLines = append(secondSubtestLines, jen.Line(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectedArgs...).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
+		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectedArgs...).Dot("Return").Call(
+			jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-		jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
+		jen.ID("ed").Dot("On").Call(
+			jen.Lit("EncodeResponse"),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sList", sn)),
+		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -245,7 +254,11 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-		jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
+		jen.ID("ed").Dot("On").Call(
+			jen.Lit("EncodeResponse"),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sList", sn)),
+		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -292,7 +305,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 	actualCallArgs := []jen.Code{
 		jen.Litf("Create%s", sn),
 		jen.Qual(utils.MockPkg, "Anything"),
-		jen.Qual(utils.MockPkg, "Anything"),
+		jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sCreationInput", sn)),
 	}
 
 	buildHappyPathSubtestVariant := func(name string, index int, returnFalse, returnErr bool) jen.Code {
@@ -334,12 +347,18 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
 				jen.Line(),
 				jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
-				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(),
+				jen.ID("r").Dot("On").Call(
+					jen.Lit("Report"),
+					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
+				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-				jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
+				jen.ID("ed").Dot("On").Call(
+					jen.Lit("EncodeResponse"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
+				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
 			)
@@ -499,12 +518,18 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
 		jen.Line(),
 		jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
-		jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(),
+		jen.ID("r").Dot("On").Call(
+			jen.Lit("Report"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
+		).Dot("Return").Call(),
 		jen.ID("s").Dot("reporter").Equals().ID("r"),
 		jen.Line(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-		jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"),
-			jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
+		jen.ID("ed").Dot("On").Call(
+			jen.Lit("EncodeResponse"),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
+		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -771,7 +796,11 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-		jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
+		jen.ID("ed").Dot("On").Call(
+			jen.Lit("EncodeResponse"),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
+		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -916,8 +945,11 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-		jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"),
-			jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
+		jen.ID("ed").Dot("On").Call(
+			jen.Lit("EncodeResponse"),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
+		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -1004,18 +1036,26 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedDBRetrievalCallArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
-		jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-			jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
+		jen.ID(dataManagerVarName).Dot("On").Call(
+			jen.Litf("Update%s", sn),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
+		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
 		jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
-		jen.ID("r").Dot("On").Call(jen.Lit("Report"),
-			jen.Qual(utils.MockPkg, "Anything"),
+		jen.ID("r").Dot("On").Call(
+			jen.Lit("Report"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
 		).Dot("Return").Call(),
 		jen.ID("s").Dot("reporter").Equals().ID("r"),
 		jen.Line(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-		jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
+		jen.ID("ed").Dot("On").Call(
+			jen.Lit("EncodeResponse"),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
+		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -1193,8 +1233,11 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedDBRetrievalCallArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
-		jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-			jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
+		jen.ID(dataManagerVarName).Dot("On").Call(
+			jen.Litf("Update%s", sn),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
+		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -1246,17 +1289,26 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedDBRetrievalCallArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
-		jen.ID(dataManagerVarName).Dot("On").Call(jen.Litf("Update%s", sn), jen.Qual(utils.MockPkg, "Anything"),
-			jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
+		jen.ID(dataManagerVarName).Dot("On").Call(
+			jen.Litf("Update%s", sn),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
+		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
 		jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
-		jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(),
+		jen.ID("r").Dot("On").Call(
+			jen.Lit("Report"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
+		).Dot("Return").Call(),
 		jen.ID("s").Dot("reporter").Equals().ID("r"),
 		jen.Line(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-		jen.ID("ed").Dot("On").Call(jen.Lit("EncodeResponse"), jen.Qual(utils.MockPkg, "Anything"),
-			jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
+		jen.ID("ed").Dot("On").Call(
+			jen.Lit("EncodeResponse"),
+			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
+		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -1429,7 +1481,10 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 		if includeAfterEffects {
 			lines = append(lines,
 				jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
-				jen.ID("r").Dot("On").Call(jen.Lit("Report"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(),
+				jen.ID("r").Dot("On").Call(
+					jen.Lit("Report"),
+					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
+				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
 				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),

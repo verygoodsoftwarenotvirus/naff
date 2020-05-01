@@ -77,7 +77,7 @@ WORKDIR /go/src/%s
 COPY . .
 COPY --from=frontend-build-stage /app/public /frontend
 
-RUN go build -o /%s %s/cmd/server/v1
+RUN go build -trimpath -o /%s %s/cmd/server/v1
 
 # final stage
 FROM debian:stretch
@@ -117,7 +117,7 @@ RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
 ADD . .
 
-RUN go test -o /%s -c -coverproj \
+RUN go test -o /integration-server -c -coverpkg \
 	%s/internal/..., \
 	%s/database/v1/..., \
 	%s/services/v1/..., \
@@ -137,13 +137,13 @@ RUN npm install && npm run build
 FROM debian:stable
 
 COPY config_files config_files
-COPY --from=build-stage /%s /%s
+COPY --from=build-stage /integration-server /integration-server
 
 EXPOSE 80
 
-ENTRYPOINT ["/%s", "-test.coverprofile=/home/integration-coverage.out"]
+ENTRYPOINT ["/integration-server", "-test.coverprofile=/home/integration-coverage.out"]
 
-`, projRoot, binaryName, projRoot, projRoot, projRoot, projRoot, projRoot, binaryName, binaryName, binaryName))
+`, projRoot, projRoot, projRoot, projRoot, projRoot, projRoot))
 }
 
 func integrationServerDotDockerfile(projRoot, binaryName string) []byte {
@@ -156,7 +156,7 @@ RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
 ADD . .
 
-RUN go build -o /%s -v %s/cmd/server/v1
+RUN go build -trimpath -o /%s -v %s/cmd/server/v1
 
 # frontend-build-stage
 FROM node:latest AS frontend-build-stage
@@ -231,7 +231,7 @@ RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
 ADD . .
 
-RUN go build -o /%s %s/cmd/server/v1
+RUN go build -trimpath -o /%s %s/cmd/server/v1
 
 # frontend-build-stage
 FROM node:latest AS frontend-build-stage

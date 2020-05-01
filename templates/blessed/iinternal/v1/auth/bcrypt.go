@@ -89,7 +89,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ValidateLogin validates a login attempt by."),
+		jen.Comment("ValidateLogin validates a login attempt by:"),
 		jen.Line(),
 		jen.Comment("1. checking that the provided password matches the stored hashed password"),
 		jen.Line(),
@@ -125,7 +125,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.If(jen.ID("tooWeak")).Block(
 				jen.Comment("NOTE: this can end up with a return set where passwordMatches is true and the err is not nil."),
-				jen.Comment("This is the valid case in the event the user has logged in with a valid password, but the."),
+				jen.Comment("This is the valid case in the event the user has logged in with a valid password, but the"),
 				jen.Comment("bcrypt cost has been raised since they last logged in."),
 				jen.Return().List(jen.ID("passwordMatches"), jen.ID("ErrCostTooLow")),
 			),

@@ -126,7 +126,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("r").Assign().Qual("github.com/emicklei/hazana", "Run").Call(jen.ID("attacker"), jen.ID("cfg")),
 			jen.Line(),
-			jen.Comment("inspect the report and compute whether the test has failed."),
+			jen.Comment("inspect the report and compute whether the test has failed"),
 			jen.Comment("e.g by looking at the success percentage and mean response time of each metric."),
 			jen.ID("r").Dot("Failed").Equals().False(),
 			jen.Line(),

@@ -29,7 +29,7 @@ func buildCORSHandlerDef() []jen.Code {
 			),
 			jen.ID("ExposedHeaders").MapAssign().Index().String().Values(jen.Lit("Link")),
 			jen.ID("AllowCredentials").MapAssign().True(),
-			jen.Comment("Maximum value not ignored by any of major browsers."),
+			jen.Comment("Maximum value not ignored by any of major browsers"),
 			jen.ID("MaxAge").MapAssign().Lit(300),
 		)),
 	}

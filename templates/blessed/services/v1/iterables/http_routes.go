@@ -386,12 +386,8 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 		jen.Line(),
 		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-
 		jen.Line(),
 	}
-
-	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, false, true, false)...)
-	fetchCallArgs := typ.BuildDBClientRetrievalMethodCallArgs(proj)
 
 	block = append(block,
 		jen.Line(),
@@ -409,15 +405,11 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 				return jen.Null()
 			}
 		}(),
-		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID("input").Dot("BelongsToUser").Equals().ID("userID")
-			} else {
-				return jen.Null()
-			}
-		}(),
 		jen.Line(),
 	)
+
+	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, false, true, typ.BelongsToUser)...)
+	fetchCallArgs := typ.BuildDBClientRetrievalMethodCallArgs(proj)
 
 	block = append(block,
 		jen.Line(),

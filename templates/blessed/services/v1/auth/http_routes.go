@@ -28,11 +28,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("DecodeCookieFromRequest")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+			jen.Line(),
 			jen.List(jen.ID("cookie"), jen.Err()).Assign().ID(constants.RequestVarName).Dot("Cookie").Call(jen.ID("CookieName")),
 			jen.If(jen.Err().DoesNotEqual().Qual("net/http", "ErrNoCookie").And().ID("cookie").DoesNotEqual().ID("nil")).Block(
 				jen.ID("decodeErr").Assign().ID("s").Dot("cookieManager").Dot("Decode").Call(jen.ID("CookieName"), jen.ID("cookie").Dot("Value"), jen.AddressOf().ID("ca")),
 				jen.If(jen.ID("decodeErr").DoesNotEqual().ID("nil")).Block(
-					jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("decoding request cookie")),
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("decoding request cookie")),
 					jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("decoding request cookie: %w"), jen.ID("decodeErr"))),
 				),
 				jen.Line(),
@@ -52,6 +54,8 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("WebsocketAuthFunction")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+			jen.Line(),
 			jen.Comment("First we check to see if there is an OAuth2 token for a valid client attached to the request."),
 			jen.Comment("We do this first because it is presumed to be the primary means by which requests are made to the httpServer."),
 			jen.List(jen.ID("oauth2Client"), jen.Err()).Assign().ID("s").Dot("oauth2ClientsService").Dot("ExtractOAuth2ClientFromRequest").Call(constants.CtxVar(), jen.ID(constants.RequestVarName)),
@@ -59,7 +63,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Return().True(),
 			),
 			jen.Line(),
-			jen.Comment("In the event there's not a valid OAuth2 token attached to the request, or there is some other OAuth2 issue,."),
+			jen.Comment("In the event there's not a valid OAuth2 token attached to the request, or there is some other OAuth2 issue,"),
 			jen.Comment("we next check to see if a valid cookie is attached to the request."),
 			jen.List(jen.ID("cookieAuth"), jen.ID("cookieErr")).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(constants.CtxVar(), jen.ID(constants.RequestVarName)),
 			jen.If(jen.ID("cookieErr").IsEqualTo().ID("nil").And().ID("cookieAuth").DoesNotEqual().ID("nil")).Block(
@@ -67,7 +71,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("If your request gets here, you're likely either trying to get here, or desperately trying to get anywhere."),
-			jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error authenticated token-authenticated request")),
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error authenticated token-authenticated request")),
 			jen.Return().False(),
 		),
 		jen.Line(),
@@ -212,7 +216,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("fetchLoginDataFromRequest searches a given HTTP request for parsed login input data, and."),
+		jen.Comment("fetchLoginDataFromRequest searches a given HTTP request for parsed login input data, and"),
 		jen.Line(),
 		jen.Comment("returns a helper struct with the relevant login information."),
 		jen.Line(),
@@ -233,7 +237,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.ID("username").Assign().ID("loginInput").Dot("Username"),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("username")),
 			jen.Line(),
-			jen.Comment("you could ensure there isn't an unsatisfied password reset token."),
+			jen.Comment("you could ensure there isn't an unsatisfied password reset token"),
 			jen.Comment("requested before allowing login here."),
 			jen.Line(),
 			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("userDB").Dot("GetUserByUsername").Call(constants.CtxVar(), jen.ID("username")),
@@ -311,7 +315,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildAuthCookie").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual("net/http", "Cookie"), jen.Error()).Block(
 			jen.Comment("NOTE: code here is duplicated into the unit tests for"),
-			jen.Comment("DecodeCookieFromRequest any changes made here might need."),
+			jen.Comment("DecodeCookieFromRequest any changes made here might need"),
 			jen.Comment("to be reflected there."),
 			jen.List(jen.ID("encoded"), jen.Err()).Assign().ID("s").Dot("cookieManager").Dot("Encode").Callln(
 				jen.ID("CookieName"),

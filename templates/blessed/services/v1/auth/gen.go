@@ -16,6 +16,7 @@ func RenderPackage(proj *models.Project) error {
 		"services/v1/auth/middleware_test.go":   middlewareTestDotGo(proj),
 		"services/v1/auth/mock_test.go":         mockTestDotGo(proj),
 		"services/v1/auth/wire.go":              wireDotGo(proj),
+		"services/v1/auth/wire_test.go":         wireTestDotGo(proj),
 		"services/v1/auth/http_routes.go":       httpRoutesDotGo(proj),
 		"services/v1/auth/middleware.go":        middlewareDotGo(proj),
 	}

@@ -105,7 +105,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 	buildServerDecLines := func() []jen.Code {
 		lines := []jen.Code{
 			jen.ID("DebugMode").MapAssign().ID("cfg").Dot("Server").Dot("Debug"),
-			jen.Comment("infra things."),
+			jen.Comment("infra things"),
 			jen.ID("db").MapAssign().ID("db"),
 			jen.ID("config").MapAssign().ID("cfg"),
 			jen.ID("encoder").MapAssign().ID("encoder"),
@@ -120,7 +120,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		// }
 
 		lines = append(lines,
-			jen.Comment("services."),
+			jen.Comment("services"),
 			jen.ID("webhooksService").MapAssign().ID("webhooksService"),
 			jen.ID("frontendService").MapAssign().ID("frontendService"),
 			jen.ID("usersService").MapAssign().ID("usersService"),

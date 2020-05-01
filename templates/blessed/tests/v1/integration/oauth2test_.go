@@ -179,7 +179,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("cookie"), jen.ID("input")),
 					jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 					jen.Line(),
-					jen.Comment("ArchiveHandler oauth2Client."),
+					jen.Comment("archive oauth2Client."),
 					jen.Err().Equals().ID("testClient").Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
 					utils.AssertNoError(jen.Err(), nil),
 					jen.Line(),

@@ -17,7 +17,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 			jen.Comment("MetricsNamespace is the namespace under which we register metrics."),
 			jen.ID("MetricsNamespace").Equals().Lit("todo_server"),
 			jen.Line(),
-			jen.Comment("MinimumRuntimeCollectionInterval is the smallest interval we can collect metrics at."),
+			jen.Comment("MinimumRuntimeCollectionInterval is the smallest interval we can collect metrics at"),
 			jen.Comment("this value is used to guard against zero values."),
 			jen.ID("MinimumRuntimeCollectionInterval").Equals().Qual("time", "Second"),
 			jen.Line(),

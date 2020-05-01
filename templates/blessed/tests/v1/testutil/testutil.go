@@ -123,7 +123,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.ID("u").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
 				jen.ID("ID").MapAssign().ID("ucr").Dot("ID"),
 				jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
-				jen.Comment("this is a dirty trick to reuse most of this model."),
+				jen.Comment("this is a dirty trick to reuse most of this model"),
 				jen.ID("HashedPassword").MapAssign().ID("in").Dot("Password"),
 				jen.ID("TwoFactorSecret").MapAssign().ID("ucr").Dot("TwoFactorSecret"),
 				jen.ID("PasswordLastChangedOn").MapAssign().ID("ucr").Dot("PasswordLastChangedOn"),

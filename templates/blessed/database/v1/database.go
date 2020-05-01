@@ -54,6 +54,14 @@ func databaseDotGo(proj *models.Project) *jen.File {
 				jen.ID("Scan").Params(jen.ID("dest").Spread().Interface()).Params(jen.Error()),
 			),
 			jen.Line(),
+			jen.Comment("ResultIterator represents any iterable database response (i.e. sql.Rows)"),
+			jen.ID("ResultIterator").Interface(
+				jen.ID("Next").Params().Bool(),
+				jen.ID("Err").Params().Error(),
+				jen.ID("Scanner"),
+				jen.Qual("io", "Closer"),
+			),
+			jen.Line(),
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx} objects"),
 			jen.ID("Querier").Interface(
 				jen.ID("ExecContext").Params(constants.CtxParam(), jen.ID("query").String(), jen.ID("args").Spread().Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),

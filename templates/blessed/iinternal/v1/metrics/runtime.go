@@ -120,7 +120,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 
 	vals = append(vals,
 		jen.ID("MetricAggregationMeasurementView"),
-		jen.Comment("provided by ochttp."),
+		jen.Comment("provided by ochttp"),
 		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerRequestCountView"),
 		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerRequestBytesView"),
 		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerResponseBytesView"),
@@ -165,6 +165,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 					jen.Select().Block(
 						jen.Case(jen.Op("<-").ID("ticker").Dot("C")).Block(
 							constants.CreateCtx(),
+							jen.Line(),
 							jen.ID("startTime").Assign().Qual("time", "Now").Call(),
 							jen.ID("ms").Assign().AddressOf().Qual("runtime", "MemStats").Values(),
 							jen.Line(),

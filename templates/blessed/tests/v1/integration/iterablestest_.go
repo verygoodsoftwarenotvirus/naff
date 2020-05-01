@@ -88,12 +88,12 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
-					"it should return an error when trying to check something that does not exist",
+					"it should return false with no error when checking something that does not exist",
 					buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
 				),
 				jen.Line(),
 				utils.BuildSubTestWithoutContext(
-					fmt.Sprintf("it should return 200 when the relevant %s exists", scn),
+					fmt.Sprintf("it should return true with no error when the relevant %s exists", scn),
 					buildTestExistenceCheckingShouldBeReadable(proj, typ)...,
 				),
 			)),
@@ -1143,6 +1143,8 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 
 func buildTestDeleting(proj *models.Project, typ models.DataType) jen.Code {
 	subtests := []jen.Code{
+		utils.BuildSubTestWithoutContext("it should return an error when trying to delete something that does not exist", buildTestDeletingShouldFailForNonexistent(proj, typ)...),
+		jen.Line(),
 		utils.BuildSubTestWithoutContext("should be able to be deleted", buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)...),
 	}
 
@@ -1171,6 +1173,36 @@ func buildTestDeletingShouldBeAbleToBeDeleted(proj *models.Project, typ models.D
 		utils.AssertNoError(
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", typ.Name.Singular()).Call(
 				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
+			),
+			nil,
+		),
+	)
+
+	cleanupCode := buildRequisiteCleanupCode(proj, typ, false)
+	if len(cleanupCode) > 0 {
+		lines = append(lines, jen.Line())
+	}
+	lines = append(lines, cleanupCode...)
+
+	return lines
+}
+
+func buildTestDeletingShouldFailForNonexistent(proj *models.Project, typ models.DataType) []jen.Code {
+	lines := []jen.Code{
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
+		jen.Line(),
+	}
+
+	archiveArgs := buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)
+	archiveArgs[len(archiveArgs)-1] = jen.ID("nonexistentID")
+
+	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
+
+	lines = append(lines,
+		jen.Line(),
+		utils.AssertError(
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", typ.Name.Singular()).Call(
+				archiveArgs...,
 			),
 			nil,
 		),

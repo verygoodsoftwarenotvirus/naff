@@ -17,8 +17,8 @@ func serverDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Type().Defs(
 			jen.Comment("Server is the structure responsible for hosting all available protocols."),
-			jen.Comment("In the events we adopted a gRPC implementation of the surface, this is."),
-			jen.Comment("the structure that would contain it and be responsible for calling its."),
+			jen.Comment("In the events we adopted a gRPC implementation of the surface, this is"),
+			jen.Comment("the structure that would contain it and be responsible for calling its"),
 			jen.Comment("serve method."),
 			jen.ID("Server").Struct(
 				jen.ID("config").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
