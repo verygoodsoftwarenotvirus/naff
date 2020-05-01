@@ -664,7 +664,7 @@ func buildMigrate(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
 			jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Info").Call(jen.Lit("migrating db")),
-			jen.If(jen.Op("!").ID(dbfl).Dot("IsReady").Call(constants.CtxVar())).Block(
+			jen.If(jen.Not().ID(dbfl).Dot("IsReady").Call(constants.CtxVar())).Block(
 				jen.Return().Qual("errors", "New").Call(jen.Lit("db is not ready yet")),
 			),
 			jen.Line(),

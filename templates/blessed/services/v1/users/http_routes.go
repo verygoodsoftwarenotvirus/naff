@@ -86,7 +86,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered generating random TOTP string")),
 				jen.Return().List(jen.Nil(), jen.Qual("net/http", "StatusInternalServerError")),
-			).Else().If(jen.Op("!").ID("valid")).Block(
+			).Else().If(jen.Not().ID("valid")).Block(
 				jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("valid"), jen.ID("valid")).Dot("Error").Call(jen.Err(), jen.Lit("invalid attempt to cycle TOTP token")),
 				jen.Return().List(jen.Nil(), jen.Qual("net/http", "StatusUnauthorized")),
 			),
@@ -138,7 +138,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("in the event that we don't want new users to be able to sign up (a config setting)"),
 				jen.Comment("just decline the request from the get-go"),
-				jen.If(jen.Op("!").ID("s").Dot("userCreationEnabled")).Block(
+				jen.If(jen.Not().ID("s").Dot("userCreationEnabled")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("disallowing user creation")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusForbidden"),
 					jen.Return(),
@@ -148,7 +148,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("userInput"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(
 					jen.ID("UserCreationMiddlewareCtxKey"),
 				).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput")),
-				jen.If(jen.Op("!").ID("ok")).Block(
+				jen.If(jen.Not().ID("ok")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to UsersService CreateHandler request")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
@@ -327,7 +327,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.ID("TOTPSecretRefreshMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(),
 					"TOTPSecretRefreshInput",
 				)),
-				jen.If(jen.Op("!").ID("ok")).Block(
+				jen.If(jen.Not().ID("ok")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no input found on TOTP secret refresh request")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
@@ -335,7 +335,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("also check for the user's ID."),
 				jen.List(jen.ID("userID"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()),
-				jen.If(jen.Op("!").ID("ok")).Block(
+				jen.If(jen.Not().ID("ok")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user ID attached to TOTP secret refresh request")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return(),
@@ -400,14 +400,14 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.Comment("check request context for parsed value."),
 				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("PasswordChangeMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "PasswordUpdateInput")),
-				jen.If(jen.Op("!").ID("ok")).Block(
+				jen.If(jen.Not().ID("ok")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no input found on UpdatePasswordHandler request")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
 				),
 				jen.Line(),
 				jen.Comment("check request context for user ID."),
-				jen.List(jen.ID("userID"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()), jen.If(jen.Op("!").ID("ok")).Block(
+				jen.List(jen.ID("userID"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()), jen.If(jen.Not().ID("ok")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user ID attached to UpdatePasswordHandler request")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return(),

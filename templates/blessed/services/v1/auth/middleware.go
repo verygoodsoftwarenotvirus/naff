@@ -140,13 +140,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.List(jen.ID("user"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")),
 				jen.Line(),
-				jen.If(jen.Op("!").ID("ok").Or().ID("user").IsEqualTo().ID("nil")).Block(
+				jen.If(jen.Not().ID("ok").Or().ID("user").IsEqualTo().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("AdminMiddleware called without user attached to context")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.If(jen.Op("!").ID("user").Dot("IsAdmin")).Block(
+				jen.If(jen.Not().ID("user").Dot("IsAdmin")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("AdminMiddleware called by non-admin user")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return(),

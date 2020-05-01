@@ -175,7 +175,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 					jen.Lit("max_attempts").MapAssign().Lit(50)),
 				).Dot("Debug").Call(jen.Lit("IsReady called")),
 				jen.Line(),
-				jen.For(jen.Op("!").ID("ready")).Block(
+				jen.For(jen.Not().ID("ready")).Block(
 					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
@@ -201,7 +201,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 					jen.Lit("max_attempts").MapAssign().Lit(50)),
 				).Dot("Debug").Call(jen.Lit("IsReady called")),
 				jen.Line(),
-				jen.For(jen.Op("!").ID("ready")).Block(
+				jen.For(jen.Not().ID("ready")).Block(
 					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
@@ -288,7 +288,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				jen.Return().Err(),
 			),
 			jen.Line(),
-			jen.If(jen.Op("!").Qual("strings", "Contains").Call(jen.ID("msg"), jen.RawString(`%w`))).Block(
+			jen.If(jen.Not().Qual("strings", "Contains").Call(jen.ID("msg"), jen.RawString(`%w`))).Block(
 				jen.ID("msg").Op("+=").Lit(": %w"),
 			),
 			jen.Line(),

@@ -99,7 +99,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("authorization check."),
-				jen.If(jen.Op("!").ID("client").Dot("HasScope").Call(jen.ID("scope"))).Block(
+				jen.If(jen.Not().ID("client").Dot("HasScope").Call(jen.ID("scope"))).Block(
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return().List(jen.EmptyString(), utils.Error("not authorized for scope")),
 				),
@@ -136,10 +136,10 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.Var().ID("uid").Uint64(),
 			jen.Line(),
 			jen.Comment("check context for client."),
-			jen.If(jen.List(jen.ID("client"), jen.ID("clientOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.Op("!").ID("clientOk")).Block(
+			jen.If(jen.List(jen.ID("client"), jen.ID("clientOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.Not().ID("clientOk")).Block(
 				jen.Comment("check for user instead."),
 				jen.List(jen.ID("user"), jen.ID("userOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")),
-				jen.If(jen.Op("!").ID("userOk")).Block(jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user attached to this request")),
+				jen.If(jen.Not().ID("userOk")).Block(jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user attached to this request")),
 					jen.Return().List(jen.EmptyString(), utils.Error("user not found")),
 				),
 				jen.ID("uid").Equals().ID("user").Dot("ID"),
@@ -181,7 +181,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.Comment("disallow implicit grants unless authorized."),
-			jen.If(jen.ID("grant").IsEqualTo().Qual("gopkg.in/oauth2.v3", "Implicit").And().Op("!").ID("client").Dot("ImplicitAllowed")).Block(
+			jen.If(jen.ID("grant").IsEqualTo().Qual("gopkg.in/oauth2.v3", "Implicit").And().Not().ID("client").Dot("ImplicitAllowed")).Block(
 				jen.Return().List(jen.False(), utils.Error("client not authorized for implicit grants")),
 			),
 			jen.Line(),

@@ -73,7 +73,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.ID("hasScope").Assign().ID("c").Dot("HasScope").Call(jen.ID("scope")),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("scope"), jen.ID("scope")).Dot("WithValue").Call(jen.Lit("scopes"), jen.Qual("strings", "Join").Call(jen.ID("c").Dot("Scopes"), jen.ID("scopesSeparator"))),
 			jen.Line(),
-			jen.If(jen.Op("!").ID("hasScope")).Block(
+			jen.If(jen.Not().ID("hasScope")).Block(
 				jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("rejecting client for invalid scope")),
 				jen.Return().List(jen.Nil(), utils.Error("client not authorized for scope")),
 			),

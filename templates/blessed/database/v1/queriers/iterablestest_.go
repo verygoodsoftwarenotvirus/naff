@@ -751,9 +751,19 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			utils.CreateDefaultQueryFilter(proj),
 			jen.Line(),
-			utils.BuildFakeVar(proj, "User"),
+			func() jen.Code {
+				if typ.BelongsToUser && typ.RestrictedToUser {
+					return utils.BuildFakeVar(proj, "User")
+				}
+				return jen.Null()
+			}(),
 			utils.BuildFakeVar(proj, sn),
-			jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
+			func() jen.Code {
+				if typ.BelongsToUser && typ.RestrictedToUser {
+					return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+				}
+				return jen.Null()
+			}(),
 			jen.Line(),
 			mockDBCall,
 			jen.Line(),
@@ -772,7 +782,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			func() jen.Code {
-				if typ.OwnedByAUserAtSomeLevel(proj) {
+				if typ.RestrictedToUserAtSomeLevel(proj) {
 					return jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call()
 				}
 				return jen.Null()

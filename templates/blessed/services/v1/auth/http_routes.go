@@ -134,7 +134,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("valid"), jen.ID("loginValid")),
 				jen.Line(),
-				jen.If(jen.Op("!").ID("loginValid")).Block(
+				jen.If(jen.Not().ID("loginValid")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("login was invalid")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return(),
@@ -227,7 +227,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
 			jen.List(jen.ID("loginInput"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("UserLoginInputMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput")),
-			jen.If(jen.Op("!").ID("ok")).Block(
+			jen.If(jen.Not().ID("ok")).Block(
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no UserLoginInput found for /login request")),
 				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Valuesln(
 					jen.ID("Code").MapAssign().Qual("net/http", "StatusUnauthorized")),

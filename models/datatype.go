@@ -1939,16 +1939,36 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientRetrievalMethodTest(proj *P
 }
 
 func (typ DataType) BuildRequisiteFakeVarsForDBClientCreateMethodTest(proj *Project) []jen.Code {
-	return typ.buildRequisiteFakeVarDecForModifierFuncs(proj, true)
+	lines := []jen.Code{constants.CreateCtx(), jen.Line()}
+
+	if typ.BelongsToUser {
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
+	}
+	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	if typ.BelongsToUser {
+		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+	}
+
+	return lines
 }
 
 func (typ DataType) BuildRequisiteFakeVarsForDBClientArchiveMethodTest(proj *Project) []jen.Code {
+	var lines []jen.Code
+
+	if typ.BelongsToUser {
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
+	}
+	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	if typ.BelongsToUser {
+		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+	}
+
 	return append([]jen.Code{
 		constants.CreateCtx(),
 		jen.Line(),
 		jen.Var().ID("expected").Error(),
 		jen.Line(),
-	}, typ.buildRequisiteFakeVarDecForModifierFuncs(proj, false)...)
+	}, lines...)
 }
 
 func (typ DataType) BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(proj *Project) []jen.Code {

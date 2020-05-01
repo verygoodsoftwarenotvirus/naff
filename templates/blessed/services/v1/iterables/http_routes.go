@@ -151,7 +151,7 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 	return lines
 }
 
-func buildRequisiteLoggerAndTracingStatementsForModification(proj *models.Project, typ models.DataType, includeExistenceChecks, includeSelf, assignToUser bool) []jen.Code {
+func buildRequisiteLoggerAndTracingStatementsForModification(proj *models.Project, typ models.DataType, includeExistenceChecks, includeSelf, assignToUser, assignToInput bool) []jen.Code {
 	lines := []jen.Code{}
 
 	if typ.OwnedByAUserAtSomeLevel(proj) {
@@ -180,6 +180,14 @@ func buildRequisiteLoggerAndTracingStatementsForModification(proj *models.Projec
 			jen.Qual(proj.InternalTracingV1Package(), fmt.Sprintf("Attach%sIDToSpan", o.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", o.Name.UnexportedVarName())),
 			jen.Line(),
 		)
+
+		if assignToInput && typ.BelongsToStruct != nil && typ.BelongsToStruct.Singular() == o.Name.Singular() {
+			lines = append(lines,
+				jen.Line(),
+				jen.ID("input").Dotf("BelongsTo%s", o.Name.Singular()).Equals().IDf("%sID", o.Name.UnexportedVarName()),
+				jen.Line(),
+			)
+		}
 
 		if includeExistenceChecks {
 			lines = append(lines,
@@ -224,7 +232,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Line(),
 		jen.Comment("check request context for parsed input struct."),
 		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn))),
-		jen.If(jen.Op("!").ID("ok")).Block(
+		jen.If(jen.Not().ID("ok")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to request")),
 			utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 			jen.Return(),
@@ -232,10 +240,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Line(),
 	}
 
-	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, true, false, true)...)
-	if typ.BelongsToStruct != nil {
-		block = append(block, jen.Line(), jen.ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
-	}
+	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, true, false, typ.BelongsToUser, true)...)
 
 	errNotNilBlock := []jen.Code{
 		jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error creating %s", scn)),
@@ -393,22 +398,15 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Line(),
 		jen.Comment("check for parsed input attached to request context."),
 		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn))),
-		jen.If(jen.Op("!").ID("ok")).Block(
+		jen.If(jen.Not().ID("ok")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("no input attached to request")),
 			utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 			jen.Return(),
 		),
-		func() jen.Code {
-			if typ.BelongsToStruct != nil {
-				return jen.ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
-			} else {
-				return jen.Null()
-			}
-		}(),
 		jen.Line(),
 	)
 
-	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, false, true, typ.BelongsToUser)...)
+	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, false, true, typ.BelongsToUser, true)...)
 	fetchCallArgs := typ.BuildDBClientRetrievalMethodCallArgs(proj)
 
 	block = append(block,
@@ -473,7 +471,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
 	}
-	blockLines = append(blockLines, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, true, true, false)...)
+	blockLines = append(blockLines, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, true, true, false, false)...)
 	callArgs := typ.BuildDBClientArchiveMethodCallArgs(proj)
 
 	blockLines = append(blockLines,

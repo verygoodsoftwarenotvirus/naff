@@ -249,6 +249,83 @@ type Item struct{
 						Pointer:               false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
+						UnderlyingType:        GetTypeForTypeName("string"),
+						Pos:                   token.Pos(41),
+					},
+				},
+				BelongsToUser: true,
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("Item"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+						UnderlyingType:        GetTypeForTypeName("string"),
+						Pos:                   token.Pos(80),
+					},
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Details"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+						UnderlyingType:        GetTypeForTypeName("string"),
+						Pos:                   token.Pos(93),
+					},
+				},
+				BelongsToUser:   false,
+				BelongsToStruct: wordsmith.FromSingularPascalCase("Owner"),
+			},
+		}
+		expectedImports := []string{
+			fmt.Sprintf("%s/services/v1/owners", exampleOutputPath),
+			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+		}
+
+		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		assert.NoError(t, err)
+
+		assert.Equal(t, expectedImports, actualImports)
+		assert.Equal(t, len(expectedDataTypes), len(actualDataTypes))
+		assert.Equal(t, expectedDataTypes, actualDataTypes)
+	})
+
+	T.Run("with meta field indicating belonging to another object and a user", func(t *testing.T) {
+		exampleOutputPath := "things/stuff"
+		exampleCode := `
+package whatever
+
+type Owner struct {
+	FirstName string
+}
+
+type Item struct{
+	Name string
+	Details string
+	_META_ uintptr ` + "`" + `belongs_to:"Owner,User"` + "`" + `
+}
+`
+		fset := token.NewFileSet()
+		f, err := parser.ParseFile(fset, "", exampleCode, parser.AllErrors)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		expectedDataTypes := []DataType{
+			{
+				Name: wordsmith.FromSingularPascalCase("Owner"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("FirstName"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
 					},
 				},
 				BelongsToUser: true,

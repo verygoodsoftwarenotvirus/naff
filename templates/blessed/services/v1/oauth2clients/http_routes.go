@@ -137,7 +137,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 					jen.ID("user").Dot("Salt"),
 				),
 				jen.Line(),
-				jen.If(jen.Op("!").ID("valid")).Block(
+				jen.If(jen.Not().ID("valid")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("invalid credentials provided")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return(),

@@ -111,7 +111,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.ID("passwordMatches").Equals().ID("b").Dot("PasswordMatches").Call(constants.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),
 			jen.ID("tooWeak").Assign().ID("b").Dot("hashedPasswordIsTooWeak").Call(constants.CtxVar(), jen.ID("hashedPassword")),
 			jen.Line(),
-			jen.If(jen.Op("!").Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("twoFactorCode"), jen.ID("twoFactorSecret"))).Block(
+			jen.If(jen.Not().Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("twoFactorCode"), jen.ID("twoFactorSecret"))).Block(
 				jen.ID("b").Dot(constants.LoggerVarName).Dot("WithValues").Call(
 					jen.Map(jen.String()).Interface().Valuesln(
 						jen.Lit("password_matches").MapAssign().ID("passwordMatches"),

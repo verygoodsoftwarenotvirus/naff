@@ -133,7 +133,7 @@ and logging in.`)
 				jen.ID("currentCode").Equals().ID("code"),
 			),
 			jen.Line(),
-			jen.If(jen.Op("!").Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("code"), jen.ID("t"))).Block(
+			jen.If(jen.Not().Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("code"), jen.ID("t"))).Block(
 				jen.ID("panic").Call(jen.Lit("this shouldn't happen")),
 			),
 			jen.Line(),

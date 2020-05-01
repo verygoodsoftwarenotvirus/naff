@@ -50,7 +50,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 			jen.For(jen.ID("isDown")).Block(
-				jen.If(jen.Op("!").ID("IsUp").Call(jen.ID("address"))).Block(
+				jen.If(jen.Not().ID("IsUp").Call(jen.ID("address"))).Block(
 					jen.Qual("log", "Print").Call(jen.Lit("waiting before pinging again")),
 					jen.Qual("time", "Sleep").Call(jen.ID("interval")),
 					jen.ID("numberOfAttempts").Op("++"),

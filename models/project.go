@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	metaFlag = "meta"
+	metaFieldName = "_META_"
 
 	belongsTo    = "belongs_to"
 	notCreatable = "!creatable"
@@ -225,9 +225,9 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 				}
 
 				for _, field := range dec.Type.(*ast.StructType).Fields.List {
-					fn := field.Names[0].Name
+					fieldName := field.Names[0].Name
 					df := DataField{
-						Name:                  wordsmith.FromSingularPascalCase(fn),
+						Name:                  wordsmith.FromSingularPascalCase(fieldName),
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   field.Pos(),
@@ -239,10 +239,12 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 						df.Pointer = true
 						df.Type = y.X.(*ast.Ident).Name
 					}
+
+					// this line doubles as a validation against invalid types
 					df.UnderlyingType = GetTypeForTypeName(df.Type)
 
 					// check if this is the meta flag
-					if fn == metaFlag && df.Type == "uintptr" {
+					if fieldName == metaFieldName && df.Type == "uintptr" {
 						// since found the meta flag, process its directives
 						var tag string
 						if field != nil && field.Tag != nil {
@@ -250,16 +252,38 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 						}
 
 						// check belonging
+						var alsoBelongsToUser bool
 						if strings.Contains(tag, "belongs_to") {
 							tagWithoutBackticks := strings.ReplaceAll(tag, "`", "")
 							tagWithoutBelongsTo := strings.ReplaceAll(tagWithoutBackticks, fmt.Sprintf("%s:", belongsTo), "")
-							ownerWithoutQuotes := strings.ReplaceAll(tagWithoutBelongsTo, `"`, ``)
+							properOwner := strings.ReplaceAll(tagWithoutBelongsTo, `"`, ``)
 
-							if ownerWithoutQuotes == "__nobody__" {
+							if strings.Contains(properOwner, ",") {
+								properOwnerParts := strings.Split(properOwner, ",")
+
+								if len(properOwnerParts) != 2 {
+									panic("too many owners, a type may only be owned by another type and a user!")
+								}
+
+								if strings.ToLower(properOwnerParts[0]) != "user" && strings.ToLower(properOwnerParts[1]) != "user" {
+									panic("too many owners, a type may only be owned by another type and a user!")
+								}
+
+								alsoBelongsToUser = true
+
+								if strings.ToLower(properOwnerParts[0]) == "user" {
+									properOwner = properOwnerParts[1]
+								} else if strings.ToLower(properOwnerParts[0]) == "user" {
+									properOwner = properOwnerParts[0]
+								}
+							}
+
+							if properOwner == "__nobody__" {
 								dt.BelongsToUser = false
 								dt.BelongsToNobody = true
-							} else if ownerWithoutQuotes != "" {
-								dt.BelongsToStruct = wordsmith.FromSingularPascalCase(ownerWithoutQuotes)
+							} else if properOwner != "" {
+								dt.BelongsToStruct = wordsmith.FromSingularPascalCase(properOwner)
+								dt.BelongsToUser = alsoBelongsToUser
 							}
 						}
 					} else {
