@@ -44,54 +44,119 @@ func RenderPackage(project *models.Project) error {
 func prometheusLocalConfigDotYAML(project *models.Project) []byte {
 	serviceName := project.Name.KebabName()
 
-	return []byte(fmt.Sprintf(`# my global config
-global:
-  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
-  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+	return []byte(fmt.Sprintf(`global:
+  # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  scrape_interval:     15s
+  # Evaluate rules every 15 seconds. The default is every 1 minute.
+  evaluation_interval: 15s
   # scrape_timeout is set to the global default (10s).
 
-# Alertmanager configuration
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets:
-          # - alertmanager:9093
-
-# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
-rule_files:
-  # - "first_rules.yml"
-  # - "second_rules.yml"
-
-# A scrape configuration containing exactly one endpoint to scrape:
-# Here it's Prometheus itself.
 scrape_configs:
-  # The job name is added as a label `+"`"+`job=<job_name>`+"`"+` to any timeseries scraped from this config.
   - job_name: '%s-server'
 
-    # metrics_path defaults to '/metrics'
-    # scheme defaults to 'http'.
     static_configs:
-      - targets: ['%s-server']
+      - targets: ['%s-server:8888']
 
+    # How frequently to scrape targets from this job.
+    scrape_interval: 15s
+
+    # Per-scrape timeout when scraping this job.
+    scrape_timeout: 15s
+
+    # The HTTP resource path on which to fetch metrics from targets.
+    metrics_path: '/metrics'
+
+    # Configures the protocol scheme used for requests.
+    scheme: 'http'
+
+    # Optional HTTP URL parameters.
+    # params:
+    #   key: 'value'
+
+    # Sets the `+"`"+`Authorization`+"`"+` header on every scrape request with the
+    # configured username and password.
+    # password and password_file are mutually exclusive.
+    #  basic_auth:
+    #    username: <string>
+    #    password: <secret>
+    #    password_file: <string>
+
+    # Sets the `+"`"+`Authorization`+"`"+` header on every scrape request with
+    # the configured bearer token. It is mutually exclusive with `+"`"+`bearer_token_file`+"`"+`.
+    # bearer_token: <secret>
+
+    # Sets the `+"`"+`Authorization`+"`"+` header on every scrape request with the bearer token
+    # read from the configured file. It is mutually exclusive with `+"`"+`bearer_token`+"`"+`.
+    #  bearer_token_file: /path/to/bearer/token/file
+
+    # Configures the scrape request's TLS settings.
     tls_config:
+      # CA certificate to validate API server certificate with.
+      #   ca_file: '/path/to/file'
+
+      # Certificate and key files for client cert authentication to the server.
+      #   cert_file: '/path/to/file'
+      #   key_file: '/path/to/file'
+
+      # ServerName extension to indicate the name of the server.
+      # https://tools.ietf.org/html/rfc4366#section-3.1
+      #   server_name: ''
+
+      # Disable validation of the server certificate.
       insecure_skip_verify: true
+
+    # Optional proxy URL.
+    #  proxy_url: ''
+
+    # Per-scrape limit on number of scraped samples that will be accepted.
+    # If more than this number of samples are present after metric relabelling
+    # the entire scrape will be treated as failed. 0 means no limit.
+    sample_limit:  0
+
+
+#alerting:
+#  alertmanagers:
+#    - scheme: https
+#      static_configs:
+#        - targets:
+#            - "1.2.3.4:9093"
+#            - "1.2.3.5:9093"
+#            - "1.2.3.6:9093"
 `, serviceName, serviceName))
 }
 
 func grafanaLocalProvisioningDashboardsAllDotYAML(project *models.Project) []byte {
-	return []byte(`- name: 'default' # name of this dashboard configuration (not dashboard itself)
-  org_id: 1 # id of the org to hold the dashboard
-  folder: '' # name of the folder to put the dashboard (http://docs.grafana.org/v5.0/reference/dashboard_folders/)
-  type: 'file' # type of dashboard description (json files)
-  options:
-    folder: '/etc/grafana/dashboards' # where dashboards are
+	return []byte(`apiVersion: 1
+
+providers:
+  # <string> an unique provider name
+  - name: 'default'
+    # <int> org id. will default to orgId 1 if not specified
+    orgId: 1
+    # <string, required> name of the dashboard folder. Required
+    folder: '/etc/grafana/dashboards'
+    # <string> folder UID. will be automatically generated if not specified
+    folderUid: ''
+    # <string, required> provider type. Required
+    type: file
+    # <bool> disable dashboard deletion
+    disableDeletion: false
+    # <bool> enable dashboard editing
+    editable: true
+    # <int> how often Grafana will scan for changed dashboards
+    updateIntervalSeconds: 10
+    # <bool> allow updating provisioned dashboards from the UI
+    allowUiUpdates: false
+    options:
+      # <string, required> path to dashboard files on disk. Required
+      path: '/etc/grafana/dashboards'
 `)
 }
 
 func grafanLocalProvisioningDataSourcesAllDotYAML(project *models.Project) []byte {
 	return []byte(`apiVersion: 1
 
-# Gracias a https://ops.tips/blog/initialize-grafana-with-preconfigured-dashboards/#configuring-grafana
+# Thanks to https://ops.tips/blog/initialize-grafana-with-preconfigured-dashboards/#configuring-grafana
 datasources:
   - access: 'proxy' # make grafana perform the requests
     version: 1 # well, versioning

@@ -6,28 +6,29 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func serviceDataEventsDotGo(pkg *models.Project) *jen.File {
+func serviceDataEventsDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Comment("ServiceDataEvent is a simple string alias"),
+		jen.Comment("ServiceDataEvent is a simple string alias."),
 		jen.Line(),
-		jen.Type().ID("ServiceDataEvent").ID("string"),
+		jen.Type().ID("ServiceDataEvent").String(),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Comment("Create represents a create event"),
-			jen.ID("Create").ID("ServiceDataEvent").Op("=").Lit("create"),
-			jen.Comment("Update represents an update event"),
-			jen.ID("Update").ID("ServiceDataEvent").Op("=").Lit("update"),
-			jen.Comment("Archive represents an archive event"),
-			jen.ID("Archive").ID("ServiceDataEvent").Op("=").Lit("archive"),
+			jen.Comment("Create represents a create event."),
+			jen.ID("Create").ID("ServiceDataEvent").Equals().Lit("create"),
+			jen.Comment("Update represents an update event."),
+			jen.ID("Update").ID("ServiceDataEvent").Equals().Lit("update"),
+			jen.Comment("Archive represents an archive event."),
+			jen.ID("Archive").ID("ServiceDataEvent").Equals().Lit("archive"),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

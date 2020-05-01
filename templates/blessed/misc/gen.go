@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
@@ -20,7 +19,7 @@ func RenderPackage(project *models.Project) error {
 		".gitignore":              gitIgnore,
 	}
 
-	files["Makefile"] = makefile(project.OutputPath, project.Name.KebabName())
+	files["Makefile"] = makefile(project)
 	files[".gitlab-ci.yml"] = gitlabCIDotYAML(project.OutputPath)
 	files["README.md"] = readmeDotMD(project.Name)
 	files[".golangci.yml"] = golancCILintDotYAML(project.OutputPath)
@@ -54,7 +53,7 @@ func badgesDotJSON() []byte {
         {
             "name": "godoc",
             "gitlab": {
-                "link": "https://godoc.org/gitlab.com/%{project_path}",
+                "link": "https://pkg.go.dev/gitlab.com/%{project_path}",
                 "badge_image_url": "https://godoc.org/gitlab.com/%{project_path}?status.svg"
             }
         },
@@ -87,45 +86,6 @@ func dockerIgnore() []byte {
 	return []byte(`**/node_modules
 **/dist
 `)
-}
-
-func readmeDotMD(projectName wordsmith.SuperPalabra) func() []byte {
-	f := fmt.Sprintf(`
-# %s
-
-replace me with a good description
-
-## dev dependencies
-
-you'll need:
-
-- make
-- go >= 1.12
-- docker
-- docker-compose
-
-the following tools are occasionally required for development:
-
-- [wire](https://github.com/google/wire) for dependency management
-- [golangci-lint](https://github.com/golangci/golangci-lint) for linting (see included config file)
-- [gocov](https://github.com/axw/gocov) for coverage report generation
-
-assuming you have go installed, you can install these by running `+"`"+`make dev-tools`+"`"+`
-
-## running the server
-
-1. clone this repository
-2. run `+"`"+`make dev`+"`"+`
-3. [http://localhost](http://localhost)
-
-## working on the frontend
-
-1. run `+"`"+`make dev`+"`"+`
-2. in a different terminal, cd into `+"`"+`frontend/v1`+"`"+` and run `+"`"+`npm run autobuild`+"`"+`
-3. edit and have fun
-`, projectName.Singular())
-
-	return func() []byte { return []byte(f) }
 }
 
 func gitIgnore() []byte {
@@ -177,249 +137,11 @@ frontend/v1/public/bundle.*
 *.profile`)
 }
 
-func makefile(pkgRoot string, projectNameKebab string) func() []byte {
-	f := fmt.Sprintf(`PWD           := $(shell pwd)
-GOPATH        := $(GOPATH)
-ARTIFACTS_DIR := artifacts
-COVERAGE_OUT  := $(ARTIFACTS_DIR)/coverage.out
-CONFIG_DIR    := config_files
-GO_FORMAT     := gofmt -s -w
+func gitlabCIDotYAML(projRoot string) func() []byte {
+	projParts := strings.Split(projRoot, "/")
 
-SERVER_DOCKER_IMAGE_NAME := %s-server
-SERVER_DOCKER_REPO_NAME  := docker.io/verygoodsoftwarenotvirus/$(SERVER_DOCKER_IMAGE_NAME)
-
-$(ARTIFACTS_DIR):
-	mkdir -p $(ARTIFACTS_DIR)
-
-## dependency injection
-
-.PHONY: wire-clean
-wire-clean:
-	rm -f cmd/server/v1/wire_gen.go
-
-.PHONY: wire
-wire:
-	wire gen %s/cmd/server/v1
-
-.PHONY: rewire
-rewire: wire-clean wire
-
-## Go-specific prerequisite stuff
-
-.PHONY: dev-tools
-dev-tools:
-	GO111MODULE=off go get -u github.com/google/wire/cmd/wire
-	GO111MODULE=off go get -u github.com/axw/gocov/gocov
-
-.PHONY: vendor-clean
-vendor-clean:
-	rm -rf vendor go.sum
-
-.PHONY: vendor
-vendor:
-	if [ ! -f go.mod ]; then go mod init; fi
-	go mod vendor
-
-.PHONY: revendor
-revendor: vendor-clean vendor
-
-## Config
-
-clean-configs:
-	rm -rf $(CONFIG_DIR)
-
-$(CONFIG_DIR):
-	mkdir -p $(CONFIG_DIR)
-	go run cmd/config_gen/v1/main.go
-
-## Testing things
-
-.PHONY: lint
-lint:
-	@docker pull golangci/golangci-lint:latest
-	docker run \
-		--rm \
-		--volume `+"`"+`pwd`+"`"+`:`+"`"+`pwd`+"`"+` \
-		--workdir=`+"`"+`pwd`+"`"+` \
-		--env=GO111MODULE=on \
-		golangci/golangci-lint:latest golangci-lint run --config=.golangci.yml ./...
-
-$(COVERAGE_OUT): $(ARTIFACTS_DIR)
-	set -ex; \
-	echo "mode: set" > $(COVERAGE_OUT);
-	for pkg in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
-		go test -coverprofile=profile.out -v -count 5 -race -failfast $$pkg; \
-		if [ $$? -ne 0 ]; then exit 1; fi; \
-		cat profile.out | grep -v "mode: atomic" >> $(COVERAGE_OUT); \
-	rm -f profile.out; \
-	done || exit 1
-	gocov convert $(COVERAGE_OUT) | gocov report
-
-.PHONY: quicktest # basically the same as coverage.out, only running once instead of with `+"`"+`-count`+"`"+` set
-quicktest: $(ARTIFACTS_DIR)
-	@set -ex; \
-	echo "mode: set" > $(COVERAGE_OUT);
-	for pkg in `+"`"+`go list %s/... | grep -Ev '(cmd|tests|mock)'`+"`"+`; do \
-		go test -coverprofile=profile.out -race -failfast $$pkg; \
-		if [ $$? -ne 0 ]; then exit 1; fi; \
-		cat profile.out | grep -v "mode: atomic" >> $(COVERAGE_OUT); \
-	rm -f profile.out; \
-	done || exit 1
-	gocov convert $(COVERAGE_OUT) | gocov report
-
-.PHONY: coverage-clean
-coverage-clean:
-	@rm -f $(COVERAGE_OUT) profile.out;
-
-.PHONY: coverage
-coverage: coverage-clean $(COVERAGE_OUT)
-
-.PHONY: test
-test:
-	docker build --tag coverage-$(SERVER_DOCKER_IMAGE_NAME):latest --file dockerfiles/coverage.Dockerfile .
-	docker run --rm --volume `+"`"+`pwd`+"`"+`:`+"`"+`pwd`+"`"+` --workdir=`+"`"+`pwd`+"`"+` coverage-$(SERVER_DOCKER_IMAGE_NAME):latest
-
-.PHONY: format
-format:
-	for file in `+"`"+`find $(PWD) -name '*.go'`+"`"+`; do $(GO_FORMAT) $$file; done
-
-.PHONY: frontend-tests
-frontend-tests:
-	docker-compose --file compose-files/frontend-tests.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
-
-## DELETE ME
-
-.PHONY: gamut
-gamut: revendor rewire config_files quicktest lint integration-tests-postgres integration-tests-sqlite integration-tests-mariadb frontend-tests
-
-## Integration tests
-
-.PHONY: lintegration-tests # this is just a handy lil' helper I use sometimes
-lintegration-tests: integration-tests lint
-`,
-		projectNameKebab,
-		pkgRoot,
-		pkgRoot,
-		pkgRoot,
-	)
-
-	f += fmt.Sprintf(`
-.PHONY: integration-tests
-integration-tests: integration-tests-postgres
-`)
-
-	var (
-		integrationTestTargets []string
-		integrationTests       []string
-	)
-
-	for _, db := range []string{"postgres", "sqlite", "mariadb"} {
-
-		integrationTestTargets = append(integrationTestTargets, fmt.Sprintf("integration-tests-%s", db))
-		integrationTests = append(integrationTests, fmt.Sprintf(`
-.PHONY: integration-tests-%s
-integration-tests-%s:
-	docker-compose --file compose-files/integration-tests-%s.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
-`, db, db, db))
-	}
-
-	f += fmt.Sprintf(`
-.PHONY: integration-tests
-integration-tests: %s
-`, strings.Join(integrationTestTargets, " "))
-
-	f += strings.Join(integrationTests, "")
-
-	f += `
-.PHONY: integration-coverage
-integration-coverage:
-	@# big thanks to https://blog.cloudflare.com/go-coverage-with-external-tests/
-	rm -f ./artifacts/integration-coverage.out
-	mkdir -p ./artifacts
-	docker-compose --file compose-files/integration-coverage.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
-	go tool cover -html=./artifacts/integration-coverage.out
-
-## Load tests
-`
-
-	f += fmt.Sprintf(`
-.PHONY: load-tests
-load-tests: load-tests-postgres
-`)
-
-	for _, db := range []string{"postgres", "sqlite", "mariadb"} {
-		f += fmt.Sprintf(`
-.PHONY: load-tests-%s
-load-tests-%s:
-	docker-compose --file compose-files/load-tests-%s.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
-`, db, db, db)
-	}
-
-	f += `
-## Docker things
-
-.PHONY: server-docker-image
-server-docker-image: wire
-	docker build --tag $(SERVER_DOCKER_IMAGE_NAME):latest --file dockerfiles/server.Dockerfile .
-
-.PHONY: push-server-to-docker
-push-server-to-docker: prod-server-docker-image
-	docker push $(SERVER_DOCKER_REPO_NAME):latest
-
-## Running
-
-.PHONY: dev
-dev:
-	docker-compose --file compose-files/development.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
-
-.PHONY: run
-run:
-	docker-compose --file compose-files/production.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit`
-
-	return func() []byte { return []byte(f) }
-}
-
-func gitlabCIDotYAML(pkgRoot string) func() []byte {
-	pkgParts := strings.Split(pkgRoot, "/")
-
-	ciPath := strings.Join([]string{pkgParts[0], pkgParts[1]}, "/")
-	ciBuildPath := strings.Join([]string{pkgParts[1], pkgParts[2]}, "/")
+	ciPath := strings.Join([]string{projParts[0], projParts[1]}, "/")
+	ciBuildPath := strings.Join([]string{projParts[1], projParts[2]}, "/")
 
 	f := fmt.Sprintf(`stages:
   - quality
@@ -434,6 +156,18 @@ before_script:
   - cd /go/src/%s
   - apt-get update -y && apt-get install -y make git gcc musl-dev
 
+formatting:
+  stage: quality
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    GOPATH: "/go"
+  script:
+    - apk add --update --no-cache py-pip openssl python-dev libffi-dev
+      openssl-dev gcc libc-dev make
+    - make check_formatting
+
 coverage:
   stage: quality
   image: golang:stretch
@@ -441,8 +175,19 @@ coverage:
     GOPATH: "/go"
   script:
     - apt-get update -y && apt-get install -y make git gcc musl-dev
-    - GO111MODULES=off go get github.com/axw/gocov/gocov
-    - make artifacts/coverage.out
+    - make coverage
+
+unit-tests:
+    stage: quality
+    image: golang:stretch
+    variables:
+      GOPATH: "/go"
+    script:
+      - apt-get update -y && apt-get install -y make git gcc musl-dev
+      - make gitlab-ci-junit-report
+    artifacts:
+      reports:
+        junit: test_artifacts/unit_test_report.xml
 
 linting:
   stage: quality
@@ -461,7 +206,7 @@ build-frontend:
   script:
     - npm run build
 
-integration-tests-sqlite:
+integration-tests-postgres:
   stage: integration-testing
   image: docker:latest
   services:
@@ -472,7 +217,7 @@ integration-tests-sqlite:
     - apk add --update --no-cache py-pip openssl python-dev libffi-dev
       openssl-dev gcc libc-dev make
     - pip install docker-compose
-    - make integration-tests-sqlite
+    - make integration-tests-postgres
 
 integration-tests-mariadb:
   stage: integration-testing
@@ -487,7 +232,7 @@ integration-tests-mariadb:
     - pip install docker-compose
     - make integration-tests-mariadb
 
-integration-tests-postgres:
+integration-tests-sqlite:
   stage: integration-testing
   image: docker:latest
   services:
@@ -498,7 +243,7 @@ integration-tests-postgres:
     - apk add --update --no-cache py-pip openssl python-dev libffi-dev
       openssl-dev gcc libc-dev make
     - pip install docker-compose
-    - make integration-tests-postgres
+    - make integration-tests-sqlite
 
 frontend-selenium-tests:
   stage: integration-testing
@@ -526,25 +271,7 @@ load-tests-postgres:
     - apk add --update --no-cache py-pip openssl python-dev libffi-dev
       openssl-dev gcc libc-dev make
     - pip install docker-compose
-    - ls -Al ./deploy/prometheus/local
-    - pwd
     - make load-tests-postgres
-  except:
-    - schedules
-
-load-tests-sqlite:
-  stage: load-testing
-  image: docker:latest
-  services:
-    - docker:dind
-  variables:
-    GOPATH: "/go"
-    LOADTEST_RUN_TIME: "2m30s"
-  script:
-    - apk add --update --no-cache py-pip openssl python-dev libffi-dev
-      openssl-dev gcc libc-dev make
-    - pip install docker-compose
-    - make load-tests-sqlite
   except:
     - schedules
 
@@ -561,6 +288,22 @@ load-tests-mariadb:
       openssl-dev gcc libc-dev make
     - pip install docker-compose
     - make load-tests-mariadb
+  except:
+    - schedules
+
+load-tests-sqlite:
+  stage: load-testing
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    GOPATH: "/go"
+    LOADTEST_RUN_TIME: "2m30s"
+  script:
+    - apk add --update --no-cache py-pip openssl python-dev libffi-dev
+      openssl-dev gcc libc-dev make
+    - pip install docker-compose
+    - make load-tests-sqlite
   except:
     - schedules
 
@@ -627,12 +370,12 @@ gitlabcr:
     - docker push registry.%s:latest
   only:
     - master
-`, ciPath, ciBuildPath, ciPath, pkgRoot, pkgRoot, pkgRoot)
+`, ciPath, ciBuildPath, ciPath, projRoot, projRoot, projRoot)
 
 	return func() []byte { return []byte(f) }
 }
 
-func golancCILintDotYAML(pkgRoot string) func() []byte {
+func golancCILintDotYAML(projRoot string) func() []byte {
 	f := fmt.Sprintf(`# options for analysis running
 run:
   # timeout for analysis, e.g. 30s, 5m, default is 1m
@@ -692,7 +435,7 @@ output:
 # all available settings of specific linters
 linters-settings:
   errcheck:
-    # report about not checking of errors in type assetions: `+"`"+`a := b.(MyStruct)`+"`"+`;
+    # report about not checking of errors in type assertions: `+"`"+`a := b.(MyStruct)`+"`"+`;
     # default is false: such cases aren't reported by default.
     check-type-assertions: true
 
@@ -783,9 +526,10 @@ linters-settings:
     range-loops: true # Report preallocation suggestions on range loops, true by default
     for-loops: false # Report preallocation suggestions on for loops, false by default
   gocritic:
-    # # Which checks should be disabled; can't be combined with 'enabled-checks'; default is empty
+    # Which checks should be disabled; can't be combined with 'enabled-checks'; default is empty
     disabled-checks:
       - captLocal
+      - singleCaseSwitch
 
     # Enable multiple checks by tags, run `+"`"+`GL_DEBUG=gocritic golangci-lint`+"`"+` run to see all tags and checks.
     # Empty list by default. See https://github.com/go-critic/go-critic#usage -> section "Tags".
@@ -823,7 +567,7 @@ linters:
     - goconst # Finds repeated strings that could be replaced by a constant
     - gocyclo # Computes and checks the cyclomatic complexity of functions
     - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
-    # - maligned # Tool to detect Go structs that would take less memory if their fields were sorted
+    - maligned # Tool to detect Go structs that would take less memory if their fields were sorted
     - depguard # Go linter that checks if package imports are in a list of acceptable packages
     - misspell # Finds commonly misspelled English words in comments
     - lll # Reports long lines
@@ -939,12 +683,14 @@ issues:
   # Default is false.
   new: false
 
-  # Show only new issues created after git revision `+"`"+`REV`+"`"+`
-  new-from-rev: REV
-
-  # Show only new issues created in git patch with set file path.
-  new-from-patch: path/to/patch/file
-`, pkgRoot)
+  #
+  # # Show only new issues created after git revision `+"`"+`REV`+"`"+`
+  # new-from-rev: REV
+  #
+  # # Show only new issues created in git patch with set file path.
+  # new-from-patch: path/to/patch/file
+  #
+`, projRoot)
 
 	return func() []byte { return []byte(f) }
 }

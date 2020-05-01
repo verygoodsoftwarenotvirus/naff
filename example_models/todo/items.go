@@ -1,6 +1,8 @@
 package todo
 
 type Item struct {
-	Name    string `naff:"createable,editable"`
-	Details string `naff:"createable,editable"`
+	Name    string
+	Details string
+
+	_META_ uintptr `restricted_to_user:"true"`
 }

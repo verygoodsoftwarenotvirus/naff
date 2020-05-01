@@ -1,98 +1,97 @@
 package mock
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mockWebhookDataServerDotGo(pkg *models.Project) *jen.File {
+func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookDataServer").Op("=").Parens(jen.Op("*").ID("WebhookDataServer")).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(proj.ModelsV1Package(), "WebhookDataServer").Equals().Parens(jen.PointerTo().ID("WebhookDataServer")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Comment("WebhookDataServer is a mocked models.WebhookDataServer for testing"),
 		jen.Line(),
-		jen.Type().ID("WebhookDataServer").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
+		jen.Type().ID("WebhookDataServer").Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("CreationInputMiddleware implements our interface requirements"),
+		jen.Comment("CreationInputMiddleware implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("next")),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "Handler")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("UpdateInputMiddleware implements our interface requirements"),
+		jen.Comment("UpdateInputMiddleware implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("next")),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "Handler")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("ListHandler implements our interface requirements"),
+		jen.Comment("ListHandler implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("CreateHandler implements our interface requirements"),
+		jen.Comment("CreateHandler implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("ReadHandler implements our interface requirements"),
+		jen.Comment("ReadHandler implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("UpdateHandler implements our interface requirements"),
+		jen.Comment("UpdateHandler implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("ArchiveHandler implements our interface requirements"),
+		jen.Comment("ArchiveHandler implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("WebhookDataServer")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Lit(0)).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

@@ -1,245 +1,239 @@
 package integration
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func webhooksTestDotGo(pkg *models.Project) *jen.File {
+func webhooksTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("integration")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Block(
+		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ID")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Name"), jen.ID("actual").Dot("Name")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ContentType"), jen.ID("actual").Dot("ContentType")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("URL"), jen.ID("actual").Dot("URL")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Method"), jen.ID("actual").Dot("Method")),
-			jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("CreatedOn")),
+			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
+			utils.AssertEqual(jen.ID("expected").Dot("Name"), jen.ID("actual").Dot("Name"), nil),
+			utils.AssertEqual(jen.ID("expected").Dot("ContentType"), jen.ID("actual").Dot("ContentType"), nil),
+			utils.AssertEqual(jen.ID("expected").Dot("URL"), jen.ID("actual").Dot("URL"), nil),
+			utils.AssertEqual(jen.ID("expected").Dot("Method"), jen.ID("actual").Dot("Method"), nil),
+			utils.AssertNotZero(jen.ID("actual").Dot("CreatedOn"), nil),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyWebhookInput").Params().Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput")).Block(
-			jen.ID("x").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-				jen.ID("Name").Op(":").Qual(utils.FakeLibrary, "Word").Call(),
-				jen.ID("URL").Op(":").Qual(utils.FakeLibrary, "DomainName").Call(),
-				jen.ID("ContentType").Op(":").Lit("application/json"),
-				jen.ID("Method").Op(":").Qual("net/http", "MethodPost"),
+		jen.Func().ID("reverse").Params(jen.ID("s").String()).Params(jen.String()).Block(
+			jen.ID("runes").Assign().Index().ID("rune").Call(jen.ID("s")),
+			jen.For(jen.List(jen.ID("i"), jen.ID("j")).Assign().List(jen.Zero(), jen.Len(jen.ID("runes")).Minus().One()), jen.ID("i").LessThan().ID("j"), jen.List(jen.ID("i"), jen.ID("j")).Equals().List(jen.ID("i").Plus().One(), jen.ID("j").Minus().One())).Block(
+				jen.List(jen.ID("runes").Index(jen.ID("i")), jen.ID("runes").Index(jen.ID("j"))).Equals().List(jen.ID("runes").Index(jen.ID("j")), jen.ID("runes").Index(jen.ID("i"))),
 			),
-			jen.Return().ID("x"),
+			jen.Return().String().Call(jen.ID("runes")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("buildDummyWebhook").Params(jen.ID("t").Op("*").Qual("testing", "T")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Block(
-			jen.ID("t").Dot("Helper").Call(),
-			jen.Line(),
-			jen.List(jen.ID("y"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("buildDummyWebhookInput").Call()),
-			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
-			jen.Return().ID("y"),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().ID("reverse").Params(jen.ID("s").ID("string")).Params(jen.ID("string")).Block(
-			jen.ID("runes").Op(":=").Index().ID("rune").Call(jen.ID("s")),
-			jen.For(jen.List(jen.ID("i"), jen.ID("j")).Op(":=").List(jen.Lit(0), jen.ID("len").Call(jen.ID("runes")).Op("-").Lit(1)), jen.ID("i").Op("<").ID("j"), jen.List(jen.ID("i"), jen.ID("j")).Op("=").List(jen.ID("i").Op("+").Lit(1), jen.ID("j").Op("-").Lit(1))).Block(
-				jen.List(jen.ID("runes").Index(jen.ID("i")), jen.ID("runes").Index(jen.ID("j"))).Op("=").List(jen.ID("runes").Index(jen.ID("j")), jen.ID("runes").Index(jen.ID("i"))),
-			),
-			jen.Return().ID("string").Call(jen.ID("runes")),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().ID("TestWebhooks").Params(jen.ID("test").Op("*").Qual("testing", "T")).Block(
-			jen.ID("test").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be createable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
+		jen.Func().ID("TestWebhooks").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be createable",
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
-					jen.Comment("Create webhook"),
-					jen.ID("input").Op(":=").ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-						jen.ID("Name").Op(":").ID("input").Dot("Name"),
-						jen.ID("URL").Op(":").ID("input").Dot("URL"),
-						jen.ID("ContentType").Op(":").ID("input").Dot("ContentType"),
-						jen.ID("Method").Op(":").ID("input").Dot("Method")),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-						jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-						jen.ID("ContentType").Op(":").ID("expected").Dot("ContentType"),
-						jen.ID("URL").Op(":").ID("expected").Dot("URL"),
-						jen.ID("Method").Op(":").ID("expected").Dot("Method"))),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
+					jen.Comment("Create webhook."),
+					utils.BuildFakeVar(proj, "Webhook"),
+					utils.BuildFakeVarWithCustomName(
+						proj,
+						"exampleWebhookInput",
+						"BuildFakeWebhookCreationInputFromWebhook",
+						jen.ID(utils.BuildFakeVarName("Webhook")),
+					),
+					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateWebhook").Call(
+						constants.CtxVar(),
+						jen.ID("exampleWebhookInput"),
+					),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
 					jen.Line(),
-					jen.Comment("Assert webhook equality"),
-					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("premade")),
+					jen.Comment("Assert webhook equality."),
+					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("premade")),
 					jen.Line(),
-					jen.Comment("Clean up"),
-					jen.ID("err").Op("=").ID("todoClient").Dot("ArchiveWebhook").Call(jen.ID("tctx"), jen.ID("premade").Dot("ID")),
-					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-					jen.Line(), // REPEATME NOTICEME
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot("GetWebhook").Call(jen.ID("tctx"), jen.ID("premade").Dot("ID")),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
-					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-					jen.Qual("github.com/stretchr/testify/assert", "NotZero").Call(jen.ID("t"), jen.ID("actual").Dot("ArchivedOn")),
-				)),
+					jen.Comment("Clean up."),
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(
+						constants.CtxVar(),
+						jen.ID("premade").Dot("ID"),
+					),
+					utils.AssertNoError(jen.Err(), nil),
+					jen.Line(),
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhook").Call(
+						constants.CtxVar(),
+						jen.ID("premade").Dot("ID"),
+					),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
+					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual")),
+					utils.AssertNotZero(jen.ID("actual").Dot("ArchivedOn"), nil),
+				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be read in a list"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be able to be read in a list",
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
-					jen.Comment("Create webhooks"),
-					jen.Var().ID("expected").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
-					jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Block(
-						jen.ID("expected").Op("=").ID("append").Call(jen.ID("expected"), jen.ID("buildDummyWebhook").Call(jen.ID("t"))),
-					),
-					jen.Line(),
-					jen.Comment("Assert webhook list equality"),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot("GetWebhooks").Call(jen.ID("tctx"), jen.ID("nil")),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
-					jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Webhooks"))),
-					jen.Line(),
-					jen.Comment("Clean up"),
-					jen.For(jen.List(jen.ID("_"), jen.ID("webhook")).Op(":=").Range().ID("actual").Dot("Webhooks")).Block(
-						jen.ID("err").Op("=").ID("todoClient").Dot("ArchiveWebhook").Call(jen.ID("tctx"), jen.ID("webhook").Dot("ID")),
-						jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-					),
-				)),
-			)),
-			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to read something that doesn't exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-					jen.Line(),
-					jen.Comment("Fetch webhook"),
-					jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("todoClient").Dot("GetWebhook").Call(jen.ID("tctx"), jen.ID("nonexistentID")),
-					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				)),
-				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should be readable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-					jen.Line(),
-					jen.Comment("Create webhook"),
-					jen.ID("input").Op(":=").ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-						jen.ID("Name").Op(":").ID("input").Dot("Name"),
-						jen.ID("URL").Op(":").ID("input").Dot("URL"),
-						jen.ID("ContentType").Op(":").ID("input").Dot("ContentType"),
-						jen.ID("Method").Op(":").ID("input").Dot("Method")),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(
-						jen.ID("tctx"),
-						jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-							jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-							jen.ID("ContentType").Op(":").ID("expected").Dot("ContentType"),
-							jen.ID("URL").Op(":").ID("expected").Dot("URL"),
-							jen.ID("Method").Op(":").ID("expected").Dot("Method"),
+					jen.Comment("Create webhooks."),
+					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+					jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
+						utils.BuildFakeVar(proj, "Webhook"),
+						utils.BuildFakeVarWithCustomName(
+							proj,
+							"exampleWebhookInput",
+							"BuildFakeWebhookCreationInputFromWebhook",
+							jen.ID(utils.BuildFakeVarName("Webhook")),
 						),
-					),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
-					jen.Line(),
-					jen.Comment("Fetch webhook"),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot("GetWebhook").Call(jen.ID("tctx"), jen.ID("premade").Dot("ID")),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
-					jen.Line(),
-					jen.Comment("Assert webhook equality"),
-					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-					jen.Line(),
-					jen.Comment("Clean up"),
-					jen.ID("err").Op("=").ID("todoClient").Dot("ArchiveWebhook").Call(jen.ID("tctx"), jen.ID("actual").Dot("ID")),
-					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				)),
-			)),
-			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should return an error when trying to update something that doesn't exist"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-					jen.Line(),
-					jen.ID("err").Op(":=").ID("todoClient").Dot("UpdateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values(jen.ID("ID").Op(":").ID("nonexistentID"))),
-					jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				)),
-				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("it should be updatable"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
-					jen.Line(),
-					jen.Comment("Create webhook"),
-					jen.ID("input").Op(":=").ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-						jen.ID("Name").Op(":").ID("input").Dot("Name"),
-						jen.ID("URL").Op(":").ID("input").Dot("URL"),
-						jen.ID("ContentType").Op(":").ID("input").Dot("ContentType"),
-						jen.ID("Method").Op(":").ID("input").Dot("Method")),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(
-						jen.ID("tctx"),
-						jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-							jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-							jen.ID("ContentType").Op(":").ID("expected").Dot("ContentType"),
-							jen.ID("URL").Op(":").ID("expected").Dot("URL"),
-							jen.ID("Method").Op(":").ID("expected").Dot("Method"),
+						jen.List(jen.ID("createdWebhook"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateWebhook").Call(
+							constants.CtxVar(),
+							jen.ID("exampleWebhookInput"),
 						),
+						jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("createdWebhook"), jen.Err()),
+						jen.Line(),
+						utils.AppendItemsToList(jen.ID("expected"), jen.ID("createdWebhook")),
 					),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
 					jen.Line(),
-					jen.Comment("Change webhook"),
-					jen.ID("premade").Dot("Name").Op("=").ID("reverse").Call(jen.ID("premade").Dot("Name")),
-					jen.ID("expected").Dot("Name").Op("=").ID("premade").Dot("Name"),
-					jen.ID("err").Op("=").ID("todoClient").Dot("UpdateWebhook").Call(jen.ID("tctx"), jen.ID("premade")),
-					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+					jen.Comment("Assert webhook list equality."),
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhooks").Call(constants.CtxVar(), jen.Nil()),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
+					utils.AssertTrue(jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Webhooks")), nil),
 					jen.Line(),
-					jen.Comment("Fetch webhook"),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("todoClient").Dot("GetWebhook").Call(jen.ID("tctx"), jen.ID("premade").Dot("ID")),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.ID("err")),
-					jen.Line(),
-					jen.Comment("Assert webhook equality"),
-					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-					jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual").Dot("UpdatedOn")),
-					jen.Line(),
-					jen.Comment("Clean up"),
-					jen.ID("err").Op("=").ID("todoClient").Dot("ArchiveWebhook").Call(jen.ID("tctx"), jen.ID("actual").Dot("ID")),
-					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				)),
+					jen.Comment("Clean up."),
+					jen.For(jen.List(jen.Underscore(), jen.ID("webhook")).Assign().Range().ID("actual").Dot("Webhooks")).Block(
+						jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhook").Dot("ID")),
+						utils.AssertNoError(jen.Err(), nil),
+					),
+				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Run").Call(jen.Lit("should be able to be deleted"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("tctx").Op(":=").Qual("context", "Background").Call(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should return an error when trying to read something that doesn't exist",
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
-					jen.Comment("Create webhook"),
-					jen.ID("input").Op(":=").ID("buildDummyWebhookInput").Call(),
-					jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-						jen.ID("Name").Op(":").ID("input").Dot("Name"),
-						jen.ID("URL").Op(":").ID("input").Dot("URL"),
-						jen.ID("ContentType").Op(":").ID("input").Dot("ContentType"),
-						jen.ID("Method").Op(":").ID("input").Dot("Method"),
-					),
-					jen.List(jen.ID("premade"), jen.ID("err")).Op(":=").ID("todoClient").Dot("CreateWebhook").Call(jen.ID("tctx"), jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-						jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-						jen.ID("ContentType").Op(":").ID("expected").Dot("ContentType"),
-						jen.ID("URL").Op(":").ID("expected").Dot("URL"),
-						jen.ID("Method").Op(":").ID("expected").Dot("Method")),
-					),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.ID("err")),
+					jen.Comment("Fetch webhook."),
+					jen.List(jen.Underscore(), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("nonexistentID")),
+					utils.AssertError(jen.Err(), nil),
+				),
+				jen.Line(),
+				utils.BuildSubTestWithoutContext(
+					"it should be readable",
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
-					jen.Comment("Clean up"),
-					jen.ID("err").Op("=").ID("todoClient").Dot("ArchiveWebhook").Call(jen.ID("tctx"), jen.ID("premade").Dot("ID")),
-					jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				)),
+					jen.Comment("Create webhook."), utils.BuildFakeVar(proj, "Webhook"),
+					utils.BuildFakeVarWithCustomName(
+						proj,
+						"exampleWebhookInput",
+						"BuildFakeWebhookCreationInputFromWebhook",
+						jen.ID(utils.BuildFakeVarName("Webhook")),
+					),
+					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateWebhook").Call(
+						constants.CtxVar(),
+						jen.ID("exampleWebhookInput"),
+					),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
+					jen.Line(),
+					jen.Comment("Fetch webhook."),
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
+					jen.Line(),
+					jen.Comment("Assert webhook equality."),
+					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual")),
+					jen.Line(),
+					jen.Comment("Clean up."),
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("actual").Dot("ID")),
+					utils.AssertNoError(jen.Err(), nil),
+				),
+			)),
+			jen.Line(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Updating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"it should return an error when trying to update something that doesn't exist",
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
+					jen.Line(),
+					utils.BuildFakeVar(proj, "Webhook"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID").Equals().ID("nonexistentID"),
+					jen.Line(),
+					jen.Err().Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("UpdateWebhook").Call(
+						constants.CtxVar(),
+						jen.ID(utils.BuildFakeVarName("Webhook")),
+					),
+					utils.AssertError(jen.Err(), nil),
+				),
+				jen.Line(),
+				utils.BuildSubTestWithoutContext(
+					"it should be updatable",
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
+					jen.Line(),
+					jen.Comment("Create webhook."),
+					utils.BuildFakeVar(proj, "Webhook"),
+					utils.BuildFakeVarWithCustomName(
+						proj,
+						"exampleWebhookInput",
+						"BuildFakeWebhookCreationInputFromWebhook",
+						jen.ID(utils.BuildFakeVarName("Webhook")),
+					),
+					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateWebhook").Call(
+						constants.CtxVar(),
+						jen.ID("exampleWebhookInput"),
+					),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
+					jen.Line(),
+					jen.Comment("Change webhook."),
+					jen.ID("premade").Dot("Name").Equals().ID("reverse").Call(jen.ID("premade").Dot("Name")),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Name").Equals().ID("premade").Dot("Name"),
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID("premade")),
+					utils.AssertNoError(jen.Err(), nil),
+					jen.Line(),
+					jen.Comment("Fetch webhook."),
+					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
+					jen.Line(),
+					jen.Comment("Assert webhook equality."),
+					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual")),
+					utils.AssertNotNil(jen.ID("actual").Dot("UpdatedOn"), nil),
+					jen.Line(),
+					jen.Comment("Clean up."),
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("actual").Dot("ID")),
+					utils.AssertNoError(jen.Err(), nil),
+				),
+			)),
+			jen.Line(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"should be able to be deleted",
+					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
+					jen.Line(),
+					jen.Comment("Create webhook."),
+					utils.BuildFakeVar(proj, "Webhook"),
+					utils.BuildFakeVarWithCustomName(
+						proj,
+						"exampleWebhookInput",
+						"BuildFakeWebhookCreationInputFromWebhook",
+						jen.ID(utils.BuildFakeVarName("Webhook")),
+					),
+					jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateWebhook").Call(
+						constants.CtxVar(),
+						jen.ID("exampleWebhookInput"),
+					),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
+					jen.Line(),
+					jen.Comment("Clean up."),
+					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
+					utils.AssertNoError(jen.Err(), nil),
+				),
 			)),
 		),
-		jen.Line(),
 	)
+
 	return ret
 }

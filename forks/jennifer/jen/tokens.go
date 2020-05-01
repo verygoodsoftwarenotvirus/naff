@@ -188,6 +188,446 @@ func (s *Statement) Op(op string) *Statement {
 	return s
 }
 
+// Spread renders the provided operator / token.
+func Spread() *Statement {
+	return newStatement().Spread()
+}
+
+// Spread renders the provided operator / token.
+func (g *Group) Spread() *Statement {
+	s := Spread()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Spread renders the provided operator / token.
+func (s *Statement) Spread() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "...",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// BitwiseXOR renders the provided operator / token.
+func BitwiseXOR() *Statement {
+	return newStatement().BitwiseXOR()
+}
+
+// BitwiseXOR renders the provided operator / token.
+func (g *Group) BitwiseXOR() *Statement {
+	s := BitwiseXOR()
+	g.items = append(g.items, s)
+	return s
+}
+
+// BitwiseXOR renders the provided operator / token.
+func (s *Statement) BitwiseXOR() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "^",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// BitwiseOR renders the provided operator / token.
+func BitwiseOR() *Statement {
+	return newStatement().BitwiseOR()
+}
+
+// BitwiseOR renders the provided operator / token.
+func (g *Group) BitwiseOR() *Statement {
+	s := BitwiseOR()
+	g.items = append(g.items, s)
+	return s
+}
+
+// BitwiseOR renders the provided operator / token.
+func (s *Statement) BitwiseOR() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "|",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// LeftShift renders the provided operator / token.
+func LeftShift() *Statement {
+	return newStatement().LeftShift()
+}
+
+// LeftShift renders the provided operator / token.
+func (g *Group) LeftShift() *Statement {
+	s := LeftShift()
+	g.items = append(g.items, s)
+	return s
+}
+
+// LeftShift renders the provided operator / token.
+func (s *Statement) LeftShift() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "<<",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// RightShift renders the provided operator / token.
+func RightShift() *Statement {
+	return newStatement().RightShift()
+}
+
+// RightShift renders the provided operator / token.
+func (g *Group) RightShift() *Statement {
+	s := RightShift()
+	g.items = append(g.items, s)
+	return s
+}
+
+// RightShift renders the provided operator / token.
+func (s *Statement) RightShift() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: ">>",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Plus renders the provided operator / token.
+func Plus() *Statement {
+	return newStatement().Plus()
+}
+
+// Plus renders the provided operator / token.
+func (g *Group) Plus() *Statement {
+	s := Plus()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Plus renders the provided operator / token.
+func (s *Statement) Plus() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "+",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Minus renders the provided operator / token.
+func Minus() *Statement {
+	return newStatement().Minus()
+}
+
+// Minus renders the provided operator / token.
+func (g *Group) Minus() *Statement {
+	s := Minus()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Minus renders the provided operator / token.
+func (s *Statement) Minus() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "-",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// And renders the provided operator / token.
+func And() *Statement {
+	return newStatement().And()
+}
+
+// And renders the provided operator / token.
+func (g *Group) And() *Statement {
+	s := And()
+	g.items = append(g.items, s)
+	return s
+}
+
+// And renders the provided operator / token.
+func (s *Statement) And() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "&&",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// AddressOf renders the provided operator / token.
+func AddressOf() *Statement {
+	return newStatement().AddressOf()
+}
+
+// AddressOf renders the provided operator / token.
+func (g *Group) AddressOf() *Statement {
+	s := AddressOf()
+	g.items = append(g.items, s)
+	return s
+}
+
+// AddressOf renders the provided operator / token.
+func (s *Statement) AddressOf() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "&",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// PointerTo renders the provided operator / token.
+func PointerTo() *Statement {
+	return newStatement().PointerTo()
+}
+
+// PointerTo renders the provided operator / token.
+func (g *Group) PointerTo() *Statement {
+	s := PointerTo()
+	g.items = append(g.items, s)
+	return s
+}
+
+// PointerTo renders the provided operator / token.
+func (s *Statement) PointerTo() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "*",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Times renders the provided operator / token.
+func Times() *Statement {
+	return newStatement().Times()
+}
+
+// Times renders the provided operator / token.
+func (g *Group) Times() *Statement {
+	s := Times()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Times renders the provided operator / token.
+func (s *Statement) Times() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "*",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// GreaterThan renders the provided operator / token.
+func GreaterThan() *Statement {
+	return newStatement().GreaterThan()
+}
+
+// GreaterThan renders the provided operator / token.
+func (g *Group) GreaterThan() *Statement {
+	s := GreaterThan()
+	g.items = append(g.items, s)
+	return s
+}
+
+// GreaterThan renders the provided operator / token.
+func (s *Statement) GreaterThan() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: ">",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// GreaterThanOrEqual renders the provided operator / token.
+func GreaterThanOrEqual() *Statement {
+	return newStatement().GreaterThanOrEqual()
+}
+
+// GreaterThanOrEqual renders the provided operator / token.
+func (g *Group) GreaterThanOrEqual() *Statement {
+	s := GreaterThanOrEqual()
+	g.items = append(g.items, s)
+	return s
+}
+
+// GreaterThanOrEqual renders the provided operator / token.
+func (s *Statement) GreaterThanOrEqual() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: ">=",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// LessThan renders the provided operator / token.
+func LessThan() *Statement {
+	return newStatement().LessThan()
+}
+
+// LessThan renders the provided operator / token.
+func (g *Group) LessThan() *Statement {
+	s := LessThan()
+	g.items = append(g.items, s)
+	return s
+}
+
+// LessThan renders the provided operator / token.
+func (s *Statement) LessThan() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "<",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// LessThanOrEqual renders the provided operator / token.
+func LessThanOrEqual() *Statement {
+	return newStatement().LessThanOrEqual()
+}
+
+// LessThanOrEqual renders the provided operator / token.
+func (g *Group) LessThanOrEqual() *Statement {
+	s := LessThanOrEqual()
+	g.items = append(g.items, s)
+	return s
+}
+
+// LessThanOrEqual renders the provided operator / token.
+func (s *Statement) LessThanOrEqual() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "<=",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// MapAssign renders the provided operator / token.
+func MapAssign() *Statement {
+	return newStatement().MapAssign()
+}
+
+// MapAssign renders the provided operator / token.
+func (g *Group) MapAssign() *Statement {
+	s := MapAssign()
+	g.items = append(g.items, s)
+	return s
+}
+
+// MapAssign renders the provided operator / token.
+func (s *Statement) MapAssign() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: ":",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Equals renders the provided operator / token.
+func Equals() *Statement {
+	return newStatement().Equals()
+}
+
+// Equals renders the provided operator / token.
+func (g *Group) Equals() *Statement {
+	s := Equals()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Equals renders the provided operator / token.
+func (s *Statement) Equals() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "=",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// IsEqualTo renders the provided operator / token.
+func IsEqualTo() *Statement {
+	return newStatement().IsEqualTo()
+}
+
+// IsEqualTo renders the provided operator / token.
+func (g *Group) IsEqualTo() *Statement {
+	s := IsEqualTo()
+	g.items = append(g.items, s)
+	return s
+}
+
+// IsEqualTo renders the provided operator / token.
+func (s *Statement) IsEqualTo() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "==",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Not renders the provided operator / token.
+func Not() *Statement {
+	return newStatement().Not()
+}
+
+// Not renders the provided operator / token.
+func (g *Group) Not() *Statement {
+	s := Not()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Not renders the provided operator / token.
+func (s *Statement) Not() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "!",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// DoesNotEqual renders the provided operator / token.
+func DoesNotEqual() *Statement {
+	return newStatement().DoesNotEqual()
+}
+
+// DoesNotEqual renders the provided operator / token.
+func (g *Group) DoesNotEqual() *Statement {
+	s := DoesNotEqual()
+	g.items = append(g.items, s)
+	return s
+}
+
+// DoesNotEqual renders the provided operator / token.
+func (s *Statement) DoesNotEqual() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "!=",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // Opln renders the provided operator / token.
 func Opln(op string) *Statement {
 	return newStatement().Opln(op)
@@ -205,6 +645,28 @@ func (s *Statement) Opln(op string) *Statement {
 	t := token{
 		typ:     operatorToken,
 		content: fmt.Sprintf("%s\n", op),
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Assign renders the colon equals ( `:=` ) operator
+func Assign() *Statement {
+	return newStatement().Op(":=")
+}
+
+// Assign renders the colon equals ( `:=` ) operator
+func (g *Group) Assign() *Statement {
+	s := Op(":=")
+	g.items = append(g.items, s)
+	return s
+}
+
+// Assign renders the colon equals ( `:=` ) operator
+func (s *Statement) Assign() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: ":=",
 	}
 	*s = append(*s, t)
 	return s
@@ -297,6 +759,50 @@ func (s *Statement) Dotf(name string, args ...interface{}) *Statement {
 		content: fmt.Sprintf(name, args...),
 	}
 	*s = append(*s, d, t)
+	return s
+}
+
+// Underscore renders an identifier.
+func Underscore() *Statement {
+	return newStatement().Underscore()
+}
+
+// Underscore renders an identifier.
+func (g *Group) Underscore() *Statement {
+	s := Underscore()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Underscore renders an identifier.
+func (s *Statement) Underscore() *Statement {
+	t := token{
+		typ:     identifierToken,
+		content: "_",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Or renders an identifier.
+func Or() *Statement {
+	return newStatement().Or()
+}
+
+// Or renders an identifier.
+func (g *Group) Or() *Statement {
+	s := Or()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Or renders an identifier.
+func (s *Statement) Or() *Statement {
+	t := token{
+		typ:     identifierToken,
+		content: "||",
+	}
+	*s = append(*s, t)
 	return s
 }
 

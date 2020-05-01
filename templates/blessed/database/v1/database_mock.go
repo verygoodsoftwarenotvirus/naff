@@ -2,7 +2,7 @@ package v1
 
 import (
 	"fmt"
-	"path/filepath"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -13,38 +13,38 @@ const (
 	mockImp = "github.com/stretchr/testify/mock"
 )
 
-func databaseMockDotGo(pkg *models.Project) *jen.File {
+func databaseMockDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("database")
 
-	mockModelsImp := filepath.Join(pkg.OutputPath, "models/v1/mock")
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	mockModelsImp := proj.ModelsV1Package("mock")
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").ID("Database").Op("=").Parens(jen.Op("*").ID("MockDatabase")).Call(jen.ID("nil")),
+		jen.Var().Underscore().ID("Database").Equals().Parens(jen.PointerTo().ID("MockDatabase")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
 	buildMockDatabaseLines := func() []jen.Code {
 		var lines []jen.Code
 
-		for _, typ := range pkg.DataTypes {
-			lines = append(lines, jen.IDf("%sDataManager", typ.Name.Singular()).Op(":").Op("&").Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())).Values())
+		for _, typ := range proj.DataTypes {
+			lines = append(lines, jen.IDf("%sDataManager", typ.Name.Singular()).MapAssign().AddressOf().Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())).Values())
 		}
 
 		lines = append(lines,
-			jen.ID("UserDataManager").Op(":").Op("&").Qual(mockModelsImp, "UserDataManager").Values(),
-			jen.ID("OAuth2ClientDataManager").Op(":").Op("&").Qual(mockModelsImp, "OAuth2ClientDataManager").Values(),
-			jen.ID("WebhookDataManager").Op(":").Op("&").Qual(mockModelsImp, "WebhookDataManager").Values(),
+			jen.ID("UserDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "UserDataManager").Values(),
+			jen.ID("OAuth2ClientDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "OAuth2ClientDataManager").Values(),
+			jen.ID("WebhookDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "WebhookDataManager").Values(),
 		)
 
 		return lines
 	}
 
 	ret.Add(
-		jen.Comment("BuildMockDatabase builds a mock database"),
+		jen.Comment("BuildMockDatabase builds a mock database."),
 		jen.Line(),
-		jen.Func().ID("BuildMockDatabase").Params().Params(jen.Op("*").ID("MockDatabase")).Block(
-			jen.Return().Op("&").ID("MockDatabase").Valuesln(
+		jen.Func().ID("BuildMockDatabase").Params().Params(jen.PointerTo().ID("MockDatabase")).Block(
+			jen.Return().AddressOf().ID("MockDatabase").Valuesln(
 				buildMockDatabaseLines()...,
 			),
 		),
@@ -57,21 +57,21 @@ func databaseMockDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 		}
 
-		for _, typ := range pkg.DataTypes {
-			lines = append(lines, jen.Op("*").Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())))
+		for _, typ := range proj.DataTypes {
+			lines = append(lines, jen.PointerTo().Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())))
 		}
 
 		lines = append(lines,
-			jen.Op("*").Qual(mockModelsImp, "UserDataManager"),
-			jen.Op("*").Qual(mockModelsImp, "OAuth2ClientDataManager"),
-			jen.Op("*").Qual(mockModelsImp, "WebhookDataManager"),
+			jen.PointerTo().Qual(mockModelsImp, "UserDataManager"),
+			jen.PointerTo().Qual(mockModelsImp, "OAuth2ClientDataManager"),
+			jen.PointerTo().Qual(mockModelsImp, "WebhookDataManager"),
 		)
 
 		return lines
 	}
 
 	ret.Add(
-		jen.Comment("MockDatabase is our mock database structure"),
+		jen.Comment("MockDatabase is our mock database structure."),
 		jen.Line(),
 		jen.Type().ID("MockDatabase").Struct(
 			buildMockDBLines()...,
@@ -80,23 +80,52 @@ func databaseMockDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Migrate satisfies the database.Database interface"),
+		jen.Comment("Migrate satisfies the Database interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("MockDatabase")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx")),
-			jen.Return().ID("args").Dot("Error").Call(jen.Lit(0)),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
+			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar()).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("IsReady satisfies the database.Database interface"),
+		jen.Comment("IsReady satisfies the Database interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("MockDatabase")).ID("IsReady").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
-			jen.ID("args").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx")),
-			jen.Return().ID("args").Dot("Bool").Call(jen.Lit(0)),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("IsReady").Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Block(
+			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar()).Dot("Bool").Call(jen.Zero()),
 		),
 		jen.Line(),
 	)
+
+	ret.Add(
+		jen.Var().Underscore().ID("ResultIterator").Equals().Parens(jen.PointerTo().ID("MockResultIterator")).Call(jen.Nil()),
+		jen.Line(),
+		jen.Line(),
+		jen.Comment("MockResultIterator is our mock sql.Rows structure."), jen.Line(),
+		jen.Type().ID("MockResultIterator").Struct(
+			jen.Qual(utils.MockPkg, "Mock"),
+		),
+		jen.Line(),
+		jen.Comment("Scan satisfies the ResultIterator interface."), jen.Line(),
+		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Scan").Params(jen.ID("dest").Spread().Interface()).Params(jen.Error()).Block(
+			jen.Return(jen.ID("m").Dot("Called").Call(jen.ID("dest").Spread())).Dot("Error").Call(jen.Zero()),
+		),
+		jen.Line(),
+		jen.Comment("Next satisfies the ResultIterator interface."), jen.Line(),
+		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Next").Params().Params(jen.Bool()).Block(
+			jen.Return(jen.ID("m").Dot("Called").Call()).Dot("Bool").Call(jen.Zero()),
+		),
+		jen.Line(),
+		jen.Comment("Err satisfies the ResultIterator interface."), jen.Line(),
+		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Err").Params().Params(jen.Error()).Block(
+			jen.Return(jen.ID("m").Dot("Called").Call()).Dot("Error").Call(jen.Zero()),
+		),
+		jen.Line(),
+		jen.Comment("Close satisfies the ResultIterator interface."), jen.Line(),
+		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Close").Params().Params(jen.Error()).Block(
+			jen.Return(jen.ID("m").Dot("Called").Call()).Dot("Error").Call(jen.Zero()),
+		),
+	)
+
 	return ret
 }

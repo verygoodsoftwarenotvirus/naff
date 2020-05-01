@@ -78,7 +78,7 @@ var cases = []tc{
 		code: Block(Lit(1).Line(), Lit(2)),
 		expect: `{
 		1
-		
+
 		2
 		}`,
 	},
@@ -87,7 +87,7 @@ var cases = []tc{
 		code: Block(Lit(1), Line(), Lit(2)),
 		expect: `{
 		1
-		
+
 		2
 		}`,
 	},
@@ -100,7 +100,7 @@ var cases = []tc{
 		}),
 		expect: `{
 		a
-		
+
 		b
 		}`,
 	},
@@ -117,7 +117,7 @@ var cases = []tc{
 			g.Empty()
 		}),
 		expect: `{
-		
+
 		}`,
 	},
 	{
@@ -464,7 +464,7 @@ var cases = []tc{
 		desc: `dict should be ordered`,
 		code: Map(String()).Int().Values(Dict{Id("z"): Lit(1), Id("a"): Lit(2)}),
 		expect: `map[string]int{
-		a:2, 
+		a:2,
 		z:1,
 		}`,
 	},

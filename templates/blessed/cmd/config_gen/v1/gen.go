@@ -7,14 +7,14 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkg *models.Project) error {
+func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
 		"cmd/config_gen/v1/doc.go":  docDotGo(),
-		"cmd/config_gen/v1/main.go": mainDotGo(pkg),
+		"cmd/config_gen/v1/main.go": mainDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
+		if err := utils.RenderGoFile(proj, path, file); err != nil {
 			return err
 		}
 	}

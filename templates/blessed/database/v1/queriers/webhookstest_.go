@@ -1,1109 +1,1001 @@
 package queriers
 
 import (
-	"path/filepath"
-	"strings"
-
+	"fmt"
+	"github.com/Masterminds/squirrel"
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"strings"
 )
 
-func webhooksTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
-	ret := jen.NewFile(vendor.SingularPackageName())
+const (
+	webhooksTableName            = "webhooks"
+	webhooksTableOwnershipColumn = "belongs_to_user"
+)
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
-	sn := vendor.Singular()
+var (
+	webhooksTableColumns = []string{
+		fmt.Sprintf("%s.id", webhooksTableName),
+		fmt.Sprintf("%s.name", webhooksTableName),
+		fmt.Sprintf("%s.content_type", webhooksTableName),
+		fmt.Sprintf("%s.url", webhooksTableName),
+		fmt.Sprintf("%s.method", webhooksTableName),
+		fmt.Sprintf("%s.events", webhooksTableName),
+		fmt.Sprintf("%s.data_types", webhooksTableName),
+		fmt.Sprintf("%s.topics", webhooksTableName),
+		fmt.Sprintf("%s.created_on", webhooksTableName),
+		fmt.Sprintf("%s.updated_on", webhooksTableName),
+		fmt.Sprintf("%s.archived_on", webhooksTableName),
+		fmt.Sprintf("%s.%s", webhooksTableName, webhooksTableOwnershipColumn),
+	}
+)
+
+func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	spn := dbvendor.SingularPackageName()
+
+	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+
+	utils.AddImports(proj, ret)
+
+	ret.Add(buildBuildMockRowsFromWebhook(proj, dbvendor)...)
+	ret.Add(buildBuildErroneousMockRowFromWebhook(proj, dbvendor)...)
+	ret.Add(buildTestScanWebhooks(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildGetWebhookQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_GetWebhook(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildGetAllWebhooksCountQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_GetAllWebhooksCount(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildGetAllWebhooksQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_GetAllWebhooks(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildGetWebhooksQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_GetWebhooks(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildWebhookCreationQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_CreateWebhook(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildUpdateWebhookQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_UpdateWebhook(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildArchiveWebhookQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_ArchiveWebhook(proj, dbvendor)...)
+
+	return ret
+}
+
+func buildBuildMockRowsFromWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
+		jen.Func().ID("buildMockRowsFromWebhook").Params(
+			jen.ID("webhooks").Spread().PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+		).Params(
+			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
+		).Block(
+			jen.ID("includeCount").Assign().Len(jen.ID("webhooks")).GreaterThan().One(),
+			jen.ID("columns").Assign().ID("webhooksTableColumns"),
+			jen.Line(),
+			jen.If(jen.ID("includeCount")).Block(
+				utils.AppendItemsToList(jen.ID("columns"), jen.Lit("count")),
+			),
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
+			jen.Line(),
+			jen.For(jen.List(jen.Underscore(), jen.ID("w")).Assign().Range().ID("webhooks")).Block(
+				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(
+					jen.ID("w").Dot("ID"),
+					jen.ID("w").Dot("Name"),
+					jen.ID("w").Dot("ContentType"),
+					jen.ID("w").Dot("URL"),
+					jen.ID("w").Dot("Method"),
+					jen.Qual("strings", "Join").Call(jen.ID("w").Dot("Events"), jen.ID("eventsSeparator")),
+					jen.Qual("strings", "Join").Call(jen.ID("w").Dot("DataTypes"), jen.ID("typesSeparator")),
+					jen.Qual("strings", "Join").Call(jen.ID("w").Dot("Topics"), jen.ID("topicsSeparator")),
+					jen.ID("w").Dot("CreatedOn"),
+					jen.ID("w").Dot("UpdatedOn"),
+					jen.ID("w").Dot("ArchivedOn"),
+					jen.ID("w").Dot(constants.UserOwnershipFieldName),
+				),
+				jen.Line(),
+				jen.If(jen.ID("includeCount")).Block(
+					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID("webhooks"))),
+				),
+				jen.Line(),
+				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
+			),
+			jen.Line(),
+			jen.Return().ID("exampleRows"),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildBuildErroneousMockRowFromWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
+		jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("webhooksTableColumns")).Dot("AddRow").Callln(
+				jen.ID("w").Dot("ArchivedOn"),
+				jen.ID("w").Dot(constants.UserOwnershipFieldName),
+				jen.ID("w").Dot("Name"),
+				jen.ID("w").Dot("ContentType"),
+				jen.ID("w").Dot("URL"),
+				jen.ID("w").Dot("Method"),
+				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("Events"), jen.ID("eventsSeparator")),
+				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("DataTypes"), jen.ID("typesSeparator")),
+				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("Topics"), jen.ID("topicsSeparator")),
+				jen.ID("w").Dot("CreatedOn"),
+				jen.ID("w").Dot("UpdatedOn"),
+				jen.ID("w").Dot("ID"),
+			),
+			jen.Line(),
+			jen.Return().ID("exampleRows"),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestScanWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
-	dbrn := vendor.RouteName()
 
-	isPostgres := dbrn == "postgres"
-	isSqlite := dbrn == "sqlite"
-	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
-
-	/////////////
-
-	ret.Add(
-		jen.Func().ID("buildMockRowFromWebhook").Params(jen.ID("w").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
-			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("webhooksTableColumns")).Dot("AddRow").Callln(
-				jen.ID("w").Dot("ID"),
-				jen.ID("w").Dot("Name"),
-				jen.ID("w").Dot("ContentType"),
-				jen.ID("w").Dot("URL"),
-				jen.ID("w").Dot("Method"),
-				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("Events"), jen.ID("eventsSeparator")),
-				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("DataTypes"), jen.ID("typesSeparator")),
-				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("Topics"), jen.ID("topicsSeparator")),
-				jen.ID("w").Dot("CreatedOn"),
-				jen.ID("w").Dot("UpdatedOn"),
-				jen.ID("w").Dot("ArchivedOn"),
-				jen.ID("w").Dot("BelongsTo"),
-			),
-			jen.Line(),
-			jen.Return().ID("exampleRows"),
-		),
-		jen.Line(),
-	)
-
-	/////////////
-
-	ret.Add(
-		jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook")).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
-			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("webhooksTableColumns")).Dot("AddRow").Callln(
-				jen.ID("w").Dot("ArchivedOn"),
-				jen.ID("w").Dot("BelongsTo"),
-				jen.ID("w").Dot("Name"),
-				jen.ID("w").Dot("ContentType"),
-				jen.ID("w").Dot("URL"),
-				jen.ID("w").Dot("Method"),
-				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("Events"), jen.ID("eventsSeparator")),
-				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("DataTypes"), jen.ID("typesSeparator")),
-				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("Topics"), jen.ID("topicsSeparator")),
-				jen.ID("w").Dot("CreatedOn"),
-				jen.ID("w").Dot("UpdatedOn"),
-				jen.ID("w").Dot("ID"),
-			),
-			jen.Line(),
-			jen.Return().ID("exampleRows"),
-		),
-		jen.Line(),
-	)
-
-	/////////////
-
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetWebhookQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_ScanWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleWebhookID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
+			utils.BuildSubTestWithoutContext(
+				"surfaces row errors",
+				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
 				jen.Line(),
-				jen.ID("expectedArgCount").Op(":=").Lit(2),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE belongs_to = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetWebhookQuery").Call(jen.ID("exampleWebhookID"), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleWebhookID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
-			)),
+				jen.List(
+					jen.Underscore(),
+					jen.Underscore(),
+					jen.Err(),
+				).Assign().ID(dbfl).Dot("scanWebhooks").Call(jen.ID("mockRows")),
+				utils.AssertError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"logs row closing errors",
+				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.Line(),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Nil()),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.List(
+					jen.Underscore(),
+					jen.Underscore(),
+					jen.Err(),
+				).Assign().ID(dbfl).Dot("scanWebhooks").Call(jen.ID("mockRows")),
+				utils.AssertNoError(jen.Err(), nil),
+			),
 		),
 		jen.Line(),
-	)
+	}
 
-	/////////////
+	return lines
+}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_GetWebhook", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+func buildTestDB_buildGetWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Select(webhooksTableColumns...).
+		From(webhooksTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.id", webhooksTableName):                               whateverValue,
+			fmt.Sprintf("%s.%s", webhooksTableName, webhooksTableOwnershipColumn): whateverValue,
+		})
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "Webhook"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "GetWebhook", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
+
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(webhooksTableColumns...).
+		From(webhooksTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.id", webhooksTableName):                               whateverValue,
+			fmt.Sprintf("%s.%s", webhooksTableName, webhooksTableOwnershipColumn): whateverValue,
+		}).
+		ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE belongs_to = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("things")),
-					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("things")),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("things")),
-				),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID"), jen.ID("expected").Dot("ID")).
-					Dotln("WillReturnRows").Call(jen.ID("buildMockRowFromWebhook").Call(jen.ID("expected"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE belongs_to = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("things")),
-					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("things")),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("things")),
-				),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID"), jen.ID("expected").Dot("ID")).
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
+					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook")))),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName)),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"surfaces sql.ErrNoRows",
+				utils.BuildFakeVar(proj, "Webhook"),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName)),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE belongs_to = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-				),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
+			utils.BuildSubTest(
+				"with error from database",
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID"), jen.ID("expected").Dot("ID")).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName)),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE belongs_to = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("Events").Op(":").Index().ID("string").Values(jen.Lit("things")),
-					jen.ID("DataTypes").Op(":").Index().ID("string").Values(jen.Lit("things")),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.Lit("things")),
-				),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
+			utils.BuildSubTest(
+				"with invalid response from database",
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID"), jen.ID("expected").Dot("ID")).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID("expected"))),
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")).
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhook").Call(jen.ID("ctx"), jen.ID("expected").Dot("ID"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName)),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 		),
 		jen.Line(),
-	)
+	}
 
-	/////////////
+	return lines
+}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetWebhookCountQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+func buildTestDB_buildGetAllWebhooksCountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Select(fmt.Sprintf(countQuery, webhooksTableName)).
+		From(webhooksTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", webhooksTableName): nil,
+		})
+
+	expectedArgs := []jen.Code{}
+	callArgs := []jen.Code{}
+
+	return buildQueryTest(proj, dbvendor, "GetAllWebhooksCount", qb, expectedArgs, callArgs, nil)
+}
+
+func buildTestDB_GetAllWebhooksCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
+
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(fmt.Sprintf(countQuery, webhooksTableName)).
+		From(webhooksTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", webhooksTableName): nil,
+		}).ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetAllWebhooksCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", getIncIndex(dbrn, 0)),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetWebhookCountQuery").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-			)),
-		),
-		jen.Line(),
-	)
-
-	/////////////
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetWebhookCount", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", getIncIndex(dbrn, 0)),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
+			utils.BuildSubTest(
+				"happy path",
+				jen.ID(utils.BuildFakeVarName("Count")).Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expected"))),
+					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").
+					Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").
+					Call(jen.ID(utils.BuildFakeVarName("Count")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhookCount").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooksCount").Call(constants.CtxVar()),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Count")), jen.ID("actual"), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", getIncIndex(dbrn, 0)),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			utils.BuildSubTest(
+				"with error from database",
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhookCount").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Zero").Call(jen.ID("t"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooksCount").Call(constants.CtxVar()),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertZero(jen.ID("actual"), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 		),
 		jen.Line(),
-	)
+	}
 
-	/////////////
+	return lines
+}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetAllWebhooksCountQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+func buildTestDB_buildGetAllWebhooksQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Select(webhooksTableColumns...).
+		From(webhooksTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", webhooksTableName): nil,
+		})
+
+	expectedArgs := []jen.Code{}
+	callArgs := []jen.Code{}
+
+	return buildQueryTest(proj, dbvendor, "GetAllWebhooks", qb, expectedArgs, callArgs, nil)
+}
+
+func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
+
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(webhooksTableColumns...).
+		From(webhooksTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", webhooksTableName): nil,
+		}).ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetAllWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.ID("actual").Op(":=").ID(dbfl).Dot("buildGetAllWebhooksCountQuery").Call(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	/////////////
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetAllWebhooksCount", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
+			jen.ID("expectedListQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(321)),
+			utils.BuildSubTest(
+				"happy path",
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expected"))),
+				utils.BuildFakeVar(proj, "WebhookList"),
+				jen.ID(utils.BuildFakeVarName("WebhookList")).Dot("Limit").Equals().Zero(),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooksCount").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooksCount").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Zero").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	/////////////
-
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetAllWebhooksQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.ID("actual").Op(":=").ID(dbfl).Dot("buildGetAllWebhooksQuery").Call(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	/////////////
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetAllWebhooks", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1), jen.ID("TotalCount").Op(":").ID("expectedCount")), jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
-							jen.ID("Name").Op(":").Lit("name"),
-						),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
+					jen.ID("buildMockRowsFromWebhook").Callln(
+						jen.AddressOf().ID(utils.BuildFakeVarName("WebhookList")).Dot("Webhooks").Index(jen.Zero()),
+						jen.AddressOf().ID(utils.BuildFakeVarName("WebhookList")).Dot("Webhooks").Index(jen.One()),
+						jen.AddressOf().ID(utils.BuildFakeVarName("WebhookList")).Dot("Webhooks").Index(jen.Lit(2)),
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-				),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("WebhookList")), jen.ID("actual"), nil),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooks").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			utils.BuildSubTest(
+				"surfaces sql.ErrNoRows",
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooks").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			utils.BuildSubTest(
+				"with error querying database",
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooks").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("example").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-				),
+			utils.BuildSubTest(
+				"with error from database",
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID("example"))),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooks").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("TotalCount").Op(":").ID("expectedCount")),
-					jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
-							jen.ID("Name").Op(":").Lit("name"),
-						),
-					),
-				),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-				),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooks").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 		),
 		jen.Line(),
-	)
+	}
 
-	/////////////
+	return lines
+}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_GetAllWebhooksForUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+func buildTestDB_buildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Select(append(webhooksTableColumns, fmt.Sprintf(countQuery, webhooksTableName))...).
+		From(webhooksTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.%s", webhooksTableName, webhooksTableOwnershipColumn): whateverValue,
+			fmt.Sprintf("%s.archived_on", webhooksTableName):                      nil,
+		})
+
+	qb = applyFleshedOutQueryFilter(qb, webhooksTableName)
+
+	expectedArgs := appendFleshedOutQueryFilterArgs([]jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+	})
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+		jen.ID(constants.FilterVarName),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+		jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call(),
+	}
+
+	return buildQueryTest(proj, dbvendor, "GetWebhooks", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
+
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(append(webhooksTableColumns, fmt.Sprintf(countQuery, webhooksTableName))...).
+		From(webhooksTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.%s", webhooksTableName, webhooksTableOwnershipColumn): whateverValue,
+			fmt.Sprintf("%s.archived_on", webhooksTableName):                      nil,
+		}).
+		GroupBy(fmt.Sprintf("%s.id", webhooksTableName)).
+		Limit(20).
+		ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expected").Op(":=").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.Valuesln(
-						jen.ID("ID").Op(":").Lit(123),
-						jen.ID("Name").Op(":").Lit("name"),
+			utils.BuildFakeVar(proj, "User"),
+			jen.ID("expectedListQuery").Assign().Lit(expectedQuery),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.CreateDefaultQueryFilter(proj),
+				utils.BuildFakeVar(proj, "WebhookList"),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).
+					Dotln("WillReturnRows").Callln(
+					jen.ID("buildMockRowsFromWebhook").Callln(
+						jen.AddressOf().ID(utils.BuildFakeVarName("WebhookList")).Dot("Webhooks").Index(jen.Zero()),
+						jen.AddressOf().ID(utils.BuildFakeVarName("WebhookList")).Dot("Webhooks").Index(jen.One()),
+						jen.AddressOf().ID(utils.BuildFakeVarName("WebhookList")).Dot("Webhooks").Index(jen.Lit(2)),
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Index(jen.Lit(0))),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(constants.FilterVarName),
 				),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("WebhookList")), jen.ID("actual"), nil),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooksForUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUser").Dot("ID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
+			utils.BuildSubTest(
+				"surfaces sql.ErrNoRows",
+				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooksForUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUser").Dot("ID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooksForUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUser").Dot("ID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expected").Op(":=").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.Valuesln(
-						jen.ID("ID").Op(":").Lit(123),
-						jen.ID("Name").Op(":").Lit("name"),
-					),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(constants.FilterVarName),
 				),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.Op("&").ID("expected").Index(jen.Lit(0)))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllWebhooksForUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUser").Dot("ID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	/////////////
-
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetWebhooksQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.Line(),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", getIncIndex(dbrn, 0)),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetWebhooksQuery").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-			)),
-		),
-		jen.Line(),
-	)
-
-	/////////////
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetWebhooks", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
-						jen.ID("Limit").Op(":").Lit(20),
-						jen.ID("TotalCount").Op(":").ID("expectedCount"),
-					),
-					jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
-							jen.ID("Name").Op(":").Lit("name"),
-						),
-					),
-				),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-				),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhooks").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhooks").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error querying database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhooks").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-				),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID("expected"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhooks").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, content_type, url, method, events, data_types, topics, created_on, updated_on, archived_on, belongs_to FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expectedCountQuery").Op(":=").Lit("SELECT COUNT(id) FROM webhooks WHERE archived_on IS NULL"),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
-						jen.ID("Limit").Op(":").Lit(20),
-						jen.ID("TotalCount").Op(":").ID("expectedCount"),
-					),
-					jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
-							jen.ID("Name").Op(":").Lit("name"),
-						),
-					),
-				),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromWebhook").Call(jen.Op("&").ID("expected").Dot("Webhooks").Index(jen.Lit(0))),
-				),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetWebhooks").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	/////////////
-
-	var queryTail string
-	if isPostgres {
-		queryTail = " RETURNING id, created_on"
-	}
-
-	var (
-		createdOnCol, createdOnVal string
-	)
-
-	if isMariaDB {
-		createdOnCol = ",created_on"
-		createdOnVal = ",UNIX_TIMESTAMP()"
-	}
-
-	ret.Add(
-		jen.Func().IDf("Test%s_buildWebhookCreationQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("ContentType").Op(":").Lit("application/json"),
-					jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"),
-					jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"),
-					jen.ID("Events").Op(":").Index().ID("string").Values(),
-					jen.ID("DataTypes").Op(":").Index().ID("string").Values(),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(),
-					jen.ID("BelongsTo").Op(":").Lit(1),
-				),
-				jen.ID("expectedArgCount").Op(":=").Lit(8),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to%s) VALUES (%s,%s,%s,%s,%s,%s,%s,%s%s)%s",
-					createdOnCol,
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					getIncIndex(dbrn, 6),
-					getIncIndex(dbrn, 7),
-					createdOnVal,
-					queryTail,
-				),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildWebhookCreationQuery").Call(jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-			)),
-		),
-		jen.Line(),
-	)
-	queryTail = ""
-
-	/////////////
-
-	if isPostgres {
-		queryTail = " RETURNING id, created_on"
-	}
-
-	var createWebhookExpectFunc, createWebhookReturnFunc string
-
-	buildCreateWebhookExampleRows := func() jen.Code {
-		if isPostgres {
-			createWebhookExpectFunc = "ExpectQuery"
-			createWebhookReturnFunc = "WillReturnRows"
-			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
-		} else if isSqlite || isMariaDB {
-			createWebhookExpectFunc = "ExpectExec"
-			createWebhookReturnFunc = "WillReturnResult"
-			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
-		}
-		return jen.Null()
-	}
-
-	buildCreateWebhookHappyPathBody := func() []jen.Code {
-		out := []jen.Code{
-			jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-			jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-				jen.ID("ID").Op(":").Lit(123),
-				jen.ID("Name").Op(":").Lit("name"),
-				jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-				jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-			),
-			jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-				jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-				jen.ID("BelongsTo").Op(":").ID("expected").Dot("BelongsTo"),
-			),
-			buildCreateWebhookExampleRows(),
-			jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to%s) VALUES (%s,%s,%s,%s,%s,%s,%s,%s%s)%s",
-				createdOnCol,
-				getIncIndex(dbrn, 0),
-				getIncIndex(dbrn, 1),
-				getIncIndex(dbrn, 2),
-				getIncIndex(dbrn, 3),
-				getIncIndex(dbrn, 4),
-				getIncIndex(dbrn, 5),
-				getIncIndex(dbrn, 6),
-				getIncIndex(dbrn, 7),
-				createdOnVal,
-				queryTail,
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 			),
 			jen.Line(),
-			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-			jen.ID("mockDB").Dot(createWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-				jen.ID("expected").Dot("Name"),
-				jen.ID("expected").Dot("ContentType"),
-				jen.ID("expected").Dot("URL"),
-				jen.ID("expected").Dot("Method"),
-				jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Events"), jen.ID("eventsSeparator")),
-				jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("DataTypes"), jen.ID("typesSeparator")),
-				jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Topics"), jen.ID("topicsSeparator")),
-				jen.ID("expected").Dot("BelongsTo"),
-			).Dot(createWebhookReturnFunc).Call(jen.ID("exampleRows")),
-			jen.Line(),
-		}
-
-		if isSqlite || isMariaDB {
-			out = append(out,
-				jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM webhooks WHERE id = %s", getIncIndex(dbrn, 0)),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("CreatedOn"))),
+			utils.BuildSubTest(
+				"with error querying database",
+				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
-			)
-		}
-
-		out = append(out,
-			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("CreateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
-			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-			jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(constants.FilterVarName),
+				),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			utils.BuildSubTest(
+				"with erroneous response from database",
+				utils.CreateDefaultQueryFilter(proj),
+				utils.BuildFakeVar(proj, "Webhook"),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook")))),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(constants.FilterVarName),
+				),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestDB_buildWebhookCreationQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Insert(webhooksTableName).
+		Columns(
+			"name",
+			"content_type",
+			"url",
+			"method",
+			"events",
+			"data_types",
+			"topics",
+			webhooksTableOwnershipColumn,
+		).
+		Values(
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
 		)
 
-		return out
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING id, created_on")
 	}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_CreateWebhook", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				buildCreateWebhookHappyPathBody()...,
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error interacting with database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-				),
-				jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-					jen.ID("BelongsTo").Op(":").ID("expected").Dot("BelongsTo")),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO webhooks (name,content_type,url,method,events,data_types,topics,belongs_to%s) VALUES (%s,%s,%s,%s,%s,%s,%s,%s%s)%s",
-					createdOnCol,
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					getIncIndex(dbrn, 6),
-					getIncIndex(dbrn, 7),
-					createdOnVal,
-					queryTail,
-				),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot(createWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-					jen.ID("expected").Dot("Name"),
-					jen.ID("expected").Dot("ContentType"),
-					jen.ID("expected").Dot("URL"),
-					jen.ID("expected").Dot("Method"),
-					jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Events"), jen.ID("eventsSeparator")),
-					jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("DataTypes"), jen.ID("typesSeparator")),
-					jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Topics"), jen.ID("topicsSeparator")),
-					jen.ID("expected").Dot("BelongsTo"),
-				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("CreateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-	queryTail = ""
-
-	/////////////
-
-	if isPostgres {
-		queryTail = " RETURNING updated_on"
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Name"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ContentType"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("URL"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Method"),
+		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"), jen.ID("eventsSeparator")),
+		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"), jen.ID("typesSeparator")),
+		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"), jen.ID("topicsSeparator")),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("Webhook")),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "Webhook"),
 	}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_buildUpdateWebhookQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("ContentType").Op(":").Lit("application/json"),
-					jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"),
-					jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"),
-					jen.ID("Events").Op(":").Index().ID("string").Values(),
-					jen.ID("DataTypes").Op(":").Index().ID("string").Values(),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(),
-					jen.ID("BelongsTo").Op(":").Lit(1),
-				),
-				jen.ID("expectedArgCount").Op(":=").Lit(9),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET name = %s, content_type = %s, url = %s, method = %s, events = %s, data_types = %s, topics = %s, updated_on = %s WHERE belongs_to = %s AND id = %s%s",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					getIncIndex(dbrn, 6),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 7),
-					getIncIndex(dbrn, 8),
-					queryTail,
-				),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateWebhookQuery").Call(jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-			)),
-		),
-		jen.Line(),
-	)
-	queryTail = ""
+	return buildQueryTest(proj, dbvendor, "WebhookCreation", qb, expectedArgs, callArgs, pql)
+}
 
-	/////////////
+func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
-	if isPostgres {
-		queryTail = " RETURNING updated_on"
+	qb := queryBuilderForDatabase(dbvendor).
+		Insert(webhooksTableName).
+		Columns(
+			"name",
+			"content_type",
+			"url",
+			"method",
+			"events",
+			"data_types",
+			"topics",
+			webhooksTableOwnershipColumn,
+		).
+		Values(
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+		)
+
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING id, created_on")
 	}
+	expectedQuery, _, _ := qb.ToSql()
 
-	var updateWebhookExpectFunc, updateWebhookReturnFunc string
-
-	buildUpdateWebhookExampleRows := func() jen.Code {
-		if isPostgres {
-			updateWebhookExpectFunc = "ExpectQuery"
-			updateWebhookReturnFunc = "WillReturnRows"
-			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
-		} else if isSqlite || isMariaDB {
-			updateWebhookExpectFunc = "ExpectExec"
-			updateWebhookReturnFunc = "WillReturnResult"
-			return jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
+	var createWebhookExpectFunc, createWebhookReturnFunc string
+	buildCreateWebhookExampleRows := func() jen.Code {
+		if isPostgres(dbvendor) {
+			createWebhookExpectFunc = "ExpectQuery"
+			createWebhookReturnFunc = "WillReturnRows"
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(
+				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("CreatedOn"),
+			)
+		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+			createWebhookExpectFunc = "ExpectExec"
+			createWebhookReturnFunc = "WillReturnResult"
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")), jen.One())
 		}
 		return jen.Null()
 	}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_UpdateWebhook", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_CreateWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("ContentType").Op(":").Lit("application/json"),
-					jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"),
-					jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"),
-					jen.ID("Events").Op(":").Index().ID("string").Values(),
-					jen.ID("DataTypes").Op(":").Index().ID("string").Values(),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(),
-					jen.ID("BelongsTo").Op(":").Lit(1),
-				),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				func() []jen.Code {
+					out := []jen.Code{
+						utils.BuildFakeVar(proj, "Webhook"),
+						utils.BuildFakeVarWithCustomName(proj, "exampleInput", "BuildFakeWebhookCreationInputFromWebhook", jen.ID(utils.BuildFakeVarName("Webhook"))),
+						buildCreateWebhookExampleRows(),
+						jen.Line(),
+						jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+						jen.ID("mockDB").Dot(createWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Name"),
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ContentType"),
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("URL"),
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Method"),
+							jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"), jen.ID("eventsSeparator")),
+							jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"), jen.ID("typesSeparator")),
+							jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"), jen.ID("topicsSeparator")),
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+						).Dot(createWebhookReturnFunc).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
+						jen.Line(),
+					}
+
+					if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+						out = append(out,
+							jen.IDf("%stt", dbfl).Assign().AddressOf().ID("mockTimeTeller").Values(),
+							jen.IDf("%stt", dbfl).Dot("On").Call(jen.Lit("Now")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("CreatedOn")),
+							jen.ID(dbfl).Dot("timeTeller").Equals().IDf("%stt", dbfl),
+							jen.Line(),
+						)
+					}
+
+					out = append(out,
+						jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
+						utils.AssertNoError(jen.Err(), nil),
+						utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual"), nil),
+						jen.Line(),
+						func() jen.Code {
+							if isMariaDB(dbvendor) || isSqlite(dbvendor) {
+								return utils.AssertExpectationsFor(fmt.Sprintf("%stt", dbfl))
+							}
+							return jen.Null()
+						}(),
+						utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+					)
+
+					return out
+				}()...,
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with error interacting with database",
+				utils.BuildFakeVar(proj, "Webhook"),
+				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "BuildFakeWebhookCreationInputFromWebhook", jen.ID(utils.BuildFakeVarName("Webhook"))),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot(createWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Name"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ContentType"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("URL"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Method"),
+					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"), jen.ID("eventsSeparator")),
+					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"), jen.ID("typesSeparator")),
+					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"), jen.ID("topicsSeparator")),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+				).Dot("WillReturnError").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestDB_buildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(webhooksTableName).
+		Set("name", whateverValue).
+		Set("content_type", whateverValue).
+		Set("url", whateverValue).
+		Set("method", whateverValue).
+		Set("events", whateverValue).
+		Set("data_types", whateverValue).
+		Set("topics", whateverValue).
+		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id":                         whateverValue,
+			webhooksTableOwnershipColumn: whateverValue,
+		})
+
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING updated_on")
+	}
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Name"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ContentType"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("URL"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Method"),
+		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"), jen.ID("eventsSeparator")),
+		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"), jen.ID("typesSeparator")),
+		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"), jen.ID("topicsSeparator")),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("Webhook")),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "Webhook"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "UpdateWebhook", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
+
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(webhooksTableName).
+		Set("name", whateverValue).
+		Set("content_type", whateverValue).
+		Set("url", whateverValue).
+		Set("method", whateverValue).
+		Set("events", whateverValue).
+		Set("data_types", whateverValue).
+		Set("topics", whateverValue).
+		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id":                         whateverValue,
+			webhooksTableOwnershipColumn: whateverValue,
+		})
+
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING updated_on")
+	}
+	expectedQuery, _, _ := qb.ToSql()
+
+	var updateWebhookExpectFunc, updateWebhookReturnFunc string
+	buildUpdateWebhookExampleRows := func() jen.Code {
+		if isPostgres(dbvendor) {
+			updateWebhookExpectFunc = "ExpectQuery"
+			updateWebhookReturnFunc = "WillReturnRows"
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("updated_on"))).Dot("AddRow").Call(
+				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("UpdatedOn"),
+			)
+		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+			updateWebhookExpectFunc = "ExpectExec"
+			updateWebhookReturnFunc = "WillReturnResult"
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")), jen.One())
+		}
+		return jen.Null()
+	}
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_UpdateWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				utils.BuildFakeVar(proj, "Webhook"),
+				jen.Line(),
 				buildUpdateWebhookExampleRows(),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET name = %s, content_type = %s, url = %s, method = %s, events = %s, data_types = %s, topics = %s, updated_on = %s WHERE belongs_to = %s AND id = %s%s",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					getIncIndex(dbrn, 6),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 7),
-					getIncIndex(dbrn, 8),
-					queryTail,
-				),
+				jen.ID("mockDB").Dot(updateWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Name"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ContentType"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("URL"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Method"),
+					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"),
+						jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"),
+						jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"),
+						jen.ID("topicsSeparator")), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+				).Dot(updateWebhookReturnFunc).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
+				jen.Line(),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook"))),
+				utils.AssertNoError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with error from database",
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
 				jen.ID("mockDB").Dot(updateWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-					jen.ID("expected").Dot("Name"),
-					jen.ID("expected").Dot("ContentType"),
-					jen.ID("expected").Dot("URL"),
-					jen.ID("expected").Dot("Method"),
-					jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Events"),
-						jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("DataTypes"),
-						jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Topics"),
-						jen.ID("topicsSeparator")), jen.ID("expected").Dot("BelongsTo"),
-					jen.ID("expected").Dot("ID"),
-				).Dot(updateWebhookReturnFunc).Call(jen.ID("exampleRows")),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Name"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ContentType"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("URL"),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Method"),
+					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Events"),
+						jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("DataTypes"),
+						jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("Topics"),
+						jen.ID("topicsSeparator")), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+				).Dot("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID(dbfl).Dot("UpdateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expected")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook"))),
+				utils.AssertError(jen.Err(), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("Name").Op(":").Lit("name"), jen.ID("ContentType").Op(":").Lit("application/json"), jen.ID("URL").Op(":").Lit("https://verygoodsoftwarenotvirus.ru"), jen.ID("Method").Op(":").Qual("net/http", "MethodPatch"), jen.ID("Events").Op(":").Index().ID("string").Values(), jen.ID("DataTypes").Op(":").Index().ID("string").Values(), jen.ID("Topics").Op(":").Index().ID("string").Values(), jen.ID("BelongsTo").Op(":").Lit(1)),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET name = %s, content_type = %s, url = %s, method = %s, events = %s, data_types = %s, topics = %s, updated_on = %s WHERE belongs_to = %s AND id = %s%s",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					getIncIndex(dbrn, 6),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 7),
-					getIncIndex(dbrn, 8),
-					queryTail,
-				),
-				jen.Line(),
-				jen.ID("mockDB").Dot(updateWebhookExpectFunc).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-					jen.ID("expected").Dot("Name"),
-					jen.ID("expected").Dot("ContentType"),
-					jen.ID("expected").Dot("URL"),
-					jen.ID("expected").Dot("Method"),
-					jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Events"),
-						jen.ID("eventsSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("DataTypes"),
-						jen.ID("typesSeparator")), jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Topics"),
-						jen.ID("topicsSeparator")), jen.ID("expected").Dot("BelongsTo"),
-					jen.ID("expected").Dot("ID"),
-				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.ID("err").Op(":=").ID(dbfl).Dot("UpdateWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expected")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 		),
 		jen.Line(),
-	)
-	queryTail = ""
-
-	/////////////
-
-	if isPostgres {
-		queryTail = " RETURNING archived_on"
 	}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_buildArchiveWebhookQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleWebhookID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedArgCount").Op(":=").Lit(2),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to = %s AND id = %s%s",
-					getTimeQuery(dbrn),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					queryTail,
-				),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildArchiveWebhookQuery").Call(jen.ID("exampleWebhookID"), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleWebhookID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
-			)),
-		),
-		jen.Line(),
-	)
-	queryTail = ""
+	return lines
+}
 
-	/////////////
+func buildTestDB_buildArchiveWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(webhooksTableName).
+		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id":                         whateverValue,
+			webhooksTableOwnershipColumn: whateverValue,
+			"archived_on":                nil,
+		})
 
-	if isPostgres {
-		queryTail = " RETURNING archived_on"
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING archived_on")
 	}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_ArchiveWebhook", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+		jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "Webhook"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "ArchiveWebhook", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_ArchiveWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
+
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(webhooksTableName).
+		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id":                         whateverValue,
+			webhooksTableOwnershipColumn: whateverValue,
+			"archived_on":                nil,
+		})
+
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING archived_on")
+	}
+	expectedQuery, _, _ := qb.ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_ArchiveWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").Lit(321),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-				),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE webhooks SET updated_on = %s, archived_on = %s WHERE archived_on IS NULL AND belongs_to = %s AND id = %s%s",
-					getTimeQuery(dbrn),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					queryTail,
-				),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "Webhook"),
+				jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-					jen.ID("expected").Dot("BelongsTo"),
-					jen.ID("expected").Dot("ID"),
-				).Dot("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1))),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+				).Dot("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.One(), jen.One())),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID(dbfl).Dot("ArchiveWebhook").Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expected").Dot("BelongsTo")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Err().Assign().ID(dbfl).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot(constants.UserOwnershipFieldName)),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 		),
 		jen.Line(),
-	)
-	return ret
+	}
+
+	return lines
 }

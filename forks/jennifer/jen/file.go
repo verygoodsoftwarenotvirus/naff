@@ -47,7 +47,7 @@ func NewFilePathName(packagePath, packageName string) *File {
 }
 
 // File represents a single source file. Package imports are managed
-// automaticaly by File.
+// automatically by File.
 type File struct {
 	*Group
 	name        string
@@ -226,10 +226,6 @@ func (f *File) register(path string) string {
 	// Only add a prefix if the name is an alias
 	if f.PackagePrefix != "" && alias {
 		unique = f.PackagePrefix + "_" + unique
-	}
-
-	if strings.Contains(path, "%s") {
-		println()
 	}
 
 	// Register the eventual name

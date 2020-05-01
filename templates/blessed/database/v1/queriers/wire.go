@@ -7,17 +7,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
-	ret := jen.NewFile(vendor.SingularPackageName())
+func wireDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	sn := dbvendor.Singular()
+	spn := dbvendor.SingularPackageName()
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
-	sn := vendor.Singular()
+	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	isMariaDB := vendor.RouteName() == "mariadb" || vendor.RouteName() == "maria_db"
-	var (
-		dbTrail string
-	)
-	if !isMariaDB {
+	utils.AddImports(proj, ret)
+
+	var dbTrail string
+
+	if !isMariaDB(dbvendor) {
 		dbTrail = "DB"
 	} else {
 		dbTrail = "Connection"
@@ -25,13 +25,14 @@ func wireDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("Providers is what we provide for dependency injection"),
-			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet").Callln(
+			jen.Comment("Providers is what we provide for dependency injection."),
+			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
 				jen.IDf("Provide%s%s", sn, dbTrail),
 				jen.IDf("Provide%s", sn),
 			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

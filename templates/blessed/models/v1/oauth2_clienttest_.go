@@ -2,95 +2,98 @@ package v1
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientTestDotGo(pkg *models.Project) *jen.File {
+func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("TestOAuth2Client_GetID").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestOAuth2Client_GetID").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Lit("uint64(123)"),
-				jen.ID("oac").Op(":=").Op("&").ID("OAuth2Client").Valuesln(
-					jen.ID("ClientID").Op(":").ID("expected")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("oac").Dot(
-					"GetID",
-				).Call()),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("expected").Assign().Lit("123"),
+				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
+					jen.ID("ClientID").MapAssign().ID("expected"),
+				),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetID").Call(), nil),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestOAuth2Client_GetSecret").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestOAuth2Client_GetSecret").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Lit("uint64(123)"),
-				jen.ID("oac").Op(":=").Op("&").ID("OAuth2Client").Valuesln(
-					jen.ID("ClientSecret").Op(":").ID("expected")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("oac").Dot(
-					"GetSecret",
-				).Call()),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("expected").Assign().Lit("123"),
+				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
+					jen.ID("ClientSecret").MapAssign().ID("expected"),
+				),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetSecret").Call(), nil),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestOAuth2Client_GetDomain").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestOAuth2Client_GetDomain").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Lit("uint64(123)"),
-				jen.ID("oac").Op(":=").Op("&").ID("OAuth2Client").Valuesln(
-					jen.ID("RedirectURI").Op(":").ID("expected")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("oac").Dot(
-					"GetDomain",
-				).Call()),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("expected").Assign().Lit("123"),
+				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
+					jen.ID("RedirectURI").MapAssign().ID("expected"),
+				),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetDomain").Call(), nil),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestOAuth2Client_GetUserID").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestOAuth2Client_GetUserID").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expected").Op(":=").Lit("123"),
-				jen.ID("oac").Op(":=").Op("&").ID("OAuth2Client").Valuesln(
-					jen.ID("BelongsTo").Op(":").ID("expectation")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("oac").Dot(
-					"GetUserID",
-				).Call()),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("expectation").Assign().Uint64().Call(jen.Lit(123)),
+				jen.ID("expected").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expectation")),
+				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
+					jen.ID(constants.UserOwnershipFieldName).MapAssign().ID("expectation"),
+				),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("oac").Dot("GetUserID").Call(), nil),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestOAuth2Client_HasScope").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestOAuth2Client_HasScope").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("oac").Op(":=").Op("&").ID("OAuth2Client").Valuesln(
-					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("things"), jen.Lit("and"), jen.Lit("stuff")),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("oac").Assign().AddressOf().ID("OAuth2Client").Valuesln(
+					jen.ID("Scopes").MapAssign().Index().String().Values(jen.Lit("things"), jen.Lit("and"), jen.Lit("stuff")),
 				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "True").Call(jen.ID("t"), jen.ID("oac").Dot("HasScope").Call(jen.ID("oac").Dot("Scopes").Index(jen.Lit(0)))),
-				jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("oac").Dot("HasScope").Call(jen.Lit("blah"))),
-				jen.Qual("github.com/stretchr/testify/assert", "False").Call(jen.ID("t"), jen.ID("oac").Dot("HasScope").Call(jen.Lit(""))),
-			)),
+				utils.AssertTrue(jen.ID("oac").Dot("HasScope").Call(jen.ID("oac").Dot("Scopes").Index(jen.Zero())), nil),
+				utils.AssertFalse(jen.ID("oac").Dot("HasScope").Call(jen.Lit("blah")), nil),
+				utils.AssertFalse(jen.ID("oac").Dot("HasScope").Call(jen.EmptyString()), nil),
+			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

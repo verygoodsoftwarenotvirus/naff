@@ -1,7 +1,7 @@
 package queriers
 
 import (
-	"path/filepath"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"strings"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -10,40 +10,49 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
-	ret := jen.NewFile(vendor.RouteName())
+func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	spn := dbvendor.SingularPackageName()
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	uvn := vendor.UnexportedVarName()
-	cn := vendor.SingularCommonName()
-	sn := vendor.Singular()
-	rn := vendor.RouteName()
+	utils.AddImports(proj, ret)
+
+	uvn := dbvendor.UnexportedVarName()
+	cn := dbvendor.SingularCommonName()
+	sn := dbvendor.Singular()
+	rn := dbvendor.RouteName()
 	dbrn := rn
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
-	isPostgres := dbrn == "postgres"
-	isSqlite := dbrn == "sqlite"
-	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
-
-	var squirrelInitConfig jen.Code
-
+	squirrelPlaceholder := "Question"
 	if dbrn == "postgres" {
-		squirrelInitConfig = jen.ID("sqlBuilder").Op(":").Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", "Dollar"))
-	} else if dbrn == "sqlite" || dbrn == "mariadb" {
-		squirrelInitConfig = jen.ID("sqlBuilder").Op(":").Qual("github.com/Masterminds/squirrel", "StatementBuilder")
+		squirrelPlaceholder = "Dollar"
 	}
+	squirrelInitConfig := jen.ID("sqlBuilder").MapAssign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", squirrelPlaceholder))
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.ID("loggerName").Op("=").Lit(rn),
-			jen.IDf("%sDriverName", uvn).Op("=").Litf("wrapped-%s-driver", vendor.KebabName()),
+			jen.ID("loggerName").Equals().Lit(rn),
+			jen.IDf("%sDriverName", uvn).Equals().Litf("wrapped-%s-driver", dbvendor.KebabName()),
+			func() jen.Code {
+				if isPostgres(dbvendor) {
+					g := &jen.Group{}
+					g.Add(
+						jen.Line(),
+						jen.ID("postgresRowExistsErrorCode").Equals().Lit("23505"),
+					)
+					return g
+				}
+				return jen.Null()
+			}(),
 			jen.Line(),
-			jen.Comment("CountQuery is a generic counter query used in a few query builders"),
-			jen.ID("CountQuery").Op("=").Lit("COUNT(id)"),
+			jen.List(jen.ID("existencePrefix"), jen.ID("existenceSuffix")).Equals().List(jen.Lit("SELECT EXISTS ("), jen.Lit(")")),
 			jen.Line(),
-			jen.Commentf("CurrentUnixTimeQuery is the query %s uses to determine the current unix time", cn),
-			jen.ID("CurrentUnixTimeQuery").Op("=").Lit(getTimeQuery(dbrn)),
+			jen.Comment("countQuery is a generic counter query used in a few query builders."),
+			jen.ID("countQuery").Equals().Lit("COUNT(%s.id)"),
+			jen.Line(),
+			jen.Commentf("currentUnixTimeQuery is the query %s uses to determine the current unix time.", cn),
+			jen.ID("currentUnixTimeQuery").Equals().Lit(getTimeQuery(dbvendor)),
 		),
 		jen.Line(),
 	)
@@ -51,51 +60,58 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	////////////
 
 	var driverInit jen.Code
-	if isPostgres {
-		driverInit = jen.Op("&").Qual("github.com/lib/pq", "Driver").Values()
-	} else if isSqlite {
-		driverInit = jen.Op("&").Qual("github.com/mattn/go-sqlite3", "SQLiteDriver").Values()
-	} else if isMariaDB {
-		driverInit = jen.Op("&").Qual("github.com/go-sql-driver/mysql", "MySQLDriver").Values()
+	if isPostgres(dbvendor) {
+		driverInit = jen.AddressOf().Qual("github.com/lib/pq", "Driver").Values()
+	} else if isSqlite(dbvendor) {
+		driverInit = jen.AddressOf().Qual("github.com/mattn/go-sqlite3", "SQLiteDriver").Values()
+	} else if isMariaDB(dbvendor) {
+		driverInit = jen.AddressOf().Qual("github.com/go-sql-driver/mysql", "MySQLDriver").Values()
 	}
 
 	ret.Add(
 		jen.Func().ID("init").Params().Block(
-			jen.Commentf("Explicitly wrap the %s driver with ocsql", sn),
-			jen.ID("driver").Op(":=").Qual("contrib.go.opencensus.io/integrations/ocsql", "Wrap").Callln(
+			jen.Commentf("Explicitly wrap the %s driver with ocsql.", sn),
+			jen.ID("driver").Assign().Qual("contrib.go.opencensus.io/integrations/ocsql", "Wrap").Callln(
 				driverInit,
-				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQuery").Call(jen.ID("true")),
-				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithAllowRoot").Call(jen.ID("false")),
-				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithRowsNext").Call(jen.ID("true")),
-				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithRowsClose").Call(jen.ID("true")),
-				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQueryParams").Call(jen.ID("true")),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQuery").Call(jen.True()),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithAllowRoot").Call(jen.False()),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithRowsNext").Call(jen.True()),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithRowsClose").Call(jen.True()),
+				jen.Qual("contrib.go.opencensus.io/integrations/ocsql", "WithQueryParams").Call(jen.True()),
 			),
 			jen.Line(),
-			jen.Comment("Register our ocsql wrapper as a db driver"),
+			jen.Comment("Register our ocsql wrapper as a db driver."),
 			jen.Qual("database/sql", "Register").Call(jen.IDf("%sDriverName", uvn), jen.ID("driver")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database").Op("=").Params(jen.Op("*").ID(sn)).Params(jen.ID("nil")),
+		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "Database").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
 		jen.Line(),
 		jen.Type().Defs(
-			jen.Commentf("%s is our main %s interaction db", sn, sn),
+			jen.Commentf("%s is our main %s interaction db.", sn, sn),
 			jen.ID(sn).Struct(
-				jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-				jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("sqlBuilder").Qual("github.com/Masterminds/squirrel", "StatementBuilderType"),
-				jen.ID("migrateOnce").Qual("sync", "Once"), jen.ID("debug").ID("bool"),
+				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+				jen.ID("db").PointerTo().Qual("database/sql", "DB"),
+				func() jen.Code {
+					if isMariaDB(dbvendor) || isSqlite(dbvendor) {
+						return jen.ID("timeTeller").ID("timeTeller")
+					}
+					return jen.Null()
+				}(),
+				jen.ID("sqlBuilder").Qual("github.com/Masterminds/squirrel", "StatementBuilderType"),
+				jen.ID("migrateOnce").Qual("sync", "Once"), jen.ID("debug").Bool(),
 			),
 			jen.Line(),
-			jen.Commentf("ConnectionDetails is a string alias for a %s url", sn),
-			jen.ID("ConnectionDetails").ID("string"),
+			jen.Commentf("ConnectionDetails is a string alias for a %s url.", sn),
+			jen.ID("ConnectionDetails").String(),
 			jen.Line(),
 			jen.Comment("Querier is a subset interface for sql.{DB|Tx|Stmt} objects"),
 			jen.ID("Querier").Interface(
-				jen.ID("ExecContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Qual("database/sql", "Result"), jen.ID("error")),
-				jen.ID("QueryContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Op("*").Qual("database/sql", "Rows"), jen.ID("error")),
-				jen.ID("QueryRowContext").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("args").Op("...").Interface()).Params(jen.Op("*").Qual("database/sql", "Row")),
+				jen.ID("ExecContext").Params(constants.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.Qual("database/sql", "Result"), jen.Error()),
+				jen.ID("QueryContext").Params(constants.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Rows"), jen.Error()),
+				jen.ID("QueryRowContext").Params(constants.CtxParam(), jen.ID("args").Spread().Interface()).Params(jen.PointerTo().Qual("database/sql", "Row")),
 			),
 		),
 		jen.Line(),
@@ -105,36 +121,42 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	var (
 		dbTrail string
 	)
-	if !isMariaDB {
+	if !isMariaDB(dbvendor) {
 		dbTrail = "DB"
 	} else {
 		dbTrail = "Connection"
 	}
 
 	ret.Add(
-		jen.Commentf("Provide%s%s provides an instrumented %s db", sn, dbTrail, cn),
+		jen.Commentf("Provide%s%s provides an instrumented %s db.", sn, dbTrail, cn),
 		jen.Line(),
-		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"), jen.ID("connectionDetails").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "ConnectionDetails")).Params(jen.Op("*").Qual("database/sql", "DB"), jen.ID("error")).Block(
-			jen.ID("logger").Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
-			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.ID("string").Call(jen.ID("connectionDetails"))),
+		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Block(
+			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
+			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.String().Call(jen.ID("connectionDetails"))),
 		),
 		jen.Line(),
 	)
 
 	////////////
 	dbTrail = ""
-	if !isMariaDB {
+	if !isMariaDB(dbvendor) {
 		dbTrail = " db"
 	}
 
 	ret.Add(
-		jen.Commentf("Provide%s provides a %s%s controller", sn, cn, dbTrail),
+		jen.Commentf("Provide%s provides a %s%s controller.", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").ID("bool"), jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database")).Block(
-			jen.Return().Op("&").IDf(sn).Valuesln(
-				jen.ID("db").Op(":").ID("db"),
-				jen.ID("debug").Op(":").ID("debug"),
-				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.ID("loggerName")),
+		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "Database")).Block(
+			jen.Return().AddressOf().IDf(sn).Valuesln(
+				jen.ID("db").MapAssign().ID("db"),
+				jen.ID("debug").MapAssign().ID("debug"),
+				func() jen.Code {
+					if isMariaDB(dbvendor) || isSqlite(dbvendor) {
+						return jen.ID("timeTeller").MapAssign().AddressOf().ID("stdLibTimeTeller").Values()
+					}
+					return jen.Null()
+				}(),
+				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("loggerName")),
 				squirrelInitConfig,
 			),
 		),
@@ -142,68 +164,75 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 	)
 
 	buildIsReadyBody := func() []jen.Code {
-		if isSqlite {
-			return []jen.Code{jen.Return(jen.ID("true"))}
-		} else if isPostgres {
+		if isSqlite(dbvendor) {
+			return []jen.Code{jen.Return(jen.True())}
+		} else if isPostgres(dbvendor) {
 			return []jen.Code{
-				jen.ID("numberOfUnsuccessfulAttempts").Op(":=").Lit(0),
+				jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
 				jen.Line(),
-				jen.ID(dbfl).Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-					jen.Lit("interval").Op(":").Qual("time", "Second"),
-					jen.Lit("max_attempts").Op(":").Lit(50)),
+				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+					jen.Lit("interval").MapAssign().Qual("time", "Second"),
+					jen.Lit("max_attempts").MapAssign().Lit(50)),
 				).Dot("Debug").Call(jen.Lit("IsReady called")),
 				jen.Line(),
-				jen.For(jen.Op("!").ID("ready")).Block(
-					jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("Ping").Call(),
-					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-						jen.ID(dbfl).Dot("logger").Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
+				jen.For(jen.Not().ID("ready")).Block(
+					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
+					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+						jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
 						jen.Line(),
 						jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
 						jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
-							jen.Return().ID("false"),
+							jen.Return().False(),
 						),
 					).Else().Block(
-						jen.ID("ready").Op("=").ID("true"),
+						jen.ID("ready").Equals().True(),
 						jen.Return().ID("ready"),
 					),
 				),
-				jen.Return().ID("false"),
+				jen.Return().False(),
 			}
-		} else if isMariaDB {
+		} else if isMariaDB(dbvendor) {
 			return []jen.Code{
-				jen.ID("numberOfUnsuccessfulAttempts").Op(":=").Lit(0),
+				jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
 				jen.Line(),
-				jen.ID(dbfl).Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-					jen.Lit("interval").Op(":").Qual("time", "Second"),
-					jen.Lit("max_attempts").Op(":").Lit(50)),
+				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+					jen.Lit("interval").MapAssign().Qual("time", "Second"),
+					jen.Lit("max_attempts").MapAssign().Lit(50)),
 				).Dot("Debug").Call(jen.Lit("IsReady called")),
 				jen.Line(),
-				jen.For(jen.Op("!").ID("ready")).Block(
-					jen.ID("err").Op(":=").ID(dbfl).Dot("db").Dot("Ping").Call(),
-					jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-						jen.ID(dbfl).Dot("logger").Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
+				jen.For(jen.Not().ID("ready")).Block(
+					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
+					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+						jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
 						jen.Line(),
 						jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
 						jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
-							jen.Return().ID("false"),
+							jen.Return().False(),
 						),
 					).Else().Block(
-						jen.ID("ready").Op("=").ID("true"),
+						jen.ID("ready").Equals().True(),
 						jen.Return().ID("ready"),
 					),
 				),
-				jen.Return().ID("false"),
+				jen.Return().False(),
 			}
 		}
 		return nil
 	}
 
 	ret.Add(
-		jen.Comment("IsReady reports whether or not the db is ready"),
+		jen.Comment("IsReady reports whether or not the db is ready."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("IsReady").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("IsReady").Params(
+			func() jen.Code {
+				if !isSqlite(dbvendor) {
+					return constants.CtxParam()
+				}
+				return jen.Underscore().Qual("context", "Context")
+			}(),
+		).Params(jen.ID("ready").Bool()).Block(
 			buildIsReadyBody()...,
 		),
 		jen.Line(),
@@ -220,17 +249,17 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 		jen.Comment("with the utmost priority."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("logQueryBuildingError").Params(jen.ID("err").ID("error")).Block(
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID(dbfl).Dot("logger").Dot("WithName").Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.ID("err"), jen.Lit("building query")),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logQueryBuildingError").Params(jen.Err().Error()).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.Err(), jen.Lit("building query")),
 			),
 		),
 		jen.Line(),
 	)
 
-	if isSqlite || isMariaDB {
+	if isMariaDB(dbvendor) || isSqlite(dbvendor) {
 		ret.Add(
-			jen.Comment("logCreationTimeRetrievalError logs errors that may occur during creation time retrieval."),
+			jen.Comment("logIDRetrievalError logs errors that may occur during created db row ID retrieval."),
 			jen.Line(),
 			jen.Comment("Such errors should be few and far between, as the generally only occur with"),
 			jen.Line(),
@@ -240,9 +269,9 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 			jen.Line(),
 			jen.Comment("with the utmost priority."),
 			jen.Line(),
-			jen.Func().Params(jen.ID(dbfl).Op("*").ID(sn)).ID("logCreationTimeRetrievalError").Params(jen.ID("err").ID("error")).Block(
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID(dbfl).Dot("logger").Dot("WithName").Call(jen.Lit("CREATION_TIME_RETRIEVAL")).Dot("Error").Call(jen.ID("err"), jen.Lit("retrieving creation time")),
+			jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logIDRetrievalError").Params(jen.Err().Error()).Block(
+				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("ROW_ID_ERROR")).Dot("Error").Call(jen.Err(), jen.Lit("fetching row ID")),
 				),
 			),
 			jen.Line(),
@@ -254,16 +283,16 @@ func databaseDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 		jen.Comment("IS NOT sql.ErrNoRows, which we want to preserve and surface to the services."),
 		jen.Line(),
-		jen.Func().ID("buildError").Params(jen.ID("err").ID("error"), jen.ID("msg").ID("string")).Params(jen.ID("error")).Block(
-			jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-				jen.Return().ID("err"),
+		jen.Func().ID("buildError").Params(jen.Err().Error(), jen.ID("msg").String()).Params(jen.Error()).Block(
+			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+				jen.Return().Err(),
 			),
 			jen.Line(),
-			jen.If(jen.Op("!").Qual("strings", "Contains").Call(jen.ID("msg"), jen.RawString(`%w`))).Block(
+			jen.If(jen.Not().Qual("strings", "Contains").Call(jen.ID("msg"), jen.RawString(`%w`))).Block(
 				jen.ID("msg").Op("+=").Lit(": %w"),
 			),
 			jen.Line(),
-			jen.Return().Qual("fmt", "Errorf").Call(jen.ID("msg"), jen.ID("err")),
+			jen.Return().Qual("fmt", "Errorf").Call(jen.ID("msg"), jen.Err()),
 		),
 		jen.Line(),
 	)

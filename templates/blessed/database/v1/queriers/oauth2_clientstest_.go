@@ -1,1047 +1,1157 @@
 package queriers
 
 import (
-	"path/filepath"
+	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"strings"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+
+	"github.com/Masterminds/squirrel"
 )
 
-func oauth2ClientsTestDotGo(pkg *models.Project, vendor wordsmith.SuperPalabra) *jen.File {
-	ret := jen.NewFile(vendor.SingularPackageName())
+const (
+	oauth2ClientsTableName            = "oauth2_clients"
+	oauth2ClientsTableOwnershipColumn = "belongs_to_user"
+)
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
-	sn := vendor.Singular()
-	dbfl := strings.ToLower(string([]byte(sn)[0]))
-	dbrn := vendor.RouteName()
+var (
+	oauth2ClientsTableColumns = []string{
+		fmt.Sprintf("%s.id", oauth2ClientsTableName),
+		fmt.Sprintf("%s.name", oauth2ClientsTableName),
+		fmt.Sprintf("%s.client_id", oauth2ClientsTableName),
+		fmt.Sprintf("%s.scopes", oauth2ClientsTableName),
+		fmt.Sprintf("%s.redirect_uri", oauth2ClientsTableName),
+		fmt.Sprintf("%s.client_secret", oauth2ClientsTableName),
+		fmt.Sprintf("%s.created_on", oauth2ClientsTableName),
+		fmt.Sprintf("%s.updated_on", oauth2ClientsTableName),
+		fmt.Sprintf("%s.archived_on", oauth2ClientsTableName),
+		fmt.Sprintf("%s.%s", oauth2ClientsTableName, oauth2ClientsTableOwnershipColumn),
+	}
+)
 
-	isPostgres := dbrn == "postgres"
-	isSqlite := dbrn == "sqlite"
-	isMariaDB := dbrn == "mariadb" || dbrn == "maria_db"
+func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	spn := dbvendor.SingularPackageName()
 
-	ret.Add(
-		jen.Func().ID("buildMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
-			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("oauth2ClientsTableColumns")).Dot("AddRow").Callln(
-				jen.ID("c").Dot("ID"),
-				jen.ID("c").Dot("Name"),
-				jen.ID("c").Dot("ClientID"),
-				jen.Qual("strings", "Join").Call(jen.ID("c").Dot("Scopes"), jen.ID("scopesSeparator")),
-				jen.ID("c").Dot("RedirectURI"),
-				jen.ID("c").Dot("ClientSecret"),
-				jen.ID("c").Dot("CreatedOn"),
-				jen.ID("c").Dot("UpdatedOn"),
-				jen.ID("c").Dot("ArchivedOn"),
-				jen.ID("c").Dot("BelongsTo"),
+	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+
+	utils.AddImports(proj, ret)
+
+	ret.Add(buildBuildMockRowsFromOAuth2Client(proj, dbvendor)...)
+	ret.Add(buildBuildErroneousMockRowFromOAuth2Client(proj, dbvendor)...)
+	ret.Add(buildTestScanOAuth2Clients(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildGetOAuth2ClientByClientIDQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_GetOAuth2ClientByClientID(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildGetAllOAuth2ClientsQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_GetAllOAuth2Clients(proj, dbvendor)...)
+	ret.Add(buildTestDB_GetAllOAuth2ClientsForUser(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildGetOAuth2ClientQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_GetOAuth2Client(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildGetAllOAuth2ClientCountQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_GetAllOAuth2ClientCount(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildGetOAuth2ClientsQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_GetOAuth2Clients(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildCreateOAuth2ClientQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_CreateOAuth2Client(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildUpdateOAuth2ClientQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_UpdateOAuth2Client(proj, dbvendor)...)
+	ret.Add(buildTestDB_buildArchiveOAuth2ClientQuery(proj, dbvendor)...)
+	ret.Add(buildTestDB_ArchiveOAuth2Client(proj, dbvendor)...)
+
+	return ret
+}
+
+func buildBuildMockRowsFromOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
+		jen.Func().ID("buildMockRowsFromOAuth2Client").Params(
+			jen.ID("clients").Spread().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+		).Params(
+			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
+		).Block(
+			jen.ID("includeCount").Assign().Len(jen.ID("clients")).GreaterThan().One(),
+			jen.ID("columns").Assign().ID("oauth2ClientsTableColumns"),
+			jen.Line(),
+			jen.If(jen.ID("includeCount")).Block(
+				utils.AppendItemsToList(jen.ID("columns"), jen.Lit("count")),
 			),
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
-			jen.Return().ID("exampleRows"),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().ID("buildErroneousMockRowFromOAuth2Client").Params(jen.ID("c").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Params(jen.Op("*").Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
-			jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("oauth2ClientsTableColumns")).Dot("AddRow").Callln(
-				jen.ID("c").Dot("ArchivedOn"),
-				jen.ID("c").Dot("Name"),
-				jen.ID("c").Dot("ClientID"),
-				jen.Qual("strings", "Join").Call(jen.ID("c").Dot("Scopes"), jen.ID("scopesSeparator")),
-				jen.ID("c").Dot("RedirectURI"),
-				jen.ID("c").Dot("ClientSecret"),
-				jen.ID("c").Dot("CreatedOn"),
-				jen.ID("c").Dot("UpdatedOn"),
-				jen.ID("c").Dot("BelongsTo"),
-				jen.ID("c").Dot("ID"),
-			),
-			jen.Line(),
-			jen.Return().ID("exampleRows"),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetOAuth2ClientByClientIDQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedClientID").Op(":=").Lit("ClientID"),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND client_id = %s", getIncIndex(dbrn, 0)),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientByClientIDQuery").Call(jen.ID("expectedClientID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedClientID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetOAuth2ClientByClientID", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
+			jen.For(jen.List(jen.Underscore(), jen.ID("c")).Assign().Range().ID("clients")).Block(
+				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(
+					jen.ID("c").Dot("ID"),
+					jen.ID("c").Dot("Name"),
+					jen.ID("c").Dot("ClientID"),
+					jen.Qual("strings", "Join").Call(jen.ID("c").Dot("Scopes"), jen.ID("scopesSeparator")),
+					jen.ID("c").Dot("RedirectURI"),
+					jen.ID("c").Dot("ClientSecret"),
+					jen.ID("c").Dot("CreatedOn"),
+					jen.ID("c").Dot("UpdatedOn"),
+					jen.ID("c").Dot("ArchivedOn"),
+					jen.ID("c").Dot(constants.UserOwnershipFieldName),
 				),
 				jen.Line(),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND client_id = %s", getIncIndex(dbrn, 0)),
+				jen.If(jen.ID("includeCount")).Block(
+					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID("clients"))),
+				),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("exampleClientID")).
-					Dotln("WillReturnRows").Call(jen.ID("buildMockRowFromOAuth2Client").Call(jen.ID("expected"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2ClientByClientID").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleClientID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND client_id = %s", getIncIndex(dbrn, 0)),
+			jen.Return().ID("exampleRows"),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildBuildErroneousMockRowFromOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
+		jen.Func().ID("buildErroneousMockRowFromOAuth2Client").Params(jen.ID("c").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("oauth2ClientsTableColumns")).Dot("AddRow").Callln(
+				jen.ID("c").Dot("ArchivedOn"),
+				jen.ID("c").Dot("Name"),
+				jen.ID("c").Dot("ClientID"),
+				jen.Qual("strings", "Join").Call(jen.ID("c").Dot("Scopes"), jen.ID("scopesSeparator")),
+				jen.ID("c").Dot("RedirectURI"),
+				jen.ID("c").Dot("ClientSecret"),
+				jen.ID("c").Dot("CreatedOn"),
+				jen.ID("c").Dot("UpdatedOn"),
+				jen.ID("c").Dot(constants.UserOwnershipFieldName),
+				jen.ID("c").Dot("ID"),
+			),
+			jen.Line(),
+			jen.Return().ID("exampleRows"),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestScanOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_ScanOAuth2Clients", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"surfaces row errors",
+				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.List(
+					jen.Underscore(),
+					jen.Underscore(),
+					jen.Err(),
+				).Assign().ID(dbfl).Dot("scanOAuth2Clients").Call(jen.ID("mockRows")),
+				utils.AssertError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"logs row closing errors",
+				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.Line(),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Nil()),
+				jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.List(
+					jen.Underscore(),
+					jen.Underscore(),
+					jen.Err(),
+				).Assign().ID(dbfl).Dot("scanOAuth2Clients").Call(jen.ID("mockRows")),
+				utils.AssertNoError(jen.Err(), nil),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestDB_buildGetOAuth2ClientByClientIDQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Select(oauth2ClientsTableColumns...).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.client_id", oauth2ClientsTableName):   whateverValue,
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName): nil,
+		})
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "OAuth2Client"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "GetOAuth2ClientByClientID", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_GetOAuth2ClientByClientID(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	stn := "OAuth2Client"
+
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(oauth2ClientsTableColumns...).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.client_id", oauth2ClientsTableName):   whateverValue,
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName): nil,
+		}).ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetOAuth2ClientByClientID", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, stn),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("exampleClientID")).
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(stn)).Dot("ClientID")).
+					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromOAuth2Client").Call(jen.ID(utils.BuildFakeVarName(stn)))),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientByClientID").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName(stn)).Dot("ClientID"),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName(stn)), jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"surfaces sql.ErrNoRows",
+				utils.BuildFakeVar(proj, stn),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(stn)).Dot("ClientID")).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2ClientByClientID").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleClientID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous row"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleClientID").Op(":=").Lit("EXAMPLE"),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientByClientID").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName(stn)).Dot("ClientID"),
 				),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND client_id = %s", getIncIndex(dbrn, 0)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with erroneous row",
+				utils.BuildFakeVar(proj, stn),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("exampleClientID")).Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID("expected"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2ClientByClientID").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleClientID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetAllOAuth2ClientsQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.ID("actualQuery").Op(":=").ID(dbfl).Dot("buildGetAllOAuth2ClientsQuery").Call(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetAllOAuth2Clients", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.Valuesln(
-						jen.ID("ID").Op(":").Lit(123),
-						jen.ID("Name").Op(":").Lit("name"),
-						jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-						jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName(stn)).Dot("ClientID")).Dotln("WillReturnRows").Call(
+					jen.ID("buildErroneousMockRowFromOAuth2Client").Call(
+						jen.ID(utils.BuildFakeVarName(stn)),
 					),
 				),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.ID("expected").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.ID("expected").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.ID("expected").Index(jen.Lit(0))),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientByClientID").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName(stn)).Dot("ClientID"),
+				),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestDB_buildGetAllOAuth2ClientsQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Select(oauth2ClientsTableColumns...).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName): nil,
+		})
+
+	expectedArgs := []jen.Code{}
+	callArgs := []jen.Code{}
+
+	return buildQueryTest(proj, dbvendor, "GetAllOAuth2Clients", qb, expectedArgs, callArgs, nil)
+}
+
+func buildTestDB_GetAllOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(oauth2ClientsTableColumns...).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName): nil,
+		}).ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetAllOAuth2Clients", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "OAuth2Client"),
+				jen.ID("expected").Assign().Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2Clients").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
+					jen.ID("buildMockRowsFromOAuth2Client").Callln(
+						jen.ID(utils.BuildFakeVarName("OAuth2Client")),
+						jen.ID(utils.BuildFakeVarName("OAuth2Client")),
+						jen.ID(utils.BuildFakeVarName("OAuth2Client")),
+					),
+				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(constants.CtxVar()),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			utils.BuildSubTest(
+				"surfaces sql.ErrNoRows",
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2Clients").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(constants.CtxVar()),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error executing query"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+			utils.BuildSubTest(
+				"with error executing query",
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2Clients").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(constants.CtxVar()),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.Valuesln(
-						jen.ID("ID").Op(":").Lit(123),
-						jen.ID("Name").Op(":").Lit("name"),
-						jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-						jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-					),
-				),
+			utils.BuildSubTest(
+				"with erroneous response from database",
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID("expected").Index(jen.Lit(0)))),
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2Clients").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2Clients").Call(constants.CtxVar()),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 		),
 		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetAllOAuth2ClientsForUser", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
-				jen.ID("expected").Op(":=").Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.Valuesln(
-						jen.ID("ID").Op(":").Lit(123),
-						jen.ID("Name").Op(":").Lit("name"),
-						jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-						jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-					),
-				),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.ID("expected").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.ID("expected").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.ID("expected").Index(jen.Lit(0))),
-				),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUser").Dot("ID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUser").Dot("ID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUser").Dot("ID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with unscannable response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("exampleUser").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(jen.ID("ID").Op(":").Lit(123)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-				),
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID("expected"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUser").Dot("ID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetOAuth2ClientQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedClientID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedArgCount").Op(":=").Lit(2),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientQuery").Call(jen.ID("expectedClientID"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedClientID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetOAuth2Client", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("things")),
-				),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expected").Dot("BelongsTo"), jen.ID("expected").Dot("ID")).
-					Dotln("WillReturnRows").Call(jen.ID("buildMockRowFromOAuth2Client").Call(jen.ID("expected"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expected").Dot("BelongsTo")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("surfaces sql.ErrNoRows"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("things")),
-				),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expected").Dot("BelongsTo"), jen.ID("expected").Dot("ID")).
-					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expected").Dot("BelongsTo")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.Qual("database/sql", "ErrNoRows"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-				),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = %s AND id = %s", getIncIndex(dbrn, 0), getIncIndex(dbrn, 1)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expected").Dot("BelongsTo"), jen.ID("expected").Dot("ID")).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID("expected"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("expected").Dot("ID"), jen.ID("expected").Dot("BelongsTo")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetOAuth2ClientCountQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", getIncIndex(dbrn, 0)),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientCountQuery").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetOAuth2ClientCount", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", getIncIndex(dbrn, 0)),
-				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
-				jen.Line(),
-				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2ClientCount").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetAllOAuth2ClientCountQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Lit("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.ID("actual").Op(":=").ID(dbfl).Dot("buildGetAllOAuth2ClientCountQuery").Call(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetAllOAuth2ClientCount", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.ID("expectedCount").Op(":=").ID("uint64").Call(jen.Lit(666)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
-				jen.Line(),
-				jen.List(jen.ID("actualCount"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetAllOAuth2ClientCount").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedCount"), jen.ID("actualCount")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_buildGetOAuth2ClientsQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedArgCount").Op(":=").Lit(1),
-				jen.ID("expectedQuery").Op(":=").Litf("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", getIncIndex(dbrn, 0)),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildGetOAuth2ClientsQuery").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-			)),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Func().IDf("Test%s_GetOAuth2Clients", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList").Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
-						jen.ID("Limit").Op(":").Lit(20),
-						jen.ID("TotalCount").Op(":").Lit(111),
-					),
-					jen.ID("Clients").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
-							jen.ID("Name").Op(":").Lit("name"),
-							jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-							jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-						),
-					),
-				),
-				jen.Line(),
-				jen.ID("filter").Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", getIncIndex(dbrn, 0)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.Op("&").ID("expected").Dot("Clients").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.Op("&").ID("expected").Dot("Clients").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.Op("&").ID("expected").Dot("Clients").Index(jen.Lit(0))),
-				),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expected").Dot("TotalCount"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2Clients").Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with no rows returned from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2Clients").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error reading from database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2Clients").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with erroneous response"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList").Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
-						jen.ID("Limit").Op(":").Lit(20),
-						jen.ID("TotalCount").Op(":").Lit(111),
-					),
-					jen.ID("Clients").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
-							jen.ID("Name").Op(":").Lit("name"),
-							jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-							jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-						),
-					),
-				),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
-					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.Op("&").ID("expected").Dot("Clients").Index(jen.Lit(0)))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2Clients").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error fetching count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList").Valuesln(
-					jen.ID("Pagination").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Pagination").Valuesln(
-						jen.ID("Page").Op(":").Lit(1),
-						jen.ID("Limit").Op(":").Lit(20),
-						jen.ID("TotalCount").Op(":").Lit(0)),
-					jen.ID("Clients").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(123),
-							jen.ID("Name").Op(":").Lit("name"),
-							jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-							jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-						),
-					),
-				),
-				jen.ID("expectedListQuery").Op(":=").Lit("SELECT id, name, client_id, scopes, redirect_uri, client_secret, created_on, updated_on, archived_on, belongs_to FROM oauth2_clients WHERE archived_on IS NULL"),
-				jen.ID("expectedCountQuery").Op(":=").Litf("SELECT COUNT(id) FROM oauth2_clients WHERE archived_on IS NULL AND belongs_to = %s LIMIT 20", getIncIndex(dbrn, 0)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.Op("&").ID("expected").Dot("Clients").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.Op("&").ID("expected").Dot("Clients").Index(jen.Lit(0))),
-					jen.ID("buildMockRowFromOAuth2Client").Call(jen.Op("&").ID("expected").Dot("Clients").Index(jen.Lit(0))),
-				),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
-					Dotln("WithArgs").Call(jen.ID("expectedUserID")).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("GetOAuth2Clients").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call(), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-
-	var (
-		queryTail string
-
-		createdOnCol, createdOnVal string
-	)
-	if isPostgres {
-		queryTail = " RETURNING id, created_on"
 	}
 
-	if isMariaDB {
-		createdOnCol = ",created_on"
-		createdOnVal = ",UNIX_TIMESTAMP()"
-	}
+	return lines
+}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_buildCreateOAuth2ClientQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+func buildTestDB_GetAllOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(append(oauth2ClientsTableColumns, fmt.Sprintf(countQuery, oauth2ClientsTableName))...).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.%s", oauth2ClientsTableName, oauth2ClientsTableOwnershipColumn): whateverValue,
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName):                           nil,
+		}).
+		GroupBy(fmt.Sprintf("%s.id", oauth2ClientsTableName)).
+		ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetAllOAuth2ClientsForUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ClientID").Op(":").Lit("ClientID"),
-					jen.ID("ClientSecret").Op(":").Lit("ClientSecret"),
-					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("blah")),
-					jen.ID("RedirectURI").Op(":").Lit("RedirectURI"),
-					jen.ID("BelongsTo").Op(":").Lit(123),
-				),
-				jen.ID("expectedArgCount").Op(":=").Lit(6),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to%s) VALUES (%s,%s,%s,%s,%s,%s%s)%s",
-					createdOnCol,
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					createdOnVal,
-					queryTail,
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
+				utils.BuildFakeVar(proj, "OAuth2ClientList"),
+				jen.Line(),
+				jen.ID("expected").Assign().Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
+					jen.AddressOf().ID(utils.BuildFakeVarName("OAuth2ClientList")).Dot("Clients").Index(jen.Zero()),
+					jen.AddressOf().ID(utils.BuildFakeVarName("OAuth2ClientList")).Dot("Clients").Index(jen.One()),
+					jen.AddressOf().ID(utils.BuildFakeVarName("OAuth2ClientList")).Dot("Clients").Index(jen.Lit(2)),
 				),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildCreateOAuth2ClientQuery").Call(jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("Name"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("ClientID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("ClientSecret"), jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("Scopes").Index(jen.Lit(0)), jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("RedirectURI"), jen.ID("args").Index(jen.Lit(4)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("exampleInput").Dot("BelongsTo"), jen.ID("args").Index(jen.Lit(5)).Assert(jen.ID("uint64"))),
-			)),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromOAuth2Client").Call(jen.ID("expected").Spread())),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"surfaces sql.ErrNoRows",
+				utils.BuildFakeVar(proj, "User"),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with erroneous response from database",
+				utils.BuildFakeVar(proj, "User"),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with unscannable response",
+				utils.BuildFakeVar(proj, "User"),
+				utils.BuildFakeVar(proj, "OAuth2Client"),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")))),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 		),
 		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestDB_buildGetOAuth2ClientQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Select(oauth2ClientsTableColumns...).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.id", oauth2ClientsTableName):                                    whateverValue,
+			fmt.Sprintf("%s.%s", oauth2ClientsTableName, oauth2ClientsTableOwnershipColumn): whateverValue,
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName):                           nil,
+		})
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "OAuth2Client"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "GetOAuth2Client", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_GetOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	fvn := utils.BuildFakeVarName("OAuth2Client")
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(oauth2ClientsTableColumns...).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.id", oauth2ClientsTableName):                                    whateverValue,
+			fmt.Sprintf("%s.%s", oauth2ClientsTableName, oauth2ClientsTableOwnershipColumn): whateverValue,
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName):                           nil,
+		}).
+		ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "OAuth2Client"),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WithArgs").Call(jen.ID(fvn).Dot(constants.UserOwnershipFieldName), jen.ID(fvn).Dot("ID")).
+					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromOAuth2Client").Call(jen.ID(fvn))),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Client").Call(constants.CtxVar(), jen.ID(fvn).Dot("ID"), jen.ID(fvn).Dot(constants.UserOwnershipFieldName)),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(fvn), jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"surfaces sql.ErrNoRows",
+				utils.BuildFakeVar(proj, "OAuth2Client"), jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WithArgs").Call(jen.ID(fvn).Dot(constants.UserOwnershipFieldName), jen.ID(fvn).Dot("ID")).
+					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Client").Call(constants.CtxVar(), jen.ID(fvn).Dot("ID"), jen.ID(fvn).Dot(constants.UserOwnershipFieldName)),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with erroneous response from database",
+				utils.BuildFakeVar(proj, "OAuth2Client"), jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WithArgs").Call(jen.ID(fvn).Dot(constants.UserOwnershipFieldName), jen.ID(fvn).Dot("ID")).
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(jen.ID(fvn))),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Client").Call(constants.CtxVar(), jen.ID(fvn).Dot("ID"), jen.ID(fvn).Dot(constants.UserOwnershipFieldName)),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestDB_buildGetAllOAuth2ClientCountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Select(fmt.Sprintf(countQuery, oauth2ClientsTableName)).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName): nil,
+		})
+
+	var (
+		expectedArgs []jen.Code
+		callArgs     []jen.Code
 	)
 
-	queryTail = ""
+	return buildQueryTest(proj, dbvendor, "GetAllOAuth2ClientCount", qb, expectedArgs, callArgs, nil)
+}
+
+func buildTestDB_GetAllOAuth2ClientCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(fmt.Sprintf(countQuery, oauth2ClientsTableName)).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName): nil,
+		}).ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetAllOAuth2ClientCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+				jen.ID("expectedCount").Assign().Uint64().Call(jen.Lit(123)),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
+				jen.Line(),
+				jen.List(jen.ID("actualCount"), jen.Err()).Assign().ID(dbfl).Dot("GetAllOAuth2ClientCount").Call(constants.CtxVar()),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID("expectedCount"), jen.ID("actualCount"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestDB_buildGetOAuth2ClientsQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Select(append(oauth2ClientsTableColumns, fmt.Sprintf(countQuery, oauth2ClientsTableName))...).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.%s", oauth2ClientsTableName, oauth2ClientsTableOwnershipColumn): whateverValue,
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName):                           nil,
+		})
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+		jen.ID(constants.FilterVarName),
+	}
+
+	qb = applyFleshedOutQueryFilter(qb, oauth2ClientsTableName)
+	expectedArgs = appendFleshedOutQueryFilterArgs(expectedArgs)
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+		jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call(),
+	}
+
+	return buildQueryTest(proj, dbvendor, "GetOAuth2Clients", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+	tn := "OAuth2ClientList"
+
+	expectedListQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(append(oauth2ClientsTableColumns, fmt.Sprintf(countQuery, oauth2ClientsTableName))...).
+		From(oauth2ClientsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.%s", oauth2ClientsTableName, oauth2ClientsTableOwnershipColumn): whateverValue,
+			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName):                           nil,
+		}).
+		GroupBy(fmt.Sprintf("%s.id", oauth2ClientsTableName)).
+		Limit(20).
+		ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetOAuth2Clients", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildFakeVar(proj, "User"),
+			jen.ID("expectedListQuery").Assign().Lit(expectedListQuery),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.CreateDefaultQueryFilter(proj),
+				jen.Line(),
+				utils.BuildFakeVar(proj, tn),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
+					jen.ID("buildMockRowsFromOAuth2Client").Callln(
+						jen.AddressOf().ID(utils.BuildFakeVarName(tn)).Dot("Clients").Index(jen.Zero()),
+						jen.AddressOf().ID(utils.BuildFakeVarName(tn)).Dot("Clients").Index(jen.One()),
+						jen.AddressOf().ID(utils.BuildFakeVarName(tn)).Dot("Clients").Index(jen.Lit(2)),
+					),
+				),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(constants.FilterVarName),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName(tn)), jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with no rows returned from database",
+				utils.CreateDefaultQueryFilter(proj),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(constants.FilterVarName),
+				),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with error reading from database",
+				utils.CreateDefaultQueryFilter(proj),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(constants.FilterVarName),
+				),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with erroneous response",
+				utils.CreateDefaultQueryFilter(proj),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(
+					jen.Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
+				)),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(constants.FilterVarName),
+				),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestDB_buildCreateOAuth2ClientQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Insert(oauth2ClientsTableName).
+		Columns(
+			"name",
+			"client_id",
+			"client_secret",
+			"scopes",
+			"redirect_uri",
+			oauth2ClientsTableOwnershipColumn,
+		).
+		Values(
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+		)
+
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING id, created_on")
+	}
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Name"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientSecret"),
+		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Scopes"), jen.ID("scopesSeparator")),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("RedirectURI"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "OAuth2Client"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "CreateOAuth2Client", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_CreateOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	qb := queryBuilderForDatabase(dbvendor).
+		Insert(oauth2ClientsTableName).
+		Columns(
+			"name",
+			"client_id",
+			"client_secret",
+			"scopes",
+			"redirect_uri",
+			oauth2ClientsTableOwnershipColumn,
+		).
+		Values(
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+		)
+
 	var (
-		happyPathExpectMethodName     string
-		happyPathReturnMethodName     string
-		createOAuth2ClientExampleRows jen.Code
-		sqliteTimeCreationAddendum    jen.Code
+		happyPathExpectMethodName string
+		happyPathReturnMethodName string
+		exampleRowsDecl           jen.Code
 	)
-	if isPostgres {
-		queryTail = " RETURNING id, created_on"
+	if isPostgres(dbvendor) {
 		happyPathExpectMethodName = "ExpectQuery"
 		happyPathReturnMethodName = "WillReturnRows"
-		createOAuth2ClientExampleRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("ID"), jen.ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
-	} else if isSqlite || isMariaDB {
+		qb = qb.Suffix("RETURNING id, created_on")
+		exampleRowsDecl = jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").
+			Call(jen.Index().String().Values(jen.Lit("id"), jen.Lit("created_on"))).Dot("AddRow").
+			Call(
+				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("CreatedOn"),
+			)
+	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		happyPathExpectMethodName = "ExpectExec"
 		happyPathReturnMethodName = "WillReturnResult"
-		createOAuth2ClientExampleRows = jen.ID("exampleRows").Op(":=").Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID("expected").Dot("ID")), jen.Lit(1))
-		g := &jen.Group{}
-		g.Add(
-			jen.ID("expectedTimeQuery").Op(":=").Litf("SELECT created_on FROM oauth2_clients WHERE id = %s", getIncIndex(dbrn, 0)), jen.Line(),
-			jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedTimeQuery"))).
-				Dotln("WithArgs").Call(jen.ID("expected").Dot("ID")).
-				Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("created_on"))).Dot("AddRow").Call(jen.ID("expected").Dot("CreatedOn"))), jen.Line(),
+		exampleRowsDecl = jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").
+			Call(jen.Int64().Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID")), jen.One())
+	}
+
+	happyPathLines := []jen.Code{
+		utils.BuildFakeVar(proj, "OAuth2Client"),
+		utils.BuildFakeVarWithCustomName(proj, "expectedInput", "BuildFakeOAuth2ClientCreationInputFromClient", jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
+		exampleRowsDecl,
+		jen.Line(),
+		jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("mockDB").Dot(happyPathExpectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Name"),
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientSecret"),
+			jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Scopes"), jen.ID("scopesSeparator")),
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("RedirectURI"),
+			jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+		).Dot(happyPathReturnMethodName).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
+		jen.Line(),
+	}
+
+	if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+		happyPathLines = append(happyPathLines,
+			jen.ID("mtt").Assign().AddressOf().ID("mockTimeTeller").Values(),
+			jen.ID("mtt").Dot("On").Call(jen.Lit("Now")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("CreatedOn")),
+			jen.ID(dbfl).Dot("timeTeller").Equals().ID("mtt"),
+			jen.Line(),
 		)
-		sqliteTimeCreationAddendum = g
 	}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_CreateOAuth2Client", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-				),
-				jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-					jen.ID("BelongsTo").Op(":").ID("expected").Dot("BelongsTo"),
-				),
-				createOAuth2ClientExampleRows,
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to%s) VALUES (%s,%s,%s,%s,%s,%s%s)%s",
-					createdOnCol,
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					createdOnVal,
-					queryTail,
-				),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot(happyPathExpectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-					jen.ID("expected").Dot("Name"),
-					jen.ID("expected").Dot("ClientID"),
-					jen.ID("expected").Dot("ClientSecret"),
-					jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Scopes"), jen.ID("scopesSeparator")),
-					jen.ID("expected").Dot("RedirectURI"),
-					jen.ID("expected").Dot("BelongsTo"),
-				).Dot(happyPathReturnMethodName).Call(jen.ID("exampleRows")),
-				jen.Line(),
-				sqliteTimeCreationAddendum,
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("CreateOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ID").Op(":").Lit(123),
-					jen.ID("Name").Op(":").Lit("name"),
-					jen.ID("BelongsTo").Op(":").ID("expectedUserID"),
-					jen.ID("CreatedOn").Op(":").ID("uint64").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-				),
-				jen.ID("expectedInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-					jen.ID("BelongsTo").Op(":").ID("expected").Dot("BelongsTo")),
-				jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO oauth2_clients (name,client_id,client_secret,scopes,redirect_uri,belongs_to%s) VALUES (%s,%s,%s,%s,%s,%s%s)%s",
-					createdOnCol,
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					createdOnVal,
-					queryTail,
-				),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot(happyPathExpectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
-					jen.ID("expected").Dot("Name"),
-					jen.ID("expected").Dot("ClientID"),
-					jen.ID("expected").Dot("ClientSecret"),
-					jen.Qual("strings", "Join").Call(jen.ID("expected").Dot("Scopes"), jen.ID("scopesSeparator")),
-					jen.ID("expected").Dot("RedirectURI"),
-					jen.ID("expected").Dot("BelongsTo"),
-				).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID(dbfl).Dot("CreateOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("expectedInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
+	happyPathLines = append(happyPathLines,
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("expectedInput")),
+		utils.AssertNoError(jen.Err(), nil),
+		utils.AssertEqual(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.ID("actual"), nil),
 		jen.Line(),
+		func() jen.Code {
+			if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+				return utils.AssertExpectationsFor("mtt")
+			}
+			return jen.Null()
+		}(),
+		utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 	)
 
-	queryTail = ""
-	if isPostgres {
-		queryTail = " RETURNING updated_on"
+	expectedQuery, _, _ := qb.ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_CreateOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+			jen.Line(),
+			utils.BuildSubTest("happy path", happyPathLines...),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with error writing to database",
+				utils.BuildFakeVar(proj, "OAuth2Client"),
+				utils.BuildFakeVarWithCustomName(proj, "expectedInput", "BuildFakeOAuth2ClientCreationInputFromClient", jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot(happyPathExpectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Name"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientSecret"),
+					jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Scopes"), jen.ID("scopesSeparator")),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("RedirectURI"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+				).Dot("WillReturnError").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("expectedInput")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+		),
+		jen.Line(),
 	}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_buildUpdateOAuth2ClientQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Valuesln(
-					jen.ID("ClientID").Op(":").Lit("ClientID"),
-					jen.ID("ClientSecret").Op(":").Lit("ClientSecret"),
-					jen.ID("Scopes").Op(":").Index().ID("string").Values(jen.Lit("blah")),
-					jen.ID("RedirectURI").Op(":").Lit("RedirectURI"),
-					jen.ID("BelongsTo").Op(":").Lit(123),
-				),
-				jen.ID("expectedArgCount").Op(":=").Lit(6),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET client_id = %s, client_secret = %s, scopes = %s, redirect_uri = %s, updated_on = %s WHERE belongs_to = %s AND id = %s%s",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					queryTail,
-				),
-				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildUpdateOAuth2ClientQuery").Call(jen.ID("expected")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ClientID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ClientSecret"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("Scopes").Index(jen.Lit(0)), jen.ID("args").Index(jen.Lit(2)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("RedirectURI"), jen.ID("args").Index(jen.Lit(3)).Assert(jen.ID("string"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("BelongsTo"), jen.ID("args").Index(jen.Lit(4)).Assert(jen.ID("uint64"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot("ID"), jen.ID("args").Index(jen.Lit(5)).Assert(jen.ID("uint64"))),
-			)),
-		),
-		jen.Line(),
-	)
+	return lines
+}
 
-	queryTail = ""
+func buildTestDB_buildUpdateOAuth2ClientQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(oauth2ClientsTableName).
+		Set("client_id", whateverValue).
+		Set("client_secret", whateverValue).
+		Set("scopes", whateverValue).
+		Set("redirect_uri", whateverValue).
+		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id":                              whateverValue,
+			oauth2ClientsTableOwnershipColumn: whateverValue,
+		})
+
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING updated_on")
+	}
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientSecret"),
+		jen.Qual("strings", "Join").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("Scopes"), jen.ID("scopesSeparator")),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("RedirectURI"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "OAuth2Client"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "UpdateOAuth2Client", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_UpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(oauth2ClientsTableName).
+		Set("client_id", whateverValue).
+		Set("client_secret", whateverValue).
+		Set("scopes", whateverValue).
+		Set("redirect_uri", whateverValue).
+		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id":                              whateverValue,
+			oauth2ClientsTableOwnershipColumn: whateverValue,
+		})
+
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING updated_on")
+	}
+
+	expectedQuery, _, _ := qb.ToSql()
+
 	var (
 		mockDBExpect        jen.Code
 		errFuncExpectMethod string
 	)
-	if isPostgres {
-		queryTail = " RETURNING updated_on"
-		mockDBExpect = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
-			jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()),
-		)
+	if isPostgres(dbvendor) {
+		mockDBExpect = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+			Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(
+			jen.Index().String().Values(jen.Lit("updated_on")),
+		).Dot("AddRow").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 		errFuncExpectMethod = "ExpectQuery"
-	} else if isSqlite || isMariaDB {
+	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 		mockDBExpect = jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-			Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1)))
+			Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.One(), jen.One()))
 		errFuncExpectMethod = "ExpectExec"
 	}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_UpdateOAuth2Client", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_UpdateOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET client_id = %s, client_secret = %s, scopes = %s, redirect_uri = %s, updated_on = %s WHERE belongs_to = %s AND id = %s%s",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					queryTail,
-				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				mockDBExpect,
 				jen.Line(),
-				jen.ID("err").Op(":=").ID(dbfl).Dot("UpdateOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateOAuth2Client").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET client_id = %s, client_secret = %s, scopes = %s, redirect_uri = %s, updated_on = %s WHERE belongs_to = %s AND id = %s%s",
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					getIncIndex(dbrn, 2),
-					getIncIndex(dbrn, 3),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 4),
-					getIncIndex(dbrn, 5),
-					queryTail,
-				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client").Values(),
+			utils.BuildSubTest(
+				"with error writing to database",
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(errFuncExpectMethod).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID(dbfl).Dot("UpdateOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateOAuth2Client").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
+				utils.AssertError(jen.Err(), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 		),
 		jen.Line(),
-	)
+	}
 
-	queryTail = ""
-	if isPostgres {
+	return lines
+}
+
+func buildTestDB_buildArchiveOAuth2ClientQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(oauth2ClientsTableName).
+		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id":                              whateverValue,
+			oauth2ClientsTableOwnershipColumn: whateverValue,
+		})
+
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING archived_on")
+	}
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+		jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "OAuth2Client"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "ArchiveOAuth2Client", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_ArchiveOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	queryTail := ""
+	if isPostgres(dbvendor) {
 		queryTail = " RETURNING archived_on"
 	}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_buildArchiveOAuth2ClientQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_ArchiveOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID(dbfl), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("expectedClientID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expectedUserID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("expectedArgCount").Op(":=").Lit(2),
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET updated_on = %s, archived_on = %s WHERE belongs_to = %s AND id = %s%s",
-					getTimeQuery(dbrn),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					queryTail,
-				),
+			jen.ID("expectedQuery").Assign().Litf("UPDATE oauth2_clients SET updated_on = %s, archived_on = %s WHERE belongs_to_user = %s AND id = %s%s",
+				getTimeQuery(dbvendor),
+				getTimeQuery(dbvendor),
+				getIncIndex(dbvendor, 0),
+				getIncIndex(dbvendor, 1),
+				queryTail,
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
-				jen.List(jen.ID("actualQuery"), jen.ID("args")).Op(":=").ID(dbfl).Dot("buildArchiveOAuth2ClientQuery").Call(jen.ID("expectedClientID"), jen.ID("expectedUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
-				jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("args"), jen.ID("expectedArgCount")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedUserID"), jen.ID("args").Index(jen.Lit(0)).Assert(jen.ID("uint64"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedClientID"), jen.ID("args").Index(jen.Lit(1)).Assert(jen.ID("uint64"))),
-			)),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WithArgs").Call(
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+				).
+					Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.One(), jen.One())),
+				jen.Line(),
+				jen.Err().Assign().ID(dbfl).Dot("ArchiveOAuth2Client").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with error writing to database",
+				utils.BuildFakeVar(proj, "OAuth2Client"),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WithArgs").Call(
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+				).
+					Dotln("WillReturnError").Call(constants.ObligatoryError()),
+				jen.Line(),
+				jen.Err().Assign().ID(dbfl).Dot("ArchiveOAuth2Client").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+				),
+				utils.AssertError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
-		jen.Func().IDf("Test%s_ArchiveOAuth2Client", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET updated_on = %s, archived_on = %s WHERE belongs_to = %s AND id = %s%s",
-					getTimeQuery(dbrn),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					queryTail,
-				),
-				jen.ID("exampleClientID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("exampleUserID"), jen.ID("exampleClientID")).
-					Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.Lit(1), jen.Lit(1))),
-				jen.Line(),
-				jen.ID("err").Op(":=").ID(dbfl).Dot("ArchiveOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleClientID"), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error writing to database"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectedQuery").Op(":=").Litf("UPDATE oauth2_clients SET updated_on = %s, archived_on = %s WHERE belongs_to = %s AND id = %s%s",
-					getTimeQuery(dbrn),
-					getTimeQuery(dbrn),
-					getIncIndex(dbrn, 0),
-					getIncIndex(dbrn, 1),
-					queryTail,
-				),
-				jen.ID("exampleClientID").Op(":=").ID("uint64").Call(jen.Lit(321)),
-				jen.ID("exampleUserID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.Line(),
-				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
-					Dotln("WithArgs").Call(jen.ID("exampleUserID"), jen.ID("exampleClientID")).
-					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.ID("err").Op(":=").ID(dbfl).Dot("ArchiveOAuth2Client").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleClientID"), jen.ID("exampleUserID")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
-			)),
-		),
-		jen.Line(),
-	)
-	return ret
+	return lines
 }

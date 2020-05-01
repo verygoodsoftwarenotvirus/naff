@@ -6,46 +6,49 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func metricsTestDotGo(pkg *models.Project) *jen.File {
+func metricsTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("config")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("c").Op(":=").Op("&").ID("ServerConfig").Valuesln(
-					jen.ID("Metrics").Op(":").ID("MetricsSettings").Valuesln(
-						jen.ID("RuntimeMetricsCollectionInterval").Op(":").Qual("time", "Second"),
-						jen.ID("MetricsProvider").Op(":").ID("DefaultMetricsProvider"),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("c").Assign().AddressOf().ID("ServerConfig").Valuesln(
+					jen.ID("Metrics").MapAssign().ID("MetricsSettings").Valuesln(
+						jen.ID("RuntimeMetricsCollectionInterval").MapAssign().Qual("time", "Second"),
+						jen.ID("MetricsProvider").MapAssign().ID("DefaultMetricsProvider"),
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID("ih"), jen.ID("err")).Op(":=").ID("c").Dot("ProvideInstrumentationHandler").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("ih")),
-			)),
+				jen.List(jen.ID("ih"), jen.Err()).Assign().ID("c").Dot("ProvideInstrumentationHandler").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertNotNil(jen.ID("ih"), nil),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestServerConfig_ProvideTracing").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestServerConfig_ProvideTracing").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("c").Op(":=").Op("&").ID("ServerConfig").Valuesln(
-					jen.ID("Metrics").Op(":").ID("MetricsSettings").Valuesln(
-						jen.ID("TracingProvider").Op(":").ID("DefaultTracingProvider"),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("c").Assign().AddressOf().ID("ServerConfig").Valuesln(
+					jen.ID("Metrics").MapAssign().ID("MetricsSettings").Valuesln(
+						jen.ID("TracingProvider").MapAssign().ID("DefaultTracingProvider"),
 					),
 				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("c").Dot("ProvideTracing").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call())),
-			)),
+				utils.AssertNoError(jen.ID("c").Dot("ProvideTracing").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()), nil),
+			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

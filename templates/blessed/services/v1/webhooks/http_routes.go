@@ -1,82 +1,57 @@
 package webhooks
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func httpRoutesDotGo(pkg *models.Project) *jen.File {
+func httpRoutesDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("webhooks")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Const().Defs(
-			jen.Comment("URIParamKey is a standard string that we'll use to refer to webhook IDs with"),
-			jen.ID("URIParamKey").Op("=").Lit("webhookID"),
+			jen.Comment("URIParamKey is a standard string that we'll use to refer to webhook IDs with."),
+			jen.ID("URIParamKey").Equals().Lit("webhookID"),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("attachWebhookIDToSpan provides a consistent way to attach a webhook ID to a given span"),
+		jen.Comment("ListHandler is our list route."),
 		jen.Line(),
-		jen.Func().ID("attachWebhookIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("webhookID").ID("uint64")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot(
-					"AddAttributes",
-				).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("webhook_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("webhookID"), jen.Lit(10)))),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("attachUserIDToSpan provides a consistent way to attach a user ID to a given span"),
-		jen.Line(),
-		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot(
-					"AddAttributes",
-				).Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10)))),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("ListHandler is our list route"),
-		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ListHandler")),
-				jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ListHandler")),
+				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
-				jen.Comment("figure out how specific we need to be"),
-				jen.ID("qf").Op(":=").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "ExtractQueryFilter").Call(jen.ID("req")),
+				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
-				jen.Comment("figure out who this is all for"),
-				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
-				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.Comment("figure out how specific we need to be."),
+				jen.ID(constants.FilterVarName).Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
-				jen.Comment("find the webhooks"),
-				jen.List(jen.ID("webhooks"), jen.ID("err")).Op(":=").ID("s").Dot("webhookDatabase").Dot("GetWebhooks").Call(jen.ID("ctx"), jen.ID("qf"), jen.ID("userID")),
-				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("webhooks").Op("=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
-						jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values()),
-				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered fetching webhooks")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Comment("figure out who this is all for."),
+				jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+				jen.Line(),
+				jen.Comment("find the webhooks."),
+				jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("GetWebhooks").Call(constants.CtxVar(), jen.ID("userID"), jen.ID(constants.FilterVarName)),
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+					jen.ID("webhooks").Equals().AddressOf().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
+						jen.ID("Webhooks").MapAssign().Index().Qual(proj.ModelsV1Package(), "Webhook").Values()),
+				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered fetching webhooks")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.Comment("encode the response"),
-				jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("webhooks")), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("s").Dot("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
+				jen.Comment("encode the response."),
+				jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("webhooks")), jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 				),
 			),
 		),
@@ -84,19 +59,19 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("validateWebhook does some validation on a WebhookCreationInput and returns an error if anything runs foul"),
+		jen.Comment("validateWebhook does some validation on a WebhookCreationInput and returns an error if anything runs foul."),
 		jen.Line(),
-		jen.Func().ID("validateWebhook").Params(jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
+		jen.Func().ID("validateWebhook").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(),
 			"WebhookCreationInput",
-		)).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("net/url", "Parse").Call(jen.ID("input").Dot("URL")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("invalid URL provided: %w"), jen.ID("err")),
+		)).Params(jen.Error()).Block(
+			jen.List(jen.Underscore(), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("input").Dot("URL")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("invalid URL provided: %w"), jen.Err()),
 			),
 			jen.Line(),
-			jen.ID("input").Dot("Method").Op("=").Qual("strings", "ToUpper").Call(jen.ID("input").Dot("Method")),
+			jen.ID("input").Dot("Method").Equals().Qual("strings", "ToUpper").Call(jen.ID("input").Dot("Method")),
 			jen.Switch(jen.ID("input").Dot("Method")).Block(
-				jen.Comment("allowed methods"),
+				jen.Comment("allowed methods."),
 				jen.Caseln(
 					jen.Qual("net/http", "MethodGet"),
 					jen.Qual("net/http", "MethodPost"),
@@ -120,58 +95,60 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("CreateHandler is our webhook creation route"),
+		jen.Comment("CreateHandler is our webhook creation route."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("CreateHandler")),
-				jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CreateHandler")),
+				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
-				jen.Comment("figure out who this is all for"),
-				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
-				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValue").Call(jen.Lit("user"), jen.ID("userID")),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
+				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
-				jen.Comment("try to pluck the parsed input from the request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput")),
-				jen.If(jen.Op("!").ID("ok")).Block(
-					jen.ID("logger").Dot("Info").Call(jen.Lit("valid input not attached to request")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+				jen.Comment("figure out who this is all for."),
+				jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+				jen.Line(),
+				jen.Comment("try to pluck the parsed input from the request context."),
+				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput")),
+				jen.If(jen.Not().ID("ok")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to request")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
 				),
-				jen.ID("input").Dot("BelongsTo").Op("=").ID("userID"),
+				jen.ID("input").Dot(constants.UserOwnershipFieldName).Equals().ID("userID"),
 				jen.Line(),
 				jen.Comment("ensure everythings on the up-and-up"),
-				jen.If(jen.ID("err").Op(":=").ID("validateWebhook").Call(jen.ID("input")), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Info").Call(jen.Lit("invalid method provided")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+				jen.If(jen.Err().Assign().ID("validateWebhook").Call(jen.ID("input")), jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("invalid method provided")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.Comment("create the webhook"),
-				jen.List(jen.ID("wh"), jen.ID("err")).Op(":=").ID("s").Dot("webhookDatabase").Dot("CreateWebhook").Call(jen.ID("ctx"), jen.ID("input")),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error creating webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Comment("create the webhook."),
+				jen.List(jen.ID("wh"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID("input")),
+				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error creating webhook")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.Comment("notify the relevant parties"),
-				jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("wh").Dot("ID")),
-				jen.ID("s").Dot("webhookCounter").Dot("Increment").Call(jen.ID("ctx")),
+				jen.Comment("notify the relevant parties."),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("wh").Dot("ID")),
+				jen.ID("s").Dot("webhookCounter").Dot("Increment").Call(constants.CtxVar()),
 				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Create")),
-					jen.ID("Data").Op(":").ID("wh"),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName"))),
+					jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Create")),
+					jen.ID("Data").MapAssign().ID("wh"),
+					jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName"))),
 				),
 				jen.Line(),
-				jen.ID("l").Op(":=").ID("wh").Dot("ToListener").Call(jen.ID("s").Dot("logger")),
+				jen.ID("l").Assign().ID("wh").Dot("ToListener").Call(jen.ID(constants.LoggerVarName)),
 				jen.ID("s").Dot("eventManager").Dot("TuneIn").Call(jen.ID("l")),
 				jen.Line(),
-				jen.Comment("let everybody know we're good"),
-				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusCreated")),
-				jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("wh")), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
+				jen.Comment("let everybody know we're good."),
+				utils.WriteXHeader(constants.ResponseVarName, "StatusCreated"),
+				jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 				),
 			),
 		),
@@ -179,40 +156,40 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ReadHandler returns a GET handler that returns an webhook"),
+		jen.Comment("ReadHandler returns a GET handler that returns an webhook."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("ReadHandler")),
-				jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ReadHandler")),
+				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
-				jen.Comment("figure out what this is for and who it belongs to"),
-				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
-				jen.ID("webhookID").Op(":=").ID("s").Dot("webhookIDFetcher").Call(jen.ID("req")),
+				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
-				jen.Comment("document it for posterity"),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
-				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-					jen.Lit("user").Op(":").ID("userID"),
-					jen.Lit("webhook").Op(":").ID("webhookID"),
-				)),
+				jen.Comment("determine relevant user ID."),
+				jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
 				jen.Line(),
-				jen.Comment("fetch the webhook from the database"),
-				jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot("webhookDatabase").Dot("GetWebhook").Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")),
-				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("logger").Dot("Debug").Call(jen.Lit("No rows found in webhookDatabase")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+				jen.Comment("determine relevant webhook ID."),
+				jen.ID("webhookID").Assign().ID("s").Dot("webhookIDFetcher").Call(jen.ID(constants.RequestVarName)),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("webhookID")),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("webhook_id"), jen.ID("webhookID")),
+				jen.Line(),
+				jen.Comment("fetch the webhook from the database."),
+				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("No rows found in webhook database")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 					jen.Return(),
-				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("Error fetching webhook from webhookDatabase")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("Error fetching webhook from webhook database")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.Comment("encode the response"),
-				jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("x")), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
+				jen.Comment("encode the response."),
+				jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 				),
 			),
 		),
@@ -220,65 +197,65 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("UpdateHandler returns a handler that updates an webhook"),
+		jen.Comment("UpdateHandler returns a handler that updates an webhook."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("UpdateHandler")),
-				jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UpdateHandler")),
+				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
-				jen.Comment("figure out what this is for and who it belongs to"),
-				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
-				jen.ID("webhookID").Op(":=").ID("s").Dot("webhookIDFetcher").Call(jen.ID("req")),
+				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
-				jen.Comment("document it for posterity"),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
-				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-					jen.Lit("user_id").Op(":").ID("userID"),
-					jen.Lit("webhook_id").Op(":").ID("webhookID")),
-				),
+				jen.Comment("determine relevant user ID."),
+				jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
 				jen.Line(),
-				jen.Comment("fetch parsed creation input from request context"),
-				jen.List(jen.ID("input"), jen.ID("ok")).Op(":=").ID("ctx").Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookUpdateInput")),
-				jen.If(jen.Op("!").ID("ok")).Block(
-					jen.ID("s").Dot("logger").Dot("Info").Call(jen.Lit("no input attached to request")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+				jen.Comment("determine relevant webhook ID."),
+				jen.ID("webhookID").Assign().ID("s").Dot("webhookIDFetcher").Call(jen.ID(constants.RequestVarName)),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("webhookID")),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("webhook_id"), jen.ID("webhookID")),
+				jen.Line(),
+				jen.Comment("fetch parsed creation input from request context."),
+				jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookUpdateInput")),
+				jen.If(jen.Not().ID("ok")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("no input attached to request")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.Comment("fetch the webhook in question"),
-				jen.List(jen.ID("wh"), jen.ID("err")).Op(":=").ID("s").Dot("webhookDatabase").Dot("GetWebhook").Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")),
-				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("logger").Dot("Debug").Call(jen.Lit("no rows found for webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+				jen.Comment("fetch the webhook in question."),
+				jen.List(jen.ID("wh"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no rows found for webhook")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 					jen.Return(),
-				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered getting webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered getting webhook")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.Comment("update it"),
+				jen.Comment("update it."),
 				jen.ID("wh").Dot("Update").Call(jen.ID("input")),
 				jen.Line(),
-				jen.Comment("save the update in the database"),
-				jen.If(jen.ID("err").Op("=").ID("s").Dot("webhookDatabase").Dot("UpdateWebhook").Call(jen.ID("ctx"), jen.ID("wh")), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered updating webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+				jen.Comment("save the update in the database."),
+				jen.If(jen.Err().Equals().ID("s").Dot("webhookDataManager").Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered updating webhook")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.Comment("notify the relevant parties"),
+				jen.Comment("notify the relevant parties."),
 				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Update")),
-					jen.ID("Data").Op(":").ID("wh"),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName"))),
+					jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Update")),
+					jen.ID("Data").MapAssign().ID("wh"),
+					jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName"))),
 				),
 				jen.Line(),
-				jen.Comment("let everybody know we're good"),
-				jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID("res"), jen.ID("wh")), jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("encoding response")),
+				jen.Comment("let everybody know we're good."),
+				jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 				),
 			),
 		),
@@ -286,51 +263,51 @@ func httpRoutesDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("ArchiveHandler returns a handler that archives an webhook"),
+		jen.Comment("ArchiveHandler returns a handler that archives an webhook."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Block(
-				jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("req").Dot("Context").Call(), jen.Lit("delete_route")),
-				jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("delete_route")),
+				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
-				jen.Comment("figure out what this is for and who it belongs to"),
-				jen.ID("userID").Op(":=").ID("s").Dot("userIDFetcher").Call(jen.ID("req")),
-				jen.ID("webhookID").Op(":=").ID("s").Dot("webhookIDFetcher").Call(jen.ID("req")),
+				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
-				jen.Comment("document it for posterity"),
-				jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-				jen.ID("attachWebhookIDToSpan").Call(jen.ID("span"), jen.ID("webhookID")),
-				jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-					jen.Lit("webhook_id").Op(":").ID("webhookID"),
-					jen.Lit("user_id").Op(":").ID("userID"),
-				),
-				),
+				jen.Comment("determine relevant user ID."),
+				jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
 				jen.Line(),
-				jen.Comment("do the deed"),
-				jen.ID("err").Op(":=").ID("s").Dot("webhookDatabase").Dot("ArchiveWebhook").Call(jen.ID("ctx"), jen.ID("webhookID"), jen.ID("userID")),
-				jen.If(jen.ID("err").Op("==").Qual("database/sql", "ErrNoRows")).Block(
-					jen.ID("logger").Dot("Debug").Call(jen.Lit("no rows found for webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNotFound")),
+				jen.Comment("determine relevant webhook ID."),
+				jen.ID("webhookID").Assign().ID("s").Dot("webhookIDFetcher").Call(jen.ID(constants.RequestVarName)),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachWebhookIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("webhookID")),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("webhook_id"), jen.ID("webhookID")),
+				jen.Line(),
+				jen.Comment("do the deed."),
+				jen.Err().Assign().ID("s").Dot("webhookDataManager").Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID("userID")),
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no rows found for webhook")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 					jen.Return(),
-				).Else().If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error encountered deleting webhook")),
-					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+				).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered deleting webhook")),
+					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.Comment("let the interested parties know"),
-				jen.ID("s").Dot("webhookCounter").Dot("Decrement").Call(jen.ID("ctx")),
+				jen.Comment("let the interested parties know."),
+				jen.ID("s").Dot("webhookCounter").Dot("Decrement").Call(constants.CtxVar()),
 				jen.ID("s").Dot("eventManager").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-					jen.ID("EventType").Op(":").ID("string").Call(jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Archive")),
-					jen.ID("Data").Op(":").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values(jen.ID("ID").Op(":").ID("webhookID")),
-					jen.ID("Topics").Op(":").Index().ID("string").Values(jen.ID("topicName"))),
+					jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Archive")),
+					jen.ID("Data").MapAssign().Qual(proj.ModelsV1Package(), "Webhook").Values(jen.ID("ID").MapAssign().ID("webhookID")),
+					jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName"))),
 				),
 				jen.Line(),
-				jen.Comment("let everybody go home"),
-				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
+				jen.Comment("let everybody go home."),
+				utils.WriteXHeader(constants.ResponseVarName, "StatusNoContent"),
 			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

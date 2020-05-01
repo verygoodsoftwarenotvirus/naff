@@ -1,69 +1,45 @@
 package client
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
+func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
+		jen.Var().Underscore().Qual(proj.ModelsV1Package(),
 			"OAuth2ClientDataManager",
-		).Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
+		).Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("attachOAuth2ClientDatabaseIDToSpan is a consistent way to attach an oauth2 client's ID to a span"),
+		jen.Comment("GetOAuth2Client gets an OAuth2 client from the database."),
 		jen.Line(),
-		jen.Func().ID("attachOAuth2ClientDatabaseIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("oauth2ClientID").ID("uint64")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("oauth2client_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("oauth2ClientID"), jen.Lit(10)))),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("attachOAuth2ClientIDToSpan is a consistent way to attach an oauth2 client's Client ID to a span"),
-		jen.Line(),
-		jen.Func().ID("attachOAuth2ClientIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("clientID").ID("string")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Call(jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("client_id"), jen.ID("clientID"))),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("GetOAuth2Client gets an OAuth2 client from the database"),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetOAuth2Client")),
-			jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
+			utils.StartSpan(proj, true, "GetOAuth2Client"),
 			jen.Line(),
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-			jen.ID("attachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("clientID")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachOAuth2ClientDatabaseIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("clientID")),
 			jen.Line(),
-			jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-				jen.Lit("client_id").Op(":").ID("clientID"), jen.Lit("user_id").Op(":").ID("userID"),
+			jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+				jen.Lit("client_id").MapAssign().ID("clientID"), jen.Lit("user_id").MapAssign().ID("userID"),
 			)),
-			jen.ID("logger").Dot("Debug").Call(jen.Lit("GetOAuth2Client called")),
+			jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("GetOAuth2Client called")),
 			jen.Line(),
-			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("c").Dot("querier").Dot("GetOAuth2Client").Call(jen.ID("ctx"), jen.ID("clientID"), jen.ID("userID")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching oauth2 client from the querier")),
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("client"), jen.Err()).Assign().ID("c").Dot("querier").Dot("GetOAuth2Client").Call(constants.CtxVar(), jen.ID("clientID"), jen.ID("userID")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error fetching oauth2 client from the querier")),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("client"), jen.ID("nil")),
+			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -73,130 +49,98 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("This is used by authenticating middleware to fetch client information it needs to validate."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2ClientByClientID").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("string")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetOAuth2ClientByClientID")),
-			jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetOAuth2ClientByClientID").Params(constants.CtxParam(), jen.ID("clientID").String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetOAuth2ClientByClientID")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachOAuth2ClientIDToSpan").Call(jen.ID("span"), jen.ID("clientID")),
-			jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("oauth2client_client_id"), jen.ID("clientID")),
-			jen.ID("logger").Dot("Debug").Call(jen.Lit("GetOAuth2ClientByClientID called")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachOAuth2ClientIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("clientID")),
+			jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("oauth2client_client_id"), jen.ID("clientID")),
+			jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("GetOAuth2ClientByClientID called")),
 			jen.Line(),
-			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("c").Dot("querier").Dot("GetOAuth2ClientByClientID").Call(jen.ID("ctx"), jen.ID("clientID")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot("Error").Call(jen.ID("err"), jen.Lit("error fetching oauth2 client from the querier")),
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("client"), jen.Err()).Assign().ID("c").Dot("querier").Dot("GetOAuth2ClientByClientID").Call(constants.CtxVar(), jen.ID("clientID")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error fetching oauth2 client from the querier")),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("client"), jen.ID("nil")),
+			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("GetOAuth2ClientCount gets the count of OAuth2 clients in the database that match the current filter"),
+		jen.Comment("GetAllOAuth2ClientCount gets the count of OAuth2 clients that match the current filter."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-			jen.ID("userID").ID("uint64")).Params(jen.ID("uint64"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetOAuth2ClientCount")),
-			jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllOAuth2ClientCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()).Block(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetAllOAuth2ClientCount")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-			jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
+			jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("GetAllOAuth2ClientCount called")),
 			jen.Line(),
-			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetOAuth2ClientCount called")),
+			jen.Return().ID("c").Dot("querier").Dot("GetAllOAuth2ClientCount").Call(constants.CtxVar()),
+		),
+		jen.Line(),
+	)
+
+	//ret.Add(
+	//	jen.Comment("GetAllOAuth2Clients returns all OAuth2 clients, irrespective of ownership."),
+	//	jen.Line(),
+	//	jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllOAuth2Clients").Params(utils.CtxParam()).Params(
+	//		jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+	//		jen.Error(),
+	//	).Block(
+	//		jen.List(utils.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetAllOAuth2Clients")),
+	//		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
+	//		jen.Line(),
+	//		jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("GetAllOAuth2Clients called")),
+	//		jen.Line(),
+	//		jen.Return().ID("c").Dot("querier").Dot("GetAllOAuth2Clients").Call(utils.CtxVar()),
+	//	),
+	//	jen.Line(),
+	//)
+
+	ret.Add(
+		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetOAuth2Clients").Params(
+			constants.CtxParam(),
+			jen.ID("userID").Uint64(),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"), jen.Error()).Block(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetOAuth2Clients")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetOAuth2ClientCount").Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachFilterToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.FilterVarName)),
+			jen.Line(),
+			jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetOAuth2Clients called")),
+			jen.Line(),
+			jen.Return().ID("c").Dot("querier").Dot("GetOAuth2Clients").Call(constants.CtxVar(), jen.ID("userID"), jen.ID(constants.FilterVarName)),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("GetAllOAuth2ClientCount gets the count of OAuth2 clients that match the current filter"),
+		jen.Comment("CreateOAuth2Client creates an OAuth2 client."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllOAuth2ClientCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllOAuth2ClientCount")),
-			jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("CreateOAuth2Client").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("CreateOAuth2Client")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("GetAllOAuth2ClientCount called")),
-			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetAllOAuth2ClientCount").Call(jen.ID("ctx")),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("GetAllOAuth2ClientsForUser returns all OAuth2 clients belonging to a given user"),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllOAuth2ClientsForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
-			"OAuth2Client",
-		),
-			jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllOAuth2ClientsForUser")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetAllOAuth2ClientsForUser called")),
-			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetAllOAuth2ClientsForUser").Call(jen.ID("ctx"), jen.ID("userID")),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("GetAllOAuth2Clients returns all OAuth2 clients, irrespective of ownership."),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetAllOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Index().Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"),
-			"OAuth2Client",
-		),
-			jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetAllOAuth2Clients")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
-			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("GetAllOAuth2Clients called")),
-			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetAllOAuth2Clients").Call(jen.ID("ctx")),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients"),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("GetOAuth2Clients").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientList"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("GetOAuth2Clients")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-			jen.ID("attachFilterToSpan").Call(jen.ID("span"), jen.ID("filter")),
-			jen.Line(),
-			jen.ID("c").Dot("logger").Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetOAuth2Clients called")),
-			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetOAuth2Clients").Call(jen.ID("ctx"), jen.ID("filter"), jen.ID("userID")),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("CreateOAuth2Client creates an OAuth2 client"),
-		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("CreateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2ClientCreationInput")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client"), jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("CreateOAuth2Client")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
-			jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-				jen.Lit("client_id").Op(":").ID("input").Dot("ClientID"),
-				jen.Lit("belongs_to").Op(":").ID("input").Dot("BelongsTo")),
+			jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+				jen.Lit("client_id").MapAssign().ID("input").Dot("ClientID"),
+				jen.Lit("belongs_to_user").MapAssign().ID("input").Dot(constants.UserOwnershipFieldName)),
 			),
 			jen.Line(),
-			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("c").Dot("querier").Dot("CreateOAuth2Client").Call(jen.ID("ctx"), jen.ID("input")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot("WithError").Call(jen.ID("err")).Dot("Debug").Call(jen.Lit("error writing oauth2 client to the querier")),
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.List(jen.ID("client"), jen.Err()).Assign().ID("c").Dot("querier").Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("input")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.ID(constants.LoggerVarName).Dot("WithError").Call(jen.Err()).Dot("Debug").Call(jen.Lit("error writing oauth2 client to the querier")),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.ID("logger").Dot("Debug").Call(jen.Lit("new oauth2 client created successfully")),
+			jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("new oauth2 client created successfully")),
 			jen.Line(),
-			jen.Return().List(jen.ID("client"), jen.ID("nil")),
+			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
 	)
@@ -206,40 +150,41 @@ func oauth2ClientsDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("ID field to be valid."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("UpdateOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "OAuth2Client")).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("UpdateOAuth2Client")),
-			jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("UpdateOAuth2Client").Params(constants.CtxParam(), jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.Error()).Block(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("UpdateOAuth2Client")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("UpdateOAuth2Client").Call(jen.ID("ctx"), jen.ID("updated")),
+			jen.Return().ID("c").Dot("querier").Dot("UpdateOAuth2Client").Call(constants.CtxVar(), jen.ID("updated")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client"),
+		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("ArchiveOAuth2Client").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("error")).Block(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").Qual("go.opencensus.io/trace", "StartSpan").Call(jen.ID("ctx"), jen.Lit("ArchiveOAuth2Client")),
-			jen.Defer().ID("span").Dot("End").Call(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.Error()).Block(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ArchiveOAuth2Client")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.ID("attachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
-			jen.ID("attachOAuth2ClientDatabaseIDToSpan").Call(jen.ID("span"), jen.ID("clientID")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachOAuth2ClientDatabaseIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("clientID")),
 			jen.Line(),
-			jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(
-				jen.Lit("client_id").Op(":").ID("clientID"),
-				jen.Lit("belongs_to").Op(":").ID("userID"),
+			jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+				jen.Lit("client_id").MapAssign().ID("clientID"),
+				jen.Lit("belongs_to_user").MapAssign().ID("userID"),
 			)),
 			jen.Line(),
-			jen.ID("err").Op(":=").ID("c").Dot("querier").Dot("ArchiveOAuth2Client").Call(jen.ID("ctx"), jen.ID("clientID"), jen.ID("userID")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("logger").Dot("WithError").Call(jen.ID("err")).Dot("Debug").Call(jen.Lit("error deleting oauth2 client to the querier")),
-				jen.Return().ID("err"),
+			jen.Err().Assign().ID("c").Dot("querier").Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID("clientID"), jen.ID("userID")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.ID(constants.LoggerVarName).Dot("WithError").Call(jen.Err()).Dot("Debug").Call(jen.Lit("error deleting oauth2 client to the querier")),
+				jen.Return().Err(),
 			),
-			jen.ID("logger").Dot("Debug").Call(jen.Lit("removed oauth2 client successfully")),
+			jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("removed oauth2 client successfully")),
 			jen.Line(),
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

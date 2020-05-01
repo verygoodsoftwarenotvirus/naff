@@ -6,19 +6,20 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireDotGo(pkg *models.Project) *jen.File {
+func wireDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("Providers represents what we provide to dependency injectors"),
-			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet").Callln(
+			jen.Comment("Providers represents what we provide to dependency injectors."),
+			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
 				jen.ID("ProvideDatabaseClient"),
 			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

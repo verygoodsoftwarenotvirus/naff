@@ -1,322 +1,430 @@
 package client
 
 import (
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func webhooksDotGo(pkg *models.Project) *jen.File {
-	ret := jen.NewFile("client")
+func webhooksDotGo(proj *models.Project) *jen.File {
+	ret := jen.NewFile(packageName)
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 	ret.Add(jen.Const().Defs(
-		jen.ID("webhooksBasePath").Op("=").Lit("webhooks"),
+		jen.ID("webhooksBasePath").Equals().Lit("webhooks"),
 	))
 
-	ret.Add(
-		jen.Comment("BuildGetWebhookRequest builds an HTTP request for fetching a webhook"),
-		jen.Line(),
-		newClientMethod("BuildGetWebhookRequest").Params(
-			utils.CtxParam(),
-			jen.ID("id").ID("uint64"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-				jen.ID("nil"),
-				jen.ID("webhooksBasePath"),
-				jen.Qual("strconv", "FormatUint").Call(
-					jen.ID("id"),
-					jen.Lit(10),
-				),
-			),
-			jen.Line(),
-			jen.Return().Qual("net/http", "NewRequest").Call(
-				jen.Qual("net/http", "MethodGet"),
-				jen.ID("uri"),
-				jen.ID("nil"),
-			),
-		),
-	)
+	ret.Add(buildBuildGetWebhookRequest(proj)...)
+	ret.Add(buildGetWebhook(proj)...)
+	ret.Add(buildBuildGetWebhooksRequest(proj)...)
+	ret.Add(buildGetWebhooks(proj)...)
+	ret.Add(buildBuildCreateWebhookRequest(proj)...)
+	ret.Add(buildCreateWebhook(proj)...)
+	ret.Add(buildBuildUpdateWebhookRequest(proj)...)
+	ret.Add(buildUpdateWebhook(proj)...)
+	ret.Add(buildBuildArchiveWebhookRequest(proj)...)
+	ret.Add(buildArchiveWebhook(proj)...)
 
-	ret.Add(
-		jen.Comment("GetWebhook retrieves a webhook"),
-		jen.Line(),
-		newClientMethod("GetWebhook").Params(
-			utils.CtxParam(),
-			jen.ID("id").ID("uint64"),
-		).Params(
-			jen.ID("webhook").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
-			jen.ID("err").ID("error"),
-		).Block(
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("BuildGetWebhookRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("id"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"),
-					jen.Qual("fmt", "Errorf").Call(
-						jen.Lit("building request: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
-				jen.ID("ctx"),
-				jen.ID("req"),
-				jen.Op("&").ID("webhook"),
-			),
-			jen.Return().List(
-				jen.ID("webhook"),
-				jen.ID("err"),
-			),
-		),
-	)
-
-	ret.Add(
-		jen.Comment("BuildGetWebhooksRequest builds an HTTP request for fetching webhooks"),
-		jen.Line(),
-		newClientMethod("BuildGetWebhooksRequest").Params(
-			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-				jen.ID("filter").Dot("ToValues").Call(),
-				jen.ID("webhooksBasePath"),
-			),
-			jen.Line(),
-			jen.Return().Qual("net/http", "NewRequest").Call(
-				jen.Qual("net/http", "MethodGet"),
-				jen.ID("uri"),
-				jen.ID("nil"),
-			),
-		),
-	)
-
-	ret.Add(
-		jen.Comment("GetWebhooks gets a list of webhooks"),
-		jen.Line(),
-		newClientMethod("GetWebhooks").Params(
-			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-		).Params(
-			jen.ID("webhooks").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList"),
-			jen.ID("err").ID("error"),
-		).Block(
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("BuildGetWebhooksRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("filter"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.Qual("fmt", "Errorf").Call(
-						jen.Lit("building request: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
-				jen.ID("ctx"),
-				jen.ID("req"),
-				jen.Op("&").ID("webhooks"),
-			),
-			jen.Return().List(
-				jen.ID("webhooks"),
-				jen.ID("err"),
-			),
-		),
-	)
-
-	ret.Add(
-		jen.Comment("BuildCreateWebhookRequest builds an HTTP request for creating a webhook"),
-		jen.Line(),
-		newClientMethod("BuildCreateWebhookRequest").Params(
-			utils.CtxParam(),
-			jen.ID("body").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-				jen.ID("nil"),
-				jen.ID("webhooksBasePath"),
-			),
-			jen.Line(),
-			jen.Return().ID("c").Dot("buildDataRequest").Call(
-				jen.Qual("net/http", "MethodPost"),
-				jen.ID("uri"),
-				jen.ID("body"),
-			),
-		),
-	)
-
-	ret.Add(
-		jen.Comment("CreateWebhook creates a webhook"),
-		jen.Line(),
-		newClientMethod("CreateWebhook").Params(
-			utils.CtxParam(),
-			jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput"),
-		).Params(
-			jen.ID("webhook").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
-			jen.ID("err").ID("error"),
-		).Block(
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("BuildCreateWebhookRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("input"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.Qual("fmt", "Errorf").Call(
-						jen.Lit("building request: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.ID("err").Op("=").ID("c").Dot("executeRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("req"),
-				jen.Op("&").ID("webhook"),
-			),
-			jen.Return().List(
-				jen.ID("webhook"),
-				jen.ID("err"),
-			),
-		),
-	)
-
-	ret.Add(
-		jen.Comment("BuildUpdateWebhookRequest builds an HTTP request for updating a webhook"),
-		jen.Line(),
-		newClientMethod("BuildUpdateWebhookRequest").Params(
-			utils.CtxParam(),
-			jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-				jen.ID("nil"),
-				jen.ID("webhooksBasePath"),
-				jen.Qual("strconv", "FormatUint").Call(
-					jen.ID("updated").Dot("ID"),
-					jen.Lit(10),
-				),
-			),
-			jen.Line(),
-			jen.Return().ID("c").Dot("buildDataRequest").Call(
-				jen.Qual("net/http", "MethodPut"),
-				jen.ID("uri"),
-				jen.ID("updated"),
-			),
-		),
-	)
-
-	ret.Add(
-		jen.Comment("UpdateWebhook updates a webhook"),
-		jen.Line(),
-		newClientMethod("UpdateWebhook").Params(
-			utils.CtxParam(),
-			jen.ID("updated").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook"),
-		).Params(
-			jen.ID("error"),
-		).Block(
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("BuildUpdateWebhookRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("updated"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("building request: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Line(),
-			jen.Return().ID("c").Dot("executeRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("req"), jen.Op("&").ID("updated"),
-			),
-		),
-	)
-
-	ret.Add(
-		jen.Comment("BuildArchiveWebhookRequest builds an HTTP request for updating a webhook"),
-		jen.Line(),
-		newClientMethod("BuildArchiveWebhookRequest").Params(
-			utils.CtxParam(),
-			jen.ID("id").ID("uint64"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("BuildURL").Call(
-				jen.ID("nil"),
-				jen.ID("webhooksBasePath"), jen.Qual("strconv", "FormatUint").Call(
-					jen.ID("id"),
-					jen.Lit(10),
-				),
-			),
-			jen.Line(),
-			jen.Return().Qual("net/http", "NewRequest").Call(
-				jen.Qual("net/http", "MethodDelete"),
-				jen.ID("uri"),
-				jen.ID("nil"),
-			),
-		),
-	)
-
-	ret.Add(
-		jen.Comment("ArchiveWebhook archives a webhook"),
-		jen.Line(),
-		newClientMethod("ArchiveWebhook").Params(
-			utils.CtxParam(),
-			jen.ID("id").ID("uint64"),
-		).Params(
-			jen.ID("error"),
-		).Block(
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("BuildArchiveWebhookRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("id"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("building request: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Line(),
-			jen.Return().ID("c").Dot("executeRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("req"),
-				jen.ID("nil"),
-			),
-		),
-	)
 	return ret
+}
+
+func buildBuildGetWebhookRequest(proj *models.Project) []jen.Code {
+	funcName := "BuildGetWebhookRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Call(
+			jen.Nil(),
+			jen.ID("webhooksBasePath"),
+			jen.Qual("strconv", "FormatUint").Call(
+				jen.ID("id"),
+				jen.Lit(10),
+			),
+		),
+		jen.Line(),
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodGet"),
+			jen.ID("uri"),
+			jen.Nil(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds an HTTP request for fetching a webhook.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID("id").Uint64(),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...,
+		),
+	}
+
+	return lines
+}
+
+func buildGetWebhook(proj *models.Project) []jen.Code {
+	funcName := "GetWebhook"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.List(
+			jen.ID(constants.RequestVarName),
+			jen.Err(),
+		).Assign().ID("c").Dot("BuildGetWebhookRequest").Call(
+			constants.CtxVar(),
+			jen.ID("id"),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(jen.Nil(),
+				jen.Qual("fmt", "Errorf").Call(
+					jen.Lit("building request: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.Line(),
+		jen.Err().Equals().ID("c").Dot("retrieve").Call(
+			constants.CtxVar(),
+			jen.ID(constants.RequestVarName),
+			jen.AddressOf().ID("webhook"),
+		),
+		jen.Return().List(
+			jen.ID("webhook"),
+			jen.Err(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s retrieves a webhook.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID("id").Uint64(),
+		).Params(
+			jen.ID("webhook").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+			jen.Err().Error(),
+		).Block(block...),
+	}
+
+	return lines
+}
+
+func buildBuildGetWebhooksRequest(proj *models.Project) []jen.Code {
+	funcName := "BuildGetWebhooksRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Call(
+			jen.ID(constants.FilterVarName).Dot("ToValues").Call(),
+			jen.ID("webhooksBasePath"),
+		),
+		jen.Line(),
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodGet"),
+			jen.ID("uri"),
+			jen.Nil(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds an HTTP request for fetching webhooks.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+	}
+
+	return lines
+}
+
+func buildGetWebhooks(proj *models.Project) []jen.Code {
+	funcName := "GetWebhooks"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.List(
+			jen.ID(constants.RequestVarName),
+			jen.Err(),
+		).Assign().ID("c").Dot("BuildGetWebhooksRequest").Call(
+			constants.CtxVar(),
+			jen.ID(constants.FilterVarName),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(
+				jen.Nil(),
+				jen.Qual("fmt", "Errorf").Call(
+					jen.Lit("building request: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.Line(),
+		jen.Err().Equals().ID("c").Dot("retrieve").Call(
+			constants.CtxVar(),
+			jen.ID(constants.RequestVarName),
+			jen.AddressOf().ID("webhooks"),
+		),
+		jen.Return().List(
+			jen.ID("webhooks"),
+			jen.Err(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s gets a list of webhooks.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+		).Params(
+			jen.ID("webhooks").PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"),
+			jen.Err().Error(),
+		).Block(block...),
+	}
+
+	return lines
+}
+
+func buildBuildCreateWebhookRequest(proj *models.Project) []jen.Code {
+	funcName := "BuildCreateWebhookRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Call(
+			jen.Nil(),
+			jen.ID("webhooksBasePath"),
+		),
+		jen.Line(),
+		jen.Return().ID("c").Dot("buildDataRequest").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodPost"),
+			jen.ID("uri"),
+			jen.ID("body"),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds an HTTP request for creating a webhook.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID("body").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+	}
+
+	return lines
+}
+
+func buildCreateWebhook(proj *models.Project) []jen.Code {
+	funcName := "CreateWebhook"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.List(
+			jen.ID(constants.RequestVarName),
+			jen.Err(),
+		).Assign().ID("c").Dot("BuildCreateWebhookRequest").Call(
+			constants.CtxVar(),
+			jen.ID("input"),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(
+				jen.Nil(),
+				jen.Qual("fmt", "Errorf").Call(
+					jen.Lit("building request: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.Line(),
+		jen.Err().Equals().ID("c").Dot("executeRequest").Call(
+			constants.CtxVar(),
+			jen.ID(constants.RequestVarName),
+			jen.AddressOf().ID("webhook"),
+		),
+		jen.Return().List(
+			jen.ID("webhook"),
+			jen.Err(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s creates a webhook.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
+		).Params(
+			jen.ID("webhook").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+			jen.Err().Error(),
+		).Block(block...),
+	}
+
+	return lines
+}
+
+func buildBuildUpdateWebhookRequest(proj *models.Project) []jen.Code {
+	funcName := "BuildUpdateWebhookRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Call(
+			jen.Nil(),
+			jen.ID("webhooksBasePath"),
+			jen.Qual("strconv", "FormatUint").Call(
+				jen.ID("updated").Dot("ID"),
+				jen.Lit(10),
+			),
+		),
+		jen.Line(),
+		jen.Return().ID("c").Dot("buildDataRequest").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodPut"),
+			jen.ID("uri"),
+			jen.ID("updated"),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds an HTTP request for updating a webhook.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+	}
+
+	return lines
+}
+
+func buildUpdateWebhook(proj *models.Project) []jen.Code {
+	funcName := "UpdateWebhook"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.List(
+			jen.ID(constants.RequestVarName),
+			jen.Err(),
+		).Assign().ID("c").Dot("BuildUpdateWebhookRequest").Call(
+			constants.CtxVar(),
+			jen.ID("updated"),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("building request: %w"),
+				jen.Err(),
+			),
+		),
+		jen.Line(),
+		jen.Return().ID("c").Dot("executeRequest").Call(
+			constants.CtxVar(),
+			jen.ID(constants.RequestVarName), jen.AddressOf().ID("updated"),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s updates a webhook.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+		).Params(
+			jen.Error(),
+		).Block(block...),
+	}
+
+	return lines
+}
+
+func buildBuildArchiveWebhookRequest(proj *models.Project) []jen.Code {
+	funcName := "BuildArchiveWebhookRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Call(
+			jen.Nil(),
+			jen.ID("webhooksBasePath"), jen.Qual("strconv", "FormatUint").Call(
+				jen.ID("id"),
+				jen.Lit(10),
+			),
+		),
+		jen.Line(),
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodDelete"),
+			jen.ID("uri"),
+			jen.Nil(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds an HTTP request for updating a webhook.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID("id").Uint64(),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+	}
+
+	return lines
+}
+
+func buildArchiveWebhook(proj *models.Project) []jen.Code {
+	funcName := "ArchiveWebhook"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.List(
+			jen.ID(constants.RequestVarName),
+			jen.Err(),
+		).Assign().ID("c").Dot("BuildArchiveWebhookRequest").Call(
+			constants.CtxVar(),
+			jen.ID("id"),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("building request: %w"),
+				jen.Err(),
+			),
+		),
+		jen.Line(),
+		jen.Return().ID("c").Dot("executeRequest").Call(
+			constants.CtxVar(),
+			jen.ID(constants.RequestVarName),
+			jen.Nil(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s archives a webhook.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID("id").Uint64(),
+		).Params(
+			jen.Error(),
+		).Block(block...,
+		),
+	}
+
+	return lines
 }

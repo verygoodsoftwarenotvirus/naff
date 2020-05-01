@@ -6,24 +6,24 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func coverageTestDotGo(pkg *models.Project) *jen.File {
+func coverageTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(jen.Null(),
 
 		jen.Line(),
 	)
 	ret.Add(
-		jen.Func().ID("TestRunMain").Params(jen.ID("_").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestRunMain").Params(jen.Underscore().PointerTo().Qual("testing", "T")).Block(
 			jen.Comment("This test is built specifically to capture the coverage that the integration"),
 			jen.Comment("tests exhibit. We run the main function (i.e. a production server)"),
 			jen.Comment("on an independent goroutine and sleep for long enough that the integration"),
 			jen.Comment("tests can run, then we quit."),
-			jen.List(jen.ID("d"), jen.ID("err")).Op(":=").Qual("time", "ParseDuration").Call(jen.Qual("os", "Getenv").Call(jen.Lit("RUNTIME_DURATION"))),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Qual("log", "Fatal").Call(jen.ID("err")),
+			jen.List(jen.ID("d"), jen.Err()).Assign().Qual("time", "ParseDuration").Call(jen.Qual("os", "Getenv").Call(jen.Lit("RUNTIME_DURATION"))),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.Qual("log", "Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.Go().ID("main").Call(),
@@ -32,5 +32,6 @@ func coverageTestDotGo(pkg *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

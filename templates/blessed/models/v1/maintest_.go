@@ -6,20 +6,24 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func mainTestDotGo(pkg *models.Project) *jen.File {
+func mainTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
+
+	ret.Add(utils.FakeSeedFunc(), jen.Line())
 
 	ret.Add(
-		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").Parens(jen.Op("&").ID("ErrorResponse").Values()).Dot("Error").Call(),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
+				jen.Underscore().Equals().Parens(jen.AddressOf().ID("ErrorResponse").Values()).Dot("Error").Call(),
+			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

@@ -1,113 +1,83 @@
 package webhooks
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func webhooksServiceTestDotGo(pkg *models.Project) *jen.File {
+func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("webhooks")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
-			jen.Return().Op("&").ID("Service").Valuesln(
-				jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-				jen.ID("webhookCounter").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
-				jen.ID("webhookDatabase").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "WebhookDataManager").Values(),
-				jen.ID("userIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-				jen.ID("webhookIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-				jen.ID("encoderDecoder").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
-				jen.ID("eventManager").Op(":").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.ID("nil"), jen.ID("nil")),
+		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Block(
+			jen.Return().AddressOf().ID("Service").Valuesln(
+				jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.ID("webhookCounter").MapAssign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("webhookDataManager").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
+				jen.ID("userIDFetcher").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
+				jen.ID("webhookIDFetcher").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
+				jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("eventManager").MapAssign().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil()),
 			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideWebhooksService").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideWebhooksService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
-				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
-				jen.Line(),
-				jen.Var().ID("ucp").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider").Op("=").Func().Paramsln(
-					jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName"),
-					jen.ID("description").ID("string"),
-				).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"), jen.ID("error")).Block(
-					jen.Return().List(jen.ID("uc"), jen.ID("nil")),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+					jen.ID("description").String(),
+				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Block(
+					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(), jen.Nil()),
 				),
 				jen.Line(),
-				jen.ID("dm").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "WebhookDataManager").Values(),
-				jen.ID("dm").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.ID("nil")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("ProvideWebhooksService").Callln(
-					jen.Qual("context", "Background").Call(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideWebhooksService").Callln(
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.ID("dm"),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
-					jen.ID("ucp"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.ID("nil"), jen.ID("nil")),
-				),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.Var().ID("ucp").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider").Op("=").Func().Paramsln(
-					jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName"),
-					jen.ID("description").ID("string")).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
-					jen.ID("error")).Block(
-					jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+					jen.AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
+					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
+					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
+					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+					jen.ID("ucp"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil()),
 				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("ProvideWebhooksService").Callln(
-					jen.Qual("context", "Background").Call(), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "WebhookDataManager").Values(),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+				utils.AssertNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"with error providing counter",
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+					jen.ID("description").String(),
+				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Block(
+					jen.Return().List(jen.Nil(), constants.ObligatoryError()),
+				),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideWebhooksService").Callln(
+					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
+					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
+					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
+					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
-					jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.ID("nil"), jen.ID("nil"))),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error setting count"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
-				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
-				jen.Line(),
-				jen.Var().ID("ucp").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider").Op("=").Func().Paramsln(
-					jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName"),
-					jen.ID("description").ID("string"),
-				).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"), jen.ID("error")).Block(
-					jen.Return().List(jen.ID("uc"), jen.ID("nil")),
+					jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil()),
 				),
 				jen.Line(),
-				jen.ID("dm").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "WebhookDataManager").Values(),
-				jen.ID("dm").Dot("On").Call(jen.Lit("GetAllWebhooksCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("ProvideWebhooksService").Callln(
-					jen.Qual("context", "Background").Call(), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.ID("dm"),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(), jen.ID("ucp"),
-					jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.ID("nil"), jen.ID("nil")),
-				),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-			)),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), nil),
+			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

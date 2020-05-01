@@ -2,14 +2,15 @@ package auth
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func authenticatorDotGo(pkg *models.Project) *jen.File {
+func authenticatorDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("auth")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(jen.Null(),
 
@@ -17,19 +18,19 @@ func authenticatorDotGo(pkg *models.Project) *jen.File {
 	)
 	ret.Add(
 		jen.Var().Defs(
-			jen.Comment("ErrInvalidTwoFactorCode indicates that a provided two factor code is invalid"),
-			jen.ID("ErrInvalidTwoFactorCode").Op("=").Qual("errors", "New").Call(jen.Lit("invalid two factor code")),
-			jen.Comment("ErrPasswordHashTooWeak indicates that a provided password hash is too weak"),
-			jen.ID("ErrPasswordHashTooWeak").Op("=").Qual("errors", "New").Call(jen.Lit("password's hash is too weak")),
+			jen.Comment("ErrInvalidTwoFactorCode indicates that a provided two factor code is invalid."),
+			jen.ID("ErrInvalidTwoFactorCode").Equals().Qual("errors", "New").Call(jen.Lit("invalid two factor code")),
+			jen.Comment("ErrPasswordHashTooWeak indicates that a provided password hash is too weak."),
+			jen.ID("ErrPasswordHashTooWeak").Equals().Qual("errors", "New").Call(jen.Lit("password's hash is too weak")),
 			jen.Line(),
-			jen.Comment("Providers represents what this package offers to external libraries in the way of constructors"),
-			jen.ID("Providers").Op("=").Qual("github.com/google/wire", "NewSet").Callln(jen.ID("ProvideBcryptAuthenticator"), jen.ID("ProvideBcryptHashCost")),
+			jen.Comment("Providers represents what this package offers to external libraries in the way of constructors."),
+			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(jen.ID("ProvideBcryptAuthenticator"), jen.ID("ProvideBcryptHashCost")),
 			jen.Line(),
 		),
 	)
 
 	ret.Add(
-		jen.Comment("ProvideBcryptHashCost provides a BcryptHashCost"),
+		jen.Comment("ProvideBcryptHashCost provides a BcryptHashCost."),
 		jen.Line(),
 		jen.Func().ID("ProvideBcryptHashCost").Params().Params(jen.ID("BcryptHashCost")).Block(
 			jen.Return().ID("DefaultBcryptHashCost"),
@@ -39,27 +40,27 @@ func authenticatorDotGo(pkg *models.Project) *jen.File {
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.Comment("PasswordHasher hashes passwords"),
+			jen.Comment("PasswordHasher hashes passwords."),
 			jen.ID("PasswordHasher").Interface(
-				jen.ID("PasswordIsAcceptable").Params(jen.ID("password").ID("string")).Params(jen.ID("bool")),
-				jen.ID("HashPassword").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("password").ID("string")).Params(jen.ID("string"), jen.ID("error")),
-				jen.ID("PasswordMatches").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).ID("string"), jen.ID("salt").Index().ID("byte")).Params(jen.ID("bool")),
+				jen.ID("PasswordIsAcceptable").Params(jen.ID("password").String()).Params(jen.Bool()),
+				jen.ID("HashPassword").Params(constants.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()),
+				jen.ID("PasswordMatches").Params(constants.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.ID("salt").Index().Byte()).Params(jen.Bool()),
 			),
 			jen.Line(),
-			jen.Comment("Authenticator is a poorly named Authenticator interface"),
+			jen.Comment("Authenticator is a poorly named Authenticator interface."),
 			jen.ID("Authenticator").Interface(
 				jen.ID("PasswordHasher"),
 				jen.Line(),
 				jen.ID("ValidateLogin").Paramsln(
-					jen.ID("ctx").Qual("context", "Context"),
+					constants.CtxParam(),
 					jen.Listln(
 						jen.ID("HashedPassword"),
 						jen.ID("ProvidedPassword"),
 						jen.ID("TwoFactorSecret"),
 						jen.ID("TwoFactorCode"),
-					).ID("string"),
-					jen.ID("Salt").Index().ID("byte"),
-				).Params(jen.ID("valid").ID("bool"), jen.ID("err").ID("error")),
+					).String(),
+					jen.ID("Salt").Index().Byte(),
+				).Params(jen.ID("valid").Bool(), jen.Err().Error()),
 			),
 		),
 		jen.Line(),
@@ -68,13 +69,14 @@ func authenticatorDotGo(pkg *models.Project) *jen.File {
 		jen.Comment("we run this function to ensure that we have no problem reading from crypto/rand"),
 		jen.Line(),
 		jen.Func().ID("init").Params().Block(
-			jen.ID("b").Op(":=").ID("make").Call(jen.Index().ID("byte"), jen.Lit(64)),
-			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.ID("panic").Call(jen.ID("err")),
+			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
 			),
 		),
 
 		jen.Line(),
 	)
+
 	return ret
 }

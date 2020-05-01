@@ -2,80 +2,94 @@ package metrics
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func counterTestDotGo(pkg *models.Project) *jen.File {
+func counterTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("Test_opencensusCounter_Increment").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("Test_opencensusCounter_Increment").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID("ct"), jen.ID("err")).Op(":=").ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
-				jen.ID("c").Op(":=").ID("ct").Assert(jen.Op("*").ID("opencensusCounter")),
+			utils.BuildSubTest(
+				"happy path",
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0))),
+				jen.List(jen.ID("ct"), jen.Err()).Assign().ID("ProvideUnitCounter").Call(jen.Lit("v"), jen.Lit("description")),
+				jen.List(jen.ID("c"), jen.ID("typOK")).Assign().ID("ct").Assert(jen.PointerTo().ID("opencensusCounter")),
+				utils.RequireNotNil(jen.ID("c"), nil),
+				utils.RequireTrue(jen.ID("typOK"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.ID("c").Dot("Increment").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(1))),
-			)),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Zero()), nil),
+				jen.Line(),
+				jen.ID("c").Dot("Increment").Call(constants.CtxVar()),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.One()), nil),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_opencensusCounter_IncrementBy").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("Test_opencensusCounter_IncrementBy").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID("ct"), jen.ID("err")).Op(":=").ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
-				jen.ID("c").Op(":=").ID("ct").Assert(jen.Op("*").ID("opencensusCounter")),
+			utils.BuildSubTest(
+				"happy path",
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0))),
+				jen.List(jen.ID("ct"), jen.Err()).Assign().ID("ProvideUnitCounter").Call(jen.Lit("v"), jen.Lit("description")),
+				jen.List(jen.ID("c"), jen.ID("typOK")).Assign().ID("ct").Assert(jen.PointerTo().ID("opencensusCounter")),
+				utils.RequireNotNil(jen.ID("c"), nil),
+				utils.RequireTrue(jen.ID("typOK"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.ID("c").Dot("IncrementBy").Call(jen.Qual("context", "Background").Call(), jen.Lit(666)),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(666))),
-			)),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Zero()), nil),
+				jen.Line(),
+				jen.ID("c").Dot("IncrementBy").Call(constants.CtxVar(), jen.Lit(666)),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Lit(666)), nil),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_opencensusCounter_Decrement").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("Test_opencensusCounter_Decrement").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID("ct"), jen.ID("err")).Op(":=").ID("ProvideUnitCounter").Call(jen.Lit("counter"), jen.Lit("description")),
-				jen.ID("c").Op(":=").ID("ct").Assert(jen.Op("*").ID("opencensusCounter")),
+			utils.BuildSubTest(
+				"happy path",
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0))),
+				jen.List(jen.ID("ct"), jen.Err()).Assign().ID("ProvideUnitCounter").Call(jen.Lit("v"), jen.Lit("description")),
+				jen.List(jen.ID("c"), jen.ID("typOK")).Assign().ID("ct").Assert(jen.PointerTo().ID("opencensusCounter")),
+				utils.RequireNotNil(jen.ID("c"), nil),
+				utils.RequireTrue(jen.ID("typOK"), nil),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.ID("c").Dot("Increment").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(1))),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Zero()), nil),
 				jen.Line(),
-				jen.ID("c").Dot("Decrement").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("c").Dot("actualCount"), jen.ID("uint64").Call(jen.Lit(0))),
-			)),
+				jen.ID("c").Dot("Increment").Call(constants.CtxVar()),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.One()), nil),
+				jen.Line(),
+				jen.ID("c").Dot("Decrement").Call(constants.CtxVar()),
+				utils.AssertEqual(jen.ID("c").Dot("actualCount"), jen.Uint64().Call(jen.Zero()), nil),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideUnitCounterProvider").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
+		jen.Func().ID("TestProvideUnitCounterProvider").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.Comment("obligatory"),
-			jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("T"), jen.ID("ProvideUnitCounterProvider").Call()),
+			jen.Comment("obligatory."),
+			utils.AssertNotNil(jen.ID("ProvideUnitCounterProvider").Call(), nil),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

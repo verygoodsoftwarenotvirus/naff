@@ -2,414 +2,789 @@ package client
 
 import (
 	"fmt"
-	"path/filepath"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile("client")
+func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
+	ret := jen.NewFile(packageName)
 
-	prn := typ.Name.PluralRouteName()
-	tp := typ.Name.Plural()   // title plural
+	utils.AddImports(proj, ret)
+
+	ret.Add(buildTestV1Client_BuildSomethingExistsRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_SomethingExists(proj, typ)...)
+	ret.Add(buildTestV1Client_BuildGetSomethingRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_GetSomething(proj, typ)...)
+	ret.Add(buildTestV1Client_BuildGetListOfSomethingRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_GetListOfSomething(proj, typ)...)
+	ret.Add(buildTestV1Client_BuildCreateSomethingRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_CreateSomething(proj, typ)...)
+	ret.Add(buildTestV1Client_BuildUpdateSomethingRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_UpdateSomething(proj, typ)...)
+	ret.Add(buildTestV1Client_BuildArchiveSomethingRequest(proj, typ)...)
+	ret.Add(buildTestV1Client_ArchiveSomething(proj, typ)...)
+
+	return ret
+}
+
+func buildTestV1Client_BuildSomethingExistsRequest(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	depVarDecls := typ.BuildDependentObjectsForHTTPClientBuildExistenceRequestMethodTest(proj)
+
+	subtestLines := []jen.Code{
+		utils.ExpectMethod("expectedMethod", "MethodHead"),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+	}
+	subtestLines = append(subtestLines, depVarDecls...)
+
+	subtestLines = append(subtestLines,
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Build%sExistsRequest", ts)).Call(
+			typ.BuildArgsForHTTPClientExistenceRequestBuildingMethodTest(proj)...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(
+			jen.Err(),
+			jen.Lit("no error should be returned"),
+		),
+		utils.AssertTrue(
+			jen.Qual("strings", "HasSuffix").Call(
+				jen.ID("actual").Dot("URL").Dot("String").Call(),
+				utils.FormatString("%d",
+					jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
+				),
+			),
+			nil,
+		),
+		utils.AssertEqual(
+			jen.ID("actual").Dot("Method"),
+			jen.ID("expectedMethod"),
+			jen.Lit("request should be a %s request"),
+			jen.ID("expectedMethod"),
+		),
+	)
+
+	lines := []jen.Code{
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Build%sExistsRequest", ts)).Block(
+			utils.ParallelTest(nil),
+			jen.Line(),
+			utils.BuildSubTest("happy path", subtestLines...),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType) []jen.Code {
 	ts := typ.Name.Singular() // title singular
 
 	// routes
-	modelRoute := fmt.Sprintf("/api/v1/%s/", prn) + "%d"
-	modelListRoute := fmt.Sprintf("/api/v1/%s", prn)
+	happyPathSubtestLines := typ.BuildDependentObjectsForHTTPClientExistenceMethodTest(proj)
+	actualCallArgs := typ.BuildArgsForHTTPClientExistenceMethodTest(proj)
+	//actualCallArgs := []jen.Code{utils.CtxVar(), jen.ID(utils.BuildFakeVarName(ts)).Dot("ID")}
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	happyPathSubtestLines = append(happyPathSubtestLines,
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertTrue(
+				jen.Qual("strings", "HasSuffix").Call(
+					jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
+					jen.Qual("strconv", "Itoa").Call(
+						jen.Int().Call(
+							jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
+						),
+					),
+				),
+				nil,
+			),
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+				utils.FormatString(
+					typ.BuildFormatStringForHTTPClientExistenceMethodTest(proj),
+					typ.BuildFormatCallArgsForHTTPClientExistenceMethodTest(proj)...,
+				),
+				jen.Lit("expected and actual paths do not match"),
+			),
+			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodHead"), nil),
+			jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusOK")),
+		),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("%sExists", ts)).Call(
+			actualCallArgs...,
+		),
+		jen.Line(),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertTrue(jen.ID("actual"), nil),
+	)
 
-	ret.Add(
+	sadPathSubtestLines := typ.BuildDependentObjectsForHTTPClientExistenceMethodTest(proj)
+	sadPathSubtestLines = append(sadPathSubtestLines,
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("%sExists", ts)).Call(
+			actualCallArgs...,
+		),
+		jen.Line(),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+		utils.AssertFalse(jen.ID("actual"), nil),
+	)
+
+	lines := []jen.Code{
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_%sExists", ts)).Block(
+			utils.ParallelTest(nil),
+			jen.Line(),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with erroneous response", sadPathSubtestLines...),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	depVarDecls := typ.BuildDependentObjectsForHTTPClientBuildRetrievalRequestMethodTest(proj)
+
+	subtestLines := []jen.Code{
+		utils.ExpectMethod("expectedMethod", "MethodGet"),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.Line(),
+	}
+	subtestLines = append(subtestLines, depVarDecls...)
+
+	subtestLines = append(subtestLines,
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(
+			typ.BuildArgsForHTTPClientRetrievalRequestBuilderMethodTest(proj)...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(
+			jen.Err(),
+			jen.Lit("no error should be returned"),
+		),
+		utils.AssertTrue(
+			jen.Qual("strings", "HasSuffix").Call(
+				jen.ID("actual").Dot("URL").Dot("String").Call(),
+				utils.FormatString("%d",
+					jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
+				),
+			),
+			nil,
+		),
+		utils.AssertEqual(
+			jen.ID("actual").Dot("Method"),
+			jen.ID("expectedMethod"),
+			jen.Lit("request should be a %s request"),
+			jen.ID("expectedMethod"),
+		),
+	)
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				utils.ExpectMethod("expectedMethod", "MethodGet"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
-				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-				jen.ID("expectedID").Op(":=").ID("uint64").Call(jen.Lit(1)),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(jen.ID("ctx"), jen.ID("expectedID")),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
-				utils.AssertTrue(
-					jen.Qual("strings", "HasSuffix").Call(
-						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
-							jen.ID("expectedID"),
-						),
-					),
-					nil,
-				),
-				utils.AssertEqual(
-					jen.ID("actual").Dot("Method"),
-					jen.ID("expectedMethod"),
-					jen.Lit("request should be a %s request"),
-					jen.ID("expectedMethod"),
-				),
-			),
+			utils.BuildSubTest("happy path", subtestLines...),
 		),
 		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	args := typ.BuildHTTPClientRetrievalTestCallArgs(proj)
+
+	happyPathSubtestLines := append(
+		typ.BuildDependentObjectsForHTTPClientRetrievalMethodTest(proj),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertTrue(
+				jen.Qual("strings", "HasSuffix").Call(
+					jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
+					jen.Qual("strconv", "Itoa").Call(
+						jen.Int().Call(
+							jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
+						),
+					),
+				),
+				nil,
+			),
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+				utils.FormatString(
+					typ.BuildFormatStringForHTTPClientRetrievalMethodTest(proj),
+					typ.BuildFormatCallArgsForHTTPClientRetrievalMethodTest(proj)...,
+				),
+				jen.Lit("expected and actual paths do not match"),
+			),
+			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))), nil),
+		),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(args...),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertEqual(jen.ID(utils.BuildFakeVarName(ts)), jen.ID("actual"), nil),
 	)
 
-	ret.Add(
+	invalidClientURLSubtestLines := append(
+		typ.BuildDependentObjectsForHTTPClientRetrievalMethodTest(proj),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(args...),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
+	invalidResponseSubtestLines := append(
+		typ.BuildDependentObjectsForHTTPClientRetrievalMethodTest(proj),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertTrue(
+				jen.Qual("strings", "HasSuffix").Call(
+					jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
+					jen.Qual("strconv", "Itoa").Call(
+						jen.Int().Call(
+							jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
+						),
+					),
+				),
+				nil,
+			),
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+				utils.FormatString(
+					typ.BuildFormatStringForHTTPClientRetrievalMethodTest(proj),
+					typ.BuildFormatCallArgsForHTTPClientRetrievalMethodTest(proj)...,
+				),
+				jen.Lit("expected and actual paths do not match"),
+			),
+			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.Lit("BLAH")), nil),
+		),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(
+			args...,
+		),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
-				),
-				jen.Line(),
-				utils.BuildTestServer(
-					"ts",
-					utils.AssertTrue(
-						jen.Qual("strings", "HasSuffix").Call(
-							jen.ID("req").Dot("URL").Dot("String").Call(),
-							jen.Qual("strconv", "Itoa").Call(
-								jen.ID("int").Call(
-									jen.ID("expected").Dot("ID"),
-								),
-							),
-						),
-						nil,
-					),
-					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(modelRoute),
-							jen.ID("expected").Dot("ID"),
-						),
-						jen.Lit("expected and actual path don't match"),
-					),
-					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodGet"), nil),
-					utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")), nil),
-				),
-				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", ts)).Call(jen.ID("ctx"), jen.ID("expected").Dot("ID")),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
-				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", invalidClientURLSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid response", invalidResponseSubtestLines...),
 		),
 		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_BuildGetListOfSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
+	tp := typ.Name.Plural() // title plural
+
+	subtestLines := append(
+		typ.BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMethodTest(proj),
+		jen.ID(constants.FilterVarName).Assign().Call(jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
+		utils.ExpectMethod("expectedMethod", "MethodGet"),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
+			typ.BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTest(proj)...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertEqual(
+			jen.ID("actual").Dot("Method"),
+			jen.ID("expectedMethod"),
+			jen.Lit("request should be a %s request"),
+			jen.ID("expectedMethod"),
+		),
 	)
 
-	ret.Add(
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", tp)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				utils.ExpectMethod("expectedMethod", "MethodGet"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
-				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(jen.ID("ctx"), jen.ID("nil")),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
-				utils.AssertEqual(
-					jen.ID("actual").Dot("Method"),
-					jen.ID("expectedMethod"),
-					jen.Lit("request should be a %s request"),
-					jen.ID("expectedMethod"),
-				),
+			utils.BuildSubTest("happy path", subtestLines...),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	tp := typ.Name.Plural()   // title plural
+	ts := typ.Name.Singular() // title singular
+
+	modelListRoute := typ.BuildFormatStringForHTTPClientListMethodTest(proj)
+
+	var uriDec *jen.Statement
+	urlFormatArgs := typ.BuildFormatCallArgsForHTTPClientListMethodTest(proj)
+	if len(urlFormatArgs) > 0 {
+		uriDec = utils.FormatString(
+			modelListRoute,
+			urlFormatArgs...,
+		)
+	} else {
+		uriDec = jen.Lit(modelListRoute)
+	}
+
+	structDecls := typ.BuildDependentObjectsForHTTPClientListRetrievalTest(proj)
+	happyPathSubtestLines := append(
+		structDecls,
+		jen.ID(constants.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
+		jen.Line(),
+		jen.IDf("example%sList", ts).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", ts)).Call(),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+				uriDec,
+				jen.Lit("expected and actual paths do not match"),
+			),
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("Method"),
+				jen.Qual("net/http", "MethodGet"),
+				nil,
+			),
+			utils.RequireNoError(
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.IDf("example%sList", ts)),
+				nil,
 			),
 		),
 		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).
+			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
+			typ.BuildCallArgsForHTTPClientListRetrievalMethodTest(proj)...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertEqual(jen.IDf("example%sList", ts), jen.ID("actual"), nil),
 	)
 
-	ret.Add(
+	invalidClientURLSubtestLines := append(
+		structDecls,
+		jen.ID(constants.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+		jen.List(jen.ID("actual"), jen.Err()).
+			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
+			typ.BuildCallArgsForHTTPClientListRetrievalMethodTest(proj)...,
+		),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
+	invalidResponseSubtestLines := append(
+		structDecls,
+		jen.ID(constants.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+				uriDec,
+				jen.Lit("expected and actual paths do not match"),
+			),
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("Method"),
+				jen.Qual("net/http", "MethodGet"),
+				nil,
+			),
+			utils.RequireNoError(
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.Lit("BLAH")),
+				nil,
+			),
+		),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).
+			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
+			typ.BuildCallArgsForHTTPClientListRetrievalMethodTest(proj)...,
+		),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", tp)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sList", ts)).Valuesln(
-					jen.ID(tp).Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
-						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(1),
-						),
-					),
-				),
-				jen.Line(),
-				utils.BuildTestServer(
-					"ts",
-					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Lit(modelListRoute),
-						jen.Lit("expected and actual path don't match"),
-					),
-					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
-						jen.Qual("net/http", "MethodGet"),
-						nil,
-					),
-					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
-						nil,
-					),
-				),
-				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
-					jen.ID("ctx"),
-					jen.ID("nil"),
-				),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
-				utils.AssertEqual(jen.ID("expected"),
-					jen.ID("actual"), nil),
-			),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", invalidClientURLSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid response", invalidResponseSubtestLines...),
 		),
 		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	cfs := []jen.Code{jen.ID("ID").MapAssign().Add(utils.FakeUint64Func())}
+	for _, field := range typ.Fields {
+		cfs = append(cfs, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
+	}
+
+	subtestLines := append(
+		typ.BuildDependentObjectsForHTTPClientBuildCreationRequestMethodTest(proj),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
+		jen.Line(),
+		utils.ExpectMethod("expectedMethod", "MethodPost"),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
+			typ.BuildHTTPClientCreationRequestBuildingMethodArgsForTest(proj)...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(
+			jen.Err(),
+			jen.Lit("no error should be returned"),
+		),
+		utils.AssertEqual(
+			jen.ID("actual").Dot("Method"),
+			jen.ID("expectedMethod"),
+			jen.Lit("request should be a %s request"),
+			jen.ID("expectedMethod"),
+		),
 	)
 
-	creationFields := func() []jen.Code {
-		lines := []jen.Code{
-			jen.ID("ID").Op(":").Lit(1),
-		}
-
-		for _, field := range typ.Fields {
-			lines = append(lines, jen.ID(field.Name.Singular()).Op(":").Add(utils.ExampleValueForField(field)))
-		}
-		return lines
-	}
-	cfs := creationFields()
-
-	ret.Add(
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildCreate%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				utils.ExpectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
-				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
-					cfs[1:]...,
-				),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
-					jen.ID("ctx"),
-					jen.ID("exampleInput"),
-				),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
-				utils.AssertEqual(
-					jen.ID("actual").Dot("Method"),
-					jen.ID("expectedMethod"),
-					jen.Lit("request should be a %s request"),
-					jen.ID("expectedMethod"),
-				),
-			),
+			utils.BuildSubTest("happy path", subtestLines...),
 		),
 		jen.Line(),
-	)
-
-	createCreationInputLines := func() []jen.Code {
-		var lines []jen.Code
-		for _, field := range typ.Fields {
-			if field.ValidForCreationInput {
-				lines = append(lines, jen.ID(field.Name.Singular()).Op(":").ID("expected").Dot(field.Name.Singular()))
-			}
-		}
-		return lines
 	}
 
-	ret.Add(
+	return lines
+}
+
+func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	// routes
+	modelListRoute := typ.BuildFormatStringForHTTPClientCreateMethodTest(proj)
+
+	var uriDec *jen.Statement
+	urlFormatArgs := typ.BuildFormatCallArgsForHTTPClientCreationMethodTest(proj)
+	if len(urlFormatArgs) > 0 {
+		uriDec = utils.FormatString(
+			modelListRoute,
+			urlFormatArgs...,
+		)
+	} else {
+		uriDec = jen.Lit(modelListRoute)
+	}
+
+	happyPathSubtestLines := append(
+		typ.BuildDependentObjectsForHTTPClientCreationMethodTest(proj),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+				uriDec,
+				jen.Lit("expected and actual paths do not match"),
+			),
+			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
+			jen.Line(),
+			jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")), nil),
+			jen.Line(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName("Input")).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().Zero()
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if typ.BelongsToUser {
+					return jen.ID(utils.BuildFakeVarName("Input")).Dot(constants.UserOwnershipFieldName).Equals().Zero()
+				}
+				return jen.Null()
+			}(),
+			utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Input")), jen.ID("x"), nil),
+			jen.Line(),
+			utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))), nil),
+		),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
+			typ.BuildHTTPClientCreationMethodArgsForTest(proj)...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertEqual(jen.ID(utils.BuildFakeVarName(ts)), jen.ID("actual"), nil),
+	)
+
+	invalidClientURLSubtestLines := append(
+		typ.BuildDependentObjectsForHTTPClientCreationMethodTest(proj),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(
+			typ.BuildHTTPClientCreationMethodArgsForTest(proj)...,
+		),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Create%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
-					cfs...,
-				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)).Valuesln(
-					createCreationInputLines()...,
-				),
-				jen.Line(),
-				utils.BuildTestServer(
-					"ts",
-					utils.AssertEqual(jen.ID("req").Dot("URL").Dot("Path"), jen.Lit(modelListRoute), jen.Lit("expected and actual path don't match")),
-					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
-					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), fmt.Sprintf("%sCreationInput", ts)),
-					utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID("req").Dot("Body")).Dot("Decode").Call(jen.Op("&").ID("x")), nil),
-					utils.AssertEqual(jen.ID("exampleInput"), jen.ID("x"), nil),
-					jen.Line(),
-					utils.RequireNoError(jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")), nil),
-				),
-				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("Create%s", ts)).Call(jen.ID("ctx"), jen.ID("exampleInput")),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
-				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
-			),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", invalidClientURLSubtestLines...),
 		),
 		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_BuildUpdateSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	actualParams := typ.BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(proj)
+
+	subtestLines := typ.BuildDependentObjectsForHTTPClientBuildUpdateRequestMethodTest(proj)
+	subtestLines = append(subtestLines,
+		utils.ExpectMethod("expectedMethod", "MethodPut"),
+		jen.Line(),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
+			actualParams...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertEqual(
+			jen.ID("actual").Dot("Method"),
+			jen.ID("expectedMethod"),
+			jen.Lit("request should be a %s request"),
+			jen.ID("expectedMethod"),
+		),
 	)
 
-	ret.Add(
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildUpdate%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest("happy path", utils.ExpectMethod("expectedMethod", "MethodPut"),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
+			utils.BuildSubTest("happy path", subtestLines...),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	subtestLines := typ.BuildDependentObjectsForHTTPClientUpdateMethodTest(proj)
+
+	happyPathSubtestLines := append(
+		subtestLines,
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+				utils.FormatString(
+					typ.BuildFormatStringForHTTPClientUpdateMethodTest(proj),
+					typ.BuildFormatCallArgsForHTTPClientUpdateTest(proj)...,
 				),
-				jen.Line(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(jen.ID("ctx"), jen.ID("exampleInput")),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
-				utils.AssertEqual(
-					jen.ID("actual").Dot("Method"),
-					jen.ID("expectedMethod"),
-					jen.Lit("request should be a %s request"),
-					jen.ID("expectedMethod"),
-				),
+				jen.Lit("expected and actual paths do not match"),
+			),
+			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
+			utils.AssertNoError(
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName(ts))),
+				nil,
 			),
 		),
 		jen.Line(),
+		jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Update%s", ts)).Call(
+			typ.BuildCallArgsForHTTPClientUpdateMethodTest(proj)...,
+		),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	)
 
-	ret.Add(
+	withInvalidClientURLSubtestLines := append(
+		subtestLines,
+		jen.Line(),
+		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot(fmt.Sprintf("Update%s", ts)).Call(
+			typ.BuildCallArgsForHTTPClientUpdateMethodTest(proj)...,
+		),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Update%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest("happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
-				),
-				jen.Line(),
-				utils.BuildTestServer(
-					"ts",
-					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(jen.Lit(modelRoute), jen.ID("expected").Dot("ID")),
-						jen.Lit("expected and actual path don't match"),
-					),
-					utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
-					utils.AssertNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), ts).Values()),
-						nil,
-					),
-				),
-				jen.Line(),
-				jen.ID("err").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Update%s", ts)).Call(jen.ID("ctx"), jen.ID("expected")),
-				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
-			),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", withInvalidClientURLSubtestLines...),
 		),
 		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_BuildArchiveSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	subtestLines := []jen.Code{
+		utils.ExpectMethod("expectedMethod", "MethodDelete"),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.Line(),
+	}
+
+	subtestLines = append(subtestLines, typ.BuildDependentObjectsForHTTPClientBuildArchiveRequestMethodTest(proj)...)
+
+	subtestLines = append(subtestLines,
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
+			typ.BuildArgsForHTTPClientArchiveRequestBuildingMethodTest(proj)...,
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.RequireNotNil(jen.ID("actual").Dot("URL"), nil),
+		utils.AssertTrue(
+			jen.Qual("strings", "HasSuffix").Call(
+				jen.ID("actual").Dot("URL").Dot("String").Call(),
+				utils.FormatString("%d",
+					jen.ID(utils.BuildFakeVarName(ts)).Dot("ID"),
+				),
+			),
+			nil,
+		),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertEqual(
+			jen.ID("actual").Dot("Method"),
+			jen.ID("expectedMethod"),
+			jen.Lit("request should be a %s request"),
+			jen.ID("expectedMethod"),
+		),
 	)
 
-	ret.Add(
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildArchive%sRequest", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				utils.ExpectMethod("expectedMethod", "MethodDelete"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
-				jen.Line(),
-				jen.ID("expectedID").Op(":=").ID("uint64").Call(
-					jen.Lit(1),
-				),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(jen.ID("ctx"), jen.ID("expectedID")),
-				jen.Line(),
-				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.RequireNotNil(jen.ID("actual").Dot("URL"), nil),
-				utils.AssertTrue(
-					jen.Qual("strings", "HasSuffix").Call(
-						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
-							jen.ID("expectedID"),
-						),
-					),
-					nil,
-				),
-				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
-				utils.AssertEqual(
-					jen.ID("actual").Dot("Method"),
-					jen.ID("expectedMethod"),
-					jen.Lit("request should be a %s request"),
-					jen.ID("expectedMethod"),
-				),
+				subtestLines...,
 			),
 		),
 		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Singular() // title singular
+
+	happyPathSubtestLines := append(
+		typ.BuildDependentObjectsForHTTPClientArchiveMethodTest(proj),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+				utils.FormatString(
+					typ.BuildFormatStringForHTTPClientArchiveMethodTest(proj),
+					typ.BuildArgsForHTTPClientArchiveMethodTestURLFormatCall(proj)...,
+				),
+				jen.Lit("expected and actual paths do not match"),
+			),
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("Method"),
+				jen.Qual("net/http", "MethodDelete"),
+				nil,
+			),
+			utils.WriteHeader("StatusOK"),
+		),
+		jen.Line(),
+		jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
+			typ.BuildArgsForHTTPClientArchiveMethodTest(proj)...,
+		),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 	)
 
-	ret.Add(
+	withInvalidClientURLSubtestLines := append(
+		typ.BuildDependentObjectsForHTTPClientArchiveMethodTest(proj),
+		jen.Line(),
+		jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot(fmt.Sprintf("Archive%s", ts)).Call(
+			typ.BuildArgsForHTTPClientArchiveMethodTest(proj)...,
+		),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
+	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Archive%s", ts)).Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
-			utils.BuildSubTest(
-				"happy path",
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(1)),
-				jen.Line(),
-				utils.BuildTestServer(
-					"ts",
-					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(jen.Lit(modelRoute), jen.ID("expected")),
-						jen.Lit("expected and actual path don't match"),
-					),
-					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
-						jen.Qual("net/http", "MethodDelete"),
-						nil,
-					),
-					utils.WriteHeader("StatusOK"),
-				),
-				jen.Line(),
-				jen.ID("err").Op(":=").ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot(fmt.Sprintf("Archive%s", ts)).Call(jen.ID("ctx"), jen.ID("expected")),
-				utils.AssertNoError(jen.ID("err"), jen.Lit("no error should be returned")),
-			),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", withInvalidClientURLSubtestLines...),
 		),
 		jen.Line(),
-	)
+	}
 
-	return ret
+	return lines
 }

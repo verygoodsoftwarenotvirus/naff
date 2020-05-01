@@ -1,24 +1,23 @@
 package client
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func clientTestDotGo(pkg *models.Project) *jen.File {
+func clientTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("buildTestClient").Params().Params(jen.Op("*").ID("Client"), jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "MockDatabase")).Block(
-			jen.ID("db").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(
-				jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-				jen.ID("querier").Op(":").ID("db"),
+		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabaseV1Package(), "MockDatabase")).Block(
+			jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
+				jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.ID("querier").MapAssign().ID("db"),
 			),
 			jen.Return(jen.List(jen.ID("c"), jen.ID("db"))),
 		),
@@ -26,85 +25,98 @@ func clientTestDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Func().ID("TestMigrate").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestMigrate").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
+			utils.BuildSubTest(
+				"happy path",
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("c").Op(":=").Op("&").ID("Client").Values(jen.ID("querier").Op(":").ID("mockDB")),
-				jen.ID("actual").Op(":=").ID("c").Dot("Migrate").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("actual")),
-			)),
+				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
+				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(constants.CtxVar()),
+				utils.AssertNoError(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("bubbles up errors"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			utils.BuildSubTest(
+				"bubbles up errors",
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.ID("c").Op(":=").Op("&").ID("Client").Values(jen.ID("querier").Op(":").ID("mockDB")),
-				jen.ID("actual").Op(":=").ID("c").Dot("Migrate").Call(jen.Qual("context", "Background").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("actual")),
-			)),
+				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
+				jen.ID("actual").Assign().ID("c").Dot("Migrate").Call(constants.CtxVar()),
+				utils.AssertError(jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestIsReady").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestIsReady").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("IsReady"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("true")),
+			utils.BuildSubTest(
+				"obligatory",
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("IsReady"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.True()),
 				jen.Line(),
-				jen.ID("c").Op(":=").Op("&").ID("Client").Values(jen.ID("querier").Op(":").ID("mockDB")),
-				jen.ID("c").Dot(
-					"IsReady",
-				).Call(jen.Qual("context", "Background").Call()),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
+				jen.ID("c").Dot("IsReady").Call(constants.CtxVar()),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideDatabaseClient").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideDatabaseClient").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("nil")),
+			utils.BuildSubTest(
+				"happy path",
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("ProvideDatabaseClient").Call(
-					jen.Qual("context", "Background").Call(),
-					jen.ID("nil"),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideDatabaseClient").Call(
+					constants.CtxVar(),
+					jen.Nil(),
 					jen.ID("mockDB"),
-					jen.ID("false"),
+					jen.True(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-			)),
+				utils.AssertNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error migrating querier"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Qual("errors", "New").Call(jen.Lit("blah")),
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expected")),
+			utils.BuildSubTest(
+				"with error migrating querier",
+				jen.ID("expected").Assign().Qual("errors", "New").Call(jen.Lit("blah")),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expected")),
 				jen.Line(),
-				jen.List(jen.ID("x"), jen.ID("actual")).Op(":=").ID("ProvideDatabaseClient").Call(
-					jen.Qual("context", "Background").Call(),
-					jen.ID("nil"),
+				jen.List(jen.ID("x"), jen.ID("actual")).Assign().ID("ProvideDatabaseClient").Call(
+					constants.CtxVar(),
+					jen.Nil(),
 					jen.ID("mockDB"),
-					jen.ID("false"),
+					jen.True(),
 					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("x")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
+				utils.AssertNil(jen.ID("x"), nil),
+				utils.AssertError(jen.ID("actual"), nil),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

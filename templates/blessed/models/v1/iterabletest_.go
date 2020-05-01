@@ -6,17 +6,18 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterableTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(proj, ret)
 	sn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
 
 	buildUpdateInputColumns := func() (updateCols []jen.Code, assertCalls []jen.Code) {
 		for _, field := range typ.Fields {
 			sn := field.Name.Singular()
-			updateCols = append(updateCols, jen.ID(sn).Op(":").Add(utils.ExampleValueForField(field)))
-			assertCalls = append(assertCalls, jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected").Dot(sn), jen.ID("i").Dot(sn)))
+			updateCols = append(updateCols, jen.ID(sn).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
+			assertCalls = append(assertCalls, utils.AssertEqual(jen.ID("expected").Dot(sn), jen.ID("i").Dot(sn), nil))
 		}
 
 		return
@@ -26,12 +27,9 @@ func iterableTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 
 	buildHappyPathBlock := func() []jen.Code {
 		lines := []jen.Code{
-
-			jen.ID("i").Op(":=").Op("&").ID(sn).Values(),
+			jen.ID("i").Assign().AddressOf().ID(sn).Values(),
 			jen.Line(),
-			jen.ID("expected").Op(":=").Op("&").IDf("%sUpdateInput", sn).Valuesln(
-				updateCols...,
-			),
+			jen.ID("expected").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(updateCols...),
 			jen.Line(),
 			jen.ID("i").Dot("Update").Call(jen.ID("expected")),
 		}
@@ -40,14 +38,39 @@ func iterableTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
 	}
 
 	ret.Add(
-		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				buildHappyPathBlock()...,
-			)),
+			utils.BuildSubTestWithoutContext("happy path", buildHappyPathBlock()...)),
+		jen.Line(),
+	)
+
+	updateInputFields := []jen.Code{}
+	expectedFields := []jen.Code{}
+	for _, field := range typ.Fields {
+		if field.ValidForUpdateInput {
+			fns := field.Name.Singular()
+			updateInputFields = append(updateInputFields, jen.ID(fns).MapAssign().Add(utils.FakeCallForField(proj.OutputPath, field)))
+			expectedFields = append(expectedFields, jen.ID(fns).MapAssign().ID(uvn).Dot(field.Name.Singular()))
+		}
+	}
+
+	ret.Add(
+		jen.Func().IDf("Test%s_ToUpdateInput", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID(uvn).Assign().AddressOf().ID(sn).Valuesln(updateInputFields...),
+				jen.Line(),
+				jen.ID("expected").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(expectedFields...),
+				jen.ID("actual").Assign().ID(uvn).Dot("ToUpdateInput").Call(),
+				jen.Line(),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

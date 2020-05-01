@@ -9,23 +9,23 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkg *models.Project) error {
+func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"tests/v1/integration/init.go":          initDotGo(pkg),
-		"tests/v1/integration/meta_test.go":     metaTestDotGo(pkg),
-		"tests/v1/integration/oauth2_test.go":   oauth2TestDotGo(pkg),
-		"tests/v1/integration/users_test.go":    usersTestDotGo(pkg),
-		"tests/v1/integration/webhooks_test.go": webhooksTestDotGo(pkg),
-		"tests/v1/integration/auth_test.go":     authTestDotGo(pkg),
+		"tests/v1/integration/init.go":          initDotGo(proj),
+		"tests/v1/integration/meta_test.go":     metaTestDotGo(proj),
+		"tests/v1/integration/oauth2_test.go":   oauth2TestDotGo(proj),
+		"tests/v1/integration/users_test.go":    usersTestDotGo(proj),
+		"tests/v1/integration/webhooks_test.go": webhooksTestDotGo(proj),
+		"tests/v1/integration/auth_test.go":     authTestDotGo(proj),
 		"tests/v1/integration/doc.go":           docDotGo(),
 	}
 
-	for _, typ := range pkg.DataTypes {
-		files[fmt.Sprintf("tests/v1/integration/%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(pkg, typ)
+	for _, typ := range proj.DataTypes {
+		files[fmt.Sprintf("tests/v1/integration/%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ)
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
+		if err := utils.RenderGoFile(proj, path, file); err != nil {
 			return err
 		}
 	}

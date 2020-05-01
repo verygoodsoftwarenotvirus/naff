@@ -1,185 +1,231 @@
 package client
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func usersTestDotGo(pkg *models.Project) *jen.File {
+func usersTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("TestClient_GetUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleID").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleID")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("GetUser"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				).Dot("Return").Call(
+					jen.ID(utils.BuildFakeVarName("User")),
+					jen.Nil(),
+				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleID")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUser").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("User")), jen.ID("actual"), nil),
 				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestClient_GetUserByUsername").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetUserByUsername").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleUsername").Op(":=").Lit("username"),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUserByUsername"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleUsername")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("GetUserByUsername"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
+				).Dot("Return").Call(
+					jen.ID(utils.BuildFakeVarName("User")), jen.Nil(),
+				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUserByUsername").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleUsername")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUserByUsername").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("Username")),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("User")), jen.ID("actual"), nil),
 				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestClient_GetUserCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetAllUserCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+			utils.BuildSubTest(
+				"happy path",
+				jen.ID(utils.BuildFakeVarName("Count")).Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUserCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("GetAllUserCount"),
+					jen.Qual(utils.MockPkg, "Anything"),
+				).Dot("Return").Call(
+					jen.ID(utils.BuildFakeVarName("Count")), jen.Nil(),
+				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUserCount").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetAllUserCount").Call(constants.CtxVar()),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Count")), jen.ID("actual"), nil),
 				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.Line(),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUserCount"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.ID("nil"))).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUserCount").Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestClient_GetUsers").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetUsers").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "UserList"),
+				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUsers"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("GetUsers"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.ID(constants.FilterVarName),
+				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUsers").Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "DefaultQueryFilter").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUsers").Call(
+					constants.CtxVar(),
+					jen.ID(constants.FilterVarName),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("UserList")), jen.ID("actual"), nil),
 				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nil filter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(),
+			utils.BuildSubTest(
+				"with nil filter",
+				utils.BuildFakeVar(proj, "UserList"),
+				utils.CreateNilQueryFilter(proj),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUsers"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.Parens(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Call(jen.ID("nil"))).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("GetUsers"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.ID(constants.FilterVarName),
+				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetUsers").Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUsers").Call(
+					constants.CtxVar(),
+					jen.ID(constants.FilterVarName),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("UserList")), jen.ID("actual"), nil),
 				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestClient_CreateUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_CreateUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput").Values(),
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserDatabaseCreationInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("CreateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("CreateUser"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.ID(utils.BuildFakeVarName("Input")),
+				).Dot("Return").Call(
+					jen.ID(utils.BuildFakeVarName("User")),
+					jen.Nil(),
+				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("CreateUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("User")), jen.ID("actual"), nil),
 				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestClient_UpdateUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_UpdateUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User").Values(),
-				jen.Var().ID("expected").ID("error"),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
+				jen.Var().ID("expected").Error(),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("UpdateUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("UpdateUser"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.ID(utils.BuildFakeVarName("User")),
+				).Dot("Return").Call(
+					jen.ID("expected"),
+				),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("c").Dot("UpdateUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Err().Assign().ID("c").Dot("UpdateUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User"))),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestClient_ArchiveUser").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_ArchiveUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("exampleInput").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.Var().ID("expected").ID("error"),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.ID("mockDB")).Op(":=").ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("ArchiveUser"), jen.Qual("github.com/stretchr/testify/mock", "Anything"), jen.ID("exampleInput")).Dot("Return").Call(jen.ID("expected"), jen.ID("nil")),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("ArchiveUser"),
+					jen.Qual(utils.MockPkg, "Anything"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("c").Dot("ArchiveUser").Call(jen.Qual("context", "Background").Call(), jen.ID("exampleInput")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.Err().Assign().ID("c").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.ID("mockDB").Dot("AssertExpectations").Call(jen.ID("t")),
-			)),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

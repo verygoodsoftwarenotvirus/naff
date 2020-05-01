@@ -1,9 +1,8 @@
 package client
 
 import (
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -13,10 +12,10 @@ const (
 	webhooksListRoute = "/api/v1/webhooks"
 )
 
-func webhooksTestDotGo(pkg *models.Project) *jen.File {
-	ret := jen.NewFile("client")
+func webhooksTestDotGo(proj *models.Project) *jen.File {
+	ret := jen.NewFile(packageName)
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Line(),
@@ -26,34 +25,31 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
-				jen.ID("expectedID").Op(":=").ID("uint64").Call(
-					jen.Lit(1),
-				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot("BuildGetWebhookRequest").Call(
-					jen.ID("ctx"),
-					jen.ID("expectedID"),
+					jen.Err(),
+				).Assign().ID("c").Dot("BuildGetWebhookRequest").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
-							jen.ID("expectedID"),
+						utils.FormatString("%d",
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
 					),
 					nil,
@@ -75,62 +71,72 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
-					jen.ID("Name").Op(":").Lit("example"),
-				),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertTrue(
 						jen.Qual("strings", "HasSuffix").Call(
-							jen.ID("req").Dot("URL").Dot("String").Call(),
+							jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
 							jen.Qual("strconv", "Itoa").Call(
-								jen.ID("int").Call(
-									jen.ID("expected").Dot("ID"),
+								jen.Int().Call(
+									jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 								),
 							),
 						),
 						nil,
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(webhookRoute),
-							jen.ID("expected").Dot("ID"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+						utils.FormatString(
+							webhookRoute,
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 						nil,
 					),
 				),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot("GetWebhook").Call(
-					jen.ID("ctx"),
-					jen.ID("expected").Dot("ID"),
+					jen.Err(),
+				).Assign().ID("c").Dot("GetWebhook").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
-				utils.AssertEqual(jen.ID("expected"),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Webhook")),
 					jen.ID("actual"), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				utils.BuildFakeVar(proj, "Webhook"),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("GetWebhook").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+				),
+				jen.Line(),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
 	)
@@ -143,23 +149,23 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodGet"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot("BuildGetWebhooksRequest").Call(
-					jen.ID("ctx"),
-					jen.ID("nil"),
+					jen.Err(),
+				).Assign().ID("c").Dot("BuildGetWebhooksRequest").Call(
+					constants.CtxVar(),
+					jen.Nil(),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(
@@ -179,52 +185,53 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Valuesln(
-					jen.ID("Webhooks").Op(":").Index().Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-						jen.Valuesln(
-							jen.ID("ID").Op(":").Lit(1),
-							jen.ID("Name").Op(":").Lit("example"),
-						),
-					),
-				),
+				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						jen.Lit(webhooksListRoute),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodGet"),
 						nil,
 					),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("WebhookList"))),
 						nil,
 					),
 				),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot("GetWebhooks").Call(
-					jen.ID("ctx"),
-					jen.ID("nil"),
+					jen.Err(),
+				).Assign().ID("c").Dot("GetWebhooks").Call(
+					constants.CtxVar(),
+					jen.Nil(),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
-				utils.AssertEqual(jen.ID("expected"),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("WebhookList")),
 					jen.ID("actual"), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("GetWebhooks").Call(constants.CtxVar(), jen.Nil()),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
 	)
@@ -237,26 +244,26 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPost"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.Line(),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-					jen.ID("Name").Op(":").Lit("expected name"),
-				),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				utils.BuildFakeVar(proj, "Webhook"),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
+				jen.Line(),
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot("BuildCreateWebhookRequest").Call(
-					jen.ID("ctx"),
-					jen.ID("exampleInput"),
+					jen.Err(),
+				).Assign().ID("c").Dot("BuildCreateWebhookRequest").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(
@@ -276,67 +283,50 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
-					jen.ID("Name").Op(":").Lit("example"),
-				),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput").Valuesln(
-					jen.ID("Name").Op(":").ID("expected").Dot("Name"),
-				),
+				utils.BuildFakeVar(proj, "Webhook"),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
+				jen.ID(utils.BuildFakeVarName("Input")).Dot(constants.UserOwnershipFieldName).Equals().Zero(),
+				jen.Line(),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
-					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Lit(webhooksListRoute),
-						jen.Lit("expected and actual path don't match"),
-					),
-					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
-						jen.Qual("net/http", "MethodPost"),
-						nil,
-					),
+					utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"), jen.Lit(webhooksListRoute), jen.Lit("expected and actual paths do not match")),
+					utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 					jen.Line(),
-					jen.Var().ID("x").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookCreationInput"),
+					jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput"),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewDecoder").Call(
-							jen.ID("req").Dot("Body"),
-						).Dot("Decode").Call(
-							jen.Op("&").ID("x"),
+						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")).Dot("Decode").Call(
+							jen.AddressOf().ID("x"),
 						),
 						nil,
 					),
-					utils.AssertEqual(
-						jen.ID("exampleInput"),
-						jen.ID("x"),
-						nil,
-					),
+					utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Input")), jen.ID("x"), nil),
 					jen.Line(),
 					utils.RequireNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.ID("expected")),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 						nil,
 					),
 				),
 				jen.Line(),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot("CreateWebhook").Call(
-					jen.ID("ctx"),
-					jen.ID("exampleInput"),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateWebhook").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Input")),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
-				utils.AssertEqual(jen.ID("expected"),
-					jen.ID("actual"), nil),
+				utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual"), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				utils.BuildFakeVar(proj, "Webhook"),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("Input"))),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
 	)
@@ -349,28 +339,17 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodPut"),
-				jen.ID("exampleInput").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("Name").Op(":").Lit("changed name"),
-				),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				),
-				jen.List(
-					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot("BuildUpdateWebhookRequest").Call(
-					jen.ID("ctx"),
-					jen.ID("exampleInput"),
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("BuildUpdateWebhookRequest").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Webhook")),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
-				),
+				utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
 				utils.AssertEqual(
 					jen.ID("actual").Dot("Method"),
 					jen.ID("expectedMethod"),
@@ -388,42 +367,40 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Valuesln(
-					jen.ID("ID").Op(":").Lit(1),
-					jen.ID("Name").Op(":").Lit("example"),
-				),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(webhookRoute),
-							jen.ID("expected").Dot("ID"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+						utils.FormatString(
+							webhookRoute,
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
-					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
-						jen.Qual("net/http", "MethodPut"),
-						nil,
-					),
+					utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodPut"), nil),
 					utils.AssertNoError(
-						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID("res")).Dot("Encode").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "Webhook").Values()),
+						jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 						nil),
 				),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				).Dot("UpdateWebhook").Call(
-					jen.ID("ctx"),
-					jen.ID("expected"),
+				jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot("UpdateWebhook").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Webhook")),
 				),
-				utils.AssertNoError(
-					jen.ID("err"),
-					jen.Lit("no error should be returned"),
+				utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				utils.BuildFakeVar(proj, "Webhook"),
+				jen.Line(),
+				jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("UpdateWebhook").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Webhook")),
 				),
+				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
 	)
@@ -436,21 +413,19 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.ExpectMethod("expectedMethod", "MethodDelete"),
-				jen.ID("ts").Op(":=").Qual("net/http/httptest", "NewTLSServer").Call(jen.ID("nil")),
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
-				jen.ID("expectedID").Op(":=").ID("uint64").Call(
-					jen.Lit(1),
-				),
-				jen.ID("c").Op(":=").ID("buildTestClient").Call(
+				jen.ID("c").Assign().ID("buildTestClient").Call(
 					jen.ID("t"),
 					jen.ID("ts"),
 				),
 				jen.List(
 					jen.ID("actual"),
-					jen.ID("err"),
-				).Op(":=").ID("c").Dot("BuildArchiveWebhookRequest").Call(
-					jen.ID("ctx"),
-					jen.ID("expectedID"),
+					jen.Err(),
+				).Assign().ID("c").Dot("BuildArchiveWebhookRequest").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				),
 				jen.Line(),
 				utils.RequireNotNil(jen.ID("actual"), nil),
@@ -461,15 +436,14 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 				utils.AssertTrue(
 					jen.Qual("strings", "HasSuffix").Call(
 						jen.ID("actual").Dot("URL").Dot("String").Call(),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%d"),
-							jen.ID("expectedID"),
+						utils.FormatString("%d",
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
 					),
 					nil,
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 				utils.AssertEqual(
@@ -489,40 +463,47 @@ func webhooksTestDotGo(pkg *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("expected").Op(":=").ID("uint64").Call(
-					jen.Lit(1),
-				),
+				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
 					utils.AssertEqual(
-						jen.ID("req").Dot("URL").Dot("Path"),
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(webhookRoute),
-							jen.ID("expected"),
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+						utils.FormatString(
+							webhookRoute,
+							jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 						),
-						jen.Lit("expected and actual path don't match"),
+						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
-						jen.ID("req").Dot("Method"),
+						jen.ID(constants.RequestVarName).Dot("Method"),
 						jen.Qual("net/http", "MethodDelete"),
 						nil,
 					),
 				),
 				jen.Line(),
-				jen.ID("err").Op(":=").ID("buildTestClient").Call(
-					jen.ID("t"),
-					jen.ID("ts"),
-				).Dot("ArchiveWebhook").Call(
-					jen.ID("ctx"),
-					jen.ID("expected"),
+				jen.Err().Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")).Dot("ArchiveWebhook").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
 				),
 				utils.AssertNoError(
-					jen.ID("err"),
+					jen.Err(),
 					jen.Lit("no error should be returned"),
 				),
 			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				utils.BuildFakeVar(proj, "Webhook"),
+				jen.Line(),
+				jen.Err().Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")).Dot("ArchiveWebhook").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"),
+				),
+				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+			),
 		),
 	)
+
 	return ret
 }

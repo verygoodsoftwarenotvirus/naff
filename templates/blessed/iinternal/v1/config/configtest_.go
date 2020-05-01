@@ -1,54 +1,50 @@
 package config
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func configTestDotGo(pkg *models.Project) *jen.File {
+func configTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("config")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Func().ID("Test_randString").Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("Test_randString").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
-			jen.Comment("obligatory"),
 			jen.Line(),
-			jen.ID("actual").Op(":=").ID("randString").Call(),
-			jen.Qual("github.com/stretchr/testify/assert", "NotEmpty").Call(jen.ID("t"), jen.ID("actual")),
-			jen.Qual("github.com/stretchr/testify/assert", "Len").Call(jen.ID("t"), jen.ID("actual"), jen.Lit(52)),
+			jen.ID("actual").Assign().ID("randString").Call(),
+			utils.AssertNotEmpty(jen.ID("actual"), nil),
+			utils.AssertLength(jen.ID("actual"), jen.Lit(52), nil),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_buildConfig").Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestBuildConfig").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
-			jen.Comment("obligatory"),
 			jen.Line(),
-			jen.ID("actual").Op(":=").ID("BuildConfig").Call(),
-			jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.ID("actual").Assign().ID("BuildConfig").Call(),
+			utils.AssertNotNil(jen.ID("actual"), nil),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestParseConfigFile").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestParseConfigFile").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID("tf"), jen.ID("err")).Op(":=").Qual("io/ioutil", "TempFile").Call(jen.Qual("os", "TempDir").Call(), jen.Lit("*.toml")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
-				jen.ID("expected").Op(":=").Lit("thisisatest"),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.List(jen.ID("tf"), jen.Err()).Assign().Qual("io/ioutil", "TempFile").Call(jen.Qual("os", "TempDir").Call(), jen.Lit("*.toml")),
+				utils.RequireNoError(jen.Err(), nil),
+				jen.ID("expected").Assign().Lit("thisisatest"),
 				jen.Line(),
-				jen.List(jen.ID("_"), jen.ID("err")).Op("=").ID("tf").Dot("Write").Call(
-					jen.Index().ID("byte").Call(
-						jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(`
+				jen.List(jen.Underscore(), jen.Err()).Equals().ID("tf").Dot("Write").Call(
+					jen.Index().Byte().Call(
+						utils.FormatString(`
 [server]
 http_port = 1234
 debug = false
@@ -57,44 +53,46 @@ debug = false
 provider = "postgres"
 debug = true
 connection_details = "%s"
-`),
+`,
 							jen.ID("expected"),
 						),
 					),
 				),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.ID("expectedConfig").Op(":=").Op("&").ID("ServerConfig").Valuesln(
-					jen.ID("Server").Op(":").ID("ServerSettings").Valuesln(
-						jen.ID("HTTPPort").Op(":").Lit(1234),
-						jen.ID("Debug").Op(":").ID("false"),
+				jen.ID("expectedConfig").Assign().AddressOf().ID("ServerConfig").Valuesln(
+					jen.ID("Server").MapAssign().ID("ServerSettings").Valuesln(
+						jen.ID("HTTPPort").MapAssign().Lit(1234),
+						jen.ID("Debug").MapAssign().False(),
 					),
-					jen.ID("Database").Op(":").ID("DatabaseSettings").Valuesln(
-						jen.ID("Provider").Op(":").Lit("postgres"),
-						jen.ID("Debug").Op(":").ID("true"),
-						jen.ID("ConnectionDetails").Op(":").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "ConnectionDetails").Call(jen.ID("expected")),
+					jen.ID("Database").MapAssign().ID("DatabaseSettings").Valuesln(
+						jen.ID("Provider").MapAssign().Lit("postgres"),
+						jen.ID("Debug").MapAssign().True(),
+						jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabaseV1Package(), "ConnectionDetails").Call(jen.ID("expected")),
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID("cfg"), jen.ID("err")).Op(":=").ID("ParseConfigFile").Call(jen.ID("tf").Dot("Name").Call()),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
+				jen.List(jen.ID("cfg"), jen.Err()).Assign().ID("ParseConfigFile").Call(jen.ID("tf").Dot("Name").Call()),
+				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedConfig").Dot("Server").Dot("HTTPPort"), jen.ID("cfg").Dot("Server").Dot("HTTPPort")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedConfig").Dot("Server").Dot("Debug"), jen.ID("cfg").Dot("Server").Dot("Debug")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedConfig").Dot("Database").Dot("Provider"), jen.ID("cfg").Dot("Database").Dot("Provider")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedConfig").Dot("Database").Dot("Debug"), jen.ID("cfg").Dot("Database").Dot("Debug")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expectedConfig").Dot("Database").Dot("ConnectionDetails"), jen.ID("cfg").Dot("Database").Dot("ConnectionDetails")),
+				utils.AssertEqual(jen.ID("expectedConfig").Dot("Server").Dot("HTTPPort"), jen.ID("cfg").Dot("Server").Dot("HTTPPort"), nil),
+				utils.AssertEqual(jen.ID("expectedConfig").Dot("Server").Dot("Debug"), jen.ID("cfg").Dot("Server").Dot("Debug"), nil),
+				utils.AssertEqual(jen.ID("expectedConfig").Dot("Database").Dot("Provider"), jen.ID("cfg").Dot("Database").Dot("Provider"), nil),
+				utils.AssertEqual(jen.ID("expectedConfig").Dot("Database").Dot("Debug"), jen.ID("cfg").Dot("Database").Dot("Debug"), nil),
+				utils.AssertEqual(jen.ID("expectedConfig").Dot("Database").Dot("ConnectionDetails"), jen.ID("cfg").Dot("Database").Dot("ConnectionDetails"), nil),
 				jen.Line(),
-				jen.Qual("os", "Remove").Call(jen.ID("tf").Dot("Name").Call()),
-			)),
+				utils.AssertNoError(jen.Qual("os", "Remove").Call(jen.ID("tf").Dot("Name").Call()), nil),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with nonexistent file"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.List(jen.ID("cfg"), jen.ID("err")).Op(":=").ID("ParseConfigFile").Call(jen.Lit("/this/doesn't/even/exist/lol")),
-				jen.Qual("github.com/stretchr/testify/assert", "Error").Call(jen.ID("t"), jen.ID("err")),
-				jen.Qual("github.com/stretchr/testify/assert", "Nil").Call(jen.ID("t"), jen.ID("cfg")),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"with nonexistent file",
+				jen.List(jen.ID("cfg"), jen.Err()).Assign().ID("ParseConfigFile").Call(jen.Lit("/this/doesn't/even/exist/lol")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("cfg"), nil),
+			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

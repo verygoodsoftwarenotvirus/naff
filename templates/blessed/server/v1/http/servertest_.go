@@ -2,87 +2,88 @@ package httpserver
 
 import (
 	"fmt"
-	"path/filepath"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func serverTestDotGo(pkg *models.Project) *jen.File {
+func serverTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	buildServerLines := func() []jen.Code {
 		lines := []jen.Code{
-			jen.ID("DebugMode").Op(":").ID("true"),
-			jen.ID("db").Op(":").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-			jen.ID("config").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig").Values(),
-			jen.ID("encoder").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
-			jen.ID("httpServer").Op(":").ID("provideHTTPServer").Call(),
-			jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-			jen.ID("frontendService").Op(":").Qual(filepath.Join(pkg.OutputPath, "services/v1/frontend"), "ProvideFrontendService").Callln(
+			jen.ID("DebugMode").MapAssign().True(),
+			jen.ID("db").MapAssign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+			jen.ID("config").MapAssign().AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Values(),
+			jen.ID("encoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+			jen.ID("httpServer").MapAssign().ID("provideHTTPServer").Call(),
+			jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("frontendService").MapAssign().Qual(proj.ServiceV1FrontendPackage(), "ProvideFrontendService").Callln(
 				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-				jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "FrontendSettings").Values(),
+				jen.Qual(proj.InternalConfigV1Package(), "FrontendSettings").Values(),
 			),
-			jen.ID("webhooksService").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "WebhookDataServer").Values(),
-			jen.ID("usersService").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "UserDataServer").Values(),
-			jen.ID("authService").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1/auth"), "Service").Values(),
+			jen.ID("webhooksService").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataServer").Values(),
+			jen.ID("usersService").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataServer").Values(),
+			jen.ID("authService").MapAssign().AddressOf().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
 		}
-		for _, typ := range pkg.DataTypes {
+		for _, typ := range proj.DataTypes {
 			tpuvn := typ.Name.PluralUnexportedVarName()
 			tsn := typ.Name.Singular()
 			lines = append(lines,
-				jen.IDf("%sService", tpuvn).Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataServer", tsn)).Values(),
+				jen.IDf("%sService", tpuvn).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataServer", tsn)).Values(),
 			)
 		}
 
 		lines = append(lines,
-			jen.ID("oauth2ClientsService").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), "OAuth2ClientDataServer").Values(),
+			jen.ID("oauth2ClientsService").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "OAuth2ClientDataServer").Values(),
 		)
 
 		return lines
 	}
 
 	ret.Add(
-		jen.Func().ID("buildTestServer").Params().Params(jen.Op("*").ID("Server")).Block(
-			jen.ID("s").Op(":=").Op("&").ID("Server").Valuesln(
+		jen.Func().ID("buildTestServer").Params().Params(jen.PointerTo().ID("Server")).Block(
+			jen.ID("s").Assign().AddressOf().ID("Server").Valuesln(
 				buildServerLines()...,
 			),
+			jen.Line(),
 			jen.Return().ID("s"),
 		),
 		jen.Line(),
 	)
 
-	buildProvideServerArgs := func() []jen.Code {
+	buildProvideServerArgs := func(cookieSecret string) []jen.Code {
 		args := []jen.Code{
-			jen.Qual("context", "Background").Call(),
-			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "ServerConfig").Valuesln(
-				jen.ID("Auth").Op(":").Qual(filepath.Join(pkg.OutputPath, "internal/v1/config"), "AuthSettings").Valuesln(
-					jen.ID("CookieSecret").Op(":").Lit("THISISAVERYLONGSTRINGFORTESTPURPOSES"),
+			constants.CtxVar(),
+			jen.AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
+				jen.ID("Auth").MapAssign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
+					jen.ID("CookieSecret").MapAssign().Lit(cookieSecret),
 				),
 			),
-			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1/auth"), "Service").Values(),
-			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1/frontend"), "Service").Values(),
+			jen.AddressOf().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
+			jen.AddressOf().Qual(proj.ServiceV1FrontendPackage(), "Service").Values(),
 		}
 
-		for _, typ := range pkg.DataTypes {
+		for _, typ := range proj.DataTypes {
 			pn := typ.Name.PackageName()
-			args = append(args, jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1", pn), "Service").Values())
+			args = append(args, jen.AddressOf().Qual(proj.ServiceV1Package(pn), "Service").Values())
 		}
 
 		args = append(args,
-			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "Service").Values(),
-			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "Service").Values(),
-			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "Service").Values(),
+			jen.AddressOf().Qual(proj.ServiceV1UsersPackage(), "Service").Values(),
+			jen.AddressOf().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service").Values(),
+			jen.AddressOf().Qual(proj.ServiceV1WebhooksPackage(), "Service").Values(),
 			jen.ID("mockDB"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-			jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
+			jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 		)
 
-		// if pkg.EnableNewsman {
+		// if proj.EnableNewsman {
 		args = append(args,
-			jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.ID("nil"), jen.ID("nil")),
+			jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil()),
 		)
 		// }
 
@@ -90,22 +91,81 @@ func serverTestDotGo(pkg *models.Project) *jen.File {
 	}
 
 	ret.Add(
-		jen.Func().ID("TestProvideServer").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("mockDB").Op(":=").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(jen.Lit("GetAllWebhooks"), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "WebhookList").Values(), jen.ID("nil")),
+			utils.BuildSubTest(
+				"happy path",
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("ProvideServer").Callln(
-					buildProvideServerArgs()...,
+				utils.BuildFakeVar(proj, "WebhookList"),
+				jen.Line(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
+					jen.Lit("GetAllWebhooks"),
+					jen.Qual(utils.MockPkg, "Anything"),
+				).Dot("Return").Call(
+					jen.ID(utils.BuildFakeVarName("WebhookList")),
+					jen.Nil(),
 				),
 				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/assert", "NotNil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.Qual("github.com/stretchr/testify/assert", "NoError").Call(jen.ID("t"), jen.ID("err")),
-			)),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideServer").Callln(
+					buildProvideServerArgs("THISISAVERYLONGSTRINGFORTESTPURPOSES")...,
+				),
+				jen.Line(),
+				utils.AssertNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid cookie secret",
+				jen.Line(),
+				utils.BuildFakeVar(proj, "WebhookList"),
+				jen.Line(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
+					jen.Lit("GetAllWebhooks"),
+					jen.Qual(utils.MockPkg, "Anything"),
+				).Dot("Return").Call(
+					jen.ID(utils.BuildFakeVarName("WebhookList")),
+					jen.Nil(),
+				),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideServer").Callln(
+					buildProvideServerArgs("THISSTRINGISNTLONGENOUGH:(")...,
+				),
+				jen.Line(),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with error fetching webhooks",
+				jen.Line(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
+					jen.Lit("GetAllWebhooks"),
+					jen.Qual(utils.MockPkg, "Anything"),
+				).Dot("Return").Call(
+					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList")).Call(jen.Nil()),
+					constants.ObligatoryError(),
+				),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideServer").Callln(
+					buildProvideServerArgs("THISISAVERYLONGSTRINGFORTESTPURPOSES")...,
+				),
+				jen.Line(),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

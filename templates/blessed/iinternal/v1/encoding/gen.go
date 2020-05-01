@@ -7,15 +7,15 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkg *models.Project) error {
+func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
 		"internal/v1/encoding/doc.go":           docDotGo(),
-		"internal/v1/encoding/encoding.go":      encodingDotGo(pkg),
-		"internal/v1/encoding/encoding_test.go": encodingTestDotGo(pkg),
+		"internal/v1/encoding/encoding.go":      encodingDotGo(proj),
+		"internal/v1/encoding/encoding_test.go": encodingTestDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
+		if err := utils.RenderGoFile(proj, path, file); err != nil {
 			return err
 		}
 	}

@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -14,11 +15,11 @@ func float64Metric(varName, measurementName, measurementDescription string, coun
 	g := jen.Group{}
 
 	return g.Add(
-		jen.Comment(fmt.Sprintf("%s captures the runtime memstats %s field", sn, varName)),
+		jen.Commentf("%s captures the runtime memstats %s field.", sn, varName),
 		jen.Line(),
 		statsDotFloat64(fmt.Sprintf("Runtime%sMeasurement", varName), measurementName, measurementDescription),
 		jen.Line(),
-		jen.Comment(fmt.Sprintf("%s is the corresponding view for the above field", vn)),
+		jen.Commentf("%s is the corresponding view for the above field.", vn),
 		jen.Line(),
 		viewDotView(vn, measurementName, sn, measurementDescription, count),
 		jen.Line(),
@@ -32,11 +33,11 @@ func int64Metric(varName, measurementName, measurementDescription string, count 
 	g := jen.Group{}
 
 	return g.Add(
-		jen.Comment(fmt.Sprintf("%s captures the runtime memstats %s field", sn, varName)),
+		jen.Commentf("%s captures the runtime memstats %s field.", sn, varName),
 		jen.Line(),
 		statsDotInt64(fmt.Sprintf("Runtime%sMeasurement", varName), measurementName, measurementDescription),
 		jen.Line(),
-		jen.Comment(fmt.Sprintf("%s is the corresponding view for the above field", vn)),
+		jen.Commentf("%s is the corresponding view for the above field.", vn),
 		jen.Line(),
 		viewDotView(vn, measurementName, sn, measurementDescription, count),
 		jen.Line(),
@@ -45,23 +46,23 @@ func int64Metric(varName, measurementName, measurementDescription string, count 
 }
 
 func viewDotView(viewName, measurementName, measurementVarName, description string, count bool) jen.Code {
-	agg := jen.ID("Aggregation").Op(":")
+	agg := jen.ID("Aggregation").MapAssign()
 	if count {
 		agg = agg.Qual("go.opencensus.io/stats/view", "Count").Call()
 	} else {
 		agg = agg.Qual("go.opencensus.io/stats/view", "LastValue").Call()
 	}
 
-	return jen.ID(viewName).Op("=").Op("&").Qual("go.opencensus.io/stats/view", "View").Valuesln(
-		jen.ID("Name").Op(":").Lit(measurementName),
-		jen.ID("Measure").Op(":").ID(measurementVarName),
-		jen.ID("Description").Op(":").Lit(description),
+	return jen.ID(viewName).Equals().AddressOf().Qual("go.opencensus.io/stats/view", "View").Valuesln(
+		jen.ID("Name").MapAssign().Lit(measurementName),
+		jen.ID("Measure").MapAssign().ID(measurementVarName),
+		jen.ID("Description").MapAssign().Lit(description),
 		agg,
 	)
 }
 
 func statsDotFloat64(varName, name, description string) jen.Code {
-	return jen.ID(varName).Op("=").Qual("go.opencensus.io/stats", "Float64").Callln(
+	return jen.ID(varName).Equals().Qual("go.opencensus.io/stats", "Float64").Callln(
 		jen.Lit(name),
 		jen.Lit(description),
 		jen.Qual("go.opencensus.io/stats", "UnitDimensionless"),
@@ -69,17 +70,17 @@ func statsDotFloat64(varName, name, description string) jen.Code {
 }
 
 func statsDotInt64(varName, name, description string) jen.Code {
-	return jen.ID(varName).Op("=").Qual("go.opencensus.io/stats", "Int64").Callln(
+	return jen.ID(varName).Equals().Qual("go.opencensus.io/stats", "Int64").Callln(
 		jen.Lit(name),
 		jen.Lit(description),
 		jen.Qual("go.opencensus.io/stats", "UnitDimensionless"),
 	)
 }
 
-func runtimeDotGo(pkg *models.Project) *jen.File {
+func runtimeDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("metrics")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Comment("inspired by:")
 	ret.Comment("https://github.com/opencensus-integrations/caddy/blob/c8498719b7c1c2a3c707355be2395a35f03e434e/caddy/caddymain/exporters.go#L54-L110")
@@ -99,6 +100,24 @@ func runtimeDotGo(pkg *models.Project) *jen.File {
 		vals = append(vals, jen.ID(fmt.Sprintf("Runtime%sView", metric.varName)))
 	}
 
+	defs = append(defs,
+		jen.Line(),
+		jen.Comment("MetricAggregationMeasurement keeps track of how much time we spend collecting metrics."),
+		jen.ID("MetricAggregationMeasurement").Equals().Qual("go.opencensus.io/stats", "Int64").Callln(
+			jen.Lit("metrics_aggregation_time"),
+			jen.Lit("cumulative time in nanoseconds spent aggregating metrics"),
+			jen.Qual("go.opencensus.io/stats", "UnitDimensionless"),
+		),
+		jen.Comment("MetricAggregationMeasurementView is the corresponding view for the above metric."),
+		jen.ID("MetricAggregationMeasurementView").Equals().AddressOf().Qual("go.opencensus.io/stats/view", "View").Valuesln(
+			jen.ID("Name").MapAssign().Lit("metrics_aggregation_time"),
+			jen.ID("Measure").MapAssign().ID("MetricAggregationMeasurement"),
+			jen.ID("Description").MapAssign().Lit("cumulative time in nanoseconds spent aggregating metrics"),
+			jen.ID("Aggregation").MapAssign().Qual("go.opencensus.io/stats/view", "LastValue").Call(),
+		),
+		jen.Line(),
+	)
+
 	vals = append(vals,
 		jen.ID("MetricAggregationMeasurementView"),
 		jen.Comment("provided by ochttp"),
@@ -109,9 +128,10 @@ func runtimeDotGo(pkg *models.Project) *jen.File {
 		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerRequestCountByMethod"),
 		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerResponseCountByStatusCode"),
 	)
+
 	defs = append(defs,
 		jen.Comment("DefaultRuntimeViews represents the pre-configured views"),
-		jen.ID("DefaultRuntimeViews").Op("=").Index().Op("*").Qual("go.opencensus.io/stats/view", "View").Valuesln(vals...),
+		jen.ID("DefaultRuntimeViews").Equals().Index().PointerTo().Qual("go.opencensus.io/stats/view", "View").Valuesln(vals...),
 	)
 
 	ret.Add(
@@ -120,28 +140,38 @@ func runtimeDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
+		jen.Comment("RegisterDefaultViews registers default runtime views."),
+		jen.Line(),
+		jen.Func().ID("RegisterDefaultViews").Params().Params(jen.Error()).Block(
+			jen.Return().Qual("go.opencensus.io/stats/view", "Register").Call(jen.ID("DefaultRuntimeViews").Spread()),
+		),
+		jen.Line(),
+	)
+
+	ret.Add(
 		jen.Comment("RecordRuntimeStats records runtime statistics at the provided interval."),
 		jen.Line(),
-		jen.Comment("Returns a stop function and an error"),
+		jen.Comment("Returns a stop function and an error."),
 		jen.Line(),
 		jen.Func().ID("RecordRuntimeStats").Params(jen.ID("interval").Qual("time", "Duration")).Params(jen.ID("stopFn").Func().Params()).Block(
 			jen.Var().Defs(
 				jen.ID("closeOnce").Qual("sync", "Once"),
-				jen.ID("ticker").Op("=").Qual("time", "NewTicker").Call(jen.ID("interval")),
-				jen.ID("done").Op("=").ID("make").Call(jen.Chan().Struct()),
+				jen.ID("ticker").Equals().Qual("time", "NewTicker").Call(jen.ID("interval")),
+				jen.ID("done").Equals().ID("make").Call(jen.Chan().Struct()),
 			),
 			jen.Line(),
-			jen.ID("ms").Op(":=").Op("&").Qual("runtime", "MemStats").Values(),
 			jen.Go().Func().Params().Block(
 				jen.For().Block(
 					jen.Select().Block(
 						jen.Case(jen.Op("<-").ID("ticker").Dot("C")).Block(
-							jen.ID("startTime").Op(":=").Qual("time", "Now").Call(),
-							jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+							constants.CreateCtx(),
+							jen.Line(),
+							jen.ID("startTime").Assign().Qual("time", "Now").Call(),
+							jen.ID("ms").Assign().AddressOf().Qual("runtime", "MemStats").Values(),
 							jen.Line(),
 							jen.Qual("runtime", "ReadMemStats").Call(jen.ID("ms")),
 							jen.Qual("go.opencensus.io/stats", "Record").Callln(
-								jen.ID("ctx"),
+								constants.CtxVar(),
 								jen.ID("RuntimeTotalAllocMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("TotalAlloc"))),
 								jen.ID("RuntimeSysMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("Sys"))),
 								jen.ID("RuntimeLookupsMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("Lookups"))),
@@ -164,16 +194,12 @@ func runtimeDotGo(pkg *models.Project) *jen.File {
 								jen.ID("RuntimeOtherSysMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("OtherSys"))),
 								jen.ID("RuntimeNextGCMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("NextGC"))),
 								jen.ID("RuntimePauseTotalNsMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("PauseTotalNs"))),
-								jen.ID("RuntimePauseNsMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("PauseNs").Index(jen.Parens(jen.ID("ms").Dot("NumGC").Op("+").Lit(255)).Op("%").Lit(256)))),
-								jen.ID("RuntimePauseEndMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("PauseEnd").Index(jen.Parens(jen.ID("ms").Dot("NumGC").Op("+").Lit(255)).Op("%").Lit(256)))),
+								jen.ID("RuntimePauseNsMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("PauseNs").Index(jen.Parens(jen.ID("ms").Dot("NumGC").Plus().Lit(255)).Op("%").Lit(256)))),
+								jen.ID("RuntimePauseEndMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("PauseEnd").Index(jen.Parens(jen.ID("ms").Dot("NumGC").Plus().Lit(255)).Op("%").Lit(256)))),
 								jen.ID("RuntimeNumGCMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("NumGC"))),
 								jen.ID("RuntimeNumForcedGCMeasurement").Dot("M").Call(jen.ID("int64").Call(jen.ID("ms").Dot("NumForcedGC"))),
 								jen.ID("RuntimeGCCPUFractionMeasurement").Dot("M").Call(jen.ID("ms").Dot("GCCPUFraction")),
-							),
-							jen.Qual("go.opencensus.io/stats", "Record").Call(
-								jen.ID("ctx"), jen.ID("MetricAggregationMeasurement").Dot("M").Call(
-									jen.Qual("time", "Since").Call(jen.ID("startTime")).Dot("Nanoseconds").Call(),
-								),
+								jen.ID("MetricAggregationMeasurement").Dot("M").Call(jen.Qual("time", "Since").Call(jen.ID("startTime")).Dot("Nanoseconds").Call()),
 							),
 						),
 						jen.Case(jen.Op("<-").ID("done")).Block(jen.ID("ticker").Dot("Stop").Call(), jen.Return()),
@@ -195,6 +221,7 @@ func runtimeDotGo(pkg *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
+
 	return ret
 }
 

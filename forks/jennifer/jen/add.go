@@ -8,7 +8,7 @@ func Add(code ...Code) *Statement {
 // Add appends the provided items to the statement.
 func (g *Group) Add(code ...Code) *Statement {
 	s := Add(code...)
-	g.items = append(g.items, s)
+	g.items = append(g.items, s, Line())
 	return s
 }
 

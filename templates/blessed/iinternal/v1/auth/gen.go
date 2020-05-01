@@ -7,17 +7,17 @@ import (
 )
 
 // RenderPackage renders the package
-func RenderPackage(pkg *models.Project) error {
+func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"internal/v1/auth/authenticator.go":      authenticatorDotGo(pkg),
-		"internal/v1/auth/authenticator_test.go": authenticatorTestDotGo(pkg),
-		"internal/v1/auth/bcrypt.go":             bcryptDotGo(pkg),
-		"internal/v1/auth/bcrypt_test.go":        bcryptTestDotGo(pkg),
+		"internal/v1/auth/authenticator.go":      authenticatorDotGo(proj),
+		"internal/v1/auth/authenticator_test.go": authenticatorTestDotGo(proj),
+		"internal/v1/auth/bcrypt.go":             bcryptDotGo(proj),
+		"internal/v1/auth/bcrypt_test.go":        bcryptTestDotGo(proj),
 		"internal/v1/auth/doc.go":                docDotGo(),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(pkg.OutputPath, path, file); err != nil {
+		if err := utils.RenderGoFile(proj, path, file); err != nil {
 			return err
 		}
 	}

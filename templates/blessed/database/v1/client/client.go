@@ -1,20 +1,19 @@
 package client
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func clientDotGo(pkg *models.Project) *jen.File {
+func clientDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("dbclient")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database").Op("=").Parens(jen.Op("*").ID("Client")).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "Database").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -31,85 +30,84 @@ func clientDotGo(pkg *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("the actual database querying is performed."),
 		jen.Line(),
-		jen.Type().ID("Client").Struct(jen.ID("db").Op("*").Qual("database/sql", "DB"), jen.ID("querier").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
-			jen.ID("debug").ID("bool"), jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger")),
+		jen.Type().ID("Client").Struct(jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
+			jen.ID("debug").Bool(), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")),
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Comment("Migrate is a simple wrapper around the core querier Migrate call"),
+	ret.Add(buildMigrate(proj)...)
+	ret.Add(buildIsReady(proj)...)
+	ret.Add(buildProvideDatabaseClient(proj)...)
+
+	return ret
+}
+
+func buildMigrate(proj *models.Project) []jen.Code {
+	funcName := "Migrate"
+
+	lines := []jen.Code{
+		jen.Commentf("%s is a simple wrapper around the core querier %s call.", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Block(
-			jen.Return().ID("c").Dot("querier").Dot("Migrate").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(constants.CtxParam()).Params(jen.Error()).Block(
+			utils.StartSpan(proj, true, funcName),
+			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(constants.CtxVar()),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
-		jen.Comment("IsReady is a simple wrapper around the core querier IsReady call"),
+	return lines
+}
+
+func buildIsReady(proj *models.Project) []jen.Code {
+	funcName := "IsReady"
+
+	lines := []jen.Code{
+		jen.Commentf("%s is a simple wrapper around the core querier %s call.", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).ID("IsReady").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("ready").ID("bool")).Block(
-			jen.Return().ID("c").Dot("querier").Dot("IsReady").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Block(
+			utils.StartSpan(proj, true, funcName),
+			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(constants.CtxVar()),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
-		jen.Comment("ProvideDatabaseClient provides a new Database client"),
+	return lines
+}
+
+func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
+	funcName := "ProvideDatabaseClient"
+
+	lines := []jen.Code{
+		jen.Commentf("%s provides a new Database client.", funcName),
 		jen.Line(),
-		jen.Func().ID("ProvideDatabaseClient").Paramsln(
-			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("db").Op("*").Qual("database/sql", "DB"),
-			jen.ID("querier").Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"),
-			jen.ID("debug").ID("bool"),
-			jen.ID("logger").Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "Logger"),
-		).Params(jen.Qual(filepath.Join(pkg.OutputPath, "database/v1"), "Database"), jen.ID("error")).Block(
-			jen.ID("c").Op(":=").Op("&").ID("Client").Valuesln(
-				jen.ID("db").Op(":").ID("db"),
-				jen.ID("querier").Op(":").ID("querier"),
-				jen.ID("debug").Op(":").ID("debug"),
-				jen.ID("logger").Op(":").ID("logger").Dot("WithName").Call(jen.Lit("db_client")),
+		jen.Func().ID(funcName).Paramsln(
+			constants.CtxParam(),
+			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
+			jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
+			jen.ID("debug").Bool(),
+			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+		).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.Error()).Block(
+			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
+				jen.ID("db").MapAssign().ID("db"),
+				jen.ID("querier").MapAssign().ID("querier"),
+				jen.ID("debug").MapAssign().ID("debug"),
+				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("db_client")),
 			),
 			jen.Line(),
 			jen.If(jen.ID("debug")).Block(
-				jen.ID("c").Dot("logger").Dot("SetLevel").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "DebugLevel")),
+				jen.ID("c").Dot(constants.LoggerVarName).Dot("SetLevel").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "DebugLevel")),
 			),
 			jen.Line(),
-			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("migrating querier")),
-			jen.If(jen.ID("err").Op(":=").ID("c").Dot("querier").Dot("Migrate").Call(jen.ID("ctx")), jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(jen.ID("nil"), jen.ID("err")),
+			jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("migrating querier")),
+			jen.If(jen.Err().Assign().ID("c").Dot("querier").Dot("Migrate").Call(constants.CtxVar()), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
-			jen.ID("c").Dot("logger").Dot("Debug").Call(jen.Lit("querier migrated!")),
+			jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("querier migrated!")),
 			jen.Line(),
-			jen.Return().List(jen.ID("c"), jen.ID("nil")),
+			jen.Return().List(jen.ID("c"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
-		jen.Comment("attachUserIDToSpan provides a consistent way to attach a user's ID to a span"),
-		jen.Line(),
-		jen.Func().ID("attachUserIDToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("userID").ID("uint64")).Block(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Callln(
-					jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("user_id"), jen.Qual("strconv", "FormatUint").Call(jen.ID("userID"), jen.Lit(10))),
-				),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("attachFilterToSpan provides a consistent way to attach a filter's info to a span"),
-		jen.Line(),
-		jen.Func().ID("attachFilterToSpan").Params(jen.ID("span").Op("*").Qual("go.opencensus.io/trace", "Span"), jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter")).Block(
-			jen.If(jen.ID("filter").Op("!=").ID("nil").Op("&&").ID("span").Op("!=").ID("nil")).Block(
-				jen.ID("span").Dot("AddAttributes").Callln(
-					jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("filter_page"), jen.Qual("strconv", "FormatUint").Call(jen.ID("filter").Dot("QueryPage").Call(), jen.Lit(10))),
-					jen.Qual("go.opencensus.io/trace", "StringAttribute").Call(jen.Lit("filter_limit"), jen.Qual("strconv", "FormatUint").Call(jen.ID("filter").Dot("Limit"), jen.Lit(10)))),
-			),
-		),
-		jen.Line(),
-	)
-	return ret
+	return lines
 }

@@ -1,423 +1,477 @@
 package client
 
 import (
-	"path/filepath"
-
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func usersDotGo(pkg *models.Project) *jen.File {
-	ret := jen.NewFile("client")
+func usersDotGo(proj *models.Project) *jen.File {
+	ret := jen.NewFile(packageName)
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
-	ret.Add(jen.Const().ID("usersBasePath").Op("=").Lit("users"))
+	ret.Add(jen.Const().ID("usersBasePath").Equals().Lit("users"))
 
-	ret.Add(
-		jen.Comment("BuildGetUserRequest builds an HTTP request for fetching a user"),
-		jen.Line(),
-		newClientMethod("BuildGetUserRequest").Params(
-			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
-				jen.ID("nil"),
-				jen.ID("usersBasePath"),
-				jen.Qual("strconv", "FormatUint").Call(
-					jen.ID("userID"),
-					jen.Lit(10),
-				),
-			),
-			jen.Line(),
-			jen.Return().Qual("net/http", "NewRequest").Call(
-				jen.Qual("net/http", "MethodGet"),
-				jen.ID("uri"),
-				jen.ID("nil"),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("GetUser retrieves a user"),
-		jen.Line(),
-		newClientMethod("GetUser").Params(
-			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
-		).Params(
-			jen.ID("user").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "User"),
-			jen.ID("err").ID("error"),
-		).Block(
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("BuildGetUserRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("userID"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.Qual("fmt", "Errorf").Call(
-						jen.Lit("building request: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
-				jen.ID("ctx"),
-				jen.ID("req"),
-				jen.Op("&").ID("user"),
-			),
-			jen.Return().List(
-				jen.ID("user"),
-				jen.ID("err"),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("BuildGetUsersRequest builds an HTTP request for fetching a user"),
-		jen.Line(),
-		newClientMethod("BuildGetUsersRequest").Params(
-			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
-				jen.ID("filter").Dot("ToValues").Call(),
-				jen.ID("usersBasePath"),
-			),
-			jen.Line(),
-			jen.Return().Qual("net/http", "NewRequest").Call(
-				jen.Qual("net/http", "MethodGet"),
-				jen.ID("uri"),
-				jen.ID("nil"),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("GetUsers retrieves a list of users"),
-		jen.Line(),
-		newClientMethod("GetUsers").Params(
-			utils.CtxParam(),
-			jen.ID("filter").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "QueryFilter"),
-		).Params(
-			jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("users").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserList").Values(),
-			jen.Line(),
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("BuildGetUsersRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("filter"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.Qual("fmt", "Errorf").Call(
-						jen.Lit("building request: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.ID("err").Op("=").ID("c").Dot("retrieve").Call(
-				jen.ID("ctx"),
-				jen.ID("req"),
-				jen.Op("&").ID("users"),
-			),
-			jen.Return().List(jen.ID("users"),
-				jen.ID("err")),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("BuildCreateUserRequest builds an HTTP request for creating a user"),
-		jen.Line(),
-		newClientMethod("BuildCreateUserRequest").Params(
-			utils.CtxParam(),
-			jen.ID("body").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
-				jen.ID("nil"),
-				jen.ID("usersBasePath"),
-			),
-			jen.Line(),
-			jen.Return().ID("c").Dot("buildDataRequest").Call(
-				jen.Qual("net/http", "MethodPost"),
-				jen.ID("uri"),
-				jen.ID("body"),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("CreateUser creates a new user"),
-		jen.Line(),
-		newClientMethod("CreateUser").Params(
-			utils.CtxParam(),
-			jen.ID("input").Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserInput"),
-		).Params(
-			jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("user").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserCreationResponse").Values(),
-			jen.Line(),
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("BuildCreateUserRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("input"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.Qual("fmt", "Errorf").Call(
-						jen.Lit("building request: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.ID("err").Op("=").ID("c").Dot("executeUnathenticatedDataRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("req"),
-				jen.Op("&").ID("user"),
-			),
-			jen.Return().List(jen.ID("user"),
-				jen.ID("err")),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("BuildArchiveUserRequest builds an HTTP request for updating a user"),
-		jen.Line(),
-		newClientMethod("BuildArchiveUserRequest").Params(
-			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error"),
-		).Block(
-			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
-				jen.ID("nil"),
-				jen.ID("usersBasePath"),
-				jen.Qual("strconv", "FormatUint").Call(
-					jen.ID("userID"),
-					jen.Lit(10),
-				),
-			),
-			jen.Line(),
-			jen.Return().Qual("net/http", "NewRequest").Call(
-				jen.Qual("net/http", "MethodDelete"),
-				jen.ID("uri"),
-				jen.ID("nil"),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("ArchiveUser archives a user"),
-		jen.Line(),
-		newClientMethod("ArchiveUser").Params(
-			utils.CtxParam(),
-			jen.ID("userID").ID("uint64"),
-		).Params(jen.ID("error")).Block(
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("BuildArchiveUserRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("userID"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("building request: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Line(),
-			jen.Return().ID("c").Dot("executeRequest").Call(
-				jen.ID("ctx"),
-				jen.ID("req"),
-				jen.ID("nil"),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("BuildLoginRequest builds an authenticating HTTP request"),
-		jen.Line(),
-		newClientMethod("BuildLoginRequest").Params(
-			jen.List(
-				jen.ID("username"),
-				jen.ID("password"),
-				jen.ID("totpToken"),
-			).ID("string"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Request"),
-			jen.ID("error"),
-		).Block(
-			jen.List(
-				jen.ID("body"),
-				jen.ID("err"),
-			).Op(":=").ID("createBodyFromStruct").Call(
-				jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserLoginInput").Valuesln(
-					jen.ID("Username").Op(":").ID("username"),
-					jen.ID("Password").Op(":").ID("password"),
-					jen.ID("TOTPToken").Op(":").ID("totpToken"),
-				),
-			),
-			jen.Line(),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.Qual("fmt", "Errorf").Call(
-						jen.Lit("creating body from struct: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.ID("uri").Op(":=").ID("c").Dot("buildVersionlessURL").Call(
-				jen.ID("nil"),
-				jen.ID("usersBasePath"),
-				jen.Lit("login"),
-			),
-			jen.Return().ID("c").Dot("buildDataRequest").Call(
-				jen.Qual("net/http", "MethodPost"),
-				jen.ID("uri"),
-				jen.ID("body"),
-			),
-		),
-		jen.Line(),
-	)
-
-	ret.Add(
-		jen.Comment("Login will, when provided the correct credentials, fetch a login cookie"),
-		jen.Line(),
-		newClientMethod("Login").Params(
-			utils.CtxParam(),
-			jen.List(
-				jen.ID("username"),
-				jen.ID("password"),
-				jen.ID("totpToken"),
-			).ID("string"),
-		).Params(
-			jen.Op("*").Qual("net/http", "Cookie"),
-			jen.ID("error"),
-		).Block(
-			jen.List(
-				jen.ID("req"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("BuildLoginRequest").Call(
-				jen.ID("username"),
-				jen.ID("password"),
-				jen.ID("totpToken"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.ID("err"),
-				),
-			),
-			jen.Line(),
-			jen.List(
-				jen.ID("res"),
-				jen.ID("err"),
-			).Op(":=").ID("c").Dot("plainClient").Dot("Do").Call(
-				jen.ID("req"),
-			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-				jen.Return().List(
-					jen.ID("nil"),
-					jen.Qual("fmt", "Errorf").Call(
-						jen.Lit("encountered error executing login request: %w"),
-						jen.ID("err"),
-					),
-				),
-			),
-			jen.Line(),
-			jen.If(jen.ID("c").Dot("Debug")).Block(
-				jen.List(
-					jen.ID("b"),
-					jen.ID("err"),
-				).Op(":=").Qual("net/http/httputil", "DumpResponse").Call(
-					jen.ID("res"),
-					jen.ID("true"),
-				),
-				jen.If(jen.ID("err").Op("!=").ID("nil")).Block(
-					jen.ID("c").Dot("logger").Dot("Error").Call(
-						jen.ID("err"),
-						jen.Lit("dumping response"),
-					),
-				),
-				jen.ID("c").Dot("logger").Dot("WithValue").Call(
-					jen.Lit("response"),
-					jen.ID("string").Call(
-						jen.ID("b"),
-					),
-				).Dot("Debug").Call(
-					jen.Lit("login response received"),
-				),
-			),
-			jen.Line(),
-			jen.Defer().Func().Params().Block(
-				jen.If(jen.ID("err").Op(":=").ID("res").Dot("Body").Dot("Close").Call(),
-					jen.ID("err").Op("!=").ID("nil"),
-				).Block(
-					jen.ID("c").Dot("logger").Dot("Error").Call(
-						jen.ID("err"),
-						jen.Lit("closing response body"),
-					),
-				),
-			).Call(),
-			jen.Line(),
-			jen.ID("cookies").Op(":=").ID("res").Dot("Cookies").Call(),
-			jen.If(jen.ID("len").Call(
-				jen.ID("cookies"),
-			).Op(">").Lit(0),
-			).Block(
-				jen.Return().List(jen.ID("cookies").Index(
-					jen.Lit(0),
-				),
-					jen.ID("nil"),
-				),
-			),
-			jen.Line(),
-			jen.Return().List(
-				jen.ID("nil"),
-				jen.Qual("errors", "New").Call(
-					jen.Lit("no cookies returned from request"),
-				),
-			),
-		),
-		jen.Line(),
-	)
+	ret.Add(buildBuildGetUserRequest(proj)...)
+	ret.Add(buildGetUser(proj)...)
+	ret.Add(buildBuildGetUsersRequest(proj)...)
+	ret.Add(buildGetUsers(proj)...)
+	ret.Add(buildBuildCreateUserRequest(proj)...)
+	ret.Add(buildCreateUser(proj)...)
+	ret.Add(buildBuildArchiveUserRequest(proj)...)
+	ret.Add(buildArchiveUser(proj)...)
+	ret.Add(buildBuildLoginRequest(proj)...)
+	ret.Add(buildLogin(proj)...)
 
 	return ret
+}
+
+func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
+	funcName := "BuildGetUserRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("uri").Assign().ID("c").Dot("buildVersionlessURL").Call(
+			jen.Nil(),
+			jen.ID("usersBasePath"),
+			jen.Qual("strconv", "FormatUint").Call(
+				jen.ID("userID"),
+				jen.Lit(10),
+			),
+		),
+		jen.Line(),
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodGet"),
+			jen.ID("uri"),
+			jen.Nil(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Comment("BuildGetUserRequest builds an HTTP request for fetching a user."),
+		jen.Line(),
+		newClientMethod("BuildGetUserRequest").Params(
+			constants.CtxParam(),
+			jen.ID("userID").Uint64(),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildGetUser(proj *models.Project) []jen.Code {
+	funcName := "GetUser"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.List(
+			jen.ID(constants.RequestVarName),
+			jen.Err(),
+		).Assign().ID("c").Dot("BuildGetUserRequest").Call(
+			constants.CtxVar(),
+			jen.ID("userID"),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(
+				jen.Nil(),
+				jen.Qual("fmt", "Errorf").Call(
+					jen.Lit("building request: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.Line(),
+		jen.Err().Equals().ID("c").Dot("retrieve").Call(
+			constants.CtxVar(),
+			jen.ID(constants.RequestVarName),
+			jen.AddressOf().ID("user"),
+		),
+		jen.Return().List(
+			jen.ID("user"),
+			jen.Err(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Comment("GetUser retrieves a user."),
+		jen.Line(),
+		newClientMethod("GetUser").Params(
+			constants.CtxParam(),
+			jen.ID("userID").Uint64(),
+		).Params(
+			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
+			jen.Err().Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
+	funcName := "BuildGetUsersRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("uri").Assign().ID("c").Dot("buildVersionlessURL").Call(
+			jen.ID(constants.FilterVarName).Dot("ToValues").Call(),
+			jen.ID("usersBasePath"),
+		),
+		jen.Line(),
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodGet"),
+			jen.ID("uri"),
+			jen.Nil(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Comment("BuildGetUsersRequest builds an HTTP request for fetching a user."),
+		jen.Line(),
+		newClientMethod("BuildGetUsersRequest").Params(
+			constants.CtxParam(),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildGetUsers(proj *models.Project) []jen.Code {
+	funcName := "GetUsers"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("users").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserList").Values(),
+		jen.Line(),
+		jen.List(
+			jen.ID(constants.RequestVarName),
+			jen.Err(),
+		).Assign().ID("c").Dot("BuildGetUsersRequest").Call(
+			constants.CtxVar(),
+			jen.ID(constants.FilterVarName),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(
+				jen.Nil(),
+				jen.Qual("fmt", "Errorf").Call(
+					jen.Lit("building request: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.Line(),
+		jen.Err().Equals().ID("c").Dot("retrieve").Call(
+			constants.CtxVar(),
+			jen.ID(constants.RequestVarName),
+			jen.AddressOf().ID("users"),
+		),
+		jen.Return().List(jen.ID("users"), jen.Err()),
+	}
+
+	lines := []jen.Code{
+		jen.Comment("GetUsers retrieves a list of users."),
+		jen.Line(),
+		newClientMethod("GetUsers").Params(
+			constants.CtxParam(),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+		).Params(
+			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"),
+			jen.Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
+	funcName := "BuildCreateUserRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("uri").Assign().ID("c").Dot("buildVersionlessURL").Call(
+			jen.Nil(),
+			jen.ID("usersBasePath"),
+		),
+		jen.Line(),
+		jen.Return().ID("c").Dot("buildDataRequest").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodPost"),
+			jen.ID("uri"),
+			jen.ID("body"),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Comment("BuildCreateUserRequest builds an HTTP request for creating a user."),
+		jen.Line(),
+		newClientMethod("BuildCreateUserRequest").Params(
+			constants.CtxParam(),
+			jen.ID("body").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildCreateUser(proj *models.Project) []jen.Code {
+	funcName := "CreateUser"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("user").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
+		jen.Line(),
+		jen.List(
+			jen.ID(constants.RequestVarName),
+			jen.Err(),
+		).Assign().ID("c").Dot("BuildCreateUserRequest").Call(
+			constants.CtxVar(),
+			jen.ID("input"),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(
+				jen.Nil(),
+				jen.Qual("fmt", "Errorf").Call(
+					jen.Lit("building request: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.Line(),
+		jen.Err().Equals().ID("c").Dot("executeUnauthenticatedDataRequest").Call(
+			constants.CtxVar(),
+			jen.ID(constants.RequestVarName),
+			jen.AddressOf().ID("user"),
+		),
+		jen.Return().List(jen.ID("user"), jen.Err()),
+	}
+
+	lines := []jen.Code{
+		jen.Comment("CreateUser creates a new user."),
+		jen.Line(),
+		newClientMethod("CreateUser").Params(
+			constants.CtxParam(),
+			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
+		).Params(
+			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
+			jen.Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
+	funcName := "BuildArchiveUserRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("uri").Assign().ID("c").Dot("buildVersionlessURL").Call(
+			jen.Nil(),
+			jen.ID("usersBasePath"),
+			jen.Qual("strconv", "FormatUint").Call(
+				jen.ID("userID"),
+				jen.Lit(10),
+			),
+		),
+		jen.Line(),
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodDelete"),
+			jen.ID("uri"),
+			jen.Nil(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Comment("BuildArchiveUserRequest builds an HTTP request for updating a user."),
+		jen.Line(),
+		newClientMethod("BuildArchiveUserRequest").Params(
+			constants.CtxParam(),
+			jen.ID("userID").Uint64(),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildArchiveUser(proj *models.Project) []jen.Code {
+	funcName := "ArchiveUser"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.List(
+			jen.ID(constants.RequestVarName),
+			jen.Err(),
+		).Assign().ID("c").Dot("BuildArchiveUserRequest").Call(
+			constants.CtxVar(),
+			jen.ID("userID"),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("building request: %w"),
+				jen.Err(),
+			),
+		),
+		jen.Line(),
+		jen.Return().ID("c").Dot("executeRequest").Call(
+			constants.CtxVar(),
+			jen.ID(constants.RequestVarName),
+			jen.Nil(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Comment("ArchiveUser archives a user."),
+		jen.Line(),
+		newClientMethod("ArchiveUser").Params(
+			constants.CtxParam(),
+			jen.ID("userID").Uint64(),
+		).Params(jen.Error()).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildBuildLoginRequest(proj *models.Project) []jen.Code {
+	funcName := "BuildLoginRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.Line(),
+		jen.If(jen.ID("input").IsEqualTo().Nil()).Block(
+			jen.Return(jen.Nil(), utils.Error("nil input provided")),
+		),
+		jen.Line(),
+		jen.List(jen.ID("body"), jen.Err()).Assign().ID("createBodyFromStruct").Call(jen.AddressOf().ID("input")),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(
+				jen.Nil(),
+				jen.Qual("fmt", "Errorf").Call(
+					jen.Lit("building request body: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.Line(),
+		jen.ID("uri").Assign().ID("c").Dot("buildVersionlessURL").Call(
+			jen.Nil(),
+			jen.ID("usersBasePath"),
+			jen.Lit("login"),
+		),
+		jen.Return().ID("c").Dot("buildDataRequest").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodPost"),
+			jen.ID("uri"),
+			jen.ID("body"),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Comment("BuildLoginRequest builds an authenticating HTTP request."),
+		jen.Line(),
+		newClientMethod("BuildLoginRequest").Params(
+			constants.CtxParam(),
+			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildLogin(proj *models.Project) []jen.Code {
+	funcName := "Login"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.Line(),
+		jen.If(jen.ID("input").IsEqualTo().Nil()).Block(
+			jen.Return(jen.Nil(), utils.Error("nil input provided")),
+		),
+		jen.Line(),
+		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(constants.CtxVar(), jen.ID("input")),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(
+				jen.Nil(),
+				jen.Err(),
+			),
+		),
+		jen.Line(),
+		jen.List(
+			jen.ID(constants.ResponseVarName),
+			jen.Err(),
+		).Assign().ID("c").Dot("plainClient").Dot("Do").Call(
+			jen.ID(constants.RequestVarName),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(
+				jen.Nil(),
+				jen.Qual("fmt", "Errorf").Call(
+					jen.Lit("encountered error executing login request: %w"),
+					jen.Err(),
+				),
+			),
+		),
+		jen.ID("c").Dot("closeResponseBody").Call(jen.ID(constants.ResponseVarName)),
+		jen.Line(),
+		jen.ID("cookies").Assign().ID(constants.ResponseVarName).Dot("Cookies").Call(),
+		jen.If(jen.Len(
+			jen.ID("cookies"),
+		).GreaterThan().Zero(),
+		).Block(
+			jen.Return().List(jen.ID("cookies").Index(
+				jen.Zero(),
+			),
+				jen.Nil(),
+			),
+		),
+		jen.Line(),
+		jen.Return().List(
+			jen.Nil(),
+			utils.Error("no cookies returned from request"),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Comment("Login will, when provided the correct credentials, fetch a login cookie."),
+		jen.Line(),
+		newClientMethod("Login").Params(
+			constants.CtxParam(),
+			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Cookie"),
+			jen.Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+
 }

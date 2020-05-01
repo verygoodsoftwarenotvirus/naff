@@ -2,106 +2,113 @@ package v1
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func userDotGo(pkg *models.Project) *jen.File {
+func userDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("models")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
 		jen.Const().Defs(
 			jen.Comment("UserKey is the non-string type we use for referencing a user in a context"),
-			jen.ID("UserKey").ID("ContextKey").Op("=").Lit("user"),
+			jen.ID("UserKey").ID("ContextKey").Equals().Lit("user"),
 			jen.Comment("UserIDKey is the non-string type we use for referencing a user ID in a context"),
-			jen.ID("UserIDKey").ID("ContextKey").Op("=").Lit("user_id"),
+			jen.ID("UserIDKey").ID("ContextKey").Equals().Lit("user_id"),
 			jen.Comment("UserIsAdminKey is the non-string type we use for referencing a user's admin status in a context"),
-			jen.ID("UserIsAdminKey").ID("ContextKey").Op("=").Lit("is_admin"),
+			jen.ID("UserIsAdminKey").ID("ContextKey").Equals().Lit("is_admin"),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Type().Defs(
-			jen.Comment("User represents a user"),
+			jen.Comment("User represents a user."),
 			jen.ID("User").Struct(
-				jen.ID("ID").ID("uint64").Tag(jsonTag("id")),
-				jen.ID("Username").ID("string").Tag(jsonTag("username")),
-				jen.ID("HashedPassword").ID("string").Tag(jsonTag("-")),
-				jen.ID("Salt").Index().ID("byte").Tag(jsonTag("-")),
-				jen.ID("TwoFactorSecret").ID("string").Tag(jsonTag("-")),
-				jen.ID("PasswordLastChangedOn").Op("*").ID("uint64").Tag(jsonTag("password_last_changed_on")),
-				jen.ID("IsAdmin").ID("bool").Tag(jsonTag("is_admin")),
-				jen.ID("CreatedOn").ID("uint64").Tag(jsonTag("created_on")),
-				jen.ID("UpdatedOn").Op("*").ID("uint64").Tag(jsonTag("updated_on")),
-				jen.ID("ArchivedOn").Op("*").ID("uint64").Tag(jsonTag("archived_on")),
+				jen.ID("ID").Uint64().Tag(jsonTag("id")),
+				jen.ID("Username").String().Tag(jsonTag("username")),
+				jen.ID("HashedPassword").String().Tag(jsonTag("-")),
+				jen.ID("Salt").Index().Byte().Tag(jsonTag("-")),
+				jen.ID("TwoFactorSecret").String().Tag(jsonTag("-")),
+				jen.ID("PasswordLastChangedOn").PointerTo().Uint64().Tag(jsonTag("password_last_changed_on")),
+				jen.ID("IsAdmin").Bool().Tag(jsonTag("is_admin")),
+				jen.ID("CreatedOn").Uint64().Tag(jsonTag("created_on")),
+				jen.ID("UpdatedOn").PointerTo().Uint64().Tag(jsonTag("updated_on")),
+				jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archived_on")),
 			),
 			jen.Line(),
-			jen.Comment("UserList represents a list of users"),
+			jen.Comment("UserList represents a list of users."),
 			jen.ID("UserList").Struct(
 				jen.ID("Pagination"),
 				jen.ID("Users").Index().ID("User").Tag(jsonTag("users")),
 			),
 			jen.Line(),
-			jen.Comment("UserLoginInput represents the payload used to log in a user"),
+			jen.Comment("UserLoginInput represents the payload used to log in a user."),
 			jen.ID("UserLoginInput").Struct(
-				jen.ID("Username").ID("string").Tag(jsonTag("username")),
-				jen.ID("Password").ID("string").Tag(jsonTag("password")),
-				jen.ID("TOTPToken").ID("string").Tag(jsonTag("totp_token")),
+				jen.ID("Username").String().Tag(jsonTag("username")),
+				jen.ID("Password").String().Tag(jsonTag("password")),
+				jen.ID("TOTPToken").String().Tag(jsonTag("totp_token")),
 			),
 			jen.Line(),
-			jen.Comment("UserInput represents the input required to modify/create users"),
-			jen.ID("UserInput").Struct(
-				jen.ID("Username").ID("string").Tag(jsonTag("username")),
-				jen.ID("Password").ID("string").Tag(jsonTag("password")),
-				jen.ID("TwoFactorSecret").ID("string").Tag(jsonTag("-")),
+			jen.Comment("UserCreationInput represents the input required from users to register an account."),
+			jen.ID("UserCreationInput").Struct(
+				jen.ID("Username").String().Tag(jsonTag("username")),
+				jen.ID("Password").String().Tag(jsonTag("password")),
 			),
 			jen.Line(),
-			jen.Comment("UserCreationResponse is a response structure for Users that doesn't contain password fields, but does contain the two factor secret"),
+			jen.Comment("UserDatabaseCreationInput is used by the user creation route to communicate with the database."),
+			jen.ID("UserDatabaseCreationInput").Struct(
+				jen.ID("Username").String(),
+				jen.ID("HashedPassword").String(),
+				jen.ID("TwoFactorSecret").String(),
+			),
+			jen.Line(),
+			jen.Comment("UserCreationResponse is a response structure for Users that doesn't contain password fields, but does contain the two factor secret."),
 			jen.ID("UserCreationResponse").Struct(
-				jen.ID("ID").ID("uint64").Tag(jsonTag("id")),
-				jen.ID("Username").ID("string").Tag(jsonTag("username")),
-				jen.ID("TwoFactorSecret").ID("string").Tag(jsonTag("two_factor_secret")),
-				jen.ID("PasswordLastChangedOn").Op("*").ID("uint64").Tag(jsonTag("password_last_changed_on")),
-				jen.ID("IsAdmin").ID("bool").Tag(jsonTag("is_admin")),
-				jen.ID("CreatedOn").ID("uint64").Tag(jsonTag("created_on")),
-				jen.ID("UpdatedOn").Op("*").ID("uint64").Tag(jsonTag("updated_on")),
-				jen.ID("ArchivedOn").Op("*").ID("uint64").Tag(jsonTag("archived_on")),
-				jen.ID("TwoFactorQRCode").ID("string").Tag(jsonTag("qr_code")),
+				jen.ID("ID").Uint64().Tag(jsonTag("id")),
+				jen.ID("Username").String().Tag(jsonTag("username")),
+				jen.ID("TwoFactorSecret").String().Tag(jsonTag("two_factor_secret")),
+				jen.ID("PasswordLastChangedOn").PointerTo().Uint64().Tag(jsonTag("password_last_changed_on")),
+				jen.ID("IsAdmin").Bool().Tag(jsonTag("is_admin")),
+				jen.ID("CreatedOn").Uint64().Tag(jsonTag("created_on")),
+				jen.ID("UpdatedOn").PointerTo().Uint64().Tag(jsonTag("updated_on")),
+				jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archived_on")),
+				jen.ID("TwoFactorQRCode").String().Tag(jsonTag("qr_code")),
 			),
 			jen.Line(),
-			jen.Comment("PasswordUpdateInput represents input a user would provide when updating their password"),
+			jen.Comment("PasswordUpdateInput represents input a user would provide when updating their password."),
 			jen.ID("PasswordUpdateInput").Struct(
-				jen.ID("NewPassword").ID("string").Tag(jsonTag("new_password")),
-				jen.ID("CurrentPassword").ID("string").Tag(jsonTag("current_password")),
-				jen.ID("TOTPToken").ID("string").Tag(jsonTag("totp_token")),
+				jen.ID("NewPassword").String().Tag(jsonTag("new_password")),
+				jen.ID("CurrentPassword").String().Tag(jsonTag("current_password")),
+				jen.ID("TOTPToken").String().Tag(jsonTag("totp_token")),
 			),
 			jen.Line(),
-			jen.Comment("TOTPSecretRefreshInput represents input a user would provide when updating their 2FA secret"),
+			jen.Comment("TOTPSecretRefreshInput represents input a user would provide when updating their 2FA secret."),
 			jen.ID("TOTPSecretRefreshInput").Struct(
-				jen.ID("CurrentPassword").ID("string").Tag(jsonTag("current_password")),
-				jen.ID("TOTPToken").ID("string").Tag(jsonTag("totp_token")),
+				jen.ID("CurrentPassword").String().Tag(jsonTag("current_password")),
+				jen.ID("TOTPToken").String().Tag(jsonTag("totp_token")),
 			),
 			jen.Line(),
-			jen.Comment("TOTPSecretRefreshResponse represents the response we provide to a user when updating their 2FA secret"),
+			jen.Comment("TOTPSecretRefreshResponse represents the response we provide to a user when updating their 2FA secret."),
 			jen.ID("TOTPSecretRefreshResponse").Struct(
-				jen.ID("TwoFactorSecret").ID("string").Tag(jsonTag("two_factor_secret")),
+				jen.ID("TwoFactorSecret").String().Tag(jsonTag("two_factor_secret")),
 			),
 			jen.Line(),
-			jen.Comment("UserDataManager describes a structure which can manage users in permanent storage"),
+			jen.Comment("UserDataManager describes a structure which can manage users in permanent storage."),
 			jen.ID("UserDataManager").Interface(
-				jen.ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("User"), jen.ID("error")),
-				jen.ID("GetUserByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.Op("*").ID("User"), jen.ID("error")),
-				jen.ID("GetUserCount").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("QueryFilter")).Params(jen.ID("uint64"), jen.ID("error")),
-				jen.ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("QueryFilter")).Params(jen.Op("*").ID("UserList"), jen.ID("error")),
-				jen.ID("CreateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("UserInput")).Params(jen.Op("*").ID("User"), jen.ID("error")),
-				jen.ID("UpdateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").ID("User")).Params(jen.ID("error")),
-				jen.ID("ArchiveUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.ID("error")),
+				jen.ID("GetUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().ID("User"), jen.Error()),
+				jen.ID("GetUserByUsername").Params(constants.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().ID("User"), jen.Error()),
+				jen.ID("GetAllUserCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
+				jen.ID("GetUsers").Params(constants.CtxParam(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("UserList"), jen.Error()),
+				jen.ID("CreateUser").Params(constants.CtxParam(), jen.ID("input").ID("UserDatabaseCreationInput")).Params(jen.PointerTo().ID("User"), jen.Error()),
+				jen.ID("UpdateUser").Params(constants.CtxParam(), jen.ID("updated").PointerTo().ID("User")).Params(jen.Error()),
+				jen.ID("ArchiveUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()),
 			),
 			jen.Line(),
-			jen.Comment("UserDataServer describes a structure capable of serving traffic related to users"),
+			jen.Comment("UserDataServer describes a structure capable of serving traffic related to users."),
 			jen.ID("UserDataServer").Interface(
 				jen.ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
@@ -119,22 +126,23 @@ func userDotGo(pkg *models.Project) *jen.File {
 	)
 
 	ret.Add(
-		jen.Comment("Update accepts a User as input and merges those values if they're set"),
+		jen.Comment("Update accepts a User as input and merges those values if they're set."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("u").Op("*").ID("User")).ID("Update").Params(jen.ID("input").Op("*").ID("User")).Block(
-			jen.If(jen.ID("input").Dot("Username").Op("!=").Lit("").Op("&&").ID("input").Dot("Username").Op("!=").ID("u").Dot("Username")).Block(
-				jen.ID("u").Dot("Username").Op("=").ID("input").Dot("Username"),
+		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("Update").Params(jen.ID("input").PointerTo().ID("User")).Block(
+			jen.If(jen.ID("input").Dot("Username").DoesNotEqual().EmptyString().And().ID("input").Dot("Username").DoesNotEqual().ID("u").Dot("Username")).Block(
+				jen.ID("u").Dot("Username").Equals().ID("input").Dot("Username"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("HashedPassword").Op("!=").Lit("").Op("&&").ID("input").Dot("HashedPassword").Op("!=").ID("u").Dot("HashedPassword")).Block(
-				jen.ID("u").Dot("HashedPassword").Op("=").ID("input").Dot("HashedPassword"),
+			jen.If(jen.ID("input").Dot("HashedPassword").DoesNotEqual().EmptyString().And().ID("input").Dot("HashedPassword").DoesNotEqual().ID("u").Dot("HashedPassword")).Block(
+				jen.ID("u").Dot("HashedPassword").Equals().ID("input").Dot("HashedPassword"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("TwoFactorSecret").Op("!=").Lit("").Op("&&").ID("input").Dot("TwoFactorSecret").Op("!=").ID("u").Dot("TwoFactorSecret")).Block(
-				jen.ID("u").Dot("TwoFactorSecret").Op("=").ID("input").Dot("TwoFactorSecret"),
+			jen.If(jen.ID("input").Dot("TwoFactorSecret").DoesNotEqual().EmptyString().And().ID("input").Dot("TwoFactorSecret").DoesNotEqual().ID("u").Dot("TwoFactorSecret")).Block(
+				jen.ID("u").Dot("TwoFactorSecret").Equals().ID("input").Dot("TwoFactorSecret"),
 			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

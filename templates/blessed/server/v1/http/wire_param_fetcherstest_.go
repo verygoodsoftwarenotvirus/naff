@@ -1,329 +1,369 @@
 package httpserver
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func wireParamFetchersTestDotGo(pkg *models.Project) *jen.File {
+func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("httpserver")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
-	for _, typ := range pkg.DataTypes {
+	for _, typ := range proj.DataTypes {
 		n := typ.Name
 
-		ret.Add(
-			jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-				jen.ID("T").Dot("Parallel").Call(),
+		if typ.OwnedByAUserAtSomeLevel(proj) {
+			ret.Add(
+				jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Plural()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+					jen.ID("T").Dot("Parallel").Call(),
+					jen.Line(),
+					utils.BuildSubTestWithoutContext(
+						"obligatory",
+						jen.Underscore().Equals().IDf("Provide%sServiceUserIDFetcher", n.Plural()).Call(),
+					),
+				),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("_").Op("=").IDf("Provide%sServiceUserIDFetcher", n.Singular()).Call(),
-				)),
-			),
-			jen.Line(),
-		)
+			)
+		}
+
+		for _, ot := range proj.FindOwnerTypeChain(typ) {
+			ret.Add(
+				jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Plural(), ot.Name.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+					jen.ID("T").Dot("Parallel").Call(),
+					jen.Line(),
+					utils.BuildSubTestWithoutContext(
+						"obligatory",
+						jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Plural(), ot.Name.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+					),
+				),
+				jen.Line(),
+			)
+		}
 
 		ret.Add(
-			jen.Func().IDf("TestProvide%sIDFetcher", n.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+			jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Plural(), n.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("_").Op("=").IDf("Provide%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				)),
+				utils.BuildSubTestWithoutContext(
+					"obligatory",
+					jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Plural(), n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				),
 			),
 			jen.Line(),
 		)
 	}
 
 	ret.Add(
-		jen.Func().ID("TestProvideUsernameFetcher").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideUsersServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideUsernameFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
+				jen.Underscore().Equals().ID("ProvideUsersServiceUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideAuthUserIDFetcher").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideAuthServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideAuthUserIDFetcher").Call(),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
+				jen.Underscore().Equals().ID("ProvideAuthServiceUserIDFetcher").Call(),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideWebhooksUserIDFetcher").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideWebhooksServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideWebhooksUserIDFetcher").Call(),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
+				jen.Underscore().Equals().ID("ProvideWebhooksServiceUserIDFetcher").Call(),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideWebhookIDFetcher").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideWebhooksServiceWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
+				jen.Underscore().Equals().ID("ProvideWebhooksServiceWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestProvideOAuth2ServiceClientIDFetcher").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideOAuth2ClientsServiceClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("_").Op("=").ID("ProvideOAuth2ServiceClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-			)),
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
+				jen.Underscore().Equals().ID("ProvideOAuth2ClientsServiceClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("TestUserIDFetcher").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("Test_userIDFetcherFromRequestContext").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
+				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
-				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
-						jen.Qual(filepath.Join(pkg.OutputPath, "models/v1"), "UserIDKey"),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
+						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
 						jen.ID("expected"),
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Op(":=").ID("UserIDFetcher").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
+				jen.ID("actual").Assign().ID("userIDFetcherFromRequestContext").Call(jen.ID(constants.RequestVarName)),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"without attached value",
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID("actual").Assign().ID("userIDFetcherFromRequestContext").Call(jen.ID(constants.RequestVarName)),
+				jen.Line(),
+				utils.AssertZero(jen.ID("actual"), nil),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_buildChiUserIDFetcher").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildRouteParamUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("fn").Op(":=").ID("buildChiUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("fn").Assign().ID("buildRouteParamUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
-				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
-						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
-							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "URIParamKey")),
-								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
+						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
+							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(utils.FormatString("%d", jen.ID("expected"))),
 							),
 						),
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Op(":=").ID("buildChiUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
+				jen.ID("fn").Assign().ID("buildRouteParamUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
-				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
-						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
-							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/users"), "URIParamKey")),
-								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
+						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
+							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 							),
 						),
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			),
 		),
 		jen.Line(),
 	)
 
-	for _, typ := range pkg.DataTypes {
+	for _, typ := range proj.DataTypes {
 		n := typ.Name
 		ret.Add(
-			jen.Func().IDf("Test_buildChi%sIDFetcher", n.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+			jen.Func().IDf("Test_buildRouteParam%sIDFetcher", n.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-					jen.ID("fn").Op(":=").IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-					jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+				utils.BuildSubTestWithoutContext(
+					"happy path",
+					jen.ID("fn").Assign().IDf("buildRouteParam%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+					jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 					jen.Line(),
-					jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-					jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+					jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+					jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 						jen.Qual("context", "WithValue").Callln(
-							jen.ID("req").Dot("Context").Call(),
+							jen.ID(constants.RequestVarName).Dot("Context").Call(),
 							jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
-							jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
-								jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-									jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PackageName()), "URIParamKey")),
-									jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
+							jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
+								jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
+									jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
+									jen.ID("Values").MapAssign().Index().String().Values(utils.FormatString("%d", jen.ID("expected"))),
 								),
 							),
 						),
 					),
 					jen.Line(),
-					jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-					jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				)),
+					jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
+					utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+				),
 				jen.Line(),
-				jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					"with invalid value somehow",
 					jen.Comment("NOTE: This will probably never happen in dev or production"),
-					jen.ID("fn").Op(":=").IDf("buildChi%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-					jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
+					jen.ID("fn").Assign().IDf("buildRouteParam%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+					jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 					jen.Line(),
-					jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-					jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+					jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+					jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 						jen.Qual("context", "WithValue").Callln(
-							jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
-							jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
-								jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-									jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1", n.PackageName()), "URIParamKey")),
-									jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
+							jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
+							jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
+								jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
+									jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
+									jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 								),
 							),
 						),
 					),
 					jen.Line(),
-					jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-					jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-				)),
+					jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
+					utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+				),
 			),
 			jen.Line(),
 		)
 	}
 
 	ret.Add(
-		jen.Func().ID("Test_buildChiWebhookIDFetcher").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildRouteParamWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("fn").Op(":=").ID("buildChiWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("fn").Assign().ID("buildRouteParamWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
-				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
-						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
-							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "URIParamKey")),
-								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
+						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
+							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(utils.FormatString("%d", jen.ID("expected"))),
 							),
 						),
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Op(":=").ID("buildChiWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
+				jen.ID("fn").Assign().ID("buildRouteParamWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
-				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
-						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
-							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/webhooks"), "URIParamKey")),
-								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
+						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
+							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 							),
 						),
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("Test_buildChiOAuth2ClientIDFetcher").Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildRouteParamOAuth2ClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("fn").Op(":=").ID("buildChiOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(123)),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.ID("fn").Assign().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
-				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
-						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
-							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "URIParamKey")),
-								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Qual("fmt", "Sprintf").Call(jen.Lit("%d"), jen.ID("expected"))),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
+						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
+							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(utils.FormatString("%d", jen.ID("expected"))),
 							),
 						),
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with invalid value somehow"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
+			utils.BuildSubTestWithoutContext(
+				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Op(":=").ID("buildChiOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
-				jen.ID("expected").Op(":=").ID("uint64").Call(jen.Lit(0)),
+				jen.ID("fn").Assign().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
-				jen.ID("req").Op(":=").ID("buildRequest").Call(jen.ID("t")),
-				jen.ID("req").Op("=").ID("req").Dot("WithContext").Callln(
+				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
+				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID("req").Dot("Context").Call(),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
-						jen.Op("&").Qual("github.com/go-chi/chi", "Context").Valuesln(
-							jen.ID("URLParams").Op(":").Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").Op(":").Index().ID("string").Values(jen.Qual(filepath.Join(pkg.OutputPath, "services/v1/oauth2clients"), "URIParamKey")),
-								jen.ID("Values").Op(":").Index().ID("string").Values(jen.Lit("expected")),
+						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
+							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
+								jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 							),
 						),
 					),
 				),
 				jen.Line(),
-				jen.ID("actual").Op(":=").ID("fn").Call(jen.ID("req")),
-				jen.Qual("github.com/stretchr/testify/assert", "Equal").Call(jen.ID("t"), jen.ID("expected"), jen.ID("actual")),
-			)),
+				jen.ID("actual").Assign().ID("fn").Call(jen.ID(constants.RequestVarName)),
+				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+			),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

@@ -2,90 +2,416 @@ package load
 
 import (
 	"fmt"
-	"path/filepath"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile("main")
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(proj, ret)
 
+	ret.Add(buildFetchRandomSomething(proj, typ)...)
+	ret.Add(buildRandomActionMap(proj, typ)...)
+
+	return ret
+}
+
+func buildParamsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj *models.Project, typ models.DataType, call bool) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxVar()}
+
+	for _, pt := range parents {
+		listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+
+	if len(listParams) > 0 {
+		if call {
+			params = append(params, listParams...)
+		} else {
+			params = append(params, jen.List(listParams...).Uint64())
+		}
+	}
+
+	return params
+}
+
+func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
 	puvn := typ.Name.PluralUnexportedVarName()
 
-	ret.Add(
-		jen.Commentf("fetchRandom%s retrieves a random %s from the list of available %s", sn, scn, pcn),
+	x := buildParamsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj, typ, false)
+	x = x[1:]
+	paramArgs := append(
+		[]jen.Code{
+			constants.CtxParam(),
+			jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
+		},
+		x...,
+	)
+
+	callArgs := append(buildParamsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj, typ, true), jen.Nil())
+
+	lines := []jen.Code{
+		jen.Commentf("fetchRandom%s retrieves a random %s from the list of available %s.", sn, scn, pcn),
 		jen.Line(),
-		jen.Func().IDf("fetchRandom%s", sn).Params(jen.ID("c").Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client")).Params(jen.Op("*").Qual(filepath.Join(pkg.OutputPath, "models/v1"), sn)).Block(
-			jen.List(jen.IDf("%sRes", puvn), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
-			jen.If(jen.ID("err").Op("!=").ID("nil").Op("||").IDf("%sRes", puvn).Op("==").ID("nil").Op("||").ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).Op("==").Lit(0)).Block(
+		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
+			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
+				callArgs...,
+			),
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().IDf("%sRes", puvn).IsEqualTo().ID("nil").Or().ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).IsEqualTo().Zero()).Block(
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),
-			jen.ID("randIndex").Op(":=").Qual("math/rand", "Intn").Call(jen.ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn))),
-			jen.Return().Op("&").IDf("%sRes", puvn).Dot(pn).Index(jen.ID("randIndex")),
+			jen.ID("randIndex").Assign().Qual("math/rand", "Intn").Call(jen.Len(jen.IDf("%sRes", puvn).Dot(pn))),
+			jen.Return().AddressOf().IDf("%sRes", puvn).Dot(pn).Index(jen.ID("randIndex")),
 		),
 		jen.Line(),
-	)
+	}
 
-	buildRandomLines := func() []jen.Code {
-		var lines []jen.Code
+	return lines
+}
 
-		for _, field := range typ.Fields {
-			fsn := field.Name.Singular()
-			lines = append(lines, jen.IDf("random%s", sn).Dot(fsn).Op("=").Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call().Dot(fsn))
+func buildCreationArguments(proj *models.Project, varPrefix string, typ models.DataType) []jen.Code {
+	creationArgs := []jen.Code{constants.CtxVar()}
+
+	owners := proj.FindOwnerTypeChain(typ)
+	for i, ot := range owners {
+		if i == len(owners)-1 && typ.BelongsToStruct != nil {
+			continue
+		} else {
+			creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, ot.Name.Singular()).Dot("ID"))
 		}
+	}
 
+	return creationArgs
+}
+
+func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen.Code {
+	lines := []jen.Code{}
+
+	const createdVarPrefix = "created"
+
+	for _, t := range proj.FindOwnerTypeChain(typ) {
+		sn := t.Name.Singular()
+
+		creationArgs := append(buildCreationArguments(proj, "created", t), jen.IDf("example%sInput", sn))
 		lines = append(lines,
-			jen.Return().ID("c").Dotf("BuildUpdate%sRequest", sn).Call(jen.Qual("context", "Background").Call(), jen.IDf("random%s", sn)),
+			jen.Commentf("Create %s.", t.Name.SingularCommonName()),
+			utils.BuildFakeVar(proj, sn),
+			func() jen.Code {
+				if t.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", t.BelongsToStruct.Singular()).Equals().IDf("created%s", t.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				utils.BuildFakeVarName(fmt.Sprintf("%sInput", sn)),
+				fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
+				jen.ID(utils.BuildFakeVarName(sn)),
+			),
+			jen.List(jen.IDf("%s%s", createdVarPrefix, t.Name.Singular()), jen.Err()).Assign().ID("c").Dotf("Create%s", sn).Call(
+				creationArgs...,
+			),
+			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+				jen.Return(jen.Nil(), jen.Err()),
+			),
+			jen.Line(),
 		)
-
-		return lines
 
 	}
 
-	ret.Add(
-		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").Op("*").Qual(filepath.Join(pkg.OutputPath, "client/v1/http"), "V1Client")).Params(jen.Map(jen.ID("string")).Op("*").ID("Action")).Block(
-			jen.Return().Map(jen.ID("string")).Op("*").ID("Action").Valuesln(
-				jen.Litf("Create%s", sn).Op(":").Valuesln(
-					jen.ID("Name").Op(":").Litf("Create%s", sn), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.Return().ID("c").Dotf("BuildCreate%sRequest", sn).Call(jen.Qual("context", "Background").Call(), jen.Qual(filepath.Join(pkg.OutputPath, "tests/v1/testutil/rand/model"), fmt.Sprintf("Random%sCreationInput", sn)).Call()),
-					),
-					jen.ID("Weight").Op(":").Lit(100)), jen.Litf("Get%s", sn).Op(":").Valuesln(
-					jen.ID("Name").Op(":").Litf("Get%s", sn), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.If(jen.IDf("random%s", sn).Op(":=").IDf("fetchRandom%s", sn).Call(jen.ID("c")), jen.IDf("random%s", sn).Op("!=").ID("nil")).Block(
-							jen.Return().ID("c").Dotf("BuildGet%sRequest", sn).Call(jen.Qual("context", "Background").Call(), jen.IDf("random%s", sn).Dot("ID")),
-						),
-						jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
-					),
-					jen.ID("Weight").Op(":").Lit(100)), jen.Litf("Get%s", pn).Op(":").Valuesln(
-					jen.ID("Name").Op(":").Litf("Get%s", pn), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.Return().ID("c").Dotf("BuildGet%sRequest", pn).Call(jen.Qual("context", "Background").Call(), jen.ID("nil")),
-					),
-					jen.ID("Weight").Op(":").Lit(100)), jen.Litf("Update%s", sn).Op(":").Valuesln(
-					jen.ID("Name").Op(":").Litf("Update%s", sn), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.If(jen.IDf("random%s", sn).Op(":=").IDf("fetchRandom%s", sn).Call(jen.ID("c")), jen.IDf("random%s", sn).Op("!=").ID("nil")).Block(
-							buildRandomLines()...,
-						),
-						jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
-					),
-					jen.ID("Weight").Op(":").Lit(100)), jen.Litf("Archive%s", sn).Op(":").Valuesln(
-					jen.ID("Name").Op(":").Litf("Archive%s", sn), jen.ID("Action").Op(":").Func().Params().Params(jen.Op("*").Qual("net/http", "Request"), jen.ID("error")).Block(
-						jen.If(jen.IDf("random%s", sn).Op(":=").IDf("fetchRandom%s", sn).Call(jen.ID("c")), jen.IDf("random%s", sn).Op("!=").ID("nil")).Block(
-							jen.Return().ID("c").Dotf("BuildArchive%sRequest", sn).Call(jen.Qual("context", "Background").Call(), jen.IDf("random%s", sn).Dot("ID")),
-						),
-						jen.Return().List(jen.ID("nil"), jen.ID("ErrUnavailableYet")),
-					),
-					jen.ID("Weight").Op(":").Lit(85))),
+	return lines
+}
+
+func buildParamsForMethodThatHandlesAnInstanceWithStructs(proj *models.Project, typ models.DataType) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for i, pt := range parents {
+			if i == len(parents)-1 && typ.BelongsToStruct != nil {
+				continue
+			} else {
+				listParams = append(listParams, jen.IDf("created%s", pt.Name.Singular()).Dot("ID"))
+			}
+		}
+		listParams = append(listParams, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
+
+		params = append(params, listParams...)
+
+	} else {
+		params = append(params, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
+	}
+
+	return params
+}
+
+func buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj *models.Project, typ models.DataType) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("random%s", pt.Name.Singular()).Dot("ID"))
+		}
+		listParams = append(listParams, jen.IDf("random%s", typ.Name.Singular()).Dot("ID"))
+
+		params = append(params, listParams...)
+
+	} else {
+		params = append(params, jen.IDf("random%s", typ.Name.Singular()).Dot("ID"))
+	}
+
+	return params
+}
+
+func buildRandomActionMap(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+
+	blockLines := []jen.Code{
+		jen.Return().Map(jen.String()).PointerTo().ID("Action").Valuesln(
+			jen.Litf("Create%s", sn).MapAssign().Valuesln(
+				jen.ID("Name").MapAssign().Litf("Create%s", sn),
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					buildCreateSomethingBlock(proj, typ)...,
+				),
+				jen.ID("Weight").MapAssign().Lit(100),
+			),
+			jen.Litf("Get%s", sn).MapAssign().Valuesln(
+				jen.ID("Name").MapAssign().Litf("Get%s", sn),
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					buildGetSomethingBlock(proj, typ)...,
+				),
+				jen.ID("Weight").MapAssign().Lit(100),
+			),
+			jen.Litf("Get%s", pn).MapAssign().Valuesln(
+				jen.ID("Name").MapAssign().Litf("Get%s", pn),
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					buildGetListOfSomethingBlock(proj, typ)...,
+				),
+				jen.ID("Weight").MapAssign().Lit(100),
+			),
+			jen.Litf("Update%s", sn).MapAssign().Valuesln(
+				jen.ID("Name").MapAssign().Litf("Update%s", sn),
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					buildUpdateChildBlock(proj, typ)...,
+				),
+				jen.ID("Weight").MapAssign().Lit(100),
+			),
+			jen.Litf("Archive%s", sn).MapAssign().Valuesln(
+				jen.ID("Name").MapAssign().Litf("Archive%s", sn),
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					buildArchiveSomethingBlock(proj, typ)...,
+				),
+				jen.ID("Weight").MapAssign().Lit(85),
+			),
+		),
+	}
+
+	return []jen.Code{
+		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Block(blockLines...),
+		jen.Line(),
+	}
+}
+
+func buildCreateSomethingBlock(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
+
+	lines := append([]jen.Code{constants.CreateCtx(), jen.Line()}, buildRequisiteCreationCode(proj, typ)...)
+
+	args := buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)
+	args = args[:len(args)-1]
+	args = append(args, jen.IDf("%sInput", uvn))
+
+	lines = append(lines,
+		utils.BuildFakeVarWithCustomName(
+			proj,
+			fmt.Sprintf("%sInput", uvn),
+			fmt.Sprintf("BuildFake%sCreationInput", sn),
+		),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.IDf("%sInput", uvn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		jen.Line(),
+		jen.Return(jen.ID("c").Dotf("BuildCreate%sRequest", sn).Call(args...)),
+	)
+
+	return lines
+}
+
+func buildRandomDependentIDFetchers(proj *models.Project, typ models.DataType) []jen.Code {
+	lines := []jen.Code{constants.CreateCtx()}
+	parentTypes := proj.FindOwnerTypeChain(typ)
+
+	callArgs := []jen.Code{
+		jen.ID("c"),
+	}
+
+	for _, pt := range parentTypes {
+		ca := buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj, pt)
+		ca = ca[1 : len(ca)-1]
+		callArgs = append([]jen.Code{constants.CtxVar(), jen.ID("c")}, ca...)
+
+		lines = append(lines,
+			jen.Line(),
+			jen.IDf("random%s", pt.Name.Singular()).Assign().IDf("fetchRandom%s", pt.Name.Singular()).Call(callArgs...),
+			jen.If(jen.IDf("random%s", pt.Name.Singular()).IsEqualTo().Nil()).Block(
+				jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("retrieving random %s", pt.Name.SingularCommonName())+": %w"), jen.ID("ErrUnavailableYet"))),
+			),
+		)
+	}
+
+	return lines
+}
+
+func buildGetSomethingBlock(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+
+	ca := buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj, typ)
+	ca = ca[1 : len(ca)-1]
+	callArgs := append([]jen.Code{constants.CtxVar(), jen.ID("c")}, ca...)
+
+	requestBuildingArgs := append([]jen.Code{constants.CtxVar()}, ca...)
+	requestBuildingArgs = append(requestBuildingArgs, jen.IDf("random%s", sn).Dot("ID"))
+
+	lines := buildRandomDependentIDFetchers(proj, typ)
+
+	lines = append(lines,
+		jen.Line(),
+		jen.IDf("random%s", typ.Name.Singular()).Assign().IDf("fetchRandom%s", typ.Name.Singular()).Call(callArgs...),
+		jen.If(jen.IDf("random%s", typ.Name.Singular()).IsEqualTo().Nil()).Block(
+			jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("retrieving random %s", typ.Name.SingularCommonName())+": %w"), jen.ID("ErrUnavailableYet"))),
+		),
+	)
+
+	lines = append(lines,
+		func() jen.Code {
+			if len(lines) > 0 {
+				return jen.Line()
+			}
+			return nil
+		}(),
+		jen.Return().ID("c").Dotf("BuildGet%sRequest", sn).Call(requestBuildingArgs...),
+	)
+
+	return lines
+}
+
+func buildGetListOfSomethingBlock(proj *models.Project, typ models.DataType) []jen.Code {
+	pn := typ.Name.Plural()
+
+	ca := buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj, typ)
+	ca = ca[1 : len(ca)-1]
+
+	requestBuildingArgs := append([]jen.Code{constants.CtxVar()}, ca...)
+	requestBuildingArgs = append(requestBuildingArgs, jen.Nil())
+
+	lines := buildRandomDependentIDFetchers(proj, typ)
+	lines = append(lines,
+		func() jen.Code {
+			if len(lines) > 0 {
+				return jen.Line()
+			}
+			return nil
+		}(),
+		jen.Return().ID("c").Dotf("BuildGet%sRequest", pn).Call(requestBuildingArgs...),
+	)
+
+	return lines
+}
+
+func buildUpdateChildBlock(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+
+	ca := buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj, typ)
+	ca = ca[1 : len(ca)-1]
+	callArgs := append([]jen.Code{constants.CtxVar(), jen.ID("c")}, ca...)
+
+	requestBuildingArgs := append([]jen.Code{constants.CtxVar()}, ca...)
+	if len(requestBuildingArgs) > 1 {
+		requestBuildingArgs = requestBuildingArgs[:len(requestBuildingArgs)-1]
+	}
+	requestBuildingArgs = append(requestBuildingArgs, jen.IDf("random%s", sn))
+
+	ifRandomExistsBlock := []jen.Code{
+		jen.IDf("new%s", sn).Assign().
+			Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).
+			Call(),
+	}
+	for _, field := range typ.Fields {
+		fsn := field.Name.Singular()
+		ifRandomExistsBlock = append(
+			ifRandomExistsBlock,
+			jen.IDf("random%s", sn).Dot(fsn).Equals().IDf("new%s", sn).Dot(fsn),
+		)
+	}
+	ifRandomExistsBlock = append(ifRandomExistsBlock,
+		jen.Return().ID("c").Dotf("BuildUpdate%sRequest", sn).Call(
+			requestBuildingArgs...,
+		),
+	)
+
+	lines := buildRandomDependentIDFetchers(proj, typ)
+	if len(lines) > 0 {
+		lines = append(lines, jen.Line())
+	}
+
+	lines = append(lines,
+		jen.If(jen.IDf("random%s", sn).Assign().IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).DoesNotEqual().ID("nil")).Block(
+			ifRandomExistsBlock...,
 		),
 		jen.Line(),
+		jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
 	)
-	return ret
+
+	return lines
+}
+
+func buildArchiveSomethingBlock(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+
+	ca := buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj, typ)
+	ca = ca[1 : len(ca)-1]
+	callArgs := append([]jen.Code{constants.CtxVar(), jen.ID("c")}, ca...)
+
+	requestBuildingArgs := append([]jen.Code{constants.CtxVar()}, ca...)
+	requestBuildingArgs = append(requestBuildingArgs, jen.IDf("random%s", sn).Dot("ID"))
+
+	lines := buildRandomDependentIDFetchers(proj, typ)
+
+	lines = append(lines,
+		jen.Line(),
+		jen.IDf("random%s", typ.Name.Singular()).Assign().IDf("fetchRandom%s", typ.Name.Singular()).Call(callArgs...),
+		jen.If(jen.IDf("random%s", typ.Name.Singular()).IsEqualTo().Nil()).Block(
+			jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("retrieving random %s", typ.Name.SingularCommonName())+": %w"), jen.ID("ErrUnavailableYet"))),
+		),
+	)
+
+	lines = append(lines,
+		func() jen.Code {
+			if len(lines) > 0 {
+				return jen.Line()
+			}
+			return nil
+		}(),
+		jen.Return().ID("c").Dotf("BuildArchive%sRequest", sn).Call(requestBuildingArgs...),
+	)
+
+	return lines
 }

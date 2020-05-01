@@ -2,6 +2,8 @@ package wordsmith
 
 type ManualWord struct {
 	SingularStr,
+	AbbreviationStr,
+	LowercaseAbbreviationStr,
 	PluralStr,
 	RouteNameStr,
 	KebabNameStr,
@@ -19,6 +21,14 @@ type ManualWord struct {
 
 func (mw *ManualWord) Singular() string {
 	return mw.SingularStr
+}
+
+func (mw *ManualWord) Abbreviation() string {
+	return mw.AbbreviationStr
+}
+
+func (mw *ManualWord) LowercaseAbbreviation() string {
+	return mw.LowercaseAbbreviationStr
 }
 
 func (mw *ManualWord) Plural() string {

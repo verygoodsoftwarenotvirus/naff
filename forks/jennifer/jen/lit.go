@@ -86,6 +86,72 @@ func (s *Statement) Lit(v interface{}) *Statement {
 	return s
 }
 
+// EmptyString renders an empty string literal.
+func EmptyString() *Statement {
+	return newStatement().EmptyString()
+}
+
+// EmptyString renders an empty string literal.
+func (g *Group) EmptyString() *Statement {
+	s := EmptyString()
+	g.items = append(g.items, s)
+	return s
+}
+
+// EmptyString renders an empty string literal.
+func (s *Statement) EmptyString() *Statement {
+	t := token{
+		typ:     literalToken,
+		content: "",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Zero renders an empty string literal.
+func Zero() *Statement {
+	return newStatement().Zero()
+}
+
+// Zero renders an empty string literal.
+func (g *Group) Zero() *Statement {
+	s := Zero()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Zero renders an empty string literal.
+func (s *Statement) Zero() *Statement {
+	t := token{
+		typ:     literalToken,
+		content: 0,
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// One renders an empty string literal.
+func One() *Statement {
+	return newStatement().One()
+}
+
+// One renders an empty string literal.
+func (g *Group) One() *Statement {
+	s := One()
+	g.items = append(g.items, s)
+	return s
+}
+
+// One renders an empty string literal.
+func (s *Statement) One() *Statement {
+	t := token{
+		typ:     literalToken,
+		content: 1,
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // Litf renders a literal. Litf supports only built-in types (bool, string, int, complex128, float64,
 // float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Passing any other type will panic.

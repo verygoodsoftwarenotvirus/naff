@@ -1,55 +1,55 @@
 package mock
 
 import (
-	"path/filepath"
-
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func counterDotGo(pkg *models.Project) *jen.File {
+func counterDotGo(proj *models.Project) *jen.File {
 	ret := jen.NewFile("mock")
 
-	utils.AddImports(pkg.OutputPath, pkg.DataTypes, ret)
+	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().ID("_").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter").Op("=").Parens(jen.Op("*").ID("UnitCounter")).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(proj.InternalMetricsV1Package(), "UnitCounter").Equals().Parens(jen.PointerTo().ID("UnitCounter")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
 	ret.Add(
 		jen.Comment("UnitCounter is a mock metrics.UnitCounter"),
 		jen.Line(),
-		jen.Type().ID("UnitCounter").Struct(jen.Qual("github.com/stretchr/testify/mock", "Mock")),
+		jen.Type().ID("UnitCounter").Struct(jen.Qual(utils.MockPkg, "Mock")),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("Increment implements our UnitCounter interface"),
+		jen.Comment("Increment implements our UnitCounter interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("Increment").Params(jen.ID("ctx").Qual("context", "Context")).Block(
-			jen.ID("m").Dot("Called").Call(),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Increment").Params(constants.CtxParam()).Block(
+			jen.ID("m").Dot("Called").Call(constants.CtxVar()),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("IncrementBy implements our UnitCounter interface"),
+		jen.Comment("IncrementBy implements our UnitCounter interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("IncrementBy").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("val").ID("uint64")).Block(
-			jen.ID("m").Dot("Called").Call(jen.ID("val")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("IncrementBy").Params(constants.CtxParam(), jen.ID("val").Uint64()).Block(
+			jen.ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("val")),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Comment("Decrement implements our UnitCounter interface"),
+		jen.Comment("Decrement implements our UnitCounter interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").Op("*").ID("UnitCounter")).ID("Decrement").Params(jen.ID("ctx").Qual("context", "Context")).Block(
-			jen.ID("m").Dot("Called").Call(),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Decrement").Params(constants.CtxParam()).Block(
+			jen.ID("m").Dot("Called").Call(constants.CtxVar()),
 		),
 		jen.Line(),
 	)
+
 	return ret
 }

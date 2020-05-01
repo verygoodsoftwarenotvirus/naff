@@ -5,9 +5,7 @@ import (
 )
 
 func main() {
-	s := wordsmith.FromSingularPascalCase("BlahBlahBlah")
+	s := wordsmith.FromSingularPascalCase("Postgres")
 
-	println(s.RouteName())
-	println(s.PackageName())
-	println(s.PluralRouteName())
+	println(s.LowercaseAbbreviation())
 }

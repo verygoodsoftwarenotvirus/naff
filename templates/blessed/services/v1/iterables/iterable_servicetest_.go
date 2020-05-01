@@ -2,136 +2,143 @@ package iterables
 
 import (
 	"fmt"
-	"path/filepath"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterableServiceTestDotGo(pkg *models.Project, typ models.DataType) *jen.File {
+func iterableServiceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(pkg.OutputPath, []models.DataType{typ}, ret)
+	utils.AddImports(proj, ret)
 
+	ret.Add(buildbuildTestServiceFuncDecl(proj, typ)...)
+	ret.Add(buildTestProvideServiceFuncDecl(proj, typ)...)
+
+	return ret
+}
+
+func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	pn := typ.Name.Plural()
-	cn := typ.Name.SingularCommonName()
 	uvn := typ.Name.UnexportedVarName()
 
-	ret.Add(
-		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("Service")).Block(
-			jen.Return().Op("&").ID("Service").Valuesln(
-				jen.ID("logger").Op(":").Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-				jen.ID(fmt.Sprintf("%sCounter", uvn)).Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
-				jen.ID(fmt.Sprintf("%sDatabase", uvn)).Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.ID("userIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-				jen.ID(fmt.Sprintf("%sIDFetcher", uvn)).Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-				jen.ID("encoderDecoder").Op(":").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
-				jen.ID("reporter").Op(":").ID("nil"),
+	serviceValues := []jen.Code{
+		jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+	}
+
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		serviceValues = append(serviceValues,
+			jen.ID(fmt.Sprintf("%sDataManager", ot.Name.UnexportedVarName())).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", ot.Name.Singular())).Values(),
+		)
+	}
+	serviceValues = append(serviceValues, jen.ID(fmt.Sprintf("%sDataManager", uvn)).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values())
+
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		serviceValues = append(serviceValues,
+			jen.IDf("%sIDFetcher", ot.Name.UnexportedVarName()).MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
+		)
+	}
+	serviceValues = append(serviceValues, jen.IDf("%sIDFetcher", uvn).MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
+
+	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
+		serviceValues = append(serviceValues,
+			jen.ID("userIDFetcher").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
+		)
+	}
+
+	serviceValues = append(serviceValues,
+		jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+		jen.ID("reporter").MapAssign().ID("nil"),
+	)
+
+	lines := []jen.Code{
+		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Block(
+			jen.Return().AddressOf().ID("Service").Valuesln(serviceValues...),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func relevantIDFetcherParam(typ models.DataType) jen.Code {
+	if typ.BelongsToUser || typ.BelongsToStruct != nil {
+		return jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero())
+	}
+	return nil
+}
+
+func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+
+	provideServiceLines := []jen.Code{
+		jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+	}
+
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		provideServiceLines = append(provideServiceLines, jen.AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", ot.Name.Singular())).Values())
+	}
+	provideServiceLines = append(provideServiceLines, jen.AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values())
+
+	for range proj.FindOwnerTypeChain(typ) {
+		provideServiceLines = append(provideServiceLines, jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
+	}
+	provideServiceLines = append(provideServiceLines, jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
+	if typ.BelongsToUser || typ.RestrictedToUserAtSomeLevel(proj) {
+		provideServiceLines = append(provideServiceLines, jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
+	}
+
+	provideServiceLines = append(provideServiceLines,
+		jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+		jen.ID("ucp"),
+		jen.Nil(),
+	)
+
+	lines := []jen.Code{
+		jen.Func().ID(fmt.Sprintf("TestProvide%sService", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"happy path",
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+					jen.ID("description").String(),
+				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+					jen.Error()).Block(
+					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(), jen.Nil()),
+				),
+				jen.Line(),
+				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
+					provideServiceLines...,
+				),
+				jen.Line(),
+				utils.AssertNotNil(jen.ID("s"), nil),
+				utils.AssertNoError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"with error providing unit counter",
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+					jen.ID("description").String(),
+				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Block(
+					jen.Return().List(jen.Nil(), constants.ObligatoryError()),
+				),
+				jen.Line(),
+				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
+					provideServiceLines...,
+				),
+				jen.Line(),
+				utils.AssertNil(jen.ID("s"), nil),
+				utils.AssertError(jen.Err(), nil),
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	ret.Add(
-		jen.Func().ID(fmt.Sprintf("TestProvide%sService", pn)).Params(jen.ID("T").Op("*").Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
-				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
-				jen.Line(),
-				jen.Var().ID("ucp").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider").Op("=").Func().Paramsln(
-					jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName"),
-					jen.ID("description").ID("string"),
-				).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
-					jen.ID("error")).Block(
-					jen.Return().List(jen.ID("uc"), jen.ID("nil")),
-				),
-				jen.Line(),
-				jen.ID("idm").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.ID("nil")),
-				jen.Line(),
-				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
-					jen.Qual("context", "Background").Call(),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.ID("idm"),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
-					jen.ID("ucp"),
-					jen.ID("nil"),
-				),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/require", "NotNil").Call(jen.ID("t"), jen.ID("s")),
-				jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("t"), jen.ID("err")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("with error providing unit counter"), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
-				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
-				jen.Line(),
-				jen.Var().ID("ucp").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider").Op("=").Func().Paramsln(
-					jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName"),
-					jen.ID("description").ID("string"),
-				).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
-					jen.ID("error")).Block(
-					jen.Return().List(jen.ID("uc"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				),
-				jen.Line(),
-				jen.ID("idm").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.ID("nil")),
-				jen.Line(),
-				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
-					jen.Qual("context", "Background").Call(),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.ID("idm"),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
-					jen.ID("ucp"),
-					jen.ID("nil"),
-				),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/require", "Nil").Call(jen.ID("t"), jen.ID("s")),
-				jen.Qual("github.com/stretchr/testify/require", "Error").Call(jen.ID("t"), jen.ID("err")),
-			)),
-			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit(fmt.Sprintf("with error fetching %s count", cn)), jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Block(
-				jen.ID("expectation").Op(":=").ID("uint64").Call(jen.Lit(123)),
-				jen.ID("uc").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics/mock"), "UnitCounter").Values(),
-				jen.ID("uc").Dot("On").Call(jen.Lit("IncrementBy"), jen.ID("expectation")).Dot("Return").Call(),
-				jen.Line(),
-				jen.Var().ID("ucp").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounterProvider").Op("=").Func().Paramsln(
-					jen.ID("counterName").Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "CounterName"),
-					jen.ID("description").ID("string"),
-				).Params(jen.Qual(filepath.Join(pkg.OutputPath, "internal/v1/metrics"), "UnitCounter"),
-					jen.ID("error")).Block(
-					jen.Return().List(jen.ID("uc"), jen.ID("nil")),
-				),
-				jen.Line(),
-				jen.ID("idm").Op(":=").Op("&").Qual(filepath.Join(pkg.OutputPath, "models/v1/mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.ID("idm").Dot("On").Call(jen.Lit(fmt.Sprintf("GetAll%sCount", pn)), jen.Qual("github.com/stretchr/testify/mock", "Anything")).Dot("Return").Call(jen.ID("expectation"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Line(),
-				jen.List(jen.ID("s"), jen.ID("err")).Op(":=").ID(fmt.Sprintf("Provide%sService", pn)).Callln(
-					jen.Qual("context", "Background").Call(),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.ID("idm"),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBlock(jen.Return().Lit(0)),
-					jen.Op("&").Qual(filepath.Join(pkg.OutputPath, "internal/v1/encoding/mock"), "EncoderDecoder").Values(),
-					jen.ID("ucp"),
-					jen.ID("nil"),
-				),
-				jen.Line(),
-				jen.Qual("github.com/stretchr/testify/require", "Nil").Call(jen.ID("t"), jen.ID("s")),
-				jen.Qual("github.com/stretchr/testify/require", "Error").Call(jen.ID("t"), jen.ID("err")),
-			)),
-		),
-		jen.Line(),
-	)
-	return ret
+	return lines
 }
