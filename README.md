@@ -44,6 +44,7 @@ NAFF doesn't just generate primary application logic, it also generates:
 - Configuration parsing/rendering
 - Prometheus and Grafana configuration files
 - Fairly strict linter configuration
+- Webhook/Websocket support via [https://gitlab.com/verygoodsoftwarenotvirus/newsman](Newsman)
 
 NAFF has support for multiple database providers. Currently those are:
 

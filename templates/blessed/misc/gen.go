@@ -608,6 +608,16 @@ issues:
         - lll
         - bodyclose
 
+    # Exclude routers from gocyclo
+    - path: server/v1/http/routes.go
+      linters:
+        - gocyclo
+
+    # Exclude frontend routers from gocyclo
+    - path: services/v1/frontend/http_routes.go
+      linters:
+        - gocyclo
+
     - path: tests/v1/testutil/
       linters:
         - bodyclose

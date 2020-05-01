@@ -749,7 +749,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").
 				Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 				Dotln("WillReturnRows").Callln(
-				jen.IDf("buildMockRowsFrom%s", sn).Call(jen.IDf("example%s", sn)),
+				jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.IDf("example%s", sn)),
 			)
 		}
 
