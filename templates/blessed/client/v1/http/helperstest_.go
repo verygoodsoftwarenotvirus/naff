@@ -419,7 +419,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.AssertError(
 					jen.Err(),
-					jen.Lit("expected no error creating JSON from valid struct"),
+					jen.Lit("expected error creating JSON from invalid struct"),
 				),
 			),
 		),

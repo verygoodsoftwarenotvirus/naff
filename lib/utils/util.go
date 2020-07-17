@@ -267,12 +267,21 @@ func RunGoimportsForFile(filename string) error {
 	return exec.Command(filepath.Join(hd, "bin/goimports"), "-w", filename).Run()
 }
 
-// RunGoFormatForFile does
+func determineGofmtPath() string {
+	gofmtLocation, err := exec.Command("which", "gofmt").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return string(gofmtLocation)
+}
+
+// RunGoFormatForFile does something
 func RunGoFormatForFile(filename string) error {
 	if runtime.GOOS == "linux" {
-		return exec.Command("/usr/local/go/bin/gofmt", "-s", "-w", filename).Run()
+		return exec.Command("gofmt", "-s", "-w", filename).Run()
 	} else if runtime.GOOS == "darwin" {
-		return exec.Command("/usr/local/bin/gofmt", "-s", "-w", filename).Run()
+		return exec.Command("gofmt", "-s", "-w", filename).Run()
 	} else {
 		return errors.New("invalid platform")
 	}

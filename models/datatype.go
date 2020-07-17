@@ -21,6 +21,7 @@ type DataType struct {
 	BelongsToUser    bool
 	BelongsToNobody  bool
 	RestrictedToUser bool
+	SearchEnabled    bool
 	BelongsToStruct  wordsmith.SuperPalabra
 	Fields           []DataField
 }

@@ -30,10 +30,13 @@ func mainDotGo(proj *models.Project) *jen.File {
 	ret.Add(
 		jen.Var().Defs(
 			jen.Comment("ErrNotFound is a handy error to return when we receive a 404 response."),
-			jen.ID("ErrNotFound").Equals().Qual("errors", "New").Call(jen.Lit("404: not found")),
+			jen.ID("ErrNotFound").Equals().Qual("fmt", "Errorf").Call(jen.Lit("%d: not found"), jen.Qual("net/http", "StatusNotFound")),
 			jen.Line(),
-			jen.Comment("ErrUnauthorized is a handy error to return when we receive a 404 response."),
-			jen.ID("ErrUnauthorized").Equals().Qual("errors", "New").Call(jen.Lit("401: not authorized")),
+			jen.Comment("ErrUnauthorized is a handy error to return when we receive a 401 response."),
+			jen.ID("ErrUnauthorized").Equals().Qual("fmt", "Errorf").Call(jen.Lit("%d: not authorized"), jen.Qual("net/http", "StatusUnauthorized")),
+			jen.Line(),
+			jen.Comment("ErrInvalidTOTPToken is an error for when our TOTP validation request goes awry."),
+			jen.ID("ErrInvalidTOTPToken").Equals().Qual("errors", "New").Call(jen.Lit("invalid TOTP token")),
 		),
 		jen.Line(),
 	)
@@ -164,6 +167,7 @@ func buildNewClient() []jen.Code {
 				jen.ID("clientID"),
 				jen.ID("clientSecret"),
 				jen.ID("scopes"),
+				jen.ID("client").Dot("Timeout"),
 			),
 			jen.Line(),
 			jen.ID("c").Assign().AddressOf().ID(v1).Valuesln(
@@ -202,6 +206,7 @@ func buildBuildOAuthClient() []jen.Code {
 				jen.ID("clientSecret"),
 			).String(),
 			jen.ID("scopes").Index().String(),
+			jen.ID("timeout").Qual("time", "Duration"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Client"),
 			jen.ID("oauth2").Dot("TokenSource"),
@@ -214,9 +219,7 @@ func buildBuildOAuthClient() []jen.Code {
 					jen.Lit("client_id").MapAssign().Index().String().Values(jen.ID("clientID")),
 					jen.Lit("client_secret").MapAssign().Index().String().Values(jen.ID("clientSecret")),
 				),
-				jen.ID("TokenURL").MapAssign().ID("tokenEndpoint").Call(
-					jen.ID("uri"),
-				).Dot("TokenURL"),
+				jen.ID("TokenURL").MapAssign().ID("tokenEndpoint").Call(jen.ID("uri")).Dot("TokenURL"),
 			),
 			jen.Line(),
 			jen.ID("ts").Assign().ID("oauth2").Dot("ReuseTokenSource").Call(
@@ -232,7 +235,7 @@ func buildBuildOAuthClient() []jen.Code {
 					),
 					jen.ID("Source").MapAssign().ID("ts"),
 				),
-				jen.ID("Timeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
+				jen.ID("Timeout").MapAssign().ID("timeout"),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("client"),

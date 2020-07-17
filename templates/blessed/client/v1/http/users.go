@@ -24,12 +24,14 @@ func usersDotGo(proj *models.Project) *jen.File {
 	ret.Add(buildArchiveUser(proj)...)
 	ret.Add(buildBuildLoginRequest(proj)...)
 	ret.Add(buildLogin(proj)...)
+	ret.Add(buildBuildVerifyTOTPSecretRequest(proj)...)
+	ret.Add(buildVerifyTOTPSecret(proj)...)
 
 	return ret
 }
 
 func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
-	funcName := "BuildGetUserRequest"
+	const funcName = "BuildGetUserRequest"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -51,9 +53,9 @@ func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildGetUserRequest builds an HTTP request for fetching a user."),
+		jen.Commentf("%s builds an HTTP request for fetching a user.", funcName),
 		jen.Line(),
-		newClientMethod("BuildGetUserRequest").Params(
+		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			jen.ID("userID").Uint64(),
 		).Params(
@@ -67,7 +69,7 @@ func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
 }
 
 func buildGetUser(proj *models.Project) []jen.Code {
-	funcName := "GetUser"
+	const funcName = "GetUser"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -100,9 +102,9 @@ func buildGetUser(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("GetUser retrieves a user."),
+		jen.Commentf("%s retrieves a user.", funcName),
 		jen.Line(),
-		newClientMethod("GetUser").Params(
+		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			jen.ID("userID").Uint64(),
 		).Params(
@@ -116,7 +118,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 }
 
 func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
-	funcName := "BuildGetUsersRequest"
+	const funcName = "BuildGetUsersRequest"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -134,9 +136,9 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildGetUsersRequest builds an HTTP request for fetching a user."),
+		jen.Commentf("%s builds an HTTP request for fetching a user.", funcName),
 		jen.Line(),
-		newClientMethod("BuildGetUsersRequest").Params(
+		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
@@ -150,7 +152,7 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 }
 
 func buildGetUsers(proj *models.Project) []jen.Code {
-	funcName := "GetUsers"
+	const funcName = "GetUsers"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -182,9 +184,9 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("GetUsers retrieves a list of users."),
+		jen.Commentf("%s retrieves a list of users.", funcName),
 		jen.Line(),
-		newClientMethod("GetUsers").Params(
+		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(
@@ -198,7 +200,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 }
 
 func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
-	funcName := "BuildCreateUserRequest"
+	const funcName = "BuildCreateUserRequest"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -216,9 +218,9 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildCreateUserRequest builds an HTTP request for creating a user."),
+		jen.Commentf("%s builds an HTTP request for creating a user.", funcName),
 		jen.Line(),
-		newClientMethod("BuildCreateUserRequest").Params(
+		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			jen.ID("body").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 		).Params(
@@ -232,7 +234,7 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 }
 
 func buildCreateUser(proj *models.Project) []jen.Code {
-	funcName := "CreateUser"
+	const funcName = "CreateUser"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -264,9 +266,9 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("CreateUser creates a new user."),
+		jen.Commentf("%s creates a new user.", funcName),
 		jen.Line(),
-		newClientMethod("CreateUser").Params(
+		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 		).Params(
@@ -280,7 +282,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 }
 
 func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
-	funcName := "BuildArchiveUserRequest"
+	const funcName = "BuildArchiveUserRequest"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -302,9 +304,9 @@ func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildArchiveUserRequest builds an HTTP request for updating a user."),
+		jen.Commentf("%s builds an HTTP request for updating a user.", funcName),
 		jen.Line(),
-		newClientMethod("BuildArchiveUserRequest").Params(
+		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			jen.ID("userID").Uint64(),
 		).Params(
@@ -318,7 +320,7 @@ func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 }
 
 func buildArchiveUser(proj *models.Project) []jen.Code {
-	funcName := "ArchiveUser"
+	const funcName = "ArchiveUser"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -344,9 +346,9 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("ArchiveUser archives a user."),
+		jen.Commentf("%s archives a user.", funcName),
 		jen.Line(),
-		newClientMethod("ArchiveUser").Params(
+		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			jen.ID("userID").Uint64(),
 		).Params(jen.Error()).Block(block...),
@@ -357,7 +359,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 }
 
 func buildBuildLoginRequest(proj *models.Project) []jen.Code {
-	funcName := "BuildLoginRequest"
+	const funcName = "BuildLoginRequest"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -391,9 +393,9 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("BuildLoginRequest builds an authenticating HTTP request."),
+		jen.Commentf("%s builds an authenticating HTTP request.", funcName),
 		jen.Line(),
-		newClientMethod("BuildLoginRequest").Params(
+		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
 		).Params(
@@ -407,7 +409,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 }
 
 func buildLogin(proj *models.Project) []jen.Code {
-	funcName := "Login"
+	const funcName = "Login"
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -420,7 +422,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(
 				jen.Nil(),
-				jen.Err(),
+				jen.Qual("fmt", "Errorf").Call(jen.Lit("error building login request: %w"), jen.Err()),
 			),
 		),
 		jen.Line(),
@@ -460,9 +462,9 @@ func buildLogin(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Comment("Login will, when provided the correct credentials, fetch a login cookie."),
+		jen.Commentf("%s will, when provided the correct credentials, fetch a login cookie.", funcName),
 		jen.Line(),
-		newClientMethod("Login").Params(
+		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
 		).Params(
@@ -474,4 +476,118 @@ func buildLogin(proj *models.Project) []jen.Code {
 
 	return lines
 
+}
+
+func buildBuildVerifyTOTPSecretRequest(proj *models.Project) []jen.Code {
+	const funcName = "BuildVerifyTOTPSecretRequest"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.Line(),
+		jen.ID("uri").Assign().ID("c").Dot("buildVersionlessURL").Call(
+			jen.Nil(),
+			jen.ID("usersBasePath"),
+			jen.Lit("totp_secret"),
+			jen.Lit("verify"),
+		),
+		jen.Line(),
+		jen.Return(jen.ID("c").Dot("buildDataRequest").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodPost"),
+			jen.ID("uri"),
+			jen.AddressOf().Qual(proj.ModelsV1Package(), "TOTPSecretVerificationInput").Valuesln(
+				jen.ID("TOTPToken").MapAssign().ID("token"),
+				jen.ID("UserID").MapAssign().ID("userID"),
+			),
+		)),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds a request to validate a TOTP secret.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			constants.UserIDParam(),
+			jen.ID("token").String(),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+//// VerifyTOTPSecret executes a request to verify a TOTP secret.
+//func (c *V1Client) VerifyTOTPSecret(ctx context.Context, userID uint64, token string) error {
+//	ctx, span := tracing.StartSpan(ctx, "BuildVerifyTOTPSecretRequest")
+//	defer span.End()
+//
+//	req, err := c.BuildVerifyTOTPSecretRequest(ctx, userID, token)
+//	if err != nil {
+//		return fmt.Errorf("error building TOTP validation request: %w", err)
+//	}
+//
+//	res, err := c.executeRawRequest(ctx, c.plainClient, req)
+//	if err != nil {
+//		return fmt.Errorf("executing request: %w", err)
+//	}
+//	c.closeResponseBody(res)
+//
+//	if res.StatusCode == http.StatusBadRequest {
+//		return ErrInvalidTOTPToken
+//	} else if res.StatusCode != http.StatusAccepted {
+//		return fmt.Errorf("erroneous response code when validating TOTP secret: %d", res.StatusCode)
+//	}
+//
+//	return nil
+//}
+
+func buildVerifyTOTPSecret(proj *models.Project) []jen.Code {
+	const funcName = "VerifyTOTPSecret"
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.Line(),
+		jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildVerifyTOTPSecretRequest").Call(
+			constants.CtxVar(),
+			constants.UserIDVar(),
+			jen.ID("token"),
+		),
+		jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("error building TOTP validation request: %w"), jen.Err())),
+		),
+		jen.Line(),
+		jen.List(jen.ID("res"), jen.Err()).Assign().ID("c").Dot("executeRawRequest").Call(
+			constants.CtxVar(),
+			jen.ID("c").Dot("plainClient"),
+			jen.ID("req"),
+		),
+		jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("executing request: %w"), jen.Err())),
+		),
+		jen.ID("c").Dot("closeResponseBody").Call(jen.ID("res")),
+		jen.Line(),
+		jen.If(jen.ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusBadRequest")).Block(
+			jen.Return(jen.ID("ErrInvalidTOTPToken")),
+		).Else().If(jen.ID("res").Dot("StatusCode").DoesNotEqual().Qual("net/http", "StatusAccepted")).Block(
+			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("erroneous response code when validating TOTP secret: %d"), jen.ID("res").Dot("StatusCode"))),
+		),
+		jen.Line(),
+		jen.Return(jen.Nil()),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s executes a request to verify a TOTP secret.", funcName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			constants.UserIDParam(),
+			jen.ID("token").String(),
+		).Params(jen.Error()).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
 }

@@ -36,6 +36,16 @@ func CtxParam() jen.Code {
 	return CtxVar().Qual("context", "Context")
 }
 
+// UserIDVar is a shorthand for a context param
+func UserIDVar() *jen.Statement {
+	return jen.ID("userID")
+}
+
+// UserIDParam is a shorthand for a context param
+func UserIDParam() jen.Code {
+	return UserIDVar().Uint64()
+}
+
 // CtxParam is a shorthand for a context param
 func CtxVar() *jen.Statement {
 	return jen.ID(ContextVarName)
