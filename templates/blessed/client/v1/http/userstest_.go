@@ -69,6 +69,10 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildFakeVar(proj, "User"),
 				jen.Comment("the hashed password is never transmitted over the wire."),
 				jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword").Equals().EmptyString(),
+				jen.Comment("the two factor secret is transmitted over the wire only on creation."),
+				jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret").Equals().EmptyString(),
+				jen.Comment("the two factor secret validation is never transmitted over the wire."),
+				jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecretVerifiedOn").Equals().Nil(),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -174,6 +178,14 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.Zero()).Dot("HashedPassword").Equals().EmptyString(),
 				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.One()).Dot("HashedPassword").Equals().EmptyString(),
 				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.Lit(2)).Dot("HashedPassword").Equals().EmptyString(),
+				jen.Comment("the two factor secret is transmitted over the wire only on creation."),
+				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.Zero()).Dot("TwoFactorSecret").Equals().EmptyString(),
+				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.One()).Dot("TwoFactorSecret").Equals().EmptyString(),
+				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.Lit(2)).Dot("TwoFactorSecret").Equals().EmptyString(),
+				jen.Comment("the two factor secret validation is never transmitted over the wire."),
+				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.Zero()).Dot("TwoFactorSecretVerifiedOn").Equals().Nil(),
+				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.One()).Dot("TwoFactorSecretVerifiedOn").Equals().Nil(),
+				jen.ID(utils.BuildFakeVarName("UserList")).Dot("Users").Index(jen.Lit(2)).Dot("TwoFactorSecretVerifiedOn").Equals().Nil(),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -456,6 +468,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		utils.OuterTestFunc("V1Client_Login").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
+			jen.Const().ID("expectedPath").Equals().Lit("/users/login"),
+			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
 				utils.BuildFakeVar(proj, "User"),
@@ -465,7 +479,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					"ts",
 					utils.AssertEqual(
 						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
-						jen.Lit("/users/login"),
+						jen.ID("expectedPath"),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
@@ -528,7 +542,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					"ts",
 					utils.AssertEqual(
 						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
-						jen.Lit("/users/login"),
+						jen.ID("expectedPath"),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
@@ -569,7 +583,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					"ts",
 					utils.AssertEqual(
 						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
-						jen.Lit("/users/login"),
+						jen.ID("expectedPath"),
 						jen.Lit("expected and actual paths do not match"),
 					),
 					utils.AssertEqual(
@@ -595,6 +609,178 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Err(),
 					nil,
 				),
+			),
+		),
+		jen.Line(),
+	)
+
+	ret.Add(
+		utils.OuterTestFunc("V1Client_BuildValidateTOTPSecretRequest").Block(
+			utils.ParallelTest(nil),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.Line(),
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
+				jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildVerifyTOTPSecretRequest").Call(
+					constants.CtxVar(),
+					jen.ID("exampleUser").Dot("ID"),
+					jen.ID("exampleInput").Dot("TOTPToken"),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.RequireNotNil(jen.ID("req"), nil),
+				utils.AssertEqual(jen.ID("req").Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
+			),
+		),
+		jen.Line(),
+	)
+
+	ret.Add(
+		utils.OuterTestFunc("V1Client_ValidateTOTPSecret").Block(
+			utils.ParallelTest(nil),
+			jen.Line(),
+			jen.Const().ID("expectedPath").Equals().Lit("/users/totp_secret/verify"),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
+				utils.BuildTestServer(
+					"ts",
+					utils.AssertEqual(
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+						jen.ID("expectedPath"),
+						jen.Lit("expected and actual paths do not match"),
+					),
+					utils.AssertEqual(
+						jen.ID(constants.RequestVarName).Dot("Method"),
+						jen.Qual("net/http", "MethodPost"),
+						nil,
+					),
+					jen.Line(),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusAccepted")),
+				),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.Line(),
+				jen.Err().Assign().ID("c").Dot("VerifyTOTPSecret").Call(
+					constants.CtxVar(),
+					jen.ID("exampleUser").Dot("ID"),
+					jen.ID("exampleInput").Dot("TOTPToken"),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+			), jen.Line(),
+			utils.BuildSubTest(
+				"with bad request response",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
+				utils.BuildTestServer(
+					"ts",
+					utils.AssertEqual(
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+						jen.ID("expectedPath"),
+						jen.Lit("expected and actual paths do not match"),
+					),
+					utils.AssertEqual(
+						jen.ID(constants.RequestVarName).Dot("Method"),
+						jen.Qual("net/http", "MethodPost"),
+						nil,
+					),
+					jen.Line(),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
+				),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.Line(),
+				jen.Err().Assign().ID("c").Dot("VerifyTOTPSecret").Call(
+					constants.CtxVar(),
+					jen.ID("exampleUser").Dot("ID"),
+					jen.ID("exampleInput").Dot("TOTPToken"),
+				),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID("ErrInvalidTOTPToken"), jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with otherwise invalid status code response",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
+				utils.BuildTestServer(
+					"ts",
+					utils.AssertEqual(
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+						jen.ID("expectedPath"),
+						jen.Lit("expected and actual paths do not match"),
+					),
+					utils.AssertEqual(
+						jen.ID(constants.RequestVarName).Dot("Method"),
+						jen.Qual("net/http", "MethodPost"),
+						nil,
+					),
+					jen.Line(),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+				),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.Line(),
+				jen.Err().Assign().ID("c").Dot("VerifyTOTPSecret").Call(
+					constants.CtxVar(),
+					jen.ID("exampleUser").Dot("ID"),
+					jen.ID("exampleInput").Dot("TOTPToken"),
+				),
+				utils.AssertError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with invalid client URL",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
+				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+				jen.Line(),
+				jen.Err().Assign().ID("c").Dot("VerifyTOTPSecret").Call(
+					constants.CtxVar(),
+					jen.ID("exampleUser").Dot("ID"),
+					jen.ID("exampleInput").Dot("TOTPToken"),
+				),
+				utils.AssertError(jen.Err(), nil),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"with timeout",
+				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.Line(),
+				utils.BuildTestServer(
+					"ts",
+					utils.AssertEqual(
+						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+						jen.ID("expectedPath"),
+						jen.Lit("expected and actual paths do not match"),
+					),
+					utils.AssertEqual(
+						jen.ID(constants.RequestVarName).Dot("Method"),
+						jen.Qual("net/http", "MethodPost"),
+						nil,
+					),
+					jen.Line(),
+					jen.Qual("time", "Sleep").Call(jen.Lit(10).Times().Qual("time", "Minute")),
+					jen.Line(),
+					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusAccepted")),
+				),
+				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+				jen.ID("c").Dot("plainClient").Dot("Timeout").Equals().Qual("time", "Millisecond"),
+				jen.Line(),
+				jen.Err().Assign().ID("c").Dot("VerifyTOTPSecret").Call(
+					constants.CtxVar(),
+					jen.ID("exampleUser").Dot("ID"),
+					jen.ID("exampleInput").Dot("TOTPToken"),
+				),
+				utils.AssertError(jen.Err(), nil),
 			),
 		),
 		jen.Line(),

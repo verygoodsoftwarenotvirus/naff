@@ -15,7 +15,7 @@ import (
 func TestParseModels(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testing.T) {
+	T.Run("basic usecase", func(t *testing.T) {
 		exampleOutputPath := "things/stuff"
 		exampleCode := `
 package whatever
@@ -245,6 +245,7 @@ type Owner struct {
 type Item struct{
 	Name string
 	Details string
+
 	_META_ uintptr ` + "`" + `belongs_to:"Owner"` + "`" + `
 }
 `
@@ -322,6 +323,7 @@ type Owner struct {
 type Item struct{
 	Name string
 	Details string
+
 	_META_ uintptr ` + "`" + `belongs_to:"Owner,User"` + "`" + `
 }
 `
@@ -399,6 +401,7 @@ type Owner struct {
 type Item struct{
 	Name string
 	Details string
+
 	_META_ uintptr ` + "`" + `belongs_to:"Owner,User" restricted_to_user:"true"` + "`" + `
 }
 `
@@ -473,6 +476,7 @@ package whatever
 type Item struct{
 	Name string
 	Details string
+
 	_META_ uintptr ` + "`" + `belongs_to:"__nobody__"` + "`" + `
 }
 `
@@ -530,6 +534,7 @@ package whatever
 type Item struct{
 	Name string
 	Details string
+
 	_META_ uintptr ` + "`" + `belongs_to:"Owner"` + "`" + `
 }
 `
@@ -542,6 +547,63 @@ type Item struct{
 
 		_, _, actualErr := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
 		assert.Error(t, actualErr)
+	})
+
+	T.Run("with search enabled", func(t *testing.T) {
+		exampleOutputPath := "things/stuff"
+		exampleCode := `
+package whatever
+
+type Item struct{
+	Name string
+	Details string
+
+	_META_ uintptr ` + "`" + `search_enabled:"true"` + "`" + `
+}
+`
+		fset := token.NewFileSet()
+		f, err := parser.ParseFile(fset, "", exampleCode, parser.AllErrors)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		expectedDataTypes := []DataType{
+			{
+				Name: wordsmith.FromSingularPascalCase("Item"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(39),
+						UnderlyingType:        GetTypeForTypeName("string"),
+					},
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Details"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+						Pos:                   token.Pos(52),
+						UnderlyingType:        GetTypeForTypeName("string"),
+					},
+				},
+				BelongsToUser: true,
+				SearchEnabled: true,
+			},
+		}
+		expectedImports := []string{
+			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+		}
+
+		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+		assert.NoError(t, err)
+
+		assert.Equal(t, expectedDataTypes, actualDataTypes)
+		assert.Equal(t, expectedImports, actualImports)
 	})
 }
 

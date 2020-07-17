@@ -1288,6 +1288,12 @@ func (typ DataType) BuildFormatStringForHTTPClientListMethodTest(proj *Project) 
 	return modelRoute
 }
 
+func (typ DataType) BuildFormatStringForHTTPClientSearchMethodTest(proj *Project) (path string) {
+	modelRoute := "/" + filepath.Join("api", "v1", typ.Name.PluralRouteName(), "search")
+
+	return modelRoute
+}
+
 func (typ DataType) BuildFormatStringForHTTPClientCreateMethodTest(proj *Project) (path string) {
 	modelRoute := "/api/v1/"
 	owners := proj.FindOwnerTypeChain(typ)

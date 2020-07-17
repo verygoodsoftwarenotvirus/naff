@@ -34,7 +34,6 @@ type SuperPalabra interface {
 	ProperSingularCommonNameWithPrefix() string
 	PluralCommonName() string
 	SingularCommonNameWithPrefix() string
-	PluralCommonNameWithPrefix() string
 }
 
 type SuperWord struct {
@@ -115,10 +114,6 @@ func (s *SuperWord) PluralCommonName() string {
 
 func (s *SuperWord) SingularCommonNameWithPrefix() string {
 	return fmt.Sprintf("%s %s", AOrAn(s.Singular()), s.SingularCommonName())
-}
-
-func (s *SuperWord) PluralCommonNameWithPrefix() string {
-	return fmt.Sprintf("%s %s", AOrAn(s.Singular()), s.PluralCommonName())
 }
 
 // AOrAn return "a" or "an" depending on the input

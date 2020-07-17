@@ -283,10 +283,6 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 							var alsoBelongsToUser bool
 							tagWithoutBackticks := strings.ReplaceAll(tag, "`", "")
 
-							if strings.Contains(tagWithoutBackticks, `search_enabled:"true"`) {
-								dt.SearchEnabled = true
-							}
-
 							if strings.Contains(tag, belongsTo) {
 								tagWithoutBelongsTo := strings.ReplaceAll(tagWithoutBackticks, fmt.Sprintf("%s:", belongsTo), "")
 								properOwner := strings.ReplaceAll(tagWithoutBelongsTo, `"`, ``)
@@ -317,9 +313,15 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 									dt.BelongsToStruct = wordsmith.FromSingularPascalCase(properOwner)
 									dt.BelongsToUser = alsoBelongsToUser
 								}
-							} else if strings.Contains(tagWithoutBackticks, `restricted_to_user:"true"`) {
-								dt.RestrictedToUser = true
+							} else {
+								if strings.Contains(tagWithoutBackticks, `restricted_to_user:"true"`) {
+									dt.RestrictedToUser = true
+								}
+								if strings.Contains(tagWithoutBackticks, `search_enabled:"true"`) {
+									dt.SearchEnabled = true
+								}
 							}
+
 						}
 					} else {
 						var tag string

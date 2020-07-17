@@ -357,6 +357,7 @@ var (
 			},
 			BelongsToUser:    true,
 			RestrictedToUser: true,
+			SearchEnabled:    true,
 		},
 	}
 

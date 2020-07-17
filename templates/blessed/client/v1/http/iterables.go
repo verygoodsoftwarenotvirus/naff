@@ -25,6 +25,12 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret.Add(buildSomethingExists(proj, typ)...)
 	ret.Add(buildBuildGetSomethingRequestFuncDecl(proj, typ)...)
 	ret.Add(buildGetSomethingFuncDecl(proj, typ)...)
+
+	if typ.SearchEnabled {
+		ret.Add(buildBuildSearchSomethingRequestFuncDecl(proj, typ)...)
+		ret.Add(buildSearchSomethingFuncDecl(proj, typ)...)
+	}
+
 	ret.Add(buildBuildGetListOfSomethingRequestFuncDecl(proj, typ)...)
 	ret.Add(buildGetListOfSomethingFuncDecl(proj, typ)...)
 	ret.Add(buildBuildCreateSomethingRequestFuncDecl(proj, typ)...)
@@ -113,6 +119,17 @@ func buildV1ClientURLBuildingParamsForListOfSomething(proj *models.Project, firs
 	urlBuildingParams = append(urlBuildingParams,
 		jen.ID(basePath),
 	)
+
+	return urlBuildingParams
+}
+
+func buildV1ClientURLBuildingParamsForSearchingSomething(proj *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
+	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
+	urlBuildingParams := []jen.Code{
+		firstVar,
+		jen.ID(basePath),
+		jen.Lit("search"),
+	}
 
 	return urlBuildingParams
 }
@@ -288,6 +305,106 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), ts),
 			jen.Err().Error(),
 		).Block(block...,
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildBuildSearchSomethingRequestFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
+	ts := typ.Name.Plural()
+	commonNameWithPrefix := typ.Name.PluralCommonName()
+	funcName := fmt.Sprintf("BuildSearch%sRequest", ts)
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.ID("params").Assign().Qual("net/url", "Values").Values(),
+		jen.ID("params").Dot("Set").Call(
+			jen.Qual(proj.ModelsV1Package(), "SearchQueryKey"),
+			jen.ID("query"),
+		),
+		jen.ID("params").Dot("Set").Call(
+			jen.Qual(proj.ModelsV1Package(), "LimitQueryKey"),
+			jen.Qual("strconv", "FormatUint").Call(
+				jen.Uint64().Call(jen.ID("limit")),
+				jen.Lit(10),
+			),
+		),
+		jen.Line(),
+		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Callln(
+			buildV1ClientURLBuildingParamsForSearchingSomething(
+				proj,
+				jen.ID("params"),
+				typ,
+			)...,
+		),
+		attachURIToSpanCall(proj),
+		jen.Line(),
+		jen.Return().Qual("net/http", "NewRequestWithContext").Call(
+			constants.CtxVar(),
+			jen.Qual("net/http", "MethodGet"),
+			jen.ID("uri"),
+			jen.Nil(),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds an HTTP request for querying %s.", funcName, commonNameWithPrefix),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID("query").String(),
+			jen.ID("limit").Uint8(),
+		).Params(
+			jen.PointerTo().Qual("net/http", "Request"),
+			jen.Error(),
+		).Block(block...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildSearchSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
+	tp := typ.Name.Plural()
+	ts := typ.Name.Singular()
+	puvn := typ.Name.PluralUnexportedVarName()
+	funcName := fmt.Sprintf("Search%s", tp)
+	commonName := typ.Name.PluralCommonName()
+
+	block := []jen.Code{
+		utils.StartSpan(proj, true, funcName),
+		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildSearch%sRequest", tp)).Call(
+			constants.CtxVar(),
+			jen.ID("query"),
+			jen.ID("limit"),
+		),
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(jen.Nil(),
+				jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.Err()),
+			),
+		),
+		jen.Line(),
+		jen.If(jen.ID("retrieveErr").Assign().ID("c").Dot("retrieve").Call(constants.CtxVar(), jen.ID(constants.RequestVarName), jen.AddressOf().ID(puvn)), jen.ID("retrieveErr").DoesNotEqual().ID("nil")).Block(
+			jen.Return().List(jen.Nil(), jen.ID("retrieveErr")),
+		),
+		jen.Line(),
+		jen.Return().List(jen.ID(puvn), jen.Nil()),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s searches for a list of %s.", funcName, commonName),
+		jen.Line(),
+		newClientMethod(funcName).Params(
+			constants.CtxParam(),
+			jen.ID("query").String(),
+			jen.ID("limit").Uint8(),
+		).Params(
+			jen.ID(puvn).Index().Qual(proj.ModelsV1Package(), ts),
+			jen.Err().Error(),
+		).Block(
+			block...,
 		),
 		jen.Line(),
 	}

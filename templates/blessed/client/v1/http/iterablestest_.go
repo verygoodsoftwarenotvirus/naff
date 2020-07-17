@@ -20,6 +20,12 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret.Add(buildTestV1Client_GetSomething(proj, typ)...)
 	ret.Add(buildTestV1Client_BuildGetListOfSomethingRequest(proj, typ)...)
 	ret.Add(buildTestV1Client_GetListOfSomething(proj, typ)...)
+
+	if typ.SearchEnabled {
+		ret.Add(buildTestV1Client_BuildSearchSomethingRequest(proj, typ)...)
+		ret.Add(buildTestV1Client_SearchSomething(proj, typ)...)
+	}
+
 	ret.Add(buildTestV1Client_BuildCreateSomethingRequest(proj, typ)...)
 	ret.Add(buildTestV1Client_CreateSomething(proj, typ)...)
 	ret.Add(buildTestV1Client_BuildUpdateSomethingRequest(proj, typ)...)
@@ -309,6 +315,179 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 	return lines
 }
 
+func buildTestV1Client_BuildSearchSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
+	tp := typ.Name.Plural() // title plural
+
+	subtestLines := append(
+		typ.BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMethodTest(proj),
+		jen.ID("limit").Assign().Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call().Dot("Limit"),
+		jen.ID("exampleQuery").Assign().Lit("whatever"),
+		utils.ExpectMethod("expectedMethod", "MethodGet"),
+		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildSearch%sRequest", tp)).Call(
+			constants.CtxVar(),
+			jen.ID("exampleQuery"),
+			jen.ID("limit"),
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertEqual(
+			jen.ID("actual").Dot("Method"),
+			jen.ID("expectedMethod"),
+			jen.Lit("request should be a %s request"),
+			jen.ID("expectedMethod"),
+		),
+	)
+
+	lines := []jen.Code{
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildSearch%sRequest", tp)).Block(
+			utils.ParallelTest(nil),
+			jen.Line(),
+			utils.BuildSubTest("happy path", subtestLines...),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestV1Client_SearchSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	tp := typ.Name.Plural()   // title plural
+	ts := typ.Name.Singular() // title singular
+
+	modelListRoute := typ.BuildFormatStringForHTTPClientSearchMethodTest(proj)
+
+	structDecls := typ.BuildDependentObjectsForHTTPClientListRetrievalTest(proj)
+	happyPathSubtestLines := append(
+		structDecls,
+		jen.ID("limit").Assign().Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call().Dot("Limit"),
+		jen.ID("exampleQuery").Assign().Lit("whatever"),
+		jen.Line(),
+		jen.IDf("example%sList", ts).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", ts)).Call().Dot(tp),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+				jen.ID("expectedPath"),
+				jen.Lit("expected and actual paths do not match"),
+			),
+			utils.AssertEqual(
+				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.ModelsV1Package(), "SearchQueryKey")),
+				jen.ID("exampleQuery"),
+				jen.Lit("expected and actual search query param do not match"),
+			),
+			utils.AssertEqual(
+				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.ModelsV1Package(), "LimitQueryKey")),
+				jen.Qual("strconv", "FormatUint").Call(jen.Uint64().Call(jen.ID("limit")), jen.Lit(10)),
+				jen.Lit("expected and actual limit query param do not match"),
+			),
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("Method"),
+				jen.Qual("net/http", "MethodGet"),
+				nil,
+			),
+			utils.RequireNoError(
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.IDf("example%sList", ts)),
+				nil,
+			),
+		),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).Op(":=").ID("c").Dot(fmt.Sprintf("Search%s", tp)).Call(
+			constants.CtxVar(),
+			jen.ID("exampleQuery"),
+			jen.ID("limit"),
+		),
+		jen.Line(),
+		utils.RequireNotNil(jen.ID("actual"), nil),
+		utils.AssertNoError(jen.Err(), jen.Lit("no error should be returned")),
+		utils.AssertEqual(jen.IDf("example%sList", ts), jen.ID("actual"), nil),
+	)
+
+	invalidClientURLSubtestLines := append(
+		structDecls,
+		jen.ID("limit").Assign().Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call().Dot("Limit"),
+		jen.ID("exampleQuery").Assign().Lit("whatever"),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
+		jen.List(jen.ID("actual"), jen.Err()).
+			Op(":=").ID("c").Dot(fmt.Sprintf("Search%s", tp)).Call(
+			constants.CtxVar(),
+			jen.ID("exampleQuery"),
+			jen.ID("limit"),
+		),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
+	invalidResponseSubtestLines := append(
+		structDecls,
+		jen.ID("limit").Assign().Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call().Dot("Limit"),
+		jen.ID("exampleQuery").Assign().Lit("whatever"),
+		jen.Line(),
+		utils.BuildTestServer(
+			"ts",
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
+				jen.ID("expectedPath"),
+				jen.Lit("expected and actual paths do not match"),
+			),
+			utils.AssertEqual(
+				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.ModelsV1Package(), "SearchQueryKey")),
+				jen.ID("exampleQuery"),
+				jen.Lit("expected and actual search query param do not match"),
+			),
+			utils.AssertEqual(
+				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.ModelsV1Package(), "LimitQueryKey")),
+				jen.Qual("strconv", "FormatUint").Call(jen.Uint64().Call(jen.ID("limit")), jen.Lit(10)),
+				jen.Lit("expected and actual limit query param do not match"),
+			),
+			utils.AssertEqual(
+				jen.ID(constants.RequestVarName).Dot("Method"),
+				jen.Qual("net/http", "MethodGet"),
+				nil,
+			),
+			utils.RequireNoError(
+				jen.Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName)).Dot("Encode").Call(jen.Lit("BLAH")),
+				nil,
+			),
+		),
+		jen.Line(),
+		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
+		jen.List(jen.ID("actual"), jen.Err()).
+			Op(":=").ID("c").Dot(fmt.Sprintf("Search%s", tp)).Call(
+			constants.CtxVar(),
+			jen.ID("exampleQuery"),
+			jen.ID("limit"),
+		),
+		jen.Line(),
+		utils.AssertNil(jen.ID("actual"), nil),
+		utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
+	)
+
+	lines := []jen.Code{
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Search%s", tp)).Block(
+			utils.ParallelTest(nil),
+			jen.Line(),
+			jen.Const().ID("expectedPath").Equals().Lit(modelListRoute),
+			jen.Line(),
+			utils.BuildSubTest("happy path", happyPathSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid client URL", invalidClientURLSubtestLines...),
+			jen.Line(),
+			utils.BuildSubTest("with invalid response", invalidResponseSubtestLines...),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
 func buildTestV1Client_BuildGetListOfSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	tp := typ.Name.Plural() // title plural
 
@@ -346,7 +525,7 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(proj *models.Project, typ 
 }
 
 func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataType) []jen.Code {
-	tp := typ.Name.Plural()   // title plural
+	pn := typ.Name.Plural()   // title plural
 	ts := typ.Name.Singular() // title singular
 
 	modelListRoute := typ.BuildFormatStringForHTTPClientListMethodTest(proj)
@@ -373,7 +552,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 			"ts",
 			utils.AssertEqual(
 				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
-				uriDec,
+				jen.ID("expectedPath"),
 				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(
@@ -389,7 +568,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).
-			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
+			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", pn)).Call(
 			typ.BuildCallArgsForHTTPClientListRetrievalMethodTest(proj)...,
 		),
 		jen.Line(),
@@ -404,7 +583,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 		jen.List(jen.ID("actual"), jen.Err()).
-			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
+			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", pn)).Call(
 			typ.BuildCallArgsForHTTPClientListRetrievalMethodTest(proj)...,
 		),
 		jen.Line(),
@@ -420,7 +599,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 			"ts",
 			utils.AssertEqual(
 				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
-				uriDec,
+				jen.ID("expectedPath"),
 				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(
@@ -436,7 +615,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 		jen.List(jen.ID("actual"), jen.Err()).
-			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", tp)).Call(
+			Op(":=").ID("c").Dot(fmt.Sprintf("Get%s", pn)).Call(
 			typ.BuildCallArgsForHTTPClientListRetrievalMethodTest(proj)...,
 		),
 		jen.Line(),
@@ -445,8 +624,10 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", tp)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", pn)).Block(
 			utils.ParallelTest(nil),
+			jen.Line(),
+			jen.Const().ID("expectedPath").Equals().Add(uriDec),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),
 			jen.Line(),
@@ -511,17 +692,6 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	// routes
 	modelListRoute := typ.BuildFormatStringForHTTPClientCreateMethodTest(proj)
 
-	var uriDec *jen.Statement
-	urlFormatArgs := typ.BuildFormatCallArgsForHTTPClientCreationMethodTest(proj)
-	if len(urlFormatArgs) > 0 {
-		uriDec = utils.FormatString(
-			modelListRoute,
-			urlFormatArgs...,
-		)
-	} else {
-		uriDec = jen.Lit(modelListRoute)
-	}
-
 	happyPathSubtestLines := append(
 		typ.BuildDependentObjectsForHTTPClientCreationMethodTest(proj),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
@@ -530,7 +700,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 			"ts",
 			utils.AssertEqual(
 				jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
-				uriDec,
+				jen.ID("expectedPath"),
 				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
@@ -581,6 +751,8 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Create%s", ts)).Block(
 			utils.ParallelTest(nil),
+			jen.Line(),
+			jen.Const().ID("expectedPath").Equals().Lit(modelListRoute),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),
 			jen.Line(),
