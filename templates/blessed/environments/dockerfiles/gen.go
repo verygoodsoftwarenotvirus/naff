@@ -13,14 +13,17 @@ import (
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
 	files := map[string]func(projRoot, binaryName string) []byte{
-		"dockerfiles/development.Dockerfile":                 developmentDotDockerfile,
-		"dockerfiles/formatting.Dockerfile":                  formattingDotDockerfile,
-		"dockerfiles/frontend-tests.Dockerfile":              frontendTestDotDockerfile,
-		"dockerfiles/integration-coverage-server.Dockerfile": integrationCoverageServerDotDockerfile,
-		"dockerfiles/integration-server.Dockerfile":          integrationServerDotDockerfile,
-		"dockerfiles/integration-tests.Dockerfile":           integrationTestsDotDockerfile,
-		"dockerfiles/load-tests.Dockerfile":                  loadTestsDotDockerfile,
-		"dockerfiles/server.Dockerfile":                      serverDotDockerfile,
+		"environments/local/Dockerfile":                                           developmentDotDockerfile,
+		"environments/testing/dockerfiles/formatting.Dockerfile":                  formattingDotDockerfile,
+		"environments/testing/dockerfiles/frontend-tests.Dockerfile":              frontendTestDotDockerfile,
+		"environments/testing/dockerfiles/integration-coverage-server.Dockerfile": integrationCoverageServerDotDockerfile,
+		"environments/testing/dockerfiles/frontend-tests-server.Dockerfile":       frontendTestsServerDotDockerfile,
+		"environments/testing/dockerfiles/integration-tests.Dockerfile":           integrationTestsDotDockerfile,
+		"environments/testing/dockerfiles/load-tests.Dockerfile":                  loadTestsDotDockerfile,
+	}
+
+	for _, db := range project.EnabledDatabases() {
+		files[fmt.Sprintf("environments/testing/dockerfiles/integration-server-%s.Dockerfile", db)] = buildIntegrationServerDotDockerfile(db)
 	}
 
 	for filename, file := range files {
@@ -53,7 +56,7 @@ WORKDIR /go/src/%s
 
 RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
-ADD . .
+ADD ../../../dockerfiles .
 
 CMD if [ $(gofmt -l . | grep -Ev '^vendor\/' | head -c1 | wc -c) -ne 0 ]; then exit 1; fi
 `, projRoot))
@@ -83,10 +86,12 @@ RUN go build -trimpath -o /%s %s/cmd/server/v1
 FROM debian:stretch
 
 COPY --from=build-stage /%s /%s
-COPY config_files config_files
 
-RUN groupadd -g 999 appuser && \
-    useradd -r -u 999 -g appuser appuser
+RUN mkdir /home/appuser
+RUN groupadd --gid 999 appuser && \
+    useradd --system --uid 999 --gid appuser appuser
+RUN chown appuser /home/appuser
+WORKDIR /home/appuser
 USER appuser
 
 ENV DOCKER=true
@@ -136,7 +141,6 @@ RUN npm install && npm run build
 # final stage
 FROM debian:stable
 
-COPY config_files config_files
 COPY --from=build-stage /integration-server /integration-server
 
 EXPOSE 80
@@ -146,7 +150,48 @@ ENTRYPOINT ["/integration-server", "-test.coverprofile=/home/integration-coverag
 `, projRoot, projRoot, projRoot, projRoot, projRoot, projRoot))
 }
 
-func integrationServerDotDockerfile(projRoot, binaryName string) []byte {
+func buildIntegrationServerDotDockerfile(dbName string) func(projRoot, binaryName string) []byte {
+	return func(projRoot, binaryName string) []byte {
+		return []byte(fmt.Sprintf(`# build stage
+FROM golang:stretch AS build-stage
+
+WORKDIR /go/src/%s
+
+RUN apt-get update -y && apt-get install -y make git gcc musl-dev
+
+ADD . .
+
+RUN go build -trimpath -o /%s -v %s/cmd/server/v1
+
+# frontend-build-stage
+FROM node:latest AS frontend-build-stage
+
+WORKDIR /app
+
+ADD frontend/v1 .
+
+RUN npm install && npm run build
+
+# final stage
+FROM debian:stretch
+
+RUN mkdir /home/appuser
+RUN groupadd --gid 999 appuser && \
+    useradd --system --uid 999 --gid appuser appuser
+RUN chown appuser /home/appuser
+WORKDIR /home/appuser
+USER appuser
+
+COPY environments/testing/config_files/integration-tests-%s.toml /etc/config.toml
+COPY --from=build-stage /%s /%s
+COPY --from=frontend-build-stage /app/public /frontend
+
+ENTRYPOINT ["/%s"]
+`, projRoot, binaryName, projRoot, dbName, binaryName, binaryName, binaryName))
+	}
+}
+
+func frontendTestsServerDotDockerfile(projRoot, binaryName string) []byte {
 	return []byte(fmt.Sprintf(`# build stage
 FROM golang:stretch AS build-stage
 
@@ -170,11 +215,14 @@ RUN npm install && npm run build
 # final stage
 FROM debian:stretch
 
-RUN groupadd -g 999 appuser && \
-    useradd -r -u 999 -g appuser appuser
+RUN mkdir /home/appuser
+RUN groupadd --gid 999 appuser && \
+    useradd --system --uid 999 --gid appuser appuser
+RUN chown appuser /home/appuser
+WORKDIR /home/appuser
 USER appuser
 
-COPY config_files config_files
+COPY environments/testing/config_files/frontend-tests.toml /etc/config.toml
 COPY --from=build-stage /%s /%s
 COPY --from=frontend-build-stage /app/public /frontend
 
@@ -194,7 +242,7 @@ ADD . .
 ENTRYPOINT [ "go", "test", "-v", "-failfast", "%s/tests/v1/integration" ]
 
 # for a more specific test:
-# ENTRYPOINT [ "go", "test", "-v", "%s/tests/v1/integration", "-run", "TestExport/Exporting/should_be_exportable" ]
+# ENTRYPOINT [ "go", "test", "-v", "%s/tests/v1/integration", "-run", "InsertTestNameHere" ]
 `, projRoot, projRoot, projRoot))
 }
 
@@ -245,8 +293,11 @@ RUN npm install && npm run build
 # final stage
 FROM debian:stable
 
-RUN groupadd -g 999 appuser && \
-    useradd -r -u 999 -g appuser appuser
+RUN mkdir /home/appuser
+RUN groupadd --gid 999 appuser && \
+    useradd --system --uid 999 --gid appuser appuser
+RUN chown appuser /home/appuser
+WORKDIR /home/appuser
 USER appuser
 
 COPY config_files config_files
