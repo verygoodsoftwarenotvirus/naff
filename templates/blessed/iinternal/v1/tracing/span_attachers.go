@@ -1,6 +1,7 @@
 package encoding
 
 import (
+	"fmt"
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -23,8 +24,12 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 	ret.Add(buildAttachStringToSpan()...)
 	ret.Add(buildAttachFilterToSpan(proj)...)
 
+	searchEnabled := false
 	for _, typ := range proj.DataTypes {
 		ret.Add(buildAttachSomethingIDToSpan(typ)...)
+		if typ.SearchEnabled {
+			searchEnabled = true
+		}
 	}
 
 	ret.Add(buildAttachUserIDToSpan()...)
@@ -34,14 +39,22 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 	ret.Add(buildAttachWebhookIDToSpan()...)
 	ret.Add(buildAttachRequestURIToSpan()...)
 
+	if searchEnabled {
+		ret.Add(buildAttachSearchQueryToSpan()...)
+	}
+
 	return ret
 }
 
 func buildConstants(proj *models.Project) []jen.Code {
 	lines := []jen.Code{}
 
+	searchEnabled := false
 	for _, typ := range proj.DataTypes {
 		lines = append(lines, jen.IDf("%sIDSpanAttachmentKey", typ.Name.UnexportedVarName()).Equals().Litf("%s_id", typ.Name.RouteName()))
+		if typ.SearchEnabled {
+			searchEnabled = true
+		}
 	}
 
 	lines = append(lines,
@@ -54,6 +67,12 @@ func buildConstants(proj *models.Project) []jen.Code {
 		jen.ID("webhookIDSpanAttachmentKey").Equals().Lit("webhook_id"),
 		jen.ID("requestURISpanAttachmentKey").Equals().Lit("request_uri"),
 	)
+
+	if searchEnabled {
+		lines = append(lines,
+			jen.ID("searchQuerySpanAttachmentKey").Equals().Lit("search_query"),
+		)
+	}
 
 	return lines
 }
@@ -112,7 +131,7 @@ func buildAttachFilterToSpan(proj *models.Project) []jen.Code {
 					),
 					jen.Qual(utils.TracingLibrary, "StringAttribute").Call(
 						jen.ID("filterLimitSpanAttachmentKey"),
-						jen.Qual("strconv", "FormatUint").Call(jen.ID(constants.FilterVarName).Dot("Limit"), jen.Lit(10)),
+						jen.Qual("strconv", "FormatUint").Call(jen.Uint64().Call(jen.ID(constants.FilterVarName).Dot("Limit")), jen.Lit(10)),
 					),
 				),
 			),
@@ -128,14 +147,17 @@ func buildAttachSomethingIDToSpan(typ models.DataType) []jen.Code {
 	uvn := typ.Name.UnexportedVarName()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
+	funcName := fmt.Sprintf("Attach%sIDToSpan", sn)
+	paramName := fmt.Sprintf("%sID", uvn)
+
 	lines := []jen.Code{
-		jen.Commentf("Attach%sIDToSpan attaches %s ID to a given span.", sn, scnwp),
+		jen.Commentf("%s attaches %s ID to a given span.", funcName, scnwp),
 		jen.Line(),
-		jen.Func().IDf("Attach%sIDToSpan", sn).Params(
+		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(utils.TracingLibrary, "Span"),
-			jen.IDf("%sID", uvn).Uint64(),
+			jen.ID(paramName).Uint64(),
 		).Block(
-			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.IDf("%sIDSpanAttachmentKey", uvn), jen.IDf("%sID", uvn)),
+			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.IDf("%sIDSpanAttachmentKey", uvn), jen.ID(paramName)),
 		),
 		jen.Line(),
 	}
@@ -144,14 +166,19 @@ func buildAttachSomethingIDToSpan(typ models.DataType) []jen.Code {
 }
 
 func buildAttachUserIDToSpan() []jen.Code {
+	const (
+		funcName  = "AttachUserIDToSpan"
+		paramName = "userID"
+	)
+
 	lines := []jen.Code{
-		jen.Comment("AttachUserIDToSpan provides a consistent way to attach a user's ID to a span."),
+		jen.Commentf("%s provides a consistent way to attach a user's ID to a span.", funcName),
 		jen.Line(),
-		jen.Func().ID("AttachUserIDToSpan").Params(
+		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(utils.TracingLibrary, "Span"),
-			jen.ID("userID").Uint64(),
+			jen.ID(paramName).Uint64(),
 		).Block(
-			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("userIDSpanAttachmentKey"), jen.ID("userID")),
+			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("userIDSpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
 	}
@@ -160,14 +187,19 @@ func buildAttachUserIDToSpan() []jen.Code {
 }
 
 func buildAttachOAuth2ClientDatabaseIDToSpan() []jen.Code {
+	const (
+		funcName  = "AttachOAuth2ClientDatabaseIDToSpan"
+		paramName = "oauth2ClientID"
+	)
+
 	lines := []jen.Code{
-		jen.Comment("AttachOAuth2ClientDatabaseIDToSpan is a consistent way to attach an oauth2 client's ID to a span."),
+		jen.Commentf("%s is a consistent way to attach an oauth2 client's ID to a span.", funcName),
 		jen.Line(),
-		jen.Func().ID("AttachOAuth2ClientDatabaseIDToSpan").Params(
+		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(utils.TracingLibrary, "Span"),
-			jen.ID("oauth2ClientID").Uint64(),
+			jen.ID(paramName).Uint64(),
 		).Block(
-			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("oauth2ClientDatabaseIDSpanAttachmentKey"), jen.ID("oauth2ClientID")),
+			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("oauth2ClientDatabaseIDSpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
 	}
@@ -176,14 +208,19 @@ func buildAttachOAuth2ClientDatabaseIDToSpan() []jen.Code {
 }
 
 func buildAttachOAuth2ClientIDToSpan() []jen.Code {
+	const (
+		funcName  = "AttachOAuth2ClientIDToSpan"
+		paramName = "clientID"
+	)
+
 	lines := []jen.Code{
-		jen.Comment("AttachOAuth2ClientIDToSpan is a consistent way to attach an oauth2 client's Client ID to a span."),
+		jen.Commentf("%s is a consistent way to attach an oauth2 client's Client ID to a span.", funcName),
 		jen.Line(),
-		jen.Func().ID("AttachOAuth2ClientIDToSpan").Params(
+		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(utils.TracingLibrary, "Span"),
-			jen.ID("clientID").String(),
+			jen.ID(paramName).String(),
 		).Block(
-			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("oauth2ClientIDSpanAttachmentKey"), jen.ID("clientID")),
+			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("oauth2ClientIDSpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
 	}
@@ -192,14 +229,19 @@ func buildAttachOAuth2ClientIDToSpan() []jen.Code {
 }
 
 func buildAttachUsernameToSpan() []jen.Code {
+	const (
+		funcName  = "AttachUsernameToSpan"
+		paramName = "username"
+	)
+
 	lines := []jen.Code{
-		jen.Comment("AttachUsernameToSpan provides a consistent way to attach a user's username to a span."),
+		jen.Commentf("%s provides a consistent way to attach a user's username to a span.", funcName),
 		jen.Line(),
-		jen.Func().ID("AttachUsernameToSpan").Params(
+		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(utils.TracingLibrary, "Span"),
-			jen.ID("username").String(),
+			jen.ID(paramName).String(),
 		).Block(
-			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("usernameSpanAttachmentKey"), jen.ID("username")),
+			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("usernameSpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
 	}
@@ -208,14 +250,19 @@ func buildAttachUsernameToSpan() []jen.Code {
 }
 
 func buildAttachWebhookIDToSpan() []jen.Code {
+	const (
+		funcName  = "AttachWebhookIDToSpan"
+		paramName = "webhookID"
+	)
+
 	lines := []jen.Code{
-		jen.Comment("AttachWebhookIDToSpan provides a consistent way to attach a webhook's ID to a span."),
+		jen.Commentf("%s provides a consistent way to attach a webhook's ID to a span.", funcName),
 		jen.Line(),
-		jen.Func().ID("AttachWebhookIDToSpan").Params(
+		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(utils.TracingLibrary, "Span"),
-			jen.ID("webhookID").Uint64(),
+			jen.ID(paramName).Uint64(),
 		).Block(
-			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("webhookIDSpanAttachmentKey"), jen.ID("webhookID")),
+			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("webhookIDSpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
 	}
@@ -224,14 +271,40 @@ func buildAttachWebhookIDToSpan() []jen.Code {
 }
 
 func buildAttachRequestURIToSpan() []jen.Code {
+	const (
+		funcName  = "AttachRequestURIToSpan"
+		paramName = "uri"
+	)
+
 	lines := []jen.Code{
-		jen.Comment("AttachRequestURIToSpan attaches a given URI to a span."),
+		jen.Commentf("%s attaches a given URI to a span.", funcName),
 		jen.Line(),
-		jen.Func().ID("AttachRequestURIToSpan").Params(
+		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(utils.TracingLibrary, "Span"),
-			jen.ID("uri").String(),
+			jen.ID(paramName).String(),
 		).Block(
-			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("requestURISpanAttachmentKey"), jen.ID("uri")),
+			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("requestURISpanAttachmentKey"), jen.ID(paramName)),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildAttachSearchQueryToSpan() []jen.Code {
+	const (
+		funcName  = "AttachSearchQueryToSpan"
+		paramName = "query"
+	)
+
+	lines := []jen.Code{
+		jen.Commentf("%s attaches a given search query to a span.", funcName),
+		jen.Line(),
+		jen.Func().ID(funcName).Params(
+			jen.ID(utils.SpanVarName).PointerTo().Qual(utils.TracingLibrary, "Span"),
+			jen.ID(paramName).String(),
+		).Block(
+			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("searchQuerySpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
 	}

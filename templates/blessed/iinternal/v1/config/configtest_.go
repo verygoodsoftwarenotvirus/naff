@@ -15,7 +15,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("Test_randString").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("actual").Assign().ID("randString").Call(),
+			jen.ID("actual").Assign().ID("randString").Call(jen.ID("randStringSize")),
 			utils.AssertNotEmpty(jen.ID("actual"), nil),
 			utils.AssertLength(jen.ID("actual"), jen.Lit(52), nil),
 		),

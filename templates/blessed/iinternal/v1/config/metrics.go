@@ -59,7 +59,6 @@ func metricsDotGo(proj *models.Project) *jen.File {
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 		).Params(
 			jen.Qual(proj.InternalMetricsV1Package(), "InstrumentationHandler"),
-			jen.Error(),
 		).Block(
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("metrics_provider"), jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")),
 			jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("setting metrics provider")),
@@ -75,12 +74,14 @@ func metricsDotGo(proj *models.Project) *jen.File {
 						),
 					),
 					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-						jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("failed to create Prometheus exporter: %w"), jen.Err())),
+						jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("failed to create Prometheus exporter")),
+						jen.Return(jen.Nil()),
 					),
 					jen.Qual("go.opencensus.io/stats/view", "RegisterExporter").Call(jen.ID("p")), jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("metrics provider registered")),
 					jen.Line(),
 					jen.If(jen.Err().Assign().Qual(proj.InternalMetricsV1Package(), "RegisterDefaultViews").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
-						jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("registering default metric views: %w"), jen.Err())),
+						jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("registering default metric views")),
+						jen.Return(jen.Nil()),
 					),
 					jen.Qual(proj.InternalMetricsV1Package(), "RecordRuntimeStats").Call(
 						jen.Qual("time", "Duration").Callln(
@@ -91,8 +92,9 @@ func metricsDotGo(proj *models.Project) *jen.File {
 						),
 					),
 					jen.Line(),
-					jen.Return().List(jen.ID("p"), jen.Nil())),
-				jen.Default().Block(jen.Return().List(jen.Nil(), jen.ID("ErrInvalidMetricsProvider"))),
+					jen.Return(jen.ID("p")),
+					jen.Default().Block(jen.Return(jen.Nil())),
+				),
 			),
 		),
 		jen.Line(),

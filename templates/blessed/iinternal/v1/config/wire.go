@@ -11,6 +11,13 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, ret)
 
+	searchEnabled := false
+	for _, typ := range proj.DataTypes {
+		if typ.SearchEnabled {
+			searchEnabled = true
+		}
+	}
+
 	ret.Add(
 		jen.Line(),
 		jen.Comment("BEGIN it'd be neat if wire could do this for me one day."),
@@ -69,6 +76,21 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
+	if searchEnabled {
+		ret.Add(
+			jen.Comment("ProvideSearchSettings is an obligatory function that"),
+			jen.Line(),
+			jen.Comment("we're required to have because wire doesn't do it for us."),
+			jen.Line(),
+			jen.Func().ID("ProvideSearchSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("SearchSettings")).Block(
+				jen.Return().ID("c").Dot(
+					"Search",
+				),
+			),
+			jen.Line(),
+		)
+	}
+
 	ret.Add(
 		jen.Line(),
 		jen.Comment("END it'd be neat if wire could do this for me one day."),
@@ -83,6 +105,13 @@ func wireDotGo(proj *models.Project) *jen.File {
 				jen.ID("ProvideConfigAuthSettings"),
 				jen.ID("ProvideConfigDatabaseSettings"),
 				jen.ID("ProvideConfigFrontendSettings"),
+				func() jen.Code {
+					if searchEnabled {
+						return jen.ID("ProvideSearchSettings")
+					}
+					return jen.Null()
+				}(),
+				jen.ID("ProvideSessionManager"),
 			),
 		),
 		jen.Line(),
