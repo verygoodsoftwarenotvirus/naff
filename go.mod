@@ -25,6 +25,7 @@ require (
 	github.com/dave/jennifer v1.3.0
 	github.com/emicklei/hazana v1.6.1
 	github.com/gertd/go-pluralize v0.1.1
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-chi/cors v1.0.0
 	github.com/go-lintpack/lintpack v0.5.2 // indirect
