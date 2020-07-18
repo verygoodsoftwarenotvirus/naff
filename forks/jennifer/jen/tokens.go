@@ -430,6 +430,28 @@ func (s *Statement) Times() *Statement {
 	return s
 }
 
+// ReceiveFromChannel renders the provided operator / token.
+func ReceiveFromChannel() *Statement {
+	return newStatement().ReceiveFromChannel()
+}
+
+// ReceiveFromChannel renders the provided operator / token.
+func (g *Group) ReceiveFromChannel() *Statement {
+	s := ReceiveFromChannel()
+	g.items = append(g.items, s)
+	return s
+}
+
+// ReceiveFromChannel renders the provided operator / token.
+func (s *Statement) ReceiveFromChannel() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "<-",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // GreaterThan renders the provided operator / token.
 func GreaterThan() *Statement {
 	return newStatement().GreaterThan()

@@ -11,6 +11,7 @@ import (
 	httpclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/client/v1/http"
 	configgen "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/config_gen/v1"
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/server/v1"
+	indexinitializercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/tools/index_initializer"
 	twofactorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/cmd/tools/two_factor"
 	composefiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/composefiles"
 	database "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/database/v1"
@@ -57,12 +58,21 @@ const async = true
 // RenderProject renders a project
 func RenderProject(proj *naffmodels.Project) error {
 	allActive := true
+	searchActive := false
+
+	for _, typ := range proj.DataTypes {
+		if typ.SearchEnabled && !searchActive {
+			searchActive = true
+			break
+		}
+	}
 
 	packageRenderers := []renderHelper{
 		{name: "httpclient", renderFunc: httpclient.RenderPackage, activated: allActive},
 		{name: "configgen", renderFunc: configgen.RenderPackage, activated: allActive},
 		{name: "servercmd", renderFunc: servercmd.RenderPackage, activated: allActive},
 		{name: "twofactorcmd", renderFunc: twofactorcmd.RenderPackage, activated: allActive},
+		{name: "indexinitializercmd", renderFunc: indexinitializercmd.RenderPackage, activated: searchActive},
 		{name: "database", renderFunc: database.RenderPackage, activated: allActive},
 		{name: "internalauth", renderFunc: internalauth.RenderPackage, activated: allActive},
 		{name: "internalauthmock", renderFunc: internalauthmock.RenderPackage, activated: allActive},

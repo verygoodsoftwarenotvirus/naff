@@ -47,6 +47,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 			jen.Qual(internalConfigImp, "Providers"),
 			jen.Qual(internalAuthImp, "Providers"),
 			jen.Comment("server things"),
+			jen.Qual(proj.InternalSearchV1Package("bleve"), "Providers"),
 			jen.Qual(serverImp, "Providers"),
 			jen.Qual(internalEncodingImp, "Providers"),
 			jen.Qual(httpServerImp, "Providers"),
@@ -90,8 +91,9 @@ func wireDotGo(proj *models.Project) *jen.File {
 			constants.CtxParam(),
 			jen.ID("cfg").PointerTo().Qual(internalConfigImp, "ServerConfig"),
 			jen.ID(constants.LoggerVarName).Qual(loggingImp, "Logger"),
-			jen.ID("database").Qual(databaseClientImp, "Database")).
-			Params(jen.PointerTo().Qual(serverImp, "Server"), jen.Error()).Block(
+			jen.ID("database").Qual(databaseClientImp, "DataManager"),
+			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
+		).Params(jen.PointerTo().Qual(serverImp, "Server"), jen.Error()).Block(
 			jen.Qual("github.com/google/wire", "Build").Callln(
 				buildWireBuildCallArgs()...,
 			),
