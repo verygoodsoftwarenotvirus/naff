@@ -13,7 +13,7 @@ func clientDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, ret)
 
 	ret.Add(
-		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "Database").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "DataManager").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -30,7 +30,7 @@ func clientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("the actual database querying is performed."),
 		jen.Line(),
-		jen.Type().ID("Client").Struct(jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
+		jen.Type().ID("Client").Struct(jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "DataManager"),
 			jen.ID("debug").Bool(), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")),
 		jen.Line(),
 	)
@@ -83,10 +83,10 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 		jen.Func().ID(funcName).Paramsln(
 			constants.CtxParam(),
 			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
-			jen.ID("querier").Qual(proj.DatabaseV1Package(), "Database"),
+			jen.ID("querier").Qual(proj.DatabaseV1Package(), "DataManager"),
 			jen.ID("debug").Bool(),
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
-		).Params(jen.Qual(proj.DatabaseV1Package(), "Database"), jen.Error()).Block(
+		).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager"), jen.Error()).Block(
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("querier").MapAssign().ID("querier"),

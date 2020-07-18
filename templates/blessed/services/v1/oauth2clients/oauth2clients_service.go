@@ -64,7 +64,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.Comment("Service manages our OAuth2 clients via HTTP."),
 			jen.ID("Service").Struct(
 				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
-				jen.ID("database").Qual(proj.DatabaseV1Package(), "Database"),
+				jen.ID("database").Qual(proj.DatabaseV1Package(), "DataManager"),
 				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 				jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 				jen.ID("urlClientIDExtractor").Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
@@ -74,14 +74,14 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 
 			jen.Line(),
 			jen.ID("clientStore").Struct(
-				jen.ID("database").Qual(proj.DatabaseV1Package(), "Database"),
+				jen.ID("database").Qual(proj.DatabaseV1Package(), "DataManager"),
 			),
 		),
 		jen.Line(),
 	)
 
 	ret.Add(
-		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "Database")).Params(jen.PointerTo().ID("clientStore")).Block(
+		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.PointerTo().ID("clientStore")).Block(
 			jen.ID("cs").Assign().AddressOf().ID("clientStore").Valuesln(
 				jen.ID("database").MapAssign().ID("db")),
 			jen.Return().ID("cs"),
@@ -111,7 +111,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientsService").Paramsln(
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
-			jen.ID("db").Qual(proj.DatabaseV1Package(), "Database"),
+			jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager"),
 			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 			jen.ID("counterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),

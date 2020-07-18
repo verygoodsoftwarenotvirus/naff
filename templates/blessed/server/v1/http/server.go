@@ -45,7 +45,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		lines = append(lines,
 			jen.Line(),
 			jen.Comment("infra things."),
-			jen.ID("db").Qual(proj.DatabaseV1Package(), "Database"),
+			jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager"),
 			jen.ID("config").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 			jen.ID("router").PointerTo().Qual("github.com/go-chi/chi", "Mux"),
 			jen.ID("httpServer").PointerTo().Qual("net/http", "Server"),
@@ -88,7 +88,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 			jen.ID("usersService").Qual(proj.ModelsV1Package(), "UserDataServer"),
 			jen.ID("oauth2Service").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer"),
 			jen.ID("webhooksService").Qual(proj.ModelsV1Package(), "WebhookDataServer"),
-			jen.ID("db").Qual(proj.DatabaseV1Package(), "Database"),
+			jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager"),
 			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		)

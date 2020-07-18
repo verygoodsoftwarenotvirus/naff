@@ -30,7 +30,7 @@ func wireDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	ret.Add(
 		jen.Commentf("Provide%sDataManager turns a database into an %sDataManager.", sn, sn),
 		jen.Line(),
-		jen.Func().ID(fmt.Sprintf("Provide%sDataManager", sn)).Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "Database")).Params(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn))).Block(
+		jen.Func().ID(fmt.Sprintf("Provide%sDataManager", sn)).Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn))).Block(
 			jen.Return().ID("db"),
 		),
 		jen.Line(),

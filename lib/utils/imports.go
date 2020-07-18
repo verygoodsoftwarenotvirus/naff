@@ -14,15 +14,16 @@ import (
 )
 
 const (
-	CoreOAuth2Pkg      = "golang.org/x/oauth2"
-	LoggingPkg         = "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	NoopLoggingPkg     = "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	AssertPkg          = "github.com/stretchr/testify/assert"
-	MustAssertPkg      = "github.com/stretchr/testify/require"
-	MockPkg            = "github.com/stretchr/testify/mock"
-	FakeLibrary        = "github.com/brianvoe/gofakeit/v5"
-	TracingLibrary     = "go.opencensus.io/trace"
-	FlagParsingLibrary = "github.com/spf13/pflag"
+	CoreOAuth2Pkg         = "golang.org/x/oauth2"
+	LoggingPkg            = "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
+	NoopLoggingPkg        = "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
+	AssertPkg             = "github.com/stretchr/testify/assert"
+	MustAssertPkg         = "github.com/stretchr/testify/require"
+	MockPkg               = "github.com/stretchr/testify/mock"
+	FakeLibrary           = "github.com/brianvoe/gofakeit/v5"
+	TracingLibrary        = "go.opencensus.io/trace"
+	FlagParsingLibrary    = "github.com/spf13/pflag"
+	SessionManagerLibrary = "github.com/alexedwards/scs/v2"
 )
 
 func AddImports(proj *models.Project, file *jen.File) {

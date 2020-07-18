@@ -87,7 +87,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	ret.Add(
-		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "Database").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "DataManager").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
 		jen.Line(),
 		jen.Type().Defs(
 			jen.Commentf("%s is our main %s interaction db.", sn, sn),
@@ -146,7 +146,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	ret.Add(
 		jen.Commentf("Provide%s provides a %s%s controller.", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "Database")).Block(
+		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager")).Block(
 			jen.Return().AddressOf().IDf(sn).Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("debug").MapAssign().ID("debug"),
