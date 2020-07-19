@@ -7,6 +7,8 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+const routingLibrary = "github.com/go-chi/chi"
+
 func buildCORSHandlerDef() []jen.Code {
 	return []jen.Code{
 		jen.Comment("Basic CORS, for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing"),
@@ -43,6 +45,12 @@ func routesDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Const().Defs(
 			jen.ID("root").Equals().Lit("/"),
+			func() jen.Code {
+				if proj.SearchEnabled() {
+					return jen.ID("searchRoot").Equals().Lit("/search")
+				}
+				return jen.Null()
+			}(),
 			jen.ID("numericIDPattern").Equals().Lit(`/{%s:[0-9]+}`),
 			jen.ID("oauth2IDPattern").Equals().Lit(`/{%s:[0-9_\-]+}`),
 		),
@@ -59,9 +67,9 @@ func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
 
 	for _, typ := range proj.DataTypes {
 		n := typ.Name
-		uvn := typ.Name.UnexportedVarName()
+		sn := n.Singular()
+		uvn := n.UnexportedVarName()
 		puvn := n.PluralUnexportedVarName()
-		singleRouteVar := jen.IDf("%sRouteParam", n.UnexportedVarName())
 
 		pathParts := []jen.Code{}
 		for _, pt := range proj.FindOwnerTypeChain(typ) {
@@ -74,6 +82,15 @@ func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
 		g = append(g,
 			jen.Comment(n.Plural()),
 			jen.IDf("%sPath", uvn).Assign().Lit(typ.Name.PluralRouteName()),
+			jen.IDf("%sRouteWithPrefix", puvn).Assign().Qual("fmt", "Sprintf").Call(
+				jen.Lit("/%s"),
+				func() jen.Code {
+					if typ.BelongsToStruct != nil {
+						return jen.IDf("%sRoute", puvn)
+					}
+					return jen.IDf("%sPath", uvn)
+				}(),
+			),
 			jen.IDf("%sRouteParam", uvn).Assign().Qual("fmt", "Sprintf").Call(
 				jen.ID("numericIDPattern"),
 				jen.Qual(proj.ServiceV1Package(typ.Name.PackageName()), "URIParamKey"),
@@ -87,24 +104,23 @@ func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
 				}
 				return jen.Null()
 			}(),
-			jen.IDf("%sRouteWithPrefix", puvn).Assign().Qual("fmt", "Sprintf").Call(
-				jen.Lit("/%s"),
-				func() jen.Code {
-					if typ.BelongsToStruct != nil {
-						return jen.IDf("%sRoute", puvn)
-					}
-					return jen.IDf("%sPath", uvn)
-				}(),
-			),
 			jen.IDf("%sRouter", "v1").Dot("Route").Call(
 				jen.IDf("%sRouteWithPrefix", puvn),
-				jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual("github.com/go-chi/chi", "Router")).Block(
+				jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual(routingLibrary, "Router")).Block(
 					jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("CreateHandler").Call()),
-					jen.IDf("%sRouter", puvn).Dot("Get").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler").Call()),
-					jen.IDf("%sRouter", puvn).Dot("Head").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler").Call()),
-					jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("UpdateInputMiddleware")).Dot("Put").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("UpdateHandler").Call()),
-					jen.IDf("%sRouter", puvn).Dot("Delete").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ArchiveHandler").Call()),
+					jen.IDf("%sRouter", puvn).Dot("Route").Call(jen.IDf("%sRouteParam", uvn), jen.Func().Params(jen.IDf("single%sRouter", sn).Qual(routingLibrary, "Router")).Block(
+						jen.IDf("single%sRouter", sn).Dot("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler").Call()),
+						jen.IDf("single%sRouter", sn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("UpdateHandler").Call()),
+						jen.IDf("single%sRouter", sn).Dot("Delete").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ArchiveHandler").Call()),
+						jen.IDf("single%sRouter", sn).Dot("Head").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler").Call()),
+					)),
 					jen.IDf("%sRouter", puvn).Dot("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ListHandler").Call()),
+					func() jen.Code {
+						if typ.SearchEnabled {
+							return jen.IDf("%sRouter", puvn).Dot("Get").Call(jen.ID("searchRoot"), jen.ID("s").Dotf("%sService", puvn).Dot("SearchHandler").Call())
+						}
+						return jen.Null()
+					}(),
 				),
 			),
 			jen.Line(),
@@ -115,7 +131,7 @@ func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
 }
 
 func buildSubRouterDecl(proj *models.Project, doneMap map[string]bool, routerPrefix string, typ models.DataType) jen.Code {
-	x := jen.IDf("%sRouter", routerPrefix).Dot("Route").Call(jen.Litf("/%s", typ.Name.PluralRouteName()), jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual("github.com/go-chi/chi", "Router")).Block(
+	x := jen.IDf("%sRouter", routerPrefix).Dot("Route").Call(jen.Litf("/%s", typ.Name.PluralRouteName()), jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual(routingLibrary, "Router")).Block(
 		buildIterableAPIRoutesBlock(proj, doneMap, "", typ)...,
 	))
 
@@ -166,7 +182,7 @@ func buildIterableAPIRoutesBlock(proj *models.Project, doneMap map[string]bool, 
 
 func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 	block := []jen.Code{
-		jen.ID("router").Assign().Qual("github.com/go-chi/chi", "NewRouter").Call(),
+		jen.ID("router").Assign().Qual(routingLibrary, "NewRouter").Call(),
 		jen.Line(),
 	}
 	block = append(block, buildCORSHandlerDef()...)
@@ -190,7 +206,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Comment("all middleware must be defined before routes on a mux."),
 		jen.Line(),
-		jen.ID("router").Dot("Route").Call(jen.Lit("/_meta_"), jen.Func().Params(jen.ID("metaRouter").Qual("github.com/go-chi/chi", "Router")).Block(
+		jen.ID("router").Dot("Route").Call(jen.Lit("/_meta_"), jen.Func().Params(jen.ID("metaRouter").Qual(routingLibrary, "Router")).Block(
 			jen.ID("health").Assign().Qual("github.com/heptiolabs/healthcheck", "NewHandler").Call(),
 			jen.Comment("Expose a liveness check on /live"),
 			jen.ID("metaRouter").Dot("Get").Call(jen.Lit("/live"), jen.ID("health").Dot("LiveEndpoint")),
@@ -220,17 +236,23 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 		jen.ID("router").Dot("With").Callln(
 			jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.True()),
 			jen.ID("s").Dot("authService").Dot("AdminMiddleware"),
-		).Dot("Route").Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").Qual("github.com/go-chi/chi", "Router")).Block(
+		).Dot("Route").Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").Qual(routingLibrary, "Router")).Block(
 			jen.ID("adminRouter").Dot("Post").Call(jen.Lit("/cycle_cookie_secret"), jen.ID("s").Dot("authService").Dot("CycleSecretHandler").Call()),
 		)),
 		jen.Line(),
-		jen.ID("router").Dot("Route").Call(jen.Lit("/users"), jen.Func().Params(jen.ID("userRouter").Qual("github.com/go-chi/chi", "Router")).Block(
+		jen.ID("router").Dot("Route").Call(jen.Lit("/users"), jen.Func().Params(jen.ID("userRouter").Qual(routingLibrary, "Router")).Block(
 			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("UserLoginInputMiddleware")).Dot("Post").Call(jen.Lit("/login"), jen.ID("s").Dot("authService").Dot("LoginHandler").Call()),
 			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware")).Dot("Post").Call(jen.Lit("/logout"), jen.ID("s").Dot("authService").Dot("LogoutHandler").Call()),
 			jen.Line(),
 			jen.ID("userIDPattern").Assign().Qual("fmt", "Sprintf").Call(jen.ID("oauth2IDPattern"), jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
 			jen.Line(),
 			jen.ID("userRouter").Dot("Get").Call(jen.ID("root"), jen.ID("s").Dot("usersService").Dot("ListHandler").Call()),
+			jen.ID("userRouter").Dot("With").Call(
+				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
+			).Dot("Get").Call(
+				jen.Lit("/status"),
+				jen.ID("s").Dot("authService").Dot("StatusHandler").Call(),
+			),
 			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("usersService").Dot("UserInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dot("usersService").Dot("CreateHandler").Call()),
 			jen.ID("userRouter").Dot("Get").Call(jen.ID("userIDPattern"), jen.ID("s").Dot("usersService").Dot("ReadHandler").Call()),
 			jen.ID("userRouter").Dot("Delete").Call(jen.ID("userIDPattern"), jen.ID("s").Dot("usersService").Dot("ArchiveHandler").Call()),
@@ -241,12 +263,15 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 			).Dot("Post").Call(jen.Lit("/totp_secret/new"), jen.ID("s").Dot("usersService").Dot("NewTOTPSecretHandler").Call()),
 			jen.Line(),
 			jen.ID("userRouter").Dot("With").Callln(
+				jen.ID("s").Dot("usersService").Dot("TOTPSecretVerificationInputMiddleware"),
+			).Dot("Post").Call(jen.Lit("/totp_secret/verify"), jen.ID("s").Dot("usersService").Dot("TOTPSecretVerificationHandler").Call()),
+			jen.ID("userRouter").Dot("With").Callln(
 				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
 				jen.ID("s").Dot("usersService").Dot("PasswordUpdateInputMiddleware"),
 			).Dot("Put").Call(jen.Lit("/password/new"), jen.ID("s").Dot("usersService").Dot("UpdatePasswordHandler").Call()),
 		)),
 		jen.Line(),
-		jen.ID("router").Dot("Route").Call(jen.Lit("/oauth2"), jen.Func().Params(jen.ID("oauth2Router").Qual("github.com/go-chi/chi", "Router")).Block(
+		jen.ID("router").Dot("Route").Call(jen.Lit("/oauth2"), jen.Func().Params(jen.ID("oauth2Router").Qual(routingLibrary, "Router")).Block(
 			jen.ID("oauth2Router").Dot("With").Callln(
 				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
 				jen.ID("s").Dot("oauth2ClientsService").Dot("CreationInputMiddleware"),
@@ -267,7 +292,8 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 			)),
 		)),
 		jen.Line(),
-		jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.True())).Dot("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual("github.com/go-chi/chi", "Router")).Block(
+		jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.True())).
+			Dotln("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual(routingLibrary, "Router")).Block(
 			v1RouterBlock...,
 		)),
 		jen.Line(),
@@ -287,7 +313,7 @@ func buildWebhookAPIRoutes(proj *models.Project) jen.Code {
 	g.Add(
 		jen.Comment("Webhooks."),
 		jen.Line(),
-		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/webhooks"), jen.Func().Params(jen.ID("webhookRouter").Qual("github.com/go-chi/chi", "Router")).Block(
+		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/webhooks"), jen.Func().Params(jen.ID("webhookRouter").Qual(routingLibrary, "Router")).Block(
 			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
 			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("CreateHandler").Call()),
 			jen.ID("webhookRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("ReadHandler").Call()),
@@ -303,7 +329,7 @@ func buildWebhookAPIRoutes(proj *models.Project) jen.Code {
 func buildOAuth2ClientsAPIRoutes(proj *models.Project) []jen.Code {
 	return []jen.Code{
 		jen.Comment("OAuth2 Clients."),
-		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/oauth2/clients"), jen.Func().Params(jen.ID("clientRouter").Qual("github.com/go-chi/chi", "Router")).Block(
+		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/oauth2/clients"), jen.Func().Params(jen.ID("clientRouter").Qual(routingLibrary, "Router")).Block(
 			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
 			jen.Comment("CreateHandler is not bound to an OAuth2 authentication token."),
 			jen.Comment("UpdateHandler not supported for OAuth2 clients."),

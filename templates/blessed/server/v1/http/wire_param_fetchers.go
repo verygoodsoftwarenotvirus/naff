@@ -21,7 +21,6 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 		args = append(args,
 			jen.ID("ProvideUsersServiceUserIDFetcher"),
 			jen.ID("ProvideOAuth2ClientsServiceClientIDFetcher"),
-			jen.ID("ProvideAuthServiceUserIDFetcher"),
 		)
 
 		for _, typ := range proj.DataTypes {
@@ -104,15 +103,6 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("ProvideAuthServiceUserIDFetcher provides a UsernameFetcher."),
-		jen.Line(),
-		jen.Func().ID("ProvideAuthServiceUserIDFetcher").Params().Params(jen.Qual(proj.ServiceV1AuthPackage(), "UserIDFetcher")).Block(
-			jen.Return().ID("userIDFetcherFromRequestContext"),
-		),
-		jen.Line(),
-	)
-
-	code.Add(
 		jen.Comment("ProvideWebhooksServiceUserIDFetcher provides a UserIDFetcher."),
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksServiceUserIDFetcher").Params().Params(jen.Qual(proj.ServiceV1WebhooksPackage(), "UserIDFetcher")).Block(
@@ -143,8 +133,8 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("userIDFetcherFromRequestContext fetches a user ID from a request routed by chi."),
 		jen.Line(),
 		jen.Func().ID("userIDFetcherFromRequestContext").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block( //if userID, ok := req.Context().Value(models.UserIDKey).(uint64); ok {
-			jen.If(jen.List(jen.ID(constants.UserIDVarName), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()), jen.ID("ok")).Block(
-				jen.Return(jen.ID(constants.UserIDVarName)),
+			jen.If(jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo")), jen.ID("ok").And().ID("si").DoesNotEqual().Nil()).Block(
+				jen.Return(jen.ID("si").Dot(constants.UserIDFieldName)),
 			),
 			jen.Return(jen.Zero()),
 		),

@@ -48,15 +48,7 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 		jen.Line(),
 	)
 
-	searchEnabled := false
-	for _, typ := range proj.DataTypes {
-		if typ.SearchEnabled {
-			searchEnabled = true
-			break
-		}
-	}
-
-	if searchEnabled {
+	if proj.SearchEnabled() {
 		code.Add(
 			jen.Comment("SearchHandler implements our interface requirements."),
 			jen.Line(),

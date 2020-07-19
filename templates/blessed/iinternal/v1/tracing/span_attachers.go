@@ -23,15 +23,6 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 	code.Add(buildAttachUint64ToSpan()...)
 	code.Add(buildAttachStringToSpan()...)
 	code.Add(buildAttachFilterToSpan(proj)...)
-
-	searchEnabled := false
-	for _, typ := range proj.DataTypes {
-		code.Add(buildAttachSomethingIDToSpan(typ)...)
-		if typ.SearchEnabled {
-			searchEnabled = true
-		}
-	}
-
 	code.Add(buildAttachUserIDToSpan()...)
 	code.Add(buildAttachOAuth2ClientDatabaseIDToSpan()...)
 	code.Add(buildAttachOAuth2ClientIDToSpan()...)
@@ -39,7 +30,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 	code.Add(buildAttachWebhookIDToSpan()...)
 	code.Add(buildAttachRequestURIToSpan()...)
 
-	if searchEnabled {
+	if proj.SearchEnabled() {
 		code.Add(buildAttachSearchQueryToSpan()...)
 	}
 
@@ -49,12 +40,8 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 func buildConstants(proj *models.Project) []jen.Code {
 	lines := []jen.Code{}
 
-	searchEnabled := false
 	for _, typ := range proj.DataTypes {
 		lines = append(lines, jen.IDf("%sIDSpanAttachmentKey", typ.Name.UnexportedVarName()).Equals().Litf("%s_id", typ.Name.RouteName()))
-		if typ.SearchEnabled {
-			searchEnabled = true
-		}
 	}
 
 	lines = append(lines,
@@ -68,7 +55,7 @@ func buildConstants(proj *models.Project) []jen.Code {
 		jen.ID("requestURISpanAttachmentKey").Equals().Lit("request_uri"),
 	)
 
-	if searchEnabled {
+	if proj.SearchEnabled() {
 		lines = append(lines,
 			jen.ID("searchQuerySpanAttachmentKey").Equals().Lit("search_query"),
 		)

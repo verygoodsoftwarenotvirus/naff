@@ -153,13 +153,8 @@ func serverDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("ih"), jen.Err()).Assign().ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID(constants.LoggerVarName)),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidMetricsProvider")).Block(
-				jen.Return().List(jen.Nil(), jen.Err()),
-			),
-			jen.If(jen.ID("ih").DoesNotEqual().ID("nil")).Block(
-				jen.ID("srv").Dot("setupRouter").Call(jen.ID("cfg").Dot("Frontend"), jen.ID("ih")),
-			),
+			jen.ID("metricsHandler").Assign().ID("cfg").Dot("ProvideInstrumentationHandler").Call(jen.ID(constants.LoggerVarName)),
+			jen.ID("srv").Dot("setupRouter").Call(jen.ID("cfg").Dot("Frontend"), jen.ID("metricsHandler")),
 			jen.Line(),
 			jen.ID("srv").Dot("httpServer").Dot("Handler").Equals().AddressOf().Qual("go.opencensus.io/plugin/ochttp", "Handler").Valuesln(
 				jen.ID("Handler").MapAssign().ID("srv").Dot("router"),

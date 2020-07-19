@@ -69,18 +69,6 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestProvideAuthServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			utils.BuildSubTestWithoutContext(
-				"obligatory",
-				jen.Underscore().Equals().ID("ProvideAuthServiceUserIDFetcher").Call(),
-			),
-		),
-		jen.Line(),
-	)
-
-	code.Add(
 		jen.Func().ID("TestProvideWebhooksServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -122,19 +110,20 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
+				utils.BuildFakeVar(proj, "User"),
+				jen.ID("expected").Assign().ID("exampleUser").Dot("ToSessionInfo").Call(),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
-					jen.Qual("context", "WithValue").Callln(
+					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
 						jen.ID("expected"),
 					),
 				),
 				jen.Line(),
 				jen.ID("actual").Assign().ID("userIDFetcherFromRequestContext").Call(jen.ID(constants.RequestVarName)),
-				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
+				utils.AssertEqual(jen.ID("expected").Dot(constants.UserIDFieldName), jen.ID("actual"), nil),
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

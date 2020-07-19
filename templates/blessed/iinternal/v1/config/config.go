@@ -157,11 +157,9 @@ func configDotGo(proj *models.Project) *jen.File {
 }
 
 func buildTypeDefinitions(proj *models.Project) []jen.Code {
-	searchEnabled := false
 	searchSettingsFields := []jen.Code{}
 	for _, typ := range proj.DataTypes {
 		if typ.SearchEnabled {
-			searchEnabled = true
 			searchSettingsFields = append(searchSettingsFields,
 				jen.Commentf("%sIndexPath indicates where our %s search index files should go.", typ.Name.Plural(), typ.Name.PluralCommonName()),
 				jen.IDf("%sIndexPath", typ.Name.Plural()).Qual(proj.InternalSearchV1Package(), "IndexPath").Tag(map[string]string{
@@ -329,7 +327,7 @@ func buildTypeDefinitions(proj *models.Project) []jen.Code {
 		jen.Line(),
 	}
 
-	if searchEnabled {
+	if proj.SearchEnabled() {
 		lines = append(lines,
 			jen.Comment("SearchSettings contains settings regarding search indices."),
 			jen.ID("SearchSettings").Struct(

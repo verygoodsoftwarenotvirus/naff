@@ -108,6 +108,17 @@ func (p *Project) ParseModels() error {
 	return nil
 }
 
+// SearchEnabled returns true if any of the datatypes have SearchEnabled
+func (p *Project) SearchEnabled() bool {
+	for _, typ := range p.DataTypes {
+		if typ.BelongsToUser {
+			return true
+		}
+	}
+
+	return false
+}
+
 // FindOwnerTypeChain returns the owner chain of a given object from highest ancestor to lowest
 // so if C belongs to B belongs to A, then calling `FindOwnerTypeChain` for C would yield [A, B]
 func (p *Project) FindOwnerTypeChain(typ DataType) []DataType {
