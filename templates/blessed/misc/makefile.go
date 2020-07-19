@@ -7,7 +7,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func makefile(proj *models.Project) func() []byte {
+func makefile(proj *models.Project) []byte {
 	projRoot := proj.OutputPath
 	projectNameKebab := proj.Name.KebabName()
 
@@ -224,5 +224,5 @@ run:
 	--always-recreate-deps \
 	--abort-on-container-exit`
 
-	return func() []byte { return []byte(f) }
+	return []byte(f)
 }

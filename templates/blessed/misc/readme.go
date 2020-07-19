@@ -3,10 +3,11 @@ package misc
 import (
 	"fmt"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func readmeDotMD(projectName wordsmith.SuperPalabra) func() []byte {
+func readmeDotMD(proj *models.Project) []byte {
+	projectName := proj.Name
 	f := fmt.Sprintf(`# %s
 
 replace me with a good description
@@ -120,5 +121,5 @@ It's a good idea to run `+"`"+`make quicktest lintegration-tests`+"`"+` before c
 2. in a different terminal, cd into `+"`"+`frontend/v1`+"`"+` and run `+"`"+`npm run autobuild`+"`"+`
 3. edit and have fun`, projectName.Singular())
 
-	return func() []byte { return []byte(f) }
+	return []byte(f)
 }

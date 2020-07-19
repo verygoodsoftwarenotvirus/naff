@@ -13,15 +13,14 @@ import (
 
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
-	files := map[string]func() []byte{
-		".dockerignore": dockerIgnore,
-		".gitignore":    gitIgnore,
+	files := map[string]func(*models.Project) []byte{
+		".dockerignore":  dockerIgnore,
+		".gitignore":     gitIgnore,
+		"Makefile":       makefile,
+		".gitlab-ci.yml": gitlabCIDotYAML,
+		"README.md":      readmeDotMD,
+		".golangci.yml":  golancCILintDotYAML,
 	}
-
-	files["Makefile"] = makefile(project)
-	files[".gitlab-ci.yml"] = gitlabCIDotYAML(project.OutputPath)
-	files["README.md"] = readmeDotMD(project.Name)
-	files[".golangci.yml"] = golancCILintDotYAML(project.OutputPath)
 
 	for filename, file := range files {
 		fname := utils.BuildTemplatePath(project.OutputPath, filename)
@@ -36,7 +35,7 @@ func RenderPackage(project *models.Project) error {
 			return err
 		}
 
-		bytes := file()
+		bytes := file(project)
 		if _, err := f.Write(bytes); err != nil {
 			log.Printf("error writing to file: %v", err)
 			return err
@@ -46,49 +45,14 @@ func RenderPackage(project *models.Project) error {
 	return nil
 }
 
-func badgesDotJSON() []byte {
-	return []byte(`{
-    "badges": [
-        {
-            "name": "godoc",
-            "gitlab": {
-                "link": "https://pkg.go.dev/gitlab.com/%{project_path}",
-                "badge_image_url": "https://godoc.org/gitlab.com/%{project_path}?status.svg"
-            }
-        },
-        {
-            "name": "ci",
-            "gitlab": {
-                "link": "https://gitlab.com/%{project_path}/commits/%{default_branch}",
-                "badge_image_url": "https://gitlab.com/%{project_path}/badges/%{default_branch}/pipeline.svg"
-            }
-        },
-        {
-            "name": "coverage",
-            "gitlab": {
-                "link": "https://gitlab.com/%{project_path}",
-                "badge_image_url": "https://gitlab.com/%{project_path}/badges/%{default_branch}/coverage.svg"
-            }
-        },
-        {
-            "name": "docker",
-            "gitlab": {
-                "link": "https://hub.docker.com/r/%{project_path}",
-                "badge_image_url": "https://img.shields.io/docker/automated/%{project_path}.svg"
-            }
-        }
-    ]
-}`)
-}
-
-func dockerIgnore() []byte {
+func dockerIgnore(project *models.Project) []byte {
 	return []byte(`**/node_modules
 **/dist
 `)
 }
 
-func gitIgnore() []byte {
-	return []byte(`# Binaries for programs and plugins
+func gitIgnore(project *models.Project) []byte {
+	output := `# Binaries for programs and plugins
 *.exe
 *.dll
 *.so
@@ -113,8 +77,8 @@ func gitIgnore() []byte {
 # OSX
 .DS_Store
 
-# # Go
-# vendor
+# Go
+vendor
 
 # Python
 .env
@@ -133,10 +97,24 @@ yarn-error.log*
 frontend/v1/public/bundle.*
 
 *.coverprofile
-*.profile`)
+*.profile
+
+cmd/playground
+`
+
+	if project.SearchEnabled() {
+		output += "*.bleve\n"
+	}
+
+	if project.DatabaseIsEnabled(models.Sqlite) {
+		output += "*.sqlite\n"
+	}
+
+	return []byte(output)
 }
 
-func gitlabCIDotYAML(projRoot string) func() []byte {
+func gitlabCIDotYAML(project *models.Project) []byte {
+	projRoot := project.OutputPath
 	projParts := strings.Split(projRoot, "/")
 
 	ciPath := strings.Join([]string{projParts[0], projParts[1]}, "/")
@@ -371,10 +349,11 @@ gitlabcr:
     - master
 `, ciPath, ciBuildPath, ciPath, projRoot, projRoot, projRoot)
 
-	return func() []byte { return []byte(f) }
+	return []byte(f)
 }
 
-func golancCILintDotYAML(projRoot string) func() []byte {
+func golancCILintDotYAML(project *models.Project) []byte {
+	projRoot := project.OutputPath
 	f := fmt.Sprintf(`# options for analysis running
 run:
   # timeout for analysis, e.g. 30s, 5m, default is 1m
@@ -701,5 +680,5 @@ issues:
   #
 `, projRoot)
 
-	return func() []byte { return []byte(f) }
+	return []byte(f)
 }
